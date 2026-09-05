@@ -1,0 +1,1954 @@
+{
+  "classSha256": "41f1966d893020d389727faf93bb49ad28d4c0754f82485d9c7774d5ae3097ca",
+  "javapExcerptSha256": "0102d358997c513ad7f105d44df8b1c4b6b59a0131885af67d5b28f883367e86",
+  "smapSha256": "37a90dee2268515bcc8a9f856461e0b510defe9b05a286c0217ffee95431d8b0",
+  "scope": "Recorded BCI/source locations, not exclusive instruction CPU costs; interpreted/C1 status pertains to these instrumented captures only.",
+  "rows": [
+    {
+      "phase": 1,
+      "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "stage": "initial",
+      "nodeLeafSamples": 32,
+      "frameTypes": {
+        "Interpreted": 20,
+        "C1 compiled": 12
+      },
+      "bytecodeRegionSampleCounts": {
+        "predicate_index_read": 7,
+        "raw_address_read": 4,
+        "range_or_control": 13,
+        "exact_set_check": 5,
+        "interrupt": 1,
+        "accounting": 1,
+        "scratch_write": 1
+      },
+      "mappedLeafFrames": [
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 580,
+          "bytecodeIndex": 283,
+          "frameType": "Interpreted",
+          "samples": 3,
+          "instruction": "invokeinterface #764,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;",
+          "lineTableCandidates": [
+            580
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 580,
+            "inlineCallSiteLine": null
+          },
+          "bytecodeRegion": "predicate_index_read"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 580,
+          "bytecodeIndex": 291,
+          "frameType": "Interpreted",
+          "samples": 3,
+          "instruction": "invokevirtual #353                // Method java/lang/Number.intValue:()I",
+          "lineTableCandidates": [
+            580
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 580,
+            "inlineCallSiteLine": null
+          },
+          "bytecodeRegion": "predicate_index_read"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 3641,
+          "bytecodeIndex": 162,
+          "frameType": "Interpreted",
+          "samples": 3,
+          "instruction": "invokevirtual #389                // Method java/nio/MappedByteBuffer.getInt:(I)I",
+          "lineTableCandidates": [
+            3641
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 2459,
+            "inlineCallSiteLine": 574
+          },
+          "bytecodeRegion": "raw_address_read"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 3643,
+          "bytecodeIndex": 252,
+          "frameType": "C1 compiled",
+          "samples": 3,
+          "instruction": "invokeinterface #344,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z",
+          "lineTableCandidates": [
+            3643
+          ],
+          "sourceLocation": {
+            "file": "_Collections.kt",
+            "line": 1756,
+            "inlineCallSiteLine": 579
+          },
+          "bytecodeRegion": "range_or_control"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 3643,
+          "bytecodeIndex": 265,
+          "frameType": "Interpreted",
+          "samples": 3,
+          "instruction": "invokevirtual #760                // Method kotlin/collections/IntIterator.nextInt:()I",
+          "lineTableCandidates": [
+            3643
+          ],
+          "sourceLocation": {
+            "file": "_Collections.kt",
+            "line": 1756,
+            "inlineCallSiteLine": 579
+          },
+          "bytecodeRegion": "range_or_control"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 581,
+          "bytecodeIndex": 322,
+          "frameType": "Interpreted",
+          "samples": 2,
+          "instruction": "invokevirtual #2638               // Method it/unimi/dsi/fastutil/ints/IntOpenHashSet.contains:(I)Z",
+          "lineTableCandidates": [
+            581
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 581,
+            "inlineCallSiteLine": null
+          },
+          "bytecodeRegion": "exact_set_check"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 3643,
+          "bytecodeIndex": 252,
+          "frameType": "Interpreted",
+          "samples": 2,
+          "instruction": "invokeinterface #344,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z",
+          "lineTableCandidates": [
+            3643
+          ],
+          "sourceLocation": {
+            "file": "_Collections.kt",
+            "line": 1756,
+            "inlineCallSiteLine": 579
+          },
+          "bytecodeRegion": "range_or_control"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 3643,
+          "bytecodeIndex": 265,
+          "frameType": "C1 compiled",
+          "samples": 2,
+          "instruction": "invokevirtual #760                // Method kotlin/collections/IntIterator.nextInt:()I",
+          "lineTableCandidates": [
+            3643
+          ],
+          "sourceLocation": {
+            "file": "_Collections.kt",
+            "line": 1756,
+            "inlineCallSiteLine": 579
+          },
+          "bytecodeRegion": "range_or_control"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 566,
+          "bytecodeIndex": 0,
+          "frameType": "C1 compiled",
+          "samples": 1,
+          "instruction": "aload_0",
+          "lineTableCandidates": [
+            566
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 566,
+            "inlineCallSiteLine": null
+          },
+          "bytecodeRegion": "interrupt"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 572,
+          "bytecodeIndex": 66,
+          "frameType": "Interpreted",
+          "samples": 1,
+          "instruction": "invokevirtual #372                // Method io/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer.consume:()V",
+          "lineTableCandidates": [
+            572
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 572,
+            "inlineCallSiteLine": null
+          },
+          "bytecodeRegion": "accounting"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 577,
+          "bytecodeIndex": 193,
+          "frameType": "C1 compiled",
+          "samples": 1,
+          "instruction": "iastore",
+          "lineTableCandidates": [
+            577
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 577,
+            "inlineCallSiteLine": null
+          },
+          "bytecodeRegion": "scratch_write"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 579,
+          "bytecodeIndex": 205,
+          "frameType": "Interpreted",
+          "samples": 1,
+          "instruction": "invokestatic  #755                // Method kotlin/collections/CollectionsKt.getIndices:(Ljava/util/Collection;)Lkotlin/ranges/IntRange;",
+          "lineTableCandidates": [
+            579
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 579,
+            "inlineCallSiteLine": null
+          },
+          "bytecodeRegion": "range_or_control"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 580,
+          "bytecodeIndex": 291,
+          "frameType": "C1 compiled",
+          "samples": 1,
+          "instruction": "invokevirtual #353                // Method java/lang/Number.intValue:()I",
+          "lineTableCandidates": [
+            580
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 580,
+            "inlineCallSiteLine": null
+          },
+          "bytecodeRegion": "predicate_index_read"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 581,
+          "bytecodeIndex": 312,
+          "frameType": "Interpreted",
+          "samples": 1,
+          "instruction": "invokeinterface #764,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;",
+          "lineTableCandidates": [
+            581
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 581,
+            "inlineCallSiteLine": null
+          },
+          "bytecodeRegion": "exact_set_check"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 581,
+          "bytecodeIndex": 317,
+          "frameType": "C1 compiled",
+          "samples": 1,
+          "instruction": "checkcast     #812                // class it/unimi/dsi/fastutil/ints/IntOpenHashSet",
+          "lineTableCandidates": [
+            581
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 581,
+            "inlineCallSiteLine": null
+          },
+          "bytecodeRegion": "exact_set_check"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 581,
+          "bytecodeIndex": 322,
+          "frameType": "C1 compiled",
+          "samples": 1,
+          "instruction": "invokevirtual #2638               // Method it/unimi/dsi/fastutil/ints/IntOpenHashSet.contains:(I)Z",
+          "lineTableCandidates": [
+            581
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 581,
+            "inlineCallSiteLine": null
+          },
+          "bytecodeRegion": "exact_set_check"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 3635,
+          "bytecodeIndex": 105,
+          "frameType": "Interpreted",
+          "samples": 1,
+          "instruction": "invokevirtual #389                // Method java/nio/MappedByteBuffer.getInt:(I)I",
+          "lineTableCandidates": [
+            3635
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 2453,
+            "inlineCallSiteLine": 574
+          },
+          "bytecodeRegion": "raw_address_read"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 3642,
+          "bytecodeIndex": 218,
+          "frameType": "C1 compiled",
+          "samples": 1,
+          "instruction": "instanceof    #545                // class java/util/Collection",
+          "lineTableCandidates": [
+            3642
+          ],
+          "sourceLocation": {
+            "file": "_Collections.kt",
+            "line": 1755,
+            "inlineCallSiteLine": 579
+          },
+          "bytecodeRegion": "range_or_control"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 3643,
+          "bytecodeIndex": 257,
+          "frameType": "C1 compiled",
+          "samples": 1,
+          "instruction": "ifeq          462",
+          "lineTableCandidates": [
+            3643
+          ],
+          "sourceLocation": {
+            "file": "_Collections.kt",
+            "line": 1756,
+            "inlineCallSiteLine": 579
+          },
+          "bytecodeRegion": "range_or_control"
+        }
+      ],
+      "sourceSampleCounts": [
+        {
+          "file": "MappedWebGraphBackedGraph.kt",
+          "line": 580,
+          "inlineCallSiteLine": null,
+          "samples": 7
+        },
+        {
+          "file": "MappedWebGraphBackedGraph.kt",
+          "line": 2459,
+          "inlineCallSiteLine": 574,
+          "samples": 3
+        },
+        {
+          "file": "_Collections.kt",
+          "line": 1756,
+          "inlineCallSiteLine": 579,
+          "samples": 11
+        },
+        {
+          "file": "MappedWebGraphBackedGraph.kt",
+          "line": 581,
+          "inlineCallSiteLine": null,
+          "samples": 5
+        },
+        {
+          "file": "MappedWebGraphBackedGraph.kt",
+          "line": 566,
+          "inlineCallSiteLine": null,
+          "samples": 1
+        },
+        {
+          "file": "MappedWebGraphBackedGraph.kt",
+          "line": 572,
+          "inlineCallSiteLine": null,
+          "samples": 1
+        },
+        {
+          "file": "MappedWebGraphBackedGraph.kt",
+          "line": 577,
+          "inlineCallSiteLine": null,
+          "samples": 1
+        },
+        {
+          "file": "MappedWebGraphBackedGraph.kt",
+          "line": 579,
+          "inlineCallSiteLine": null,
+          "samples": 1
+        },
+        {
+          "file": "MappedWebGraphBackedGraph.kt",
+          "line": 2453,
+          "inlineCallSiteLine": 574,
+          "samples": 1
+        },
+        {
+          "file": "_Collections.kt",
+          "line": 1755,
+          "inlineCallSiteLine": 579,
+          "samples": 1
+        }
+      ]
+    },
+    {
+      "phase": 1,
+      "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "stage": "initial",
+      "nodeLeafSamples": 2,
+      "frameTypes": {
+        "C1 compiled": 2
+      },
+      "bytecodeRegionSampleCounts": {
+        "interrupt": 1,
+        "range_or_control": 1
+      },
+      "mappedLeafFrames": [
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 566,
+          "bytecodeIndex": 0,
+          "frameType": "C1 compiled",
+          "samples": 1,
+          "instruction": "aload_0",
+          "lineTableCandidates": [
+            566
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 566,
+            "inlineCallSiteLine": null
+          },
+          "bytecodeRegion": "interrupt"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 3643,
+          "bytecodeIndex": 252,
+          "frameType": "C1 compiled",
+          "samples": 1,
+          "instruction": "invokeinterface #344,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z",
+          "lineTableCandidates": [
+            3643
+          ],
+          "sourceLocation": {
+            "file": "_Collections.kt",
+            "line": 1756,
+            "inlineCallSiteLine": 579
+          },
+          "bytecodeRegion": "range_or_control"
+        }
+      ],
+      "sourceSampleCounts": [
+        {
+          "file": "MappedWebGraphBackedGraph.kt",
+          "line": 566,
+          "inlineCallSiteLine": null,
+          "samples": 1
+        },
+        {
+          "file": "_Collections.kt",
+          "line": 1756,
+          "inlineCallSiteLine": 579,
+          "samples": 1
+        }
+      ]
+    },
+    {
+      "phase": 1,
+      "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "stage": "provenance",
+      "nodeLeafSamples": 21,
+      "frameTypes": {
+        "C1 compiled": 21
+      },
+      "bytecodeRegionSampleCounts": {
+        "range_or_control": 16,
+        "predicate_index_read": 1,
+        "exact_set_check": 2,
+        "selected_tuple": 1,
+        "raw_address_read": 1
+      },
+      "mappedLeafFrames": [
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 3642,
+          "bytecodeIndex": 218,
+          "frameType": "C1 compiled",
+          "samples": 6,
+          "instruction": "instanceof    #545                // class java/util/Collection",
+          "lineTableCandidates": [
+            3642
+          ],
+          "sourceLocation": {
+            "file": "_Collections.kt",
+            "line": 1755,
+            "inlineCallSiteLine": 579
+          },
+          "bytecodeRegion": "range_or_control"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 3643,
+          "bytecodeIndex": 252,
+          "frameType": "C1 compiled",
+          "samples": 5,
+          "instruction": "invokeinterface #344,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z",
+          "lineTableCandidates": [
+            3643
+          ],
+          "sourceLocation": {
+            "file": "_Collections.kt",
+            "line": 1756,
+            "inlineCallSiteLine": 579
+          },
+          "bytecodeRegion": "range_or_control"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 3643,
+          "bytecodeIndex": 455,
+          "frameType": "C1 compiled",
+          "samples": 3,
+          "instruction": "ifeq          250",
+          "lineTableCandidates": [
+            3643
+          ],
+          "sourceLocation": {
+            "file": "_Collections.kt",
+            "line": 1756,
+            "inlineCallSiteLine": 579
+          },
+          "bytecodeRegion": "range_or_control"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 579,
+          "bytecodeIndex": 202,
+          "frameType": "C1 compiled",
+          "samples": 1,
+          "instruction": "checkcast     #545                // class java/util/Collection",
+          "lineTableCandidates": [
+            579
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 579,
+            "inlineCallSiteLine": null
+          },
+          "bytecodeRegion": "range_or_control"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 580,
+          "bytecodeIndex": 291,
+          "frameType": "C1 compiled",
+          "samples": 1,
+          "instruction": "invokevirtual #353                // Method java/lang/Number.intValue:()I",
+          "lineTableCandidates": [
+            580
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 580,
+            "inlineCallSiteLine": null
+          },
+          "bytecodeRegion": "predicate_index_read"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 581,
+          "bytecodeIndex": 312,
+          "frameType": "C1 compiled",
+          "samples": 1,
+          "instruction": "invokeinterface #764,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;",
+          "lineTableCandidates": [
+            581
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 581,
+            "inlineCallSiteLine": null
+          },
+          "bytecodeRegion": "exact_set_check"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 581,
+          "bytecodeIndex": 322,
+          "frameType": "C1 compiled",
+          "samples": 1,
+          "instruction": "invokevirtual #2638               // Method it/unimi/dsi/fastutil/ints/IntOpenHashSet.contains:(I)Z",
+          "lineTableCandidates": [
+            581
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 581,
+            "inlineCallSiteLine": null
+          },
+          "bytecodeRegion": "exact_set_check"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 600,
+          "bytecodeIndex": 572,
+          "frameType": "C1 compiled",
+          "samples": 1,
+          "instruction": "iaload",
+          "lineTableCandidates": [
+            600
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 600,
+            "inlineCallSiteLine": null
+          },
+          "bytecodeRegion": "selected_tuple"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 3634,
+          "bytecodeIndex": 85,
+          "frameType": "C1 compiled",
+          "samples": 1,
+          "instruction": "invokeinterface #382,  2          // InterfaceMethod io/johnsonlee/graphite/webgraph/NodeOffsetIndex.offset:(I)J",
+          "lineTableCandidates": [
+            3634
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 2452,
+            "inlineCallSiteLine": 574
+          },
+          "bytecodeRegion": "raw_address_read"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 3643,
+          "bytecodeIndex": 257,
+          "frameType": "C1 compiled",
+          "samples": 1,
+          "instruction": "ifeq          462",
+          "lineTableCandidates": [
+            3643
+          ],
+          "sourceLocation": {
+            "file": "_Collections.kt",
+            "line": 1756,
+            "inlineCallSiteLine": 579
+          },
+          "bytecodeRegion": "range_or_control"
+        }
+      ],
+      "sourceSampleCounts": [
+        {
+          "file": "_Collections.kt",
+          "line": 1755,
+          "inlineCallSiteLine": 579,
+          "samples": 6
+        },
+        {
+          "file": "_Collections.kt",
+          "line": 1756,
+          "inlineCallSiteLine": 579,
+          "samples": 9
+        },
+        {
+          "file": "MappedWebGraphBackedGraph.kt",
+          "line": 579,
+          "inlineCallSiteLine": null,
+          "samples": 1
+        },
+        {
+          "file": "MappedWebGraphBackedGraph.kt",
+          "line": 580,
+          "inlineCallSiteLine": null,
+          "samples": 1
+        },
+        {
+          "file": "MappedWebGraphBackedGraph.kt",
+          "line": 581,
+          "inlineCallSiteLine": null,
+          "samples": 2
+        },
+        {
+          "file": "MappedWebGraphBackedGraph.kt",
+          "line": 600,
+          "inlineCallSiteLine": null,
+          "samples": 1
+        },
+        {
+          "file": "MappedWebGraphBackedGraph.kt",
+          "line": 2452,
+          "inlineCallSiteLine": 574,
+          "samples": 1
+        }
+      ]
+    },
+    {
+      "phase": 2,
+      "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "stage": "initial",
+      "nodeLeafSamples": 36,
+      "frameTypes": {
+        "Interpreted": 26,
+        "C1 compiled": 10
+      },
+      "bytecodeRegionSampleCounts": {
+        "range_or_control": 16,
+        "interrupt": 3,
+        "predicate_index_read": 5,
+        "exact_set_check": 2,
+        "raw_address_read": 9,
+        "limit_check": 1
+      },
+      "mappedLeafFrames": [
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 3643,
+          "bytecodeIndex": 265,
+          "frameType": "Interpreted",
+          "samples": 6,
+          "instruction": "invokevirtual #760                // Method kotlin/collections/IntIterator.nextInt:()I",
+          "lineTableCandidates": [
+            3643
+          ],
+          "sourceLocation": {
+            "file": "_Collections.kt",
+            "line": 1756,
+            "inlineCallSiteLine": 579
+          },
+          "bytecodeRegion": "range_or_control"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 3643,
+          "bytecodeIndex": 252,
+          "frameType": "C1 compiled",
+          "samples": 4,
+          "instruction": "invokeinterface #344,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z",
+          "lineTableCandidates": [
+            3643
+          ],
+          "sourceLocation": {
+            "file": "_Collections.kt",
+            "line": 1756,
+            "inlineCallSiteLine": 579
+          },
+          "bytecodeRegion": "range_or_control"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 566,
+          "bytecodeIndex": 0,
+          "frameType": "C1 compiled",
+          "samples": 3,
+          "instruction": "aload_0",
+          "lineTableCandidates": [
+            566
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 566,
+            "inlineCallSiteLine": null
+          },
+          "bytecodeRegion": "interrupt"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 580,
+          "bytecodeIndex": 283,
+          "frameType": "Interpreted",
+          "samples": 3,
+          "instruction": "invokeinterface #764,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;",
+          "lineTableCandidates": [
+            580
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 580,
+            "inlineCallSiteLine": null
+          },
+          "bytecodeRegion": "predicate_index_read"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 579,
+          "bytecodeIndex": 205,
+          "frameType": "Interpreted",
+          "samples": 2,
+          "instruction": "invokestatic  #755                // Method kotlin/collections/CollectionsKt.getIndices:(Ljava/util/Collection;)Lkotlin/ranges/IntRange;",
+          "lineTableCandidates": [
+            579
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 579,
+            "inlineCallSiteLine": null
+          },
+          "bytecodeRegion": "range_or_control"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 581,
+          "bytecodeIndex": 322,
+          "frameType": "Interpreted",
+          "samples": 2,
+          "instruction": "invokevirtual #2638               // Method it/unimi/dsi/fastutil/ints/IntOpenHashSet.contains:(I)Z",
+          "lineTableCandidates": [
+            581
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 581,
+            "inlineCallSiteLine": null
+          },
+          "bytecodeRegion": "exact_set_check"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 3635,
+          "bytecodeIndex": 97,
+          "frameType": "Interpreted",
+          "samples": 2,
+          "instruction": "invokestatic  #385                // Method access$getMappedNodeData$p:(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;)Ljava/nio/MappedByteBuffer;",
+          "lineTableCandidates": [
+            3635
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 2453,
+            "inlineCallSiteLine": 574
+          },
+          "bytecodeRegion": "raw_address_read"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 3639,
+          "bytecodeIndex": 140,
+          "frameType": "Interpreted",
+          "samples": 2,
+          "instruction": "invokevirtual #389                // Method java/nio/MappedByteBuffer.getInt:(I)I",
+          "lineTableCandidates": [
+            3639
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 2457,
+            "inlineCallSiteLine": 574
+          },
+          "bytecodeRegion": "raw_address_read"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 3641,
+          "bytecodeIndex": 155,
+          "frameType": "Interpreted",
+          "samples": 2,
+          "instruction": "invokestatic  #385                // Method access$getMappedNodeData$p:(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;)Ljava/nio/MappedByteBuffer;",
+          "lineTableCandidates": [
+            3641
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 2459,
+            "inlineCallSiteLine": 574
+          },
+          "bytecodeRegion": "raw_address_read"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 3643,
+          "bytecodeIndex": 252,
+          "frameType": "Interpreted",
+          "samples": 2,
+          "instruction": "invokeinterface #344,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z",
+          "lineTableCandidates": [
+            3643
+          ],
+          "sourceLocation": {
+            "file": "_Collections.kt",
+            "line": 1756,
+            "inlineCallSiteLine": 579
+          },
+          "bytecodeRegion": "range_or_control"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 580,
+          "bytecodeIndex": 283,
+          "frameType": "C1 compiled",
+          "samples": 1,
+          "instruction": "invokeinterface #764,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;",
+          "lineTableCandidates": [
+            580
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 580,
+            "inlineCallSiteLine": null
+          },
+          "bytecodeRegion": "predicate_index_read"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 580,
+          "bytecodeIndex": 294,
+          "frameType": "C1 compiled",
+          "samples": 1,
+          "instruction": "iaload",
+          "lineTableCandidates": [
+            580
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 580,
+            "inlineCallSiteLine": null
+          },
+          "bytecodeRegion": "predicate_index_read"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 611,
+          "bytecodeIndex": 776,
+          "frameType": "Interpreted",
+          "samples": 1,
+          "instruction": "invokevirtual #939                // Method java/util/ArrayList.size:()I",
+          "lineTableCandidates": [
+            611
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 611,
+            "inlineCallSiteLine": null
+          },
+          "bytecodeRegion": "limit_check"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 3638,
+          "bytecodeIndex": 123,
+          "frameType": "Interpreted",
+          "samples": 1,
+          "instruction": "invokestatic  #385                // Method access$getMappedNodeData$p:(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;)Ljava/nio/MappedByteBuffer;",
+          "lineTableCandidates": [
+            3637,
+            3638
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 2456,
+            "inlineCallSiteLine": 574
+          },
+          "bytecodeRegion": "raw_address_read"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 3638,
+          "bytecodeIndex": 128,
+          "frameType": "Interpreted",
+          "samples": 1,
+          "instruction": "invokevirtual #389                // Method java/nio/MappedByteBuffer.getInt:(I)I",
+          "lineTableCandidates": [
+            3637,
+            3638
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 2456,
+            "inlineCallSiteLine": 574
+          },
+          "bytecodeRegion": "raw_address_read"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 3640,
+          "bytecodeIndex": 145,
+          "frameType": "Interpreted",
+          "samples": 1,
+          "instruction": "invokestatic  #385                // Method access$getMappedNodeData$p:(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;)Ljava/nio/MappedByteBuffer;",
+          "lineTableCandidates": [
+            3640
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 2458,
+            "inlineCallSiteLine": 574
+          },
+          "bytecodeRegion": "raw_address_read"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 3642,
+          "bytecodeIndex": 218,
+          "frameType": "C1 compiled",
+          "samples": 1,
+          "instruction": "instanceof    #545                // class java/util/Collection",
+          "lineTableCandidates": [
+            3642
+          ],
+          "sourceLocation": {
+            "file": "_Collections.kt",
+            "line": 1755,
+            "inlineCallSiteLine": 579
+          },
+          "bytecodeRegion": "range_or_control"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 3643,
+          "bytecodeIndex": 243,
+          "frameType": "Interpreted",
+          "samples": 1,
+          "instruction": "invokeinterface #547,  1          // InterfaceMethod java/lang/Iterable.iterator:()Ljava/util/Iterator;",
+          "lineTableCandidates": [
+            3643
+          ],
+          "sourceLocation": {
+            "file": "_Collections.kt",
+            "line": 1756,
+            "inlineCallSiteLine": 579
+          },
+          "bytecodeRegion": "range_or_control"
+        }
+      ],
+      "sourceSampleCounts": [
+        {
+          "file": "_Collections.kt",
+          "line": 1756,
+          "inlineCallSiteLine": 579,
+          "samples": 13
+        },
+        {
+          "file": "MappedWebGraphBackedGraph.kt",
+          "line": 566,
+          "inlineCallSiteLine": null,
+          "samples": 3
+        },
+        {
+          "file": "MappedWebGraphBackedGraph.kt",
+          "line": 580,
+          "inlineCallSiteLine": null,
+          "samples": 5
+        },
+        {
+          "file": "MappedWebGraphBackedGraph.kt",
+          "line": 579,
+          "inlineCallSiteLine": null,
+          "samples": 2
+        },
+        {
+          "file": "MappedWebGraphBackedGraph.kt",
+          "line": 581,
+          "inlineCallSiteLine": null,
+          "samples": 2
+        },
+        {
+          "file": "MappedWebGraphBackedGraph.kt",
+          "line": 2453,
+          "inlineCallSiteLine": 574,
+          "samples": 2
+        },
+        {
+          "file": "MappedWebGraphBackedGraph.kt",
+          "line": 2457,
+          "inlineCallSiteLine": 574,
+          "samples": 2
+        },
+        {
+          "file": "MappedWebGraphBackedGraph.kt",
+          "line": 2459,
+          "inlineCallSiteLine": 574,
+          "samples": 2
+        },
+        {
+          "file": "MappedWebGraphBackedGraph.kt",
+          "line": 611,
+          "inlineCallSiteLine": null,
+          "samples": 1
+        },
+        {
+          "file": "MappedWebGraphBackedGraph.kt",
+          "line": 2456,
+          "inlineCallSiteLine": 574,
+          "samples": 2
+        },
+        {
+          "file": "MappedWebGraphBackedGraph.kt",
+          "line": 2458,
+          "inlineCallSiteLine": 574,
+          "samples": 1
+        },
+        {
+          "file": "_Collections.kt",
+          "line": 1755,
+          "inlineCallSiteLine": 579,
+          "samples": 1
+        }
+      ]
+    },
+    {
+      "phase": 2,
+      "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "stage": "initial",
+      "nodeLeafSamples": 2,
+      "frameTypes": {
+        "Interpreted": 2
+      },
+      "bytecodeRegionSampleCounts": {
+        "exact_set_check": 1,
+        "range_or_control": 1
+      },
+      "mappedLeafFrames": [
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 581,
+          "bytecodeIndex": 312,
+          "frameType": "Interpreted",
+          "samples": 1,
+          "instruction": "invokeinterface #764,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;",
+          "lineTableCandidates": [
+            581
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 581,
+            "inlineCallSiteLine": null
+          },
+          "bytecodeRegion": "exact_set_check"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 3643,
+          "bytecodeIndex": 265,
+          "frameType": "Interpreted",
+          "samples": 1,
+          "instruction": "invokevirtual #760                // Method kotlin/collections/IntIterator.nextInt:()I",
+          "lineTableCandidates": [
+            3643
+          ],
+          "sourceLocation": {
+            "file": "_Collections.kt",
+            "line": 1756,
+            "inlineCallSiteLine": 579
+          },
+          "bytecodeRegion": "range_or_control"
+        }
+      ],
+      "sourceSampleCounts": [
+        {
+          "file": "MappedWebGraphBackedGraph.kt",
+          "line": 581,
+          "inlineCallSiteLine": null,
+          "samples": 1
+        },
+        {
+          "file": "_Collections.kt",
+          "line": 1756,
+          "inlineCallSiteLine": 579,
+          "samples": 1
+        }
+      ]
+    },
+    {
+      "phase": 2,
+      "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "stage": "provenance",
+      "nodeLeafSamples": 17,
+      "frameTypes": {
+        "C1 compiled": 17
+      },
+      "bytecodeRegionSampleCounts": {
+        "range_or_control": 7,
+        "exact_set_check": 4,
+        "predicate_index_read": 2,
+        "raw_address_read": 4
+      },
+      "mappedLeafFrames": [
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 3643,
+          "bytecodeIndex": 252,
+          "frameType": "C1 compiled",
+          "samples": 5,
+          "instruction": "invokeinterface #344,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z",
+          "lineTableCandidates": [
+            3643
+          ],
+          "sourceLocation": {
+            "file": "_Collections.kt",
+            "line": 1756,
+            "inlineCallSiteLine": 579
+          },
+          "bytecodeRegion": "range_or_control"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 581,
+          "bytecodeIndex": 317,
+          "frameType": "C1 compiled",
+          "samples": 2,
+          "instruction": "checkcast     #812                // class it/unimi/dsi/fastutil/ints/IntOpenHashSet",
+          "lineTableCandidates": [
+            581
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 581,
+            "inlineCallSiteLine": null
+          },
+          "bytecodeRegion": "exact_set_check"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 580,
+          "bytecodeIndex": 283,
+          "frameType": "C1 compiled",
+          "samples": 1,
+          "instruction": "invokeinterface #764,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;",
+          "lineTableCandidates": [
+            580
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 580,
+            "inlineCallSiteLine": null
+          },
+          "bytecodeRegion": "predicate_index_read"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 580,
+          "bytecodeIndex": 288,
+          "frameType": "C1 compiled",
+          "samples": 1,
+          "instruction": "checkcast     #349                // class java/lang/Number",
+          "lineTableCandidates": [
+            580
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 580,
+            "inlineCallSiteLine": null
+          },
+          "bytecodeRegion": "predicate_index_read"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 581,
+          "bytecodeIndex": 300,
+          "frameType": "C1 compiled",
+          "samples": 1,
+          "instruction": "ifnull        328",
+          "lineTableCandidates": [
+            581
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 581,
+            "inlineCallSiteLine": null
+          },
+          "bytecodeRegion": "exact_set_check"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 581,
+          "bytecodeIndex": 322,
+          "frameType": "C1 compiled",
+          "samples": 1,
+          "instruction": "invokevirtual #2638               // Method it/unimi/dsi/fastutil/ints/IntOpenHashSet.contains:(I)Z",
+          "lineTableCandidates": [
+            581
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 581,
+            "inlineCallSiteLine": null
+          },
+          "bytecodeRegion": "exact_set_check"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 3634,
+          "bytecodeIndex": 85,
+          "frameType": "C1 compiled",
+          "samples": 1,
+          "instruction": "invokeinterface #382,  2          // InterfaceMethod io/johnsonlee/graphite/webgraph/NodeOffsetIndex.offset:(I)J",
+          "lineTableCandidates": [
+            3634
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 2452,
+            "inlineCallSiteLine": 574
+          },
+          "bytecodeRegion": "raw_address_read"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 3639,
+          "bytecodeIndex": 140,
+          "frameType": "C1 compiled",
+          "samples": 1,
+          "instruction": "invokevirtual #389                // Method java/nio/MappedByteBuffer.getInt:(I)I",
+          "lineTableCandidates": [
+            3639
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 2457,
+            "inlineCallSiteLine": 574
+          },
+          "bytecodeRegion": "raw_address_read"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 3640,
+          "bytecodeIndex": 150,
+          "frameType": "C1 compiled",
+          "samples": 1,
+          "instruction": "invokevirtual #389                // Method java/nio/MappedByteBuffer.getInt:(I)I",
+          "lineTableCandidates": [
+            3640
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 2458,
+            "inlineCallSiteLine": 574
+          },
+          "bytecodeRegion": "raw_address_read"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 3641,
+          "bytecodeIndex": 162,
+          "frameType": "C1 compiled",
+          "samples": 1,
+          "instruction": "invokevirtual #389                // Method java/nio/MappedByteBuffer.getInt:(I)I",
+          "lineTableCandidates": [
+            3641
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 2459,
+            "inlineCallSiteLine": 574
+          },
+          "bytecodeRegion": "raw_address_read"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 3643,
+          "bytecodeIndex": 257,
+          "frameType": "C1 compiled",
+          "samples": 1,
+          "instruction": "ifeq          462",
+          "lineTableCandidates": [
+            3643
+          ],
+          "sourceLocation": {
+            "file": "_Collections.kt",
+            "line": 1756,
+            "inlineCallSiteLine": 579
+          },
+          "bytecodeRegion": "range_or_control"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 3643,
+          "bytecodeIndex": 265,
+          "frameType": "C1 compiled",
+          "samples": 1,
+          "instruction": "invokevirtual #760                // Method kotlin/collections/IntIterator.nextInt:()I",
+          "lineTableCandidates": [
+            3643
+          ],
+          "sourceLocation": {
+            "file": "_Collections.kt",
+            "line": 1756,
+            "inlineCallSiteLine": 579
+          },
+          "bytecodeRegion": "range_or_control"
+        }
+      ],
+      "sourceSampleCounts": [
+        {
+          "file": "_Collections.kt",
+          "line": 1756,
+          "inlineCallSiteLine": 579,
+          "samples": 7
+        },
+        {
+          "file": "MappedWebGraphBackedGraph.kt",
+          "line": 581,
+          "inlineCallSiteLine": null,
+          "samples": 4
+        },
+        {
+          "file": "MappedWebGraphBackedGraph.kt",
+          "line": 580,
+          "inlineCallSiteLine": null,
+          "samples": 2
+        },
+        {
+          "file": "MappedWebGraphBackedGraph.kt",
+          "line": 2452,
+          "inlineCallSiteLine": 574,
+          "samples": 1
+        },
+        {
+          "file": "MappedWebGraphBackedGraph.kt",
+          "line": 2457,
+          "inlineCallSiteLine": 574,
+          "samples": 1
+        },
+        {
+          "file": "MappedWebGraphBackedGraph.kt",
+          "line": 2458,
+          "inlineCallSiteLine": 574,
+          "samples": 1
+        },
+        {
+          "file": "MappedWebGraphBackedGraph.kt",
+          "line": 2459,
+          "inlineCallSiteLine": 574,
+          "samples": 1
+        }
+      ]
+    },
+    {
+      "phase": 3,
+      "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "stage": "initial",
+      "nodeLeafSamples": 30,
+      "frameTypes": {
+        "Interpreted": 17,
+        "C1 compiled": 13
+      },
+      "bytecodeRegionSampleCounts": {
+        "exact_set_check": 6,
+        "range_or_control": 13,
+        "predicate_index_read": 6,
+        "raw_address_read": 4,
+        "interrupt": 1
+      },
+      "mappedLeafFrames": [
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 581,
+          "bytecodeIndex": 322,
+          "frameType": "Interpreted",
+          "samples": 3,
+          "instruction": "invokevirtual #2638               // Method it/unimi/dsi/fastutil/ints/IntOpenHashSet.contains:(I)Z",
+          "lineTableCandidates": [
+            581
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 581,
+            "inlineCallSiteLine": null
+          },
+          "bytecodeRegion": "exact_set_check"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 3642,
+          "bytecodeIndex": 218,
+          "frameType": "C1 compiled",
+          "samples": 3,
+          "instruction": "instanceof    #545                // class java/util/Collection",
+          "lineTableCandidates": [
+            3642
+          ],
+          "sourceLocation": {
+            "file": "_Collections.kt",
+            "line": 1755,
+            "inlineCallSiteLine": 579
+          },
+          "bytecodeRegion": "range_or_control"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 3643,
+          "bytecodeIndex": 252,
+          "frameType": "C1 compiled",
+          "samples": 3,
+          "instruction": "invokeinterface #344,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z",
+          "lineTableCandidates": [
+            3643
+          ],
+          "sourceLocation": {
+            "file": "_Collections.kt",
+            "line": 1756,
+            "inlineCallSiteLine": 579
+          },
+          "bytecodeRegion": "range_or_control"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 3643,
+          "bytecodeIndex": 252,
+          "frameType": "Interpreted",
+          "samples": 3,
+          "instruction": "invokeinterface #344,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z",
+          "lineTableCandidates": [
+            3643
+          ],
+          "sourceLocation": {
+            "file": "_Collections.kt",
+            "line": 1756,
+            "inlineCallSiteLine": 579
+          },
+          "bytecodeRegion": "range_or_control"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 580,
+          "bytecodeIndex": 291,
+          "frameType": "C1 compiled",
+          "samples": 2,
+          "instruction": "invokevirtual #353                // Method java/lang/Number.intValue:()I",
+          "lineTableCandidates": [
+            580
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 580,
+            "inlineCallSiteLine": null
+          },
+          "bytecodeRegion": "predicate_index_read"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 580,
+          "bytecodeIndex": 291,
+          "frameType": "Interpreted",
+          "samples": 2,
+          "instruction": "invokevirtual #353                // Method java/lang/Number.intValue:()I",
+          "lineTableCandidates": [
+            580
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 580,
+            "inlineCallSiteLine": null
+          },
+          "bytecodeRegion": "predicate_index_read"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 581,
+          "bytecodeIndex": 312,
+          "frameType": "Interpreted",
+          "samples": 2,
+          "instruction": "invokeinterface #764,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;",
+          "lineTableCandidates": [
+            581
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 581,
+            "inlineCallSiteLine": null
+          },
+          "bytecodeRegion": "exact_set_check"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 3638,
+          "bytecodeIndex": 128,
+          "frameType": "Interpreted",
+          "samples": 2,
+          "instruction": "invokevirtual #389                // Method java/nio/MappedByteBuffer.getInt:(I)I",
+          "lineTableCandidates": [
+            3637,
+            3638
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 2456,
+            "inlineCallSiteLine": 574
+          },
+          "bytecodeRegion": "raw_address_read"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 3643,
+          "bytecodeIndex": 265,
+          "frameType": "Interpreted",
+          "samples": 2,
+          "instruction": "invokevirtual #760                // Method kotlin/collections/IntIterator.nextInt:()I",
+          "lineTableCandidates": [
+            3643
+          ],
+          "sourceLocation": {
+            "file": "_Collections.kt",
+            "line": 1756,
+            "inlineCallSiteLine": 579
+          },
+          "bytecodeRegion": "range_or_control"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 3643,
+          "bytecodeIndex": 455,
+          "frameType": "C1 compiled",
+          "samples": 2,
+          "instruction": "ifeq          250",
+          "lineTableCandidates": [
+            3643
+          ],
+          "sourceLocation": {
+            "file": "_Collections.kt",
+            "line": 1756,
+            "inlineCallSiteLine": 579
+          },
+          "bytecodeRegion": "range_or_control"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 566,
+          "bytecodeIndex": 0,
+          "frameType": "C1 compiled",
+          "samples": 1,
+          "instruction": "aload_0",
+          "lineTableCandidates": [
+            566
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 566,
+            "inlineCallSiteLine": null
+          },
+          "bytecodeRegion": "interrupt"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 580,
+          "bytecodeIndex": 283,
+          "frameType": "Interpreted",
+          "samples": 1,
+          "instruction": "invokeinterface #764,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;",
+          "lineTableCandidates": [
+            580
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 580,
+            "inlineCallSiteLine": null
+          },
+          "bytecodeRegion": "predicate_index_read"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 580,
+          "bytecodeIndex": 288,
+          "frameType": "C1 compiled",
+          "samples": 1,
+          "instruction": "checkcast     #349                // class java/lang/Number",
+          "lineTableCandidates": [
+            580
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 580,
+            "inlineCallSiteLine": null
+          },
+          "bytecodeRegion": "predicate_index_read"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 581,
+          "bytecodeIndex": 300,
+          "frameType": "C1 compiled",
+          "samples": 1,
+          "instruction": "ifnull        328",
+          "lineTableCandidates": [
+            581
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 581,
+            "inlineCallSiteLine": null
+          },
+          "bytecodeRegion": "exact_set_check"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 3634,
+          "bytecodeIndex": 80,
+          "frameType": "Interpreted",
+          "samples": 1,
+          "instruction": "invokestatic  #376                // Method access$getNodeOffsets$p:(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;)Lio/johnsonlee/graphite/webgraph/NodeOffsetIndex;",
+          "lineTableCandidates": [
+            3634
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 2452,
+            "inlineCallSiteLine": 574
+          },
+          "bytecodeRegion": "raw_address_read"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 3641,
+          "bytecodeIndex": 162,
+          "frameType": "Interpreted",
+          "samples": 1,
+          "instruction": "invokevirtual #389                // Method java/nio/MappedByteBuffer.getInt:(I)I",
+          "lineTableCandidates": [
+            3641
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 2459,
+            "inlineCallSiteLine": 574
+          },
+          "bytecodeRegion": "raw_address_read"
+        }
+      ],
+      "sourceSampleCounts": [
+        {
+          "file": "MappedWebGraphBackedGraph.kt",
+          "line": 581,
+          "inlineCallSiteLine": null,
+          "samples": 6
+        },
+        {
+          "file": "_Collections.kt",
+          "line": 1755,
+          "inlineCallSiteLine": 579,
+          "samples": 3
+        },
+        {
+          "file": "_Collections.kt",
+          "line": 1756,
+          "inlineCallSiteLine": 579,
+          "samples": 10
+        },
+        {
+          "file": "MappedWebGraphBackedGraph.kt",
+          "line": 580,
+          "inlineCallSiteLine": null,
+          "samples": 6
+        },
+        {
+          "file": "MappedWebGraphBackedGraph.kt",
+          "line": 2456,
+          "inlineCallSiteLine": 574,
+          "samples": 2
+        },
+        {
+          "file": "MappedWebGraphBackedGraph.kt",
+          "line": 566,
+          "inlineCallSiteLine": null,
+          "samples": 1
+        },
+        {
+          "file": "MappedWebGraphBackedGraph.kt",
+          "line": 2452,
+          "inlineCallSiteLine": 574,
+          "samples": 1
+        },
+        {
+          "file": "MappedWebGraphBackedGraph.kt",
+          "line": 2459,
+          "inlineCallSiteLine": 574,
+          "samples": 1
+        }
+      ]
+    },
+    {
+      "phase": 3,
+      "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "stage": "initial",
+      "nodeLeafSamples": 3,
+      "frameTypes": {
+        "Interpreted": 3
+      },
+      "bytecodeRegionSampleCounts": {
+        "range_or_control": 2,
+        "exact_set_check": 1
+      },
+      "mappedLeafFrames": [
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 579,
+          "bytecodeIndex": 205,
+          "frameType": "Interpreted",
+          "samples": 1,
+          "instruction": "invokestatic  #755                // Method kotlin/collections/CollectionsKt.getIndices:(Ljava/util/Collection;)Lkotlin/ranges/IntRange;",
+          "lineTableCandidates": [
+            579
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 579,
+            "inlineCallSiteLine": null
+          },
+          "bytecodeRegion": "range_or_control"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 581,
+          "bytecodeIndex": 322,
+          "frameType": "Interpreted",
+          "samples": 1,
+          "instruction": "invokevirtual #2638               // Method it/unimi/dsi/fastutil/ints/IntOpenHashSet.contains:(I)Z",
+          "lineTableCandidates": [
+            581
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 581,
+            "inlineCallSiteLine": null
+          },
+          "bytecodeRegion": "exact_set_check"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 3643,
+          "bytecodeIndex": 243,
+          "frameType": "Interpreted",
+          "samples": 1,
+          "instruction": "invokeinterface #547,  1          // InterfaceMethod java/lang/Iterable.iterator:()Ljava/util/Iterator;",
+          "lineTableCandidates": [
+            3643
+          ],
+          "sourceLocation": {
+            "file": "_Collections.kt",
+            "line": 1756,
+            "inlineCallSiteLine": 579
+          },
+          "bytecodeRegion": "range_or_control"
+        }
+      ],
+      "sourceSampleCounts": [
+        {
+          "file": "MappedWebGraphBackedGraph.kt",
+          "line": 579,
+          "inlineCallSiteLine": null,
+          "samples": 1
+        },
+        {
+          "file": "MappedWebGraphBackedGraph.kt",
+          "line": 581,
+          "inlineCallSiteLine": null,
+          "samples": 1
+        },
+        {
+          "file": "_Collections.kt",
+          "line": 1756,
+          "inlineCallSiteLine": 579,
+          "samples": 1
+        }
+      ]
+    },
+    {
+      "phase": 3,
+      "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "stage": "provenance",
+      "nodeLeafSamples": 5,
+      "frameTypes": {
+        "Interpreted": 3,
+        "C1 compiled": 2
+      },
+      "bytecodeRegionSampleCounts": {
+        "exact_set_check": 2,
+        "selected_tuple": 3
+      },
+      "mappedLeafFrames": [
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 581,
+          "bytecodeIndex": 322,
+          "frameType": "Interpreted",
+          "samples": 2,
+          "instruction": "invokevirtual #2638               // Method it/unimi/dsi/fastutil/ints/IntOpenHashSet.contains:(I)Z",
+          "lineTableCandidates": [
+            581
+          ],
+          "sourceLocation": {
+            "file": "MappedWebGraphBackedGraph.kt",
+            "line": 581,
+            "inlineCallSiteLine": null
+          },
+          "bytecodeRegion": "exact_set_check"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 3648,
+          "bytecodeIndex": 585,
+          "frameType": "C1 compiled",
+          "samples": 2,
+          "instruction": "goto          523",
+          "lineTableCandidates": [
+            3648
+          ],
+          "sourceLocation": {
+            "file": "_Collections.kt",
+            "line": 1629,
+            "inlineCallSiteLine": 599
+          },
+          "bytecodeRegion": "selected_tuple"
+        },
+        {
+          "method": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef;Ljava/util/concurrent/atomic/AtomicBoolean;Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph;Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer;Ljava/util/HashSet;Ljava/util/List;Ljava/util/HashSet;Ljava/util/ArrayList;I[ILjava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;I)Z",
+          "lineNumber": 3647,
+          "bytecodeIndex": 525,
+          "frameType": "Interpreted",
+          "samples": 1,
+          "instruction": "invokeinterface #344,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z",
+          "lineTableCandidates": [
+            3647
+          ],
+          "sourceLocation": {
+            "file": "_Collections.kt",
+            "line": 1628,
+            "inlineCallSiteLine": 599
+          },
+          "bytecodeRegion": "selected_tuple"
+        }
+      ],
+      "sourceSampleCounts": [
+        {
+          "file": "MappedWebGraphBackedGraph.kt",
+          "line": 581,
+          "inlineCallSiteLine": null,
+          "samples": 2
+        },
+        {
+          "file": "_Collections.kt",
+          "line": 1629,
+          "inlineCallSiteLine": 599,
+          "samples": 2
+        },
+        {
+          "file": "_Collections.kt",
+          "line": 1628,
+          "inlineCallSiteLine": 599,
+          "samples": 1
+        }
+      ]
+    }
+  ]
+}

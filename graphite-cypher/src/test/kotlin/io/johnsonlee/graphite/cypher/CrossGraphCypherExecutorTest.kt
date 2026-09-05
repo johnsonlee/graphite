@@ -911,6 +911,114 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
+    fun `prepared global wide interrupted request cancels workers queued behind another query`() {
+        val poolWorkers = resolveDirectStringExecutorParallelism()
+        if (resolveDirectStringGraphParallelism(64) < 2) return
+        val blockingGraphCount = if (poolWorkers > 8) maxOf(40, poolWorkers) else poolWorkers
+        val blockersStarted = CountDownLatch(poolWorkers)
+        val releaseBlockers = CountDownLatch(1)
+        val planningStarted = CountDownLatch(1)
+        val releasePlanning = CountDownLatch(1)
+        val requestThread = java.util.concurrent.atomic.AtomicReference<Thread>()
+        val planningInterrupted = java.util.concurrent.atomic.AtomicBoolean()
+        val suffixLookups = AtomicInteger()
+        val empty = graph()
+        val blockingGraphs = List(blockingGraphCount) { graphIndex ->
+            CypherGraph("busy-$graphIndex", object : Graph by empty, StringPropertyDisjunctionAggregation {
+                override fun aggregateStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>,
+                    distinctProperty: String?
+                ): StringPropertyDisjunctionAggregate {
+                    blockersStarted.countDown()
+                    check(releaseBlockers.await(10, TimeUnit.SECONDS))
+                    return StringPropertyDisjunctionAggregate(1L, null)
+                }
+            })
+        }
+        val preparedGraphs = List(64) { graphIndex ->
+            CypherGraph("prepared-$graphIndex", object :
+                Graph by empty,
+                WorkAwareStringPropertyDisjunctionLookup,
+                PreparedStringPropertyDisjunctionLookup {
+                override fun nodeCount(type: Class<out Node>): Long? =
+                    if (type == CallSiteNode::class.java) 10_000L else empty.nodeCount(type)
+
+                override fun hasPreparedStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>
+                ): Boolean {
+                    if (graphIndex == 1 && !planningInterrupted.get()) {
+                        planningStarted.countDown()
+                        try {
+                            check(releasePlanning.await(10, TimeUnit.SECONDS))
+                        } catch (_: InterruptedException) {
+                            planningInterrupted.set(true)
+                            Thread.currentThread().interrupt()
+                        }
+                    }
+                    return type == CallSiteNode::class.java && predicates.isNotEmpty()
+                }
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int
+                ): Sequence<T> = error("The work-aware overload is required")
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer
+                ): Sequence<T> {
+                    if (graphIndex != 0) suffixLookups.incrementAndGet()
+                    return emptySequence()
+                }
+            })
+        }
+        val requests = Executors.newFixedThreadPool(2)
+        try {
+            val blockingQuery = requests.submit<CypherResult> {
+                CrossGraphCypherExecutor(blockingGraphs).execute(
+                    "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'busy' RETURN count(*) AS total"
+                )
+            }
+            assertTrue(blockersStarted.await(5, TimeUnit.SECONDS), "The shared graph pool was not saturated")
+            val interruptedQuery = requests.submit<CypherResult> {
+                requestThread.set(Thread.currentThread())
+                CrossGraphCypherExecutor(preparedGraphs).execute(
+                    "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'absent' " +
+                        "RETURN n.caller_class LIMIT 1"
+                )
+            }
+            assertTrue(planningStarted.await(5, TimeUnit.SECONDS), "The prepared query did not reach planning")
+            // Preserve request interruption through planning while the other query owns every worker.
+            // The prepared workers must be cancelled without running when they are subsequently queued.
+            requestThread.get().interrupt()
+            val failure = assertFailsWith<java.util.concurrent.ExecutionException> {
+                interruptedQuery.get(2, TimeUnit.SECONDS)
+            }
+            assertTrue(planningInterrupted.get())
+            assertEquals("Parallel graph scan failed", failure.cause?.message)
+            assertTrue(failure.cause?.cause is InterruptedException)
+            assertEquals(0, suffixLookups.get())
+            assertEquals(1, releaseBlockers.count, "Cancellation must finish while the other query still owns the pool")
+
+            releaseBlockers.countDown()
+            val result = blockingQuery.get(5, TimeUnit.SECONDS)
+            assertEquals(blockingGraphs.size.toLong(), result.rows.single()["total"])
+            assertEquals(blockingGraphs.map(CypherGraph::id).sorted(), graphIds(result.rows.single()))
+            assertEquals(0, suffixLookups.get(), "Cancelled queued workers must not scan when the pool becomes available")
+        } finally {
+            releasePlanning.countDown()
+            releaseBlockers.countDown()
+            requests.shutdownNow()
+            assertTrue(requests.awaitTermination(5, TimeUnit.SECONDS))
+        }
+    }
+
+    @Test
     fun `prepared global wide workers shut down after exhausting the shared queue`() {
         val activeLookups = AtomicInteger()
         val completedLookups = AtomicInteger()

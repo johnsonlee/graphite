@@ -1,0 +1,344 @@
+{
+  "result": "pass",
+  "offlineOnly": true,
+  "usedParentAnalysisAlgorithm": false,
+  "algorithm": "Absolute ISO timestamps parsed at integer nanosecond precision; sorted interval merge for union; independent O(n^2) endpoint-cell containment counts for occupancy integral; direct intersection of two duration-ranked longest spans.",
+  "summarySha256": "feb860c68be24bcd4ca15b9cf2401acee21d3e9411a8ec9f7ca4d935a63534c6",
+  "readmeSha256": "55e872e6a2a07104522ab55c4e978569769f4b2656aefc823f68e96ab7a51991",
+  "verifiedQueries": 9,
+  "verifiedGraphCalls": 576,
+  "targetedSingleActiveFraction": [
+    0.9702558127134778,
+    0.9705371679985259,
+    0.9702819812491784
+  ],
+  "denseTwoActiveFraction": [
+    0.9656664228121927,
+    0.9486607267002821,
+    0.953264673565802
+  ],
+  "readmeNumericalClaimsVerified": true,
+  "limitations": [
+    "Graph-level lifetime overlap is not CPU occupancy, scheduler causality, serial execution time or speedup.",
+    "Segment-level workers are outside these graph-level trace spans counts.",
+    "Zero-active bins cover only earliest-start through latest-end for each phase, not all outer time.",
+    "No graph IDs are available in these traces; long spans cannot identify specific graphs.",
+    "Outer duration and untraced gap are checked against existing summary fields; no independent JFR decoding performed."
+  ],
+  "rows": [
+    {
+      "recording": 1,
+      "query": "global-wide-wrapped-case-insensitive-distinct-zero",
+      "initial": {
+        "callCount": 64,
+        "unionNanos": 1179294,
+        "sumCallDurationNanos": 1402875,
+        "durationByActiveGraphCallsNanos": {
+          "1": 955713,
+          "0": 2020665,
+          "2": 223581
+        },
+        "meanActiveCallsDuringUnion": 1.189588855705193,
+        "longestCallNanos": 442042,
+        "twoLongestCallOverlapNanos": 0,
+        "threadCallCounts": {
+          "broad-query-pressure-worker [java=28,os=39427]": 1,
+          "graphite-cypher-scan-1 [java=29,os=36867]": 17,
+          "graphite-cypher-scan-4 [java=32,os=37123]": 16,
+          "graphite-cypher-scan-2 [java=30,os=38659]": 15,
+          "graphite-cypher-scan-3 [java=31,os=38147]": 15
+        }
+      },
+      "provenance": {
+        "callCount": 0,
+        "unionNanos": 0,
+        "sumCallDurationNanos": 0,
+        "durationByActiveGraphCallsNanos": {},
+        "meanActiveCallsDuringUnion": null,
+        "longestCallNanos": 0,
+        "twoLongestCallOverlapNanos": null,
+        "threadCallCounts": {}
+      }
+    },
+    {
+      "recording": 1,
+      "query": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "initial": {
+        "callCount": 64,
+        "unionNanos": 29332084,
+        "sumCallDurationNanos": 30204543,
+        "durationByActiveGraphCallsNanos": {
+          "1": 28459625,
+          "0": 761249,
+          "2": 872459
+        },
+        "meanActiveCallsDuringUnion": 1.029744187286522,
+        "longestCallNanos": 16621333,
+        "twoLongestCallOverlapNanos": 0,
+        "threadCallCounts": {
+          "broad-query-pressure-worker [java=28,os=39427]": 1,
+          "graphite-cypher-scan-1 [java=29,os=36867]": 16,
+          "graphite-cypher-scan-4 [java=32,os=37123]": 15,
+          "graphite-cypher-scan-2 [java=30,os=38659]": 15,
+          "graphite-cypher-scan-3 [java=31,os=38147]": 17
+        }
+      },
+      "provenance": {
+        "callCount": 0,
+        "unionNanos": 0,
+        "sumCallDurationNanos": 0,
+        "durationByActiveGraphCallsNanos": {},
+        "meanActiveCallsDuringUnion": null,
+        "longestCallNanos": 0,
+        "twoLongestCallOverlapNanos": null,
+        "threadCallCounts": {}
+      }
+    },
+    {
+      "recording": 1,
+      "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "initial": {
+        "callCount": 1,
+        "unionNanos": 5079916,
+        "sumCallDurationNanos": 5079916,
+        "durationByActiveGraphCallsNanos": {
+          "1": 5079916
+        },
+        "meanActiveCallsDuringUnion": 1.0,
+        "longestCallNanos": 5079916,
+        "twoLongestCallOverlapNanos": null,
+        "threadCallCounts": {
+          "broad-query-pressure-worker [java=28,os=39427]": 1
+        }
+      },
+      "provenance": {
+        "callCount": 63,
+        "unionNanos": 47671875,
+        "sumCallDurationNanos": 93707004,
+        "durationByActiveGraphCallsNanos": {
+          "1": 1636746,
+          "2": 46035129
+        },
+        "meanActiveCallsDuringUnion": 1.9656664228121927,
+        "longestCallNanos": 16234500,
+        "twoLongestCallOverlapNanos": 0,
+        "threadCallCounts": {
+          "graphite-cypher-scan-1 [java=29,os=36867]": 17,
+          "graphite-cypher-scan-4 [java=32,os=37123]": 10,
+          "graphite-cypher-scan-2 [java=30,os=38659]": 18,
+          "graphite-cypher-scan-3 [java=31,os=38147]": 18
+        }
+      }
+    },
+    {
+      "recording": 2,
+      "query": "global-wide-wrapped-case-insensitive-distinct-zero",
+      "initial": {
+        "callCount": 64,
+        "unionNanos": 1353626,
+        "sumCallDurationNanos": 1461207,
+        "durationByActiveGraphCallsNanos": {
+          "1": 1246045,
+          "0": 2026790,
+          "2": 107581
+        },
+        "meanActiveCallsDuringUnion": 1.0794761625441591,
+        "longestCallNanos": 420708,
+        "twoLongestCallOverlapNanos": 0,
+        "threadCallCounts": {
+          "graphite-cypher-scan-2 [java=31,os=38915]": 16,
+          "graphite-cypher-scan-1 [java=30,os=37635]": 16,
+          "broad-query-pressure-worker [java=29,os=36867]": 1,
+          "graphite-cypher-scan-4 [java=33,os=38403]": 16,
+          "graphite-cypher-scan-3 [java=32,os=38147]": 15
+        }
+      },
+      "provenance": {
+        "callCount": 0,
+        "unionNanos": 0,
+        "sumCallDurationNanos": 0,
+        "durationByActiveGraphCallsNanos": {},
+        "meanActiveCallsDuringUnion": null,
+        "longestCallNanos": 0,
+        "twoLongestCallOverlapNanos": null,
+        "threadCallCounts": {}
+      }
+    },
+    {
+      "recording": 2,
+      "query": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "initial": {
+        "callCount": 64,
+        "unionNanos": 30259956,
+        "sumCallDurationNanos": 31151500,
+        "durationByActiveGraphCallsNanos": {
+          "1": 29368412,
+          "0": 671919,
+          "2": 891544
+        },
+        "meanActiveCallsDuringUnion": 1.0294628320014743,
+        "longestCallNanos": 17156875,
+        "twoLongestCallOverlapNanos": 0,
+        "threadCallCounts": {
+          "graphite-cypher-scan-2 [java=31,os=38915]": 15,
+          "graphite-cypher-scan-1 [java=30,os=37635]": 16,
+          "broad-query-pressure-worker [java=29,os=36867]": 1,
+          "graphite-cypher-scan-4 [java=33,os=38403]": 16,
+          "graphite-cypher-scan-3 [java=32,os=38147]": 16
+        }
+      },
+      "provenance": {
+        "callCount": 0,
+        "unionNanos": 0,
+        "sumCallDurationNanos": 0,
+        "durationByActiveGraphCallsNanos": {},
+        "meanActiveCallsDuringUnion": null,
+        "longestCallNanos": 0,
+        "twoLongestCallOverlapNanos": null,
+        "threadCallCounts": {}
+      }
+    },
+    {
+      "recording": 2,
+      "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "initial": {
+        "callCount": 1,
+        "unionNanos": 5700375,
+        "sumCallDurationNanos": 5700375,
+        "durationByActiveGraphCallsNanos": {
+          "1": 5700375
+        },
+        "meanActiveCallsDuringUnion": 1.0,
+        "longestCallNanos": 5700375,
+        "twoLongestCallOverlapNanos": null,
+        "threadCallCounts": {
+          "broad-query-pressure-worker [java=29,os=36867]": 1
+        }
+      },
+      "provenance": {
+        "callCount": 63,
+        "unionNanos": 31285250,
+        "sumCallDurationNanos": 60964338,
+        "durationByActiveGraphCallsNanos": {
+          "1": 1606162,
+          "2": 29679088,
+          "0": 72000
+        },
+        "meanActiveCallsDuringUnion": 1.948660726700282,
+        "longestCallNanos": 12385542,
+        "twoLongestCallOverlapNanos": 0,
+        "threadCallCounts": {
+          "graphite-cypher-scan-2 [java=31,os=38915]": 10,
+          "graphite-cypher-scan-1 [java=30,os=37635]": 18,
+          "graphite-cypher-scan-4 [java=33,os=38403]": 17,
+          "graphite-cypher-scan-3 [java=32,os=38147]": 18
+        }
+      }
+    },
+    {
+      "recording": 3,
+      "query": "global-wide-wrapped-case-insensitive-distinct-zero",
+      "initial": {
+        "callCount": 64,
+        "unionNanos": 1179210,
+        "sumCallDurationNanos": 1379834,
+        "durationByActiveGraphCallsNanos": {
+          "1": 978586,
+          "0": 2046207,
+          "2": 200624
+        },
+        "meanActiveCallsDuringUnion": 1.170134242416533,
+        "longestCallNanos": 430417,
+        "twoLongestCallOverlapNanos": 0,
+        "threadCallCounts": {
+          "broad-query-pressure-worker [java=28,os=39171]": 1,
+          "graphite-cypher-scan-2 [java=30,os=36611]": 14,
+          "graphite-cypher-scan-1 [java=29,os=36099]": 17,
+          "graphite-cypher-scan-3 [java=31,os=36867]": 18,
+          "graphite-cypher-scan-4 [java=32,os=37891]": 14
+        }
+      },
+      "provenance": {
+        "callCount": 0,
+        "unionNanos": 0,
+        "sumCallDurationNanos": 0,
+        "durationByActiveGraphCallsNanos": {},
+        "meanActiveCallsDuringUnion": null,
+        "longestCallNanos": 0,
+        "twoLongestCallOverlapNanos": null,
+        "threadCallCounts": {}
+      }
+    },
+    {
+      "recording": 3,
+      "query": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "initial": {
+        "callCount": 64,
+        "unionNanos": 25315584,
+        "sumCallDurationNanos": 26067913,
+        "durationByActiveGraphCallsNanos": {
+          "1": 24563255,
+          "0": 458291,
+          "2": 752329
+        },
+        "meanActiveCallsDuringUnion": 1.0297180187508217,
+        "longestCallNanos": 17175458,
+        "twoLongestCallOverlapNanos": 0,
+        "threadCallCounts": {
+          "broad-query-pressure-worker [java=28,os=39171]": 1,
+          "graphite-cypher-scan-2 [java=30,os=36611]": 15,
+          "graphite-cypher-scan-1 [java=29,os=36099]": 17,
+          "graphite-cypher-scan-3 [java=31,os=36867]": 16,
+          "graphite-cypher-scan-4 [java=32,os=37891]": 15
+        }
+      },
+      "provenance": {
+        "callCount": 0,
+        "unionNanos": 0,
+        "sumCallDurationNanos": 0,
+        "durationByActiveGraphCallsNanos": {},
+        "meanActiveCallsDuringUnion": null,
+        "longestCallNanos": 0,
+        "twoLongestCallOverlapNanos": null,
+        "threadCallCounts": {}
+      }
+    },
+    {
+      "recording": 3,
+      "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "initial": {
+        "callCount": 1,
+        "unionNanos": 6081208,
+        "sumCallDurationNanos": 6081208,
+        "durationByActiveGraphCallsNanos": {
+          "1": 6081208
+        },
+        "meanActiveCallsDuringUnion": 1.0,
+        "longestCallNanos": 6081208,
+        "twoLongestCallOverlapNanos": null,
+        "threadCallCounts": {
+          "broad-query-pressure-worker [java=28,os=39171]": 1
+        }
+      },
+      "provenance": {
+        "callCount": 63,
+        "unionNanos": 33777083,
+        "sumCallDurationNanos": 65975583,
+        "durationByActiveGraphCallsNanos": {
+          "1": 1578583,
+          "2": 32198500,
+          "0": 61334
+        },
+        "meanActiveCallsDuringUnion": 1.953264673565802,
+        "longestCallNanos": 8745417,
+        "twoLongestCallOverlapNanos": 0,
+        "threadCallCounts": {
+          "graphite-cypher-scan-2 [java=30,os=36611]": 17,
+          "graphite-cypher-scan-1 [java=29,os=36099]": 17,
+          "graphite-cypher-scan-3 [java=31,os=36867]": 12,
+          "graphite-cypher-scan-4 [java=32,os=37891]": 17
+        }
+      }
+    }
+  ]
+}

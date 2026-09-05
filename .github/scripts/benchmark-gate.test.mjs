@@ -516,6 +516,9 @@ test("fixture64 global wide-query pressure requires 10x in both paired run order
         evidence.manifest
     );
     assert.equal(comparison.passed, true);
+    assert.equal(comparison.regressionPassed, true);
+    assert.equal(comparison.targetAchieved, true);
+    assert.deepEqual(comparison.targetErrors, []);
     assert.equal(comparison.runs.length, 3);
     assert.ok(comparison.runs.every((run) => run.p95Speedup >= 10));
     assert.match(renderGlobalWidePressureReport(comparison), /Result: PASS/);
@@ -533,6 +536,157 @@ test("fixture64 global wide-query pressure requires 10x in both paired run order
     );
     assert.equal(unstable.passed, false);
     assert.match(unstable.errors.join("\n"), /pair-2: P95 speedup/);
+});
+
+test("global-wide regression evaluation accepts a 1x control without claiming the 10x target", () => {
+    const evidence = globalWideEvidence();
+    const results = Array.from({ length: 3 }, () => [globalWidePressureResult(35_000_000)]);
+    const observations = Array.from({ length: 3 }, () => evidence.observations);
+    const inputs = [results, results, observations, observations, evidence.oracle, 10,
+        ["candidate-base", "base-candidate", "candidate-base"], evidence.manifest];
+    const regression = compareGlobalWidePressure(...inputs, { regressionOnly: true });
+    assert.equal(regression.passed, true);
+    assert.equal(regression.regressionPassed, true);
+    assert.equal(regression.targetAchieved, false);
+    assert.equal(regression.targetErrors.length, 9);
+    assert.deepEqual(regression.errors, []);
+    assert.match(renderGlobalWidePressureReport(regression), /Evaluation: \*\*non-regression\*\*/);
+    assert.match(renderGlobalWidePressureReport(regression), /target achieved: \*\*NO\*\*/);
+    assert.match(renderGlobalWidePressureReport(regression), /Target remains unmet/);
+
+    const strict = compareGlobalWidePressure(...inputs);
+    assert.equal(strict.passed, false);
+    assert.equal(strict.regressionPassed, true);
+    assert.equal(strict.targetAchieved, false);
+    assert.deepEqual(strict.errors, strict.targetErrors);
+    assert.match(strict.errors.join("\n"), /required 10\.00x/);
+});
+
+test("global-wide regression evaluation retains correctness, source-access and resource failures", () => {
+    const evidence = globalWideEvidence();
+    const results = Array.from({ length: 3 }, () => [globalWidePressureResult(35_000_000)]);
+    const observations = Array.from({ length: 3 }, () => evidence.observations);
+    for (const [overrides, rowTransform, expectedError] of [
+        [{ processCpuNanos: 116_000_000 }, (rows) => rows, /process CPU .* by >15%/],
+        [{ peakUsedHeapBytes: 5 * 1024 ** 3 }, (rows) => rows, /peak used heap .* by >15%/],
+        [{ peakResidentSetBytes: 6 * 1024 ** 3 }, (rows) => rows, /peak RSS .* by >15%/],
+        [{}, (rows) => rows.replace(/shape-0-zero\tglobal-wide/, "shape-0-zero\tglobal"),
+            /family differs from correctness oracle/],
+        [{}, (rows) => rows.replaceAll("graph-", "detached-"),
+            /accessed graph IDs are not bound to graphs.tsv/]
+    ]) {
+        const comparison = compareGlobalWidePressure(
+            results,
+            [[globalWidePressureResult(35_000_000, overrides)], ...results.slice(1)],
+            observations,
+            [rowTransform(evidence.observations), ...observations.slice(1)],
+            evidence.oracle, 10, ["candidate-base", "base-candidate", "candidate-base"], evidence.manifest,
+            { regressionOnly: true }
+        );
+        assert.equal(comparison.passed, false);
+        assert.equal(comparison.regressionPassed, false);
+        assert.equal(comparison.targetAchieved, false);
+        assert.match(comparison.errors.join("\n"), expectedError);
+    }
+});
+
+test("global-wide regression evaluation guards repeated aggregate and wrapped P95 shifts", () => {
+    const evidence = globalWideEvidence();
+    const baseResults = Array.from({ length: 3 }, () => [globalWidePressureResult(35_000_000)]);
+    const observations = Array.from({ length: 3 }, () => evidence.observations);
+    const withLatency = (select, latency) => {
+        const [header, ...lines] = evidence.observations.trimEnd().split("\n");
+        const names = header.split("\t");
+        return [header, ...lines.map((line, index) => {
+            const values = line.split("\t");
+            const row = Object.fromEntries(names.map((name, column) => [name, values[column]]));
+            if (select(row, index)) values[names.indexOf("latencyNanos")] = String(latency);
+            return values.join("\t");
+        })].join("\n") + "\n";
+    };
+    const compare = (candidateResults, candidateObservations) => compareGlobalWidePressure(
+        baseResults, candidateResults, observations, candidateObservations, evidence.oracle, 10,
+        ["candidate-base", "base-candidate", "candidate-base"], evidence.manifest, { regressionOnly: true }
+    );
+    // Disjoint slow rows avoid triggering the existing repeated per-row guard; P95 still regresses twice.
+    const aggregate = compare(
+        [0, 1, 2].map((index) => [globalWidePressureResult(index < 2 ? 80_000_000 : 35_000_000, {
+            p50LatencyNanos: 35_000_000
+        })]),
+        [withLatency((row, index) => index < 3, 80_000_000),
+            withLatency((row, index) => index >= 3 && index < 6, 80_000_000), evidence.observations]
+    );
+    assert.equal(aggregate.regressionPassed, false);
+    assert.match(aggregate.errors.join("\n"), /aggregate P95: latency .* repeated in 2 independent pairs/);
+    assert.doesNotMatch(aggregate.errors.join("\n"), /aligned latency/);
+
+    const wrapped = compare(
+        [0, 1, 2].map((index) => [globalWidePressureResult(35_000_000, {
+            maxLatencyNanos: index < 2 ? 80_000_000 : 35_000_000
+        })]),
+        ["zero", "targeted", null].map((selectivity) => withLatency((row) =>
+            row.shape === "global-wide-wrapped-case-insensitive" && row.selectivity === selectivity, 80_000_000))
+    );
+    assert.equal(wrapped.regressionPassed, false);
+    assert.match(wrapped.errors.join("\n"), /global-wide-wrapped-case-insensitive P95: latency .* repeated in 2/);
+    assert.doesNotMatch(wrapped.errors.join("\n"), /aggregate P95: latency|aligned latency/);
+
+    const isolated = compare(
+        [[globalWidePressureResult(80_000_000)], ...baseResults.slice(1)],
+        [globalWideEvidence(80_000_000).observations, ...observations.slice(1)]
+    );
+    assert.equal(isolated.regressionPassed, true);
+    assert.equal(isolated.targetAchieved, false);
+
+    const smallAbsolute = compareGlobalWidePressure(
+        Array.from({ length: 3 }, () => [globalWidePressureResult(1_000_000)]),
+        Array.from({ length: 3 }, () => [globalWidePressureResult(1_200_000)]),
+        Array.from({ length: 3 }, () => globalWideEvidence(1_000_000).observations),
+        Array.from({ length: 3 }, () => globalWideEvidence(1_200_000).observations),
+        evidence.oracle, 10, ["candidate-base", "base-candidate", "candidate-base"], evidence.manifest,
+        { regressionOnly: true }
+    );
+    assert.equal(smallAbsolute.regressionPassed, true);
+    assert.equal(smallAbsolute.targetAchieved, false);
+});
+
+test("global-wide CLI makes regression-only evaluation explicit and keeps strict target default", () => {
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "global-wide-evaluation-"));
+    try {
+        const evidence = globalWideEvidence();
+        const write = (name, contents) => {
+            const file = path.join(directory, name);
+            fs.writeFileSync(file, contents);
+            return file;
+        };
+        const resultFile = write("control.json", JSON.stringify([globalWidePressureResult(35_000_000)]));
+        const observationFile = write("control.tsv", evidence.observations);
+        const argumentsFor = (mode) => [
+            new URL("./benchmark-gate.mjs", import.meta.url).pathname,
+            "compare-global-wide-pressure",
+            "--bases", Array(3).fill(resultFile).join(","),
+            "--candidates", Array(3).fill(resultFile).join(","),
+            "--base-observations", Array(3).fill(observationFile).join(","),
+            "--candidate-observations", Array(3).fill(observationFile).join(","),
+            "--run-orders", "candidate-base,base-candidate,candidate-base",
+            "--graph-manifest", write("graphs.tsv", evidence.manifest),
+            "--correctness-oracle", write("oracle.txt", evidence.oracle),
+            "--minimum-speedup", "10",
+            "--report", path.join(directory, `${mode}.md`),
+            "--status", path.join(directory, `${mode}.json`),
+            ...(mode === "regression" ? ["--regression-only"] : [])
+        ];
+        for (const mode of ["regression", "strict"]) {
+            const run = spawnSync(process.execPath, argumentsFor(mode), { encoding: "utf8" });
+            assert.equal(run.status, mode === "regression" ? 0 : 1, run.stderr);
+            const status = JSON.parse(fs.readFileSync(path.join(directory, `${mode}.json`), "utf8"));
+            assert.equal(status.regressionPassed, true);
+            assert.equal(status.targetAchieved, false);
+            assert.equal(status.passed, mode === "regression");
+        }
+    } finally {
+        fs.rmSync(directory, { recursive: true, force: true });
+    }
 });
 
 test("fixture64 global wide-query pressure verifies NCPU split and correctness", () => {
@@ -558,6 +712,8 @@ test("fixture64 global wide-query pressure verifies NCPU split and correctness",
         evidence.manifest
     );
     assert.equal(comparison.passed, false);
+    assert.equal(comparison.regressionPassed, false);
+    assert.equal(comparison.targetAchieved, false);
     assert.match(comparison.errors.join("\n"), /NCPU split 16 -> 16\+8; expected 8\+8/);
     assert.match(comparison.errors.join("\n"), /family differs from correctness oracle/);
 
@@ -831,7 +987,10 @@ test("fixture64 global-wide driver binds pinned JAR provenance and alternates pa
     assert.match(driver, /test-fixture64-reproducibility\.sh|REPRODUCIBILITY_SCRIPT_PATH/);
     assert.match(driver, /if \(\( RUN % 2 == 1 \)\); then run_candidate; run_base;/);
     assert.match(driver, /--bases "\$\{BASE_JSON_LIST\}"/);
-    assert.match(driver, /--minimum-speedup 5/);
+    assert.match(driver, /MINIMUM_SPEEDUP=\$\{GRAPHITE_PRESSURE_MINIMUM_SPEEDUP:-10\}/);
+    assert.match(driver, /--minimum-speedup "\$\{MINIMUM_SPEEDUP\}"/);
+    assert.match(driver, /COMPARISON_OPTIONS\+=\(--regression-only\)/);
+    assert.match(driver, /Regression-only evaluation cannot publish a strict target status/);
     assert.match(driver, /GRAPHITE_PRESSURE_PUBLISH_EVIDENCE/);
     assert.match(driver, /if \[\[ "\$\{PUBLISH_EVIDENCE\}" == false \]\]/);
     assert.match(driver, /graphite\/fixture64-global-wide/);
@@ -3034,11 +3193,15 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.match(globalWideJob, /Download shared fixture64 corpus/);
     assert.match(globalWideJob, /verify-shared-fixture64\.sh/);
     assert.doesNotMatch(globalWideJob, /Generate 64 persisted graphs|prepare-fixture64-graphs\.sh/);
-    assert.match(globalWideJob, /run-real64-global-wide\.sh/);
-    assert.match(
-        globalWideJob,
-        /cd candidate\n\s*\.github\/scripts\/run-real64-global-wide\.sh \\\n\s*\.\.\/shared-fixture64\/graphs\/graphs\.tsv/
-    );
+    assert.match(globalWideJob, /benchmark-global-iteration\.mjs/);
+    assert.match(globalWideJob, /benchmark-optimization-references\.mjs/);
+    assert.match(globalWideJob, /fetch-depth: 0/);
+    assert.match(globalWideJob, /actions: read/);
+    assert.match(globalWideJob, /--references \.\.\/benchmark-results\/optimization-references\.json/);
+    assert.match(globalWideJob, /--manifest \.\.\/shared-fixture64\/graphs\/graphs\.tsv/);
+    assert.match(globalWideJob, /REQUIRE_TARGET: \$\{\{ !github\.event\.pull_request\.draft \}\}/);
+    assert.match(globalWideJob, /TARGET_OPTIONS\+=\(--require-target\)/);
+    assert.match(workflow, /types: \[opened, synchronize, reopened, ready_for_review, converted_to_draft\]/);
     assert.match(globalWideJob, /GRAPHITE_FIXTURE64_REPRODUCIBILITY_RECEIPT:/);
     assert.match(globalWideJob, /GRAPHITE_PRESSURE_PUBLISH_EVIDENCE: false/);
     assert.match(globalWideJob, /github\.event\.pull_request\.base\.sha/);

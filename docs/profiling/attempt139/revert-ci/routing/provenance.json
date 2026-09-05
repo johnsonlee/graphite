@@ -1,0 +1,21 @@
+{
+  "repository": "johnsonlee/graphite",
+  "baseSha": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "candidateSha": "aede4c82f66a925ba9df3fc8588c6e1399c17f61",
+  "harnessSha256": "154a6ff739caac2600b769072d6861d1d8d04c4692c7eff8bca5c8d7477d499f",
+  "correctnessManifestSha256": "f6e8af6000ccd89e02ac932bf7e95c75cacce636ebcc73227e997f695f06e717",
+  "fixtureVerifierSha256": "f88e0e29fdf41ec9e1ce3adc323ff7d7c333b3a15b049eae6ed112d133870126",
+  "comparatorSha256": "a4d09bf16e44deb05cab214db16bd9f922cf41430fb6028de1a3f8a9d71b3950",
+  "scriptSha256": "38cc5f56b087e535c5f4d50478c622d82bfe578893167b9474e21a2bc3a08d00",
+  "reproducibilityScriptSha256": "dfe887b4e032746a97dd3f7b5bb2c456eef4c9435861832f39bbbd2772c7e769",
+  "zipHasherSha256": "a65bd7cbe0a7df3569ca9fcfe471a21105417753d5a1f6977c8f7bc44ea041ae",
+  "gistEvidenceSha256": "8eece58ed7117ac19afe11e4f4a7b53e413d5e715ba5c3576beb8bd24ff14d0a",
+  "fixturePreparationScriptSha256": "f9cb88042869ea91fa56c4ef7ed63ff07af3edabffdc67c3447144f5281ff20a",
+  "workloadVerifierSha256": "14a41dc9e8f63c8d1c0e474a463829ab8b5e8320262d702edc0e29d2a0ed66c6",
+  "baseJarContentSha256": "ddfed3136e1c443d1cbd1cc96285de133fb84ba2a6a252b43326f82020250275",
+  "candidateJarContentSha256": "ddfed3136e1c443d1cbd1cc96285de133fb84ba2a6a252b43326f82020250275",
+  "manifestSha256": "3c019438680a5e95e8ccc335e001c6b6e54b4e5b904871750b5742e3c17037d5",
+  "fixtureProvenanceSha256": "4a87e194346a32d2b348b79780bfd9a35136365cb5fc7388edc67a957ea0ece9",
+  "oracleSha256": "bc8edcf39a58c19d2f8bb4e269402308e916e3cb5df5ef9740d33e34f4f7836d",
+  "oracleSource": "base-single-source"
+}

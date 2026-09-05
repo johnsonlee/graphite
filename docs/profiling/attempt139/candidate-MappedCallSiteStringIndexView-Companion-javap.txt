@@ -1,0 +1,1231 @@
+Picked up JAVA_TOOL_OPTIONS: -XX:ActiveProcessorCount=4
+Compiled from "MappedCallSiteStringIndexView.kt"
+public final class io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView$Companion {
+  private io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView$Companion();
+    Code:
+       0: aload_0
+       1: invokespecial #8                  // Method java/lang/Object."<init>":()V
+       4: return
+
+  public final io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView load(java.nio.file.Path, int, int, byte[], io.johnsonlee.graphite.webgraph.StringTable, int, kotlin.jvm.functions.Function1<? super java.lang.Integer, java.lang.Long>, io.johnsonlee.graphite.graph.GraphWorkConsumer);
+    Code:
+       0: aload_1
+       1: ldc           #21                 // String path
+       3: invokestatic  #27                 // Method kotlin/jvm/internal/Intrinsics.checkNotNullParameter:(Ljava/lang/Object;Ljava/lang/String;)V
+       6: aload         4
+       8: ldc           #29                 // String expectedContentIdentity
+      10: invokestatic  #27                 // Method kotlin/jvm/internal/Intrinsics.checkNotNullParameter:(Ljava/lang/Object;Ljava/lang/String;)V
+      13: aload         5
+      15: ldc           #31                 // String stringTable
+      17: invokestatic  #27                 // Method kotlin/jvm/internal/Intrinsics.checkNotNullParameter:(Ljava/lang/Object;Ljava/lang/String;)V
+      20: aload         7
+      22: ldc           #33                 // String nodeOrder
+      24: invokestatic  #27                 // Method kotlin/jvm/internal/Intrinsics.checkNotNullParameter:(Ljava/lang/Object;Ljava/lang/String;)V
+      27: aload_1
+      28: iconst_0
+      29: anewarray     #35                 // class java/nio/file/LinkOption
+      32: invokestatic  #41                 // Method java/nio/file/Files.isRegularFile:(Ljava/nio/file/Path;[Ljava/nio/file/LinkOption;)Z
+      35: ifeq          46
+      38: aload         4
+      40: arraylength
+      41: bipush        32
+      43: if_icmpeq     48
+      46: aconst_null
+      47: areturn
+      48: invokestatic  #46                 // Method io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexViewKt.access$checkViewInterrupted:()V
+      51: nop
+      52: aload_1
+      53: iconst_1
+      54: anewarray     #48                 // class java/nio/file/OpenOption
+      57: astore        9
+      59: aload         9
+      61: iconst_0
+      62: getstatic     #54                 // Field java/nio/file/StandardOpenOption.READ:Ljava/nio/file/StandardOpenOption;
+      65: aastore
+      66: aload         9
+      68: invokestatic  #60                 // Method java/nio/channels/FileChannel.open:(Ljava/nio/file/Path;[Ljava/nio/file/OpenOption;)Ljava/nio/channels/FileChannel;
+      71: checkcast     #62                 // class java/io/Closeable
+      74: astore        9
+      76: aconst_null
+      77: astore        10
+      79: nop
+      80: aload         9
+      82: checkcast     #56                 // class java/nio/channels/FileChannel
+      85: astore        11
+      87: iconst_0
+      88: istore        12
+      90: aload         11
+      92: invokevirtual #66                 // Method java/nio/channels/FileChannel.size:()J
+      95: lstore        13
+      97: ldc2_w        #67                 // long 84l
+     100: lload         13
+     102: lcmp
+     103: ifgt          123
+     106: lload         13
+     108: ldc2_w        #69                 // long 2147483648l
+     111: lcmp
+     112: ifge          119
+     115: iconst_1
+     116: goto          124
+     119: iconst_0
+     120: goto          124
+     123: iconst_0
+     124: ifne          144
+     127: ldc           #72                 // String Failed requirement.
+     129: astore        15
+     131: new           #74                 // class java/lang/IllegalArgumentException
+     134: dup
+     135: aload         15
+     137: invokevirtual #78                 // Method java/lang/Object.toString:()Ljava/lang/String;
+     140: invokespecial #81                 // Method java/lang/IllegalArgumentException."<init>":(Ljava/lang/String;)V
+     143: athrow
+     144: aload         11
+     146: getstatic     #87                 // Field java/nio/channels/FileChannel$MapMode.READ_ONLY:Ljava/nio/channels/FileChannel$MapMode;
+     149: lconst_0
+     150: lload         13
+     152: invokevirtual #91                 // Method java/nio/channels/FileChannel.map:(Ljava/nio/channels/FileChannel$MapMode;JJ)Ljava/nio/MappedByteBuffer;
+     155: getstatic     #97                 // Field java/nio/ByteOrder.BIG_ENDIAN:Ljava/nio/ByteOrder;
+     158: invokevirtual #103                // Method java/nio/MappedByteBuffer.order:(Ljava/nio/ByteOrder;)Ljava/nio/ByteBuffer;
+     161: astore        16
+     163: aload         16
+     165: invokevirtual #109                // Method java/nio/ByteBuffer.duplicate:()Ljava/nio/ByteBuffer;
+     168: getstatic     #97                 // Field java/nio/ByteOrder.BIG_ENDIAN:Ljava/nio/ByteOrder;
+     171: invokevirtual #110                // Method java/nio/ByteBuffer.order:(Ljava/nio/ByteOrder;)Ljava/nio/ByteBuffer;
+     174: astore        15
+     176: aload         15
+     178: invokevirtual #114                // Method java/nio/ByteBuffer.getInt:()I
+     181: ldc           #115                // int 1196573523
+     183: if_icmpne     190
+     186: iconst_1
+     187: goto          191
+     190: iconst_0
+     191: ifne          211
+     194: ldc           #72                 // String Failed requirement.
+     196: astore        17
+     198: new           #74                 // class java/lang/IllegalArgumentException
+     201: dup
+     202: aload         17
+     204: invokevirtual #78                 // Method java/lang/Object.toString:()Ljava/lang/String;
+     207: invokespecial #81                 // Method java/lang/IllegalArgumentException."<init>":(Ljava/lang/String;)V
+     210: athrow
+     211: aload         15
+     213: invokevirtual #114                // Method java/nio/ByteBuffer.getInt:()I
+     216: iconst_2
+     217: if_icmpne     224
+     220: iconst_1
+     221: goto          225
+     224: iconst_0
+     225: ifne          245
+     228: ldc           #72                 // String Failed requirement.
+     230: astore        17
+     232: new           #74                 // class java/lang/IllegalArgumentException
+     235: dup
+     236: aload         17
+     238: invokevirtual #78                 // Method java/lang/Object.toString:()Ljava/lang/String;
+     241: invokespecial #81                 // Method java/lang/IllegalArgumentException."<init>":(Ljava/lang/String;)V
+     244: athrow
+     245: aload         15
+     247: invokevirtual #114                // Method java/nio/ByteBuffer.getInt:()I
+     250: istore        18
+     252: aload         15
+     254: invokevirtual #114                // Method java/nio/ByteBuffer.getInt:()I
+     257: istore        17
+     259: iload         18
+     261: iload_2
+     262: if_icmpne     275
+     265: iload         17
+     267: iload_3
+     268: if_icmpne     275
+     271: iconst_1
+     272: goto          276
+     275: iconst_0
+     276: ifne          296
+     279: ldc           #72                 // String Failed requirement.
+     281: astore        19
+     283: new           #74                 // class java/lang/IllegalArgumentException
+     286: dup
+     287: aload         19
+     289: invokevirtual #78                 // Method java/lang/Object.toString:()Ljava/lang/String;
+     292: invokespecial #81                 // Method java/lang/IllegalArgumentException."<init>":(Ljava/lang/String;)V
+     295: athrow
+     296: bipush        32
+     298: newarray       byte
+     300: astore        20
+     302: aload         15
+     304: aload         20
+     306: invokevirtual #119                // Method java/nio/ByteBuffer.get:([B)Ljava/nio/ByteBuffer;
+     309: pop
+     310: nop
+     311: aload         20
+     313: aload         4
+     315: invokestatic  #125                // Method java/util/Arrays.equals:([B[B)Z
+     318: ifne          338
+     321: ldc           #72                 // String Failed requirement.
+     323: astore        21
+     325: new           #74                 // class java/lang/IllegalArgumentException
+     328: dup
+     329: aload         21
+     331: invokevirtual #78                 // Method java/lang/Object.toString:()Ljava/lang/String;
+     334: invokespecial #81                 // Method java/lang/IllegalArgumentException."<init>":(Ljava/lang/String;)V
+     337: athrow
+     338: iconst_0
+     339: istore        21
+     341: iconst_4
+     342: newarray       int
+     344: astore        22
+     346: iload         21
+     348: iconst_4
+     349: if_icmpge     372
+     352: iload         21
+     354: istore        23
+     356: aload         22
+     358: iload         23
+     360: aload         15
+     362: invokevirtual #114                // Method java/nio/ByteBuffer.getInt:()I
+     365: iastore
+     366: iinc          21, 1
+     369: goto          346
+     372: aload         22
+     374: astore        19
+     376: aload         19
+     378: astore        21
+     380: iconst_0
+     381: istore        22
+     383: iconst_0
+     384: istore        23
+     386: aload         21
+     388: arraylength
+     389: istore        24
+     391: iload         23
+     393: iload         24
+     395: if_icmpge     447
+     398: aload         21
+     400: iload         23
+     402: iaload
+     403: istore        25
+     405: iload         25
+     407: istore        26
+     409: iconst_0
+     410: istore        27
+     412: iconst_0
+     413: iload         26
+     415: if_icmpgt     433
+     418: iload         26
+     420: iload         18
+     422: if_icmpgt     429
+     425: iconst_1
+     426: goto          434
+     429: iconst_0
+     430: goto          434
+     433: iconst_0
+     434: ifne          441
+     437: iconst_0
+     438: goto          448
+     441: iinc          23, 1
+     444: goto          391
+     447: iconst_1
+     448: ifne          468
+     451: ldc           #72                 // String Failed requirement.
+     453: astore        22
+     455: new           #74                 // class java/lang/IllegalArgumentException
+     458: dup
+     459: aload         22
+     461: invokevirtual #78                 // Method java/lang/Object.toString:()Ljava/lang/String;
+     464: invokespecial #81                 // Method java/lang/IllegalArgumentException."<init>":(Ljava/lang/String;)V
+     467: athrow
+     468: aload         15
+     470: invokevirtual #114                // Method java/nio/ByteBuffer.getInt:()I
+     473: istore        21
+     475: iload         21
+     477: ifle          484
+     480: iconst_1
+     481: goto          485
+     484: iconst_0
+     485: ifne          505
+     488: ldc           #72                 // String Failed requirement.
+     490: astore        23
+     492: new           #74                 // class java/lang/IllegalArgumentException
+     495: dup
+     496: aload         23
+     498: invokevirtual #78                 // Method java/lang/Object.toString:()Ljava/lang/String;
+     501: invokespecial #81                 // Method java/lang/IllegalArgumentException."<init>":(Ljava/lang/String;)V
+     504: athrow
+     505: aload         15
+     507: invokevirtual #128                // Method java/nio/ByteBuffer.getLong:()J
+     510: lconst_0
+     511: lcmp
+     512: ifle          519
+     515: iconst_1
+     516: goto          520
+     519: iconst_0
+     520: ifne          540
+     523: ldc           #72                 // String Failed requirement.
+     525: astore        23
+     527: new           #74                 // class java/lang/IllegalArgumentException
+     530: dup
+     531: aload         23
+     533: invokevirtual #78                 // Method java/lang/Object.toString:()Ljava/lang/String;
+     536: invokespecial #81                 // Method java/lang/IllegalArgumentException."<init>":(Ljava/lang/String;)V
+     539: athrow
+     540: lconst_0
+     541: lstore        39
+     543: ldc2_w        #129                // long 76l
+     546: lstore        39
+     548: iconst_0
+     549: istore        24
+     551: iconst_4
+     552: anewarray     #132                // class java/nio/IntBuffer
+     555: astore        25
+     557: iload         24
+     559: iconst_4
+     560: if_icmpge     585
+     563: iload         24
+     565: istore        26
+     567: aload         25
+     569: iload         26
+     571: iconst_0
+     572: invokestatic  #136                // Method java/nio/IntBuffer.allocate:(I)Ljava/nio/IntBuffer;
+     575: invokevirtual #140                // Method java/nio/IntBuffer.asReadOnlyBuffer:()Ljava/nio/IntBuffer;
+     578: aastore
+     579: iinc          24, 1
+     582: goto          557
+     585: aload         25
+     587: astore        23
+     589: iconst_0
+     590: istore        25
+     592: iconst_4
+     593: anewarray     #132                // class java/nio/IntBuffer
+     596: astore        26
+     598: iload         25
+     600: iconst_4
+     601: if_icmpge     626
+     604: iload         25
+     606: istore        27
+     608: aload         26
+     610: iload         27
+     612: iconst_0
+     613: invokestatic  #136                // Method java/nio/IntBuffer.allocate:(I)Ljava/nio/IntBuffer;
+     616: invokevirtual #140                // Method java/nio/IntBuffer.asReadOnlyBuffer:()Ljava/nio/IntBuffer;
+     619: aastore
+     620: iinc          25, 1
+     623: goto          598
+     626: aload         26
+     628: astore        24
+     630: iconst_0
+     631: istore        26
+     633: iconst_4
+     634: anewarray     #132                // class java/nio/IntBuffer
+     637: astore        27
+     639: iload         26
+     641: iconst_4
+     642: if_icmpge     667
+     645: iload         26
+     647: istore        28
+     649: aload         27
+     651: iload         28
+     653: iconst_0
+     654: invokestatic  #136                // Method java/nio/IntBuffer.allocate:(I)Ljava/nio/IntBuffer;
+     657: invokevirtual #140                // Method java/nio/IntBuffer.asReadOnlyBuffer:()Ljava/nio/IntBuffer;
+     660: aastore
+     661: iinc          26, 1
+     664: goto          639
+     667: aload         27
+     669: astore        25
+     671: iconst_4
+     672: istore        26
+     674: iconst_0
+     675: istore        27
+     677: iload         27
+     679: iload         26
+     681: if_icmpge     794
+     684: iload         27
+     686: istore        28
+     688: iconst_0
+     689: istore        29
+     691: aload         19
+     693: iload         28
+     695: iaload
+     696: istore        30
+     698: iload         30
+     700: i2l
+     701: iconst_4
+     702: i2l
+     703: lmul
+     704: lstore        31
+     706: aload         23
+     708: iload         28
+     710: getstatic     #145                // Field io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexView.Companion:Lio/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexView$Companion;
+     713: aload         16
+     715: invokestatic  #149                // Method kotlin/jvm/internal/Intrinsics.checkNotNull:(Ljava/lang/Object;)V
+     718: aload         16
+     720: lload         39
+     722: iload         30
+     724: invokespecial #153                // Method mappedInts:(Ljava/nio/ByteBuffer;JI)Ljava/nio/IntBuffer;
+     727: aastore
+     728: lload         39
+     730: lload         31
+     732: ladd
+     733: lstore        39
+     735: aload         24
+     737: iload         28
+     739: getstatic     #145                // Field io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexView.Companion:Lio/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexView$Companion;
+     742: aload         16
+     744: lload         39
+     746: iload         30
+     748: invokespecial #153                // Method mappedInts:(Ljava/nio/ByteBuffer;JI)Ljava/nio/IntBuffer;
+     751: aastore
+     752: lload         39
+     754: lload         31
+     756: ladd
+     757: lstore        39
+     759: aload         25
+     761: iload         28
+     763: getstatic     #145                // Field io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexView.Companion:Lio/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexView$Companion;
+     766: aload         16
+     768: lload         39
+     770: iload         17
+     772: invokespecial #153                // Method mappedInts:(Ljava/nio/ByteBuffer;JI)Ljava/nio/IntBuffer;
+     775: aastore
+     776: lload         39
+     778: iload         17
+     780: i2l
+     781: iconst_4
+     782: i2l
+     783: lmul
+     784: ladd
+     785: lstore        39
+     787: nop
+     788: iinc          27, 1
+     791: goto          677
+     794: lload         39
+     796: lstore        33
+     798: lload         39
+     800: iload         18
+     802: i2l
+     803: bipush        8
+     805: i2l
+     806: lmul
+     807: ladd
+     808: lstore        39
+     810: lload         39
+     812: iload         21
+     814: i2l
+     815: bipush        8
+     817: i2l
+     818: lmul
+     819: ladd
+     820: bipush        8
+     822: i2l
+     823: ladd
+     824: lstore        35
+     826: lload         35
+     828: lload         13
+     830: lcmp
+     831: ifne          838
+     834: iconst_1
+     835: goto          839
+     838: iconst_0
+     839: ifne          859
+     842: ldc           #72                 // String Failed requirement.
+     844: astore        37
+     846: new           #74                 // class java/lang/IllegalArgumentException
+     849: dup
+     850: aload         37
+     852: invokevirtual #78                 // Method java/lang/Object.toString:()Ljava/lang/String;
+     855: invokespecial #81                 // Method java/lang/IllegalArgumentException."<init>":(Ljava/lang/String;)V
+     858: athrow
+     859: getstatic     #145                // Field io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexView.Companion:Lio/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexView$Companion;
+     862: aload         16
+     864: invokestatic  #149                // Method kotlin/jvm/internal/Intrinsics.checkNotNull:(Ljava/lang/Object;)V
+     867: aload         16
+     869: lload         39
+     871: iload         21
+     873: invokespecial #157                // Method mappedLongs:(Ljava/nio/ByteBuffer;JI)Ljava/nio/LongBuffer;
+     876: astore        30
+     878: nop
+     879: getstatic     #145                // Field io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexView.Companion:Lio/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexView$Companion;
+     882: aload         16
+     884: aload         23
+     886: aload         24
+     888: aload         25
+     890: lload         33
+     892: lload         39
+     894: aload         19
+     896: iload         18
+     898: iload         17
+     900: iload         6
+     902: iload         21
+     904: aload         4
+     906: aload         8
+     908: invokespecial #161                // Method validatePersistentIndex:(Ljava/nio/ByteBuffer;[Ljava/nio/IntBuffer;[Ljava/nio/IntBuffer;[Ljava/nio/IntBuffer;JJ[IIIII[BLio/johnsonlee/graphite/graph/GraphWorkConsumer;)Z
+     911: ifne          931
+     914: ldc           #72                 // String Failed requirement.
+     916: astore        38
+     918: new           #74                 // class java/lang/IllegalArgumentException
+     921: dup
+     922: aload         38
+     924: invokevirtual #78                 // Method java/lang/Object.toString:()Ljava/lang/String;
+     927: invokespecial #81                 // Method java/lang/IllegalArgumentException."<init>":(Ljava/lang/String;)V
+     930: athrow
+     931: new           #142                // class io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexView
+     934: dup
+     935: aload         23
+     937: aload         24
+     939: aload         25
+     941: aload         30
+     943: iload         17
+     945: iload         18
+     947: aload         5
+     949: aload         7
+     951: aconst_null
+     952: invokespecial #164                // Method io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexView."<init>":([Ljava/nio/IntBuffer;[Ljava/nio/IntBuffer;[Ljava/nio/IntBuffer;Ljava/nio/LongBuffer;IILio/johnsonlee/graphite/webgraph/StringTable;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+     955: nop
+     956: astore        11
+     958: aload         9
+     960: aload         10
+     962: invokestatic  #170                // Method kotlin/io/CloseableKt.closeFinally:(Ljava/io/Closeable;Ljava/lang/Throwable;)V
+     965: aload         11
+     967: goto          991
+     970: astore        11
+     972: aload         11
+     974: astore        10
+     976: aload         11
+     978: athrow
+     979: astore        11
+     981: aload         9
+     983: aload         10
+     985: invokestatic  #170                // Method kotlin/io/CloseableKt.closeFinally:(Ljava/io/Closeable;Ljava/lang/Throwable;)V
+     988: aload         11
+     990: athrow
+     991: astore        9
+     993: goto          1062
+     996: astore        10
+     998: aload         10
+    1000: astore        11
+    1002: aload         11
+    1004: instanceof    #172                // class java/util/concurrent/CancellationException
+    1007: ifeq          1013
+    1010: aload         10
+    1012: athrow
+    1013: aload         11
+    1015: instanceof    #174                // class java/io/IOException
+    1018: ifne          1053
+    1021: aload         11
+    1023: instanceof    #74                 // class java/lang/IllegalArgumentException
+    1026: ifne          1053
+    1029: aload         11
+    1031: instanceof    #176                // class java/lang/ArithmeticException
+    1034: ifne          1053
+    1037: aload         11
+    1039: instanceof    #178                // class java/nio/BufferUnderflowException
+    1042: ifne          1053
+    1045: aload         11
+    1047: instanceof    #180                // class java/lang/IndexOutOfBoundsException
+    1050: ifeq          1057
+    1053: aconst_null
+    1054: goto          1060
+    1057: aload         10
+    1059: athrow
+    1060: astore        9
+    1062: aload         9
+    1064: areturn
+    Exception table:
+       from    to  target type
+          79   958   970   Class java/lang/Throwable
+          79   958   979   any
+         970   979   979   any
+         979   981   979   any
+          51   993   996   Class java/lang/Exception
+
+  private final boolean validatePersistentIndex(java.nio.ByteBuffer, java.nio.IntBuffer[], java.nio.IntBuffer[], java.nio.IntBuffer[], long, long, int[], int, int, int, int, byte[], io.johnsonlee.graphite.graph.GraphWorkConsumer);
+    Code:
+       0: new           #238                // class io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator
+       3: dup
+       4: aload_1
+       5: aload         15
+       7: invokespecial #241                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator."<init>":(Ljava/nio/ByteBuffer;Lio/johnsonlee/graphite/graph/GraphWorkConsumer;)V
+      10: astore        16
+      12: aload         16
+      14: ldc           #115                // int 1196573523
+      16: invokevirtual #245                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.updateInt:(I)V
+      19: aload         16
+      21: iconst_2
+      22: invokevirtual #245                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.updateInt:(I)V
+      25: aload         16
+      27: iload         10
+      29: invokevirtual #245                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.updateInt:(I)V
+      32: aload         16
+      34: iload         11
+      36: invokevirtual #245                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.updateInt:(I)V
+      39: aload         16
+      41: aload         14
+      43: invokevirtual #249                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.updateBytes:([B)V
+      46: aload         9
+      48: astore        17
+      50: iconst_0
+      51: istore        18
+      53: iconst_0
+      54: istore        19
+      56: aload         17
+      58: arraylength
+      59: istore        20
+      61: iload         19
+      63: iload         20
+      65: if_icmpge     99
+      68: aload         17
+      70: iload         19
+      72: iaload
+      73: istore        21
+      75: iload         21
+      77: istore        22
+      79: iconst_0
+      80: istore        23
+      82: iconst_0
+      83: istore        24
+      85: aload         16
+      87: iload         22
+      89: invokevirtual #245                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.updateInt:(I)V
+      92: nop
+      93: iinc          19, 1
+      96: goto          61
+      99: nop
+     100: aload         16
+     102: iload         13
+     104: invokevirtual #245                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.updateInt:(I)V
+     107: aload         16
+     109: aload_1
+     110: bipush        68
+     112: invokevirtual #252                // Method java/nio/ByteBuffer.getLong:(I)J
+     115: invokevirtual #256                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.updateLong:(J)V
+     118: iconst_4
+     119: istore        17
+     121: iconst_0
+     122: istore        18
+     124: iload         18
+     126: iload         17
+     128: if_icmpge     792
+     131: iload         18
+     133: istore        19
+     135: iconst_0
+     136: istore        20
+     138: iconst_0
+     139: istore        21
+     141: iconst_m1
+     142: istore        21
+     144: aload         16
+     146: astore        22
+     148: aload_2
+     149: iload         19
+     151: aaload
+     152: astore        23
+     154: iconst_0
+     155: istore        24
+     157: iconst_0
+     158: istore        25
+     160: iload         25
+     162: aload         23
+     164: invokevirtual #259                // Method java/nio/IntBuffer.limit:()I
+     167: if_icmpge     357
+     170: invokestatic  #46                 // Method io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexViewKt.access$checkViewInterrupted:()V
+     173: aload         22
+     175: invokestatic  #263                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.access$getScratch$p:(Lio/johnsonlee/graphite/webgraph/PersistentIndexViewValidator;)Ljava/nio/ByteBuffer;
+     178: invokevirtual #266                // Method java/nio/ByteBuffer.clear:()Ljava/nio/ByteBuffer;
+     181: pop
+     182: iload         25
+     184: istore        27
+     186: aload         23
+     188: invokevirtual #259                // Method java/nio/IntBuffer.limit:()I
+     191: iload         25
+     193: aload         22
+     195: invokestatic  #263                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.access$getScratch$p:(Lio/johnsonlee/graphite/webgraph/PersistentIndexViewValidator;)Ljava/nio/ByteBuffer;
+     198: invokevirtual #269                // Method java/nio/ByteBuffer.capacity:()I
+     201: iconst_4
+     202: idiv
+     203: iadd
+     204: invokestatic  #275                // Method java/lang/Math.min:(II)I
+     207: istore        28
+     209: iload         25
+     211: iload         28
+     213: if_icmpge     315
+     216: aload         23
+     218: iload         25
+     220: iinc          25, 1
+     223: invokevirtual #278                // Method java/nio/IntBuffer.get:(I)I
+     226: istore        29
+     228: iload         29
+     230: istore        30
+     232: iconst_0
+     233: istore        31
+     235: iconst_0
+     236: iload         30
+     238: if_icmpgt     256
+     241: iload         30
+     243: iload         10
+     245: if_icmpge     252
+     248: iconst_1
+     249: goto          257
+     252: iconst_0
+     253: goto          257
+     256: iconst_0
+     257: ifeq          271
+     260: iload         30
+     262: iload         21
+     264: if_icmple     271
+     267: iconst_1
+     268: goto          272
+     271: iconst_0
+     272: ifne          292
+     275: ldc           #72                 // String Failed requirement.
+     277: astore        32
+     279: new           #74                 // class java/lang/IllegalArgumentException
+     282: dup
+     283: aload         32
+     285: invokevirtual #78                 // Method java/lang/Object.toString:()Ljava/lang/String;
+     288: invokespecial #81                 // Method java/lang/IllegalArgumentException."<init>":(Ljava/lang/String;)V
+     291: athrow
+     292: iload         30
+     294: istore        21
+     296: nop
+     297: nop
+     298: aload         22
+     300: invokestatic  #263                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.access$getScratch$p:(Lio/johnsonlee/graphite/webgraph/PersistentIndexViewValidator;)Ljava/nio/ByteBuffer;
+     303: iload         29
+     305: invokestatic  #283                // Method java/lang/Integer.reverseBytes:(I)I
+     308: invokevirtual #287                // Method java/nio/ByteBuffer.putInt:(I)Ljava/nio/ByteBuffer;
+     311: pop
+     312: goto          209
+     315: aload         22
+     317: invokestatic  #291                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.access$getChecksum$p:(Lio/johnsonlee/graphite/webgraph/PersistentIndexViewValidator;)Ljava/util/zip/CRC32;
+     320: aload         22
+     322: invokestatic  #263                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.access$getScratch$p:(Lio/johnsonlee/graphite/webgraph/PersistentIndexViewValidator;)Ljava/nio/ByteBuffer;
+     325: invokevirtual #295                // Method java/nio/ByteBuffer.array:()[B
+     328: iconst_0
+     329: aload         22
+     331: invokestatic  #263                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.access$getScratch$p:(Lio/johnsonlee/graphite/webgraph/PersistentIndexViewValidator;)Ljava/nio/ByteBuffer;
+     334: invokevirtual #298                // Method java/nio/ByteBuffer.position:()I
+     337: invokevirtual #304                // Method java/util/zip/CRC32.update:([BII)V
+     340: aload         22
+     342: invokestatic  #308                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.access$getWorkConsumer$p:(Lio/johnsonlee/graphite/webgraph/PersistentIndexViewValidator;)Lio/johnsonlee/graphite/graph/GraphWorkConsumer;
+     345: iload         28
+     347: iload         27
+     349: isub
+     350: i2l
+     351: invokestatic  #314                // Method io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraphKt.consumeGraphWork:(Lio/johnsonlee/graphite/graph/GraphWorkConsumer;J)V
+     354: goto          160
+     357: nop
+     358: iconst_0
+     359: istore        22
+     361: aload         16
+     363: astore        23
+     365: aload_3
+     366: iload         19
+     368: aaload
+     369: astore        24
+     371: iconst_0
+     372: istore        25
+     374: iconst_0
+     375: istore        27
+     377: iload         27
+     379: aload         24
+     381: invokevirtual #259                // Method java/nio/IntBuffer.limit:()I
+     384: if_icmpge     556
+     387: invokestatic  #46                 // Method io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexViewKt.access$checkViewInterrupted:()V
+     390: aload         23
+     392: invokestatic  #263                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.access$getScratch$p:(Lio/johnsonlee/graphite/webgraph/PersistentIndexViewValidator;)Ljava/nio/ByteBuffer;
+     395: invokevirtual #266                // Method java/nio/ByteBuffer.clear:()Ljava/nio/ByteBuffer;
+     398: pop
+     399: iload         27
+     401: istore        28
+     403: aload         24
+     405: invokevirtual #259                // Method java/nio/IntBuffer.limit:()I
+     408: iload         27
+     410: aload         23
+     412: invokestatic  #263                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.access$getScratch$p:(Lio/johnsonlee/graphite/webgraph/PersistentIndexViewValidator;)Ljava/nio/ByteBuffer;
+     415: invokevirtual #269                // Method java/nio/ByteBuffer.capacity:()I
+     418: iconst_4
+     419: idiv
+     420: iadd
+     421: invokestatic  #275                // Method java/lang/Math.min:(II)I
+     424: istore        29
+     426: iload         27
+     428: iload         29
+     430: if_icmpge     514
+     433: aload         24
+     435: iload         27
+     437: iinc          27, 1
+     440: invokevirtual #278                // Method java/nio/IntBuffer.get:(I)I
+     443: istore        30
+     445: iload         30
+     447: istore        31
+     449: iconst_0
+     450: istore        32
+     452: iload         31
+     454: iload         22
+     456: if_icmple     470
+     459: iload         31
+     461: iload         11
+     463: if_icmpgt     470
+     466: iconst_1
+     467: goto          471
+     470: iconst_0
+     471: ifne          491
+     474: ldc           #72                 // String Failed requirement.
+     476: astore        33
+     478: new           #74                 // class java/lang/IllegalArgumentException
+     481: dup
+     482: aload         33
+     484: invokevirtual #78                 // Method java/lang/Object.toString:()Ljava/lang/String;
+     487: invokespecial #81                 // Method java/lang/IllegalArgumentException."<init>":(Ljava/lang/String;)V
+     490: athrow
+     491: iload         31
+     493: istore        22
+     495: nop
+     496: nop
+     497: aload         23
+     499: invokestatic  #263                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.access$getScratch$p:(Lio/johnsonlee/graphite/webgraph/PersistentIndexViewValidator;)Ljava/nio/ByteBuffer;
+     502: iload         30
+     504: invokestatic  #283                // Method java/lang/Integer.reverseBytes:(I)I
+     507: invokevirtual #287                // Method java/nio/ByteBuffer.putInt:(I)Ljava/nio/ByteBuffer;
+     510: pop
+     511: goto          426
+     514: aload         23
+     516: invokestatic  #291                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.access$getChecksum$p:(Lio/johnsonlee/graphite/webgraph/PersistentIndexViewValidator;)Ljava/util/zip/CRC32;
+     519: aload         23
+     521: invokestatic  #263                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.access$getScratch$p:(Lio/johnsonlee/graphite/webgraph/PersistentIndexViewValidator;)Ljava/nio/ByteBuffer;
+     524: invokevirtual #295                // Method java/nio/ByteBuffer.array:()[B
+     527: iconst_0
+     528: aload         23
+     530: invokestatic  #263                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.access$getScratch$p:(Lio/johnsonlee/graphite/webgraph/PersistentIndexViewValidator;)Ljava/nio/ByteBuffer;
+     533: invokevirtual #298                // Method java/nio/ByteBuffer.position:()I
+     536: invokevirtual #304                // Method java/util/zip/CRC32.update:([BII)V
+     539: aload         23
+     541: invokestatic  #308                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.access$getWorkConsumer$p:(Lio/johnsonlee/graphite/webgraph/PersistentIndexViewValidator;)Lio/johnsonlee/graphite/graph/GraphWorkConsumer;
+     544: iload         29
+     546: iload         28
+     548: isub
+     549: i2l
+     550: invokestatic  #314                // Method io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraphKt.consumeGraphWork:(Lio/johnsonlee/graphite/graph/GraphWorkConsumer;J)V
+     553: goto          377
+     556: nop
+     557: iload         22
+     559: iload         11
+     561: if_icmpne     568
+     564: iconst_1
+     565: goto          569
+     568: iconst_0
+     569: ifne          589
+     572: ldc           #72                 // String Failed requirement.
+     574: astore        24
+     576: new           #74                 // class java/lang/IllegalArgumentException
+     579: dup
+     580: aload         24
+     582: invokevirtual #78                 // Method java/lang/Object.toString:()Ljava/lang/String;
+     585: invokespecial #81                 // Method java/lang/IllegalArgumentException."<init>":(Ljava/lang/String;)V
+     588: athrow
+     589: aload         16
+     591: astore        23
+     593: aload         4
+     595: iload         19
+     597: aaload
+     598: astore        24
+     600: iconst_0
+     601: istore        25
+     603: iconst_0
+     604: istore        27
+     606: iload         27
+     608: aload         24
+     610: invokevirtual #259                // Method java/nio/IntBuffer.limit:()I
+     613: if_icmpge     784
+     616: invokestatic  #46                 // Method io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexViewKt.access$checkViewInterrupted:()V
+     619: aload         23
+     621: invokestatic  #263                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.access$getScratch$p:(Lio/johnsonlee/graphite/webgraph/PersistentIndexViewValidator;)Ljava/nio/ByteBuffer;
+     624: invokevirtual #266                // Method java/nio/ByteBuffer.clear:()Ljava/nio/ByteBuffer;
+     627: pop
+     628: iload         27
+     630: istore        28
+     632: aload         24
+     634: invokevirtual #259                // Method java/nio/IntBuffer.limit:()I
+     637: iload         27
+     639: aload         23
+     641: invokestatic  #263                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.access$getScratch$p:(Lio/johnsonlee/graphite/webgraph/PersistentIndexViewValidator;)Ljava/nio/ByteBuffer;
+     644: invokevirtual #269                // Method java/nio/ByteBuffer.capacity:()I
+     647: iconst_4
+     648: idiv
+     649: iadd
+     650: invokestatic  #275                // Method java/lang/Math.min:(II)I
+     653: istore        29
+     655: iload         27
+     657: iload         29
+     659: if_icmpge     742
+     662: aload         24
+     664: iload         27
+     666: iinc          27, 1
+     669: invokevirtual #278                // Method java/nio/IntBuffer.get:(I)I
+     672: istore        30
+     674: iload         30
+     676: istore        31
+     678: iconst_0
+     679: istore        32
+     681: iconst_0
+     682: iload         31
+     684: if_icmpgt     702
+     687: iload         31
+     689: iload         12
+     691: if_icmpge     698
+     694: iconst_1
+     695: goto          703
+     698: iconst_0
+     699: goto          703
+     702: iconst_0
+     703: ifne          723
+     706: ldc           #72                 // String Failed requirement.
+     708: astore        33
+     710: new           #74                 // class java/lang/IllegalArgumentException
+     713: dup
+     714: aload         33
+     716: invokevirtual #78                 // Method java/lang/Object.toString:()Ljava/lang/String;
+     719: invokespecial #81                 // Method java/lang/IllegalArgumentException."<init>":(Ljava/lang/String;)V
+     722: athrow
+     723: nop
+     724: nop
+     725: aload         23
+     727: invokestatic  #263                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.access$getScratch$p:(Lio/johnsonlee/graphite/webgraph/PersistentIndexViewValidator;)Ljava/nio/ByteBuffer;
+     730: iload         30
+     732: invokestatic  #283                // Method java/lang/Integer.reverseBytes:(I)I
+     735: invokevirtual #287                // Method java/nio/ByteBuffer.putInt:(I)Ljava/nio/ByteBuffer;
+     738: pop
+     739: goto          655
+     742: aload         23
+     744: invokestatic  #291                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.access$getChecksum$p:(Lio/johnsonlee/graphite/webgraph/PersistentIndexViewValidator;)Ljava/util/zip/CRC32;
+     747: aload         23
+     749: invokestatic  #263                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.access$getScratch$p:(Lio/johnsonlee/graphite/webgraph/PersistentIndexViewValidator;)Ljava/nio/ByteBuffer;
+     752: invokevirtual #295                // Method java/nio/ByteBuffer.array:()[B
+     755: iconst_0
+     756: aload         23
+     758: invokestatic  #263                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.access$getScratch$p:(Lio/johnsonlee/graphite/webgraph/PersistentIndexViewValidator;)Ljava/nio/ByteBuffer;
+     761: invokevirtual #298                // Method java/nio/ByteBuffer.position:()I
+     764: invokevirtual #304                // Method java/util/zip/CRC32.update:([BII)V
+     767: aload         23
+     769: invokestatic  #308                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.access$getWorkConsumer$p:(Lio/johnsonlee/graphite/webgraph/PersistentIndexViewValidator;)Lio/johnsonlee/graphite/graph/GraphWorkConsumer;
+     772: iload         29
+     774: iload         28
+     776: isub
+     777: i2l
+     778: invokestatic  #314                // Method io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraphKt.consumeGraphWork:(Lio/johnsonlee/graphite/graph/GraphWorkConsumer;J)V
+     781: goto          606
+     784: nop
+     785: nop
+     786: iinc          18, 1
+     789: goto          124
+     792: nop
+     793: iconst_0
+     794: istore        18
+     796: aload         16
+     798: lload         5
+     800: iload         10
+     802: bipush        8
+     804: invokestatic  #318                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.access$mappedSlice:(Lio/johnsonlee/graphite/webgraph/PersistentIndexViewValidator;JII)Ljava/nio/ByteBuffer;
+     807: invokevirtual #322                // Method java/nio/ByteBuffer.asLongBuffer:()Ljava/nio/LongBuffer;
+     810: astore        19
+     812: iconst_0
+     813: istore        20
+     815: iload         20
+     817: aload         19
+     819: invokevirtual #323                // Method java/nio/LongBuffer.limit:()I
+     822: if_icmpge     956
+     825: invokestatic  #46                 // Method io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexViewKt.access$checkViewInterrupted:()V
+     828: aload         16
+     830: invokestatic  #263                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.access$getScratch$p:(Lio/johnsonlee/graphite/webgraph/PersistentIndexViewValidator;)Ljava/nio/ByteBuffer;
+     833: invokevirtual #266                // Method java/nio/ByteBuffer.clear:()Ljava/nio/ByteBuffer;
+     836: pop
+     837: iload         20
+     839: istore        21
+     841: aload         19
+     843: invokevirtual #323                // Method java/nio/LongBuffer.limit:()I
+     846: iload         20
+     848: aload         16
+     850: invokestatic  #263                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.access$getScratch$p:(Lio/johnsonlee/graphite/webgraph/PersistentIndexViewValidator;)Ljava/nio/ByteBuffer;
+     853: invokevirtual #269                // Method java/nio/ByteBuffer.capacity:()I
+     856: bipush        8
+     858: idiv
+     859: iadd
+     860: invokestatic  #275                // Method java/lang/Math.min:(II)I
+     863: istore        22
+     865: iload         20
+     867: iload         22
+     869: if_icmpge     914
+     872: aload         19
+     874: iload         20
+     876: iinc          20, 1
+     879: invokevirtual #325                // Method java/nio/LongBuffer.get:(I)J
+     882: lstore        23
+     884: lload         23
+     886: lstore        25
+     888: iconst_0
+     889: istore        27
+     891: lload         25
+     893: lstore        28
+     895: nop
+     896: nop
+     897: aload         16
+     899: invokestatic  #263                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.access$getScratch$p:(Lio/johnsonlee/graphite/webgraph/PersistentIndexViewValidator;)Ljava/nio/ByteBuffer;
+     902: lload         23
+     904: invokestatic  #330                // Method java/lang/Long.reverseBytes:(J)J
+     907: invokevirtual #334                // Method java/nio/ByteBuffer.putLong:(J)Ljava/nio/ByteBuffer;
+     910: pop
+     911: goto          865
+     914: aload         16
+     916: invokestatic  #291                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.access$getChecksum$p:(Lio/johnsonlee/graphite/webgraph/PersistentIndexViewValidator;)Ljava/util/zip/CRC32;
+     919: aload         16
+     921: invokestatic  #263                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.access$getScratch$p:(Lio/johnsonlee/graphite/webgraph/PersistentIndexViewValidator;)Ljava/nio/ByteBuffer;
+     924: invokevirtual #295                // Method java/nio/ByteBuffer.array:()[B
+     927: iconst_0
+     928: aload         16
+     930: invokestatic  #263                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.access$getScratch$p:(Lio/johnsonlee/graphite/webgraph/PersistentIndexViewValidator;)Ljava/nio/ByteBuffer;
+     933: invokevirtual #298                // Method java/nio/ByteBuffer.position:()I
+     936: invokevirtual #304                // Method java/util/zip/CRC32.update:([BII)V
+     939: aload         16
+     941: invokestatic  #308                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.access$getWorkConsumer$p:(Lio/johnsonlee/graphite/webgraph/PersistentIndexViewValidator;)Lio/johnsonlee/graphite/graph/GraphWorkConsumer;
+     944: iload         22
+     946: iload         21
+     948: isub
+     949: i2l
+     950: invokestatic  #314                // Method io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraphKt.consumeGraphWork:(Lio/johnsonlee/graphite/graph/GraphWorkConsumer;J)V
+     953: goto          815
+     956: nop
+     957: lconst_0
+     958: lstore        34
+     960: ldc2_w        #335                // long -9223372036854775808l
+     963: lstore        34
+     965: aload         16
+     967: astore        18
+     969: iconst_0
+     970: istore        19
+     972: aload         18
+     974: lload         7
+     976: iload         13
+     978: bipush        8
+     980: invokestatic  #318                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.access$mappedSlice:(Lio/johnsonlee/graphite/webgraph/PersistentIndexViewValidator;JII)Ljava/nio/ByteBuffer;
+     983: invokevirtual #322                // Method java/nio/ByteBuffer.asLongBuffer:()Ljava/nio/LongBuffer;
+     986: astore        20
+     988: iconst_0
+     989: istore        21
+     991: iload         21
+     993: aload         20
+     995: invokevirtual #323                // Method java/nio/LongBuffer.limit:()I
+     998: if_icmpge     1195
+    1001: invokestatic  #46                 // Method io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexViewKt.access$checkViewInterrupted:()V
+    1004: aload         18
+    1006: invokestatic  #263                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.access$getScratch$p:(Lio/johnsonlee/graphite/webgraph/PersistentIndexViewValidator;)Ljava/nio/ByteBuffer;
+    1009: invokevirtual #266                // Method java/nio/ByteBuffer.clear:()Ljava/nio/ByteBuffer;
+    1012: pop
+    1013: iload         21
+    1015: istore        22
+    1017: aload         20
+    1019: invokevirtual #323                // Method java/nio/LongBuffer.limit:()I
+    1022: iload         21
+    1024: aload         18
+    1026: invokestatic  #263                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.access$getScratch$p:(Lio/johnsonlee/graphite/webgraph/PersistentIndexViewValidator;)Ljava/nio/ByteBuffer;
+    1029: invokevirtual #269                // Method java/nio/ByteBuffer.capacity:()I
+    1032: bipush        8
+    1034: idiv
+    1035: iadd
+    1036: invokestatic  #275                // Method java/lang/Math.min:(II)I
+    1039: istore        23
+    1041: iload         21
+    1043: iload         23
+    1045: if_icmpge     1153
+    1048: aload         20
+    1050: iload         21
+    1052: iinc          21, 1
+    1055: invokevirtual #325                // Method java/nio/LongBuffer.get:(I)J
+    1058: lstore        24
+    1060: lload         24
+    1062: lstore        27
+    1064: iconst_0
+    1065: istore        29
+    1067: lload         27
+    1069: lload         34
+    1071: lcmp
+    1072: iflt          1109
+    1075: lload         27
+    1077: l2i
+    1078: istore        30
+    1080: iconst_0
+    1081: iload         30
+    1083: if_icmpgt     1101
+    1086: iload         30
+    1088: iload         10
+    1090: if_icmpge     1097
+    1093: iconst_1
+    1094: goto          1102
+    1097: iconst_0
+    1098: goto          1102
+    1101: iconst_0
+    1102: ifeq          1109
+    1105: iconst_1
+    1106: goto          1110
+    1109: iconst_0
+    1110: ifne          1130
+    1113: ldc           #72                 // String Failed requirement.
+    1115: astore        31
+    1117: new           #74                 // class java/lang/IllegalArgumentException
+    1120: dup
+    1121: aload         31
+    1123: invokevirtual #78                 // Method java/lang/Object.toString:()Ljava/lang/String;
+    1126: invokespecial #81                 // Method java/lang/IllegalArgumentException."<init>":(Ljava/lang/String;)V
+    1129: athrow
+    1130: lload         27
+    1132: lstore        34
+    1134: nop
+    1135: nop
+    1136: aload         18
+    1138: invokestatic  #263                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.access$getScratch$p:(Lio/johnsonlee/graphite/webgraph/PersistentIndexViewValidator;)Ljava/nio/ByteBuffer;
+    1141: lload         24
+    1143: invokestatic  #330                // Method java/lang/Long.reverseBytes:(J)J
+    1146: invokevirtual #334                // Method java/nio/ByteBuffer.putLong:(J)Ljava/nio/ByteBuffer;
+    1149: pop
+    1150: goto          1041
+    1153: aload         18
+    1155: invokestatic  #291                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.access$getChecksum$p:(Lio/johnsonlee/graphite/webgraph/PersistentIndexViewValidator;)Ljava/util/zip/CRC32;
+    1158: aload         18
+    1160: invokestatic  #263                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.access$getScratch$p:(Lio/johnsonlee/graphite/webgraph/PersistentIndexViewValidator;)Ljava/nio/ByteBuffer;
+    1163: invokevirtual #295                // Method java/nio/ByteBuffer.array:()[B
+    1166: iconst_0
+    1167: aload         18
+    1169: invokestatic  #263                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.access$getScratch$p:(Lio/johnsonlee/graphite/webgraph/PersistentIndexViewValidator;)Ljava/nio/ByteBuffer;
+    1172: invokevirtual #298                // Method java/nio/ByteBuffer.position:()I
+    1175: invokevirtual #304                // Method java/util/zip/CRC32.update:([BII)V
+    1178: aload         18
+    1180: invokestatic  #308                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.access$getWorkConsumer$p:(Lio/johnsonlee/graphite/webgraph/PersistentIndexViewValidator;)Lio/johnsonlee/graphite/graph/GraphWorkConsumer;
+    1183: iload         23
+    1185: iload         22
+    1187: isub
+    1188: i2l
+    1189: invokestatic  #314                // Method io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraphKt.consumeGraphWork:(Lio/johnsonlee/graphite/graph/GraphWorkConsumer;J)V
+    1192: goto          991
+    1195: nop
+    1196: aload_1
+    1197: lload         7
+    1199: iload         13
+    1201: i2l
+    1202: bipush        8
+    1204: i2l
+    1205: lmul
+    1206: ladd
+    1207: invokestatic  #340                // Method java/lang/Math.toIntExact:(J)I
+    1210: invokevirtual #252                // Method java/nio/ByteBuffer.getLong:(I)J
+    1213: lstore        18
+    1215: aload         16
+    1217: invokevirtual #343                // Method io/johnsonlee/graphite/webgraph/PersistentIndexViewValidator.getValue:()J
+    1220: lload         18
+    1222: lcmp
+    1223: ifne          1230
+    1226: iconst_1
+    1227: goto          1231
+    1230: iconst_0
+    1231: ireturn
+
+  private final java.nio.IntBuffer mappedInts(java.nio.ByteBuffer, long, int);
+    Code:
+       0: iload         4
+       2: ifne          20
+       5: iconst_0
+       6: invokestatic  #136                // Method java/nio/IntBuffer.allocate:(I)Ljava/nio/IntBuffer;
+       9: invokevirtual #140                // Method java/nio/IntBuffer.asReadOnlyBuffer:()Ljava/nio/IntBuffer;
+      12: dup
+      13: ldc_w         #378                // String asReadOnlyBuffer(...)
+      16: invokestatic  #381                // Method kotlin/jvm/internal/Intrinsics.checkNotNullExpressionValue:(Ljava/lang/Object;Ljava/lang/String;)V
+      19: areturn
+      20: iload         4
+      22: iconst_4
+      23: invokestatic  #384                // Method java/lang/Math.multiplyExact:(II)I
+      26: istore        5
+      28: aload_0
+      29: aload_1
+      30: lload_2
+      31: iload         5
+      33: invokespecial #388                // Method mappedSlice:(Ljava/nio/ByteBuffer;JI)Ljava/nio/ByteBuffer;
+      36: invokevirtual #391                // Method java/nio/ByteBuffer.asIntBuffer:()Ljava/nio/IntBuffer;
+      39: invokevirtual #140                // Method java/nio/IntBuffer.asReadOnlyBuffer:()Ljava/nio/IntBuffer;
+      42: dup
+      43: ldc_w         #378                // String asReadOnlyBuffer(...)
+      46: invokestatic  #381                // Method kotlin/jvm/internal/Intrinsics.checkNotNullExpressionValue:(Ljava/lang/Object;Ljava/lang/String;)V
+      49: areturn
+
+  private final java.nio.LongBuffer mappedLongs(java.nio.ByteBuffer, long, int);
+    Code:
+       0: iload         4
+       2: bipush        8
+       4: invokestatic  #384                // Method java/lang/Math.multiplyExact:(II)I
+       7: istore        5
+       9: aload_0
+      10: aload_1
+      11: lload_2
+      12: iload         5
+      14: invokespecial #388                // Method mappedSlice:(Ljava/nio/ByteBuffer;JI)Ljava/nio/ByteBuffer;
+      17: invokevirtual #322                // Method java/nio/ByteBuffer.asLongBuffer:()Ljava/nio/LongBuffer;
+      20: invokevirtual #394                // Method java/nio/LongBuffer.asReadOnlyBuffer:()Ljava/nio/LongBuffer;
+      23: dup
+      24: ldc_w         #378                // String asReadOnlyBuffer(...)
+      27: invokestatic  #381                // Method kotlin/jvm/internal/Intrinsics.checkNotNullExpressionValue:(Ljava/lang/Object;Ljava/lang/String;)V
+      30: areturn
+
+  private final java.nio.ByteBuffer mappedSlice(java.nio.ByteBuffer, long, int);
+    Code:
+       0: lload_2
+       1: invokestatic  #340                // Method java/lang/Math.toIntExact:(J)I
+       4: istore        5
+       6: iload         5
+       8: iload         4
+      10: invokestatic  #397                // Method java/lang/Math.addExact:(II)I
+      13: istore        6
+      15: iload         6
+      17: aload_1
+      18: invokevirtual #398                // Method java/nio/ByteBuffer.limit:()I
+      21: if_icmpgt     28
+      24: iconst_1
+      25: goto          29
+      28: iconst_0
+      29: ifne          49
+      32: ldc           #72                 // String Failed requirement.
+      34: astore        7
+      36: new           #74                 // class java/lang/IllegalArgumentException
+      39: dup
+      40: aload         7
+      42: invokevirtual #78                 // Method java/lang/Object.toString:()Ljava/lang/String;
+      45: invokespecial #81                 // Method java/lang/IllegalArgumentException."<init>":(Ljava/lang/String;)V
+      48: athrow
+      49: aload_1
+      50: invokevirtual #109                // Method java/nio/ByteBuffer.duplicate:()Ljava/nio/ByteBuffer;
+      53: getstatic     #97                 // Field java/nio/ByteOrder.BIG_ENDIAN:Ljava/nio/ByteOrder;
+      56: invokevirtual #110                // Method java/nio/ByteBuffer.order:(Ljava/nio/ByteOrder;)Ljava/nio/ByteBuffer;
+      59: astore        7
+      61: aload         7
+      63: astore        8
+      65: iconst_0
+      66: istore        9
+      68: aload         8
+      70: iload         5
+      72: invokevirtual #400                // Method java/nio/ByteBuffer.position:(I)Ljava/nio/ByteBuffer;
+      75: pop
+      76: aload         8
+      78: iload         6
+      80: invokevirtual #402                // Method java/nio/ByteBuffer.limit:(I)Ljava/nio/ByteBuffer;
+      83: pop
+      84: nop
+      85: aload         7
+      87: invokevirtual #405                // Method java/nio/ByteBuffer.slice:()Ljava/nio/ByteBuffer;
+      90: getstatic     #97                 // Field java/nio/ByteOrder.BIG_ENDIAN:Ljava/nio/ByteOrder;
+      93: invokevirtual #110                // Method java/nio/ByteBuffer.order:(Ljava/nio/ByteOrder;)Ljava/nio/ByteBuffer;
+      96: dup
+      97: ldc_w         #407                // String order(...)
+     100: invokestatic  #381                // Method kotlin/jvm/internal/Intrinsics.checkNotNullExpressionValue:(Ljava/lang/Object;Ljava/lang/String;)V
+     103: areturn
+
+  public io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView$Companion(kotlin.jvm.internal.DefaultConstructorMarker);
+    Code:
+       0: aload_0
+       1: invokespecial #412                // Method "<init>":()V
+       4: return
+}

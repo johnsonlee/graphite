@@ -1,0 +1,3879 @@
+{
+  "schema": "independent-rejected138-cold-profile-audit-v1",
+  "passed": true,
+  "regressionCauseLocated": false,
+  "rejectionRemainsFinal": true,
+  "newMeasurements": false,
+  "verifiedQueryCount": 160,
+  "verifiedFullRowCount": 32000,
+  "v2SelectedQueriesEqualV3": true,
+  "recordings": {
+    "base": {
+      "analysisSha256": "e60a29d3642300e200ec29e164860a4ddd7bc0e0e1edaecabdcea97bf4ade446",
+      "tsvSha256": "cef0d5a36c3aade48b56d677235afd5e2edfbdf70e98b700f5f50aeb152a9910",
+      "fullRowsSha256": "651e7059806ee8f58f94eca8623a0563c59b5ccd0691c1306fe55b9dfced2491",
+      "commandSha256": "969561c4fa9562b6795c03052d768f6e16081f22cc42af46a0c07afa69a22d90",
+      "commandJar": "/private/tmp/graphite-next-baseline.T2FTs9/graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar",
+      "recordedJfrSha256": "b83bd35a42f0e4c926d494553a9504878a3be1a937fcbd870e605431d72b966c",
+      "attributedEventsChecked": {
+        "jdk.ExecutionSample": 15034,
+        "jdk.ObjectAllocationInNewTLAB": 184303
+      },
+      "allRecordingCpuEvents": 31250,
+      "unattributedCpuEvents": 16216,
+      "windowCount": 80,
+      "minGapNanos": 62333,
+      "maxGapNanos": 7209292,
+      "positiveUntracedNanos": 16681035,
+      "collapsedMetricFilesChecked": 160
+    },
+    "candidate": {
+      "analysisSha256": "598a30c75baea1ac8d4d305bd66dc41a62dd8fc08531b42ed14f7d2e74d3ea47",
+      "tsvSha256": "b3acb65dadad26a3c4a9efcc6277c62592c32f8606cfd081453a1b13d26ef0eb",
+      "fullRowsSha256": "651e7059806ee8f58f94eca8623a0563c59b5ccd0691c1306fe55b9dfced2491",
+      "commandSha256": "cb7b9c55891c920c86c0b0a011e0fc3b975158eaa06e0433f73135a67fe676b9",
+      "commandJar": "/private/tmp/graphite-attempt138.7ihszrob/candidate-jmh.jar",
+      "recordedJfrSha256": "096f82ef20768a3d80c1002e9c82cf7e98723c34d877fc693aad59508676ae41",
+      "attributedEventsChecked": {
+        "jdk.ExecutionSample": 16054,
+        "jdk.ObjectAllocationInNewTLAB": 183670
+      },
+      "allRecordingCpuEvents": 31942,
+      "unattributedCpuEvents": 15888,
+      "windowCount": 80,
+      "minGapNanos": 64666,
+      "maxGapNanos": 6134916,
+      "positiveUntracedNanos": 15247162,
+      "collapsedMetricFilesChecked": 160
+    }
+  },
+  "groups": [
+    {
+      "revision": "base",
+      "projection": "rows",
+      "counters": {
+        "cpuSamples.all": 1263,
+        "cpuSamples.background": 326,
+        "cpuSamples.application": 937,
+        "cpuSamples.candidateDiscovery": 10,
+        "cpuSamples.mappedLoad": 433,
+        "cpuSamples.validator": 425,
+        "cpuSamples.intersection.validator+mappedLoad": 425,
+        "cpuSamples.missingStackEvents": 0,
+        "cpuSamples.truncatedStackEvents": 0,
+        "allocationSampledBytes.all": 999293536,
+        "allocationSampledBytes.application": 999293536,
+        "allocationSampledBytes.candidateDiscovery": 786432,
+        "allocationSampledBytes.validator": 950272608,
+        "allocationSampledBytes.mappedLoad": 950534752,
+        "allocationSampledBytes.intersection.validator+mappedLoad": 950272608,
+        "allocationSampledBytes.missingStackEvents": 0,
+        "allocationSampledBytes.truncatedStackEvents": 0
+      },
+      "threadGroups": {
+        "cpuSamples": {
+          "jit": 200,
+          "otherBackground": 126,
+          "application": 937
+        },
+        "allocationSampledBytes": {
+          "application": 999293536
+        }
+      },
+      "threads": {
+        "cpuSamples": {
+          "Java: C1 CompilerThread0 [java=0,os=29443]": 55,
+          "Java: C2 CompilerThread0 [java=0,os=26883]": 145,
+          "Java: Service Thread [java=0,os=29955]": 1,
+          "[tid=40195] [java=0,os=40195]": 94,
+          "broad-query-pressure-worker [java=25,os=36619]": 697,
+          "broad-query-resource-sampler [java=20,os=30471]": 23,
+          "graphite-callsite-segment-1 [java=26,os=39939]": 120,
+          "graphite-callsite-segment-2 [java=27,os=37635]": 120,
+          "process reaper [java=24,os=33043]": 2,
+          "Java: JFR Thread Sampler [java=0,os=42499]": 6
+        },
+        "allocationSampledBytes": {
+          "broad-query-pressure-worker [java=25,os=36619]": 993788512,
+          "graphite-callsite-segment-1 [java=26,os=39939]": 2883584,
+          "graphite-callsite-segment-2 [java=27,os=37635]": 2621440
+        }
+      },
+      "workUnitsFrequency": {
+        "1152827": 40
+      },
+      "topMethodLeaves": {
+        "cpuSamples.candidateDiscovery": [
+          [
+            "java.util.HashMap.putVal(ILjava/lang/Object:Ljava/lang/Object:ZZ)Ljava/lang/Object:",
+            4
+          ],
+          [
+            "jshort_disjoint_arraycopy()L:",
+            2
+          ],
+          [
+            "libjvm.dylib.ClassVerifier::verify_iload()L:",
+            1
+          ],
+          [
+            "java.util.WeakHashMap.put(Ljava/lang/Object:Ljava/lang/Object:)Ljava/lang/Object:",
+            1
+          ],
+          [
+            "zero_blocks()L:",
+            1
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.trigramPostingRange(I)Lkotlin/ranges/IntRange:",
+            1
+          ]
+        ],
+        "cpuSamples.mappedLoad": [
+          [
+            "io.johnsonlee.graphite.webgraph.PersistentIndexViewValidator.updateLongs(JILkotlin/jvm/functions/Function1:)V",
+            102
+          ],
+          [
+            "itable stub()L:",
+            48
+          ],
+          [
+            "updateBytesCRC32()L:",
+            47
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.PersistentIndexViewValidator.updateInts(Ljava/nio/IntBuffer:Lkotlin/jvm/functions/Function1:)V",
+            42
+          ],
+          [
+            "java.lang.Long.valueOf(J)Ljava/lang/Long:",
+            23
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView$Companion$$Lambda$200.0x0000007001151528.invoke(Ljava/lang/Object:)Ljava/lang/Object:",
+            18
+          ],
+          [
+            "java.nio.HeapByteBuffer.putInt(I)Ljava/nio/ByteBuffer:",
+            17
+          ],
+          [
+            "java.nio.Buffer.scope()Ljdk/internal/misc/ScopedMemoryAccess$Scope:",
+            13
+          ],
+          [
+            "java.lang.Integer.<init>(I)V",
+            12
+          ],
+          [
+            "java.nio.HeapByteBuffer.byteOffset(J)J",
+            11
+          ],
+          [
+            "java.nio.HeapByteBuffer.putLong(J)Ljava/nio/ByteBuffer:",
+            8
+          ],
+          [
+            "libsystem_platform.dylib._platform_memmove()L:",
+            8
+          ]
+        ],
+        "cpuSamples.validator": [
+          [
+            "io.johnsonlee.graphite.webgraph.PersistentIndexViewValidator.updateLongs(JILkotlin/jvm/functions/Function1:)V",
+            102
+          ],
+          [
+            "itable stub()L:",
+            48
+          ],
+          [
+            "updateBytesCRC32()L:",
+            47
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.PersistentIndexViewValidator.updateInts(Ljava/nio/IntBuffer:Lkotlin/jvm/functions/Function1:)V",
+            42
+          ],
+          [
+            "java.lang.Long.valueOf(J)Ljava/lang/Long:",
+            23
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView$Companion$$Lambda$200.0x0000007001151528.invoke(Ljava/lang/Object:)Ljava/lang/Object:",
+            18
+          ],
+          [
+            "java.nio.HeapByteBuffer.putInt(I)Ljava/nio/ByteBuffer:",
+            17
+          ],
+          [
+            "java.lang.Integer.<init>(I)V",
+            12
+          ],
+          [
+            "java.nio.HeapByteBuffer.byteOffset(J)J",
+            11
+          ],
+          [
+            "java.nio.Buffer.scope()Ljdk/internal/misc/ScopedMemoryAccess$Scope:",
+            10
+          ],
+          [
+            "java.nio.HeapByteBuffer.putLong(J)Ljava/nio/ByteBuffer:",
+            8
+          ],
+          [
+            "libsystem_platform.dylib._platform_memmove()L:",
+            8
+          ]
+        ],
+        "allocationSampledBytes.candidateDiscovery": [
+          [
+            "java.util.Arrays.copyOfRange([BII)[B",
+            262144
+          ],
+          [
+            "java.util.Arrays.copyOf([BI)[B",
+            262144
+          ],
+          [
+            "kotlin.ranges.RangesKt___RangesKt.until(II)Lkotlin/ranges/IntRange:",
+            262144
+          ]
+        ],
+        "allocationSampledBytes.validator": [
+          [
+            "java.lang.Long.valueOf(J)Ljava/lang/Long:",
+            603455488
+          ],
+          [
+            "java.lang.Integer.valueOf(I)Ljava/lang/Integer:",
+            306970624
+          ],
+          [
+            "java.nio.HeapByteBuffer.<init>(IILjdk/internal/access/foreign/MemorySegmentProxy:)V",
+            39846496
+          ]
+        ],
+        "allocationSampledBytes.mappedLoad": [
+          [
+            "java.lang.Long.valueOf(J)Ljava/lang/Long:",
+            603455488
+          ],
+          [
+            "java.lang.Integer.valueOf(I)Ljava/lang/Integer:",
+            306970624
+          ],
+          [
+            "java.nio.HeapByteBuffer.<init>(IILjdk/internal/access/foreign/MemorySegmentProxy:)V",
+            39846496
+          ],
+          [
+            "java.util.Arrays.copyOf([BI)[B",
+            262144
+          ]
+        ]
+      },
+      "collapsedChecks": [
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/01-or-four-broad-rows-00.cpuSamples.collapsed",
+          "sha256": "3519c539ed9726c0e0a62226f9f1e772496dd1784b1bd42237c1c3c6e2fd2eb3",
+          "weight": 354,
+          "eventCount": 354
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/01-or-four-broad-rows-00.allocationSampledBytes.collapsed",
+          "sha256": "d8acbad655e88b25775cc87a388f1785aa59012f6286d6499c9d72276439a97d",
+          "weight": 31457296,
+          "eventCount": 117
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/03-or-four-broad-rows-01.cpuSamples.collapsed",
+          "sha256": "50e7db283bc9c62c52d10680b5d67d9e367a754135151eefa558700db7616ab9",
+          "weight": 112,
+          "eventCount": 112
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/03-or-four-broad-rows-01.allocationSampledBytes.collapsed",
+          "sha256": "f4a030738694045830d371dfd35af9683187fb0ccec3025418209375062eb45f",
+          "weight": 25427984,
+          "eventCount": 94
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/05-or-four-broad-rows-02.cpuSamples.collapsed",
+          "sha256": "56b2c688769959b8ce14ae918b6559e0cb344cac7ced6b91a0ac41b09831489b",
+          "weight": 41,
+          "eventCount": 41
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/05-or-four-broad-rows-02.allocationSampledBytes.collapsed",
+          "sha256": "3175698f0014e0949f83d8d756a11a1cbfae4111264201830cebd93ab1ce8f7a",
+          "weight": 26738704,
+          "eventCount": 99
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/07-or-four-broad-rows-03.cpuSamples.collapsed",
+          "sha256": "e65ebd7eaa800477b7139b731217cdb0ffbe912f9d56561b2a736e782caf19dd",
+          "weight": 19,
+          "eventCount": 19
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/07-or-four-broad-rows-03.allocationSampledBytes.collapsed",
+          "sha256": "9c495e663787c964ae7e711a4f17ddb9d4099e6c609b18e44edc6746976a27ec",
+          "weight": 23330832,
+          "eventCount": 86
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/09-or-four-broad-rows-04.cpuSamples.collapsed",
+          "sha256": "3670c0a1a2be8c9fa62f7fff1dca73a35979f856ad17c59e8512394f14f7c50a",
+          "weight": 23,
+          "eventCount": 23
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/09-or-four-broad-rows-04.allocationSampledBytes.collapsed",
+          "sha256": "ff2aa08af92b73b0a522bc80f0e601d2657bdd06ba272ab23bf713caded7082f",
+          "weight": 26476560,
+          "eventCount": 98
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/11-or-four-broad-rows-05.cpuSamples.collapsed",
+          "sha256": "c2d8f915a5c5be50365e17814d146a23a1bf00538ef5f5d80e1c5174af70da24",
+          "weight": 21,
+          "eventCount": 21
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/11-or-four-broad-rows-05.allocationSampledBytes.collapsed",
+          "sha256": "75f7a96b7a541f5768187526eb00668163dde97b080d82cdb09302739370e1e7",
+          "weight": 21233680,
+          "eventCount": 78
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/13-or-four-broad-rows-06.cpuSamples.collapsed",
+          "sha256": "f76cee88f48fbab85b95e91987ea55026271599dac5628e5107ec4cd5f90afc4",
+          "weight": 17,
+          "eventCount": 17
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/13-or-four-broad-rows-06.allocationSampledBytes.collapsed",
+          "sha256": "86d4903614ed5874e824734e41239ab10725192dbe1da5d85ba169507aca0f5b",
+          "weight": 22806544,
+          "eventCount": 84
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/15-or-four-broad-rows-07.cpuSamples.collapsed",
+          "sha256": "73faf73a00a6fdd1d2c6d5506162ffc513c14d7e4e789407d7d9b0d2b4f82eea",
+          "weight": 22,
+          "eventCount": 22
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/15-or-four-broad-rows-07.allocationSampledBytes.collapsed",
+          "sha256": "8a9b6b1e48b58431a12c429e49fa4f7b8e677bf178cb2428555fd4846d6e6fff",
+          "weight": 22806544,
+          "eventCount": 84
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/17-or-four-broad-rows-08.cpuSamples.collapsed",
+          "sha256": "b560b5f6edbb27f87748df88b9f41d73dbae7d0227549f5aa3de2eb0d68da369",
+          "weight": 27,
+          "eventCount": 27
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/17-or-four-broad-rows-08.allocationSampledBytes.collapsed",
+          "sha256": "1ac2e6adc4468b1c99c91ec1709b40bc28a414e1e982761a904b3cac8a751598",
+          "weight": 21233680,
+          "eventCount": 78
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/19-or-four-broad-rows-09.cpuSamples.collapsed",
+          "sha256": "b2c19d8d032c5b17ae2e06640d8b3700d609ab655db8b241175a960ae6201249",
+          "weight": 22,
+          "eventCount": 22
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/19-or-four-broad-rows-09.allocationSampledBytes.collapsed",
+          "sha256": "1efec9d032db7c8bd44370566cef692a9ebe73fec8f70d5ca8d4a92b78490fd0",
+          "weight": 20709392,
+          "eventCount": 76
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/21-or-four-broad-rows-10.cpuSamples.collapsed",
+          "sha256": "69acc84c413e5a24ccc36e47b7cd66c70bcb458228913e59c1dc29e30db1a546",
+          "weight": 24,
+          "eventCount": 24
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/21-or-four-broad-rows-10.allocationSampledBytes.collapsed",
+          "sha256": "34368fc90b5c7f3a83526a8a3ff09e78e9a12020cfd725078ca87c4640bac5fb",
+          "weight": 24117264,
+          "eventCount": 89
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/23-or-four-broad-rows-11.cpuSamples.collapsed",
+          "sha256": "0343094ea64fc44ff9e951bf8741eb80a1656d8f0104a96838347aef457d682a",
+          "weight": 24,
+          "eventCount": 24
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/23-or-four-broad-rows-11.allocationSampledBytes.collapsed",
+          "sha256": "0ce416a2f83dffdd373aa886ef9256a6adc3521f46cbd74b9ea1b795c0ecbabf",
+          "weight": 24641552,
+          "eventCount": 91
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/25-or-four-broad-rows-12.cpuSamples.collapsed",
+          "sha256": "7da59397ef1c0e7c5bf0c84a15cd67f55be5e64b7950483cbba38b724348ae17",
+          "weight": 19,
+          "eventCount": 19
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/25-or-four-broad-rows-12.allocationSampledBytes.collapsed",
+          "sha256": "48b8d27971b30974f66f9c187db983f58ce034638ca7fe13c45605d185bf41da",
+          "weight": 20971536,
+          "eventCount": 77
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/27-or-four-broad-rows-13.cpuSamples.collapsed",
+          "sha256": "d239444509cc225b5b42ad21ee02ec09691a51e305d9dea8fc270bb47e4785fa",
+          "weight": 19,
+          "eventCount": 19
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/27-or-four-broad-rows-13.allocationSampledBytes.collapsed",
+          "sha256": "6cd873b38a8ed38094b8d50e04487df0e5a42e90f04cbd8f684cb330f75430b8",
+          "weight": 27000848,
+          "eventCount": 100
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/29-or-four-broad-rows-14.cpuSamples.collapsed",
+          "sha256": "c171797f3aafbe5cfd3124ec517ab43a91ce0cfb3eaa5e0aa4b136c58ee90a8c",
+          "weight": 24,
+          "eventCount": 24
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/29-or-four-broad-rows-14.allocationSampledBytes.collapsed",
+          "sha256": "9dcbb1918bbd87674ef1dee3b27480baf8dafaafdbe2ad43df605e481df22502",
+          "weight": 27262992,
+          "eventCount": 101
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/31-or-four-broad-rows-15.cpuSamples.collapsed",
+          "sha256": "943065d97198b2f08391652ad6a57ac61070fac6d2c8240b8ac088f738d0ebbb",
+          "weight": 24,
+          "eventCount": 24
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/31-or-four-broad-rows-15.allocationSampledBytes.collapsed",
+          "sha256": "d643469a1b26bac5beadc6871ee6718dbb4363d19af6978741f2cb8118af1a03",
+          "weight": 21495824,
+          "eventCount": 79
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/33-or-four-broad-rows-16.cpuSamples.collapsed",
+          "sha256": "e10885d42805ac9e226af701521bfc913fd8fcd1e27720a1988b8517a7f22513",
+          "weight": 21,
+          "eventCount": 21
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/33-or-four-broad-rows-16.allocationSampledBytes.collapsed",
+          "sha256": "42ca840669aef6d325b0c49d32b365dd8c1089ba1083503112984bf80e67e5fd",
+          "weight": 25427984,
+          "eventCount": 94
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/35-or-four-broad-rows-17.cpuSamples.collapsed",
+          "sha256": "0c5465aeeb473bf546a2655e6cb14c21b6ccf316b7a9fdb868eb68a0a94a7df1",
+          "weight": 20,
+          "eventCount": 20
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/35-or-four-broad-rows-17.allocationSampledBytes.collapsed",
+          "sha256": "2994ec272d896253fa86e8fd90d0daf7caa7729ed3a5497c77212d6c18fd54c5",
+          "weight": 28311568,
+          "eventCount": 105
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/37-or-four-broad-rows-18.cpuSamples.collapsed",
+          "sha256": "425288aa1f29420458874cd774c5add3d0659aa1dadd896b2351ec9a17358d4a",
+          "weight": 19,
+          "eventCount": 19
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/37-or-four-broad-rows-18.allocationSampledBytes.collapsed",
+          "sha256": "f0ae9184ed24eb8db4608b6d6453330823eeabbc21e4dd9b9ccd3d135b519c75",
+          "weight": 20709392,
+          "eventCount": 76
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/39-or-four-broad-rows-19.cpuSamples.collapsed",
+          "sha256": "044d38c6e8e635be0fb7bf3a26ce9e84dba54380ecaaea0d8e691b20abb23b73",
+          "weight": 17,
+          "eventCount": 17
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/39-or-four-broad-rows-19.allocationSampledBytes.collapsed",
+          "sha256": "ac56e1461344022b22509be90184eed01091eeabb02fb2ac161d964f96db786b",
+          "weight": 23592976,
+          "eventCount": 87
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/41-or-four-broad-rows-20.cpuSamples.collapsed",
+          "sha256": "39a56fccb33262b38b9cf61cf6ef661bae387e9fc510e8d4330822abe756f13d",
+          "weight": 21,
+          "eventCount": 21
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/41-or-four-broad-rows-20.allocationSampledBytes.collapsed",
+          "sha256": "6a2b2684a907ae668bcd5fbf8d16d322f90ede94f60a7d502dddf20159f27027",
+          "weight": 20971536,
+          "eventCount": 77
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/43-or-four-broad-rows-21.cpuSamples.collapsed",
+          "sha256": "2cd66f9f44d697121bec30626c103a7b8defbd4a809865700c2f6c3f960e7316",
+          "weight": 20,
+          "eventCount": 20
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/43-or-four-broad-rows-21.allocationSampledBytes.collapsed",
+          "sha256": "af5e266aee75acaaadff5656bfa2d65ae408f50ef49a359b269b725b37c09443",
+          "weight": 20971536,
+          "eventCount": 77
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/45-or-four-broad-rows-22.cpuSamples.collapsed",
+          "sha256": "d4cd0a875df2e5bf3c94c2f2f4126cfddc5796f6c77a9bd726de84c131550a45",
+          "weight": 20,
+          "eventCount": 20
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/45-or-four-broad-rows-22.allocationSampledBytes.collapsed",
+          "sha256": "8d35215582d0e9f4e2eeddededfcfbc0a34c4931d42a6ed00353871424878223",
+          "weight": 22806544,
+          "eventCount": 84
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/47-or-four-broad-rows-23.cpuSamples.collapsed",
+          "sha256": "8cab923e0c3b176930128247542d258ba39f6ed3f42c4ec2f7e651982655d834",
+          "weight": 25,
+          "eventCount": 25
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/47-or-four-broad-rows-23.allocationSampledBytes.collapsed",
+          "sha256": "00f71c27d9db9ac3a7b966acbf44d2e27503f381a38c5c8de8018b3735540402",
+          "weight": 27525136,
+          "eventCount": 102
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/49-or-four-broad-rows-24.cpuSamples.collapsed",
+          "sha256": "39e8b7d6acf223a89add51bc613bbe8e1681d1c55eab88474f1a8daa31a20d90",
+          "weight": 20,
+          "eventCount": 20
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/49-or-four-broad-rows-24.allocationSampledBytes.collapsed",
+          "sha256": "c7fe4d516124b34d7d5c90281f2b101f7668cb2e6557146120f7ad5124ce1297",
+          "weight": 27000832,
+          "eventCount": 103
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/51-or-four-broad-rows-25.cpuSamples.collapsed",
+          "sha256": "612f78f6b5c184746710148d4f2abe5c532c0333ad09bcf8d12dbaf6568307d4",
+          "weight": 21,
+          "eventCount": 21
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/51-or-four-broad-rows-25.allocationSampledBytes.collapsed",
+          "sha256": "51db38157f407590ca9500cf785d2baf97264f6528aba23a23231a40e8ec6ce4",
+          "weight": 30146576,
+          "eventCount": 112
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/53-or-four-broad-rows-26.cpuSamples.collapsed",
+          "sha256": "b5cd7c86fb10592660b87920661b5a79ce45a796d28e075d8fc8f3886d2eef19",
+          "weight": 20,
+          "eventCount": 20
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/53-or-four-broad-rows-26.allocationSampledBytes.collapsed",
+          "sha256": "9efa758a1dade2efe4c348fc41831515ff77bc43cea0e601a8e969c5c818e923",
+          "weight": 24641552,
+          "eventCount": 91
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/55-or-four-broad-rows-27.cpuSamples.collapsed",
+          "sha256": "b17db77951de79a1ab1305252610f1744560bd8c7586550d8ed29aece4d00fec",
+          "weight": 20,
+          "eventCount": 20
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/55-or-four-broad-rows-27.allocationSampledBytes.collapsed",
+          "sha256": "e418176282affdff1e102980d0a3b7bcea5896178aed6c470c626b4001b3c55d",
+          "weight": 27262992,
+          "eventCount": 101
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/57-or-four-broad-rows-28.cpuSamples.collapsed",
+          "sha256": "5eb154925179782085b7ac8be89eb8d379390858de0dca2dd41b86f0822fea26",
+          "weight": 19,
+          "eventCount": 19
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/57-or-four-broad-rows-28.allocationSampledBytes.collapsed",
+          "sha256": "f75f73b6605ddc0579a64d2482e430cc56ad60d789b526c8a4326699f5b955f5",
+          "weight": 27000832,
+          "eventCount": 103
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/59-or-four-broad-rows-29.cpuSamples.collapsed",
+          "sha256": "d0974e5d0e8e3c7d386b632da444e1248314d61fe3434cb21d96095c75fa379d",
+          "weight": 21,
+          "eventCount": 21
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/59-or-four-broad-rows-29.allocationSampledBytes.collapsed",
+          "sha256": "93681507e1a25c6bd576090de66fc890761c9d43aed33505ed3f38852c80f05c",
+          "weight": 27262992,
+          "eventCount": 101
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/61-or-four-broad-rows-30.cpuSamples.collapsed",
+          "sha256": "369cd73109c938436f2f6cb53086185ae96944bd09875e318730858ff8486636",
+          "weight": 18,
+          "eventCount": 18
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/61-or-four-broad-rows-30.allocationSampledBytes.collapsed",
+          "sha256": "de5a05559112a08111f3e65fc9522c82979c585629243729f0d47cb24d5ec73c",
+          "weight": 24903696,
+          "eventCount": 92
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/63-or-four-broad-rows-31.cpuSamples.collapsed",
+          "sha256": "a966b0381f51d8cf8444ac98804914dc3d1f0fb79324ce019fc37631aa214617",
+          "weight": 19,
+          "eventCount": 19
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/63-or-four-broad-rows-31.allocationSampledBytes.collapsed",
+          "sha256": "a892f6a6d97ce5c8cc090aee15862581205389662810342cae7d9deb0884cc30",
+          "weight": 27787280,
+          "eventCount": 103
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/65-or-four-broad-rows-32.cpuSamples.collapsed",
+          "sha256": "1948a72284a5b6a2b23975d5f1cc6926be7335b68782d6bdc7b0757fb6183de6",
+          "weight": 20,
+          "eventCount": 20
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/65-or-four-broad-rows-32.allocationSampledBytes.collapsed",
+          "sha256": "8cc01530c12f048ea67f3ef79bbc0aa45ad3b635314d09cfa3b62700f3a84620",
+          "weight": 24641552,
+          "eventCount": 91
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/67-or-four-broad-rows-33.cpuSamples.collapsed",
+          "sha256": "be7aaece1056511c14d87409a9ae814061916577eda5c1ecf1a9d7a5edb709e0",
+          "weight": 18,
+          "eventCount": 18
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/67-or-four-broad-rows-33.allocationSampledBytes.collapsed",
+          "sha256": "00f71c27d9db9ac3a7b966acbf44d2e27503f381a38c5c8de8018b3735540402",
+          "weight": 27525136,
+          "eventCount": 102
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/69-or-four-broad-rows-34.cpuSamples.collapsed",
+          "sha256": "0495b337084ea7a8309fc2b91b5d11cf32cc0ef23e3946765d375b11a291aac3",
+          "weight": 13,
+          "eventCount": 13
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/69-or-four-broad-rows-34.allocationSampledBytes.collapsed",
+          "sha256": "1ce6722c2ced661a2bca911bef94011c9b29bdf28316b61d6562568992f22457",
+          "weight": 24379408,
+          "eventCount": 90
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/71-or-four-broad-rows-35.cpuSamples.collapsed",
+          "sha256": "491bc033c1d288dd17f369a55128a1ccb7e2cb6982239fd62488d49026c41356",
+          "weight": 22,
+          "eventCount": 22
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/71-or-four-broad-rows-35.allocationSampledBytes.collapsed",
+          "sha256": "13d0af8ca2b7c23a7082f5406fecd70ae826e523ffd08fac05390a6cf105247c",
+          "weight": 24903696,
+          "eventCount": 92
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/73-or-four-broad-rows-36.cpuSamples.collapsed",
+          "sha256": "27a23d43c3422d4a4cc2557e89a02a75b983ecd6d71a5ac33789e86c51198f9b",
+          "weight": 18,
+          "eventCount": 18
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/73-or-four-broad-rows-36.allocationSampledBytes.collapsed",
+          "sha256": "d37f97b4303dad2fb4cbb60a40370bab17142f87b68084b5aa42fd94ee97a66a",
+          "weight": 23330832,
+          "eventCount": 86
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/75-or-four-broad-rows-37.cpuSamples.collapsed",
+          "sha256": "50418b5d7ae449e3f37f8f705d17777b1cfabcff51a5cb9f2cc1470545e9a05f",
+          "weight": 23,
+          "eventCount": 23
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/75-or-four-broad-rows-37.allocationSampledBytes.collapsed",
+          "sha256": "2738d0714ca96621e9f50f8b169a22b87e3c7f0d03e07330c841745ad9bd270d",
+          "weight": 27000848,
+          "eventCount": 100
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/77-or-four-broad-rows-38.cpuSamples.collapsed",
+          "sha256": "95ad0549bc2e6b24783adb8327ab1d2aeca8712ef7057414add50b6d7ed8a4c0",
+          "weight": 17,
+          "eventCount": 17
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/77-or-four-broad-rows-38.allocationSampledBytes.collapsed",
+          "sha256": "776dddb798a096c85b8c9167f755134c693f8caa74b5b24802a855e63d7dc157",
+          "weight": 28049424,
+          "eventCount": 104
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/79-or-four-broad-rows-39.cpuSamples.collapsed",
+          "sha256": "ab5966825b220c75970a4bd5064a011d131081372194c1b6b4daccdadbadb475",
+          "weight": 19,
+          "eventCount": 19
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/79-or-four-broad-rows-39.allocationSampledBytes.collapsed",
+          "sha256": "6f207f52fe24fce30758a59a43373b7e3335bda405168aa47501e3abccc181c1",
+          "weight": 25427984,
+          "eventCount": 94
+        }
+      ]
+    },
+    {
+      "revision": "base",
+      "projection": "distinct",
+      "counters": {
+        "cpuSamples.all": 13771,
+        "cpuSamples.background": 1517,
+        "cpuSamples.application": 12254,
+        "cpuSamples.candidateDiscovery": 250,
+        "cpuSamples.validator": 11216,
+        "cpuSamples.mappedLoad": 11296,
+        "cpuSamples.intersection.validator+mappedLoad": 11209,
+        "cpuSamples.rawProjectionIncludingWorkers": 498,
+        "cpuSamples.rawProjection": 326,
+        "cpuSamples.intersection.rawProjectionIncludingWorkers+rawProjection": 326,
+        "cpuSamples.findId": 50,
+        "cpuSamples.intersection.findId+rawProjectionIncludingWorkers": 50,
+        "cpuSamples.intersection.findId+rawProjection": 50,
+        "cpuSamples.missingStackEvents": 0,
+        "cpuSamples.truncatedStackEvents": 0,
+        "allocationSampledBytes.all": 49256372208,
+        "allocationSampledBytes.background": 5505024,
+        "allocationSampledBytes.application": 49250867184,
+        "allocationSampledBytes.validator": 48960411632,
+        "allocationSampledBytes.mappedLoad": 48994490352,
+        "allocationSampledBytes.intersection.validator+mappedLoad": 48960411632,
+        "allocationSampledBytes.rawProjectionIncludingWorkers": 160694272,
+        "allocationSampledBytes.rawProjection": 121110528,
+        "allocationSampledBytes.intersection.rawProjectionIncludingWorkers+rawProjection": 121110528,
+        "allocationSampledBytes.candidateDiscovery": 29884416,
+        "allocationSampledBytes.findId": 66060288,
+        "allocationSampledBytes.intersection.findId+rawProjectionIncludingWorkers": 66060288,
+        "allocationSampledBytes.intersection.findId+rawProjection": 66060288,
+        "allocationSampledBytes.missingStackEvents": 0,
+        "allocationSampledBytes.truncatedStackEvents": 0
+      },
+      "threadGroups": {
+        "cpuSamples": {
+          "otherBackground": 266,
+          "jit": 1236,
+          "gc": 15,
+          "application": 12254
+        },
+        "allocationSampledBytes": {
+          "otherBackground": 5505024,
+          "application": 49250867184
+        }
+      },
+      "threads": {
+        "cpuSamples": {
+          "JFR Recorder Thread [java=13,os=43011]": 2,
+          "Java: C1 CompilerThread0 [java=0,os=29443]": 174,
+          "Java: C2 CompilerThread0 [java=0,os=26883]": 1062,
+          "Java: G1 Conc#0 [java=0,os=13827]": 11,
+          "Java: GC Thread#0 [java=0,os=13059]": 1,
+          "Java: GC Thread#1 [java=0,os=41475]": 1,
+          "Java: GC Thread#2 [java=0,os=41219]": 1,
+          "Java: GC Thread#3 [java=0,os=40963]": 1,
+          "Java: JFR Thread Sampler [java=0,os=42499]": 124,
+          "Java: VM Thread [java=0,os=16643]": 1,
+          "broad-query-pressure-worker [java=25,os=36619]": 806,
+          "broad-query-resource-sampler [java=20,os=30471]": 132,
+          "graphite-callsite-segment-1 [java=26,os=39939]": 93,
+          "graphite-callsite-segment-2 [java=27,os=37635]": 83,
+          "graphite-cypher-scan-1 [java=31,os=40199]": 2864,
+          "graphite-cypher-scan-2 [java=32,os=39695]": 2821,
+          "graphite-cypher-scan-3 [java=33,os=38147]": 2787,
+          "graphite-cypher-scan-4 [java=34,os=38915]": 2800,
+          "JFR Periodic Tasks [java=14,os=42755]": 4,
+          "[tid=20739] [java=0,os=20739]": 1,
+          "process reaper [java=24,os=33043]": 1,
+          "[tid=34307] [java=0,os=34307]": 1
+        },
+        "allocationSampledBytes": {
+          "JFR Periodic Tasks [java=14,os=42755]": 1310720,
+          "broad-query-pressure-worker [java=25,os=36619]": 986972784,
+          "broad-query-resource-sampler [java=20,os=30471]": 3932160,
+          "graphite-callsite-segment-1 [java=26,os=39939]": 19136512,
+          "graphite-callsite-segment-2 [java=27,os=37635]": 20447232,
+          "graphite-cypher-scan-1 [java=31,os=40199]": 12163491232,
+          "graphite-cypher-scan-2 [java=32,os=39695]": 11928347840,
+          "graphite-cypher-scan-3 [java=33,os=38147]": 12026127712,
+          "graphite-cypher-scan-4 [java=34,os=38915]": 12106343872,
+          "process reaper [java=24,os=33043]": 262144
+        }
+      },
+      "workUnitsFrequency": {
+        "57697051": 40
+      },
+      "topMethodLeaves": {
+        "cpuSamples.candidateDiscovery": [
+          [
+            "java.util.HashMap.putVal(ILjava/lang/Object:Ljava/lang/Object:ZZ)Ljava/lang/Object:",
+            81
+          ],
+          [
+            "java.util.HashSet.<init>()V",
+            67
+          ],
+          [
+            "jshort_disjoint_arraycopy()L:",
+            22
+          ],
+          [
+            "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.extract(I[CII)I",
+            16
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.trigramPostingRange(I)Lkotlin/ranges/IntRange:",
+            12
+          ],
+          [
+            "java.nio.Bits.swap(J)J",
+            9
+          ],
+          [
+            "java.lang.CharacterDataLatin1.toLowerCase(I)I",
+            8
+          ],
+          [
+            "it.unimi.dsi.lang.MutableString.indexOf(Ljava/lang/CharSequence:III)I",
+            7
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraphKt.reusableContains(Lit/unimi/dsi/lang/MutableString:Lio/johnsonlee/graphite/graph/StringValueTransform:Ljava/lang/String:)Z",
+            3
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.exactMatchingStringIds(Lio/johnsonlee/graphite/graph/StringPropertyPredicate:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)[I",
+            2
+          ],
+          [
+            "java.lang.CharacterDataLatin1.getProperties(I)I",
+            2
+          ],
+          [
+            "it.unimi.dsi.lang.MutableString.toLowerCase()Lit/unimi/dsi/lang/MutableString:",
+            2
+          ]
+        ],
+        "cpuSamples.validator": [
+          [
+            "io.johnsonlee.graphite.webgraph.PersistentIndexViewValidator.updateLongs(JILkotlin/jvm/functions/Function1:)V",
+            3067
+          ],
+          [
+            "updateBytesCRC32()L:",
+            1626
+          ],
+          [
+            "itable stub()L:",
+            1267
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.PersistentIndexViewValidator.updateInts(Ljava/nio/IntBuffer:Lkotlin/jvm/functions/Function1:)V",
+            1089
+          ],
+          [
+            "java.lang.Long.valueOf(J)Ljava/lang/Long:",
+            574
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView$Companion$$Lambda$200.0x0000007001151528.invoke(Ljava/lang/Object:)Ljava/lang/Object:",
+            509
+          ],
+          [
+            "java.nio.HeapByteBuffer.putLong(J)Ljava/nio/ByteBuffer:",
+            409
+          ],
+          [
+            "java.nio.HeapByteBuffer.putInt(I)Ljava/nio/ByteBuffer:",
+            357
+          ],
+          [
+            "java.lang.Integer.valueOf(I)Ljava/lang/Integer:",
+            320
+          ],
+          [
+            "java.nio.Buffer.scope()Ljdk/internal/misc/ScopedMemoryAccess$Scope:",
+            271
+          ],
+          [
+            "java.nio.HeapByteBuffer.byteOffset(J)J",
+            187
+          ],
+          [
+            "libsystem_platform.dylib._platform_memmove()L:",
+            185
+          ]
+        ],
+        "cpuSamples.mappedLoad": [
+          [
+            "io.johnsonlee.graphite.webgraph.PersistentIndexViewValidator.updateLongs(JILkotlin/jvm/functions/Function1:)V",
+            3067
+          ],
+          [
+            "updateBytesCRC32()L:",
+            1626
+          ],
+          [
+            "itable stub()L:",
+            1267
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.PersistentIndexViewValidator.updateInts(Ljava/nio/IntBuffer:Lkotlin/jvm/functions/Function1:)V",
+            1089
+          ],
+          [
+            "java.lang.Long.valueOf(J)Ljava/lang/Long:",
+            574
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView$Companion$$Lambda$200.0x0000007001151528.invoke(Ljava/lang/Object:)Ljava/lang/Object:",
+            509
+          ],
+          [
+            "java.nio.HeapByteBuffer.putLong(J)Ljava/nio/ByteBuffer:",
+            409
+          ],
+          [
+            "java.nio.HeapByteBuffer.putInt(I)Ljava/nio/ByteBuffer:",
+            357
+          ],
+          [
+            "java.lang.Integer.valueOf(I)Ljava/lang/Integer:",
+            320
+          ],
+          [
+            "java.nio.Buffer.scope()Ljdk/internal/misc/ScopedMemoryAccess$Scope:",
+            276
+          ],
+          [
+            "java.nio.HeapByteBuffer.byteOffset(J)J",
+            187
+          ],
+          [
+            "libsystem_platform.dylib._platform_memmove()L:",
+            186
+          ]
+        ],
+        "cpuSamples.rawProjectionIncludingWorkers": [
+          [
+            "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef:Ljava/util/concurrent/atomic/AtomicBoolean:Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/HashSet:Ljava/util/List:Ljava/util/HashSet:Ljava/util/ArrayList:I[ILjava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:I)Z",
+            187
+          ],
+          [
+            "it.unimi.dsi.fastutil.ints.IntOpenHashSet.contains(I)Z",
+            90
+          ],
+          [
+            "kotlin.ranges.IntProgressionIterator.nextInt()I",
+            33
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection(Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:Ljava/util/List:Lio/johnsonlee/graphite/webgraph/CallSiteStringIdMembership:)Ljava/util/List:",
+            20
+          ],
+          [
+            "java.util.ArrayList.elementData(I)Ljava/lang/Object:",
+            19
+          ],
+          [
+            "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.getArray(I)[C",
+            15
+          ],
+          [
+            "java.lang.StringUTF16.compress([CII)[B",
+            12
+          ],
+          [
+            "it.unimi.dsi.fastutil.HashCommon.mix(I)I",
+            9
+          ],
+          [
+            "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.extract(I[CII)I",
+            9
+          ],
+          [
+            "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.length(I)I",
+            7
+          ],
+          [
+            "jshort_disjoint_arraycopy()L:",
+            7
+          ],
+          [
+            "it.unimi.dsi.fastutil.BigArrays.copyFromBig([[CJ[CII)V",
+            7
+          ]
+        ],
+        "cpuSamples.rawProjection": [
+          [
+            "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef:Ljava/util/concurrent/atomic/AtomicBoolean:Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/HashSet:Ljava/util/List:Ljava/util/HashSet:Ljava/util/ArrayList:I[ILjava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:I)Z",
+            117
+          ],
+          [
+            "it.unimi.dsi.fastutil.ints.IntOpenHashSet.contains(I)Z",
+            53
+          ],
+          [
+            "kotlin.ranges.IntProgressionIterator.nextInt()I",
+            24
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection(Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:Ljava/util/List:Lio/johnsonlee/graphite/webgraph/CallSiteStringIdMembership:)Ljava/util/List:",
+            20
+          ],
+          [
+            "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.getArray(I)[C",
+            14
+          ],
+          [
+            "java.util.ArrayList.elementData(I)Ljava/lang/Object:",
+            12
+          ],
+          [
+            "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.extract(I[CII)I",
+            7
+          ],
+          [
+            "jshort_disjoint_arraycopy()L:",
+            7
+          ],
+          [
+            "it.unimi.dsi.fastutil.HashCommon.mix(I)I",
+            6
+          ],
+          [
+            "java.lang.StringUTF16.compress([CII)[B",
+            6
+          ],
+          [
+            "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.length(I)I",
+            4
+          ],
+          [
+            "jdk.internal.misc.Unsafe.convEndian(ZI)I",
+            4
+          ]
+        ],
+        "cpuSamples.findId": [
+          [
+            "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.getArray(I)[C",
+            11
+          ],
+          [
+            "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.extract(I[CII)I",
+            7
+          ],
+          [
+            "java.lang.StringUTF16.compress([CII)[B",
+            6
+          ],
+          [
+            "jshort_disjoint_arraycopy()L:",
+            6
+          ],
+          [
+            "it.unimi.dsi.fastutil.BigArrays.copyFromBig([[CJ[CII)V",
+            4
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.StringTable.findId$webgraph(Ljava/lang/String:)I",
+            3
+          ],
+          [
+            "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.length(I)I",
+            3
+          ],
+          [
+            "it.unimi.dsi.fastutil.BigArrays.get([[CJ)C",
+            3
+          ],
+          [
+            "java.lang.String.compareTo(Ljava/lang/String:)I",
+            2
+          ],
+          [
+            "it.unimi.dsi.fastutil.BigArrays.displacement(J)I",
+            1
+          ],
+          [
+            "zero_blocks()L:",
+            1
+          ],
+          [
+            "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.count(I)I",
+            1
+          ]
+        ],
+        "allocationSampledBytes.validator": [
+          [
+            "java.lang.Long.valueOf(J)Ljava/lang/Long:",
+            31511543808
+          ],
+          [
+            "java.lang.Integer.valueOf(I)Ljava/lang/Integer:",
+            14898954240
+          ],
+          [
+            "java.nio.HeapByteBuffer.<init>(IILjdk/internal/access/foreign/MemorySegmentProxy:)V",
+            2549127152
+          ],
+          [
+            "java.nio.DirectByteBufferR.asLongBuffer()Ljava/nio/LongBuffer:",
+            524288
+          ],
+          [
+            "java.nio.DirectByteBufferR.slice()Ljava/nio/MappedByteBuffer:",
+            262144
+          ]
+        ],
+        "allocationSampledBytes.mappedLoad": [
+          [
+            "java.lang.Long.valueOf(J)Ljava/lang/Long:",
+            31511543808
+          ],
+          [
+            "java.lang.Integer.valueOf(I)Ljava/lang/Integer:",
+            14898954240
+          ],
+          [
+            "java.nio.HeapByteBuffer.<init>(IILjdk/internal/access/foreign/MemorySegmentProxy:)V",
+            2549127152
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.BoundedPostingRangeValidationCache.<init>(Lio/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexMemoryBudget$Reservation:)V",
+            23068672
+          ],
+          [
+            "java.nio.DirectByteBufferR.duplicate()Ljava/nio/MappedByteBuffer:",
+            2883584
+          ],
+          [
+            "java.nio.DirectByteBufferR.slice()Ljava/nio/MappedByteBuffer:",
+            1572864
+          ],
+          [
+            "java.nio.HeapIntBuffer.asReadOnlyBuffer()Ljava/nio/IntBuffer:",
+            1310720
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView$Companion.validatePersistentIndex(Ljava/nio/ByteBuffer:[Ljava/nio/IntBuffer:[Ljava/nio/IntBuffer:[Ljava/nio/IntBuffer:JJ[IIIII[BLio/johnsonlee/graphite/graph/GraphWorkConsumer:)Z",
+            1048576
+          ],
+          [
+            "java.nio.DirectIntBufferRS.duplicate()Ljava/nio/IntBuffer:",
+            1048576
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView$Companion.load(Ljava/nio/file/Path:II[BLio/johnsonlee/graphite/webgraph/StringTable:ILkotlin/jvm/functions/Function1:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)Lio/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexView:",
+            786432
+          ],
+          [
+            "java.nio.HeapIntBuffer.<init>(IILjdk/internal/access/foreign/MemorySegmentProxy:)V",
+            786432
+          ],
+          [
+            "jdk.internal.misc.Unsafe.allocateInstance(Ljava/lang/Class:)Ljava/lang/Object:",
+            786432
+          ]
+        ],
+        "allocationSampledBytes.rawProjectionIncludingWorkers": [
+          [
+            "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.getArray(I)[C",
+            53477376
+          ],
+          [
+            "java.lang.StringUTF16.compress([CII)[B",
+            39583744
+          ],
+          [
+            "java.util.ArrayList.<init>(I)V",
+            25952256
+          ],
+          [
+            "kotlin.collections.CollectionsKt__CollectionsKt.getIndices(Ljava/util/Collection:)Lkotlin/ranges/IntRange:",
+            12582912
+          ],
+          [
+            "it.unimi.dsi.lang.MutableString.toString()Ljava/lang/String:",
+            7340032
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:ILio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:IIILjava/util/concurrent/atomic/AtomicBoolean:Ljava/util/HashSet:Ljava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:)Lio/johnsonlee/graphite/webgraph/ParallelCallSiteProjectionResult:",
+            5505024
+          ],
+          [
+            "kotlin.ranges.IntProgression.iterator()Lkotlin/collections/IntIterator:",
+            3407872
+          ],
+          [
+            "java.lang.Long.valueOf(J)Ljava/lang/Long:",
+            2883584
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef:Ljava/util/concurrent/atomic/AtomicBoolean:Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/HashSet:Ljava/util/List:Ljava/util/HashSet:Ljava/util/ArrayList:I[ILjava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:I)Z",
+            2621440
+          ],
+          [
+            "java.util.HashMap.newNode(ILjava/lang/Object:Ljava/lang/Object:Ljava/util/HashMap$Node:)Ljava/util/HashMap$Node:",
+            2621440
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection(Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:Ljava/util/List:Lio/johnsonlee/graphite/webgraph/CallSiteStringIdMembership:)Ljava/util/List:",
+            2097152
+          ],
+          [
+            "java.util.HashMap.resize()[Ljava/util/HashMap$Node:",
+            1310720
+          ]
+        ],
+        "allocationSampledBytes.rawProjection": [
+          [
+            "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.getArray(I)[C",
+            39583744
+          ],
+          [
+            "java.lang.StringUTF16.compress([CII)[B",
+            29884416
+          ],
+          [
+            "java.util.ArrayList.<init>(I)V",
+            24641536
+          ],
+          [
+            "kotlin.collections.CollectionsKt__CollectionsKt.getIndices(Ljava/util/Collection:)Lkotlin/ranges/IntRange:",
+            12582912
+          ],
+          [
+            "kotlin.ranges.IntProgression.iterator()Lkotlin/collections/IntIterator:",
+            2883584
+          ],
+          [
+            "java.lang.Long.valueOf(J)Ljava/lang/Long:",
+            2883584
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection(Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:Ljava/util/List:Lio/johnsonlee/graphite/webgraph/CallSiteStringIdMembership:)Ljava/util/List:",
+            2097152
+          ],
+          [
+            "java.util.HashMap.newNode(ILjava/lang/Object:Ljava/lang/Object:Ljava/util/HashMap$Node:)Ljava/util/HashMap$Node:",
+            2097152
+          ],
+          [
+            "it.unimi.dsi.lang.MutableString.toString()Ljava/lang/String:",
+            1572864
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef:Ljava/util/concurrent/atomic/AtomicBoolean:Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/HashSet:Ljava/util/List:Ljava/util/HashSet:Ljava/util/ArrayList:I[ILjava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:I)Z",
+            786432
+          ],
+          [
+            "java.util.HashMap.resize()[Ljava/util/HashMap$Node:",
+            786432
+          ],
+          [
+            "java.lang.invoke.MethodHandles$Lookup$ClassFile.newInstanceNoCheck(Ljava/lang/String:[B)Ljava/lang/invoke/MethodHandles$Lookup$ClassFile:",
+            262144
+          ]
+        ],
+        "allocationSampledBytes.candidateDiscovery": [
+          [
+            "java.util.HashMap.newNode(ILjava/lang/Object:Ljava/lang/Object:Ljava/util/HashMap$Node:)Ljava/util/HashMap$Node:",
+            6291456
+          ],
+          [
+            "kotlin.ranges.RangesKt___RangesKt.until(II)Lkotlin/ranges/IntRange:",
+            4980736
+          ],
+          [
+            "it.unimi.dsi.lang.MutableString.expand(I)V",
+            4718592
+          ],
+          [
+            "java.util.HashMap.resize()[Ljava/util/HashMap$Node:",
+            3670016
+          ],
+          [
+            "java.lang.Integer.valueOf(I)Ljava/lang/Integer:",
+            3145728
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.exactMatchingStringIds(Lio/johnsonlee/graphite/graph/StringPropertyPredicate:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)[I",
+            2359296
+          ],
+          [
+            "java.util.Arrays.copyOf([Ljava/lang/Object:I)[Ljava/lang/Object:",
+            2097152
+          ],
+          [
+            "java.util.Arrays.copyOf([II)[I",
+            786432
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.exactMatchingStringIds(Ljava/util/List:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)Ljava/util/List:",
+            786432
+          ],
+          [
+            "java.util.HashSet.<init>()V",
+            524288
+          ],
+          [
+            "java.util.Arrays.copyOf([Ljava/lang/Object:ILjava/lang/Class:)[Ljava/lang/Object:",
+            262144
+          ],
+          [
+            "java.util.ArrayList.grow(I)[Ljava/lang/Object:",
+            262144
+          ]
+        ],
+        "allocationSampledBytes.findId": [
+          [
+            "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.getArray(I)[C",
+            36962304
+          ],
+          [
+            "java.lang.StringUTF16.compress([CII)[B",
+            28049408
+          ],
+          [
+            "it.unimi.dsi.lang.MutableString.toString()Ljava/lang/String:",
+            786432
+          ],
+          [
+            "it.unimi.dsi.lang.MutableString.wrap([C)Lit/unimi/dsi/lang/MutableString:",
+            262144
+          ]
+        ]
+      },
+      "collapsedChecks": [
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/02-or-four-broad-distinct-00.cpuSamples.collapsed",
+          "sha256": "f2ffe3fe1ce01ab894107550b88755514175df467869061ad913aab6ec32617d",
+          "weight": 943,
+          "eventCount": 943
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/02-or-four-broad-distinct-00.allocationSampledBytes.collapsed",
+          "sha256": "a6f908bf8443f02a8c955c19c0b2423043c3ebfd506afe0a8c804309b4dee1a8",
+          "weight": 1203766256,
+          "eventCount": 4403
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/04-or-four-broad-distinct-01.cpuSamples.collapsed",
+          "sha256": "db8cdcc14a21ad23e27452ae155af950068dfabaa2fbb6d5fbfcaac0a5cbd63d",
+          "weight": 423,
+          "eventCount": 423
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/04-or-four-broad-distinct-01.allocationSampledBytes.collapsed",
+          "sha256": "0eef685d923089e4095ada499a768edbc6a4d52815a4ba6a48ceb73c2bce6ccb",
+          "weight": 1233388512,
+          "eventCount": 4519
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/06-or-four-broad-distinct-02.cpuSamples.collapsed",
+          "sha256": "905e72a112e468765478f7e394e8d14d6444d26980fc620607fbddbc0b458044",
+          "weight": 372,
+          "eventCount": 372
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/06-or-four-broad-distinct-02.allocationSampledBytes.collapsed",
+          "sha256": "b0a9832e1e33092246e2c320787941049d0f8a16e4a47226c6907afb87330b95",
+          "weight": 1229980640,
+          "eventCount": 4506
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/08-or-four-broad-distinct-03.cpuSamples.collapsed",
+          "sha256": "3a88887ff7e0dd0008f168374989b2466597d64a5ccd87b1f4325333667e4ad4",
+          "weight": 342,
+          "eventCount": 342
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/08-or-four-broad-distinct-03.allocationSampledBytes.collapsed",
+          "sha256": "5aeea9594e1eeba76ce400f37b84af8a2e097c73cbe975fb72f4fc313ed54b70",
+          "weight": 1227097056,
+          "eventCount": 4495
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/10-or-four-broad-distinct-04.cpuSamples.collapsed",
+          "sha256": "7ece440e453c8244d46970d197298906ca18fcb72d90e64b4a5d4e90639ffbc5",
+          "weight": 305,
+          "eventCount": 305
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/10-or-four-broad-distinct-04.allocationSampledBytes.collapsed",
+          "sha256": "84b68ab71adab7a8451f027e1a4ddaef13e04d8660e79b15831447f582cd2620",
+          "weight": 1233650688,
+          "eventCount": 4514
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/12-or-four-broad-distinct-05.cpuSamples.collapsed",
+          "sha256": "d902c6f8474d0ca23d0ab4309c689e0f1f6bebed1d75f14fbe5f7a4cd4551caf",
+          "weight": 400,
+          "eventCount": 400
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/12-or-four-broad-distinct-05.allocationSampledBytes.collapsed",
+          "sha256": "d419b0b343f8dabf0c19ff518999469cd1933243d588183ec90513a6959191ca",
+          "weight": 1239942096,
+          "eventCount": 4547
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/14-or-four-broad-distinct-06.cpuSamples.collapsed",
+          "sha256": "938eb634f8e0bc7ba00ee64824c7f89349bd500d1152ad114e75815b0d3f01f7",
+          "weight": 385,
+          "eventCount": 385
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/14-or-four-broad-distinct-06.allocationSampledBytes.collapsed",
+          "sha256": "43b1c9254949ba963664a0d7200f72233970011f883c2ab36c9117ffd665f207",
+          "weight": 1227097056,
+          "eventCount": 4495
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/16-or-four-broad-distinct-07.cpuSamples.collapsed",
+          "sha256": "73ef523f371e5b587dcf7105d761813c8415482cb6ea2cdfef83b55e4d6339e2",
+          "weight": 331,
+          "eventCount": 331
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/16-or-four-broad-distinct-07.allocationSampledBytes.collapsed",
+          "sha256": "c1fd4fa3500a773b00039356260e194ce6f67b4058fb34ef597f9afb0512e39f",
+          "weight": 1257505760,
+          "eventCount": 4611
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/18-or-four-broad-distinct-08.cpuSamples.collapsed",
+          "sha256": "b01212f05ec281e432460d96a00d94dc23636bd3ebc40a7226b9411bc40cc713",
+          "weight": 441,
+          "eventCount": 441
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/18-or-four-broad-distinct-08.allocationSampledBytes.collapsed",
+          "sha256": "05cac15652ebb2114522185dc1da2713c93927f7bc6d95ad394b2c80c428297b",
+          "weight": 1249641440,
+          "eventCount": 4581
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/20-or-four-broad-distinct-09.cpuSamples.collapsed",
+          "sha256": "730399f8aa2edff8909e632a1db8b59e7468414ba7e73db58651c5ff4ba04c8f",
+          "weight": 310,
+          "eventCount": 310
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/20-or-four-broad-distinct-09.allocationSampledBytes.collapsed",
+          "sha256": "6f31b80fcca18c945b47215f6bcd234fa45db7be5d442e66f4da234c51428227",
+          "weight": 1283195824,
+          "eventCount": 4718
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/22-or-four-broad-distinct-10.cpuSamples.collapsed",
+          "sha256": "7cd8a7c419248b857c46499a24bb9be22840cab1b0a6548dee46872868b01314",
+          "weight": 318,
+          "eventCount": 318
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/22-or-four-broad-distinct-10.allocationSampledBytes.collapsed",
+          "sha256": "5446ce276a2e1d284aac934baab54cf85551daf38bfd4ceadc277d91e072fe60",
+          "weight": 1230766992,
+          "eventCount": 4524
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/24-or-four-broad-distinct-11.cpuSamples.collapsed",
+          "sha256": "aedce986f2a720d266b7dca3e49f26e7ace7cf035c0ab057f7bfef85a18045aa",
+          "weight": 337,
+          "eventCount": 337
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/24-or-four-broad-distinct-11.allocationSampledBytes.collapsed",
+          "sha256": "873c886378c42a3bb8db9cb01e63d3d1e13f8ccb6cbe1c63d4ba488872b27735",
+          "weight": 1217921968,
+          "eventCount": 4469
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/26-or-four-broad-distinct-12.cpuSamples.collapsed",
+          "sha256": "9da355867bf1edc35cec17c929a477bbfdd60c83125cbd951fcd2d254e77ab7a",
+          "weight": 292,
+          "eventCount": 292
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/26-or-four-broad-distinct-12.allocationSampledBytes.collapsed",
+          "sha256": "23f5462b1a9663df015f3018657e977f62c0b2f2618d543f8928a318b18ef629",
+          "weight": 1229718464,
+          "eventCount": 4511
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/28-or-four-broad-distinct-13.cpuSamples.collapsed",
+          "sha256": "6a3bc8bf0fa48b97433f9f30a8cb12a25246634db95a36164aafe688441bf77b",
+          "weight": 407,
+          "eventCount": 407
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/28-or-four-broad-distinct-13.allocationSampledBytes.collapsed",
+          "sha256": "874abcd9f952c844cfa498b4db30d5a6d4678395e2a0f4030998b5b2b7d787e1",
+          "weight": 1224737728,
+          "eventCount": 4492
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/30-or-four-broad-distinct-14.cpuSamples.collapsed",
+          "sha256": "16353c5398047adad41feb7aae81948536c4c4a0efe426cbd7a6d733ad9b5492",
+          "weight": 310,
+          "eventCount": 310
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/30-or-four-broad-distinct-14.allocationSampledBytes.collapsed",
+          "sha256": "8ff0332f048d96c11f2d0d5b1ba2598c0056a6ad8f99e2299803f3187218e647",
+          "weight": 1226048400,
+          "eventCount": 4506
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/32-or-four-broad-distinct-15.cpuSamples.collapsed",
+          "sha256": "3d4b1a012036a1c4efdceefe4b8251099a3021b65e097c8314230e1ef4392582",
+          "weight": 347,
+          "eventCount": 347
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/32-or-four-broad-distinct-15.allocationSampledBytes.collapsed",
+          "sha256": "22536a3fcfe2f8d80c32f4e44f2792e0d1ff13cbd8581f78d72aeffee046460a",
+          "weight": 1250952128,
+          "eventCount": 4592
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/34-or-four-broad-distinct-16.cpuSamples.collapsed",
+          "sha256": "4de0b04cb5521f95d7fdae58b4729908a5aa4536dfbc3cea7443c6e239b7887d",
+          "weight": 351,
+          "eventCount": 351
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/34-or-four-broad-distinct-16.allocationSampledBytes.collapsed",
+          "sha256": "45148d9fd28650f6eb1bc9e1402f75e73dac13ac70c67afd6d6ee873a31c00ba",
+          "weight": 1246757856,
+          "eventCount": 4570
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/36-or-four-broad-distinct-17.cpuSamples.collapsed",
+          "sha256": "77b15bbc426825c8c09d0aabf1302478333cef4f642f090c4c1add4b69187f15",
+          "weight": 315,
+          "eventCount": 315
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/36-or-four-broad-distinct-17.allocationSampledBytes.collapsed",
+          "sha256": "1328f2691e7641fdb93f28be407ba549b8886c101356ceb75a0a3ec0660f8cf5",
+          "weight": 1229456352,
+          "eventCount": 4504
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/38-or-four-broad-distinct-18.cpuSamples.collapsed",
+          "sha256": "6b9e8404153132def49d952b1b9c53be8204ca5074b47b244f9f63eefef0499e",
+          "weight": 297,
+          "eventCount": 297
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/38-or-four-broad-distinct-18.allocationSampledBytes.collapsed",
+          "sha256": "0059c02605884846b65f0124d3925da340dbd3c78d4c383ddf1eff9a2c218885",
+          "weight": 1229718480,
+          "eventCount": 4508
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/40-or-four-broad-distinct-19.cpuSamples.collapsed",
+          "sha256": "93d46059183bdcd4505dade53cfdc9a881618b9d3a8c37862e6a79a0cd3d7173",
+          "weight": 316,
+          "eventCount": 316
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/40-or-four-broad-distinct-19.allocationSampledBytes.collapsed",
+          "sha256": "8a79e305051e78289ce4aa655ffb4de15e6d5e346dd063f28b3521a49f532840",
+          "weight": 1219756992,
+          "eventCount": 4473
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/42-or-four-broad-distinct-20.cpuSamples.collapsed",
+          "sha256": "0ba6deee643e68308a4103a4aa8d48aabde5687d87a59cd35cea6baa4c78fab0",
+          "weight": 312,
+          "eventCount": 312
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/42-or-four-broad-distinct-20.allocationSampledBytes.collapsed",
+          "sha256": "51d783056f5ee7adc5e9f1c87dcfb6850eabe28023d67a64106527aeec5a0b60",
+          "weight": 1223164896,
+          "eventCount": 4480
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/44-or-four-broad-distinct-21.cpuSamples.collapsed",
+          "sha256": "84115d7dc90bfe96b4d0350064788b1d7428c2e81deda7d03ad8cd4d18b3ba13",
+          "weight": 327,
+          "eventCount": 327
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/44-or-four-broad-distinct-21.allocationSampledBytes.collapsed",
+          "sha256": "9b730c46d62c527c45965fa777b1388d027ce9f717d194fbb571cc8e553b4c6c",
+          "weight": 1237582800,
+          "eventCount": 4538
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/46-or-four-broad-distinct-22.cpuSamples.collapsed",
+          "sha256": "c7236353898d3315d1ad2a984a5106ba183a176e6ba8544e587d77256cadbb3b",
+          "weight": 312,
+          "eventCount": 312
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/46-or-four-broad-distinct-22.allocationSampledBytes.collapsed",
+          "sha256": "9c2168ca9e74bb1d57973f13781f0d9fe0a47483565392ee5d5a8302a4f076e8",
+          "weight": 1210581936,
+          "eventCount": 4441
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/48-or-four-broad-distinct-23.cpuSamples.collapsed",
+          "sha256": "cd8e62d39cdf8ce48063c3dc87df975f2f1960ba4af9b4bf5cf9cf85edf8a6ff",
+          "weight": 313,
+          "eventCount": 313
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/48-or-four-broad-distinct-23.allocationSampledBytes.collapsed",
+          "sha256": "a622d379825581552cc41c0a336a18e80b6e91a8dbaf0aa4adc788988492e234",
+          "weight": 1240990704,
+          "eventCount": 4545
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/50-or-four-broad-distinct-24.cpuSamples.collapsed",
+          "sha256": "15b3462290f9a14b46d7a4f60d3693d156ac7132c1a421ca1ef4e40e44ad15df",
+          "weight": 321,
+          "eventCount": 321
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/50-or-four-broad-distinct-24.allocationSampledBytes.collapsed",
+          "sha256": "1de00b8ed39340d185addc8dcf8a8eb21593aae48cd83597edab913d3442152d",
+          "weight": 1202717648,
+          "eventCount": 4405
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/52-or-four-broad-distinct-25.cpuSamples.collapsed",
+          "sha256": "320a7816f001f6467fb8bc4eb375ea29176ca3dc551d8a879d3ebcbdef3c4b5c",
+          "weight": 324,
+          "eventCount": 324
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/52-or-four-broad-distinct-25.allocationSampledBytes.collapsed",
+          "sha256": "48383bf9b516f35b6c09c666d2cc29c29e985d17fb4fa6c0a6a76ecce04fd1c7",
+          "weight": 1223427024,
+          "eventCount": 4484
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/54-or-four-broad-distinct-26.cpuSamples.collapsed",
+          "sha256": "1c0f0d1dbeafcf4a53ef6a0af787d17c363a3546bb1f1743f40a1a14e8663374",
+          "weight": 320,
+          "eventCount": 320
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/54-or-four-broad-distinct-26.allocationSampledBytes.collapsed",
+          "sha256": "6fe0215386e5f849bf57096446ade553fa25a0ea18d40c5e32d30806ee084da7",
+          "weight": 1250690000,
+          "eventCount": 4588
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/56-or-four-broad-distinct-27.cpuSamples.collapsed",
+          "sha256": "63f8771b6ceb7ec13ae8385a6c37fb855bf95cdd332a094cbfdca30ad3bb5410",
+          "weight": 327,
+          "eventCount": 327
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/56-or-four-broad-distinct-27.allocationSampledBytes.collapsed",
+          "sha256": "d1c686a45e5371ed50269202c5ea57ce5484fc98ff0950e6e9ae154f5d976822",
+          "weight": 1204290544,
+          "eventCount": 4405
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/58-or-four-broad-distinct-28.cpuSamples.collapsed",
+          "sha256": "b4d2d00b74e6889ea53bb54ea589f5a24fbc2c1f9c5aaa55a4e03ffde36ba7a7",
+          "weight": 318,
+          "eventCount": 318
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/58-or-four-broad-distinct-28.allocationSampledBytes.collapsed",
+          "sha256": "db3fc9ab59daa95909b9817761d0fbc5b2f208bfa1f21d850dfeb9cf8e313347",
+          "weight": 1203241936,
+          "eventCount": 4407
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/60-or-four-broad-distinct-29.cpuSamples.collapsed",
+          "sha256": "5030a4759cedf70fe5898dd5cd9d1ed62f3199c44a0f4435fb960344956355de",
+          "weight": 313,
+          "eventCount": 313
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/60-or-four-broad-distinct-29.allocationSampledBytes.collapsed",
+          "sha256": "31009aed96051bfe68391f5f0dc510381ad2a424fb765f2cbc7601e85c29b568",
+          "weight": 1201669104,
+          "eventCount": 4395
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/62-or-four-broad-distinct-30.cpuSamples.collapsed",
+          "sha256": "23060eed342b7c319532b06f95cef36d7ac4dd3165a1b804d14bcf22ac25dead",
+          "weight": 316,
+          "eventCount": 316
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/62-or-four-broad-distinct-30.allocationSampledBytes.collapsed",
+          "sha256": "1a613ffc57f4d39ebb8613d8adbe533dd48345440381d105271da2490dcf7171",
+          "weight": 1237844960,
+          "eventCount": 4536
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/64-or-four-broad-distinct-31.cpuSamples.collapsed",
+          "sha256": "ebe11f73c27bf9aa2973bed180da2e749f700190257708c94618fe2d763450c6",
+          "weight": 307,
+          "eventCount": 307
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/64-or-four-broad-distinct-31.allocationSampledBytes.collapsed",
+          "sha256": "99db0fa6aa48a59639c0e9dccb1d45371e77e60b4778faeab05382daf50ef88e",
+          "weight": 1216349104,
+          "eventCount": 4463
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/66-or-four-broad-distinct-32.cpuSamples.collapsed",
+          "sha256": "3362c9b19f28ffc5c7e4683b40a764e40b3aed3222dc5848a564468a79098cc3",
+          "weight": 310,
+          "eventCount": 310
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/66-or-four-broad-distinct-32.allocationSampledBytes.collapsed",
+          "sha256": "5f79996e2a3543755aa1a2332f29e09729b8790de6d1c72571caa49c04786b0b",
+          "weight": 1230766992,
+          "eventCount": 4524
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/68-or-four-broad-distinct-33.cpuSamples.collapsed",
+          "sha256": "67741e51f402ffd1b187e76ac280d7b352d08caa56ddcd530f0e4faa93c77744",
+          "weight": 313,
+          "eventCount": 313
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/68-or-four-broad-distinct-33.allocationSampledBytes.collapsed",
+          "sha256": "35d04d10920a43ddc1c6626c79ff018ef82461af57e0df3c63e227d81ecda16e",
+          "weight": 1216086944,
+          "eventCount": 4465
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/70-or-four-broad-distinct-34.cpuSamples.collapsed",
+          "sha256": "584c6c81c0a2ff68cdd4a62a20c615b45504811c4ceaef78b86966a59ad4cc48",
+          "weight": 371,
+          "eventCount": 371
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/70-or-four-broad-distinct-34.allocationSampledBytes.collapsed",
+          "sha256": "6fa0b86761912c854bf75b535479af9b193949ff8afc9bb7e4c5b9b931757574",
+          "weight": 1268777952,
+          "eventCount": 4654
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/72-or-four-broad-distinct-35.cpuSamples.collapsed",
+          "sha256": "24d476f025e6d0f5d151b3b2f4edca4576704c19bebd1ccd6817c0d01df303df",
+          "weight": 285,
+          "eventCount": 285
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/72-or-four-broad-distinct-35.allocationSampledBytes.collapsed",
+          "sha256": "7ae466acbac63f9826a9bcb7e7e4554e6b82346fc9bc6bd5085b42ba56a8d3ac",
+          "weight": 1233650576,
+          "eventCount": 4535
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/74-or-four-broad-distinct-36.cpuSamples.collapsed",
+          "sha256": "13c99910854191e3a78f8622b0fdc72a3ae6d4da70bdbd7b317ffebd96b11f72",
+          "weight": 276,
+          "eventCount": 276
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/74-or-four-broad-distinct-36.allocationSampledBytes.collapsed",
+          "sha256": "6867e3eda83aea403bbffc3d7f41b1479367ca7e1cd1a3da8bee959318818ffd",
+          "weight": 1250427904,
+          "eventCount": 4578
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/76-or-four-broad-distinct-37.cpuSamples.collapsed",
+          "sha256": "f30ecaedb4b658e1412323aa3fe5010c9eae7f661b67b926dfd392a0d9bf60da",
+          "weight": 292,
+          "eventCount": 292
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/76-or-four-broad-distinct-37.allocationSampledBytes.collapsed",
+          "sha256": "d1172ecd0cf66dfcc213f07522495b31ee79720c9e2f7a1d8239bce922c34e13",
+          "weight": 1236272064,
+          "eventCount": 4536
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/78-or-four-broad-distinct-38.cpuSamples.collapsed",
+          "sha256": "1b4ecb51125486724aee81e8573d67226fd3dfd52378a0314367d064a87da45c",
+          "weight": 259,
+          "eventCount": 259
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/78-or-four-broad-distinct-38.allocationSampledBytes.collapsed",
+          "sha256": "bfd88d10866120e63c2b88b8603a85ddaac24aa731afe3a73a867a11a87d23c4",
+          "weight": 1228145616,
+          "eventCount": 4502
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/80-or-four-broad-distinct-39.cpuSamples.collapsed",
+          "sha256": "359256ce52d27c33644318f7db5730786a595a3033730428937006966d66920f",
+          "weight": 313,
+          "eventCount": 313
+        },
+        {
+          "path": "cold-regression-profile/base-analysis/collapsed/80-or-four-broad-distinct-39.allocationSampledBytes.collapsed",
+          "sha256": "2871fb1af942febe776d2c5c0db34acb6c2039586a4506c79e27f30dcee0bba5",
+          "weight": 1248592816,
+          "eventCount": 4586
+        }
+      ]
+    },
+    {
+      "revision": "candidate",
+      "projection": "rows",
+      "counters": {
+        "cpuSamples.all": 1290,
+        "cpuSamples.background": 266,
+        "cpuSamples.application": 1024,
+        "cpuSamples.candidateDiscovery": 14,
+        "cpuSamples.validator": 476,
+        "cpuSamples.mappedLoad": 483,
+        "cpuSamples.intersection.validator+mappedLoad": 476,
+        "cpuSamples.missingStackEvents": 0,
+        "cpuSamples.truncatedStackEvents": 0,
+        "allocationSampledBytes.all": 953156192,
+        "allocationSampledBytes.application": 951845472,
+        "allocationSampledBytes.validator": 917242464,
+        "allocationSampledBytes.mappedLoad": 918553184,
+        "allocationSampledBytes.intersection.validator+mappedLoad": 917242464,
+        "allocationSampledBytes.missingStackEvents": 0,
+        "allocationSampledBytes.truncatedStackEvents": 0,
+        "allocationSampledBytes.background": 1310720
+      },
+      "threadGroups": {
+        "cpuSamples": {
+          "jit": 227,
+          "otherBackground": 39,
+          "application": 1024
+        },
+        "allocationSampledBytes": {
+          "application": 951845472,
+          "otherBackground": 1310720
+        }
+      },
+      "threads": {
+        "cpuSamples": {
+          "Java: C1 CompilerThread0 [java=0,os=27139]": 47,
+          "Java: C2 CompilerThread0 [java=0,os=29699]": 180,
+          "Java: JFR Thread Sampler [java=0,os=33795]": 14,
+          "broad-query-pressure-worker [java=25,os=39683]": 763,
+          "broad-query-resource-sampler [java=20,os=24839]": 25,
+          "graphite-callsite-segment-1 [java=26,os=39171]": 129,
+          "graphite-callsite-segment-2 [java=27,os=36099]": 132
+        },
+        "allocationSampledBytes": {
+          "broad-query-pressure-worker [java=25,os=39683]": 944505440,
+          "graphite-callsite-segment-1 [java=26,os=39171]": 3670016,
+          "graphite-callsite-segment-2 [java=27,os=36099]": 3670016,
+          "JFR Periodic Tasks [java=14,os=42499]": 262144,
+          "broad-query-resource-sampler [java=20,os=24839]": 1048576
+        }
+      },
+      "workUnitsFrequency": {
+        "1152827": 40
+      },
+      "topMethodLeaves": {
+        "cpuSamples.candidateDiscovery": [
+          [
+            "java.nio.Bits.swap(J)J",
+            7
+          ],
+          [
+            "it.unimi.dsi.lang.MutableString.charAt(I)C",
+            1
+          ],
+          [
+            "jdk.internal.loader.BuiltinClassLoader.getAndVerifyPackage(Ljava/lang/String:Ljava/util/jar/Manifest:Ljava/net/URL:)Ljava/lang/Package:",
+            1
+          ],
+          [
+            "libsystem_kernel.dylib.__psynch_mutexwait()L:",
+            1
+          ],
+          [
+            "java.lang.CharacterDataLatin1.toLowerCase(I)I",
+            1
+          ],
+          [
+            "libjvm.dylib.TypeArrayKlass::copy_array()L:",
+            1
+          ],
+          [
+            "libjvm.dylib.SignatureStream::next()L:",
+            1
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.trigramPostingRange(I)Lkotlin/ranges/IntRange:",
+            1
+          ]
+        ],
+        "cpuSamples.validator": [
+          [
+            "io.johnsonlee.graphite.webgraph.PersistentIndexViewValidator.updateLongs(JILkotlin/jvm/functions/Function1:)V",
+            93
+          ],
+          [
+            "updateBytesCRC32()L:",
+            62
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.PersistentIndexViewValidator.updateInts(Ljava/nio/IntBuffer:Lkotlin/jvm/functions/Function1:)V",
+            46
+          ],
+          [
+            "itable stub()L:",
+            45
+          ],
+          [
+            "java.lang.Long.valueOf(J)Ljava/lang/Long:",
+            34
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView$Companion$$Lambda$200.0x000000e801151528.invoke(Ljava/lang/Object:)Ljava/lang/Object:",
+            31
+          ],
+          [
+            "java.nio.Buffer.scope()Ljdk/internal/misc/ScopedMemoryAccess$Scope:",
+            19
+          ],
+          [
+            "java.lang.Integer.valueOf(I)Ljava/lang/Integer:",
+            18
+          ],
+          [
+            "java.nio.HeapByteBuffer.putLong(J)Ljava/nio/ByteBuffer:",
+            16
+          ],
+          [
+            "java.nio.HeapByteBuffer.putInt(I)Ljava/nio/ByteBuffer:",
+            12
+          ],
+          [
+            "libsystem_platform.dylib._platform_memmove()L:",
+            10
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView$Companion.validatePersistentIndex$lambda$7(Lkotlin/jvm/internal/Ref$LongRef:IJ)Lkotlin/Unit:",
+            8
+          ]
+        ],
+        "cpuSamples.mappedLoad": [
+          [
+            "io.johnsonlee.graphite.webgraph.PersistentIndexViewValidator.updateLongs(JILkotlin/jvm/functions/Function1:)V",
+            93
+          ],
+          [
+            "updateBytesCRC32()L:",
+            62
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.PersistentIndexViewValidator.updateInts(Ljava/nio/IntBuffer:Lkotlin/jvm/functions/Function1:)V",
+            46
+          ],
+          [
+            "itable stub()L:",
+            45
+          ],
+          [
+            "java.lang.Long.valueOf(J)Ljava/lang/Long:",
+            34
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView$Companion$$Lambda$200.0x000000e801151528.invoke(Ljava/lang/Object:)Ljava/lang/Object:",
+            31
+          ],
+          [
+            "java.nio.Buffer.scope()Ljdk/internal/misc/ScopedMemoryAccess$Scope:",
+            19
+          ],
+          [
+            "java.lang.Integer.valueOf(I)Ljava/lang/Integer:",
+            18
+          ],
+          [
+            "java.nio.HeapByteBuffer.putLong(J)Ljava/nio/ByteBuffer:",
+            16
+          ],
+          [
+            "java.nio.HeapByteBuffer.putInt(I)Ljava/nio/ByteBuffer:",
+            12
+          ],
+          [
+            "libsystem_platform.dylib._platform_memmove()L:",
+            10
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView$Companion.validatePersistentIndex$lambda$7(Lkotlin/jvm/internal/Ref$LongRef:IJ)Lkotlin/Unit:",
+            8
+          ]
+        ],
+        "allocationSampledBytes.validator": [
+          [
+            "java.lang.Long.valueOf(J)Ljava/lang/Long:",
+            580911104
+          ],
+          [
+            "java.lang.Integer.valueOf(I)Ljava/lang/Integer:",
+            296484864
+          ],
+          [
+            "java.nio.HeapByteBuffer.<init>(IILjdk/internal/access/foreign/MemorySegmentProxy:)V",
+            39846496
+          ]
+        ],
+        "allocationSampledBytes.mappedLoad": [
+          [
+            "java.lang.Long.valueOf(J)Ljava/lang/Long:",
+            580911104
+          ],
+          [
+            "java.lang.Integer.valueOf(I)Ljava/lang/Integer:",
+            296484864
+          ],
+          [
+            "java.nio.HeapByteBuffer.<init>(IILjdk/internal/access/foreign/MemorySegmentProxy:)V",
+            39846496
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.BoundedPostingRangeValidationCache.<init>(Lio/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexMemoryBudget$Reservation:)V",
+            524288
+          ],
+          [
+            "jdk.internal.org.objectweb.asm.SymbolTable.<init>(Ljdk/internal/org/objectweb/asm/ClassWriter:)V",
+            262144
+          ],
+          [
+            "java.nio.DirectByteBufferR.asIntBuffer()Ljava/nio/IntBuffer:",
+            262144
+          ],
+          [
+            "java.nio.DirectByteBufferR.duplicate()Ljava/nio/MappedByteBuffer:",
+            262144
+          ]
+        ]
+      },
+      "collapsedChecks": [
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/01-or-four-broad-rows-00.cpuSamples.collapsed",
+          "sha256": "1917ffb78690d0ef262a62127b7c24eaec8c5f8583aea387af08d7c6596b3d16",
+          "weight": 277,
+          "eventCount": 277
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/01-or-four-broad-rows-00.allocationSampledBytes.collapsed",
+          "sha256": "0ff888a65c81ac687959e0c08765a24d312e7ce01cbed9c1528ec41c7151c914",
+          "weight": 25690112,
+          "eventCount": 98
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/03-or-four-broad-rows-01.cpuSamples.collapsed",
+          "sha256": "02d75f2c87008b42476663396b995df98f630a17525b2d90ed13bd404b23fd4b",
+          "weight": 109,
+          "eventCount": 109
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/03-or-four-broad-rows-01.allocationSampledBytes.collapsed",
+          "sha256": "01502fbdad82ca033c5278720bfd15f65b5c8f5ff40eb170262d24b678609ddd",
+          "weight": 22544400,
+          "eventCount": 83
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/05-or-four-broad-rows-02.cpuSamples.collapsed",
+          "sha256": "a859efa07ec98f150adebdf2dd530b2e996e10380f75cabb2e0e1d44db68f6b6",
+          "weight": 44,
+          "eventCount": 44
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/05-or-four-broad-rows-02.allocationSampledBytes.collapsed",
+          "sha256": "3de60f724b487d10497239898be4a90380d91899657632767bd8789916188ba4",
+          "weight": 17301520,
+          "eventCount": 63
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/07-or-four-broad-rows-03.cpuSamples.collapsed",
+          "sha256": "6bc74cb6536a27971d8ed52bff30a65d0d5ef323f3f2d7b6c1d4355d9ea62525",
+          "weight": 30,
+          "eventCount": 30
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/07-or-four-broad-rows-03.allocationSampledBytes.collapsed",
+          "sha256": "93512810060d47aa8ee5c7e5b6f1bf9d934b35d188f424974e196cad1c5f5aba",
+          "weight": 23068688,
+          "eventCount": 85
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/09-or-four-broad-rows-04.cpuSamples.collapsed",
+          "sha256": "4bec207396f5ab94029319f2efd4278382e9dafdeea84658278e61053b29ee27",
+          "weight": 29,
+          "eventCount": 29
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/09-or-four-broad-rows-04.allocationSampledBytes.collapsed",
+          "sha256": "ca741157c1cb1dac241f5a3954ffab05786255ca24311062b48edea7b28510c2",
+          "weight": 28311568,
+          "eventCount": 105
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/11-or-four-broad-rows-05.cpuSamples.collapsed",
+          "sha256": "fe3c0ff1c4c88d68f1fc26c21d359a6b4ceeff7f4bbf16901964fff0ef776ab1",
+          "weight": 25,
+          "eventCount": 25
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/11-or-four-broad-rows-05.allocationSampledBytes.collapsed",
+          "sha256": "f95c1e37527439b69b93dd7af4f5b0b45e2bc8e84379a6ceb669b95e8dd2ae4c",
+          "weight": 20709392,
+          "eventCount": 76
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/13-or-four-broad-rows-06.cpuSamples.collapsed",
+          "sha256": "43fe7d161dccec590b5716ef1ed87e034e2747f638c31b1185db223013b88dcb",
+          "weight": 24,
+          "eventCount": 24
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/13-or-four-broad-rows-06.allocationSampledBytes.collapsed",
+          "sha256": "4b36cd1e964df7b478bd0edbd30cefcf5e628a3eb70e818075dac8bbc8ba432c",
+          "weight": 22544400,
+          "eventCount": 83
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/15-or-four-broad-rows-07.cpuSamples.collapsed",
+          "sha256": "122f7df3da47145bfbf554e6b34ef28ff6d71659f5ebcf262944f4ee50680286",
+          "weight": 25,
+          "eventCount": 25
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/15-or-four-broad-rows-07.allocationSampledBytes.collapsed",
+          "sha256": "6bfc32fdca2c454c06217115de07fb3a5f1157f9ce3da5d6df6668ccfd2627ef",
+          "weight": 23068688,
+          "eventCount": 85
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/17-or-four-broad-rows-08.cpuSamples.collapsed",
+          "sha256": "d0bada2c7fa0492e5931607b2aa2357abb874fb2872437d82453294c7ba80e5b",
+          "weight": 25,
+          "eventCount": 25
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/17-or-four-broad-rows-08.allocationSampledBytes.collapsed",
+          "sha256": "342c9266c8e667cc31dbfc1f374214666d08063c858229d7533d2d87051682e5",
+          "weight": 32243728,
+          "eventCount": 120
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/19-or-four-broad-rows-09.cpuSamples.collapsed",
+          "sha256": "8350c5f9ba46aca85b2cd697cec4d7e46886cfbe1687aab7e30e173ed39c31b5",
+          "weight": 30,
+          "eventCount": 30
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/19-or-four-broad-rows-09.allocationSampledBytes.collapsed",
+          "sha256": "134f910a9c006dc153fbe024492d083a612e4167e514b662c4a54c234c50734b",
+          "weight": 23068688,
+          "eventCount": 85
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/21-or-four-broad-rows-10.cpuSamples.collapsed",
+          "sha256": "f42869766415bb38e5fd689bfe8359b57dfc913a137f35e888c583be3d37dd65",
+          "weight": 22,
+          "eventCount": 22
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/21-or-four-broad-rows-10.allocationSampledBytes.collapsed",
+          "sha256": "dde427baceba44d94289a16b39c5ee80fd4d624dc1ac340f63e998b2a9068b4c",
+          "weight": 22806544,
+          "eventCount": 84
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/23-or-four-broad-rows-11.cpuSamples.collapsed",
+          "sha256": "a9ebb67a19c01a0526319140f03439c21078ae575f9e0ed22572e4a99d4fa930",
+          "weight": 22,
+          "eventCount": 22
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/23-or-four-broad-rows-11.allocationSampledBytes.collapsed",
+          "sha256": "5c0f3a6f45f7742547429f881b1cb20a7aeb6656cb43c23f99171bfddd73ef41",
+          "weight": 24379408,
+          "eventCount": 90
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/25-or-four-broad-rows-12.cpuSamples.collapsed",
+          "sha256": "aa64a5d2f8a13fa0fc186c94068852971db5b14cf2895aa5d2b98cd9ed14f27e",
+          "weight": 23,
+          "eventCount": 23
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/25-or-four-broad-rows-12.allocationSampledBytes.collapsed",
+          "sha256": "e664ff436a22281dff127610905c2e483db48f64bc57391c96ae298aafac3345",
+          "weight": 18350096,
+          "eventCount": 67
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/27-or-four-broad-rows-13.cpuSamples.collapsed",
+          "sha256": "01f587f4252011b303939f8c0823910f91e1ff76501ac37016df9e838cd3e5c2",
+          "weight": 27,
+          "eventCount": 27
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/27-or-four-broad-rows-13.allocationSampledBytes.collapsed",
+          "sha256": "45dd2176decb2c22d36f55b0297969479f9060a4ae9edfa9dbdbbcc9fc3a6478",
+          "weight": 26476560,
+          "eventCount": 98
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/29-or-four-broad-rows-14.cpuSamples.collapsed",
+          "sha256": "a3173319663739c047bcfed1483c6cdb5aaa681761ff260f045e3ab03a22559b",
+          "weight": 25,
+          "eventCount": 25
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/29-or-four-broad-rows-14.allocationSampledBytes.collapsed",
+          "sha256": "b93d72b61d356236fb61ec0878980c08d9c3aed28e980747ecdc60ec85bc287e",
+          "weight": 24117264,
+          "eventCount": 89
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/31-or-four-broad-rows-15.cpuSamples.collapsed",
+          "sha256": "d601589a4a906e4b61e3516c40235bc91d055a9bd30aa1df84cf5c8fb98c9f79",
+          "weight": 26,
+          "eventCount": 26
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/31-or-four-broad-rows-15.allocationSampledBytes.collapsed",
+          "sha256": "2c09d9abb04067944de175340eb0a3ba134fcbee70cdc01567905fc8f802eaa8",
+          "weight": 23855120,
+          "eventCount": 88
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/33-or-four-broad-rows-16.cpuSamples.collapsed",
+          "sha256": "5fc56fe43914047bf263e694ec8aacd19b2260b4022101fd4007071c14870218",
+          "weight": 21,
+          "eventCount": 21
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/33-or-four-broad-rows-16.allocationSampledBytes.collapsed",
+          "sha256": "ed0c98fa3414e31cd883039e7ad8e238c94c05bd75093c0f17171fafbea9aaa8",
+          "weight": 20447248,
+          "eventCount": 75
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/35-or-four-broad-rows-17.cpuSamples.collapsed",
+          "sha256": "8975f2d54d06a829b8463969003266801410674a895ce771b45a55b9c0e80053",
+          "weight": 25,
+          "eventCount": 25
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/35-or-four-broad-rows-17.allocationSampledBytes.collapsed",
+          "sha256": "2d59b369f9d8ad18c69735cbd349c10ce42603e6dc1078768029fd29330c1f40",
+          "weight": 23855120,
+          "eventCount": 88
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/37-or-four-broad-rows-18.cpuSamples.collapsed",
+          "sha256": "d798e003b418c2c1a2e5b419c1e0885031af5406c6bd8494aed939085f8390f1",
+          "weight": 24,
+          "eventCount": 24
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/37-or-four-broad-rows-18.allocationSampledBytes.collapsed",
+          "sha256": "978dcb6fa93d2be6eae4208e3432651ae0d58f01949f7554b1a468504251e2da",
+          "weight": 27262992,
+          "eventCount": 101
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/39-or-four-broad-rows-19.cpuSamples.collapsed",
+          "sha256": "ce8c4de04ab05f44cb66e33d973d426f4c31de2ef1a3c20b65dbfa896b7759bc",
+          "weight": 24,
+          "eventCount": 24
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/39-or-four-broad-rows-19.allocationSampledBytes.collapsed",
+          "sha256": "8fd9357943d188d7dd4588577c90d79c53bc751ed9a5e0e428bdf30a25d4cb5b",
+          "weight": 22544384,
+          "eventCount": 86
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/41-or-four-broad-rows-20.cpuSamples.collapsed",
+          "sha256": "59f98dae9b500b94a941bb6518cf4c5544ff4d67969f416b51596ebc1ba06bce",
+          "weight": 27,
+          "eventCount": 27
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/41-or-four-broad-rows-20.allocationSampledBytes.collapsed",
+          "sha256": "cf49ef7d42b9b681cf540918c56ee56a27215a1566d67b6bc97836acd6d3b2a5",
+          "weight": 20447248,
+          "eventCount": 75
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/43-or-four-broad-rows-21.cpuSamples.collapsed",
+          "sha256": "d5e59101eaa4e8a4090819a7b14c54105d06cfb919b93f312088bb35b20a6e75",
+          "weight": 28,
+          "eventCount": 28
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/43-or-four-broad-rows-21.allocationSampledBytes.collapsed",
+          "sha256": "f46c73b6c3493c41b6324c11a0c22807f0806f7a9317766d10c4834241a5d69a",
+          "weight": 27000848,
+          "eventCount": 100
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/45-or-four-broad-rows-22.cpuSamples.collapsed",
+          "sha256": "6906ec91feaddc2681303a893a2d190beb83044dac7c9fe4a3f04ed308dd32b7",
+          "weight": 19,
+          "eventCount": 19
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/45-or-four-broad-rows-22.allocationSampledBytes.collapsed",
+          "sha256": "6f17303071ecafde623ce6f8fcf7e1c7ced4d8e685e971683bb9f82d57cac162",
+          "weight": 18087952,
+          "eventCount": 66
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/47-or-four-broad-rows-23.cpuSamples.collapsed",
+          "sha256": "f701f97f7b5c216a922288ca1eaca6c31f8e358f6ef7f16ad31cea16f70e93f9",
+          "weight": 21,
+          "eventCount": 21
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/47-or-four-broad-rows-23.allocationSampledBytes.collapsed",
+          "sha256": "3fb219762f89b6b57add4a8cf761b1a9409d3c011317bea02d79b3a68e8db1ff",
+          "weight": 24117264,
+          "eventCount": 89
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/49-or-four-broad-rows-24.cpuSamples.collapsed",
+          "sha256": "85e8786c1a4ed6bc884b1914c89b1c2a6461f9b8d01150d843c7017aaef7e858",
+          "weight": 24,
+          "eventCount": 24
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/49-or-four-broad-rows-24.allocationSampledBytes.collapsed",
+          "sha256": "efd306446eebbb2501d3d2880dfd7c07281cd30580a9936b3e8464640dc69ecf",
+          "weight": 21233680,
+          "eventCount": 78
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/51-or-four-broad-rows-25.cpuSamples.collapsed",
+          "sha256": "f8fc05681c601d02888707a56ecc50e8ace60fedccdc3d8631da855c15bfbc3e",
+          "weight": 21,
+          "eventCount": 21
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/51-or-four-broad-rows-25.allocationSampledBytes.collapsed",
+          "sha256": "7887f805d96af1b83926837c6c2eedf9a997cdb3652002a2736d69a20aa0963b",
+          "weight": 26476560,
+          "eventCount": 98
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/53-or-four-broad-rows-26.cpuSamples.collapsed",
+          "sha256": "4b988fed9b65a16b335431d340e57f421ad5c63d4d56e4bfef0dc2fb83752f22",
+          "weight": 20,
+          "eventCount": 20
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/53-or-four-broad-rows-26.allocationSampledBytes.collapsed",
+          "sha256": "d23a9386bbea62807d6d5442b1edbbdef12ddbed7c7823561e1b80a4a1c8b2dc",
+          "weight": 25952272,
+          "eventCount": 96
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/55-or-four-broad-rows-27.cpuSamples.collapsed",
+          "sha256": "93bc9ba70f03c80f1513cd41304c80472d07eadcb462c3c574a8d24161b8c40a",
+          "weight": 23,
+          "eventCount": 23
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/55-or-four-broad-rows-27.allocationSampledBytes.collapsed",
+          "sha256": "6afbc9c8e36dc05f61d529623032201c14ba84792647e72298babc8be94987d0",
+          "weight": 22806544,
+          "eventCount": 84
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/57-or-four-broad-rows-28.cpuSamples.collapsed",
+          "sha256": "f88f1969629a15ae40e5c3c2a35712cc28bb7f24ce4ab674885b01c8752c07b0",
+          "weight": 20,
+          "eventCount": 20
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/57-or-four-broad-rows-28.allocationSampledBytes.collapsed",
+          "sha256": "5be1fa655f81bf493605d7eca0dad6d57f45b6adf2f5a91a12ea6773366af6cc",
+          "weight": 21495824,
+          "eventCount": 79
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/59-or-four-broad-rows-29.cpuSamples.collapsed",
+          "sha256": "3c6bef16918a491a9e19b14250c829655dd78e6c8532b3b06c28f7ef8669741c",
+          "weight": 21,
+          "eventCount": 21
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/59-or-four-broad-rows-29.allocationSampledBytes.collapsed",
+          "sha256": "40f1e12c262f6012c51c066c64b5f99b53728006c823116cba8af54f3496b36f",
+          "weight": 24117264,
+          "eventCount": 89
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/61-or-four-broad-rows-30.cpuSamples.collapsed",
+          "sha256": "e2b52f4480ddea2246bd50a1ad86c61925cd4bae6a7239cfcafb7aa0e6bea894",
+          "weight": 20,
+          "eventCount": 20
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/61-or-four-broad-rows-30.allocationSampledBytes.collapsed",
+          "sha256": "f42ebd81716bcccac4966ee9c94f3513977491f37f62ebdd89d8835115ef2c16",
+          "weight": 28573712,
+          "eventCount": 106
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/63-or-four-broad-rows-31.cpuSamples.collapsed",
+          "sha256": "915dc90492853fb330ce3288202e3eb91d9e47b25b838e17c227a02a72b9b245",
+          "weight": 21,
+          "eventCount": 21
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/63-or-four-broad-rows-31.allocationSampledBytes.collapsed",
+          "sha256": "e5bff20411e26971ae87093a02be424b652ceaea4a29946aee204a3e02a27502",
+          "weight": 26214416,
+          "eventCount": 97
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/65-or-four-broad-rows-32.cpuSamples.collapsed",
+          "sha256": "3e90d6673149ea822867f3c94c6d12cfdd19de0d2e822ad25ed2550fa18bcf62",
+          "weight": 21,
+          "eventCount": 21
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/65-or-four-broad-rows-32.allocationSampledBytes.collapsed",
+          "sha256": "9bebffe4994fc246ddcbf334ab130fcc752d9e657a5c0ab8492d257656d3ef98",
+          "weight": 26476560,
+          "eventCount": 98
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/67-or-four-broad-rows-33.cpuSamples.collapsed",
+          "sha256": "ce20afdf4ee033f9ca81615da2285e397937b095f7db502471c8347d74806e5a",
+          "weight": 23,
+          "eventCount": 23
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/67-or-four-broad-rows-33.allocationSampledBytes.collapsed",
+          "sha256": "9eb9d40d6f2ea14f5a0d0d5920af3810c1fd2eb66038f1e8230ed2906204473b",
+          "weight": 24117264,
+          "eventCount": 89
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/69-or-four-broad-rows-34.cpuSamples.collapsed",
+          "sha256": "60d6359eb081a435593f38e648e392c2e6696b4c07c414517024e2d603c031e3",
+          "weight": 23,
+          "eventCount": 23
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/69-or-four-broad-rows-34.allocationSampledBytes.collapsed",
+          "sha256": "4bc165c1d5792dc38849be44b46b2354b3dd03147738bd390130164831f80dd2",
+          "weight": 24903696,
+          "eventCount": 92
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/71-or-four-broad-rows-35.cpuSamples.collapsed",
+          "sha256": "b38e56031ed264978ba8b8032879b6184a9ac02e7c210777d475baac6b36a255",
+          "weight": 22,
+          "eventCount": 22
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/71-or-four-broad-rows-35.allocationSampledBytes.collapsed",
+          "sha256": "0e2cd1c329d9adaa43b700dc9bace52f563177955070bdb3e9ca12a3b1cca236",
+          "weight": 23855120,
+          "eventCount": 88
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/73-or-four-broad-rows-36.cpuSamples.collapsed",
+          "sha256": "45655b852bb18e166b6722508b57d710fe211e0e8a537c089a1a4106fb6b6284",
+          "weight": 23,
+          "eventCount": 23
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/73-or-four-broad-rows-36.allocationSampledBytes.collapsed",
+          "sha256": "38034a5af91c34d7164b430f1ffe5c80619d3bb52ccacbbf36d25a6f34b7c350",
+          "weight": 32243728,
+          "eventCount": 120
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/75-or-four-broad-rows-37.cpuSamples.collapsed",
+          "sha256": "7882fcf69bc6f4920e61dafde2e4efd5418c38602874e7ca35ca14137a579907",
+          "weight": 18,
+          "eventCount": 18
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/75-or-four-broad-rows-37.allocationSampledBytes.collapsed",
+          "sha256": "3b6422a66a89d95de2aea80b21c9bbf637d92e2f76f03fdf2ab5b65c98001ac7",
+          "weight": 20447248,
+          "eventCount": 75
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/77-or-four-broad-rows-38.cpuSamples.collapsed",
+          "sha256": "9d10b879cbead276b71b0f21a73f5ae40aeefd3a1dbddcc059d7537bec277e76",
+          "weight": 18,
+          "eventCount": 18
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/77-or-four-broad-rows-38.allocationSampledBytes.collapsed",
+          "sha256": "60805bc93531c8693716f31c3e4ec174795a4f2ab2d67f87dc8eb623d37c0ef1",
+          "weight": 22544400,
+          "eventCount": 83
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/79-or-four-broad-rows-39.cpuSamples.collapsed",
+          "sha256": "f97c112f2419381eefcf6632e3c2e40c1d814d71dd28122ba1a595cd43c2c486",
+          "weight": 20,
+          "eventCount": 20
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/79-or-four-broad-rows-39.allocationSampledBytes.collapsed",
+          "sha256": "2ded29923c5ccd01047998e194ac10e4d7820f120db1d039b78c5fdb1d96e953",
+          "weight": 19398672,
+          "eventCount": 71
+        }
+      ]
+    },
+    {
+      "revision": "candidate",
+      "projection": "distinct",
+      "counters": {
+        "cpuSamples.all": 14764,
+        "cpuSamples.background": 1605,
+        "cpuSamples.application": 13159,
+        "cpuSamples.candidateDiscovery": 9,
+        "cpuSamples.validator": 12420,
+        "cpuSamples.mappedLoad": 12488,
+        "cpuSamples.intersection.validator+mappedLoad": 12416,
+        "cpuSamples.rawProjectionIncludingWorkers": 371,
+        "cpuSamples.rawProjection": 212,
+        "cpuSamples.intersection.rawProjectionIncludingWorkers+rawProjection": 212,
+        "cpuSamples.selectedProjection": 86,
+        "cpuSamples.selectedStringIds": 75,
+        "cpuSamples.findId": 54,
+        "cpuSamples.intersection.selectedProjection+selectedStringIds": 75,
+        "cpuSamples.intersection.selectedProjection+findId": 54,
+        "cpuSamples.intersection.selectedStringIds+findId": 54,
+        "cpuSamples.missingStackEvents": 0,
+        "cpuSamples.truncatedStackEvents": 0,
+        "allocationSampledBytes.all": 49131067264,
+        "allocationSampledBytes.background": 6553600,
+        "allocationSampledBytes.application": 49124513664,
+        "allocationSampledBytes.validator": 48880719744,
+        "allocationSampledBytes.mappedLoad": 48913749888,
+        "allocationSampledBytes.intersection.validator+mappedLoad": 48880719744,
+        "allocationSampledBytes.rawProjectionIncludingWorkers": 54788096,
+        "allocationSampledBytes.rawProjection": 11534336,
+        "allocationSampledBytes.intersection.rawProjectionIncludingWorkers+rawProjection": 11534336,
+        "allocationSampledBytes.selectedProjection": 87818240,
+        "allocationSampledBytes.selectedStringIds": 83886080,
+        "allocationSampledBytes.findId": 63700992,
+        "allocationSampledBytes.intersection.selectedProjection+selectedStringIds": 83886080,
+        "allocationSampledBytes.intersection.selectedProjection+findId": 63700992,
+        "allocationSampledBytes.intersection.selectedStringIds+findId": 63700992,
+        "allocationSampledBytes.missingStackEvents": 0,
+        "allocationSampledBytes.truncatedStackEvents": 0,
+        "allocationSampledBytes.candidateDiscovery": 262144,
+        "cpuSamples.initialLimitProbe": 1
+      },
+      "threadGroups": {
+        "cpuSamples": {
+          "jit": 1262,
+          "gc": 13,
+          "otherBackground": 330,
+          "application": 13159
+        },
+        "allocationSampledBytes": {
+          "otherBackground": 6553600,
+          "application": 49124513664
+        }
+      },
+      "threads": {
+        "cpuSamples": {
+          "Java: C1 CompilerThread0 [java=0,os=27139]": 178,
+          "Java: C2 CompilerThread0 [java=0,os=29699]": 1084,
+          "Java: G1 Conc#0 [java=0,os=13315]": 11,
+          "Java: GC Thread#0 [java=0,os=12547]": 1,
+          "Java: GC Thread#1 [java=0,os=41731]": 1,
+          "Java: JFR Thread Sampler [java=0,os=33795]": 150,
+          "Java: Service Thread [java=0,os=26627]": 1,
+          "Java: VM Thread [java=0,os=18179]": 1,
+          "broad-query-pressure-worker [java=25,os=39683]": 778,
+          "broad-query-resource-sampler [java=20,os=24839]": 139,
+          "graphite-callsite-segment-1 [java=26,os=39171]": 83,
+          "graphite-callsite-segment-2 [java=27,os=36099]": 81,
+          "graphite-cypher-scan-1 [java=31,os=38415]": 3108,
+          "graphite-cypher-scan-2 [java=32,os=38147]": 3032,
+          "graphite-cypher-scan-3 [java=33,os=36611]": 3031,
+          "graphite-cypher-scan-4 [java=34,os=37379]": 3046,
+          "Secondary finalizer [java=182,os=37147]": 24,
+          "JFR Periodic Tasks [java=14,os=42499]": 2,
+          "[tid=42243] [java=0,os=42243]": 3,
+          "Async-profiler Timer [java=12,os=27651]": 3,
+          "Java: Sweeper thread [java=0,os=28931]": 6,
+          "JFR Recorder Thread [java=13,os=33027]": 1
+        },
+        "allocationSampledBytes": {
+          "JFR Periodic Tasks [java=14,os=42499]": 1048576,
+          "broad-query-pressure-worker [java=25,os=39683]": 958136944,
+          "broad-query-resource-sampler [java=20,os=24839]": 5242880,
+          "graphite-callsite-segment-1 [java=26,os=39171]": 23592960,
+          "graphite-callsite-segment-2 [java=27,os=36099]": 19660800,
+          "graphite-cypher-scan-1 [java=31,os=38415]": 12119975184,
+          "graphite-cypher-scan-2 [java=32,os=38147]": 11875132688,
+          "graphite-cypher-scan-3 [java=33,os=36611]": 12028749136,
+          "graphite-cypher-scan-4 [java=34,os=37379]": 12099265952,
+          "process reaper [java=24,os=43031]": 262144
+        }
+      },
+      "workUnitsFrequency": {
+        "57699276": 40
+      },
+      "topMethodLeaves": {
+        "cpuSamples.candidateDiscovery": [
+          [
+            "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.trigramPostingRange(I)Lkotlin/ranges/IntRange:",
+            2
+          ],
+          [
+            "it.unimi.dsi.lang.MutableString.toLowerCase()Lit/unimi/dsi/lang/MutableString:",
+            1
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.exactMatchingStringIds(Ljava/util/List:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)Ljava/util/List:",
+            1
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.exactMatchingStringIds(Lio/johnsonlee/graphite/graph/StringPropertyPredicate:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)[I",
+            1
+          ],
+          [
+            "java.nio.Bits.swap(J)J",
+            1
+          ],
+          [
+            "jshort_disjoint_arraycopy()L:",
+            1
+          ],
+          [
+            "java.lang.CharacterData.of(I)Ljava/lang/CharacterData:",
+            1
+          ],
+          [
+            "libjvm.dylib.TypeArrayKlass::copy_array()L:",
+            1
+          ]
+        ],
+        "cpuSamples.validator": [
+          [
+            "io.johnsonlee.graphite.webgraph.PersistentIndexViewValidator.updateLongs(JILkotlin/jvm/functions/Function1:)V",
+            3596
+          ],
+          [
+            "updateBytesCRC32()L:",
+            1657
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.PersistentIndexViewValidator.updateInts(Ljava/nio/IntBuffer:Lkotlin/jvm/functions/Function1:)V",
+            1116
+          ],
+          [
+            "itable stub()L:",
+            1023
+          ],
+          [
+            "java.lang.Long.valueOf(J)Ljava/lang/Long:",
+            723
+          ],
+          [
+            "java.nio.Buffer.scope()Ljdk/internal/misc/ScopedMemoryAccess$Scope:",
+            636
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView$Companion$$Lambda$200.0x000000e801151528.invoke(Ljava/lang/Object:)Ljava/lang/Object:",
+            567
+          ],
+          [
+            "java.nio.HeapByteBuffer.putInt(I)Ljava/nio/ByteBuffer:",
+            394
+          ],
+          [
+            "java.nio.HeapByteBuffer.putLong(J)Ljava/nio/ByteBuffer:",
+            374
+          ],
+          [
+            "java.lang.Integer.valueOf(I)Ljava/lang/Integer:",
+            336
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView$Companion.validatePersistentIndex$lambda$7(Lkotlin/jvm/internal/Ref$LongRef:IJ)Lkotlin/Unit:",
+            321
+          ],
+          [
+            "io.johnsonlee.graphite.cypher.PreferredMappedStringIndexViewGraphWorkConsumer.consume(J)V",
+            182
+          ]
+        ],
+        "cpuSamples.mappedLoad": [
+          [
+            "io.johnsonlee.graphite.webgraph.PersistentIndexViewValidator.updateLongs(JILkotlin/jvm/functions/Function1:)V",
+            3596
+          ],
+          [
+            "updateBytesCRC32()L:",
+            1657
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.PersistentIndexViewValidator.updateInts(Ljava/nio/IntBuffer:Lkotlin/jvm/functions/Function1:)V",
+            1116
+          ],
+          [
+            "itable stub()L:",
+            1023
+          ],
+          [
+            "java.lang.Long.valueOf(J)Ljava/lang/Long:",
+            723
+          ],
+          [
+            "java.nio.Buffer.scope()Ljdk/internal/misc/ScopedMemoryAccess$Scope:",
+            643
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView$Companion$$Lambda$200.0x000000e801151528.invoke(Ljava/lang/Object:)Ljava/lang/Object:",
+            567
+          ],
+          [
+            "java.nio.HeapByteBuffer.putInt(I)Ljava/nio/ByteBuffer:",
+            394
+          ],
+          [
+            "java.nio.HeapByteBuffer.putLong(J)Ljava/nio/ByteBuffer:",
+            374
+          ],
+          [
+            "java.lang.Integer.valueOf(I)Ljava/lang/Integer:",
+            336
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView$Companion.validatePersistentIndex$lambda$7(Lkotlin/jvm/internal/Ref$LongRef:IJ)Lkotlin/Unit:",
+            321
+          ],
+          [
+            "io.johnsonlee.graphite.cypher.PreferredMappedStringIndexViewGraphWorkConsumer.consume(J)V",
+            182
+          ]
+        ],
+        "cpuSamples.rawProjectionIncludingWorkers": [
+          [
+            "it.unimi.dsi.fastutil.ints.IntOpenHashSet.contains(I)Z",
+            125
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$38$lambda$37$lambda$36(Lkotlin/jvm/internal/Ref$IntRef:Ljava/util/concurrent/atomic/AtomicBoolean:Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/HashSet:Ljava/util/List:Ljava/util/HashSet:Ljava/util/ArrayList:I[ILjava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:I)Z",
+            87
+          ],
+          [
+            "kotlin.ranges.IntProgressionIterator.nextInt()I",
+            31
+          ],
+          [
+            "java.util.ArrayList.elementData(I)Ljava/lang/Object:",
+            30
+          ],
+          [
+            "it.unimi.dsi.fastutil.HashCommon.mix(I)I",
+            11
+          ],
+          [
+            "java.lang.StringUTF16.compress([CII)[B",
+            6
+          ],
+          [
+            "it.unimi.dsi.fastutil.BigArrays.copyFromBig([[CJ[CII)V",
+            6
+          ],
+          [
+            "java.util.Objects.checkIndex(II)I",
+            5
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$225.0x000000e80116a400.test(I)Z",
+            4
+          ],
+          [
+            "java.lang.Integer.intValue()I",
+            4
+          ],
+          [
+            "jdk.internal.misc.Unsafe.convEndian(ZI)I",
+            4
+          ],
+          [
+            "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.length(I)I",
+            4
+          ]
+        ],
+        "cpuSamples.rawProjection": [
+          [
+            "it.unimi.dsi.fastutil.ints.IntOpenHashSet.contains(I)Z",
+            81
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$38$lambda$37$lambda$36(Lkotlin/jvm/internal/Ref$IntRef:Ljava/util/concurrent/atomic/AtomicBoolean:Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/HashSet:Ljava/util/List:Ljava/util/HashSet:Ljava/util/ArrayList:I[ILjava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:I)Z",
+            52
+          ],
+          [
+            "kotlin.ranges.IntProgressionIterator.nextInt()I",
+            22
+          ],
+          [
+            "java.util.ArrayList.elementData(I)Ljava/lang/Object:",
+            17
+          ],
+          [
+            "it.unimi.dsi.fastutil.HashCommon.mix(I)I",
+            6
+          ],
+          [
+            "libjvm.dylib.CompressedReadStream::read_int()L:",
+            3
+          ],
+          [
+            "kotlin.ranges.IntProgression.iterator()Lkotlin/collections/IntIterator:",
+            3
+          ],
+          [
+            "jdk.internal.misc.Unsafe.convEndian(ZI)I",
+            3
+          ],
+          [
+            "java.util.ArrayList.get(I)Ljava/lang/Object:",
+            2
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection(Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:Ljava/util/List:Lio/johnsonlee/graphite/webgraph/CallSiteStringIdMembership:)Ljava/util/List:",
+            2
+          ],
+          [
+            "java.lang.Integer.intValue()I",
+            2
+          ],
+          [
+            "java.util.Objects.checkIndex(II)I",
+            2
+          ]
+        ],
+        "cpuSamples.selectedProjection": [
+          [
+            "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.selectedTupleStringIds([ILjava/util/List:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/Map:Ljava/util/Map:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)[I",
+            16
+          ],
+          [
+            "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.getArray(I)[C",
+            12
+          ],
+          [
+            "java.lang.StringUTF16.compress([CII)[B",
+            9
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.selectedProjectionHits(Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:Lkotlin/jvm/functions/Function2:)Ljava/util/List:",
+            5
+          ],
+          [
+            "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.extract(I[CII)I",
+            5
+          ],
+          [
+            "it.unimi.dsi.fastutil.BigArrays.displacement(J)I",
+            5
+          ],
+          [
+            "zero_blocks()L:",
+            5
+          ],
+          [
+            "jshort_disjoint_arraycopy()L:",
+            4
+          ],
+          [
+            "it.unimi.dsi.fastutil.BigArrays.copyFromBig([[CJ[CII)V",
+            4
+          ],
+          [
+            "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.count(I)I",
+            2
+          ],
+          [
+            "java.util.HashMap$Node.getKey()Ljava/lang/Object:",
+            2
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.StringTable.findId$webgraph(Ljava/lang/String:)I",
+            1
+          ]
+        ],
+        "cpuSamples.selectedStringIds": [
+          [
+            "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.selectedTupleStringIds([ILjava/util/List:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/Map:Ljava/util/Map:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)[I",
+            16
+          ],
+          [
+            "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.getArray(I)[C",
+            12
+          ],
+          [
+            "java.lang.StringUTF16.compress([CII)[B",
+            9
+          ],
+          [
+            "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.extract(I[CII)I",
+            5
+          ],
+          [
+            "it.unimi.dsi.fastutil.BigArrays.displacement(J)I",
+            5
+          ],
+          [
+            "zero_blocks()L:",
+            5
+          ],
+          [
+            "jshort_disjoint_arraycopy()L:",
+            4
+          ],
+          [
+            "it.unimi.dsi.fastutil.BigArrays.copyFromBig([[CJ[CII)V",
+            4
+          ],
+          [
+            "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.count(I)I",
+            2
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.StringTable.findId$webgraph(Ljava/lang/String:)I",
+            1
+          ],
+          [
+            "libjvm.dylib.nmethod::entry_point()L:",
+            1
+          ],
+          [
+            "libsystem_kernel.dylib.thread_self_trap()L:",
+            1
+          ]
+        ],
+        "cpuSamples.findId": [
+          [
+            "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.getArray(I)[C",
+            12
+          ],
+          [
+            "java.lang.StringUTF16.compress([CII)[B",
+            9
+          ],
+          [
+            "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.extract(I[CII)I",
+            5
+          ],
+          [
+            "it.unimi.dsi.fastutil.BigArrays.displacement(J)I",
+            5
+          ],
+          [
+            "zero_blocks()L:",
+            5
+          ],
+          [
+            "jshort_disjoint_arraycopy()L:",
+            4
+          ],
+          [
+            "it.unimi.dsi.fastutil.BigArrays.copyFromBig([[CJ[CII)V",
+            4
+          ],
+          [
+            "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.count(I)I",
+            2
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.StringTable.findId$webgraph(Ljava/lang/String:)I",
+            1
+          ],
+          [
+            "libsystem_kernel.dylib.thread_self_trap()L:",
+            1
+          ],
+          [
+            "it.unimi.dsi.fastutil.BigArrays.get([[CJ)C",
+            1
+          ],
+          [
+            "forward_copy_longs()L:",
+            1
+          ]
+        ],
+        "allocationSampledBytes.validator": [
+          [
+            "java.lang.Long.valueOf(J)Ljava/lang/Long:",
+            31439454208
+          ],
+          [
+            "java.lang.Integer.valueOf(I)Ljava/lang/Integer:",
+            14898692096
+          ],
+          [
+            "java.nio.HeapByteBuffer.<init>(IILjdk/internal/access/foreign/MemorySegmentProxy:)V",
+            2541787008
+          ],
+          [
+            "java.nio.DirectByteBufferR.asLongBuffer()Ljava/nio/LongBuffer:",
+            524288
+          ],
+          [
+            "java.nio.DirectByteBufferR.slice()Ljava/nio/MappedByteBuffer:",
+            262144
+          ]
+        ],
+        "allocationSampledBytes.mappedLoad": [
+          [
+            "java.lang.Long.valueOf(J)Ljava/lang/Long:",
+            31439454208
+          ],
+          [
+            "java.lang.Integer.valueOf(I)Ljava/lang/Integer:",
+            14898692096
+          ],
+          [
+            "java.nio.HeapByteBuffer.<init>(IILjdk/internal/access/foreign/MemorySegmentProxy:)V",
+            2541787008
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.BoundedPostingRangeValidationCache.<init>(Lio/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexMemoryBudget$Reservation:)V",
+            19660800
+          ],
+          [
+            "java.nio.DirectByteBufferR.slice()Ljava/nio/MappedByteBuffer:",
+            2621440
+          ],
+          [
+            "java.nio.DirectByteBufferR.duplicate()Ljava/nio/MappedByteBuffer:",
+            2359296
+          ],
+          [
+            "java.nio.HeapIntBuffer.asReadOnlyBuffer()Ljava/nio/IntBuffer:",
+            1835008
+          ],
+          [
+            "java.nio.IntBuffer.allocate(I)Ljava/nio/IntBuffer:",
+            1048576
+          ],
+          [
+            "java.nio.DirectByteBufferR.asIntBuffer()Ljava/nio/IntBuffer:",
+            1048576
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView$Companion.validatePersistentIndex(Ljava/nio/ByteBuffer:[Ljava/nio/IntBuffer:[Ljava/nio/IntBuffer:[Ljava/nio/IntBuffer:JJ[IIIII[BLio/johnsonlee/graphite/graph/GraphWorkConsumer:)Z",
+            786432
+          ],
+          [
+            "java.nio.DirectIntBufferRS.duplicate()Ljava/nio/IntBuffer:",
+            524288
+          ],
+          [
+            "java.nio.DirectByteBufferR.asLongBuffer()Ljava/nio/LongBuffer:",
+            524288
+          ]
+        ],
+        "allocationSampledBytes.rawProjectionIncludingWorkers": [
+          [
+            "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.getArray(I)[C",
+            16252928
+          ],
+          [
+            "java.lang.StringUTF16.compress([CII)[B",
+            8388608
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$38$lambda$37(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:ILio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:IIILjava/util/concurrent/atomic/AtomicBoolean:Ljava/util/HashSet:Ljava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:)Lio/johnsonlee/graphite/webgraph/ParallelCallSiteProjectionResult:",
+            6291456
+          ],
+          [
+            "it.unimi.dsi.lang.MutableString.toString()Ljava/lang/String:",
+            5242880
+          ],
+          [
+            "it.unimi.dsi.lang.MutableString.wrap([C)Lit/unimi/dsi/lang/MutableString:",
+            4718592
+          ],
+          [
+            "kotlin.ranges.IntProgression.iterator()Lkotlin/collections/IntIterator:",
+            3670016
+          ],
+          [
+            "kotlin.collections.CollectionsKt__CollectionsKt.getIndices(Ljava/util/Collection:)Lkotlin/ranges/IntRange:",
+            2621440
+          ],
+          [
+            "java.util.ArrayList.iterator()Ljava/util/Iterator:",
+            2097152
+          ],
+          [
+            "java.util.ArrayList.<init>(I)V",
+            2097152
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$38$lambda$37$lambda$36(Lkotlin/jvm/internal/Ref$IntRef:Ljava/util/concurrent/atomic/AtomicBoolean:Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/HashSet:Ljava/util/List:Ljava/util/HashSet:Ljava/util/ArrayList:I[ILjava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:I)Z",
+            1835008
+          ],
+          [
+            "java.util.HashMap.newNode(ILjava/lang/Object:Ljava/lang/Object:Ljava/util/HashMap$Node:)Ljava/util/HashMap$Node:",
+            786432
+          ],
+          [
+            "jdk.internal.org.objectweb.asm.SymbolTable.<init>(Ljdk/internal/org/objectweb/asm/ClassWriter:)V",
+            262144
+          ]
+        ],
+        "allocationSampledBytes.rawProjection": [
+          [
+            "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.getArray(I)[C",
+            3932160
+          ],
+          [
+            "kotlin.collections.CollectionsKt__CollectionsKt.getIndices(Ljava/util/Collection:)Lkotlin/ranges/IntRange:",
+            1572864
+          ],
+          [
+            "kotlin.ranges.IntProgression.iterator()Lkotlin/collections/IntIterator:",
+            1572864
+          ],
+          [
+            "java.lang.StringUTF16.compress([CII)[B",
+            1572864
+          ],
+          [
+            "it.unimi.dsi.lang.MutableString.wrap([C)Lit/unimi/dsi/lang/MutableString:",
+            524288
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$38$lambda$37$lambda$36(Lkotlin/jvm/internal/Ref$IntRef:Ljava/util/concurrent/atomic/AtomicBoolean:Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/HashSet:Ljava/util/List:Ljava/util/HashSet:Ljava/util/ArrayList:I[ILjava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:I)Z",
+            524288
+          ],
+          [
+            "java.util.ArrayList.iterator()Ljava/util/Iterator:",
+            524288
+          ],
+          [
+            "it.unimi.dsi.lang.MutableString.toString()Ljava/lang/String:",
+            524288
+          ],
+          [
+            "java.util.HashMap.resize()[Ljava/util/HashMap$Node:",
+            262144
+          ],
+          [
+            "java.util.HashMap.newNode(ILjava/lang/Object:Ljava/lang/Object:Ljava/util/HashMap$Node:)Ljava/util/HashMap$Node:",
+            262144
+          ],
+          [
+            "java.util.HashSet.<init>()V",
+            262144
+          ]
+        ],
+        "allocationSampledBytes.selectedProjection": [
+          [
+            "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.getArray(I)[C",
+            40108032
+          ],
+          [
+            "java.lang.StringUTF16.compress([CII)[B",
+            23330816
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.selectedTupleStringIds([ILjava/util/List:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/Map:Ljava/util/Map:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)[I",
+            16777216
+          ],
+          [
+            "java.lang.Long.valueOf(J)Ljava/lang/Long:",
+            2359296
+          ],
+          [
+            "java.util.ArrayList.<init>(I)V",
+            2359296
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.selectedProjectionHits(Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:Lkotlin/jvm/functions/Function2:)Ljava/util/List:",
+            1048576
+          ],
+          [
+            "java.util.HashMap.newNode(ILjava/lang/Object:Ljava/lang/Object:Ljava/util/HashMap$Node:)Ljava/util/HashMap$Node:",
+            786432
+          ],
+          [
+            "java.util.HashMap.resize()[Ljava/util/HashMap$Node:",
+            524288
+          ],
+          [
+            "it.unimi.dsi.lang.MutableString.wrap([C)Lit/unimi/dsi/lang/MutableString:",
+            262144
+          ],
+          [
+            "java.util.LinkedHashMap$LinkedKeySet.iterator()Ljava/util/Iterator:",
+            262144
+          ]
+        ],
+        "allocationSampledBytes.selectedStringIds": [
+          [
+            "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.getArray(I)[C",
+            40108032
+          ],
+          [
+            "java.lang.StringUTF16.compress([CII)[B",
+            23330816
+          ],
+          [
+            "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.selectedTupleStringIds([ILjava/util/List:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/Map:Ljava/util/Map:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)[I",
+            16777216
+          ],
+          [
+            "java.lang.Long.valueOf(J)Ljava/lang/Long:",
+            2097152
+          ],
+          [
+            "java.util.HashMap.newNode(ILjava/lang/Object:Ljava/lang/Object:Ljava/util/HashMap$Node:)Ljava/util/HashMap$Node:",
+            786432
+          ],
+          [
+            "java.util.HashMap.resize()[Ljava/util/HashMap$Node:",
+            524288
+          ],
+          [
+            "it.unimi.dsi.lang.MutableString.wrap([C)Lit/unimi/dsi/lang/MutableString:",
+            262144
+          ]
+        ],
+        "allocationSampledBytes.findId": [
+          [
+            "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.getArray(I)[C",
+            40108032
+          ],
+          [
+            "java.lang.StringUTF16.compress([CII)[B",
+            23330816
+          ],
+          [
+            "it.unimi.dsi.lang.MutableString.wrap([C)Lit/unimi/dsi/lang/MutableString:",
+            262144
+          ]
+        ],
+        "allocationSampledBytes.candidateDiscovery": [
+          [
+            "it.unimi.dsi.lang.MutableString.expand(I)V",
+            262144
+          ]
+        ],
+        "cpuSamples.initialLimitProbe": [
+          [
+            "io.johnsonlee.graphite.cypher.PreferredMappedStringIndexViewGraphWorkConsumer.consume(J)V",
+            1
+          ]
+        ]
+      },
+      "collapsedChecks": [
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/02-or-four-broad-distinct-00.cpuSamples.collapsed",
+          "sha256": "e2179c1ee045f7c754276929b6cba578fd27a3e2a1c63de310823e35e67b0724",
+          "weight": 1011,
+          "eventCount": 1011
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/02-or-four-broad-distinct-00.allocationSampledBytes.collapsed",
+          "sha256": "b9347088ef597335a7f3726aae6c840fef3b474ec808c83e8354ca1e6ed63dbb",
+          "weight": 1218446304,
+          "eventCount": 4462
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/04-or-four-broad-distinct-01.cpuSamples.collapsed",
+          "sha256": "d58e2fa272744dcbe2d2dbe055ead6050fe58b5ecbeac63f30caaa1d37a37972",
+          "weight": 480,
+          "eventCount": 480
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/04-or-four-broad-distinct-01.allocationSampledBytes.collapsed",
+          "sha256": "324aebbb701bfbf201bb1d981aaf472e6c8d2dbb62b24d39d0706c2bc8730c86",
+          "weight": 1215038384,
+          "eventCount": 4458
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/06-or-four-broad-distinct-02.cpuSamples.collapsed",
+          "sha256": "0e9325ca9bd597de5a01544cd7a7dbaa25df2f75f9a4f60f744fa57d2b2b9e47",
+          "weight": 397,
+          "eventCount": 397
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/06-or-four-broad-distinct-02.allocationSampledBytes.collapsed",
+          "sha256": "2ab4de3a4a2d2f8f8b15332b754d793141743e6bcc1f8f54165a319dd861c469",
+          "weight": 1252000640,
+          "eventCount": 4608
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/08-or-four-broad-distinct-03.cpuSamples.collapsed",
+          "sha256": "c2832aab052468dae4f7bcfad1e0d2aeeca5cbc10d9d94e60821254ea0e02f87",
+          "weight": 374,
+          "eventCount": 374
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/08-or-four-broad-distinct-03.allocationSampledBytes.collapsed",
+          "sha256": "db5b9184b7bdcdf28a015d149a1a43d7328558e8d7e49fc8c3010c39ffce81f1",
+          "weight": 1238893520,
+          "eventCount": 4543
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/10-or-four-broad-distinct-04.cpuSamples.collapsed",
+          "sha256": "67bffa4609ee3cba046d3f0773a7a186aa86c15d37a347875af1db104fb8edf2",
+          "weight": 346,
+          "eventCount": 346
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/10-or-four-broad-distinct-04.allocationSampledBytes.collapsed",
+          "sha256": "9ba6a81b98e220ae64580f195ca344465873d8adc207e5b4f0837a3c532f2898",
+          "weight": 1238369232,
+          "eventCount": 4541
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/12-or-four-broad-distinct-05.cpuSamples.collapsed",
+          "sha256": "4dc31eaabb4fd45d2c257e0a7e49623ebea2a189098f3116e60d3d53af906652",
+          "weight": 424,
+          "eventCount": 424
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/12-or-four-broad-distinct-05.allocationSampledBytes.collapsed",
+          "sha256": "182b78fb9651f4a1dcb91dc8b739d888515edf865bae85188fb83cedea574504",
+          "weight": 1266156496,
+          "eventCount": 4647
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/14-or-four-broad-distinct-06.cpuSamples.collapsed",
+          "sha256": "64e1975da566d59821c2631c7a25056c3aae42f7bbfa8ba6e97aaee619e62848",
+          "weight": 362,
+          "eventCount": 362
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/14-or-four-broad-distinct-06.allocationSampledBytes.collapsed",
+          "sha256": "01bdfe41e5edf54f334232067205572d25236cba5f8b43265742eb9973fd9095",
+          "weight": 1220805568,
+          "eventCount": 4477
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/16-or-four-broad-distinct-07.cpuSamples.collapsed",
+          "sha256": "7cd087763e0729a4c64ed41358254ddee815223723758bbc14c443cef7d07502",
+          "weight": 350,
+          "eventCount": 350
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/16-or-four-broad-distinct-07.allocationSampledBytes.collapsed",
+          "sha256": "5b1c89782ade9fe0ba55948e3f8a4ae178df3627247906c85d902b1f79a5169e",
+          "weight": 1258292144,
+          "eventCount": 4623
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/18-or-four-broad-distinct-08.cpuSamples.collapsed",
+          "sha256": "9be09c25e4351dd82be660dca79bbadbe7f355098da07d6af29643442899f4cd",
+          "weight": 345,
+          "eventCount": 345
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/18-or-four-broad-distinct-08.allocationSampledBytes.collapsed",
+          "sha256": "8bbcfcce55d09bb39a4febd7366d2e242955dcc700ef2b1db9ebf88374ad0fe0",
+          "weight": 1251214304,
+          "eventCount": 4587
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/20-or-four-broad-distinct-09.cpuSamples.collapsed",
+          "sha256": "a36d387c4c3ebfd08ed9c24295e7bd756088c629d461497d2459cad3236d9350",
+          "weight": 332,
+          "eventCount": 332
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/20-or-four-broad-distinct-09.allocationSampledBytes.collapsed",
+          "sha256": "924f846f0a450253379cf06502eaff5f12677cdd62210a82438c8bc772da46ed",
+          "weight": 1227621344,
+          "eventCount": 4497
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/22-or-four-broad-distinct-10.cpuSamples.collapsed",
+          "sha256": "732255ca9e00a98c5e6ad6c1f1027a64c251dd1d255c8a8d85c9d5ad984b352f",
+          "weight": 324,
+          "eventCount": 324
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/22-or-four-broad-distinct-10.allocationSampledBytes.collapsed",
+          "sha256": "c2e9c41b39c38a663239b974d956c8605358b530eac3fbecbf57a1587ecead51",
+          "weight": 1245971440,
+          "eventCount": 4564
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/24-or-four-broad-distinct-11.cpuSamples.collapsed",
+          "sha256": "7967ddc4377fccdcec59dc7662af1a4724dbc87c52f6720cf5fa1d235ab5c103",
+          "weight": 337,
+          "eventCount": 337
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/24-or-four-broad-distinct-11.allocationSampledBytes.collapsed",
+          "sha256": "f9f75cc2cad9235a0e819b2be42654c5eca03031c7e2d393b3678af173de4044",
+          "weight": 1248592864,
+          "eventCount": 4577
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/26-or-four-broad-distinct-12.cpuSamples.collapsed",
+          "sha256": "0e64708fe8a5ffe332bfd975b2d690337954bd9e91901b706471e7d84981560b",
+          "weight": 335,
+          "eventCount": 335
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/26-or-four-broad-distinct-12.allocationSampledBytes.collapsed",
+          "sha256": "105de850b5ec34ce48d7c0254411d9175e5d1837793e8480ab3544baa4cd8758",
+          "weight": 1250952144,
+          "eventCount": 4589
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/28-or-four-broad-distinct-13.cpuSamples.collapsed",
+          "sha256": "95441bc3466ece7a571ce0f8a125ce8b0b506edee3bc716e722b5afdfebaa5e7",
+          "weight": 495,
+          "eventCount": 495
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/28-or-four-broad-distinct-13.allocationSampledBytes.collapsed",
+          "sha256": "41f646c1e11d598cffdaf6afeaf0c70c37bc27ab1d103397d76a948d374e5c23",
+          "weight": 1200096176,
+          "eventCount": 4401
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/30-or-four-broad-distinct-14.cpuSamples.collapsed",
+          "sha256": "a2bba5741828e735e4dccf89f349bcf9af7e5a92749edd9b66c26c308ccfb3ee",
+          "weight": 371,
+          "eventCount": 371
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/30-or-four-broad-distinct-14.allocationSampledBytes.collapsed",
+          "sha256": "c8ce0b4eceb694fe1c4718ff9e5e340adfc4e9dbef36d42b84af159d53e9967a",
+          "weight": 1204290512,
+          "eventCount": 4411
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/32-or-four-broad-distinct-15.cpuSamples.collapsed",
+          "sha256": "f8455787c3ef8d959cf6d7f475a4f06498feb156cce81ce4a74cc7d1e7eb6c7e",
+          "weight": 361,
+          "eventCount": 361
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/32-or-four-broad-distinct-15.allocationSampledBytes.collapsed",
+          "sha256": "98fd969630a582a97be1bbc41f6722015e852f25fe1a1e9cc32f53f30bcdd89d",
+          "weight": 1217135584,
+          "eventCount": 4457
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/34-or-four-broad-distinct-16.cpuSamples.collapsed",
+          "sha256": "e2dd51336d5c970eef08f2ebb996372d876efe8d97b30b4099f023e11344b6f5",
+          "weight": 370,
+          "eventCount": 370
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/34-or-four-broad-distinct-16.allocationSampledBytes.collapsed",
+          "sha256": "89191de968a95065e6fe89c4fad470a9e146a965ca99fded0036d5f7b2340739",
+          "weight": 1227621312,
+          "eventCount": 4503
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/36-or-four-broad-distinct-17.cpuSamples.collapsed",
+          "sha256": "20fb5cf77093009dc5b2981bef69a2bbd6b0ea5d4f2baf3007b38d037cb48528",
+          "weight": 375,
+          "eventCount": 375
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/36-or-four-broad-distinct-17.allocationSampledBytes.collapsed",
+          "sha256": "b0361c685c89a9b930f02cce6ca0d2b3ffa84b22d2921fe1f48a33e0f36b33a2",
+          "weight": 1220805536,
+          "eventCount": 4483
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/38-or-four-broad-distinct-18.cpuSamples.collapsed",
+          "sha256": "95f4c67e46df05c196911559aa4357e0534956fa57bd9c0f61c95243c11b9e74",
+          "weight": 333,
+          "eventCount": 333
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/38-or-four-broad-distinct-18.allocationSampledBytes.collapsed",
+          "sha256": "e1fa12f154937c49474d53c8970f523aeafa2930d132ffd80b80714a9dc81bac",
+          "weight": 1203504080,
+          "eventCount": 4408
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/40-or-four-broad-distinct-19.cpuSamples.collapsed",
+          "sha256": "f1a14432dba3ea701d5d7d8a105d5ac3620f0c594cd4c482564b594de3adf82f",
+          "weight": 333,
+          "eventCount": 333
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/40-or-four-broad-distinct-19.allocationSampledBytes.collapsed",
+          "sha256": "3bde690106e27444e36e4a472f7d17e23383e55c6fc27c702f3f25c89f47c2b8",
+          "weight": 1205339104,
+          "eventCount": 4412
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/42-or-four-broad-distinct-20.cpuSamples.collapsed",
+          "sha256": "ee584a3c57a82352725df393b29b0ca2363853d3a191f241fbd05c422c4de689",
+          "weight": 343,
+          "eventCount": 343
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/42-or-four-broad-distinct-20.allocationSampledBytes.collapsed",
+          "sha256": "94b06708f89536410cc4cdce5c181baba504ac65e638f7f11fb138a0608064f4",
+          "weight": 1241252816,
+          "eventCount": 4552
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/44-or-four-broad-distinct-21.cpuSamples.collapsed",
+          "sha256": "b282ffd8b19c8729d9f05521a826cf8adbe2611f697d0c3d243e66a01cbd65d5",
+          "weight": 350,
+          "eventCount": 350
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/44-or-four-broad-distinct-21.allocationSampledBytes.collapsed",
+          "sha256": "c78673ce2b181cc279c3a66650899deb2280afe3026f8793eaf7c1e8dbb4099b",
+          "weight": 1244136384,
+          "eventCount": 4566
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/46-or-four-broad-distinct-22.cpuSamples.collapsed",
+          "sha256": "35e83dd1d0627d93a7640e200001c6cfd9d9234e34101e5610e8414110484854",
+          "weight": 343,
+          "eventCount": 343
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/46-or-four-broad-distinct-22.allocationSampledBytes.collapsed",
+          "sha256": "6406da91bb0fa7fb3a48de917e69bb48d518fedd4f51dd1ca133f4ce307a88c3",
+          "weight": 1207698336,
+          "eventCount": 4433
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/48-or-four-broad-distinct-23.cpuSamples.collapsed",
+          "sha256": "0b75a9118329a8548dd646f879eea252ab3f7aea5622cbf2dd8bd5d381f2fa32",
+          "weight": 344,
+          "eventCount": 344
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/48-or-four-broad-distinct-23.allocationSampledBytes.collapsed",
+          "sha256": "77ee40451b456a3f234c48f32a582018617973b3ec46eb4cac308f43317cdd22",
+          "weight": 1222902736,
+          "eventCount": 4482
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/50-or-four-broad-distinct-24.cpuSamples.collapsed",
+          "sha256": "8f1e5838ac5d18cd287f48e0147c67d1ad8311d93a1a9d632e1dd803e2f7b199",
+          "weight": 343,
+          "eventCount": 343
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/50-or-four-broad-distinct-24.allocationSampledBytes.collapsed",
+          "sha256": "c4f82512f4576eb7d50c3b3e19c9b2d46c7c190645e267594a1244cf85c804a7",
+          "weight": 1209271232,
+          "eventCount": 4433
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/52-or-four-broad-distinct-25.cpuSamples.collapsed",
+          "sha256": "aa9bc8339415732ac9349e6be364acaa2f5a9d601540dbd833d7905891e6e256",
+          "weight": 338,
+          "eventCount": 338
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/52-or-four-broad-distinct-25.allocationSampledBytes.collapsed",
+          "sha256": "819171b2ce82063f9a70cb174d11de1cccd29010902bc66a0e4d13b1b5a94df9",
+          "weight": 1221067728,
+          "eventCount": 4475
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/54-or-four-broad-distinct-26.cpuSamples.collapsed",
+          "sha256": "8b708458907d19cb196ffacf751e1b8fb189ae3b8101e4702ad62c208e4e4d51",
+          "weight": 348,
+          "eventCount": 348
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/54-or-four-broad-distinct-26.allocationSampledBytes.collapsed",
+          "sha256": "1a6e6333d81c2c4b73952aeb09b31f602b777fb63aa07e920257fc7ad6a30df3",
+          "weight": 1274807280,
+          "eventCount": 4674
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/56-or-four-broad-distinct-27.cpuSamples.collapsed",
+          "sha256": "c3f1d667184b4fc606436276487440ce1fa05deb6fe51ac08db5e289c73e4d03",
+          "weight": 349,
+          "eventCount": 349
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/56-or-four-broad-distinct-27.allocationSampledBytes.collapsed",
+          "sha256": "0c5136593bb5be1aa50f95bb1a52ee65c130f128abc0d9bb1e7a45ca8f4bb622",
+          "weight": 1203504096,
+          "eventCount": 4405
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/58-or-four-broad-distinct-28.cpuSamples.collapsed",
+          "sha256": "d8d922e77df29b9911eda20a93cad174ff738f3d0973efe73feff0b81ba4d76e",
+          "weight": 340,
+          "eventCount": 340
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/58-or-four-broad-distinct-28.allocationSampledBytes.collapsed",
+          "sha256": "515e777207799e08fbd2a0b9e9ab8ff1ca708e0ec686740cfea87c3fe50cc5c0",
+          "weight": 1240728544,
+          "eventCount": 4547
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/60-or-four-broad-distinct-29.cpuSamples.collapsed",
+          "sha256": "f2bada1e4cfed25382ae78eb328c070a26dbe0a908a062f00730df6f27a44634",
+          "weight": 335,
+          "eventCount": 335
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/60-or-four-broad-distinct-29.allocationSampledBytes.collapsed",
+          "sha256": "56fa3e2dacc2203ed9ab877b3ed30afed1b92f5172e5741abaa15b68c4b98702",
+          "weight": 1226572736,
+          "eventCount": 4499
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/62-or-four-broad-distinct-30.cpuSamples.collapsed",
+          "sha256": "703e7d2024d401400e32dc0040db3226abb3966dbd052f48fbf276a2796c3168",
+          "weight": 327,
+          "eventCount": 327
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/62-or-four-broad-distinct-30.allocationSampledBytes.collapsed",
+          "sha256": "76b36c56b8b75d42b329faf2e87462e5c35bf878853cbf35e2cc368ce8f91a38",
+          "weight": 1226310608,
+          "eventCount": 4495
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/64-or-four-broad-distinct-31.cpuSamples.collapsed",
+          "sha256": "337ad7fa62df175b5dd9b35bfa4307a4e3bd7ad7ec740fa15c2457b7c5452b6f",
+          "weight": 337,
+          "eventCount": 337
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/64-or-four-broad-distinct-31.allocationSampledBytes.collapsed",
+          "sha256": "3eee64403b13c61e9f6386c82d2fe2ac5f282f7d2a1322240dcab25d7f0e8a60",
+          "weight": 1241514992,
+          "eventCount": 4547
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/66-or-four-broad-distinct-32.cpuSamples.collapsed",
+          "sha256": "ba42efbbad8a24e0f8d9cbebbd3f621ad4c2c80e7440b3f410d31c7fee18eeab",
+          "weight": 326,
+          "eventCount": 326
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/66-or-four-broad-distinct-32.allocationSampledBytes.collapsed",
+          "sha256": "2566e159cdf49d54ebc05bf0dc96c26095c9708d7f736dd20a258922187a4541",
+          "weight": 1208222640,
+          "eventCount": 4432
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/68-or-four-broad-distinct-33.cpuSamples.collapsed",
+          "sha256": "c601eb4553d2a21baf5b455504b014937176bb8066262431e512db4a86993de7",
+          "weight": 333,
+          "eventCount": 333
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/68-or-four-broad-distinct-33.allocationSampledBytes.collapsed",
+          "sha256": "a9522b6a419af110585d13d9ec1d0c16bd29003074b8fa857002d24e5ace8235",
+          "weight": 1244922816,
+          "eventCount": 4569
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/70-or-four-broad-distinct-34.cpuSamples.collapsed",
+          "sha256": "797dcda1f767b73d8cd4eed4adf7e9e74e3fe31c065325425abab93cc83c349b",
+          "weight": 411,
+          "eventCount": 411
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/70-or-four-broad-distinct-34.allocationSampledBytes.collapsed",
+          "sha256": "ad1313c90632d9309703d45c28634bd0189d358151af82f727c78ae405b6921b",
+          "weight": 1200882608,
+          "eventCount": 4404
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/72-or-four-broad-distinct-35.cpuSamples.collapsed",
+          "sha256": "8d667009d446b954f8b831dfae9a6ba69bdc68098a2573f3e26f694b64efbd5b",
+          "weight": 316,
+          "eventCount": 316
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/72-or-four-broad-distinct-35.allocationSampledBytes.collapsed",
+          "sha256": "e55b90dd2576496360df82861cfa733a1c2596ad0b9ee44c349d76d92656e112",
+          "weight": 1211630544,
+          "eventCount": 4439
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/74-or-four-broad-distinct-36.cpuSamples.collapsed",
+          "sha256": "942a41315635714158e4826a593adcac5561002763b3ff59207e14f7f2836e6b",
+          "weight": 300,
+          "eventCount": 300
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/74-or-four-broad-distinct-36.allocationSampledBytes.collapsed",
+          "sha256": "3e76657a0d1c1d00968ddc7b30477c48deb5ba68dc50fa1fd9a2d7a461a419d2",
+          "weight": 1210844096,
+          "eventCount": 4439
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/76-or-four-broad-distinct-37.cpuSamples.collapsed",
+          "sha256": "81675b0c5cccb7cd97ac678f074531571702eb9d502df31bd9df4010ddd8e6dc",
+          "weight": 310,
+          "eventCount": 310
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/76-or-four-broad-distinct-37.allocationSampledBytes.collapsed",
+          "sha256": "405b6dbd7bebd4f8ea5dd6d8069b5118045df3a709e61a9390ca338ba30a96f5",
+          "weight": 1227096992,
+          "eventCount": 4507
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/78-or-four-broad-distinct-38.cpuSamples.collapsed",
+          "sha256": "f24274dbc3d0fdf8365d0863b51f13869fb166c684de3e157e1e591967d08d1c",
+          "weight": 286,
+          "eventCount": 286
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/78-or-four-broad-distinct-38.allocationSampledBytes.collapsed",
+          "sha256": "1e9daa0ff93cc57e9e6e115b28107aa53c52339976b9bcdd3e280c8270e26da6",
+          "weight": 1226048464,
+          "eventCount": 4494
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/80-or-four-broad-distinct-39.cpuSamples.collapsed",
+          "sha256": "20950b4b1547d4bf702bbce5a721c959f1a4d2b85833ba1a3f90c80b8930a49e",
+          "weight": 330,
+          "eventCount": 330
+        },
+        {
+          "path": "cold-regression-profile/candidate-analysis/collapsed/80-or-four-broad-distinct-39.allocationSampledBytes.collapsed",
+          "sha256": "722708e1bf02dce29993444c7305efd0636d0edafd598c3d1d930289fc6af608",
+          "weight": 1230504928,
+          "eventCount": 4508
+        }
+      ]
+    }
+  ],
+  "recordedInputJarHashes": {
+    "base": "a5c2db2b0020798488916ec86902459d1044a7dcef606a73e00055883cdf5abe",
+    "candidate": "2c419ac0b9d996af0890d1c857f81fa3479c170f59306fe35517a6e90cf7b5bf"
+  },
+  "inputHashes": {
+    "completed.json": "306db86ad9182b88a15b4b463f2f2b32a04a4565aa5971d8a7a333684bea3bf3",
+    "input-receipt.json": "239189d3fa1f82efb52fb509a02c533ea60383a4b8fd9c725cbf04cb99a6687f",
+    "summary.json": "7904bc3d1e1302a4dc58d3ff67dd98c2442678f47f59cf3216ec6280a60c1ae6",
+    "analyze-cold-regression.py": "7f345f21a9a3d7b35801763df8aee44130cbf07ed5b395b73cc48977db950936",
+    "profile-cold-regression.py": "743f9461dfd0d14f304862b27dd08c9d6aafb6f93b4e56d0ecb2f6618056670e"
+  },
+  "additionalRawFamilyCoverage": [
+    {
+      "revision": "base",
+      "projection": "distinct",
+      "counters": {
+        "cpuSamples.methodOrGeneratedLambdaUnion": 498,
+        "cpuSamples.generatedLambdaWithoutMethod": 172,
+        "allocationSampledBytes.methodOrGeneratedLambdaUnion": 160694272,
+        "allocationSampledBytes.generatedLambdaWithoutMethod": 39583744
+      }
+    },
+    {
+      "revision": "candidate",
+      "projection": "distinct",
+      "counters": {
+        "cpuSamples.methodOrGeneratedLambdaUnion": 371,
+        "cpuSamples.generatedLambdaWithoutMethod": 159,
+        "allocationSampledBytes.methodOrGeneratedLambdaUnion": 54788096,
+        "allocationSampledBytes.generatedLambdaWithoutMethod": 43253760
+      }
+    }
+  ],
+  "classpathHelperFiles": {
+    "/private/tmp/graphite-main-profiling-n50joikp/control-v2-26/classes/MultiKeywordProfileRunner.class": "2334f8271a8c44c9dd85aec1ce0ef4d644e1965fe496b52fabd5b313b00d233f"
+  },
+  "validatorBytecodeCheck": {
+    "receipt": {
+      "validatorJavapInstructionsByteIdentical": true,
+      "baseSha256": "2d32c910fd0040d9b19249b32946d4ac3928883672ee944b042cd661a8136973",
+      "candidateSha256": "2d32c910fd0040d9b19249b32946d4ac3928883672ee944b042cd661a8136973",
+      "scope": "javap -c -p whole validator class; this does not compare native JIT output or establish a runtime cause"
+    },
+    "independentlyComparedBytes": true,
+    "receiptSha256": "7c307ddf5b267de2b89572340ffba59f110a80a8d6373f856846a194ad60a36b"
+  },
+  "limitations": [
+    "This independently parses saved analyzer output and collapsed stacks, not the native JFR binary; its exact-signature event extraction remains the ProfileWindows result.",
+    "Method inclusive weights overlap and must not be added; intersections and per-thread/all-thread conservation were independently verified.",
+    "No sample for selectedAnchor/postingValidation does not establish zero calls.",
+    "TLAB weights are sampled weighted bytes, not exact complete allocation bytes or objects.",
+    "CPU event mode is cpu even though async-profiler engine setting is wall; companion JVM samples were not merged.",
+    "One recording per revision in sequence is diagnostic; 40 repetitions do not independently repeat the original three paired experiments.",
+    "Final graph/JAR equality is documented by completed receipt and capture script assertions; this audit did not rehash large graph/JAR/JFR files.",
+    "Profiled timing does not replace original acceptance measurements; rejected138 remains rejected and no regression cause has been located."
+  ]
+}

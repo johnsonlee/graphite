@@ -1,0 +1,227 @@
+{
+  "copyOnly": true,
+  "numbersAndParsedJsonUnchanged": true,
+  "normalization": "At most trailing newline normalization; original and archived hashes retained.",
+  "files": [
+    {
+      "source": "/private/tmp/graphite-rejected133-mechanism-ivkvn783/source-receipt.json",
+      "destination": "docs/profiling/distinct-projection-work/rejected133-residual/source-receipt.json",
+      "sourceSha256": "82d9b268feaa795d0e73529e4da38ea7f8afdda4bdb19f7e57ef978a8b0f2939",
+      "archivedSha256": "82d9b268feaa795d0e73529e4da38ea7f8afdda4bdb19f7e57ef978a8b0f2939",
+      "sourceBytes": 44051,
+      "archivedBytes": 44051,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-rejected133-mechanism-ivkvn783/build-command.json",
+      "destination": "docs/profiling/distinct-projection-work/rejected133-residual/build-command.json",
+      "sourceSha256": "d8fe765096c0c1693b0ad965384d1f621f95f5cba9cb561f12a085be333fa6b2",
+      "archivedSha256": "d8fe765096c0c1693b0ad965384d1f621f95f5cba9cb561f12a085be333fa6b2",
+      "sourceBytes": 508,
+      "archivedBytes": 508,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-rejected133-mechanism-ivkvn783/build-receipt.json",
+      "destination": "docs/profiling/distinct-projection-work/rejected133-residual/build-receipt.json",
+      "sourceSha256": "b77c755bbe92f30658ded93e407de369e54319a9f8c9c82858a475da39eee05e",
+      "archivedSha256": "b77c755bbe92f30658ded93e407de369e54319a9f8c9c82858a475da39eee05e",
+      "sourceBytes": 497,
+      "archivedBytes": 497,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-rejected133-mechanism-ivkvn783/artifact-verification.json",
+      "destination": "docs/profiling/distinct-projection-work/rejected133-residual/artifact-verification.json",
+      "sourceSha256": "205ec116537083220f9a7d6a121ca82aa7a1f795d0e86b6b1b84510a8f2a288c",
+      "archivedSha256": "205ec116537083220f9a7d6a121ca82aa7a1f795d0e86b6b1b84510a8f2a288c",
+      "sourceBytes": 658,
+      "archivedBytes": 658,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-rejected133-mechanism-ivkvn783/build-diagnostic.py",
+      "destination": "docs/profiling/distinct-projection-work/rejected133-residual/build-diagnostic.py",
+      "sourceSha256": "8522c00c27596cdcf647a43a2ea639417cc1b139fc374d429fed66843ce7c70b",
+      "archivedSha256": "8522c00c27596cdcf647a43a2ea639417cc1b139fc374d429fed66843ce7c70b",
+      "sourceBytes": 2002,
+      "archivedBytes": 2002,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": false
+    },
+    {
+      "source": "/private/tmp/graphite-rejected133-mechanism-ivkvn783/capture-residual.py",
+      "destination": "docs/profiling/distinct-projection-work/rejected133-residual/capture-residual.py",
+      "sourceSha256": "a170f7c9fd42cb19769384c27ca26b7b4af55c755b72193393e1adbfa89e6ff6",
+      "archivedSha256": "a170f7c9fd42cb19769384c27ca26b7b4af55c755b72193393e1adbfa89e6ff6",
+      "sourceBytes": 3711,
+      "archivedBytes": 3711,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": false
+    },
+    {
+      "source": "/private/tmp/graphite-rejected133-mechanism-ivkvn783/build.log",
+      "destination": "docs/profiling/distinct-projection-work/rejected133-residual/build.log",
+      "sourceSha256": "5bda24349a53cd63de1ca9e44c5379a55468a273564df3a19a0d2570f78a7e53",
+      "archivedSha256": "5bda24349a53cd63de1ca9e44c5379a55468a273564df3a19a0d2570f78a7e53",
+      "sourceBytes": 2623,
+      "archivedBytes": 2623,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": false
+    },
+    {
+      "source": "/private/tmp/graphite-rejected133-mechanism-ivkvn783/java-version.txt",
+      "destination": "docs/profiling/distinct-projection-work/rejected133-residual/java-version.txt",
+      "sourceSha256": "02edbd212ae87c9da37ab3e52aa4db12bd96e5137f902ee6c1d40565b69566c8",
+      "archivedSha256": "02edbd212ae87c9da37ab3e52aa4db12bd96e5137f902ee6c1d40565b69566c8",
+      "sourceBytes": 221,
+      "archivedBytes": 221,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": false
+    },
+    {
+      "source": "/private/tmp/graphite-rejected133-mechanism-ivkvn783/profiles/residual-summary.json",
+      "destination": "docs/profiling/distinct-projection-work/rejected133-residual/profiles/residual-summary.json",
+      "sourceSha256": "8ad3b4c3e45ddbecc8fade0c62e9de17434c07ac395e4f0831ff942e15175742",
+      "archivedSha256": "8ad3b4c3e45ddbecc8fade0c62e9de17434c07ac395e4f0831ff942e15175742",
+      "sourceBytes": 115600,
+      "archivedBytes": 115600,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-rejected133-mechanism-ivkvn783/profiles/residual-audit.md",
+      "destination": "docs/profiling/distinct-projection-work/rejected133-residual/profiles/residual-audit.md",
+      "sourceSha256": "a81ca12ac883e90bddf46ac9ba2c98cc7d236357e39128bdace068e415307b98",
+      "archivedSha256": "a81ca12ac883e90bddf46ac9ba2c98cc7d236357e39128bdace068e415307b98",
+      "sourceBytes": 6011,
+      "archivedBytes": 6011,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": false
+    },
+    {
+      "source": "/private/tmp/graphite-rejected133-mechanism-ivkvn783/profiles/residual-audit.json",
+      "destination": "docs/profiling/distinct-projection-work/rejected133-residual/profiles/residual-audit.json",
+      "sourceSha256": "9cf099e731d33fd3ba38c7340a0c48e642a47236880bc3a6d433679b4fd2e436",
+      "archivedSha256": "9cf099e731d33fd3ba38c7340a0c48e642a47236880bc3a6d433679b4fd2e436",
+      "sourceBytes": 50062,
+      "archivedBytes": 50062,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-rejected133-mechanism-ivkvn783/profiles/audit-residual.py",
+      "destination": "docs/profiling/distinct-projection-work/rejected133-residual/profiles/audit-residual.py",
+      "sourceSha256": "a4b0f8f48f120193f6a30fdede228320c67178217297a2b062cb9a829ca0c92a",
+      "archivedSha256": "a4b0f8f48f120193f6a30fdede228320c67178217297a2b062cb9a829ca0c92a",
+      "sourceBytes": 7246,
+      "archivedBytes": 7246,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": false
+    },
+    {
+      "source": "/private/tmp/graphite-rejected133-mechanism-ivkvn783/profiles/completed.json",
+      "destination": "docs/profiling/distinct-projection-work/rejected133-residual/profiles/completed.json",
+      "sourceSha256": "386f4a734f59d0aa6e03f416f8b9af2c26e01393891bcc99ff56a854c37013a2",
+      "archivedSha256": "386f4a734f59d0aa6e03f416f8b9af2c26e01393891bcc99ff56a854c37013a2",
+      "sourceBytes": 218,
+      "archivedBytes": 218,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-rejected133-mechanism-ivkvn783/profiles/input-receipt.json",
+      "destination": "docs/profiling/distinct-projection-work/rejected133-residual/profiles/input-receipt.json",
+      "sourceSha256": "32a0c5a12ecd4f8a818bce3242e044909421bfb957371d08b5bec0506a873136",
+      "archivedSha256": "32a0c5a12ecd4f8a818bce3242e044909421bfb957371d08b5bec0506a873136",
+      "sourceBytes": 194053,
+      "archivedBytes": 194053,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-rejected133-mechanism-ivkvn783/profiles/base.tsv",
+      "destination": "docs/profiling/distinct-projection-work/rejected133-residual/profiles/base.tsv",
+      "sourceSha256": "58dcebaf5c9137c4eef8cb02bc3a4ce43be79a982903a58011110260e76c6cc8",
+      "archivedSha256": "58dcebaf5c9137c4eef8cb02bc3a4ce43be79a982903a58011110260e76c6cc8",
+      "sourceBytes": 41049,
+      "archivedBytes": 41049,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": false
+    },
+    {
+      "source": "/private/tmp/graphite-rejected133-mechanism-ivkvn783/profiles/rejected133.tsv",
+      "destination": "docs/profiling/distinct-projection-work/rejected133-residual/profiles/rejected133.tsv",
+      "sourceSha256": "f79b4e1389f7ad56d68f93e6acbdd2ea88c5f59b4ac6077973ef9382a1188321",
+      "archivedSha256": "f79b4e1389f7ad56d68f93e6acbdd2ea88c5f59b4ac6077973ef9382a1188321",
+      "sourceBytes": 41048,
+      "archivedBytes": 41048,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": false
+    },
+    {
+      "source": "/private/tmp/graphite-rejected133-mechanism-ivkvn783/profiles/base-command.json",
+      "destination": "docs/profiling/distinct-projection-work/rejected133-residual/profiles/base-command.json",
+      "sourceSha256": "c423417d48438cc0c07188aba68a4fe70dea006777f30c233483597031f66d4d",
+      "archivedSha256": "c423417d48438cc0c07188aba68a4fe70dea006777f30c233483597031f66d4d",
+      "sourceBytes": 1682,
+      "archivedBytes": 1682,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-rejected133-mechanism-ivkvn783/profiles/rejected133-command.json",
+      "destination": "docs/profiling/distinct-projection-work/rejected133-residual/profiles/rejected133-command.json",
+      "sourceSha256": "5d6ae37cf81530891ef0508621fc44c5d45fd1d44aedf076e33cbb34372de5a7",
+      "archivedSha256": "5d6ae37cf81530891ef0508621fc44c5d45fd1d44aedf076e33cbb34372de5a7",
+      "sourceBytes": 1690,
+      "archivedBytes": 1690,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-rejected133-mechanism-ivkvn783/profiles/base-analysis-0-command.json",
+      "destination": "docs/profiling/distinct-projection-work/rejected133-residual/profiles/base-analysis-0-command.json",
+      "sourceSha256": "f06e85e49a1feca16202d3779daed61582df95b9e150080f63723885f41a0daf",
+      "archivedSha256": "f06e85e49a1feca16202d3779daed61582df95b9e150080f63723885f41a0daf",
+      "sourceBytes": 522,
+      "archivedBytes": 522,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-rejected133-mechanism-ivkvn783/profiles/base-analysis-1-command.json",
+      "destination": "docs/profiling/distinct-projection-work/rejected133-residual/profiles/base-analysis-1-command.json",
+      "sourceSha256": "100fa32eea011f8adbeffbc53ab4acbc4156e8e7c77e85567f2b945ad51d7cc3",
+      "archivedSha256": "100fa32eea011f8adbeffbc53ab4acbc4156e8e7c77e85567f2b945ad51d7cc3",
+      "sourceBytes": 447,
+      "archivedBytes": 447,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-rejected133-mechanism-ivkvn783/profiles/rejected133-analysis-0-command.json",
+      "destination": "docs/profiling/distinct-projection-work/rejected133-residual/profiles/rejected133-analysis-0-command.json",
+      "sourceSha256": "3c35a7f34fe8bf5e2e2ff62def974e1cb2037699bc8189baf776abfea6599dfb",
+      "archivedSha256": "3c35a7f34fe8bf5e2e2ff62def974e1cb2037699bc8189baf776abfea6599dfb",
+      "sourceBytes": 543,
+      "archivedBytes": 543,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    },
+    {
+      "source": "/private/tmp/graphite-rejected133-mechanism-ivkvn783/profiles/rejected133-analysis-1-command.json",
+      "destination": "docs/profiling/distinct-projection-work/rejected133-residual/profiles/rejected133-analysis-1-command.json",
+      "sourceSha256": "f47919093c09e57e6cd2cc3768dd1e1ce5791ec4435fa14e468f9484f06db25c",
+      "archivedSha256": "f47919093c09e57e6cd2cc3768dd1e1ce5791ec4435fa14e468f9484f06db25c",
+      "sourceBytes": 468,
+      "archivedBytes": 468,
+      "trailingNewlineOnlyNormalization": false,
+      "parsedJsonUnchanged": true
+    }
+  ]
+}

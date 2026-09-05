@@ -1,0 +1,15 @@
+diff --git a/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt b/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt
+index 5298ad7a..b4d2f446 100644
+--- a/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt
++++ b/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt
+@@ -499,8 +499,8 @@ internal class MappedWebGraphBackedGraph(
+         )
+         val workerCount = minOf(nodeCount.toInt(), backgroundWorkerCount + 1)
+         val chunkSize = (nodeCount + workerCount - 1L) / workerCount
+-        val predicatePropertyIndexes = predicates.map { predicate ->
+-            requiredCallSiteStringPropertyIndex(predicate.property)
++        val predicatePropertyIndexes = IntArray(predicates.size) { index ->
++            requiredCallSiteStringPropertyIndex(predicates[index].property)
+         }
+         val projectedPropertyIndexes = projectedProperties.map(::callSiteStringPropertyIndex)
+         val selectedStringIds = HashMap<String, Int>()

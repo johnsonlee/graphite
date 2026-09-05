@@ -1,0 +1,2213 @@
+{
+  "attempt": 136,
+  "scope": "Independent read-only audit of completed old34 runs; no measurements/JVM",
+  "oracle": "/private/tmp/graphite-attempt136.zr21l653/old34-pairs/oracle.correctness",
+  "oracleSha256": "a331a139c575120eb47bec21e2cbafb766f1f68dee2f892939edfa608e105219",
+  "oracleByteEqualPrior": "/private/tmp/graphite-mapped-tuple-evidence.t2461mo1/oracle.correctness",
+  "oracleRecordFields": [
+    "id",
+    "family",
+    "shape",
+    "selectivity",
+    "operator",
+    "boundary",
+    "projection",
+    "targetGraphId",
+    "workloadIdentity",
+    "limit",
+    "outcome",
+    "rowCount",
+    "responseBytes",
+    "digest"
+  ],
+  "oracleRecords": [
+    "global-wide-four-properties-zero|global-wide|global-wide-four-properties|zero|raw-contains|single-query|properties||47c5f2f8275ab2447995a1b45a36cd5b0b70e258e0f75934abd1f0cef5c2b93e|200|success|0|147|805c8c7334c868e18e2be84be95b83cc60895722d739c2b164a68be4cd410c49",
+    "global-wide-four-properties-targeted|global-wide|global-wide-four-properties|targeted|raw-contains|single-query|properties||47c5f2f8275ab2447995a1b45a36cd5b0b70e258e0f75934abd1f0cef5c2b93e|200|success|11|6277|ca01ade166f4156fe11d166c7832fed45bfbdf107060915eb0c8f2df36ef35ed",
+    "global-wide-four-properties-dense|global-wide|global-wide-four-properties|dense|raw-contains|single-query|properties||47c5f2f8275ab2447995a1b45a36cd5b0b70e258e0f75934abd1f0cef5c2b93e|200|success|200|84412|8eceb0bb70ccfdd593dcb45e66de5d2b8ea8dae746bc99461d0899dc8d12c31a",
+    "global-wide-class-pair-zero|global-wide|global-wide-class-pair|zero|raw-contains|single-query|class-properties||2884fe5070e6e70bd2c44e54af37c56e2cfd19343a8721d5b36093d7d1db0f7d|200|success|0|84|425b336aa734c4a1ffbfb58aeaf5489b33f919170492c4bff859504736492e7f",
+    "global-wide-class-pair-targeted|global-wide|global-wide-class-pair|targeted|raw-contains|single-query|class-properties||2884fe5070e6e70bd2c44e54af37c56e2cfd19343a8721d5b36093d7d1db0f7d|200|success|1|548|293726158b0e5fab1ac11826253b0682c325d22e027a3b3fd202214984b341d6",
+    "global-wide-class-pair-dense|global-wide|global-wide-class-pair|dense|raw-contains|single-query|class-properties||47c5f2f8275ab2447995a1b45a36cd5b0b70e258e0f75934abd1f0cef5c2b93e|200|success|200|60629|81d3eb1768219b0da6ffd7c3b85945b972fea0dcf7b73f3c4ab85cb548d7f0cf",
+    "global-wide-name-pair-zero|global-wide|global-wide-name-pair|zero|raw-contains|single-query|name-properties||caf42d54ef3437f216c963929327ed5ef3f52ce080fa2be4c3305c2370617ab1|200|success|0|82|3ccae830dbdb8a07387e7c7e6dc034be54ba0aabd8aed60d7c03e33380639d25",
+    "global-wide-name-pair-targeted|global-wide|global-wide-name-pair|targeted|raw-contains|single-query|name-properties||caf42d54ef3437f216c963929327ed5ef3f52ce080fa2be4c3305c2370617ab1|200|success|4|1103|58540b74d820ca24f3d68b0b7fb18b59338e9416511998c40901a1ea0e3da925",
+    "global-wide-name-pair-dense|global-wide|global-wide-name-pair|dense|raw-contains|single-query|name-properties||47c5f2f8275ab2447995a1b45a36cd5b0b70e258e0f75934abd1f0cef5c2b93e|200|success|200|52008|cb35d833bb790432aec3a1d31677653b78a921e9c16abed9af2e31b673ab2819",
+    "global-wide-caller-class-zero|global-wide|global-wide-caller-class|zero|raw-contains|single-query|caller-class||a70ca503c8d7edc9fd5b26430e9c4bd9517cfcf9084469733cfeff8a4fef63f8|200|success|0|52|49a026e323beb71e70addfd97b163cb2851f30cc7d78914fb454d79e4dac8372",
+    "global-wide-caller-class-targeted|global-wide|global-wide-caller-class|targeted|raw-contains|single-query|caller-class||a70ca503c8d7edc9fd5b26430e9c4bd9517cfcf9084469733cfeff8a4fef63f8|200|success|2|690|71d6d516eb1b38878b6c3fb33515ffbef9ce1e392274e3672fadb25c6d59468c",
+    "global-wide-caller-class-dense|global-wide|global-wide-caller-class|dense|raw-contains|single-query|caller-class||47c5f2f8275ab2447995a1b45a36cd5b0b70e258e0f75934abd1f0cef5c2b93e|200|success|200|45685|4acba209fd2966a95b338a6ca2bb4826cae6e1bc982fb1e8f624274f38af44fd",
+    "global-wide-callee-class-zero|global-wide|global-wide-callee-class|zero|raw-contains|single-query|callee-class||333b320af3f398d083e1d44b1a79e54fa546da12ce118f18db6f7cc3387398c8|200|success|0|52|4b6b439db49d0055828a93fdeb339f15977e31edc79e5cbecac39307b3c93d34",
+    "global-wide-callee-class-targeted|global-wide|global-wide-callee-class|targeted|raw-contains|single-query|callee-class||333b320af3f398d083e1d44b1a79e54fa546da12ce118f18db6f7cc3387398c8|200|success|13|3106|38accaa3de2bf6856772e7af245aab8ef28aa1b18d695c5c6636f16b84eda1fe",
+    "global-wide-callee-class-dense|global-wide|global-wide-callee-class|dense|raw-contains|single-query|callee-class||47c5f2f8275ab2447995a1b45a36cd5b0b70e258e0f75934abd1f0cef5c2b93e|200|success|200|43370|4612b6fd3373ac72f1504e0f36e283689f5d39f8d1ee079417b1b2cce0b575a5",
+    "global-wide-provenance-zero|global-wide|global-wide-provenance|zero|raw-contains|single-query|graph-id-properties||bc37ba5880a9fc3e89dea2bf6571ad8db10f8c499dfca7c678b831d8edb064fe|200|success|0|173|21514b44bab7a7f1a700cdc7119f3ce1b4ea8304c84e402ddb5f9775b21dd8af",
+    "global-wide-provenance-targeted|global-wide|global-wide-provenance|targeted|raw-contains|single-query|graph-id-properties||bc37ba5880a9fc3e89dea2bf6571ad8db10f8c499dfca7c678b831d8edb064fe|200|success|5|3686|e03733885fccd27d09d67440e488d5be3f0db06077f0518c35fad38155449305",
+    "global-wide-provenance-dense|global-wide|global-wide-provenance|dense|raw-contains|single-query|graph-id-properties||47c5f2f8275ab2447995a1b45a36cd5b0b70e258e0f75934abd1f0cef5c2b93e|200|success|200|96838|0195b457e87cb89f9435db8fabc1571a1cc9b3c89510875ac7eb56a14bd74eaf",
+    "global-wide-aliased-zero|global-wide|global-wide-aliased|zero|raw-contains|single-query|aliased-properties||e942f277a2b44bd11b03bd9380dd5388338721030a1701c31ff2277dd8f8cd9a|200|success|0|127|204c1d27407857dc7d7e40edba750f7e94fe476df82ab2ae0618ecb2491bc113",
+    "global-wide-aliased-targeted|global-wide|global-wide-aliased|targeted|raw-contains|single-query|aliased-properties||e942f277a2b44bd11b03bd9380dd5388338721030a1701c31ff2277dd8f8cd9a|200|success|68|41116|ad659bfee58b6bedbfe40a71c4fad3a9ae4b1fcbbae0a4465fc1383dbba89f8d",
+    "global-wide-aliased-dense|global-wide|global-wide-aliased|dense|raw-contains|single-query|aliased-properties||47c5f2f8275ab2447995a1b45a36cd5b0b70e258e0f75934abd1f0cef5c2b93e|200|success|200|80392|ff07e16e7d2fb977a5bd5b90d859a49a4a57c15852658928bd8ec41286ffb6d0",
+    "global-wide-parameterized-zero|global-wide|global-wide-parameterized|zero|raw-contains|parameters|properties||a2378f34cd746f343988852d75ea5d50b8bfe89e6cd965dacb19b742e3a8c966|200|success|0|147|805c8c7334c868e18e2be84be95b83cc60895722d739c2b164a68be4cd410c49",
+    "global-wide-parameterized-targeted|global-wide|global-wide-parameterized|targeted|raw-contains|parameters|properties||a2378f34cd746f343988852d75ea5d50b8bfe89e6cd965dacb19b742e3a8c966|200|success|4|2598|d72c68d3fe0e8e0257e28136dfcba3f279a31d304b51dc9611dfa7b0f16169a8",
+    "global-wide-parameterized-dense|global-wide|global-wide-parameterized|dense|raw-contains|parameters|properties||47c5f2f8275ab2447995a1b45a36cd5b0b70e258e0f75934abd1f0cef5c2b93e|200|success|200|84412|8eceb0bb70ccfdd593dcb45e66de5d2b8ea8dae746bc99461d0899dc8d12c31a",
+    "global-wide-wrapped-case-insensitive-zero|global-wide|global-wide-wrapped-case-insensitive|zero|wrapped-lowercase-contains|single-query|properties||37be466842d1f239df76fe55e92f6769fc0b2d6e47e43f0020c40a8ce8422cb0|200|success|0|147|805c8c7334c868e18e2be84be95b83cc60895722d739c2b164a68be4cd410c49",
+    "global-wide-wrapped-case-insensitive-targeted|global-wide|global-wide-wrapped-case-insensitive|targeted|wrapped-lowercase-contains|single-query|properties||37be466842d1f239df76fe55e92f6769fc0b2d6e47e43f0020c40a8ce8422cb0|200|success|5|3192|6be81ce87c99d083628d76b0dce1e105c3d7fae110ebf15207143c3be7df8eeb",
+    "global-wide-wrapped-case-insensitive-dense|global-wide|global-wide-wrapped-case-insensitive|dense|wrapped-lowercase-contains|single-query|properties||47c5f2f8275ab2447995a1b45a36cd5b0b70e258e0f75934abd1f0cef5c2b93e|200|success|200|84411|3bdee68309e62bee93f47848258ded90b1763d55841fa57d8b8fd21867653c44",
+    "global-wide-wrapped-case-insensitive-distinct-zero|global-wide|global-wide-wrapped-case-insensitive-distinct|zero|wrapped-lowercase-contains|single-query|distinct-properties||86015e396789c5c1cf86d1df3b0b97987a7b461bfcfb129491f3d758793d1d65|200|success|0|147|805c8c7334c868e18e2be84be95b83cc60895722d739c2b164a68be4cd410c49",
+    "global-wide-wrapped-case-insensitive-distinct-targeted|global-wide|global-wide-wrapped-case-insensitive-distinct|targeted|wrapped-lowercase-contains|single-query|distinct-properties||86015e396789c5c1cf86d1df3b0b97987a7b461bfcfb129491f3d758793d1d65|200|success|12|7358|3358c833e7c8859180e728fd0fbf286febcb246f2ecb508f1202b5ef6e3b8b9f",
+    "global-wide-wrapped-case-insensitive-distinct-dense|global-wide|global-wide-wrapped-case-insensitive-distinct|dense|wrapped-lowercase-contains|single-query|distinct-properties||47c5f2f8275ab2447995a1b45a36cd5b0b70e258e0f75934abd1f0cef5c2b93e|200|success|200|85721|1e662cf0935ee94c21b8eb0c4f6e3b4257d74ab515ccb1e7e31419b17919a9e7",
+    "global-wide-distribution-broad-all-64|global-wide|global-wide-distribution-broad-all-64|dense|wrapped-lowercase-contains|fixture-distribution|properties||47c5f2f8275ab2447995a1b45a36cd5b0b70e258e0f75934abd1f0cef5c2b93e|200|success|200|84411|3bdee68309e62bee93f47848258ded90b1763d55841fa57d8b8fd21867653c44",
+    "global-wide-distribution-localized-early|global-wide|global-wide-distribution-localized-early|dense|wrapped-lowercase-contains|fixture-distribution|properties||47c5f2f8275ab2447995a1b45a36cd5b0b70e258e0f75934abd1f0cef5c2b93e|200|success|200|87514|061ea2dc2c6b48e0062033a68c9330f5e3ae05832411ea3c936eda2bf17b38ee",
+    "global-wide-distribution-localized-late|global-wide|global-wide-distribution-localized-late|dense|wrapped-lowercase-contains|fixture-distribution|properties||86015e396789c5c1cf86d1df3b0b97987a7b461bfcfb129491f3d758793d1d65|200|success|200|113169|a4f80afc105bb0a4b11b2222f95fb82babb9dcc4eb366b125a552fd58091dac9",
+    "global-wide-distribution-localized-middle|global-wide|global-wide-distribution-localized-middle|dense|wrapped-lowercase-contains|fixture-distribution|properties||80331285783d790177bcaeeebf677e98900445b2273d41781c6e07aa5683a500|200|success|200|98559|c0cb93ca1d3016402e2a72f544861fd280085797fa3a16f1cbefb769ecfda4b3"
+  ],
+  "all204OracleSignaturesMatched": true,
+  "allRunsSameOrderAndSourceWorkScanFields": [
+    "hitGraphIds",
+    "graphWorkUnits",
+    "inputSourceCount",
+    "accessedGraphIds",
+    "parallelScanCount"
+  ],
+  "percentileDefinition": "ceil(34*0.95)=33rd ordered query latency; heterogeneous-query suite percentile, not repeated fixed-query request P95",
+  "runs": [
+    {
+      "side": "base",
+      "pair": 1,
+      "json": "/private/tmp/graphite-attempt136.zr21l653/old34-pairs/base-global-wide-1.json",
+      "jsonSha256": "3f0ef80c79fada64b5f1ea856d8e463eb124553999d638334542ecd19ff3abda",
+      "tsv": "/private/tmp/graphite-attempt136.zr21l653/old34-pairs/base-global-wide-1.tsv",
+      "tsvSha256": "8addfa8506ef31a60605912a2dfb14581006eccf9e87de0df72318e451e19f4f",
+      "command": "/private/tmp/graphite-attempt136.zr21l653/old34-pairs/base-global-wide-1-command.json",
+      "commandSha256": "13a7319cd25bdcfa74bf2c5d7d8b81b3241d05f8326e2849fe500ff2ca77710f",
+      "params": {
+        "coverageFamily": "global-wide",
+        "graphCount": "64",
+        "indexState": "cold",
+        "timeoutMillis": "300000"
+      },
+      "jvmArgs": [
+        "-Xmx8g",
+        "-XX:ActiveProcessorCount=4",
+        "-Dgraphite.broad.pressure.graphs=/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/graphs.tsv",
+        "-Dgraphite.broad.pressure.correctness.mode=verify",
+        "-Dgraphite.broad.pressure.correctness.oracle=/private/tmp/graphite-attempt136.zr21l653/old34-pairs/oracle.correctness",
+        "-Dgraphite.broad.pressure.observations.output=/private/tmp/graphite-attempt136.zr21l653/old34-pairs/base-global-wide-1.tsv"
+      ],
+      "fullOracleMatched": true,
+      "queryCount": 34,
+      "correctnessSignatureSha256": "a331a139c575120eb47bec21e2cbafb766f1f68dee2f892939edfa608e105219",
+      "metrics": {
+        "processCpuNanos": 1499329000,
+        "peakUsedHeapBytes": 4704819360,
+        "peakResidentSetBytes": 5255626752,
+        "queryCount": 34,
+        "failureCount": 0,
+        "timeoutCount": 0,
+        "graphWorkUnits": 58071626,
+        "p95LatencyNanos": 47074708
+      },
+      "p95RankOneBased": 33,
+      "p95QueryId": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "primaryWallScore": 0.510339125,
+      "primaryWallUnit": "s/op",
+      "rows": [
+        {
+          "id": "global-wide-four-properties-zero",
+          "latencyNanos": 258135833,
+          "graphWorkUnits": 57642093,
+          "hitGraphIds": "",
+          "digest": "805c8c7334c868e18e2be84be95b83cc60895722d739c2b164a68be4cd410c49",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-four-properties-targeted",
+          "latencyNanos": 11144916,
+          "graphWorkUnits": 2315,
+          "hitGraphIds": "fixture-android-00,fixture-android-09",
+          "digest": "ca01ade166f4156fe11d166c7832fed45bfbdf107060915eb0c8f2df36ef35ed",
+          "rowCount": 11
+        },
+        {
+          "id": "global-wide-four-properties-dense",
+          "latencyNanos": 3937000,
+          "graphWorkUnits": 681,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "8eceb0bb70ccfdd593dcb45e66de5d2b8ea8dae746bc99461d0899dc8d12c31a",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-class-pair-zero",
+          "latencyNanos": 2000458,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "425b336aa734c4a1ffbfb58aeaf5489b33f919170492c4bff859504736492e7f",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-class-pair-targeted",
+          "latencyNanos": 4606000,
+          "graphWorkUnits": 2674,
+          "hitGraphIds": "fixture-android-07",
+          "digest": "293726158b0e5fab1ac11826253b0682c325d22e027a3b3fd202214984b341d6",
+          "rowCount": 1
+        },
+        {
+          "id": "global-wide-class-pair-dense",
+          "latencyNanos": 1055375,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "81d3eb1768219b0da6ffd7c3b85945b972fea0dcf7b73f3c4ab85cb548d7f0cf",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-name-pair-zero",
+          "latencyNanos": 2175958,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "3ccae830dbdb8a07387e7c7e6dc034be54ba0aabd8aed60d7c03e33380639d25",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-name-pair-targeted",
+          "latencyNanos": 4754750,
+          "graphWorkUnits": 4650,
+          "hitGraphIds": "fixture-android-03,fixture-android-14",
+          "digest": "58540b74d820ca24f3d68b0b7fb18b59338e9416511998c40901a1ea0e3da925",
+          "rowCount": 4
+        },
+        {
+          "id": "global-wide-name-pair-dense",
+          "latencyNanos": 808375,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "cb35d833bb790432aec3a1d31677653b78a921e9c16abed9af2e31b673ab2819",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-caller-class-zero",
+          "latencyNanos": 1751667,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "49a026e323beb71e70addfd97b163cb2851f30cc7d78914fb454d79e4dac8372",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-caller-class-targeted",
+          "latencyNanos": 3080333,
+          "graphWorkUnits": 2566,
+          "hitGraphIds": "fixture-tika-05,fixture-tika-15",
+          "digest": "71d6d516eb1b38878b6c3fb33515ffbef9ce1e392274e3672fadb25c6d59468c",
+          "rowCount": 2
+        },
+        {
+          "id": "global-wide-caller-class-dense",
+          "latencyNanos": 653875,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "4acba209fd2966a95b338a6ca2bb4826cae6e1bc982fb1e8f624274f38af44fd",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-callee-class-zero",
+          "latencyNanos": 1500125,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "4b6b439db49d0055828a93fdeb339f15977e31edc79e5cbecac39307b3c93d34",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-callee-class-targeted",
+          "latencyNanos": 2162334,
+          "graphWorkUnits": 2015,
+          "hitGraphIds": "fixture-tika-02,fixture-tika-12",
+          "digest": "38accaa3de2bf6856772e7af245aab8ef28aa1b18d695c5c6636f16b84eda1fe",
+          "rowCount": 13
+        },
+        {
+          "id": "global-wide-callee-class-dense",
+          "latencyNanos": 488375,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "4612b6fd3373ac72f1504e0f36e283689f5d39f8d1ee079417b1b2cce0b575a5",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-provenance-zero",
+          "latencyNanos": 1030167,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "21514b44bab7a7f1a700cdc7119f3ce1b4ea8304c84e402ddb5f9775b21dd8af",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-provenance-targeted",
+          "latencyNanos": 3470750,
+          "graphWorkUnits": 3382,
+          "hitGraphIds": "fixture-hive-03,fixture-hive-11",
+          "digest": "e03733885fccd27d09d67440e488d5be3f0db06077f0518c35fad38155449305",
+          "rowCount": 5
+        },
+        {
+          "id": "global-wide-provenance-dense",
+          "latencyNanos": 906292,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "0195b457e87cb89f9435db8fabc1571a1cc9b3c89510875ac7eb56a14bd74eaf",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-aliased-zero",
+          "latencyNanos": 1125375,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "204c1d27407857dc7d7e40edba750f7e94fe476df82ab2ae0618ecb2491bc113",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-aliased-targeted",
+          "latencyNanos": 3517083,
+          "graphWorkUnits": 3955,
+          "hitGraphIds": "fixture-hive-08,fixture-hive-10,fixture-hive-13",
+          "digest": "ad659bfee58b6bedbfe40a71c4fad3a9ae4b1fcbbae0a4465fc1383dbba89f8d",
+          "rowCount": 68
+        },
+        {
+          "id": "global-wide-aliased-dense",
+          "latencyNanos": 773750,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "ff07e16e7d2fb977a5bd5b90d859a49a4a57c15852658928bd8ec41286ffb6d0",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-parameterized-zero",
+          "latencyNanos": 1039000,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "805c8c7334c868e18e2be84be95b83cc60895722d739c2b164a68be4cd410c49",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-parameterized-targeted",
+          "latencyNanos": 2408875,
+          "graphWorkUnits": 2781,
+          "hitGraphIds": "fixture-kotlin-compiler-01",
+          "digest": "d72c68d3fe0e8e0257e28136dfcba3f279a31d304b51dc9611dfa7b0f16169a8",
+          "rowCount": 4
+        },
+        {
+          "id": "global-wide-parameterized-dense",
+          "latencyNanos": 774167,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "8eceb0bb70ccfdd593dcb45e66de5d2b8ea8dae746bc99461d0899dc8d12c31a",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-wrapped-case-insensitive-zero",
+          "latencyNanos": 1136708,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "805c8c7334c868e18e2be84be95b83cc60895722d739c2b164a68be4cd410c49",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-wrapped-case-insensitive-targeted",
+          "latencyNanos": 2530542,
+          "graphWorkUnits": 2777,
+          "hitGraphIds": "fixture-kotlin-compiler-08,fixture-kotlin-compiler-14",
+          "digest": "6be81ce87c99d083628d76b0dce1e105c3d7fae110ebf15207143c3be7df8eeb",
+          "rowCount": 5
+        },
+        {
+          "id": "global-wide-wrapped-case-insensitive-dense",
+          "latencyNanos": 1381208,
+          "graphWorkUnits": 665,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "3bdee68309e62bee93f47848258ded90b1763d55841fa57d8b8fd21867653c44",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-wrapped-case-insensitive-distinct-zero",
+          "latencyNanos": 3504333,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "805c8c7334c868e18e2be84be95b83cc60895722d739c2b164a68be4cd410c49",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+          "latencyNanos": 24229000,
+          "graphWorkUnits": 106706,
+          "hitGraphIds": "fixture-kotlin-compiler-11,fixture-kotlin-compiler-15",
+          "digest": "3358c833e7c8859180e728fd0fbf286febcb246f2ecb508f1202b5ef6e3b8b9f",
+          "rowCount": 12
+        },
+        {
+          "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+          "latencyNanos": 47074708,
+          "graphWorkUnits": 283544,
+          "hitGraphIds": "fixture-android-00,fixture-tika-00",
+          "digest": "1e662cf0935ee94c21b8eb0c4f6e3b4257d74ab515ccb1e7e31419b17919a9e7",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-distribution-broad-all-64",
+          "latencyNanos": 859958,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "3bdee68309e62bee93f47848258ded90b1763d55841fa57d8b8fd21867653c44",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-distribution-localized-early",
+          "latencyNanos": 1318708,
+          "graphWorkUnits": 1053,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "061ea2dc2c6b48e0062033a68c9330f5e3ae05832411ea3c936eda2bf17b38ee",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-distribution-localized-late",
+          "latencyNanos": 3845291,
+          "graphWorkUnits": 2846,
+          "hitGraphIds": "fixture-kotlin-compiler-15",
+          "digest": "a4f80afc105bb0a4b11b2222f95fb82babb9dcc4eb366b125a552fd58091dac9",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-distribution-localized-middle",
+          "latencyNanos": 3055875,
+          "graphWorkUnits": 4432,
+          "hitGraphIds": "fixture-tika-15",
+          "digest": "c0cb93ca1d3016402e2a72f544861fd280085797fa3a16f1cbefb769ecfda4b3",
+          "rowCount": 200
+        }
+      ],
+      "topThreeSlowest": [
+        {
+          "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+          "latencyNanos": 24229000
+        },
+        {
+          "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+          "latencyNanos": 47074708
+        },
+        {
+          "id": "global-wide-four-properties-zero",
+          "latencyNanos": 258135833
+        }
+      ]
+    },
+    {
+      "side": "candidate",
+      "pair": 1,
+      "json": "/private/tmp/graphite-attempt136.zr21l653/old34-pairs/candidate-global-wide-1.json",
+      "jsonSha256": "bce6b3e187e3545985b2269009d95529e5e1d038c37484f733d5cb00822aa95c",
+      "tsv": "/private/tmp/graphite-attempt136.zr21l653/old34-pairs/candidate-global-wide-1.tsv",
+      "tsvSha256": "35eae5ad8dca304ef13436e920e843968534565e74f6e40da5fca79038e94e8c",
+      "command": "/private/tmp/graphite-attempt136.zr21l653/old34-pairs/candidate-global-wide-1-command.json",
+      "commandSha256": "e7486e11d4c589575549f9ca06879853865f65b3c96f2faa858a4b118dbc7e70",
+      "params": {
+        "coverageFamily": "global-wide",
+        "graphCount": "64",
+        "indexState": "cold",
+        "timeoutMillis": "300000"
+      },
+      "jvmArgs": [
+        "-Xmx8g",
+        "-XX:ActiveProcessorCount=4",
+        "-Dgraphite.broad.pressure.graphs=/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/graphs.tsv",
+        "-Dgraphite.broad.pressure.correctness.mode=verify",
+        "-Dgraphite.broad.pressure.correctness.oracle=/private/tmp/graphite-attempt136.zr21l653/old34-pairs/oracle.correctness",
+        "-Dgraphite.broad.pressure.observations.output=/private/tmp/graphite-attempt136.zr21l653/old34-pairs/candidate-global-wide-1.tsv"
+      ],
+      "fullOracleMatched": true,
+      "queryCount": 34,
+      "correctnessSignatureSha256": "a331a139c575120eb47bec21e2cbafb766f1f68dee2f892939edfa608e105219",
+      "metrics": {
+        "processCpuNanos": 1552886000,
+        "peakUsedHeapBytes": 4325719720,
+        "peakResidentSetBytes": 4861919232,
+        "queryCount": 34,
+        "failureCount": 0,
+        "timeoutCount": 0,
+        "graphWorkUnits": 58071626,
+        "p95LatencyNanos": 50419250
+      },
+      "p95RankOneBased": 33,
+      "p95QueryId": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "primaryWallScore": 0.513259791,
+      "primaryWallUnit": "s/op",
+      "rows": [
+        {
+          "id": "global-wide-four-properties-zero",
+          "latencyNanos": 255740709,
+          "graphWorkUnits": 57642093,
+          "hitGraphIds": "",
+          "digest": "805c8c7334c868e18e2be84be95b83cc60895722d739c2b164a68be4cd410c49",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-four-properties-targeted",
+          "latencyNanos": 10603875,
+          "graphWorkUnits": 2315,
+          "hitGraphIds": "fixture-android-00,fixture-android-09",
+          "digest": "ca01ade166f4156fe11d166c7832fed45bfbdf107060915eb0c8f2df36ef35ed",
+          "rowCount": 11
+        },
+        {
+          "id": "global-wide-four-properties-dense",
+          "latencyNanos": 4455500,
+          "graphWorkUnits": 681,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "8eceb0bb70ccfdd593dcb45e66de5d2b8ea8dae746bc99461d0899dc8d12c31a",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-class-pair-zero",
+          "latencyNanos": 1885417,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "425b336aa734c4a1ffbfb58aeaf5489b33f919170492c4bff859504736492e7f",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-class-pair-targeted",
+          "latencyNanos": 4226208,
+          "graphWorkUnits": 2674,
+          "hitGraphIds": "fixture-android-07",
+          "digest": "293726158b0e5fab1ac11826253b0682c325d22e027a3b3fd202214984b341d6",
+          "rowCount": 1
+        },
+        {
+          "id": "global-wide-class-pair-dense",
+          "latencyNanos": 914083,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "81d3eb1768219b0da6ffd7c3b85945b972fea0dcf7b73f3c4ab85cb548d7f0cf",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-name-pair-zero",
+          "latencyNanos": 1818208,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "3ccae830dbdb8a07387e7c7e6dc034be54ba0aabd8aed60d7c03e33380639d25",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-name-pair-targeted",
+          "latencyNanos": 4071666,
+          "graphWorkUnits": 4650,
+          "hitGraphIds": "fixture-android-03,fixture-android-14",
+          "digest": "58540b74d820ca24f3d68b0b7fb18b59338e9416511998c40901a1ea0e3da925",
+          "rowCount": 4
+        },
+        {
+          "id": "global-wide-name-pair-dense",
+          "latencyNanos": 718500,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "cb35d833bb790432aec3a1d31677653b78a921e9c16abed9af2e31b673ab2819",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-caller-class-zero",
+          "latencyNanos": 1419541,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "49a026e323beb71e70addfd97b163cb2851f30cc7d78914fb454d79e4dac8372",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-caller-class-targeted",
+          "latencyNanos": 2598375,
+          "graphWorkUnits": 2566,
+          "hitGraphIds": "fixture-tika-05,fixture-tika-15",
+          "digest": "71d6d516eb1b38878b6c3fb33515ffbef9ce1e392274e3672fadb25c6d59468c",
+          "rowCount": 2
+        },
+        {
+          "id": "global-wide-caller-class-dense",
+          "latencyNanos": 485167,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "4acba209fd2966a95b338a6ca2bb4826cae6e1bc982fb1e8f624274f38af44fd",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-callee-class-zero",
+          "latencyNanos": 1406792,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "4b6b439db49d0055828a93fdeb339f15977e31edc79e5cbecac39307b3c93d34",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-callee-class-targeted",
+          "latencyNanos": 2348084,
+          "graphWorkUnits": 2015,
+          "hitGraphIds": "fixture-tika-02,fixture-tika-12",
+          "digest": "38accaa3de2bf6856772e7af245aab8ef28aa1b18d695c5c6636f16b84eda1fe",
+          "rowCount": 13
+        },
+        {
+          "id": "global-wide-callee-class-dense",
+          "latencyNanos": 422750,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "4612b6fd3373ac72f1504e0f36e283689f5d39f8d1ee079417b1b2cce0b575a5",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-provenance-zero",
+          "latencyNanos": 1246416,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "21514b44bab7a7f1a700cdc7119f3ce1b4ea8304c84e402ddb5f9775b21dd8af",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-provenance-targeted",
+          "latencyNanos": 3087459,
+          "graphWorkUnits": 3382,
+          "hitGraphIds": "fixture-hive-03,fixture-hive-11",
+          "digest": "e03733885fccd27d09d67440e488d5be3f0db06077f0518c35fad38155449305",
+          "rowCount": 5
+        },
+        {
+          "id": "global-wide-provenance-dense",
+          "latencyNanos": 818750,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "0195b457e87cb89f9435db8fabc1571a1cc9b3c89510875ac7eb56a14bd74eaf",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-aliased-zero",
+          "latencyNanos": 972000,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "204c1d27407857dc7d7e40edba750f7e94fe476df82ab2ae0618ecb2491bc113",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-aliased-targeted",
+          "latencyNanos": 3220375,
+          "graphWorkUnits": 3955,
+          "hitGraphIds": "fixture-hive-08,fixture-hive-10,fixture-hive-13",
+          "digest": "ad659bfee58b6bedbfe40a71c4fad3a9ae4b1fcbbae0a4465fc1383dbba89f8d",
+          "rowCount": 68
+        },
+        {
+          "id": "global-wide-aliased-dense",
+          "latencyNanos": 713583,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "ff07e16e7d2fb977a5bd5b90d859a49a4a57c15852658928bd8ec41286ffb6d0",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-parameterized-zero",
+          "latencyNanos": 966709,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "805c8c7334c868e18e2be84be95b83cc60895722d739c2b164a68be4cd410c49",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-parameterized-targeted",
+          "latencyNanos": 2135125,
+          "graphWorkUnits": 2781,
+          "hitGraphIds": "fixture-kotlin-compiler-01",
+          "digest": "d72c68d3fe0e8e0257e28136dfcba3f279a31d304b51dc9611dfa7b0f16169a8",
+          "rowCount": 4
+        },
+        {
+          "id": "global-wide-parameterized-dense",
+          "latencyNanos": 716458,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "8eceb0bb70ccfdd593dcb45e66de5d2b8ea8dae746bc99461d0899dc8d12c31a",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-wrapped-case-insensitive-zero",
+          "latencyNanos": 1144417,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "805c8c7334c868e18e2be84be95b83cc60895722d739c2b164a68be4cd410c49",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-wrapped-case-insensitive-targeted",
+          "latencyNanos": 2348500,
+          "graphWorkUnits": 2777,
+          "hitGraphIds": "fixture-kotlin-compiler-08,fixture-kotlin-compiler-14",
+          "digest": "6be81ce87c99d083628d76b0dce1e105c3d7fae110ebf15207143c3be7df8eeb",
+          "rowCount": 5
+        },
+        {
+          "id": "global-wide-wrapped-case-insensitive-dense",
+          "latencyNanos": 1342750,
+          "graphWorkUnits": 665,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "3bdee68309e62bee93f47848258ded90b1763d55841fa57d8b8fd21867653c44",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-wrapped-case-insensitive-distinct-zero",
+          "latencyNanos": 3113375,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "805c8c7334c868e18e2be84be95b83cc60895722d739c2b164a68be4cd410c49",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+          "latencyNanos": 38935916,
+          "graphWorkUnits": 106706,
+          "hitGraphIds": "fixture-kotlin-compiler-11,fixture-kotlin-compiler-15",
+          "digest": "3358c833e7c8859180e728fd0fbf286febcb246f2ecb508f1202b5ef6e3b8b9f",
+          "rowCount": 12
+        },
+        {
+          "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+          "latencyNanos": 50419250,
+          "graphWorkUnits": 283544,
+          "hitGraphIds": "fixture-android-00,fixture-tika-00",
+          "digest": "1e662cf0935ee94c21b8eb0c4f6e3b4257d74ab515ccb1e7e31419b17919a9e7",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-distribution-broad-all-64",
+          "latencyNanos": 794125,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "3bdee68309e62bee93f47848258ded90b1763d55841fa57d8b8fd21867653c44",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-distribution-localized-early",
+          "latencyNanos": 1214959,
+          "graphWorkUnits": 1053,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "061ea2dc2c6b48e0062033a68c9330f5e3ae05832411ea3c936eda2bf17b38ee",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-distribution-localized-late",
+          "latencyNanos": 4096750,
+          "graphWorkUnits": 2846,
+          "hitGraphIds": "fixture-kotlin-compiler-15",
+          "digest": "a4f80afc105bb0a4b11b2222f95fb82babb9dcc4eb366b125a552fd58091dac9",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-distribution-localized-middle",
+          "latencyNanos": 2770167,
+          "graphWorkUnits": 4432,
+          "hitGraphIds": "fixture-tika-15",
+          "digest": "c0cb93ca1d3016402e2a72f544861fd280085797fa3a16f1cbefb769ecfda4b3",
+          "rowCount": 200
+        }
+      ],
+      "topThreeSlowest": [
+        {
+          "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+          "latencyNanos": 38935916
+        },
+        {
+          "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+          "latencyNanos": 50419250
+        },
+        {
+          "id": "global-wide-four-properties-zero",
+          "latencyNanos": 255740709
+        }
+      ]
+    },
+    {
+      "side": "base",
+      "pair": 2,
+      "json": "/private/tmp/graphite-attempt136.zr21l653/old34-pairs/base-global-wide-2.json",
+      "jsonSha256": "6424c09d3f0cf9d83fb743df60da19d8e7db3e2f3091dda999e6e1f84658a6e0",
+      "tsv": "/private/tmp/graphite-attempt136.zr21l653/old34-pairs/base-global-wide-2.tsv",
+      "tsvSha256": "6b74b683307d3f2963eb91579d1a07a91efcf4bedbf9a8c9c22f524e88e577f8",
+      "command": "/private/tmp/graphite-attempt136.zr21l653/old34-pairs/base-global-wide-2-command.json",
+      "commandSha256": "3732b19b0fcfae8a833d69f304cbc16da5d24df923bb4465277cdeb9f83e80e9",
+      "params": {
+        "coverageFamily": "global-wide",
+        "graphCount": "64",
+        "indexState": "cold",
+        "timeoutMillis": "300000"
+      },
+      "jvmArgs": [
+        "-Xmx8g",
+        "-XX:ActiveProcessorCount=4",
+        "-Dgraphite.broad.pressure.graphs=/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/graphs.tsv",
+        "-Dgraphite.broad.pressure.correctness.mode=verify",
+        "-Dgraphite.broad.pressure.correctness.oracle=/private/tmp/graphite-attempt136.zr21l653/old34-pairs/oracle.correctness",
+        "-Dgraphite.broad.pressure.observations.output=/private/tmp/graphite-attempt136.zr21l653/old34-pairs/base-global-wide-2.tsv"
+      ],
+      "fullOracleMatched": true,
+      "queryCount": 34,
+      "correctnessSignatureSha256": "a331a139c575120eb47bec21e2cbafb766f1f68dee2f892939edfa608e105219",
+      "metrics": {
+        "processCpuNanos": 1659594000,
+        "peakUsedHeapBytes": 4360736392,
+        "peakResidentSetBytes": 5030313984,
+        "queryCount": 34,
+        "failureCount": 0,
+        "timeoutCount": 0,
+        "graphWorkUnits": 58071626,
+        "p95LatencyNanos": 65733291
+      },
+      "p95RankOneBased": 33,
+      "p95QueryId": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "primaryWallScore": 0.536011334,
+      "primaryWallUnit": "s/op",
+      "rows": [
+        {
+          "id": "global-wide-four-properties-zero",
+          "latencyNanos": 270451042,
+          "graphWorkUnits": 57642093,
+          "hitGraphIds": "",
+          "digest": "805c8c7334c868e18e2be84be95b83cc60895722d739c2b164a68be4cd410c49",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-four-properties-targeted",
+          "latencyNanos": 9941625,
+          "graphWorkUnits": 2315,
+          "hitGraphIds": "fixture-android-00,fixture-android-09",
+          "digest": "ca01ade166f4156fe11d166c7832fed45bfbdf107060915eb0c8f2df36ef35ed",
+          "rowCount": 11
+        },
+        {
+          "id": "global-wide-four-properties-dense",
+          "latencyNanos": 4393750,
+          "graphWorkUnits": 681,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "8eceb0bb70ccfdd593dcb45e66de5d2b8ea8dae746bc99461d0899dc8d12c31a",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-class-pair-zero",
+          "latencyNanos": 2122000,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "425b336aa734c4a1ffbfb58aeaf5489b33f919170492c4bff859504736492e7f",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-class-pair-targeted",
+          "latencyNanos": 4382250,
+          "graphWorkUnits": 2674,
+          "hitGraphIds": "fixture-android-07",
+          "digest": "293726158b0e5fab1ac11826253b0682c325d22e027a3b3fd202214984b341d6",
+          "rowCount": 1
+        },
+        {
+          "id": "global-wide-class-pair-dense",
+          "latencyNanos": 1050791,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "81d3eb1768219b0da6ffd7c3b85945b972fea0dcf7b73f3c4ab85cb548d7f0cf",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-name-pair-zero",
+          "latencyNanos": 1802000,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "3ccae830dbdb8a07387e7c7e6dc034be54ba0aabd8aed60d7c03e33380639d25",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-name-pair-targeted",
+          "latencyNanos": 4279209,
+          "graphWorkUnits": 4650,
+          "hitGraphIds": "fixture-android-03,fixture-android-14",
+          "digest": "58540b74d820ca24f3d68b0b7fb18b59338e9416511998c40901a1ea0e3da925",
+          "rowCount": 4
+        },
+        {
+          "id": "global-wide-name-pair-dense",
+          "latencyNanos": 794708,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "cb35d833bb790432aec3a1d31677653b78a921e9c16abed9af2e31b673ab2819",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-caller-class-zero",
+          "latencyNanos": 1588166,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "49a026e323beb71e70addfd97b163cb2851f30cc7d78914fb454d79e4dac8372",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-caller-class-targeted",
+          "latencyNanos": 3019959,
+          "graphWorkUnits": 2566,
+          "hitGraphIds": "fixture-tika-05,fixture-tika-15",
+          "digest": "71d6d516eb1b38878b6c3fb33515ffbef9ce1e392274e3672fadb25c6d59468c",
+          "rowCount": 2
+        },
+        {
+          "id": "global-wide-caller-class-dense",
+          "latencyNanos": 620166,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "4acba209fd2966a95b338a6ca2bb4826cae6e1bc982fb1e8f624274f38af44fd",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-callee-class-zero",
+          "latencyNanos": 1231708,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "4b6b439db49d0055828a93fdeb339f15977e31edc79e5cbecac39307b3c93d34",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-callee-class-targeted",
+          "latencyNanos": 2054417,
+          "graphWorkUnits": 2015,
+          "hitGraphIds": "fixture-tika-02,fixture-tika-12",
+          "digest": "38accaa3de2bf6856772e7af245aab8ef28aa1b18d695c5c6636f16b84eda1fe",
+          "rowCount": 13
+        },
+        {
+          "id": "global-wide-callee-class-dense",
+          "latencyNanos": 503709,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "4612b6fd3373ac72f1504e0f36e283689f5d39f8d1ee079417b1b2cce0b575a5",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-provenance-zero",
+          "latencyNanos": 1102834,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "21514b44bab7a7f1a700cdc7119f3ce1b4ea8304c84e402ddb5f9775b21dd8af",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-provenance-targeted",
+          "latencyNanos": 3121250,
+          "graphWorkUnits": 3382,
+          "hitGraphIds": "fixture-hive-03,fixture-hive-11",
+          "digest": "e03733885fccd27d09d67440e488d5be3f0db06077f0518c35fad38155449305",
+          "rowCount": 5
+        },
+        {
+          "id": "global-wide-provenance-dense",
+          "latencyNanos": 817334,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "0195b457e87cb89f9435db8fabc1571a1cc9b3c89510875ac7eb56a14bd74eaf",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-aliased-zero",
+          "latencyNanos": 1080542,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "204c1d27407857dc7d7e40edba750f7e94fe476df82ab2ae0618ecb2491bc113",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-aliased-targeted",
+          "latencyNanos": 3392875,
+          "graphWorkUnits": 3955,
+          "hitGraphIds": "fixture-hive-08,fixture-hive-10,fixture-hive-13",
+          "digest": "ad659bfee58b6bedbfe40a71c4fad3a9ae4b1fcbbae0a4465fc1383dbba89f8d",
+          "rowCount": 68
+        },
+        {
+          "id": "global-wide-aliased-dense",
+          "latencyNanos": 758917,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "ff07e16e7d2fb977a5bd5b90d859a49a4a57c15852658928bd8ec41286ffb6d0",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-parameterized-zero",
+          "latencyNanos": 1008333,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "805c8c7334c868e18e2be84be95b83cc60895722d739c2b164a68be4cd410c49",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-parameterized-targeted",
+          "latencyNanos": 2202000,
+          "graphWorkUnits": 2781,
+          "hitGraphIds": "fixture-kotlin-compiler-01",
+          "digest": "d72c68d3fe0e8e0257e28136dfcba3f279a31d304b51dc9611dfa7b0f16169a8",
+          "rowCount": 4
+        },
+        {
+          "id": "global-wide-parameterized-dense",
+          "latencyNanos": 744292,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "8eceb0bb70ccfdd593dcb45e66de5d2b8ea8dae746bc99461d0899dc8d12c31a",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-wrapped-case-insensitive-zero",
+          "latencyNanos": 1156417,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "805c8c7334c868e18e2be84be95b83cc60895722d739c2b164a68be4cd410c49",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-wrapped-case-insensitive-targeted",
+          "latencyNanos": 2298250,
+          "graphWorkUnits": 2777,
+          "hitGraphIds": "fixture-kotlin-compiler-08,fixture-kotlin-compiler-14",
+          "digest": "6be81ce87c99d083628d76b0dce1e105c3d7fae110ebf15207143c3be7df8eeb",
+          "rowCount": 5
+        },
+        {
+          "id": "global-wide-wrapped-case-insensitive-dense",
+          "latencyNanos": 1428583,
+          "graphWorkUnits": 665,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "3bdee68309e62bee93f47848258ded90b1763d55841fa57d8b8fd21867653c44",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-wrapped-case-insensitive-distinct-zero",
+          "latencyNanos": 3129291,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "805c8c7334c868e18e2be84be95b83cc60895722d739c2b164a68be4cd410c49",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+          "latencyNanos": 42839250,
+          "graphWorkUnits": 106706,
+          "hitGraphIds": "fixture-kotlin-compiler-11,fixture-kotlin-compiler-15",
+          "digest": "3358c833e7c8859180e728fd0fbf286febcb246f2ecb508f1202b5ef6e3b8b9f",
+          "rowCount": 12
+        },
+        {
+          "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+          "latencyNanos": 65733291,
+          "graphWorkUnits": 283544,
+          "hitGraphIds": "fixture-android-00,fixture-tika-00",
+          "digest": "1e662cf0935ee94c21b8eb0c4f6e3b4257d74ab515ccb1e7e31419b17919a9e7",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-distribution-broad-all-64",
+          "latencyNanos": 782166,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "3bdee68309e62bee93f47848258ded90b1763d55841fa57d8b8fd21867653c44",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-distribution-localized-early",
+          "latencyNanos": 1177083,
+          "graphWorkUnits": 1053,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "061ea2dc2c6b48e0062033a68c9330f5e3ae05832411ea3c936eda2bf17b38ee",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-distribution-localized-late",
+          "latencyNanos": 3849834,
+          "graphWorkUnits": 2846,
+          "hitGraphIds": "fixture-kotlin-compiler-15",
+          "digest": "a4f80afc105bb0a4b11b2222f95fb82babb9dcc4eb366b125a552fd58091dac9",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-distribution-localized-middle",
+          "latencyNanos": 2629750,
+          "graphWorkUnits": 4432,
+          "hitGraphIds": "fixture-tika-15",
+          "digest": "c0cb93ca1d3016402e2a72f544861fd280085797fa3a16f1cbefb769ecfda4b3",
+          "rowCount": 200
+        }
+      ],
+      "topThreeSlowest": [
+        {
+          "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+          "latencyNanos": 42839250
+        },
+        {
+          "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+          "latencyNanos": 65733291
+        },
+        {
+          "id": "global-wide-four-properties-zero",
+          "latencyNanos": 270451042
+        }
+      ]
+    },
+    {
+      "side": "candidate",
+      "pair": 2,
+      "json": "/private/tmp/graphite-attempt136.zr21l653/old34-pairs/candidate-global-wide-2.json",
+      "jsonSha256": "08086ae92a36a3335ca83cc505f30eadcddd168c047d6e7bf45de5410ad41b43",
+      "tsv": "/private/tmp/graphite-attempt136.zr21l653/old34-pairs/candidate-global-wide-2.tsv",
+      "tsvSha256": "6baf83bdf85779d17b306477def73bb197b0051f3cda8bf614986b1fdec00f6a",
+      "command": "/private/tmp/graphite-attempt136.zr21l653/old34-pairs/candidate-global-wide-2-command.json",
+      "commandSha256": "bb193476e19dcf3b0a55b0198bc8b5a1f60871b7cf3a41d7b8fb46841a34c477",
+      "params": {
+        "coverageFamily": "global-wide",
+        "graphCount": "64",
+        "indexState": "cold",
+        "timeoutMillis": "300000"
+      },
+      "jvmArgs": [
+        "-Xmx8g",
+        "-XX:ActiveProcessorCount=4",
+        "-Dgraphite.broad.pressure.graphs=/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/graphs.tsv",
+        "-Dgraphite.broad.pressure.correctness.mode=verify",
+        "-Dgraphite.broad.pressure.correctness.oracle=/private/tmp/graphite-attempt136.zr21l653/old34-pairs/oracle.correctness",
+        "-Dgraphite.broad.pressure.observations.output=/private/tmp/graphite-attempt136.zr21l653/old34-pairs/candidate-global-wide-2.tsv"
+      ],
+      "fullOracleMatched": true,
+      "queryCount": 34,
+      "correctnessSignatureSha256": "a331a139c575120eb47bec21e2cbafb766f1f68dee2f892939edfa608e105219",
+      "metrics": {
+        "processCpuNanos": 1511979000,
+        "peakUsedHeapBytes": 4245986496,
+        "peakResidentSetBytes": 4772020224,
+        "queryCount": 34,
+        "failureCount": 0,
+        "timeoutCount": 0,
+        "graphWorkUnits": 58071626,
+        "p95LatencyNanos": 55483833
+      },
+      "p95RankOneBased": 33,
+      "p95QueryId": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "primaryWallScore": 0.492276667,
+      "primaryWallUnit": "s/op",
+      "rows": [
+        {
+          "id": "global-wide-four-properties-zero",
+          "latencyNanos": 242558166,
+          "graphWorkUnits": 57642093,
+          "hitGraphIds": "",
+          "digest": "805c8c7334c868e18e2be84be95b83cc60895722d739c2b164a68be4cd410c49",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-four-properties-targeted",
+          "latencyNanos": 10408792,
+          "graphWorkUnits": 2315,
+          "hitGraphIds": "fixture-android-00,fixture-android-09",
+          "digest": "ca01ade166f4156fe11d166c7832fed45bfbdf107060915eb0c8f2df36ef35ed",
+          "rowCount": 11
+        },
+        {
+          "id": "global-wide-four-properties-dense",
+          "latencyNanos": 3979542,
+          "graphWorkUnits": 681,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "8eceb0bb70ccfdd593dcb45e66de5d2b8ea8dae746bc99461d0899dc8d12c31a",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-class-pair-zero",
+          "latencyNanos": 1853916,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "425b336aa734c4a1ffbfb58aeaf5489b33f919170492c4bff859504736492e7f",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-class-pair-targeted",
+          "latencyNanos": 4009791,
+          "graphWorkUnits": 2674,
+          "hitGraphIds": "fixture-android-07",
+          "digest": "293726158b0e5fab1ac11826253b0682c325d22e027a3b3fd202214984b341d6",
+          "rowCount": 1
+        },
+        {
+          "id": "global-wide-class-pair-dense",
+          "latencyNanos": 894917,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "81d3eb1768219b0da6ffd7c3b85945b972fea0dcf7b73f3c4ab85cb548d7f0cf",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-name-pair-zero",
+          "latencyNanos": 1616958,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "3ccae830dbdb8a07387e7c7e6dc034be54ba0aabd8aed60d7c03e33380639d25",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-name-pair-targeted",
+          "latencyNanos": 4656167,
+          "graphWorkUnits": 4650,
+          "hitGraphIds": "fixture-android-03,fixture-android-14",
+          "digest": "58540b74d820ca24f3d68b0b7fb18b59338e9416511998c40901a1ea0e3da925",
+          "rowCount": 4
+        },
+        {
+          "id": "global-wide-name-pair-dense",
+          "latencyNanos": 801333,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "cb35d833bb790432aec3a1d31677653b78a921e9c16abed9af2e31b673ab2819",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-caller-class-zero",
+          "latencyNanos": 1441083,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "49a026e323beb71e70addfd97b163cb2851f30cc7d78914fb454d79e4dac8372",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-caller-class-targeted",
+          "latencyNanos": 2766875,
+          "graphWorkUnits": 2566,
+          "hitGraphIds": "fixture-tika-05,fixture-tika-15",
+          "digest": "71d6d516eb1b38878b6c3fb33515ffbef9ce1e392274e3672fadb25c6d59468c",
+          "rowCount": 2
+        },
+        {
+          "id": "global-wide-caller-class-dense",
+          "latencyNanos": 464250,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "4acba209fd2966a95b338a6ca2bb4826cae6e1bc982fb1e8f624274f38af44fd",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-callee-class-zero",
+          "latencyNanos": 1163042,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "4b6b439db49d0055828a93fdeb339f15977e31edc79e5cbecac39307b3c93d34",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-callee-class-targeted",
+          "latencyNanos": 1868292,
+          "graphWorkUnits": 2015,
+          "hitGraphIds": "fixture-tika-02,fixture-tika-12",
+          "digest": "38accaa3de2bf6856772e7af245aab8ef28aa1b18d695c5c6636f16b84eda1fe",
+          "rowCount": 13
+        },
+        {
+          "id": "global-wide-callee-class-dense",
+          "latencyNanos": 423000,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "4612b6fd3373ac72f1504e0f36e283689f5d39f8d1ee079417b1b2cce0b575a5",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-provenance-zero",
+          "latencyNanos": 1147292,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "21514b44bab7a7f1a700cdc7119f3ce1b4ea8304c84e402ddb5f9775b21dd8af",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-provenance-targeted",
+          "latencyNanos": 3378792,
+          "graphWorkUnits": 3382,
+          "hitGraphIds": "fixture-hive-03,fixture-hive-11",
+          "digest": "e03733885fccd27d09d67440e488d5be3f0db06077f0518c35fad38155449305",
+          "rowCount": 5
+        },
+        {
+          "id": "global-wide-provenance-dense",
+          "latencyNanos": 949083,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "0195b457e87cb89f9435db8fabc1571a1cc9b3c89510875ac7eb56a14bd74eaf",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-aliased-zero",
+          "latencyNanos": 1269666,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "204c1d27407857dc7d7e40edba750f7e94fe476df82ab2ae0618ecb2491bc113",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-aliased-targeted",
+          "latencyNanos": 3395125,
+          "graphWorkUnits": 3955,
+          "hitGraphIds": "fixture-hive-08,fixture-hive-10,fixture-hive-13",
+          "digest": "ad659bfee58b6bedbfe40a71c4fad3a9ae4b1fcbbae0a4465fc1383dbba89f8d",
+          "rowCount": 68
+        },
+        {
+          "id": "global-wide-aliased-dense",
+          "latencyNanos": 729959,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "ff07e16e7d2fb977a5bd5b90d859a49a4a57c15852658928bd8ec41286ffb6d0",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-parameterized-zero",
+          "latencyNanos": 1014875,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "805c8c7334c868e18e2be84be95b83cc60895722d739c2b164a68be4cd410c49",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-parameterized-targeted",
+          "latencyNanos": 2400291,
+          "graphWorkUnits": 2781,
+          "hitGraphIds": "fixture-kotlin-compiler-01",
+          "digest": "d72c68d3fe0e8e0257e28136dfcba3f279a31d304b51dc9611dfa7b0f16169a8",
+          "rowCount": 4
+        },
+        {
+          "id": "global-wide-parameterized-dense",
+          "latencyNanos": 721250,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "8eceb0bb70ccfdd593dcb45e66de5d2b8ea8dae746bc99461d0899dc8d12c31a",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-wrapped-case-insensitive-zero",
+          "latencyNanos": 960333,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "805c8c7334c868e18e2be84be95b83cc60895722d739c2b164a68be4cd410c49",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-wrapped-case-insensitive-targeted",
+          "latencyNanos": 2175083,
+          "graphWorkUnits": 2777,
+          "hitGraphIds": "fixture-kotlin-compiler-08,fixture-kotlin-compiler-14",
+          "digest": "6be81ce87c99d083628d76b0dce1e105c3d7fae110ebf15207143c3be7df8eeb",
+          "rowCount": 5
+        },
+        {
+          "id": "global-wide-wrapped-case-insensitive-dense",
+          "latencyNanos": 1469042,
+          "graphWorkUnits": 665,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "3bdee68309e62bee93f47848258ded90b1763d55841fa57d8b8fd21867653c44",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-wrapped-case-insensitive-distinct-zero",
+          "latencyNanos": 4568667,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "805c8c7334c868e18e2be84be95b83cc60895722d739c2b164a68be4cd410c49",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+          "latencyNanos": 30707583,
+          "graphWorkUnits": 106706,
+          "hitGraphIds": "fixture-kotlin-compiler-11,fixture-kotlin-compiler-15",
+          "digest": "3358c833e7c8859180e728fd0fbf286febcb246f2ecb508f1202b5ef6e3b8b9f",
+          "rowCount": 12
+        },
+        {
+          "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+          "latencyNanos": 55483833,
+          "graphWorkUnits": 283544,
+          "hitGraphIds": "fixture-android-00,fixture-tika-00",
+          "digest": "1e662cf0935ee94c21b8eb0c4f6e3b4257d74ab515ccb1e7e31419b17919a9e7",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-distribution-broad-all-64",
+          "latencyNanos": 779083,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "3bdee68309e62bee93f47848258ded90b1763d55841fa57d8b8fd21867653c44",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-distribution-localized-early",
+          "latencyNanos": 1219834,
+          "graphWorkUnits": 1053,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "061ea2dc2c6b48e0062033a68c9330f5e3ae05832411ea3c936eda2bf17b38ee",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-distribution-localized-late",
+          "latencyNanos": 4193083,
+          "graphWorkUnits": 2846,
+          "hitGraphIds": "fixture-kotlin-compiler-15",
+          "digest": "a4f80afc105bb0a4b11b2222f95fb82babb9dcc4eb366b125a552fd58091dac9",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-distribution-localized-middle",
+          "latencyNanos": 2777417,
+          "graphWorkUnits": 4432,
+          "hitGraphIds": "fixture-tika-15",
+          "digest": "c0cb93ca1d3016402e2a72f544861fd280085797fa3a16f1cbefb769ecfda4b3",
+          "rowCount": 200
+        }
+      ],
+      "topThreeSlowest": [
+        {
+          "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+          "latencyNanos": 30707583
+        },
+        {
+          "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+          "latencyNanos": 55483833
+        },
+        {
+          "id": "global-wide-four-properties-zero",
+          "latencyNanos": 242558166
+        }
+      ]
+    },
+    {
+      "side": "base",
+      "pair": 3,
+      "json": "/private/tmp/graphite-attempt136.zr21l653/old34-pairs/base-global-wide-3.json",
+      "jsonSha256": "4ffd31f91373670960bee2f7dbdeaaea1cd8e5bcc02a8f36dfc4a3dc85b16df5",
+      "tsv": "/private/tmp/graphite-attempt136.zr21l653/old34-pairs/base-global-wide-3.tsv",
+      "tsvSha256": "5fec75b061b1382f67475b069563743c966c6ec5770f29c74303e541683d8f4e",
+      "command": "/private/tmp/graphite-attempt136.zr21l653/old34-pairs/base-global-wide-3-command.json",
+      "commandSha256": "ad891e957016901956e1bbad38ec33204608b38f468ce8952344d5eea4dbf705",
+      "params": {
+        "coverageFamily": "global-wide",
+        "graphCount": "64",
+        "indexState": "cold",
+        "timeoutMillis": "300000"
+      },
+      "jvmArgs": [
+        "-Xmx8g",
+        "-XX:ActiveProcessorCount=4",
+        "-Dgraphite.broad.pressure.graphs=/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/graphs.tsv",
+        "-Dgraphite.broad.pressure.correctness.mode=verify",
+        "-Dgraphite.broad.pressure.correctness.oracle=/private/tmp/graphite-attempt136.zr21l653/old34-pairs/oracle.correctness",
+        "-Dgraphite.broad.pressure.observations.output=/private/tmp/graphite-attempt136.zr21l653/old34-pairs/base-global-wide-3.tsv"
+      ],
+      "fullOracleMatched": true,
+      "queryCount": 34,
+      "correctnessSignatureSha256": "a331a139c575120eb47bec21e2cbafb766f1f68dee2f892939edfa608e105219",
+      "metrics": {
+        "processCpuNanos": 1590953000,
+        "peakUsedHeapBytes": 4704479200,
+        "peakResidentSetBytes": 5268406272,
+        "queryCount": 34,
+        "failureCount": 0,
+        "timeoutCount": 0,
+        "graphWorkUnits": 58071626,
+        "p95LatencyNanos": 47527125
+      },
+      "p95RankOneBased": 33,
+      "p95QueryId": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "primaryWallScore": 0.522253959,
+      "primaryWallUnit": "s/op",
+      "rows": [
+        {
+          "id": "global-wide-four-properties-zero",
+          "latencyNanos": 257897417,
+          "graphWorkUnits": 57642093,
+          "hitGraphIds": "",
+          "digest": "805c8c7334c868e18e2be84be95b83cc60895722d739c2b164a68be4cd410c49",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-four-properties-targeted",
+          "latencyNanos": 10039333,
+          "graphWorkUnits": 2315,
+          "hitGraphIds": "fixture-android-00,fixture-android-09",
+          "digest": "ca01ade166f4156fe11d166c7832fed45bfbdf107060915eb0c8f2df36ef35ed",
+          "rowCount": 11
+        },
+        {
+          "id": "global-wide-four-properties-dense",
+          "latencyNanos": 4079042,
+          "graphWorkUnits": 681,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "8eceb0bb70ccfdd593dcb45e66de5d2b8ea8dae746bc99461d0899dc8d12c31a",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-class-pair-zero",
+          "latencyNanos": 1831959,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "425b336aa734c4a1ffbfb58aeaf5489b33f919170492c4bff859504736492e7f",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-class-pair-targeted",
+          "latencyNanos": 4357458,
+          "graphWorkUnits": 2674,
+          "hitGraphIds": "fixture-android-07",
+          "digest": "293726158b0e5fab1ac11826253b0682c325d22e027a3b3fd202214984b341d6",
+          "rowCount": 1
+        },
+        {
+          "id": "global-wide-class-pair-dense",
+          "latencyNanos": 921333,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "81d3eb1768219b0da6ffd7c3b85945b972fea0dcf7b73f3c4ab85cb548d7f0cf",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-name-pair-zero",
+          "latencyNanos": 2054250,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "3ccae830dbdb8a07387e7c7e6dc034be54ba0aabd8aed60d7c03e33380639d25",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-name-pair-targeted",
+          "latencyNanos": 4382875,
+          "graphWorkUnits": 4650,
+          "hitGraphIds": "fixture-android-03,fixture-android-14",
+          "digest": "58540b74d820ca24f3d68b0b7fb18b59338e9416511998c40901a1ea0e3da925",
+          "rowCount": 4
+        },
+        {
+          "id": "global-wide-name-pair-dense",
+          "latencyNanos": 846583,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "cb35d833bb790432aec3a1d31677653b78a921e9c16abed9af2e31b673ab2819",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-caller-class-zero",
+          "latencyNanos": 1549167,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "49a026e323beb71e70addfd97b163cb2851f30cc7d78914fb454d79e4dac8372",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-caller-class-targeted",
+          "latencyNanos": 2550166,
+          "graphWorkUnits": 2566,
+          "hitGraphIds": "fixture-tika-05,fixture-tika-15",
+          "digest": "71d6d516eb1b38878b6c3fb33515ffbef9ce1e392274e3672fadb25c6d59468c",
+          "rowCount": 2
+        },
+        {
+          "id": "global-wide-caller-class-dense",
+          "latencyNanos": 713792,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "4acba209fd2966a95b338a6ca2bb4826cae6e1bc982fb1e8f624274f38af44fd",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-callee-class-zero",
+          "latencyNanos": 1236583,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "4b6b439db49d0055828a93fdeb339f15977e31edc79e5cbecac39307b3c93d34",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-callee-class-targeted",
+          "latencyNanos": 2018958,
+          "graphWorkUnits": 2015,
+          "hitGraphIds": "fixture-tika-02,fixture-tika-12",
+          "digest": "38accaa3de2bf6856772e7af245aab8ef28aa1b18d695c5c6636f16b84eda1fe",
+          "rowCount": 13
+        },
+        {
+          "id": "global-wide-callee-class-dense",
+          "latencyNanos": 502834,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "4612b6fd3373ac72f1504e0f36e283689f5d39f8d1ee079417b1b2cce0b575a5",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-provenance-zero",
+          "latencyNanos": 1312875,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "21514b44bab7a7f1a700cdc7119f3ce1b4ea8304c84e402ddb5f9775b21dd8af",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-provenance-targeted",
+          "latencyNanos": 3024291,
+          "graphWorkUnits": 3382,
+          "hitGraphIds": "fixture-hive-03,fixture-hive-11",
+          "digest": "e03733885fccd27d09d67440e488d5be3f0db06077f0518c35fad38155449305",
+          "rowCount": 5
+        },
+        {
+          "id": "global-wide-provenance-dense",
+          "latencyNanos": 857166,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "0195b457e87cb89f9435db8fabc1571a1cc9b3c89510875ac7eb56a14bd74eaf",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-aliased-zero",
+          "latencyNanos": 930583,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "204c1d27407857dc7d7e40edba750f7e94fe476df82ab2ae0618ecb2491bc113",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-aliased-targeted",
+          "latencyNanos": 3238625,
+          "graphWorkUnits": 3955,
+          "hitGraphIds": "fixture-hive-08,fixture-hive-10,fixture-hive-13",
+          "digest": "ad659bfee58b6bedbfe40a71c4fad3a9ae4b1fcbbae0a4465fc1383dbba89f8d",
+          "rowCount": 68
+        },
+        {
+          "id": "global-wide-aliased-dense",
+          "latencyNanos": 741917,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "ff07e16e7d2fb977a5bd5b90d859a49a4a57c15852658928bd8ec41286ffb6d0",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-parameterized-zero",
+          "latencyNanos": 952083,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "805c8c7334c868e18e2be84be95b83cc60895722d739c2b164a68be4cd410c49",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-parameterized-targeted",
+          "latencyNanos": 2183208,
+          "graphWorkUnits": 2781,
+          "hitGraphIds": "fixture-kotlin-compiler-01",
+          "digest": "d72c68d3fe0e8e0257e28136dfcba3f279a31d304b51dc9611dfa7b0f16169a8",
+          "rowCount": 4
+        },
+        {
+          "id": "global-wide-parameterized-dense",
+          "latencyNanos": 738459,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "8eceb0bb70ccfdd593dcb45e66de5d2b8ea8dae746bc99461d0899dc8d12c31a",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-wrapped-case-insensitive-zero",
+          "latencyNanos": 1025125,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "805c8c7334c868e18e2be84be95b83cc60895722d739c2b164a68be4cd410c49",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-wrapped-case-insensitive-targeted",
+          "latencyNanos": 2282542,
+          "graphWorkUnits": 2777,
+          "hitGraphIds": "fixture-kotlin-compiler-08,fixture-kotlin-compiler-14",
+          "digest": "6be81ce87c99d083628d76b0dce1e105c3d7fae110ebf15207143c3be7df8eeb",
+          "rowCount": 5
+        },
+        {
+          "id": "global-wide-wrapped-case-insensitive-dense",
+          "latencyNanos": 1411542,
+          "graphWorkUnits": 665,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "3bdee68309e62bee93f47848258ded90b1763d55841fa57d8b8fd21867653c44",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-wrapped-case-insensitive-distinct-zero",
+          "latencyNanos": 4821041,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "805c8c7334c868e18e2be84be95b83cc60895722d739c2b164a68be4cd410c49",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+          "latencyNanos": 37553583,
+          "graphWorkUnits": 106706,
+          "hitGraphIds": "fixture-kotlin-compiler-11,fixture-kotlin-compiler-15",
+          "digest": "3358c833e7c8859180e728fd0fbf286febcb246f2ecb508f1202b5ef6e3b8b9f",
+          "rowCount": 12
+        },
+        {
+          "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+          "latencyNanos": 47527125,
+          "graphWorkUnits": 283544,
+          "hitGraphIds": "fixture-android-00,fixture-tika-00",
+          "digest": "1e662cf0935ee94c21b8eb0c4f6e3b4257d74ab515ccb1e7e31419b17919a9e7",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-distribution-broad-all-64",
+          "latencyNanos": 835250,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "3bdee68309e62bee93f47848258ded90b1763d55841fa57d8b8fd21867653c44",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-distribution-localized-early",
+          "latencyNanos": 1244209,
+          "graphWorkUnits": 1053,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "061ea2dc2c6b48e0062033a68c9330f5e3ae05832411ea3c936eda2bf17b38ee",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-distribution-localized-late",
+          "latencyNanos": 3989000,
+          "graphWorkUnits": 2846,
+          "hitGraphIds": "fixture-kotlin-compiler-15",
+          "digest": "a4f80afc105bb0a4b11b2222f95fb82babb9dcc4eb366b125a552fd58091dac9",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-distribution-localized-middle",
+          "latencyNanos": 2712792,
+          "graphWorkUnits": 4432,
+          "hitGraphIds": "fixture-tika-15",
+          "digest": "c0cb93ca1d3016402e2a72f544861fd280085797fa3a16f1cbefb769ecfda4b3",
+          "rowCount": 200
+        }
+      ],
+      "topThreeSlowest": [
+        {
+          "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+          "latencyNanos": 37553583
+        },
+        {
+          "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+          "latencyNanos": 47527125
+        },
+        {
+          "id": "global-wide-four-properties-zero",
+          "latencyNanos": 257897417
+        }
+      ]
+    },
+    {
+      "side": "candidate",
+      "pair": 3,
+      "json": "/private/tmp/graphite-attempt136.zr21l653/old34-pairs/candidate-global-wide-3.json",
+      "jsonSha256": "9912b3c372df17a5b68a12e6f4b3951682b25ff6a4670179114fe2df46beb6ea",
+      "tsv": "/private/tmp/graphite-attempt136.zr21l653/old34-pairs/candidate-global-wide-3.tsv",
+      "tsvSha256": "93bfe9ac9e3311d0853ddd6164ce5be0cd5eb3354925d9aee69174c67317bf1f",
+      "command": "/private/tmp/graphite-attempt136.zr21l653/old34-pairs/candidate-global-wide-3-command.json",
+      "commandSha256": "e9cc03e31c1eb3b21d44ea4ba5f02e0c770d538651a62ed2555085ced470a54d",
+      "params": {
+        "coverageFamily": "global-wide",
+        "graphCount": "64",
+        "indexState": "cold",
+        "timeoutMillis": "300000"
+      },
+      "jvmArgs": [
+        "-Xmx8g",
+        "-XX:ActiveProcessorCount=4",
+        "-Dgraphite.broad.pressure.graphs=/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/graphs.tsv",
+        "-Dgraphite.broad.pressure.correctness.mode=verify",
+        "-Dgraphite.broad.pressure.correctness.oracle=/private/tmp/graphite-attempt136.zr21l653/old34-pairs/oracle.correctness",
+        "-Dgraphite.broad.pressure.observations.output=/private/tmp/graphite-attempt136.zr21l653/old34-pairs/candidate-global-wide-3.tsv"
+      ],
+      "fullOracleMatched": true,
+      "queryCount": 34,
+      "correctnessSignatureSha256": "a331a139c575120eb47bec21e2cbafb766f1f68dee2f892939edfa608e105219",
+      "metrics": {
+        "processCpuNanos": 1491688000,
+        "peakUsedHeapBytes": 4696793328,
+        "peakResidentSetBytes": 5263376384,
+        "queryCount": 34,
+        "failureCount": 0,
+        "timeoutCount": 0,
+        "graphWorkUnits": 58071626,
+        "p95LatencyNanos": 41615750
+      },
+      "p95RankOneBased": 33,
+      "p95QueryId": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "primaryWallScore": 0.507693625,
+      "primaryWallUnit": "s/op",
+      "rows": [
+        {
+          "id": "global-wide-four-properties-zero",
+          "latencyNanos": 259727958,
+          "graphWorkUnits": 57642093,
+          "hitGraphIds": "",
+          "digest": "805c8c7334c868e18e2be84be95b83cc60895722d739c2b164a68be4cd410c49",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-four-properties-targeted",
+          "latencyNanos": 10127416,
+          "graphWorkUnits": 2315,
+          "hitGraphIds": "fixture-android-00,fixture-android-09",
+          "digest": "ca01ade166f4156fe11d166c7832fed45bfbdf107060915eb0c8f2df36ef35ed",
+          "rowCount": 11
+        },
+        {
+          "id": "global-wide-four-properties-dense",
+          "latencyNanos": 4079541,
+          "graphWorkUnits": 681,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "8eceb0bb70ccfdd593dcb45e66de5d2b8ea8dae746bc99461d0899dc8d12c31a",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-class-pair-zero",
+          "latencyNanos": 1850916,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "425b336aa734c4a1ffbfb58aeaf5489b33f919170492c4bff859504736492e7f",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-class-pair-targeted",
+          "latencyNanos": 4101917,
+          "graphWorkUnits": 2674,
+          "hitGraphIds": "fixture-android-07",
+          "digest": "293726158b0e5fab1ac11826253b0682c325d22e027a3b3fd202214984b341d6",
+          "rowCount": 1
+        },
+        {
+          "id": "global-wide-class-pair-dense",
+          "latencyNanos": 969125,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "81d3eb1768219b0da6ffd7c3b85945b972fea0dcf7b73f3c4ab85cb548d7f0cf",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-name-pair-zero",
+          "latencyNanos": 1725459,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "3ccae830dbdb8a07387e7c7e6dc034be54ba0aabd8aed60d7c03e33380639d25",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-name-pair-targeted",
+          "latencyNanos": 4182958,
+          "graphWorkUnits": 4650,
+          "hitGraphIds": "fixture-android-03,fixture-android-14",
+          "digest": "58540b74d820ca24f3d68b0b7fb18b59338e9416511998c40901a1ea0e3da925",
+          "rowCount": 4
+        },
+        {
+          "id": "global-wide-name-pair-dense",
+          "latencyNanos": 774333,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "cb35d833bb790432aec3a1d31677653b78a921e9c16abed9af2e31b673ab2819",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-caller-class-zero",
+          "latencyNanos": 1712708,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "49a026e323beb71e70addfd97b163cb2851f30cc7d78914fb454d79e4dac8372",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-caller-class-targeted",
+          "latencyNanos": 2701875,
+          "graphWorkUnits": 2566,
+          "hitGraphIds": "fixture-tika-05,fixture-tika-15",
+          "digest": "71d6d516eb1b38878b6c3fb33515ffbef9ce1e392274e3672fadb25c6d59468c",
+          "rowCount": 2
+        },
+        {
+          "id": "global-wide-caller-class-dense",
+          "latencyNanos": 544208,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "4acba209fd2966a95b338a6ca2bb4826cae6e1bc982fb1e8f624274f38af44fd",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-callee-class-zero",
+          "latencyNanos": 1510792,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "4b6b439db49d0055828a93fdeb339f15977e31edc79e5cbecac39307b3c93d34",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-callee-class-targeted",
+          "latencyNanos": 2580208,
+          "graphWorkUnits": 2015,
+          "hitGraphIds": "fixture-tika-02,fixture-tika-12",
+          "digest": "38accaa3de2bf6856772e7af245aab8ef28aa1b18d695c5c6636f16b84eda1fe",
+          "rowCount": 13
+        },
+        {
+          "id": "global-wide-callee-class-dense",
+          "latencyNanos": 482459,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "4612b6fd3373ac72f1504e0f36e283689f5d39f8d1ee079417b1b2cce0b575a5",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-provenance-zero",
+          "latencyNanos": 1184833,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "21514b44bab7a7f1a700cdc7119f3ce1b4ea8304c84e402ddb5f9775b21dd8af",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-provenance-targeted",
+          "latencyNanos": 2967292,
+          "graphWorkUnits": 3382,
+          "hitGraphIds": "fixture-hive-03,fixture-hive-11",
+          "digest": "e03733885fccd27d09d67440e488d5be3f0db06077f0518c35fad38155449305",
+          "rowCount": 5
+        },
+        {
+          "id": "global-wide-provenance-dense",
+          "latencyNanos": 827125,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "0195b457e87cb89f9435db8fabc1571a1cc9b3c89510875ac7eb56a14bd74eaf",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-aliased-zero",
+          "latencyNanos": 911208,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "204c1d27407857dc7d7e40edba750f7e94fe476df82ab2ae0618ecb2491bc113",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-aliased-targeted",
+          "latencyNanos": 3177041,
+          "graphWorkUnits": 3955,
+          "hitGraphIds": "fixture-hive-08,fixture-hive-10,fixture-hive-13",
+          "digest": "ad659bfee58b6bedbfe40a71c4fad3a9ae4b1fcbbae0a4465fc1383dbba89f8d",
+          "rowCount": 68
+        },
+        {
+          "id": "global-wide-aliased-dense",
+          "latencyNanos": 725125,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "ff07e16e7d2fb977a5bd5b90d859a49a4a57c15852658928bd8ec41286ffb6d0",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-parameterized-zero",
+          "latencyNanos": 905833,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "805c8c7334c868e18e2be84be95b83cc60895722d739c2b164a68be4cd410c49",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-parameterized-targeted",
+          "latencyNanos": 2172625,
+          "graphWorkUnits": 2781,
+          "hitGraphIds": "fixture-kotlin-compiler-01",
+          "digest": "d72c68d3fe0e8e0257e28136dfcba3f279a31d304b51dc9611dfa7b0f16169a8",
+          "rowCount": 4
+        },
+        {
+          "id": "global-wide-parameterized-dense",
+          "latencyNanos": 754917,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "8eceb0bb70ccfdd593dcb45e66de5d2b8ea8dae746bc99461d0899dc8d12c31a",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-wrapped-case-insensitive-zero",
+          "latencyNanos": 1093458,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "805c8c7334c868e18e2be84be95b83cc60895722d739c2b164a68be4cd410c49",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-wrapped-case-insensitive-targeted",
+          "latencyNanos": 2365583,
+          "graphWorkUnits": 2777,
+          "hitGraphIds": "fixture-kotlin-compiler-08,fixture-kotlin-compiler-14",
+          "digest": "6be81ce87c99d083628d76b0dce1e105c3d7fae110ebf15207143c3be7df8eeb",
+          "rowCount": 5
+        },
+        {
+          "id": "global-wide-wrapped-case-insensitive-dense",
+          "latencyNanos": 1434125,
+          "graphWorkUnits": 665,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "3bdee68309e62bee93f47848258ded90b1763d55841fa57d8b8fd21867653c44",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-wrapped-case-insensitive-distinct-zero",
+          "latencyNanos": 2988959,
+          "graphWorkUnits": 99,
+          "hitGraphIds": "",
+          "digest": "805c8c7334c868e18e2be84be95b83cc60895722d739c2b164a68be4cd410c49",
+          "rowCount": 0
+        },
+        {
+          "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+          "latencyNanos": 29260708,
+          "graphWorkUnits": 106706,
+          "hitGraphIds": "fixture-kotlin-compiler-11,fixture-kotlin-compiler-15",
+          "digest": "3358c833e7c8859180e728fd0fbf286febcb246f2ecb508f1202b5ef6e3b8b9f",
+          "rowCount": 12
+        },
+        {
+          "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+          "latencyNanos": 41615750,
+          "graphWorkUnits": 283544,
+          "hitGraphIds": "fixture-android-00,fixture-tika-00",
+          "digest": "1e662cf0935ee94c21b8eb0c4f6e3b4257d74ab515ccb1e7e31419b17919a9e7",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-distribution-broad-all-64",
+          "latencyNanos": 790708,
+          "graphWorkUnits": 200,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "3bdee68309e62bee93f47848258ded90b1763d55841fa57d8b8fd21867653c44",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-distribution-localized-early",
+          "latencyNanos": 1193833,
+          "graphWorkUnits": 1053,
+          "hitGraphIds": "fixture-android-00",
+          "digest": "061ea2dc2c6b48e0062033a68c9330f5e3ae05832411ea3c936eda2bf17b38ee",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-distribution-localized-late",
+          "latencyNanos": 4007958,
+          "graphWorkUnits": 2846,
+          "hitGraphIds": "fixture-kotlin-compiler-15",
+          "digest": "a4f80afc105bb0a4b11b2222f95fb82babb9dcc4eb366b125a552fd58091dac9",
+          "rowCount": 200
+        },
+        {
+          "id": "global-wide-distribution-localized-middle",
+          "latencyNanos": 2743125,
+          "graphWorkUnits": 4432,
+          "hitGraphIds": "fixture-tika-15",
+          "digest": "c0cb93ca1d3016402e2a72f544861fd280085797fa3a16f1cbefb769ecfda4b3",
+          "rowCount": 200
+        }
+      ],
+      "topThreeSlowest": [
+        {
+          "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+          "latencyNanos": 29260708
+        },
+        {
+          "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+          "latencyNanos": 41615750
+        },
+        {
+          "id": "global-wide-four-properties-zero",
+          "latencyNanos": 259727958
+        }
+      ]
+    }
+  ],
+  "pairs": [
+    {
+      "pair": 1,
+      "orderReported": "candidate-base",
+      "baseP95Nanos": 47074708,
+      "candidateP95Nanos": 50419250,
+      "p95Speedup": 0.9336653758237181,
+      "p95ChangePercent": 7.104753575954215,
+      "strictProgress": false,
+      "target10x": false,
+      "rows": {
+        "targeted": {
+          "baseLatencyNanos": 24229000,
+          "candidateLatencyNanos": 38935916,
+          "latencyChangePercent": 60.69964092616287,
+          "graphWorkUnitsBoth": 106706,
+          "digestBoth": "3358c833e7c8859180e728fd0fbf286febcb246f2ecb508f1202b5ef6e3b8b9f",
+          "rowCountBoth": 12,
+          "hitGraphIdsBoth": "fixture-kotlin-compiler-11,fixture-kotlin-compiler-15"
+        },
+        "dense": {
+          "baseLatencyNanos": 47074708,
+          "candidateLatencyNanos": 50419250,
+          "latencyChangePercent": 7.104753575954215,
+          "graphWorkUnitsBoth": 283544,
+          "digestBoth": "1e662cf0935ee94c21b8eb0c4f6e3b4257d74ab515ccb1e7e31419b17919a9e7",
+          "rowCountBoth": 200,
+          "hitGraphIdsBoth": "fixture-android-00,fixture-tika-00"
+        }
+      },
+      "baseResources": {
+        "processCpuNanos": 1499329000,
+        "peakUsedHeapBytes": 4704819360,
+        "peakResidentSetBytes": 5255626752,
+        "queryCount": 34,
+        "failureCount": 0,
+        "timeoutCount": 0,
+        "graphWorkUnits": 58071626,
+        "p95LatencyNanos": 47074708
+      },
+      "candidateResources": {
+        "processCpuNanos": 1552886000,
+        "peakUsedHeapBytes": 4325719720,
+        "peakResidentSetBytes": 4861919232,
+        "queryCount": 34,
+        "failureCount": 0,
+        "timeoutCount": 0,
+        "graphWorkUnits": 58071626,
+        "p95LatencyNanos": 50419250
+      }
+    },
+    {
+      "pair": 2,
+      "orderReported": "base-candidate",
+      "baseP95Nanos": 65733291,
+      "candidateP95Nanos": 55483833,
+      "p95Speedup": 1.1847287298986715,
+      "p95ChangePercent": -15.592491786239638,
+      "strictProgress": true,
+      "target10x": false,
+      "rows": {
+        "targeted": {
+          "baseLatencyNanos": 42839250,
+          "candidateLatencyNanos": 30707583,
+          "latencyChangePercent": -28.319046201789245,
+          "graphWorkUnitsBoth": 106706,
+          "digestBoth": "3358c833e7c8859180e728fd0fbf286febcb246f2ecb508f1202b5ef6e3b8b9f",
+          "rowCountBoth": 12,
+          "hitGraphIdsBoth": "fixture-kotlin-compiler-11,fixture-kotlin-compiler-15"
+        },
+        "dense": {
+          "baseLatencyNanos": 65733291,
+          "candidateLatencyNanos": 55483833,
+          "latencyChangePercent": -15.592491786239638,
+          "graphWorkUnitsBoth": 283544,
+          "digestBoth": "1e662cf0935ee94c21b8eb0c4f6e3b4257d74ab515ccb1e7e31419b17919a9e7",
+          "rowCountBoth": 200,
+          "hitGraphIdsBoth": "fixture-android-00,fixture-tika-00"
+        }
+      },
+      "baseResources": {
+        "processCpuNanos": 1659594000,
+        "peakUsedHeapBytes": 4360736392,
+        "peakResidentSetBytes": 5030313984,
+        "queryCount": 34,
+        "failureCount": 0,
+        "timeoutCount": 0,
+        "graphWorkUnits": 58071626,
+        "p95LatencyNanos": 65733291
+      },
+      "candidateResources": {
+        "processCpuNanos": 1511979000,
+        "peakUsedHeapBytes": 4245986496,
+        "peakResidentSetBytes": 4772020224,
+        "queryCount": 34,
+        "failureCount": 0,
+        "timeoutCount": 0,
+        "graphWorkUnits": 58071626,
+        "p95LatencyNanos": 55483833
+      }
+    },
+    {
+      "pair": 3,
+      "orderReported": "candidate-base",
+      "baseP95Nanos": 47527125,
+      "candidateP95Nanos": 41615750,
+      "p95Speedup": 1.1420465809218865,
+      "p95ChangePercent": -12.437897306012092,
+      "strictProgress": true,
+      "target10x": false,
+      "rows": {
+        "targeted": {
+          "baseLatencyNanos": 37553583,
+          "candidateLatencyNanos": 29260708,
+          "latencyChangePercent": -22.082779691088327,
+          "graphWorkUnitsBoth": 106706,
+          "digestBoth": "3358c833e7c8859180e728fd0fbf286febcb246f2ecb508f1202b5ef6e3b8b9f",
+          "rowCountBoth": 12,
+          "hitGraphIdsBoth": "fixture-kotlin-compiler-11,fixture-kotlin-compiler-15"
+        },
+        "dense": {
+          "baseLatencyNanos": 47527125,
+          "candidateLatencyNanos": 41615750,
+          "latencyChangePercent": -12.437897306012092,
+          "graphWorkUnitsBoth": 283544,
+          "digestBoth": "1e662cf0935ee94c21b8eb0c4f6e3b4257d74ab515ccb1e7e31419b17919a9e7",
+          "rowCountBoth": 200,
+          "hitGraphIdsBoth": "fixture-android-00,fixture-tika-00"
+        }
+      },
+      "baseResources": {
+        "processCpuNanos": 1590953000,
+        "peakUsedHeapBytes": 4704479200,
+        "peakResidentSetBytes": 5268406272,
+        "queryCount": 34,
+        "failureCount": 0,
+        "timeoutCount": 0,
+        "graphWorkUnits": 58071626,
+        "p95LatencyNanos": 47527125
+      },
+      "candidateResources": {
+        "processCpuNanos": 1491688000,
+        "peakUsedHeapBytes": 4696793328,
+        "peakResidentSetBytes": 5263376384,
+        "queryCount": 34,
+        "failureCount": 0,
+        "timeoutCount": 0,
+        "graphWorkUnits": 58071626,
+        "p95LatencyNanos": 41615750
+      }
+    }
+  ],
+  "gate": {
+    "reportedRegressionPassed": true,
+    "reportedRegressionOnlyMode": true,
+    "reportedPassed": true,
+    "independentlyComputedStrictProgressEveryPair": false,
+    "independentlyComputed10xEveryPair": false,
+    "accepted": false,
+    "reason": "Pair 1 P95 regressed; the predeclared every-pair progress condition fails. Target 10x is also unmet."
+  },
+  "limitations": [
+    "Oracle signatures verify full canonical results via digest; stored TSV does not expose all raw result rows for independent recomputation.",
+    "RegressionPassed is the existing comparator verdict; raw metrics/resources were independently cross-checked, not all comparator predicates reimplemented.",
+    "CPU/heap/RSS values are whole-replay counters, not isolated dense/targeted resource measurements.",
+    "No additional candidate v3, CI run, benchmark, or JVM was launched."
+  ],
+  "statusSha256": "46ad09387b8de3d1b1f2bd32bd08f3efe30708359c9549a0a89e7531ac01b718",
+  "localProgressSha256": "154b32b70f98097f7692ce05c496cf2eb44ebdb1ce768ff2453505e7d9ef3f7f"
+}

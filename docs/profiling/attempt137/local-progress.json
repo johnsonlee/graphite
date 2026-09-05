@@ -1,0 +1,12 @@
+{
+  "jarHashes": {
+    "base": "a5c2db2b0020798488916ec86902459d1044a7dcef606a73e00055883cdf5abe",
+    "candidate": "b129029382bc6f0e8491c97c9057830c5993902b9cbeae7f21e6df10865a1fb7"
+  },
+  "comparisonExit": 0,
+  "regressionPassed": true,
+  "strictProgressEveryPair": true,
+  "targetAchieved": false,
+  "accepted": false,
+  "reason": "CI acceptance not established"
+}

@@ -1,0 +1,3674 @@
+{
+  "offlineOnly": true,
+  "rows": [
+    {
+      "recording": 1,
+      "query": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "phase": "initial",
+      "metric": "allocationSampledBytes",
+      "total": 7077888,
+      "counts": {
+        "application": 7077888,
+        "applicationMappedStringDiscoveryInclusive": 786432,
+        "applicationRawProjectionInclusive": 6029312
+      },
+      "topApplicationLeaves": [
+        {
+          "frame": "kotlin.ranges.IntProgression.iterator()Lkotlin/collections/IntIterator:",
+          "weight": 2883584
+        },
+        {
+          "frame": "kotlin.collections.CollectionsKt__CollectionsKt.getIndices(Ljava/util/Collection:)Lkotlin/ranges/IntRange:",
+          "weight": 1572864
+        },
+        {
+          "frame": "java.util.HashMap.newNode(ILjava/lang/Object:Ljava/lang/Object:Ljava/util/HashMap$Node:)Ljava/util/HashMap$Node:",
+          "weight": 524288
+        },
+        {
+          "frame": "java.util.zip.InflaterInputStream.<init>(Ljava/io/InputStream:Ljava/util/zip/Inflater:I)V",
+          "weight": 524288
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.getArray(I)[C",
+          "weight": 262144
+        },
+        {
+          "frame": "java.util.ArrayList.grow(I)[Ljava/lang/Object:",
+          "weight": 262144
+        },
+        {
+          "frame": "jdk.internal.org.objectweb.asm.ByteVector.<init>(I)V",
+          "weight": 262144
+        },
+        {
+          "frame": "java.util.Arrays.copyOf([BI)[B",
+          "weight": 262144
+        },
+        {
+          "frame": "jdk.internal.org.objectweb.asm.SymbolTable.addConstantUtf8Reference(ILjava/lang/String:)Ljdk/internal/org/objectweb/asm/Symbol:",
+          "weight": 262144
+        },
+        {
+          "frame": "kotlin.collections.CollectionsKt___CollectionsKt.toMutableList(Ljava/util/Collection:)Ljava/util/List:",
+          "weight": 262144
+        }
+      ],
+      "topApplicationInclusive": [
+        {
+          "frame": "java.lang.Thread.run()V",
+          "weight": 7077888
+        },
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor.runWorker(Ljava/util/concurrent/ThreadPoolExecutor$Worker:)V",
+          "weight": 7077888
+        },
+        {
+          "frame": "java.util.concurrent.FutureTask.run()V",
+          "weight": 7077888
+        },
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor$Worker.run()V",
+          "weight": 7077888
+        },
+        {
+          "frame": "java.util.concurrent.Executors$RunnableAdapter.call()Ljava/lang/Object:",
+          "weight": 6815744
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:ILio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:IIILjava/util/concurrent/atomic/AtomicBoolean:Ljava/util/HashSet:Ljava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:)Lio/johnsonlee/graphite/webgraph/ParallelCallSiteProjectionResult:",
+          "weight": 4980736
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$229.0x00000003011aeba8.call()Ljava/lang/Object:",
+          "weight": 4980736
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$236.0x00000003011afaa8.test(I)Z",
+          "weight": 4718592
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef:Ljava/util/concurrent/atomic/AtomicBoolean:Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/HashSet:Ljava/util/List:Ljava/util/HashSet:Ljava/util/ArrayList:I[ILjava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:I)Z",
+          "weight": 4718592
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedNodeTypeIndex.forEachIdWhile(Ljava/lang/Class:IILjava/util/function/IntPredicate:)V",
+          "weight": 4718592
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexKt.trackedSplitCallSiteTask$lambda$11(Ljava/util/concurrent/Callable:)Ljava/lang/Object:",
+          "weight": 3670016
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexKt$$Lambda$230.0x00000003011aedd0.call()Ljava/lang/Object:",
+          "weight": 3670016
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeIndexedDistinctStringProjection$projectSource(Ljava/util/List:Ljava/util/List:Lio/johnsonlee/graphite/cypher/QueryPipeline:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:ZLjava/util/List:Ljava/util/List:ILjava/lang/Class:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:I)Lio/johnsonlee/graphite/cypher/QueryPipeline$IndexedProjectedRows:",
+          "weight": 3407872
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.distinctStringPropertyDisjunction(Ljava/lang/Class:Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)Ljava/util/List:",
+          "weight": 3145728
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline$$Lambda$222.0x00000003011a2a20.invoke()Ljava/lang/Object:",
+          "weight": 3145728
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.runDirectStringTasksInOrderUntil$submit$175$lambda$174(Ljava/util/concurrent/atomic/AtomicBoolean:ILjava/util/List:Ljava/util/concurrent/CountDownLatch:)Lio/johnsonlee/graphite/cypher/QueryPipeline$runDirectStringTasksInOrderUntil$Outcome:",
+          "weight": 3145728
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeIndexedDistinctStringProjection$lambda$142$lambda$141(ILjava/util/List:Ljava/util/List:Lio/johnsonlee/graphite/cypher/QueryPipeline:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:ZLjava/util/List:Ljava/util/List:ILjava/lang/Class:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:)Lio/johnsonlee/graphite/cypher/QueryPipeline$IndexedProjectedRows:",
+          "weight": 3145728
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline$$Lambda$223.0x00000003011a3420.call()Ljava/lang/Object:",
+          "weight": 3145728
+        },
+        {
+          "frame": "kotlin.ranges.IntProgression.iterator()Ljava/util/Iterator:",
+          "weight": 2883584
+        },
+        {
+          "frame": "kotlin.ranges.IntProgression.iterator()Lkotlin/collections/IntIterator:",
+          "weight": 2883584
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection(Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:Ljava/util/List:Lio/johnsonlee/graphite/webgraph/CallSiteStringIdMembership:)Ljava/util/List:",
+          "weight": 2359296
+        },
+        {
+          "frame": "kotlin.collections.CollectionsKt__CollectionsKt.getIndices(Ljava/util/Collection:)Lkotlin/ranges/IntRange:",
+          "weight": 1572864
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.exactMatchingStringIds(Lio/johnsonlee/graphite/graph/StringPropertyPredicate:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)[I",
+          "weight": 786432
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.exactMatchingStringIds(Ljava/util/List:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)Ljava/util/List:",
+          "weight": 786432
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.ints.IntOpenHashSet.<init>([IIIF)V",
+          "weight": 786432
+        }
+      ]
+    },
+    {
+      "recording": 1,
+      "query": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "phase": "initial",
+      "metric": "cpuSamples",
+      "total": 151,
+      "counts": {
+        "jit": 66,
+        "other": 9,
+        "application": 76,
+        "applicationRawProjectionInclusive": 75,
+        "applicationMappedStringDiscoveryInclusive": 1
+      },
+      "topApplicationLeaves": [
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef:Ljava/util/concurrent/atomic/AtomicBoolean:Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/HashSet:Ljava/util/List:Ljava/util/HashSet:Ljava/util/ArrayList:I[ILjava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:I)Z",
+          "weight": 32
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedNodeTypeIndex.forEachIdWhile(Ljava/lang/Class:IILjava/util/function/IntPredicate:)V",
+          "weight": 8
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.ints.IntOpenHashSet.contains(I)Z",
+          "weight": 3
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.HashCommon.mix(I)I",
+          "weight": 3
+        },
+        {
+          "frame": "java.util.Objects.checkIndex(II)I",
+          "weight": 3
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$236.0x00000003011afaa8.test(I)Z",
+          "weight": 3
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.PreferredMappedStringIndexViewGraphWorkConsumer.consume(J)V",
+          "weight": 2
+        },
+        {
+          "frame": "java.util.ArrayList.get(I)Ljava/lang/Object:",
+          "weight": 2
+        },
+        {
+          "frame": "kotlin.collections.CollectionsKt__CollectionsKt.getIndices(Ljava/util/Collection:)Lkotlin/ranges/IntRange:",
+          "weight": 2
+        },
+        {
+          "frame": "kotlin.ranges.IntProgressionIterator.<init>(III)V",
+          "weight": 2
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:ILio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:IIILjava/util/concurrent/atomic/AtomicBoolean:Ljava/util/HashSet:Ljava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:)Lio/johnsonlee/graphite/webgraph/ParallelCallSiteProjectionResult:",
+          "weight": 1
+        },
+        {
+          "frame": "I2C/C2I adapters(0xba)()L:",
+          "weight": 1
+        },
+        {
+          "frame": "jdk.internal.misc.Unsafe.getLongUnaligned(Ljava/lang/Object:JZ)J",
+          "weight": 1
+        },
+        {
+          "frame": "java.nio.DirectByteBuffer.getInt(J)I",
+          "weight": 1
+        },
+        {
+          "frame": "java.lang.String.isLatin1()Z",
+          "weight": 1
+        }
+      ],
+      "topApplicationInclusive": [
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor.runWorker(Ljava/util/concurrent/ThreadPoolExecutor$Worker:)V",
+          "weight": 76
+        },
+        {
+          "frame": "java.util.concurrent.FutureTask.run()V",
+          "weight": 76
+        },
+        {
+          "frame": "java.lang.Thread.run()V",
+          "weight": 76
+        },
+        {
+          "frame": "java.util.concurrent.Executors$RunnableAdapter.call()Ljava/lang/Object:",
+          "weight": 76
+        },
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor$Worker.run()V",
+          "weight": 76
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:ILio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:IIILjava/util/concurrent/atomic/AtomicBoolean:Ljava/util/HashSet:Ljava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:)Lio/johnsonlee/graphite/webgraph/ParallelCallSiteProjectionResult:",
+          "weight": 71
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$229.0x00000003011aeba8.call()Ljava/lang/Object:",
+          "weight": 71
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedNodeTypeIndex.forEachIdWhile(Ljava/lang/Class:IILjava/util/function/IntPredicate:)V",
+          "weight": 66
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$236.0x00000003011afaa8.test(I)Z",
+          "weight": 58
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef:Ljava/util/concurrent/atomic/AtomicBoolean:Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/HashSet:Ljava/util/List:Ljava/util/HashSet:Ljava/util/ArrayList:I[ILjava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:I)Z",
+          "weight": 55
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexKt.trackedSplitCallSiteTask$lambda$11(Ljava/util/concurrent/Callable:)Ljava/lang/Object:",
+          "weight": 48
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexKt$$Lambda$230.0x00000003011aedd0.call()Ljava/lang/Object:",
+          "weight": 48
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.runDirectStringTasksInOrderUntil$submit$175$lambda$174(Ljava/util/concurrent/atomic/AtomicBoolean:ILjava/util/List:Ljava/util/concurrent/CountDownLatch:)Lio/johnsonlee/graphite/cypher/QueryPipeline$runDirectStringTasksInOrderUntil$Outcome:",
+          "weight": 28
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeIndexedDistinctStringProjection$projectSource(Ljava/util/List:Ljava/util/List:Lio/johnsonlee/graphite/cypher/QueryPipeline:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:ZLjava/util/List:Ljava/util/List:ILjava/lang/Class:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:I)Lio/johnsonlee/graphite/cypher/QueryPipeline$IndexedProjectedRows:",
+          "weight": 28
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.distinctStringPropertyDisjunction(Ljava/lang/Class:Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)Ljava/util/List:",
+          "weight": 28
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeIndexedDistinctStringProjection$lambda$142$lambda$141(ILjava/util/List:Ljava/util/List:Lio/johnsonlee/graphite/cypher/QueryPipeline:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:ZLjava/util/List:Ljava/util/List:ILjava/lang/Class:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:)Lio/johnsonlee/graphite/cypher/QueryPipeline$IndexedProjectedRows:",
+          "weight": 28
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline$$Lambda$223.0x00000003011a3420.call()Ljava/lang/Object:",
+          "weight": 28
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline$$Lambda$222.0x00000003011a2a20.invoke()Ljava/lang/Object:",
+          "weight": 28
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection(Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:Ljava/util/List:Lio/johnsonlee/graphite/webgraph/CallSiteStringIdMembership:)Ljava/util/List:",
+          "weight": 27
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.ints.IntOpenHashSet.contains(I)Z",
+          "weight": 6
+        },
+        {
+          "frame": "java.util.ArrayList.get(I)Ljava/lang/Object:",
+          "weight": 5
+        },
+        {
+          "frame": "java.nio.DirectByteBuffer.getLong(I)J",
+          "weight": 3
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedNodeOffsetIndex.offset(I)J",
+          "weight": 3
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.HashCommon.mix(I)I",
+          "weight": 3
+        },
+        {
+          "frame": "java.util.Objects.checkIndex(II)I",
+          "weight": 3
+        }
+      ]
+    },
+    {
+      "recording": 1,
+      "query": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "phase": "other",
+      "metric": "cpuSamples",
+      "total": 3,
+      "counts": {
+        "jit": 2,
+        "application": 1
+      },
+      "topApplicationLeaves": [
+        {
+          "frame": "java.lang.invoke.VarHandleGuards.guard_LI_V(Ljava/lang/invoke/VarHandle:Ljava/lang/Object:ILjava/lang/invoke/VarHandle$AccessDescriptor:)V",
+          "weight": 1
+        }
+      ],
+      "topApplicationInclusive": [
+        {
+          "frame": "java.lang.invoke.VarHandleGuards.guard_LI_V(Ljava/lang/invoke/VarHandle:Ljava/lang/Object:ILjava/lang/invoke/VarHandle$AccessDescriptor:)V",
+          "weight": 1
+        },
+        {
+          "frame": "java.util.concurrent.FutureTask.set(Ljava/lang/Object:)V",
+          "weight": 1
+        },
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor.runWorker(Ljava/util/concurrent/ThreadPoolExecutor$Worker:)V",
+          "weight": 1
+        },
+        {
+          "frame": "java.util.concurrent.FutureTask.run()V",
+          "weight": 1
+        },
+        {
+          "frame": "java.lang.Thread.run()V",
+          "weight": 1
+        },
+        {
+          "frame": "java.util.concurrent.Executors$RunnableAdapter.call()Ljava/lang/Object:",
+          "weight": 1
+        },
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor$Worker.run()V",
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "recording": 1,
+      "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "phase": "initial",
+      "metric": "cpuSamples",
+      "total": 22,
+      "counts": {
+        "jit": 13,
+        "application": 8,
+        "applicationMappedStringDiscoveryInclusive": 2,
+        "applicationRawProjectionInclusive": 4,
+        "other": 1
+      },
+      "topApplicationLeaves": [
+        {
+          "frame": "java.util.Arrays.fill([CIIC)V",
+          "weight": 2
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef:Ljava/util/concurrent/atomic/AtomicBoolean:Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/HashSet:Ljava/util/List:Ljava/util/HashSet:Ljava/util/ArrayList:I[ILjava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:I)Z",
+          "weight": 2
+        },
+        {
+          "frame": "java.util.LinkedHashMap.newNode(ILjava/lang/Object:Ljava/lang/Object:Ljava/util/HashMap$Node:)Ljava/util/HashMap$Node:",
+          "weight": 1
+        },
+        {
+          "frame": "libsystem_kernel.dylib.stat64()L:",
+          "weight": 1
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.ints.IntOpenHashSet.<init>([IIIF)V",
+          "weight": 1
+        },
+        {
+          "frame": "libjvm.dylib.LastFrameAccessor::bytecode()L:",
+          "weight": 1
+        }
+      ],
+      "topApplicationInclusive": [
+        {
+          "frame": "java.lang.Thread.run()V",
+          "weight": 8
+        },
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor.runWorker(Ljava/util/concurrent/ThreadPoolExecutor$Worker:)V",
+          "weight": 8
+        },
+        {
+          "frame": "java.util.concurrent.FutureTask.run()V",
+          "weight": 8
+        },
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor$Worker.run()V",
+          "weight": 8
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunction$default(Lio/johnsonlee/graphite/cypher/QueryPipeline:Ljava/lang/Class:Ljava/lang/String:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:ILkotlin/jvm/functions/Function1:Ljava/util/List:ZILjava/lang/Object:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 6
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunction(Ljava/lang/Class:Ljava/lang/String:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:ILkotlin/jvm/functions/Function1:Ljava/util/List:Z)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 6
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark$$Lambda$196.0x0000000301185e90.call()Ljava/lang/Object:",
+          "weight": 6
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.CypherExecutor.execute(Ljava/lang/String:Ljava/util/Map:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 6
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replay$lambda$33$lambda$29(Ljava/util/List:Lio/johnsonlee/graphite/cypher/CypherExecutionContext:Lio/johnsonlee/graphite/webgraph/BroadQueryCase:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 6
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeIndexedDistinctStringProjection(Ljava/lang/Class:Ljava/lang/String:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:ILjava/util/List:Z)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 6
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.tryFastFilteredNodeLimit(Ljava/util/List:Ljava/util/List:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 6
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeIndexedDistinctStringProjection$projectSource(Ljava/util/List:Ljava/util/List:Lio/johnsonlee/graphite/cypher/QueryPipeline:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:ZLjava/util/List:Ljava/util/List:ILjava/lang/Class:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:I)Lio/johnsonlee/graphite/cypher/QueryPipeline$IndexedProjectedRows:",
+          "weight": 6
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(Ljava/util/List:Ljava/util/Map:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 6
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.execute(Ljava/lang/String:Ljava/util/Map:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 6
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(Ljava/util/List:Ljava/util/Map:Ljava/lang/Integer:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 6
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(Ljava/util/List:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 6
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.distinctStringPropertyDisjunction(Ljava/lang/Class:Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)Ljava/util/List:",
+          "weight": 5
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:ILio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:IIILjava/util/concurrent/atomic/AtomicBoolean:Ljava/util/HashSet:Ljava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:)Lio/johnsonlee/graphite/webgraph/ParallelCallSiteProjectionResult:",
+          "weight": 3
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedNodeTypeIndex.forEachIdWhile(Ljava/lang/Class:IILjava/util/function/IntPredicate:)V",
+          "weight": 3
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$236.0x00000003011afaa8.test(I)Z",
+          "weight": 3
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef:Ljava/util/concurrent/atomic/AtomicBoolean:Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/HashSet:Ljava/util/List:Ljava/util/HashSet:Ljava/util/ArrayList:I[ILjava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:I)Z",
+          "weight": 3
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$229.0x00000003011aeba8.call()Ljava/lang/Object:",
+          "weight": 3
+        },
+        {
+          "frame": "java.util.HashMap.putVal(ILjava/lang/Object:Ljava/lang/Object:ZZ)Ljava/lang/Object:",
+          "weight": 2
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.exactMatchingStringIds(Lio/johnsonlee/graphite/graph/StringPropertyPredicate:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)[I",
+          "weight": 2
+        },
+        {
+          "frame": "it.unimi.dsi.lang.MutableString.length(I)Lit/unimi/dsi/lang/MutableString:",
+          "weight": 2
+        }
+      ]
+    },
+    {
+      "recording": 1,
+      "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "phase": "initial",
+      "metric": "allocationSampledBytes",
+      "total": 524288,
+      "counts": {
+        "application": 524288,
+        "applicationRawProjectionInclusive": 524288
+      },
+      "topApplicationLeaves": [
+        {
+          "frame": "java.util.HashMap.resize()[Ljava/util/HashMap$Node:",
+          "weight": 262144
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.ints.IntOpenHashSet.<init>(IF)V",
+          "weight": 262144
+        }
+      ],
+      "topApplicationInclusive": [
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunction$default(Lio/johnsonlee/graphite/cypher/QueryPipeline:Ljava/lang/Class:Ljava/lang/String:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:ILkotlin/jvm/functions/Function1:Ljava/util/List:ZILjava/lang/Object:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 524288
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunction(Ljava/lang/Class:Ljava/lang/String:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:ILkotlin/jvm/functions/Function1:Ljava/util/List:Z)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 524288
+        },
+        {
+          "frame": "java.lang.Thread.run()V",
+          "weight": 524288
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark$$Lambda$196.0x0000000301185e90.call()Ljava/lang/Object:",
+          "weight": 524288
+        },
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor.runWorker(Ljava/util/concurrent/ThreadPoolExecutor$Worker:)V",
+          "weight": 524288
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.CypherExecutor.execute(Ljava/lang/String:Ljava/util/Map:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 524288
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replay$lambda$33$lambda$29(Ljava/util/List:Lio/johnsonlee/graphite/cypher/CypherExecutionContext:Lio/johnsonlee/graphite/webgraph/BroadQueryCase:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 524288
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection(Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:Ljava/util/List:Lio/johnsonlee/graphite/webgraph/CallSiteStringIdMembership:)Ljava/util/List:",
+          "weight": 524288
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeIndexedDistinctStringProjection(Ljava/lang/Class:Ljava/lang/String:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:ILjava/util/List:Z)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 524288
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.tryFastFilteredNodeLimit(Ljava/util/List:Ljava/util/List:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 524288
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeIndexedDistinctStringProjection$projectSource(Ljava/util/List:Ljava/util/List:Lio/johnsonlee/graphite/cypher/QueryPipeline:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:ZLjava/util/List:Ljava/util/List:ILjava/lang/Class:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:I)Lio/johnsonlee/graphite/cypher/QueryPipeline$IndexedProjectedRows:",
+          "weight": 524288
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(Ljava/util/List:Ljava/util/Map:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 524288
+        },
+        {
+          "frame": "java.util.concurrent.FutureTask.run()V",
+          "weight": 524288
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.execute(Ljava/lang/String:Ljava/util/Map:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 524288
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(Ljava/util/List:Ljava/util/Map:Ljava/lang/Integer:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 524288
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.distinctStringPropertyDisjunction(Ljava/lang/Class:Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)Ljava/util/List:",
+          "weight": 524288
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(Ljava/util/List:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 524288
+        },
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor$Worker.run()V",
+          "weight": 524288
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:ILio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:IIILjava/util/concurrent/atomic/AtomicBoolean:Ljava/util/HashSet:Ljava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:)Lio/johnsonlee/graphite/webgraph/ParallelCallSiteProjectionResult:",
+          "weight": 262144
+        },
+        {
+          "frame": "java.util.HashSet.add(Ljava/lang/Object:)Z",
+          "weight": 262144
+        },
+        {
+          "frame": "java.util.HashMap.resize()[Ljava/util/HashMap$Node:",
+          "weight": 262144
+        },
+        {
+          "frame": "java.util.HashMap.put(Ljava/lang/Object:Ljava/lang/Object:)Ljava/lang/Object:",
+          "weight": 262144
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedNodeTypeIndex.forEachIdWhile(Ljava/lang/Class:IILjava/util/function/IntPredicate:)V",
+          "weight": 262144
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$236.0x00000003011afaa8.test(I)Z",
+          "weight": 262144
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef:Ljava/util/concurrent/atomic/AtomicBoolean:Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/HashSet:Ljava/util/List:Ljava/util/HashSet:Ljava/util/ArrayList:I[ILjava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:I)Z",
+          "weight": 262144
+        }
+      ]
+    },
+    {
+      "recording": 1,
+      "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "phase": "provenance",
+      "metric": "cpuSamples",
+      "total": 223,
+      "counts": {
+        "jit": 100,
+        "application": 123,
+        "applicationRawProjectionInclusive": 53,
+        "applicationMappedStringDiscoveryInclusive": 69
+      },
+      "topApplicationLeaves": [
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef:Ljava/util/concurrent/atomic/AtomicBoolean:Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/HashSet:Ljava/util/List:Ljava/util/HashSet:Ljava/util/ArrayList:I[ILjava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:I)Z",
+          "weight": 21
+        },
+        {
+          "frame": "it.unimi.dsi.lang.MutableString.length(I)Lit/unimi/dsi/lang/MutableString:",
+          "weight": 8
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.exactMatchingStringIds(Lio/johnsonlee/graphite/graph/StringPropertyPredicate:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)[I",
+          "weight": 7
+        },
+        {
+          "frame": "java.util.Arrays.fill([CIIC)V",
+          "weight": 7
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection(Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:Ljava/util/List:Lio/johnsonlee/graphite/webgraph/CallSiteStringIdMembership:)Ljava/util/List:",
+          "weight": 7
+        },
+        {
+          "frame": "java.lang.CharacterDataLatin1.toLowerCase(I)I",
+          "weight": 6
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.ints.IntOpenHashSet.contains(I)Z",
+          "weight": 5
+        },
+        {
+          "frame": "java.nio.DirectByteBuffer.getInt(J)I",
+          "weight": 5
+        },
+        {
+          "frame": "jshort_disjoint_arraycopy()L:",
+          "weight": 5
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraphKt.reusableContains(Lit/unimi/dsi/lang/MutableString:Lio/johnsonlee/graphite/graph/StringValueTransform:Ljava/lang/String:)Z",
+          "weight": 4
+        },
+        {
+          "frame": "it.unimi.dsi.util.FrontCodedStringList.get(ILit/unimi/dsi/lang/MutableString:)V",
+          "weight": 4
+        },
+        {
+          "frame": "jshort_fill()L:",
+          "weight": 4
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.extract(I[CII)I",
+          "weight": 4
+        },
+        {
+          "frame": "it.unimi.dsi.lang.MutableString.indexOf(Ljava/lang/CharSequence:III)I",
+          "weight": 3
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.StringTable.get$webgraph(ILit/unimi/dsi/lang/MutableString:)V",
+          "weight": 3
+        }
+      ],
+      "topApplicationInclusive": [
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor.runWorker(Ljava/util/concurrent/ThreadPoolExecutor$Worker:)V",
+          "weight": 121
+        },
+        {
+          "frame": "java.util.concurrent.FutureTask.run()V",
+          "weight": 121
+        },
+        {
+          "frame": "java.lang.Thread.run()V",
+          "weight": 121
+        },
+        {
+          "frame": "java.util.concurrent.Executors$RunnableAdapter.call()Ljava/lang/Object:",
+          "weight": 121
+        },
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor$Worker.run()V",
+          "weight": 121
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline$$Lambda$237.0x00000003011b48c8.invoke()Ljava/lang/Object:",
+          "weight": 93
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeIndexedDistinctStringProjection$lambda$155$lambda$154(Ljava/util/List:ILjava/util/List:Lio/johnsonlee/graphite/cypher/QueryPipeline:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:ZLjava/util/LinkedHashSet:Ljava/util/List:Ljava/util/List:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringSelectedRowMatcher:Ljava/lang/Class:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/Set:Ljava/util/List:)Ljava/util/Set:",
+          "weight": 93
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline$$Lambda$238.0x00000003011b4d00.call()Ljava/lang/Object:",
+          "weight": 93
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.runDirectStringTasks$submit$lambda$168(Ljava/util/concurrent/atomic/AtomicBoolean:ILjava/util/List:Ljava/util/concurrent/CountDownLatch:)Lkotlin/collections/IndexedValue:",
+          "weight": 93
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.distinctStringPropertyDisjunction(Ljava/lang/Class:Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)Ljava/util/List:",
+          "weight": 92
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.exactMatchingStringIds(Ljava/util/List:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)Ljava/util/List:",
+          "weight": 69
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.exactMatchingStringIds(Lio/johnsonlee/graphite/graph/StringPropertyPredicate:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)[I",
+          "weight": 68
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef:Ljava/util/concurrent/atomic/AtomicBoolean:Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/HashSet:Ljava/util/List:Ljava/util/HashSet:Ljava/util/ArrayList:I[ILjava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:I)Z",
+          "weight": 44
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$236.0x00000003011afaa8.test(I)Z",
+          "weight": 43
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:ILio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:IIILjava/util/concurrent/atomic/AtomicBoolean:Ljava/util/HashSet:Ljava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:)Lio/johnsonlee/graphite/webgraph/ParallelCallSiteProjectionResult:",
+          "weight": 43
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$229.0x00000003011aeba8.call()Ljava/lang/Object:",
+          "weight": 43
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedNodeTypeIndex.forEachIdWhile(Ljava/lang/Class:IILjava/util/function/IntPredicate:)V",
+          "weight": 43
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.StringTable.get$webgraph(ILit/unimi/dsi/lang/MutableString:)V",
+          "weight": 43
+        },
+        {
+          "frame": "it.unimi.dsi.util.FrontCodedStringList.get(ILit/unimi/dsi/lang/MutableString:)V",
+          "weight": 40
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexKt.trackedSplitCallSiteTask$lambda$11(Ljava/util/concurrent/Callable:)Ljava/lang/Object:",
+          "weight": 28
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexKt$$Lambda$230.0x00000003011aedd0.call()Ljava/lang/Object:",
+          "weight": 28
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection(Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:Ljava/util/List:Lio/johnsonlee/graphite/webgraph/CallSiteStringIdMembership:)Ljava/util/List:",
+          "weight": 24
+        },
+        {
+          "frame": "it.unimi.dsi.lang.MutableString.length(I)Lit/unimi/dsi/lang/MutableString:",
+          "weight": 21
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraphKt.reusableContains(Lit/unimi/dsi/lang/MutableString:Lio/johnsonlee/graphite/graph/StringValueTransform:Ljava/lang/String:)Z",
+          "weight": 18
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.get(I[C)I",
+          "weight": 15
+        }
+      ]
+    },
+    {
+      "recording": 1,
+      "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "phase": "provenance",
+      "metric": "allocationSampledBytes",
+      "total": 13369344,
+      "counts": {
+        "application": 13369344,
+        "applicationRawProjectionInclusive": 12058624,
+        "applicationMappedStringDiscoveryInclusive": 1310720
+      },
+      "topApplicationLeaves": [
+        {
+          "frame": "kotlin.ranges.IntProgression.iterator()Lkotlin/collections/IntIterator:",
+          "weight": 2359296
+        },
+        {
+          "frame": "kotlin.collections.CollectionsKt__CollectionsKt.getIndices(Ljava/util/Collection:)Lkotlin/ranges/IntRange:",
+          "weight": 2097152
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.getArray(I)[C",
+          "weight": 1572864
+        },
+        {
+          "frame": "java.lang.StringUTF16.compress([CII)[B",
+          "weight": 1310720
+        },
+        {
+          "frame": "java.util.ArrayList.<init>(I)V",
+          "weight": 1048576
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.exactMatchingStringIds(Lio/johnsonlee/graphite/graph/StringPropertyPredicate:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)[I",
+          "weight": 1048576
+        },
+        {
+          "frame": "java.lang.Integer.valueOf(I)Ljava/lang/Integer:",
+          "weight": 786432
+        },
+        {
+          "frame": "it.unimi.dsi.lang.MutableString.toString()Ljava/lang/String:",
+          "weight": 786432
+        },
+        {
+          "frame": "java.util.ArrayList.iterator()Ljava/util/Iterator:",
+          "weight": 524288
+        },
+        {
+          "frame": "it.unimi.dsi.lang.MutableString.wrap([C)Lit/unimi/dsi/lang/MutableString:",
+          "weight": 524288
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection(Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:Ljava/util/List:Lio/johnsonlee/graphite/webgraph/CallSiteStringIdMembership:)Ljava/util/List:",
+          "weight": 524288
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef:Ljava/util/concurrent/atomic/AtomicBoolean:Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/HashSet:Ljava/util/List:Ljava/util/HashSet:Ljava/util/ArrayList:I[ILjava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:I)Z",
+          "weight": 524288
+        },
+        {
+          "frame": "java.util.HashMap.newNode(ILjava/lang/Object:Ljava/lang/Object:Ljava/util/HashMap$Node:)Ljava/util/HashMap$Node:",
+          "weight": 262144
+        }
+      ],
+      "topApplicationInclusive": [
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor.runWorker(Ljava/util/concurrent/ThreadPoolExecutor$Worker:)V",
+          "weight": 13369344
+        },
+        {
+          "frame": "java.util.concurrent.FutureTask.run()V",
+          "weight": 13369344
+        },
+        {
+          "frame": "java.lang.Thread.run()V",
+          "weight": 13369344
+        },
+        {
+          "frame": "java.util.concurrent.Executors$RunnableAdapter.call()Ljava/lang/Object:",
+          "weight": 13369344
+        },
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor$Worker.run()V",
+          "weight": 13369344
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline$$Lambda$237.0x00000003011b48c8.invoke()Ljava/lang/Object:",
+          "weight": 9961472
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeIndexedDistinctStringProjection$lambda$155$lambda$154(Ljava/util/List:ILjava/util/List:Lio/johnsonlee/graphite/cypher/QueryPipeline:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:ZLjava/util/LinkedHashSet:Ljava/util/List:Ljava/util/List:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringSelectedRowMatcher:Ljava/lang/Class:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/Set:Ljava/util/List:)Ljava/util/Set:",
+          "weight": 9961472
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline$$Lambda$238.0x00000003011b4d00.call()Ljava/lang/Object:",
+          "weight": 9961472
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.distinctStringPropertyDisjunction(Ljava/lang/Class:Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)Ljava/util/List:",
+          "weight": 9961472
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.runDirectStringTasks$submit$lambda$168(Ljava/util/concurrent/atomic/AtomicBoolean:ILjava/util/List:Ljava/util/concurrent/CountDownLatch:)Lkotlin/collections/IndexedValue:",
+          "weight": 9961472
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection(Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:Ljava/util/List:Lio/johnsonlee/graphite/webgraph/CallSiteStringIdMembership:)Ljava/util/List:",
+          "weight": 8650752
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$236.0x00000003011afaa8.test(I)Z",
+          "weight": 5767168
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:ILio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:IIILjava/util/concurrent/atomic/AtomicBoolean:Ljava/util/HashSet:Ljava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:)Lio/johnsonlee/graphite/webgraph/ParallelCallSiteProjectionResult:",
+          "weight": 5767168
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef:Ljava/util/concurrent/atomic/AtomicBoolean:Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/HashSet:Ljava/util/List:Ljava/util/HashSet:Ljava/util/ArrayList:I[ILjava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:I)Z",
+          "weight": 5767168
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$229.0x00000003011aeba8.call()Ljava/lang/Object:",
+          "weight": 5767168
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedNodeTypeIndex.forEachIdWhile(Ljava/lang/Class:IILjava/util/function/IntPredicate:)V",
+          "weight": 5767168
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.StringTable.findId$webgraph(Ljava/lang/String:)I",
+          "weight": 4194304
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexKt.trackedSplitCallSiteTask$lambda$11(Ljava/util/concurrent/Callable:)Ljava/lang/Object:",
+          "weight": 3407872
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexKt$$Lambda$230.0x00000003011aedd0.call()Ljava/lang/Object:",
+          "weight": 3407872
+        },
+        {
+          "frame": "kotlin.ranges.IntProgression.iterator()Ljava/util/Iterator:",
+          "weight": 2359296
+        },
+        {
+          "frame": "kotlin.ranges.IntProgression.iterator()Lkotlin/collections/IntIterator:",
+          "weight": 2359296
+        },
+        {
+          "frame": "kotlin.collections.CollectionsKt__CollectionsKt.getIndices(Ljava/util/Collection:)Lkotlin/ranges/IntRange:",
+          "weight": 2097152
+        },
+        {
+          "frame": "it.unimi.dsi.lang.MutableString.toString()Ljava/lang/String:",
+          "weight": 2097152
+        },
+        {
+          "frame": "it.unimi.dsi.util.FrontCodedStringList.get(I)Lit/unimi/dsi/lang/MutableString:",
+          "weight": 2097152
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.getArray(I)[C",
+          "weight": 1572864
+        }
+      ]
+    },
+    {
+      "recording": 1,
+      "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "phase": "other",
+      "metric": "cpuSamples",
+      "total": 11,
+      "counts": {
+        "jit": 6,
+        "other": 1,
+        "application": 4
+      },
+      "topApplicationLeaves": [
+        {
+          "frame": "java.util.AbstractMap.equals(Ljava/lang/Object:)Z",
+          "weight": 1
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.CypherExecutor.materializeResult(Lio/johnsonlee/graphite/cypher/CypherResult:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 1
+        },
+        {
+          "frame": "java.lang.invoke.InnerClassLambdaMetafactory$1.<init>(Ljava/lang/invoke/InnerClassLambdaMetafactory:Ljava/lang/Class:)V",
+          "weight": 1
+        },
+        {
+          "frame": "libjvm.dylib.JVM_NewInstanceFromConstructor()L:",
+          "weight": 1
+        }
+      ],
+      "topApplicationInclusive": [
+        {
+          "frame": "break_stack_range()L:",
+          "weight": 2
+        },
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor.runWorker(Ljava/util/concurrent/ThreadPoolExecutor$Worker:)V",
+          "weight": 2
+        },
+        {
+          "frame": "java.util.concurrent.FutureTask.run()V",
+          "weight": 2
+        },
+        {
+          "frame": "java.lang.Thread.run()V",
+          "weight": 2
+        },
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor$Worker.run()V",
+          "weight": 2
+        },
+        {
+          "frame": "java.util.HashMap.containsKey(Ljava/lang/Object:)Z",
+          "weight": 1
+        },
+        {
+          "frame": "java.util.HashMap.getNode(Ljava/lang/Object:)Ljava/util/HashMap$Node:",
+          "weight": 1
+        },
+        {
+          "frame": "java.util.HashSet.contains(Ljava/lang/Object:)Z",
+          "weight": 1
+        },
+        {
+          "frame": "java.util.AbstractCollection.containsAll(Ljava/util/Collection:)Z",
+          "weight": 1
+        },
+        {
+          "frame": "java.util.AbstractMap.equals(Ljava/lang/Object:)Z",
+          "weight": 1
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark$$Lambda$196.0x0000000301185e90.call()Ljava/lang/Object:",
+          "weight": 1
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.execute(Ljava/lang/String:Ljava/util/Map:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 1
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.CypherExecutor.execute(Ljava/lang/String:Ljava/util/Map:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 1
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(Ljava/util/List:Ljava/util/Map:Ljava/lang/Integer:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 1
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.CypherExecutor.materializeResult(Lio/johnsonlee/graphite/cypher/CypherResult:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 1
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replay$lambda$33$lambda$29(Ljava/util/List:Lio/johnsonlee/graphite/cypher/CypherExecutionContext:Lio/johnsonlee/graphite/webgraph/BroadQueryCase:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 1
+        },
+        {
+          "frame": "java.lang.invoke.Invokers$Holder.invokeExact_MT(Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:)Ljava/lang/Object:",
+          "weight": 1
+        },
+        {
+          "frame": "java.lang.invoke.LambdaMetafactory.metafactory(Ljava/lang/invoke/MethodHandles$Lookup:Ljava/lang/String:Ljava/lang/invoke/MethodType:Ljava/lang/invoke/MethodType:Ljava/lang/invoke/MethodHandle:Ljava/lang/invoke/MethodType:)Ljava/lang/invoke/CallSite:",
+          "weight": 1
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline$$Lambda$238.0x00000003011b4d00.call()Ljava/lang/Object:",
+          "weight": 1
+        },
+        {
+          "frame": "java.lang.invoke.BootstrapMethodInvoker.invoke(Ljava/lang/Class:Ljava/lang/invoke/MethodHandle:Ljava/lang/String:Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Class:)Ljava/lang/Object:",
+          "weight": 1
+        },
+        {
+          "frame": "java.lang.invoke.InnerClassLambdaMetafactory$1.<init>(Ljava/lang/invoke/InnerClassLambdaMetafactory:Ljava/lang/Class:)V",
+          "weight": 1
+        },
+        {
+          "frame": "java.lang.invoke.MethodHandleNatives.linkCallSiteImpl(Ljava/lang/Class:Ljava/lang/invoke/MethodHandle:Ljava/lang/String:Ljava/lang/invoke/MethodType:Ljava/lang/Object:[Ljava/lang/Object:)Ljava/lang/invoke/MemberName:",
+          "weight": 1
+        },
+        {
+          "frame": "java.lang.invoke.LambdaForm$DMH.0x00000003010ac000.invokeStatic(Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:)Ljava/lang/Object:",
+          "weight": 1
+        },
+        {
+          "frame": "java.lang.invoke.CallSite.makeSite(Ljava/lang/invoke/MethodHandle:Ljava/lang/String:Ljava/lang/invoke/MethodType:Ljava/lang/Object:Ljava/lang/Class:)Ljava/lang/invoke/CallSite:",
+          "weight": 1
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.runDirectStringTasks$submit$lambda$168(Ljava/util/concurrent/atomic/AtomicBoolean:ILjava/util/List:Ljava/util/concurrent/CountDownLatch:)Lkotlin/collections/IndexedValue:",
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "recording": 1,
+      "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "phase": "other",
+      "metric": "allocationSampledBytes",
+      "total": 524288,
+      "counts": {
+        "application": 524288
+      },
+      "topApplicationLeaves": [
+        {
+          "frame": "kotlin.collections.MapsKt__MapsJVMKt.createMapBuilder()Ljava/util/Map:",
+          "weight": 262144
+        },
+        {
+          "frame": "java.lang.Object.clone()Ljava/lang/Object:",
+          "weight": 262144
+        }
+      ],
+      "topApplicationInclusive": [
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark$$Lambda$196.0x0000000301185e90.call()Ljava/lang/Object:",
+          "weight": 524288
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.execute(Ljava/lang/String:Ljava/util/Map:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 524288
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.CypherExecutor.execute(Ljava/lang/String:Ljava/util/Map:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 524288
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(Ljava/util/List:Ljava/util/Map:Ljava/lang/Integer:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 524288
+        },
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor.runWorker(Ljava/util/concurrent/ThreadPoolExecutor$Worker:)V",
+          "weight": 524288
+        },
+        {
+          "frame": "java.util.concurrent.FutureTask.run()V",
+          "weight": 524288
+        },
+        {
+          "frame": "java.lang.Thread.run()V",
+          "weight": 524288
+        },
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor$Worker.run()V",
+          "weight": 524288
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replay$lambda$33$lambda$29(Ljava/util/List:Lio/johnsonlee/graphite/cypher/CypherExecutionContext:Lio/johnsonlee/graphite/webgraph/BroadQueryCase:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 524288
+        },
+        {
+          "frame": "kotlin.collections.MapsKt__MapsJVMKt.createMapBuilder()Ljava/util/Map:",
+          "weight": 262144
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.CypherExecutor.materializeResult(Lio/johnsonlee/graphite/cypher/CypherResult:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 262144
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunction$default(Lio/johnsonlee/graphite/cypher/QueryPipeline:Ljava/lang/Class:Ljava/lang/String:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:ILkotlin/jvm/functions/Function1:Ljava/util/List:ZILjava/lang/Object:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 262144
+        },
+        {
+          "frame": "java.lang.Object.clone()Ljava/lang/Object:",
+          "weight": 262144
+        },
+        {
+          "frame": "java.lang.invoke.LambdaForm$Name.<init>(Ljava/lang/invoke/MethodType:[Ljava/lang/Object:)V",
+          "weight": 262144
+        },
+        {
+          "frame": "java.lang.invoke.DirectMethodHandle.preparedLambdaForm(Ljava/lang/invoke/MemberName:)Ljava/lang/invoke/LambdaForm:",
+          "weight": 262144
+        },
+        {
+          "frame": "java.lang.invoke.DirectMethodHandle.preparedLambdaForm(Ljava/lang/invoke/MethodType:I)Ljava/lang/invoke/LambdaForm:",
+          "weight": 262144
+        },
+        {
+          "frame": "java.lang.invoke.MethodHandleNatives.linkCallSite(Ljava/lang/Object:ILjava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:[Ljava/lang/Object:)Ljava/lang/invoke/MemberName:",
+          "weight": 262144
+        },
+        {
+          "frame": "java.lang.invoke.LambdaForm$NamedFunction.<init>(Ljava/lang/invoke/MethodType:)V",
+          "weight": 262144
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunction(Ljava/lang/Class:Ljava/lang/String:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:ILkotlin/jvm/functions/Function1:Ljava/util/List:Z)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 262144
+        },
+        {
+          "frame": "java.lang.invoke.Invokers.callSiteForm(Ljava/lang/invoke/MethodType:Z)Ljava/lang/invoke/LambdaForm:",
+          "weight": 262144
+        },
+        {
+          "frame": "java.lang.invoke.MethodHandleNatives.linkCallSiteImpl(Ljava/lang/Class:Ljava/lang/invoke/MethodHandle:Ljava/lang/String:Ljava/lang/invoke/MethodType:Ljava/lang/Object:[Ljava/lang/Object:)Ljava/lang/invoke/MemberName:",
+          "weight": 262144
+        },
+        {
+          "frame": "java.lang.invoke.Invokers.linkToTargetMethod(Ljava/lang/invoke/MethodType:)Ljava/lang/invoke/MemberName:",
+          "weight": 262144
+        },
+        {
+          "frame": "java.lang.invoke.MemberName$Factory.resolveOrFail(BLjava/lang/invoke/MemberName:Ljava/lang/Class:ILjava/lang/Class:)Ljava/lang/invoke/MemberName:",
+          "weight": 262144
+        },
+        {
+          "frame": "java.lang.invoke.DirectMethodHandle.make(Ljava/lang/Class:Ljava/lang/invoke/MemberName:)Ljava/lang/invoke/DirectMethodHandle:",
+          "weight": 262144
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeIndexedDistinctStringProjection(Ljava/lang/Class:Ljava/lang/String:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:ILjava/util/List:Z)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 262144
+        }
+      ]
+    },
+    {
+      "recording": 2,
+      "query": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "phase": "initial",
+      "metric": "cpuSamples",
+      "total": 151,
+      "counts": {
+        "jit": 69,
+        "other": 3,
+        "application": 79,
+        "applicationRawProjectionInclusive": 74,
+        "applicationMappedStringDiscoveryInclusive": 3
+      },
+      "topApplicationLeaves": [
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef:Ljava/util/concurrent/atomic/AtomicBoolean:Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/HashSet:Ljava/util/List:Ljava/util/HashSet:Ljava/util/ArrayList:I[ILjava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:I)Z",
+          "weight": 36
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.ints.IntOpenHashSet.contains(I)Z",
+          "weight": 6
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedNodeTypeIndex.forEachIdWhile(Ljava/lang/Class:IILjava/util/function/IntPredicate:)V",
+          "weight": 4
+        },
+        {
+          "frame": "kotlin.ranges.IntProgression.iterator()Lkotlin/collections/IntIterator:",
+          "weight": 3
+        },
+        {
+          "frame": "jdk.internal.misc.ScopedMemoryAccess.getLongUnalignedInternal(Ljdk/internal/misc/ScopedMemoryAccess$Scope:Ljava/lang/Object:JZ)J",
+          "weight": 2
+        },
+        {
+          "frame": "java.util.ArrayList.get(I)Ljava/lang/Object:",
+          "weight": 2
+        },
+        {
+          "frame": "kotlin.ranges.IntProgressionIterator.hasNext()Z",
+          "weight": 2
+        },
+        {
+          "frame": "kotlin.ranges.IntProgressionIterator.nextInt()I",
+          "weight": 2
+        },
+        {
+          "frame": "java.lang.Integer.intValue()I",
+          "weight": 2
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.trigramPostingRange(I)Lkotlin/ranges/IntRange:",
+          "weight": 2
+        },
+        {
+          "frame": "java.lang.invoke.DirectMethodHandle.makePreparedLambdaForm(Ljava/lang/invoke/MethodType:I)Ljava/lang/invoke/LambdaForm:",
+          "weight": 2
+        },
+        {
+          "frame": "libsystem_kernel.dylib.__psynch_cvwait()L:",
+          "weight": 2
+        },
+        {
+          "frame": "java.nio.DirectByteBuffer.getInt(I)I",
+          "weight": 1
+        },
+        {
+          "frame": "java.nio.DirectByteBuffer.getInt(J)I",
+          "weight": 1
+        },
+        {
+          "frame": "jdk.internal.org.objectweb.asm.ClassWriter.visitMethod(ILjava/lang/String:Ljava/lang/String:Ljava/lang/String:[Ljava/lang/String:)Ljdk/internal/org/objectweb/asm/MethodVisitor:",
+          "weight": 1
+        }
+      ],
+      "topApplicationInclusive": [
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor.runWorker(Ljava/util/concurrent/ThreadPoolExecutor$Worker:)V",
+          "weight": 78
+        },
+        {
+          "frame": "java.lang.Thread.run()V",
+          "weight": 78
+        },
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor$Worker.run()V",
+          "weight": 78
+        },
+        {
+          "frame": "java.util.concurrent.FutureTask.run()V",
+          "weight": 77
+        },
+        {
+          "frame": "java.util.concurrent.Executors$RunnableAdapter.call()Ljava/lang/Object:",
+          "weight": 77
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$229.0x00000003011aefc8.call()Ljava/lang/Object:",
+          "weight": 69
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:ILio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:IIILjava/util/concurrent/atomic/AtomicBoolean:Ljava/util/HashSet:Ljava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:)Lio/johnsonlee/graphite/webgraph/ParallelCallSiteProjectionResult:",
+          "weight": 69
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedNodeTypeIndex.forEachIdWhile(Ljava/lang/Class:IILjava/util/function/IntPredicate:)V",
+          "weight": 66
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$234.0x00000003011afc70.test(I)Z",
+          "weight": 63
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef:Ljava/util/concurrent/atomic/AtomicBoolean:Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/HashSet:Ljava/util/List:Ljava/util/HashSet:Ljava/util/ArrayList:I[ILjava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:I)Z",
+          "weight": 61
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexKt.trackedSplitCallSiteTask$lambda$11(Ljava/util/concurrent/Callable:)Ljava/lang/Object:",
+          "weight": 46
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexKt$$Lambda$230.0x00000003011af1f0.call()Ljava/lang/Object:",
+          "weight": 46
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.runDirectStringTasksInOrderUntil$submit$175$lambda$174(Ljava/util/concurrent/atomic/AtomicBoolean:ILjava/util/List:Ljava/util/concurrent/CountDownLatch:)Lio/johnsonlee/graphite/cypher/QueryPipeline$runDirectStringTasksInOrderUntil$Outcome:",
+          "weight": 31
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline$$Lambda$222.0x00000003011a3050.invoke()Ljava/lang/Object:",
+          "weight": 31
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline$$Lambda$223.0x00000003011a3a50.call()Ljava/lang/Object:",
+          "weight": 31
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeIndexedDistinctStringProjection$projectSource(Ljava/util/List:Ljava/util/List:Lio/johnsonlee/graphite/cypher/QueryPipeline:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:ZLjava/util/List:Ljava/util/List:ILjava/lang/Class:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:I)Lio/johnsonlee/graphite/cypher/QueryPipeline$IndexedProjectedRows:",
+          "weight": 31
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.distinctStringPropertyDisjunction(Ljava/lang/Class:Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)Ljava/util/List:",
+          "weight": 31
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeIndexedDistinctStringProjection$lambda$142$lambda$141(ILjava/util/List:Ljava/util/List:Lio/johnsonlee/graphite/cypher/QueryPipeline:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:ZLjava/util/List:Ljava/util/List:ILjava/lang/Class:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:)Lio/johnsonlee/graphite/cypher/QueryPipeline$IndexedProjectedRows:",
+          "weight": 31
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection(Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:Ljava/util/List:Lio/johnsonlee/graphite/webgraph/CallSiteStringIdMembership:)Ljava/util/List:",
+          "weight": 28
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.ints.IntOpenHashSet.contains(I)Z",
+          "weight": 6
+        },
+        {
+          "frame": "java.lang.invoke.Invokers$Holder.invokeExact_MT(Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:)Ljava/lang/Object:",
+          "weight": 4
+        },
+        {
+          "frame": "java.lang.invoke.MethodHandles$Lookup.findConstructor(Ljava/lang/Class:Ljava/lang/invoke/MethodType:)Ljava/lang/invoke/MethodHandle:",
+          "weight": 4
+        },
+        {
+          "frame": "java.lang.invoke.DirectMethodHandle.preparedLambdaForm(Ljava/lang/invoke/MemberName:)Ljava/lang/invoke/LambdaForm:",
+          "weight": 4
+        },
+        {
+          "frame": "java.lang.invoke.DirectMethodHandle.preparedLambdaForm(Ljava/lang/invoke/MethodType:I)Ljava/lang/invoke/LambdaForm:",
+          "weight": 4
+        },
+        {
+          "frame": "java.lang.invoke.MethodHandleNatives.linkCallSite(Ljava/lang/Object:ILjava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:[Ljava/lang/Object:)Ljava/lang/invoke/MemberName:",
+          "weight": 4
+        }
+      ]
+    },
+    {
+      "recording": 2,
+      "query": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "phase": "initial",
+      "metric": "allocationSampledBytes",
+      "total": 9175040,
+      "counts": {
+        "application": 9175040,
+        "applicationRawProjectionInclusive": 8126464,
+        "applicationMappedStringDiscoveryInclusive": 1048576
+      },
+      "topApplicationLeaves": [
+        {
+          "frame": "kotlin.ranges.IntProgression.iterator()Lkotlin/collections/IntIterator:",
+          "weight": 5242880
+        },
+        {
+          "frame": "kotlin.collections.CollectionsKt__CollectionsKt.getIndices(Ljava/util/Collection:)Lkotlin/ranges/IntRange:",
+          "weight": 2097152
+        },
+        {
+          "frame": "java.util.Arrays.copyOf([BI)[B",
+          "weight": 524288
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.exactMatchingStringIds(Ljava/util/List:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)Ljava/util/List:",
+          "weight": 262144
+        },
+        {
+          "frame": "kotlin.ranges.RangesKt___RangesKt.until(II)Lkotlin/ranges/IntRange:",
+          "weight": 262144
+        },
+        {
+          "frame": "java.lang.AbstractStringBuilder.<init>(I)V",
+          "weight": 262144
+        },
+        {
+          "frame": "java.util.HashMap.newNode(ILjava/lang/Object:Ljava/lang/Object:Ljava/util/HashMap$Node:)Ljava/util/HashMap$Node:",
+          "weight": 262144
+        },
+        {
+          "frame": "java.util.HashMap.resize()[Ljava/util/HashMap$Node:",
+          "weight": 262144
+        }
+      ],
+      "topApplicationInclusive": [
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor.runWorker(Ljava/util/concurrent/ThreadPoolExecutor$Worker:)V",
+          "weight": 9175040
+        },
+        {
+          "frame": "java.util.concurrent.FutureTask.run()V",
+          "weight": 9175040
+        },
+        {
+          "frame": "java.lang.Thread.run()V",
+          "weight": 9175040
+        },
+        {
+          "frame": "java.util.concurrent.Executors$RunnableAdapter.call()Ljava/lang/Object:",
+          "weight": 9175040
+        },
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor$Worker.run()V",
+          "weight": 9175040
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$234.0x00000003011afc70.test(I)Z",
+          "weight": 7340032
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$229.0x00000003011aefc8.call()Ljava/lang/Object:",
+          "weight": 7340032
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:ILio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:IIILjava/util/concurrent/atomic/AtomicBoolean:Ljava/util/HashSet:Ljava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:)Lio/johnsonlee/graphite/webgraph/ParallelCallSiteProjectionResult:",
+          "weight": 7340032
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef:Ljava/util/concurrent/atomic/AtomicBoolean:Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/HashSet:Ljava/util/List:Ljava/util/HashSet:Ljava/util/ArrayList:I[ILjava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:I)Z",
+          "weight": 7340032
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedNodeTypeIndex.forEachIdWhile(Ljava/lang/Class:IILjava/util/function/IntPredicate:)V",
+          "weight": 7340032
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexKt.trackedSplitCallSiteTask$lambda$11(Ljava/util/concurrent/Callable:)Ljava/lang/Object:",
+          "weight": 5505024
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexKt$$Lambda$230.0x00000003011af1f0.call()Ljava/lang/Object:",
+          "weight": 5505024
+        },
+        {
+          "frame": "kotlin.ranges.IntProgression.iterator()Ljava/util/Iterator:",
+          "weight": 5242880
+        },
+        {
+          "frame": "kotlin.ranges.IntProgression.iterator()Lkotlin/collections/IntIterator:",
+          "weight": 5242880
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.runDirectStringTasksInOrderUntil$submit$175$lambda$174(Ljava/util/concurrent/atomic/AtomicBoolean:ILjava/util/List:Ljava/util/concurrent/CountDownLatch:)Lio/johnsonlee/graphite/cypher/QueryPipeline$runDirectStringTasksInOrderUntil$Outcome:",
+          "weight": 3670016
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline$$Lambda$222.0x00000003011a3050.invoke()Ljava/lang/Object:",
+          "weight": 3670016
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline$$Lambda$223.0x00000003011a3a50.call()Ljava/lang/Object:",
+          "weight": 3670016
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeIndexedDistinctStringProjection$projectSource(Ljava/util/List:Ljava/util/List:Lio/johnsonlee/graphite/cypher/QueryPipeline:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:ZLjava/util/List:Ljava/util/List:ILjava/lang/Class:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:I)Lio/johnsonlee/graphite/cypher/QueryPipeline$IndexedProjectedRows:",
+          "weight": 3670016
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.distinctStringPropertyDisjunction(Ljava/lang/Class:Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)Ljava/util/List:",
+          "weight": 3670016
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeIndexedDistinctStringProjection$lambda$142$lambda$141(ILjava/util/List:Ljava/util/List:Lio/johnsonlee/graphite/cypher/QueryPipeline:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:ZLjava/util/List:Ljava/util/List:ILjava/lang/Class:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:)Lio/johnsonlee/graphite/cypher/QueryPipeline$IndexedProjectedRows:",
+          "weight": 3670016
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection(Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:Ljava/util/List:Lio/johnsonlee/graphite/webgraph/CallSiteStringIdMembership:)Ljava/util/List:",
+          "weight": 2621440
+        },
+        {
+          "frame": "kotlin.collections.CollectionsKt__CollectionsKt.getIndices(Ljava/util/Collection:)Lkotlin/ranges/IntRange:",
+          "weight": 2097152
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.exactMatchingStringIds(Ljava/util/List:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)Ljava/util/List:",
+          "weight": 1048576
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.exactMatchingStringIds(Lio/johnsonlee/graphite/graph/StringPropertyPredicate:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)[I",
+          "weight": 786432
+        },
+        {
+          "frame": "jdk.internal.loader.URLClassPath$JarLoader$2.getBytes()[B",
+          "weight": 524288
+        }
+      ]
+    },
+    {
+      "recording": 2,
+      "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "phase": "initial",
+      "metric": "cpuSamples",
+      "total": 26,
+      "counts": {
+        "jit": 17,
+        "application": 9,
+        "applicationMappedStringDiscoveryInclusive": 2,
+        "applicationRawProjectionInclusive": 6
+      },
+      "topApplicationLeaves": [
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef:Ljava/util/concurrent/atomic/AtomicBoolean:Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/HashSet:Ljava/util/List:Ljava/util/HashSet:Ljava/util/ArrayList:I[ILjava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:I)Z",
+          "weight": 2
+        },
+        {
+          "frame": "libjvm.dylib.LinkResolver::check_method_accessability()L:",
+          "weight": 1
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.exactMatchingStringIds(Lio/johnsonlee/graphite/graph/StringPropertyPredicate:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)[I",
+          "weight": 1
+        },
+        {
+          "frame": "java.util.Arrays.fill([CIIC)V",
+          "weight": 1
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.extract(I[CII)I",
+          "weight": 1
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.ints.IntOpenHashSet.<init>([IIIF)V",
+          "weight": 1
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.objects.AbstractObjectList.ensureRestrictedIndex(I)V",
+          "weight": 1
+        },
+        {
+          "frame": "java.nio.Buffer.scope()Ljdk/internal/misc/ScopedMemoryAccess$Scope:",
+          "weight": 1
+        }
+      ],
+      "topApplicationInclusive": [
+        {
+          "frame": "java.lang.Thread.run()V",
+          "weight": 9
+        },
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor.runWorker(Ljava/util/concurrent/ThreadPoolExecutor$Worker:)V",
+          "weight": 9
+        },
+        {
+          "frame": "java.util.concurrent.FutureTask.run()V",
+          "weight": 9
+        },
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor$Worker.run()V",
+          "weight": 9
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunction$default(Lio/johnsonlee/graphite/cypher/QueryPipeline:Ljava/lang/Class:Ljava/lang/String:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:ILkotlin/jvm/functions/Function1:Ljava/util/List:ZILjava/lang/Object:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 6
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunction(Ljava/lang/Class:Ljava/lang/String:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:ILkotlin/jvm/functions/Function1:Ljava/util/List:Z)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 6
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.CypherExecutor.execute(Ljava/lang/String:Ljava/util/Map:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 6
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replay$lambda$33$lambda$29(Ljava/util/List:Lio/johnsonlee/graphite/cypher/CypherExecutionContext:Lio/johnsonlee/graphite/webgraph/BroadQueryCase:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 6
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeIndexedDistinctStringProjection(Ljava/lang/Class:Ljava/lang/String:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:ILjava/util/List:Z)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 6
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.tryFastFilteredNodeLimit(Ljava/util/List:Ljava/util/List:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 6
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeIndexedDistinctStringProjection$projectSource(Ljava/util/List:Ljava/util/List:Lio/johnsonlee/graphite/cypher/QueryPipeline:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:ZLjava/util/List:Ljava/util/List:ILjava/lang/Class:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:I)Lio/johnsonlee/graphite/cypher/QueryPipeline$IndexedProjectedRows:",
+          "weight": 6
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(Ljava/util/List:Ljava/util/Map:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 6
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.execute(Ljava/lang/String:Ljava/util/Map:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 6
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(Ljava/util/List:Ljava/util/Map:Ljava/lang/Integer:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 6
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark$$Lambda$196.0x0000000301186110.call()Ljava/lang/Object:",
+          "weight": 6
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(Ljava/util/List:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 6
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.distinctStringPropertyDisjunction(Ljava/lang/Class:Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)Ljava/util/List:",
+          "weight": 5
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$229.0x00000003011aefc8.call()Ljava/lang/Object:",
+          "weight": 5
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:ILio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:IIILjava/util/concurrent/atomic/AtomicBoolean:Ljava/util/HashSet:Ljava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:)Lio/johnsonlee/graphite/webgraph/ParallelCallSiteProjectionResult:",
+          "weight": 5
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedNodeTypeIndex.forEachIdWhile(Ljava/lang/Class:IILjava/util/function/IntPredicate:)V",
+          "weight": 5
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$234.0x00000003011afc70.test(I)Z",
+          "weight": 5
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef:Ljava/util/concurrent/atomic/AtomicBoolean:Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/HashSet:Ljava/util/List:Ljava/util/HashSet:Ljava/util/ArrayList:I[ILjava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:I)Z",
+          "weight": 5
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection(Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:Ljava/util/List:Lio/johnsonlee/graphite/webgraph/CallSiteStringIdMembership:)Ljava/util/List:",
+          "weight": 3
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexKt.trackedSplitCallSiteTask$lambda$11(Ljava/util/concurrent/Callable:)Ljava/lang/Object:",
+          "weight": 3
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexKt$$Lambda$230.0x00000003011af1f0.call()Ljava/lang/Object:",
+          "weight": 3
+        }
+      ]
+    },
+    {
+      "recording": 2,
+      "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "phase": "initial",
+      "metric": "allocationSampledBytes",
+      "total": 1048576,
+      "counts": {
+        "application": 1048576,
+        "applicationRawProjectionInclusive": 786432
+      },
+      "topApplicationLeaves": [
+        {
+          "frame": "kotlin.ranges.IntProgression.iterator()Lkotlin/collections/IntIterator:",
+          "weight": 262144
+        },
+        {
+          "frame": "java.util.ArrayList.<init>(I)V",
+          "weight": 262144
+        },
+        {
+          "frame": "kotlin.collections.CollectionsKt__CollectionsKt.getIndices(Ljava/util/Collection:)Lkotlin/ranges/IntRange:",
+          "weight": 262144
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.getArray(I)[C",
+          "weight": 262144
+        }
+      ],
+      "topApplicationInclusive": [
+        {
+          "frame": "java.lang.Thread.run()V",
+          "weight": 1048576
+        },
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor.runWorker(Ljava/util/concurrent/ThreadPoolExecutor$Worker:)V",
+          "weight": 1048576
+        },
+        {
+          "frame": "java.util.concurrent.FutureTask.run()V",
+          "weight": 1048576
+        },
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor$Worker.run()V",
+          "weight": 1048576
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunction$default(Lio/johnsonlee/graphite/cypher/QueryPipeline:Ljava/lang/Class:Ljava/lang/String:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:ILkotlin/jvm/functions/Function1:Ljava/util/List:ZILjava/lang/Object:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 786432
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunction(Ljava/lang/Class:Ljava/lang/String:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:ILkotlin/jvm/functions/Function1:Ljava/util/List:Z)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 786432
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.CypherExecutor.execute(Ljava/lang/String:Ljava/util/Map:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 786432
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replay$lambda$33$lambda$29(Ljava/util/List:Lio/johnsonlee/graphite/cypher/CypherExecutionContext:Lio/johnsonlee/graphite/webgraph/BroadQueryCase:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 786432
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeIndexedDistinctStringProjection(Ljava/lang/Class:Ljava/lang/String:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:ILjava/util/List:Z)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 786432
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.tryFastFilteredNodeLimit(Ljava/util/List:Ljava/util/List:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 786432
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeIndexedDistinctStringProjection$projectSource(Ljava/util/List:Ljava/util/List:Lio/johnsonlee/graphite/cypher/QueryPipeline:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:ZLjava/util/List:Ljava/util/List:ILjava/lang/Class:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:I)Lio/johnsonlee/graphite/cypher/QueryPipeline$IndexedProjectedRows:",
+          "weight": 786432
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(Ljava/util/List:Ljava/util/Map:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 786432
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.execute(Ljava/lang/String:Ljava/util/Map:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 786432
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(Ljava/util/List:Ljava/util/Map:Ljava/lang/Integer:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 786432
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark$$Lambda$196.0x0000000301186110.call()Ljava/lang/Object:",
+          "weight": 786432
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(Ljava/util/List:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 786432
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$229.0x00000003011aefc8.call()Ljava/lang/Object:",
+          "weight": 786432
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:ILio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:IIILjava/util/concurrent/atomic/AtomicBoolean:Ljava/util/HashSet:Ljava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:)Lio/johnsonlee/graphite/webgraph/ParallelCallSiteProjectionResult:",
+          "weight": 786432
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedNodeTypeIndex.forEachIdWhile(Ljava/lang/Class:IILjava/util/function/IntPredicate:)V",
+          "weight": 786432
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$234.0x00000003011afc70.test(I)Z",
+          "weight": 786432
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef:Ljava/util/concurrent/atomic/AtomicBoolean:Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/HashSet:Ljava/util/List:Ljava/util/HashSet:Ljava/util/ArrayList:I[ILjava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:I)Z",
+          "weight": 786432
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection(Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:Ljava/util/List:Lio/johnsonlee/graphite/webgraph/CallSiteStringIdMembership:)Ljava/util/List:",
+          "weight": 524288
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.distinctStringPropertyDisjunction(Ljava/lang/Class:Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)Ljava/util/List:",
+          "weight": 524288
+        },
+        {
+          "frame": "kotlin.ranges.IntProgression.iterator()Ljava/util/Iterator:",
+          "weight": 262144
+        },
+        {
+          "frame": "kotlin.ranges.IntProgression.iterator()Lkotlin/collections/IntIterator:",
+          "weight": 262144
+        }
+      ]
+    },
+    {
+      "recording": 2,
+      "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "phase": "provenance",
+      "metric": "cpuSamples",
+      "total": 155,
+      "counts": {
+        "jit": 67,
+        "other": 1,
+        "application": 87,
+        "applicationRawProjectionInclusive": 46,
+        "applicationMappedStringDiscoveryInclusive": 33
+      },
+      "topApplicationLeaves": [
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef:Ljava/util/concurrent/atomic/AtomicBoolean:Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/HashSet:Ljava/util/List:Ljava/util/HashSet:Ljava/util/ArrayList:I[ILjava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:I)Z",
+          "weight": 17
+        },
+        {
+          "frame": "libsystem_kernel.dylib.__psynch_cvwait()L:",
+          "weight": 5
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraphKt.reusableContains(Lit/unimi/dsi/lang/MutableString:Lio/johnsonlee/graphite/graph/StringValueTransform:Ljava/lang/String:)Z",
+          "weight": 5
+        },
+        {
+          "frame": "zero_blocks()L:",
+          "weight": 4
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection(Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:Ljava/util/List:Lio/johnsonlee/graphite/webgraph/CallSiteStringIdMembership:)Ljava/util/List:",
+          "weight": 4
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.ints.IntOpenHashSet.contains(I)Z",
+          "weight": 3
+        },
+        {
+          "frame": "it.unimi.dsi.lang.MutableString.toLowerCase()Lit/unimi/dsi/lang/MutableString:",
+          "weight": 3
+        },
+        {
+          "frame": "java.util.ArrayList.add(Ljava/lang/Object:[Ljava/lang/Object:I)V",
+          "weight": 2
+        },
+        {
+          "frame": "kotlin.collections.CollectionsKt__CollectionsKt.getIndices(Ljava/util/Collection:)Lkotlin/ranges/IntRange:",
+          "weight": 2
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.exactMatchingStringIds(Lio/johnsonlee/graphite/graph/StringPropertyPredicate:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)[I",
+          "weight": 2
+        },
+        {
+          "frame": "it.unimi.dsi.lang.MutableString.charAt(I)C",
+          "weight": 2
+        },
+        {
+          "frame": "java.lang.CharacterDataLatin1.getProperties(I)I",
+          "weight": 2
+        },
+        {
+          "frame": "jshort_disjoint_arraycopy()L:",
+          "weight": 2
+        },
+        {
+          "frame": "jshort_fill()L:",
+          "weight": 2
+        },
+        {
+          "frame": "it.unimi.dsi.lang.MutableString.length()I",
+          "weight": 2
+        }
+      ],
+      "topApplicationInclusive": [
+        {
+          "frame": "java.lang.Thread.run()V",
+          "weight": 87
+        },
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor.runWorker(Ljava/util/concurrent/ThreadPoolExecutor$Worker:)V",
+          "weight": 87
+        },
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor$Worker.run()V",
+          "weight": 87
+        },
+        {
+          "frame": "java.util.concurrent.FutureTask.run()V",
+          "weight": 84
+        },
+        {
+          "frame": "java.util.concurrent.Executors$RunnableAdapter.call()Ljava/lang/Object:",
+          "weight": 81
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline$$Lambda$238.0x00000003011ab1b0.call()Ljava/lang/Object:",
+          "weight": 59
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.runDirectStringTasks$submit$lambda$168(Ljava/util/concurrent/atomic/AtomicBoolean:ILjava/util/List:Ljava/util/concurrent/CountDownLatch:)Lkotlin/collections/IndexedValue:",
+          "weight": 59
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeIndexedDistinctStringProjection$lambda$155$lambda$154(Ljava/util/List:ILjava/util/List:Lio/johnsonlee/graphite/cypher/QueryPipeline:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:ZLjava/util/LinkedHashSet:Ljava/util/List:Ljava/util/List:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringSelectedRowMatcher:Ljava/lang/Class:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/Set:Ljava/util/List:)Ljava/util/Set:",
+          "weight": 58
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline$$Lambda$237.0x00000003011aad78.invoke()Ljava/lang/Object:",
+          "weight": 58
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.distinctStringPropertyDisjunction(Ljava/lang/Class:Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)Ljava/util/List:",
+          "weight": 58
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$234.0x00000003011afc70.test(I)Z",
+          "weight": 33
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$229.0x00000003011aefc8.call()Ljava/lang/Object:",
+          "weight": 33
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:ILio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:IIILjava/util/concurrent/atomic/AtomicBoolean:Ljava/util/HashSet:Ljava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:)Lio/johnsonlee/graphite/webgraph/ParallelCallSiteProjectionResult:",
+          "weight": 33
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedNodeTypeIndex.forEachIdWhile(Ljava/lang/Class:IILjava/util/function/IntPredicate:)V",
+          "weight": 33
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.exactMatchingStringIds(Lio/johnsonlee/graphite/graph/StringPropertyPredicate:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)[I",
+          "weight": 33
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.exactMatchingStringIds(Ljava/util/List:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)Ljava/util/List:",
+          "weight": 33
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef:Ljava/util/concurrent/atomic/AtomicBoolean:Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/HashSet:Ljava/util/List:Ljava/util/HashSet:Ljava/util/ArrayList:I[ILjava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:I)Z",
+          "weight": 32
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection(Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:Ljava/util/List:Lio/johnsonlee/graphite/webgraph/CallSiteStringIdMembership:)Ljava/util/List:",
+          "weight": 24
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexKt.trackedSplitCallSiteTask$lambda$11(Ljava/util/concurrent/Callable:)Ljava/lang/Object:",
+          "weight": 22
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexKt$$Lambda$230.0x00000003011af1f0.call()Ljava/lang/Object:",
+          "weight": 22
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraphKt.reusableContains(Lit/unimi/dsi/lang/MutableString:Lio/johnsonlee/graphite/graph/StringValueTransform:Ljava/lang/String:)Z",
+          "weight": 16
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.StringTable.get$webgraph(ILit/unimi/dsi/lang/MutableString:)V",
+          "weight": 15
+        },
+        {
+          "frame": "it.unimi.dsi.util.FrontCodedStringList.get(ILit/unimi/dsi/lang/MutableString:)V",
+          "weight": 14
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.get(I[C)I",
+          "weight": 7
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.get(I[CII)I",
+          "weight": 7
+        }
+      ]
+    },
+    {
+      "recording": 2,
+      "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "phase": "provenance",
+      "metric": "allocationSampledBytes",
+      "total": 13631488,
+      "counts": {
+        "application": 13631488,
+        "applicationRawProjectionInclusive": 11272192,
+        "applicationMappedStringDiscoveryInclusive": 2359296
+      },
+      "topApplicationLeaves": [
+        {
+          "frame": "kotlin.ranges.IntProgression.iterator()Lkotlin/collections/IntIterator:",
+          "weight": 2621440
+        },
+        {
+          "frame": "kotlin.collections.CollectionsKt__CollectionsKt.getIndices(Ljava/util/Collection:)Lkotlin/ranges/IntRange:",
+          "weight": 1835008
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.getArray(I)[C",
+          "weight": 1835008
+        },
+        {
+          "frame": "java.util.ArrayList.<init>(I)V",
+          "weight": 1572864
+        },
+        {
+          "frame": "java.util.Arrays.copyOf([II)[I",
+          "weight": 1310720
+        },
+        {
+          "frame": "java.lang.Integer.valueOf(I)Ljava/lang/Integer:",
+          "weight": 1048576
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.exactMatchingStringIds(Lio/johnsonlee/graphite/graph/StringPropertyPredicate:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)[I",
+          "weight": 1048576
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef:Ljava/util/concurrent/atomic/AtomicBoolean:Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/HashSet:Ljava/util/List:Ljava/util/HashSet:Ljava/util/ArrayList:I[ILjava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:I)Z",
+          "weight": 524288
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection(Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:Ljava/util/List:Lio/johnsonlee/graphite/webgraph/CallSiteStringIdMembership:)Ljava/util/List:",
+          "weight": 524288
+        },
+        {
+          "frame": "java.lang.StringUTF16.compress([CII)[B",
+          "weight": 524288
+        },
+        {
+          "frame": "it.unimi.dsi.lang.MutableString.toString()Ljava/lang/String:",
+          "weight": 262144
+        },
+        {
+          "frame": "it.unimi.dsi.lang.MutableString.wrap([C)Lit/unimi/dsi/lang/MutableString:",
+          "weight": 262144
+        },
+        {
+          "frame": "java.util.HashMap.resize()[Ljava/util/HashMap$Node:",
+          "weight": 262144
+        }
+      ],
+      "topApplicationInclusive": [
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor.runWorker(Ljava/util/concurrent/ThreadPoolExecutor$Worker:)V",
+          "weight": 13631488
+        },
+        {
+          "frame": "java.util.concurrent.FutureTask.run()V",
+          "weight": 13631488
+        },
+        {
+          "frame": "java.lang.Thread.run()V",
+          "weight": 13631488
+        },
+        {
+          "frame": "java.util.concurrent.Executors$RunnableAdapter.call()Ljava/lang/Object:",
+          "weight": 13631488
+        },
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor$Worker.run()V",
+          "weight": 13631488
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline$$Lambda$238.0x00000003011ab1b0.call()Ljava/lang/Object:",
+          "weight": 10485760
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeIndexedDistinctStringProjection$lambda$155$lambda$154(Ljava/util/List:ILjava/util/List:Lio/johnsonlee/graphite/cypher/QueryPipeline:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:ZLjava/util/LinkedHashSet:Ljava/util/List:Ljava/util/List:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringSelectedRowMatcher:Ljava/lang/Class:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/Set:Ljava/util/List:)Ljava/util/Set:",
+          "weight": 10485760
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline$$Lambda$237.0x00000003011aad78.invoke()Ljava/lang/Object:",
+          "weight": 10485760
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.distinctStringPropertyDisjunction(Ljava/lang/Class:Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)Ljava/util/List:",
+          "weight": 10485760
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.runDirectStringTasks$submit$lambda$168(Ljava/util/concurrent/atomic/AtomicBoolean:ILjava/util/List:Ljava/util/concurrent/CountDownLatch:)Lkotlin/collections/IndexedValue:",
+          "weight": 10485760
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection(Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:Ljava/util/List:Lio/johnsonlee/graphite/webgraph/CallSiteStringIdMembership:)Ljava/util/List:",
+          "weight": 8126464
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$234.0x00000003011afc70.test(I)Z",
+          "weight": 5767168
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$229.0x00000003011aefc8.call()Ljava/lang/Object:",
+          "weight": 5767168
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:ILio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:IIILjava/util/concurrent/atomic/AtomicBoolean:Ljava/util/HashSet:Ljava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:)Lio/johnsonlee/graphite/webgraph/ParallelCallSiteProjectionResult:",
+          "weight": 5767168
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef:Ljava/util/concurrent/atomic/AtomicBoolean:Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/HashSet:Ljava/util/List:Ljava/util/HashSet:Ljava/util/ArrayList:I[ILjava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:I)Z",
+          "weight": 5767168
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedNodeTypeIndex.forEachIdWhile(Ljava/lang/Class:IILjava/util/function/IntPredicate:)V",
+          "weight": 5767168
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexKt.trackedSplitCallSiteTask$lambda$11(Ljava/util/concurrent/Callable:)Ljava/lang/Object:",
+          "weight": 3145728
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexKt$$Lambda$230.0x00000003011af1f0.call()Ljava/lang/Object:",
+          "weight": 3145728
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.StringTable.findId$webgraph(Ljava/lang/String:)I",
+          "weight": 2883584
+        },
+        {
+          "frame": "kotlin.ranges.IntProgression.iterator()Ljava/util/Iterator:",
+          "weight": 2621440
+        },
+        {
+          "frame": "kotlin.ranges.IntProgression.iterator()Lkotlin/collections/IntIterator:",
+          "weight": 2621440
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.exactMatchingStringIds(Lio/johnsonlee/graphite/graph/StringPropertyPredicate:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)[I",
+          "weight": 2359296
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.exactMatchingStringIds(Ljava/util/List:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)Ljava/util/List:",
+          "weight": 2359296
+        },
+        {
+          "frame": "it.unimi.dsi.util.FrontCodedStringList.get(I)Lit/unimi/dsi/lang/MutableString:",
+          "weight": 2097152
+        },
+        {
+          "frame": "kotlin.collections.CollectionsKt__CollectionsKt.getIndices(Ljava/util/Collection:)Lkotlin/ranges/IntRange:",
+          "weight": 1835008
+        }
+      ]
+    },
+    {
+      "recording": 2,
+      "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "phase": "other",
+      "metric": "cpuSamples",
+      "total": 12,
+      "counts": {
+        "jit": 7,
+        "other": 2,
+        "application": 3
+      },
+      "topApplicationLeaves": [
+        {
+          "frame": "kotlin.collections.builders.MapBuilder.getCapacity$kotlin_stdlib()I",
+          "weight": 1
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.visibleRow(Ljava/util/Map:)Ljava/util/Map:",
+          "weight": 1
+        },
+        {
+          "frame": "java.util.Arrays.copyOfRange([BII)[B",
+          "weight": 1
+        }
+      ],
+      "topApplicationInclusive": [
+        {
+          "frame": "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.execute(Ljava/lang/String:Ljava/util/Map:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 3
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.CypherExecutor.execute(Ljava/lang/String:Ljava/util/Map:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 3
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(Ljava/util/List:Ljava/util/Map:Ljava/lang/Integer:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 3
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark$$Lambda$196.0x0000000301186110.call()Ljava/lang/Object:",
+          "weight": 3
+        },
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor.runWorker(Ljava/util/concurrent/ThreadPoolExecutor$Worker:)V",
+          "weight": 3
+        },
+        {
+          "frame": "java.util.concurrent.FutureTask.run()V",
+          "weight": 3
+        },
+        {
+          "frame": "java.lang.Thread.run()V",
+          "weight": 3
+        },
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor$Worker.run()V",
+          "weight": 3
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replay$lambda$33$lambda$29(Ljava/util/List:Lio/johnsonlee/graphite/cypher/CypherExecutionContext:Lio/johnsonlee/graphite/webgraph/BroadQueryCase:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 3
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunction$default(Lio/johnsonlee/graphite/cypher/QueryPipeline:Ljava/lang/Class:Ljava/lang/String:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:ILkotlin/jvm/functions/Function1:Ljava/util/List:ZILjava/lang/Object:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 2
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeIndexedDistinctStringProjection(Ljava/lang/Class:Ljava/lang/String:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:ILjava/util/List:Z)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 2
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.tryFastFilteredNodeLimit(Ljava/util/List:Ljava/util/List:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 2
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(Ljava/util/List:Ljava/util/Map:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 2
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunction(Ljava/lang/Class:Ljava/lang/String:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:ILkotlin/jvm/functions/Function1:Ljava/util/List:Z)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 2
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(Ljava/util/List:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 2
+        },
+        {
+          "frame": "kotlin.collections.builders.MapBuilder.addKey$kotlin_stdlib(Ljava/lang/Object:)I",
+          "weight": 1
+        },
+        {
+          "frame": "kotlin.collections.builders.MapBuilder.put(Ljava/lang/Object:Ljava/lang/Object:)Ljava/lang/Object:",
+          "weight": 1
+        },
+        {
+          "frame": "kotlin.collections.builders.MapBuilder.getCapacity$kotlin_stdlib()I",
+          "weight": 1
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.CypherExecutor.materializeResult(Lio/johnsonlee/graphite/cypher/CypherResult:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 1
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.visibleRow(Ljava/util/Map:)Ljava/util/Map:",
+          "weight": 1
+        },
+        {
+          "frame": "jdk.internal.org.objectweb.asm.Frame.setInputFrameFromDescriptor(Ljdk/internal/org/objectweb/asm/SymbolTable:ILjava/lang/String:I)V",
+          "weight": 1
+        },
+        {
+          "frame": "java.lang.invoke.InvokerBytecodeGenerator.generateCustomizedCodeBytes()[B",
+          "weight": 1
+        },
+        {
+          "frame": "java.lang.invoke.InvokerBytecodeGenerator.addMethod()V",
+          "weight": 1
+        },
+        {
+          "frame": "java.lang.invoke.MethodHandleNatives.linkCallSite(Ljava/lang/Object:ILjava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:[Ljava/lang/Object:)Ljava/lang/invoke/MemberName:",
+          "weight": 1
+        },
+        {
+          "frame": "java.lang.invoke.Invokers.callSiteForm(Ljava/lang/invoke/MethodType:Z)Ljava/lang/invoke/LambdaForm:",
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "recording": 2,
+      "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "phase": "other",
+      "metric": "allocationSampledBytes",
+      "total": 1310720,
+      "counts": {
+        "application": 1310720
+      },
+      "topApplicationLeaves": [
+        {
+          "frame": "java.util.LinkedHashMap.newNode(ILjava/lang/Object:Ljava/lang/Object:Ljava/util/HashMap$Node:)Ljava/util/HashMap$Node:",
+          "weight": 524288
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.addDistinctRow(Ljava/util/LinkedHashMap:Ljava/util/Map:I)V",
+          "weight": 262144
+        },
+        {
+          "frame": "java.lang.invoke.DirectMethodHandle.allocateInstance(Ljava/lang/Object:)Ljava/lang/Object:",
+          "weight": 262144
+        },
+        {
+          "frame": "jdk.internal.org.objectweb.asm.ByteVector.<init>()V",
+          "weight": 262144
+        }
+      ],
+      "topApplicationInclusive": [
+        {
+          "frame": "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.execute(Ljava/lang/String:Ljava/util/Map:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 1310720
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunction$default(Lio/johnsonlee/graphite/cypher/QueryPipeline:Ljava/lang/Class:Ljava/lang/String:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:ILkotlin/jvm/functions/Function1:Ljava/util/List:ZILjava/lang/Object:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 1310720
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.CypherExecutor.execute(Ljava/lang/String:Ljava/util/Map:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 1310720
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeIndexedDistinctStringProjection(Ljava/lang/Class:Ljava/lang/String:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:ILjava/util/List:Z)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 1310720
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(Ljava/util/List:Ljava/util/Map:Ljava/lang/Integer:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 1310720
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark$$Lambda$196.0x0000000301186110.call()Ljava/lang/Object:",
+          "weight": 1310720
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.tryFastFilteredNodeLimit(Ljava/util/List:Ljava/util/List:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 1310720
+        },
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor.runWorker(Ljava/util/concurrent/ThreadPoolExecutor$Worker:)V",
+          "weight": 1310720
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(Ljava/util/List:Ljava/util/Map:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 1310720
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunction(Ljava/lang/Class:Ljava/lang/String:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:ILkotlin/jvm/functions/Function1:Ljava/util/List:Z)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 1310720
+        },
+        {
+          "frame": "java.util.concurrent.FutureTask.run()V",
+          "weight": 1310720
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(Ljava/util/List:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 1310720
+        },
+        {
+          "frame": "java.lang.Thread.run()V",
+          "weight": 1310720
+        },
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor$Worker.run()V",
+          "weight": 1310720
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replay$lambda$33$lambda$29(Ljava/util/List:Lio/johnsonlee/graphite/cypher/CypherExecutionContext:Lio/johnsonlee/graphite/webgraph/BroadQueryCase:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 1310720
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.addDistinctRow(Ljava/util/LinkedHashMap:Ljava/util/Map:I)V",
+          "weight": 786432
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeIndexedDistinctStringProjection$mergeSource([Ljava/util/List:[ZLjava/util/List:Ljava/util/LinkedHashMap:ILio/johnsonlee/graphite/cypher/QueryPipeline:Lio/johnsonlee/graphite/cypher/QueryPipeline$IndexedProjectedRows:)Z",
+          "weight": 786432
+        },
+        {
+          "frame": "java.util.HashMap.put(Ljava/lang/Object:Ljava/lang/Object:)Ljava/lang/Object:",
+          "weight": 524288
+        },
+        {
+          "frame": "java.util.LinkedHashMap.newNode(ILjava/lang/Object:Ljava/lang/Object:Ljava/util/HashMap$Node:)Ljava/util/HashMap$Node:",
+          "weight": 524288
+        },
+        {
+          "frame": "java.util.HashMap.putVal(ILjava/lang/Object:Ljava/lang/Object:ZZ)Ljava/lang/Object:",
+          "weight": 524288
+        },
+        {
+          "frame": "java.lang.invoke.LambdaForm$MH.0x00000003011b3000.linkToTargetMethod(Ljava/lang/Object:ILjava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:ILjava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:)Ljava/lang/Object:",
+          "weight": 262144
+        },
+        {
+          "frame": "java.lang.invoke.LambdaForm$DMH.0x00000003011b2800.newInvokeSpecial(Ljava/lang/Object:Ljava/lang/Object:ILjava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:ILjava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:)Ljava/lang/Object:",
+          "weight": 262144
+        },
+        {
+          "frame": "java.lang.invoke.DirectMethodHandle.allocateInstance(Ljava/lang/Object:)Ljava/lang/Object:",
+          "weight": 262144
+        },
+        {
+          "frame": "java.lang.invoke.Invokers$Holder.invokeExact_MT(Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:)Ljava/lang/Object:",
+          "weight": 262144
+        },
+        {
+          "frame": "java.lang.invoke.MethodHandles$Lookup.findConstructor(Ljava/lang/Class:Ljava/lang/invoke/MethodType:)Ljava/lang/invoke/MethodHandle:",
+          "weight": 262144
+        }
+      ]
+    },
+    {
+      "recording": 3,
+      "query": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "phase": "initial",
+      "metric": "cpuSamples",
+      "total": 128,
+      "counts": {
+        "jit": 58,
+        "other": 4,
+        "application": 66,
+        "applicationRawProjectionInclusive": 60,
+        "applicationMappedStringDiscoveryInclusive": 2
+      },
+      "topApplicationLeaves": [
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef:Ljava/util/concurrent/atomic/AtomicBoolean:Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/HashSet:Ljava/util/List:Ljava/util/HashSet:Ljava/util/ArrayList:I[ILjava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:I)Z",
+          "weight": 30
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.ints.IntOpenHashSet.contains(I)Z",
+          "weight": 4
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.PreferredMappedStringIndexViewGraphWorkConsumer.consume(J)V",
+          "weight": 3
+        },
+        {
+          "frame": "java.lang.Integer.intValue()I",
+          "weight": 3
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedNodeTypeIndex.forEachIdWhile(Ljava/lang/Class:IILjava/util/function/IntPredicate:)V",
+          "weight": 3
+        },
+        {
+          "frame": "libsystem_kernel.dylib.__psynch_cvwait()L:",
+          "weight": 2
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$238.0x00000080011aa000.test(I)Z",
+          "weight": 2
+        },
+        {
+          "frame": "kotlin.ranges.IntProgressionIterator.nextInt()I",
+          "weight": 2
+        },
+        {
+          "frame": "libjvm.dylib.InstanceKlass::find_method_index()L:",
+          "weight": 2
+        },
+        {
+          "frame": "libsystem_pthread.dylib.pthread_jit_write_protect_np()L:",
+          "weight": 1
+        },
+        {
+          "frame": "java.nio.DirectByteBuffer.getInt(J)I",
+          "weight": 1
+        },
+        {
+          "frame": "java.util.ArrayList.get(I)Ljava/lang/Object:",
+          "weight": 1
+        },
+        {
+          "frame": "kotlin.ranges.IntProgression.<init>(III)V",
+          "weight": 1
+        },
+        {
+          "frame": "java.lang.Long.reverseBytes(J)J",
+          "weight": 1
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.HashCommon.mix(I)I",
+          "weight": 1
+        }
+      ],
+      "topApplicationInclusive": [
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor.runWorker(Ljava/util/concurrent/ThreadPoolExecutor$Worker:)V",
+          "weight": 65
+        },
+        {
+          "frame": "java.util.concurrent.FutureTask.run()V",
+          "weight": 65
+        },
+        {
+          "frame": "java.lang.Thread.run()V",
+          "weight": 65
+        },
+        {
+          "frame": "java.util.concurrent.Executors$RunnableAdapter.call()Ljava/lang/Object:",
+          "weight": 65
+        },
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor$Worker.run()V",
+          "weight": 65
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:ILio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:IIILjava/util/concurrent/atomic/AtomicBoolean:Ljava/util/HashSet:Ljava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:)Lio/johnsonlee/graphite/webgraph/ParallelCallSiteProjectionResult:",
+          "weight": 57
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedNodeTypeIndex.forEachIdWhile(Ljava/lang/Class:IILjava/util/function/IntPredicate:)V",
+          "weight": 57
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$229.0x00000080011aeba8.call()Ljava/lang/Object:",
+          "weight": 57
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$238.0x00000080011aa000.test(I)Z",
+          "weight": 54
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef:Ljava/util/concurrent/atomic/AtomicBoolean:Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/HashSet:Ljava/util/List:Ljava/util/HashSet:Ljava/util/ArrayList:I[ILjava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:I)Z",
+          "weight": 52
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexKt.trackedSplitCallSiteTask$lambda$11(Ljava/util/concurrent/Callable:)Ljava/lang/Object:",
+          "weight": 38
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexKt$$Lambda$230.0x00000080011aedd0.call()Ljava/lang/Object:",
+          "weight": 38
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.runDirectStringTasksInOrderUntil$submit$175$lambda$174(Ljava/util/concurrent/atomic/AtomicBoolean:ILjava/util/List:Ljava/util/concurrent/CountDownLatch:)Lio/johnsonlee/graphite/cypher/QueryPipeline$runDirectStringTasksInOrderUntil$Outcome:",
+          "weight": 27
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline$$Lambda$222.0x00000080011a2a20.invoke()Ljava/lang/Object:",
+          "weight": 27
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeIndexedDistinctStringProjection$projectSource(Ljava/util/List:Ljava/util/List:Lio/johnsonlee/graphite/cypher/QueryPipeline:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:ZLjava/util/List:Ljava/util/List:ILjava/lang/Class:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:I)Lio/johnsonlee/graphite/cypher/QueryPipeline$IndexedProjectedRows:",
+          "weight": 27
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeIndexedDistinctStringProjection$lambda$142$lambda$141(ILjava/util/List:Ljava/util/List:Lio/johnsonlee/graphite/cypher/QueryPipeline:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:ZLjava/util/List:Ljava/util/List:ILjava/lang/Class:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:)Lio/johnsonlee/graphite/cypher/QueryPipeline$IndexedProjectedRows:",
+          "weight": 27
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline$$Lambda$223.0x00000080011a3420.call()Ljava/lang/Object:",
+          "weight": 27
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.distinctStringPropertyDisjunction(Ljava/lang/Class:Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)Ljava/util/List:",
+          "weight": 24
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection(Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:Ljava/util/List:Lio/johnsonlee/graphite/webgraph/CallSiteStringIdMembership:)Ljava/util/List:",
+          "weight": 22
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.ints.IntOpenHashSet.contains(I)Z",
+          "weight": 6
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraphKt.consumeGraphWork(Lio/johnsonlee/graphite/graph/GraphWorkConsumer:J)V",
+          "weight": 3
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.PreferredMappedStringIndexViewGraphWorkConsumer.consume(J)V",
+          "weight": 3
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.BufferedGraphWorkConsumer.consume()V",
+          "weight": 3
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.BufferedGraphWorkConsumer.flush()V",
+          "weight": 3
+        },
+        {
+          "frame": "java.lang.Integer.intValue()I",
+          "weight": 3
+        }
+      ]
+    },
+    {
+      "recording": 3,
+      "query": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "phase": "initial",
+      "metric": "allocationSampledBytes",
+      "total": 3407872,
+      "counts": {
+        "application": 3407872,
+        "applicationRawProjectionInclusive": 3407872
+      },
+      "topApplicationLeaves": [
+        {
+          "frame": "kotlin.collections.CollectionsKt__CollectionsKt.getIndices(Ljava/util/Collection:)Lkotlin/ranges/IntRange:",
+          "weight": 1572864
+        },
+        {
+          "frame": "kotlin.ranges.IntProgression.iterator()Lkotlin/collections/IntIterator:",
+          "weight": 1310720
+        },
+        {
+          "frame": "java.util.Arrays.copyOfRange([BII)[B",
+          "weight": 262144
+        },
+        {
+          "frame": "java.util.Arrays.copyOf([BI)[B",
+          "weight": 262144
+        }
+      ],
+      "topApplicationInclusive": [
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor.runWorker(Ljava/util/concurrent/ThreadPoolExecutor$Worker:)V",
+          "weight": 3407872
+        },
+        {
+          "frame": "java.util.concurrent.FutureTask.run()V",
+          "weight": 3407872
+        },
+        {
+          "frame": "java.lang.Thread.run()V",
+          "weight": 3407872
+        },
+        {
+          "frame": "java.util.concurrent.Executors$RunnableAdapter.call()Ljava/lang/Object:",
+          "weight": 3407872
+        },
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor$Worker.run()V",
+          "weight": 3407872
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:ILio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:IIILjava/util/concurrent/atomic/AtomicBoolean:Ljava/util/HashSet:Ljava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:)Lio/johnsonlee/graphite/webgraph/ParallelCallSiteProjectionResult:",
+          "weight": 3145728
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$229.0x00000080011aeba8.call()Ljava/lang/Object:",
+          "weight": 3145728
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$238.0x00000080011aa000.test(I)Z",
+          "weight": 2883584
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef:Ljava/util/concurrent/atomic/AtomicBoolean:Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/HashSet:Ljava/util/List:Ljava/util/HashSet:Ljava/util/ArrayList:I[ILjava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:I)Z",
+          "weight": 2883584
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedNodeTypeIndex.forEachIdWhile(Ljava/lang/Class:IILjava/util/function/IntPredicate:)V",
+          "weight": 2883584
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexKt.trackedSplitCallSiteTask$lambda$11(Ljava/util/concurrent/Callable:)Ljava/lang/Object:",
+          "weight": 2097152
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexKt$$Lambda$230.0x00000080011aedd0.call()Ljava/lang/Object:",
+          "weight": 2097152
+        },
+        {
+          "frame": "kotlin.collections.CollectionsKt__CollectionsKt.getIndices(Ljava/util/Collection:)Lkotlin/ranges/IntRange:",
+          "weight": 1572864
+        },
+        {
+          "frame": "kotlin.ranges.IntProgression.iterator()Ljava/util/Iterator:",
+          "weight": 1310720
+        },
+        {
+          "frame": "kotlin.ranges.IntProgression.iterator()Lkotlin/collections/IntIterator:",
+          "weight": 1310720
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection(Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:Ljava/util/List:Lio/johnsonlee/graphite/webgraph/CallSiteStringIdMembership:)Ljava/util/List:",
+          "weight": 1310720
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.runDirectStringTasksInOrderUntil$submit$175$lambda$174(Ljava/util/concurrent/atomic/AtomicBoolean:ILjava/util/List:Ljava/util/concurrent/CountDownLatch:)Lio/johnsonlee/graphite/cypher/QueryPipeline$runDirectStringTasksInOrderUntil$Outcome:",
+          "weight": 1310720
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline$$Lambda$222.0x00000080011a2a20.invoke()Ljava/lang/Object:",
+          "weight": 1310720
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeIndexedDistinctStringProjection$projectSource(Ljava/util/List:Ljava/util/List:Lio/johnsonlee/graphite/cypher/QueryPipeline:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:ZLjava/util/List:Ljava/util/List:ILjava/lang/Class:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:I)Lio/johnsonlee/graphite/cypher/QueryPipeline$IndexedProjectedRows:",
+          "weight": 1310720
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.distinctStringPropertyDisjunction(Ljava/lang/Class:Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)Ljava/util/List:",
+          "weight": 1310720
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeIndexedDistinctStringProjection$lambda$142$lambda$141(ILjava/util/List:Ljava/util/List:Lio/johnsonlee/graphite/cypher/QueryPipeline:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:ZLjava/util/List:Ljava/util/List:ILjava/lang/Class:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:)Lio/johnsonlee/graphite/cypher/QueryPipeline$IndexedProjectedRows:",
+          "weight": 1310720
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline$$Lambda$223.0x00000080011a3420.call()Ljava/lang/Object:",
+          "weight": 1310720
+        },
+        {
+          "frame": "java.lang.invoke.Invokers$Holder.invokeExact_MT(Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:)Ljava/lang/Object:",
+          "weight": 262144
+        },
+        {
+          "frame": "java.lang.invoke.LambdaForm$DMH.0x00000080010ac000.invokeStatic(Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:)Ljava/lang/Object:",
+          "weight": 262144
+        },
+        {
+          "frame": "java.lang.invoke.MethodHandleNatives.linkCallSite(Ljava/lang/Object:ILjava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:[Ljava/lang/Object:)Ljava/lang/invoke/MemberName:",
+          "weight": 262144
+        }
+      ]
+    },
+    {
+      "recording": 3,
+      "query": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "phase": "other",
+      "metric": "cpuSamples",
+      "total": 3,
+      "counts": {
+        "jit": 2,
+        "application": 1
+      },
+      "topApplicationLeaves": [
+        {
+          "frame": "libsystem_pthread.dylib.pthread_jit_write_protect_np()L:",
+          "weight": 1
+        }
+      ],
+      "topApplicationInclusive": [
+        {
+          "frame": "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await()V",
+          "weight": 1
+        },
+        {
+          "frame": "java.util.concurrent.locks.LockSupport.park()V",
+          "weight": 1
+        },
+        {
+          "frame": "java.util.concurrent.LinkedBlockingQueue.take()Ljava/lang/Object:",
+          "weight": 1
+        },
+        {
+          "frame": "java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block()Z",
+          "weight": 1
+        },
+        {
+          "frame": "java.util.concurrent.ForkJoinPool.unmanagedBlock(Ljava/util/concurrent/ForkJoinPool$ManagedBlocker:)V",
+          "weight": 1
+        },
+        {
+          "frame": "libjvm.dylib.jni_GetObjectClass()L:",
+          "weight": 1
+        },
+        {
+          "frame": "libasyncProfiler.dylib.LockTracer::UnsafeParkHook()L:",
+          "weight": 1
+        },
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor.runWorker(Ljava/util/concurrent/ThreadPoolExecutor$Worker:)V",
+          "weight": 1
+        },
+        {
+          "frame": "jdk.internal.misc.Unsafe.park(ZJ)V",
+          "weight": 1
+        },
+        {
+          "frame": "libsystem_pthread.dylib.pthread_jit_write_protect_np()L:",
+          "weight": 1
+        },
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor.getTask()Ljava/lang/Runnable:",
+          "weight": 1
+        },
+        {
+          "frame": "java.lang.Thread.run()V",
+          "weight": 1
+        },
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor$Worker.run()V",
+          "weight": 1
+        },
+        {
+          "frame": "java.util.concurrent.ForkJoinPool.managedBlock(Ljava/util/concurrent/ForkJoinPool$ManagedBlocker:)V",
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "recording": 3,
+      "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "phase": "initial",
+      "metric": "allocationSampledBytes",
+      "total": 1310720,
+      "counts": {
+        "application": 1310720,
+        "applicationRawProjectionInclusive": 1048576
+      },
+      "topApplicationLeaves": [
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.addDistinctRow(Ljava/util/LinkedHashMap:Ljava/util/Map:I)V",
+          "weight": 262144
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.getArray(I)[C",
+          "weight": 262144
+        },
+        {
+          "frame": "java.lang.StringUTF16.compress([CII)[B",
+          "weight": 262144
+        },
+        {
+          "frame": "java.util.ArrayList.<init>(I)V",
+          "weight": 262144
+        },
+        {
+          "frame": "kotlin.collections.CollectionsKt__CollectionsKt.getIndices(Ljava/util/Collection:)Lkotlin/ranges/IntRange:",
+          "weight": 262144
+        }
+      ],
+      "topApplicationInclusive": [
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor.runWorker(Ljava/util/concurrent/ThreadPoolExecutor$Worker:)V",
+          "weight": 1310720
+        },
+        {
+          "frame": "java.util.concurrent.FutureTask.run()V",
+          "weight": 1310720
+        },
+        {
+          "frame": "java.lang.Thread.run()V",
+          "weight": 1310720
+        },
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor$Worker.run()V",
+          "weight": 1310720
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:ILio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:IIILjava/util/concurrent/atomic/AtomicBoolean:Ljava/util/HashSet:Ljava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:)Lio/johnsonlee/graphite/webgraph/ParallelCallSiteProjectionResult:",
+          "weight": 1048576
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$229.0x00000080011aeba8.call()Ljava/lang/Object:",
+          "weight": 1048576
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedNodeTypeIndex.forEachIdWhile(Ljava/lang/Class:IILjava/util/function/IntPredicate:)V",
+          "weight": 1048576
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$238.0x00000080011aa000.test(I)Z",
+          "weight": 1048576
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef:Ljava/util/concurrent/atomic/AtomicBoolean:Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/HashSet:Ljava/util/List:Ljava/util/HashSet:Ljava/util/ArrayList:I[ILjava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:I)Z",
+          "weight": 1048576
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexKt.trackedSplitCallSiteTask$lambda$11(Ljava/util/concurrent/Callable:)Ljava/lang/Object:",
+          "weight": 786432
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexKt$$Lambda$230.0x00000080011aedd0.call()Ljava/lang/Object:",
+          "weight": 786432
+        },
+        {
+          "frame": "java.util.concurrent.Executors$RunnableAdapter.call()Ljava/lang/Object:",
+          "weight": 786432
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.execute(Ljava/lang/String:Ljava/util/Map:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 524288
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunction$default(Lio/johnsonlee/graphite/cypher/QueryPipeline:Ljava/lang/Class:Ljava/lang/String:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:ILkotlin/jvm/functions/Function1:Ljava/util/List:ZILjava/lang/Object:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 524288
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replay$lambda$33$lambda$29(Ljava/util/List:Lio/johnsonlee/graphite/cypher/CypherExecutionContext:Lio/johnsonlee/graphite/webgraph/BroadQueryCase:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 524288
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.CypherExecutor.execute(Ljava/lang/String:Ljava/util/Map:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 524288
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeIndexedDistinctStringProjection(Ljava/lang/Class:Ljava/lang/String:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:ILjava/util/List:Z)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 524288
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(Ljava/util/List:Ljava/util/Map:Ljava/lang/Integer:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 524288
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.tryFastFilteredNodeLimit(Ljava/util/List:Ljava/util/List:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 524288
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeIndexedDistinctStringProjection$projectSource(Ljava/util/List:Ljava/util/List:Lio/johnsonlee/graphite/cypher/QueryPipeline:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:ZLjava/util/List:Ljava/util/List:ILjava/lang/Class:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:I)Lio/johnsonlee/graphite/cypher/QueryPipeline$IndexedProjectedRows:",
+          "weight": 524288
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(Ljava/util/List:Ljava/util/Map:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 524288
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunction(Ljava/lang/Class:Ljava/lang/String:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:ILkotlin/jvm/functions/Function1:Ljava/util/List:Z)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 524288
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(Ljava/util/List:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 524288
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark$$Lambda$196.0x0000008001185e90.call()Ljava/lang/Object:",
+          "weight": 524288
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.StringTable.get(I)Ljava/lang/String:",
+          "weight": 524288
+        }
+      ]
+    },
+    {
+      "recording": 3,
+      "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "phase": "initial",
+      "metric": "cpuSamples",
+      "total": 22,
+      "counts": {
+        "jit": 14,
+        "application": 8,
+        "applicationMappedStringDiscoveryInclusive": 3,
+        "applicationRawProjectionInclusive": 4
+      },
+      "topApplicationLeaves": [
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef:Ljava/util/concurrent/atomic/AtomicBoolean:Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/HashSet:Ljava/util/List:Ljava/util/HashSet:Ljava/util/ArrayList:I[ILjava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:I)Z",
+          "weight": 3
+        },
+        {
+          "frame": "libjvm.dylib.InterpreterRuntime::resolve_invoke()L:",
+          "weight": 1
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline$$Lambda$199.0x0000008001183aa0.invoke(Ljava/lang/Object:)Ljava/lang/Object:",
+          "weight": 1
+        },
+        {
+          "frame": "it.unimi.dsi.lang.MutableString.buildFilter(Ljava/lang/CharSequence:I)I",
+          "weight": 1
+        },
+        {
+          "frame": "it.unimi.dsi.lang.MutableString.toLowerCase()Lit/unimi/dsi/lang/MutableString:",
+          "weight": 1
+        },
+        {
+          "frame": "java.lang.StringUTF16.compress([CII)[B",
+          "weight": 1
+        }
+      ],
+      "topApplicationInclusive": [
+        {
+          "frame": "java.lang.Thread.run()V",
+          "weight": 8
+        },
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor.runWorker(Ljava/util/concurrent/ThreadPoolExecutor$Worker:)V",
+          "weight": 8
+        },
+        {
+          "frame": "java.util.concurrent.FutureTask.run()V",
+          "weight": 8
+        },
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor$Worker.run()V",
+          "weight": 8
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunction$default(Lio/johnsonlee/graphite/cypher/QueryPipeline:Ljava/lang/Class:Ljava/lang/String:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:ILkotlin/jvm/functions/Function1:Ljava/util/List:ZILjava/lang/Object:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 5
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunction(Ljava/lang/Class:Ljava/lang/String:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:ILkotlin/jvm/functions/Function1:Ljava/util/List:Z)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 5
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark$$Lambda$196.0x0000008001185e90.call()Ljava/lang/Object:",
+          "weight": 5
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.CypherExecutor.execute(Ljava/lang/String:Ljava/util/Map:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 5
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replay$lambda$33$lambda$29(Ljava/util/List:Lio/johnsonlee/graphite/cypher/CypherExecutionContext:Lio/johnsonlee/graphite/webgraph/BroadQueryCase:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 5
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeIndexedDistinctStringProjection(Ljava/lang/Class:Ljava/lang/String:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:ILjava/util/List:Z)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 5
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.tryFastFilteredNodeLimit(Ljava/util/List:Ljava/util/List:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 5
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeIndexedDistinctStringProjection$projectSource(Ljava/util/List:Ljava/util/List:Lio/johnsonlee/graphite/cypher/QueryPipeline:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:ZLjava/util/List:Ljava/util/List:ILjava/lang/Class:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:I)Lio/johnsonlee/graphite/cypher/QueryPipeline$IndexedProjectedRows:",
+          "weight": 5
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(Ljava/util/List:Ljava/util/Map:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 5
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.execute(Ljava/lang/String:Ljava/util/Map:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 5
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(Ljava/util/List:Ljava/util/Map:Ljava/lang/Integer:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 5
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(Ljava/util/List:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 5
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.distinctStringPropertyDisjunction(Ljava/lang/Class:Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)Ljava/util/List:",
+          "weight": 4
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:ILio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:IIILjava/util/concurrent/atomic/AtomicBoolean:Ljava/util/HashSet:Ljava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:)Lio/johnsonlee/graphite/webgraph/ParallelCallSiteProjectionResult:",
+          "weight": 4
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$229.0x00000080011aeba8.call()Ljava/lang/Object:",
+          "weight": 4
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedNodeTypeIndex.forEachIdWhile(Ljava/lang/Class:IILjava/util/function/IntPredicate:)V",
+          "weight": 4
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$238.0x00000080011aa000.test(I)Z",
+          "weight": 4
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef:Ljava/util/concurrent/atomic/AtomicBoolean:Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/HashSet:Ljava/util/List:Ljava/util/HashSet:Ljava/util/ArrayList:I[ILjava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:I)Z",
+          "weight": 4
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.exactMatchingStringIds(Lio/johnsonlee/graphite/graph/StringPropertyPredicate:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)[I",
+          "weight": 3
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.exactMatchingStringIds(Ljava/util/List:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)Ljava/util/List:",
+          "weight": 3
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexKt.trackedSplitCallSiteTask$lambda$11(Ljava/util/concurrent/Callable:)Ljava/lang/Object:",
+          "weight": 3
+        }
+      ]
+    },
+    {
+      "recording": 3,
+      "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "phase": "provenance",
+      "metric": "cpuSamples",
+      "total": 157,
+      "counts": {
+        "other": 4,
+        "jit": 73,
+        "application": 80,
+        "applicationRawProjectionInclusive": 28,
+        "applicationMappedStringDiscoveryInclusive": 49
+      },
+      "topApplicationLeaves": [
+        {
+          "frame": "it.unimi.dsi.fastutil.ints.IntOpenHashSet.contains(I)Z",
+          "weight": 9
+        },
+        {
+          "frame": "it.unimi.dsi.lang.MutableString.length()I",
+          "weight": 9
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraphKt.reusableContains(Lit/unimi/dsi/lang/MutableString:Lio/johnsonlee/graphite/graph/StringValueTransform:Ljava/lang/String:)Z",
+          "weight": 7
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.extract(I[CII)I",
+          "weight": 6
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef:Ljava/util/concurrent/atomic/AtomicBoolean:Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/HashSet:Ljava/util/List:Ljava/util/HashSet:Ljava/util/ArrayList:I[ILjava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:I)Z",
+          "weight": 5
+        },
+        {
+          "frame": "java.lang.CharacterDataLatin1.toLowerCase(I)I",
+          "weight": 5
+        },
+        {
+          "frame": "jshort_disjoint_arraycopy()L:",
+          "weight": 4
+        },
+        {
+          "frame": "it.unimi.dsi.lang.MutableString.toLowerCase()Lit/unimi/dsi/lang/MutableString:",
+          "weight": 3
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection(Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:Ljava/util/List:Lio/johnsonlee/graphite/webgraph/CallSiteStringIdMembership:)Ljava/util/List:",
+          "weight": 3
+        },
+        {
+          "frame": "it.unimi.dsi.lang.MutableString.charAt(I)C",
+          "weight": 3
+        },
+        {
+          "frame": "java.util.ArrayList.hashCodeRange(II)I",
+          "weight": 2
+        },
+        {
+          "frame": "jshort_fill()L:",
+          "weight": 2
+        },
+        {
+          "frame": "kotlin.ranges.IntProgressionIterator.nextInt()I",
+          "weight": 1
+        },
+        {
+          "frame": "java.lang.Integer.intValue()I",
+          "weight": 1
+        },
+        {
+          "frame": "jdk.internal.misc.Unsafe.convEndian(ZI)I",
+          "weight": 1
+        }
+      ],
+      "topApplicationInclusive": [
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor.runWorker(Ljava/util/concurrent/ThreadPoolExecutor$Worker:)V",
+          "weight": 80
+        },
+        {
+          "frame": "java.lang.Thread.run()V",
+          "weight": 80
+        },
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor$Worker.run()V",
+          "weight": 80
+        },
+        {
+          "frame": "java.util.concurrent.FutureTask.run()V",
+          "weight": 79
+        },
+        {
+          "frame": "java.util.concurrent.Executors$RunnableAdapter.call()Ljava/lang/Object:",
+          "weight": 79
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeIndexedDistinctStringProjection$lambda$155$lambda$154(Ljava/util/List:ILjava/util/List:Lio/johnsonlee/graphite/cypher/QueryPipeline:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:ZLjava/util/LinkedHashSet:Ljava/util/List:Ljava/util/List:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringSelectedRowMatcher:Ljava/lang/Class:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/Set:Ljava/util/List:)Ljava/util/Set:",
+          "weight": 65
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline$$Lambda$239.0x00000080011aad78.invoke()Ljava/lang/Object:",
+          "weight": 65
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.runDirectStringTasks$submit$lambda$168(Ljava/util/concurrent/atomic/AtomicBoolean:ILjava/util/List:Ljava/util/concurrent/CountDownLatch:)Lkotlin/collections/IndexedValue:",
+          "weight": 65
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline$$Lambda$240.0x00000080011ab1b0.call()Ljava/lang/Object:",
+          "weight": 65
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.distinctStringPropertyDisjunction(Ljava/lang/Class:Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)Ljava/util/List:",
+          "weight": 63
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.exactMatchingStringIds(Lio/johnsonlee/graphite/graph/StringPropertyPredicate:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)[I",
+          "weight": 49
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.exactMatchingStringIds(Ljava/util/List:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)Ljava/util/List:",
+          "weight": 49
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraphKt.reusableContains(Lit/unimi/dsi/lang/MutableString:Lio/johnsonlee/graphite/graph/StringValueTransform:Ljava/lang/String:)Z",
+          "weight": 30
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$238.0x00000080011aa000.test(I)Z",
+          "weight": 21
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:ILio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:IIILjava/util/concurrent/atomic/AtomicBoolean:Ljava/util/HashSet:Ljava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:)Lio/johnsonlee/graphite/webgraph/ParallelCallSiteProjectionResult:",
+          "weight": 21
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef:Ljava/util/concurrent/atomic/AtomicBoolean:Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/HashSet:Ljava/util/List:Ljava/util/HashSet:Ljava/util/ArrayList:I[ILjava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:I)Z",
+          "weight": 21
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedNodeTypeIndex.forEachIdWhile(Ljava/lang/Class:IILjava/util/function/IntPredicate:)V",
+          "weight": 21
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$229.0x00000080011aeba8.call()Ljava/lang/Object:",
+          "weight": 21
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.StringTable.get$webgraph(ILit/unimi/dsi/lang/MutableString:)V",
+          "weight": 18
+        },
+        {
+          "frame": "it.unimi.dsi.util.FrontCodedStringList.get(ILit/unimi/dsi/lang/MutableString:)V",
+          "weight": 18
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexKt.trackedSplitCallSiteTask$lambda$11(Ljava/util/concurrent/Callable:)Ljava/lang/Object:",
+          "weight": 14
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexKt$$Lambda$230.0x00000080011aedd0.call()Ljava/lang/Object:",
+          "weight": 14
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.get(I[CII)I",
+          "weight": 14
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.get(I[C)I",
+          "weight": 14
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection(Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:Ljava/util/List:Lio/johnsonlee/graphite/webgraph/CallSiteStringIdMembership:)Ljava/util/List:",
+          "weight": 14
+        }
+      ]
+    },
+    {
+      "recording": 3,
+      "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "phase": "provenance",
+      "metric": "allocationSampledBytes",
+      "total": 12582912,
+      "counts": {
+        "application": 12582912,
+        "applicationRawProjectionInclusive": 9175040,
+        "applicationMappedStringDiscoveryInclusive": 2883584
+      },
+      "topApplicationLeaves": [
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.exactMatchingStringIds(Lio/johnsonlee/graphite/graph/StringPropertyPredicate:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)[I",
+          "weight": 1835008
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.getArray(I)[C",
+          "weight": 1835008
+        },
+        {
+          "frame": "kotlin.ranges.IntProgression.iterator()Lkotlin/collections/IntIterator:",
+          "weight": 1572864
+        },
+        {
+          "frame": "kotlin.collections.CollectionsKt__CollectionsKt.getIndices(Ljava/util/Collection:)Lkotlin/ranges/IntRange:",
+          "weight": 1572864
+        },
+        {
+          "frame": "it.unimi.dsi.lang.MutableString.toString()Ljava/lang/String:",
+          "weight": 1048576
+        },
+        {
+          "frame": "java.lang.StringUTF16.compress([CII)[B",
+          "weight": 1048576
+        },
+        {
+          "frame": "java.util.Arrays.copyOf([II)[I",
+          "weight": 1048576
+        },
+        {
+          "frame": "java.lang.Integer.valueOf(I)Ljava/lang/Integer:",
+          "weight": 786432
+        },
+        {
+          "frame": "it.unimi.dsi.lang.MutableString.wrap([C)Lit/unimi/dsi/lang/MutableString:",
+          "weight": 524288
+        },
+        {
+          "frame": "java.util.ArrayList.<init>(I)V",
+          "weight": 524288
+        },
+        {
+          "frame": "java.util.ArrayList.iterator()Ljava/util/Iterator:",
+          "weight": 262144
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.storageSelectedValues(Ljava/util/Set:Ljava/util/List:Ljava/lang/String:)Ljava/util/Set:",
+          "weight": 262144
+        },
+        {
+          "frame": "java.util.PriorityQueue.<init>(ILjava/util/Comparator:)V",
+          "weight": 262144
+        }
+      ],
+      "topApplicationInclusive": [
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor.runWorker(Ljava/util/concurrent/ThreadPoolExecutor$Worker:)V",
+          "weight": 12582912
+        },
+        {
+          "frame": "java.util.concurrent.FutureTask.run()V",
+          "weight": 12582912
+        },
+        {
+          "frame": "java.lang.Thread.run()V",
+          "weight": 12582912
+        },
+        {
+          "frame": "java.util.concurrent.Executors$RunnableAdapter.call()Ljava/lang/Object:",
+          "weight": 12582912
+        },
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor$Worker.run()V",
+          "weight": 12582912
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeIndexedDistinctStringProjection$lambda$155$lambda$154(Ljava/util/List:ILjava/util/List:Lio/johnsonlee/graphite/cypher/QueryPipeline:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:ZLjava/util/LinkedHashSet:Ljava/util/List:Ljava/util/List:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringSelectedRowMatcher:Ljava/lang/Class:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/Set:Ljava/util/List:)Ljava/util/Set:",
+          "weight": 10485760
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline$$Lambda$239.0x00000080011aad78.invoke()Ljava/lang/Object:",
+          "weight": 10485760
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.runDirectStringTasks$submit$lambda$168(Ljava/util/concurrent/atomic/AtomicBoolean:ILjava/util/List:Ljava/util/concurrent/CountDownLatch:)Lkotlin/collections/IndexedValue:",
+          "weight": 10485760
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline$$Lambda$240.0x00000080011ab1b0.call()Ljava/lang/Object:",
+          "weight": 10485760
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.distinctStringPropertyDisjunction(Ljava/lang/Class:Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)Ljava/util/List:",
+          "weight": 9961472
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection(Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:Ljava/util/List:Lio/johnsonlee/graphite/webgraph/CallSiteStringIdMembership:)Ljava/util/List:",
+          "weight": 7077888
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.StringTable.findId$webgraph(Ljava/lang/String:)I",
+          "weight": 4456448
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$238.0x00000080011aa000.test(I)Z",
+          "weight": 3932160
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:ILio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:IIILjava/util/concurrent/atomic/AtomicBoolean:Ljava/util/HashSet:Ljava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:)Lio/johnsonlee/graphite/webgraph/ParallelCallSiteProjectionResult:",
+          "weight": 3932160
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef:Ljava/util/concurrent/atomic/AtomicBoolean:Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/HashSet:Ljava/util/List:Ljava/util/HashSet:Ljava/util/ArrayList:I[ILjava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:I)Z",
+          "weight": 3932160
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedNodeTypeIndex.forEachIdWhile(Ljava/lang/Class:IILjava/util/function/IntPredicate:)V",
+          "weight": 3932160
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$229.0x00000080011aeba8.call()Ljava/lang/Object:",
+          "weight": 3932160
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.exactMatchingStringIds(Lio/johnsonlee/graphite/graph/StringPropertyPredicate:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)[I",
+          "weight": 2883584
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.exactMatchingStringIds(Ljava/util/List:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)Ljava/util/List:",
+          "weight": 2883584
+        },
+        {
+          "frame": "it.unimi.dsi.util.FrontCodedStringList.get(I)Lit/unimi/dsi/lang/MutableString:",
+          "weight": 2359296
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexKt.trackedSplitCallSiteTask$lambda$11(Ljava/util/concurrent/Callable:)Ljava/lang/Object:",
+          "weight": 2097152
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexKt$$Lambda$230.0x00000080011aedd0.call()Ljava/lang/Object:",
+          "weight": 2097152
+        },
+        {
+          "frame": "it.unimi.dsi.lang.MutableString.toString()Ljava/lang/String:",
+          "weight": 2097152
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.getArray(I)[C",
+          "weight": 1835008
+        },
+        {
+          "frame": "kotlin.ranges.IntProgression.iterator()Ljava/util/Iterator:",
+          "weight": 1572864
+        }
+      ]
+    },
+    {
+      "recording": 3,
+      "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "phase": "other",
+      "metric": "cpuSamples",
+      "total": 8,
+      "counts": {
+        "jit": 5,
+        "other": 2,
+        "application": 1
+      },
+      "topApplicationLeaves": [
+        {
+          "frame": "libsystem_kernel.dylib.__psynch_mutexwait()L:",
+          "weight": 1
+        }
+      ],
+      "topApplicationInclusive": [
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunction$default(Lio/johnsonlee/graphite/cypher/QueryPipeline:Ljava/lang/Class:Ljava/lang/String:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:ILkotlin/jvm/functions/Function1:Ljava/util/List:ZILjava/lang/Object:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 1
+        },
+        {
+          "frame": "java.lang.System$2.defineClass(Ljava/lang/ClassLoader:Ljava/lang/Class:Ljava/lang/String:[BLjava/security/ProtectionDomain:ZILjava/lang/Object:)Ljava/lang/Class:",
+          "weight": 1
+        },
+        {
+          "frame": "libjvm.dylib.Chunk::next_chop()L:",
+          "weight": 1
+        },
+        {
+          "frame": "java.lang.invoke.MethodHandleNatives.linkCallSite(Ljava/lang/Object:ILjava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:Ljava/lang/Object:[Ljava/lang/Object:)Ljava/lang/invoke/MemberName:",
+          "weight": 1
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunction(Ljava/lang/Class:Ljava/lang/String:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:ILkotlin/jvm/functions/Function1:Ljava/util/List:Z)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 1
+        },
+        {
+          "frame": "java.lang.Thread.run()V",
+          "weight": 1
+        },
+        {
+          "frame": "java.lang.invoke.MethodHandles$Lookup$ClassDefiner.defineClass(ZLjava/lang/Object:)Ljava/lang/Class:",
+          "weight": 1
+        },
+        {
+          "frame": "java.lang.invoke.Invokers.callSiteForm(Ljava/lang/invoke/MethodType:Z)Ljava/lang/invoke/LambdaForm:",
+          "weight": 1
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark$$Lambda$196.0x0000008001185e90.call()Ljava/lang/Object:",
+          "weight": 1
+        },
+        {
+          "frame": "libjvm.dylib.JVM_LookupDefineClass()L:",
+          "weight": 1
+        },
+        {
+          "frame": "libsystem_pthread.dylib._pthread_mutex_firstfit_lock_slow()L:",
+          "weight": 1
+        },
+        {
+          "frame": "libjvm.dylib.KlassFactory::create_from_stream()L:",
+          "weight": 1
+        },
+        {
+          "frame": "java.lang.invoke.MethodHandleNatives.linkCallSiteImpl(Ljava/lang/Class:Ljava/lang/invoke/MethodHandle:Ljava/lang/String:Ljava/lang/invoke/MethodType:Ljava/lang/Object:[Ljava/lang/Object:)Ljava/lang/invoke/MemberName:",
+          "weight": 1
+        },
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor.runWorker(Ljava/util/concurrent/ThreadPoolExecutor$Worker:)V",
+          "weight": 1
+        },
+        {
+          "frame": "libjvm.dylib.ChunkPool::free()L:",
+          "weight": 1
+        },
+        {
+          "frame": "java.lang.invoke.Invokers.linkToTargetMethod(Ljava/lang/invoke/MethodType:)Ljava/lang/invoke/MemberName:",
+          "weight": 1
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.CypherExecutor.execute(Ljava/lang/String:Ljava/util/Map:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 1
+        },
+        {
+          "frame": "libsystem_kernel.dylib.__psynch_mutexwait()L:",
+          "weight": 1
+        },
+        {
+          "frame": "java.lang.invoke.InvokerBytecodeGenerator.loadMethod([B)Ljava/lang/invoke/MemberName:",
+          "weight": 1
+        },
+        {
+          "frame": "libjvm.dylib.ResourceArea::rollback_to()L:",
+          "weight": 1
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replay$lambda$33$lambda$29(Ljava/util/List:Lio/johnsonlee/graphite/cypher/CypherExecutionContext:Lio/johnsonlee/graphite/webgraph/BroadQueryCase:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 1
+        },
+        {
+          "frame": "libjava.dylib.Java_java_lang_ClassLoader_defineClass0()L:",
+          "weight": 1
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeIndexedDistinctStringProjection(Ljava/lang/Class:Ljava/lang/String:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:ILjava/util/List:Z)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 1
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.tryFastFilteredNodeLimit(Ljava/util/List:Ljava/util/List:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 1
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(Ljava/util/List:Ljava/util/Map:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "recording": 3,
+      "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "phase": "other",
+      "metric": "allocationSampledBytes",
+      "total": 262144,
+      "counts": {
+        "application": 262144
+      },
+      "topApplicationLeaves": [
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.addDistinctRow(Ljava/util/LinkedHashMap:Ljava/util/Map:I)V",
+          "weight": 262144
+        }
+      ],
+      "topApplicationInclusive": [
+        {
+          "frame": "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.execute(Ljava/lang/String:Ljava/util/Map:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 262144
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunction$default(Lio/johnsonlee/graphite/cypher/QueryPipeline:Ljava/lang/Class:Ljava/lang/String:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:ILkotlin/jvm/functions/Function1:Ljava/util/List:ZILjava/lang/Object:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 262144
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replay$lambda$33$lambda$29(Ljava/util/List:Lio/johnsonlee/graphite/cypher/CypherExecutionContext:Lio/johnsonlee/graphite/webgraph/BroadQueryCase:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 262144
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.CypherExecutor.execute(Ljava/lang/String:Ljava/util/Map:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 262144
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeIndexedDistinctStringProjection(Ljava/lang/Class:Ljava/lang/String:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:ILjava/util/List:Z)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 262144
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(Ljava/util/List:Ljava/util/Map:Ljava/lang/Integer:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 262144
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.addDistinctRow(Ljava/util/LinkedHashMap:Ljava/util/Map:I)V",
+          "weight": 262144
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.tryFastFilteredNodeLimit(Ljava/util/List:Ljava/util/List:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 262144
+        },
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor.runWorker(Ljava/util/concurrent/ThreadPoolExecutor$Worker:)V",
+          "weight": 262144
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(Ljava/util/List:Ljava/util/Map:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 262144
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeDirectStringDisjunction(Ljava/lang/Class:Ljava/lang/String:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/List:Ljava/util/List:ILkotlin/jvm/functions/Function1:Ljava/util/List:Z)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 262144
+        },
+        {
+          "frame": "java.util.concurrent.FutureTask.run()V",
+          "weight": 262144
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(Ljava/util/List:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 262144
+        },
+        {
+          "frame": "java.lang.Thread.run()V",
+          "weight": 262144
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeIndexedDistinctStringProjection$mergeSource([Ljava/util/List:[ZLjava/util/List:Ljava/util/LinkedHashMap:ILio/johnsonlee/graphite/cypher/QueryPipeline:Lio/johnsonlee/graphite/cypher/QueryPipeline$IndexedProjectedRows:)Z",
+          "weight": 262144
+        },
+        {
+          "frame": "java.util.concurrent.ThreadPoolExecutor$Worker.run()V",
+          "weight": 262144
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark$$Lambda$196.0x0000008001185e90.call()Ljava/lang/Object:",
+          "weight": 262144
+        }
+      ]
+    }
+  ],
+  "inclusiveNotAdditive": true,
+  "threadSelection": "pressure request and graphite cypher/callsite scan/segment workers; JIT and all other threads separate"
+}

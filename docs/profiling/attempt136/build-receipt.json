@@ -1,0 +1,18 @@
+{
+  "parent": "34b45bf798cbe26932e46ab42d6635b534e7fa3e",
+  "checks": [
+    ":webgraph:test",
+    ":webgraph:detekt",
+    ":webgraph:jmhJar",
+    ":webgraph:verifyJmhJarExcludesTests"
+  ],
+  "testCounts": {
+    "tests": 187,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "jarSha256": "8bb7c9a0f507d37b23289209e4c846ad1b2335e508464449deba66ecbf18f433",
+  "productionSourceSha256": "d313dc9654354f0cdbbce79901aaad0840241bd88097557703bf65012fd4b002",
+  "testSourceSha256": "22f542ebc4021b072b7e40fe58de42fc3ff9698559ba105a01904547c743817b"
+}

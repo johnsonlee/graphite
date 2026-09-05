@@ -30,6 +30,17 @@ REPOSITORY_URL=$(git -C "${REPOSITORY_ROOT}" remote get-url origin)
 TIMEOUT_MILLIS=${GRAPHITE_PRESSURE_TIMEOUT_MILLIS:-300000}
 PUBLISH_EVIDENCE=${GRAPHITE_PRESSURE_PUBLISH_EVIDENCE:-true}
 SHARED_REPRODUCIBILITY_RECEIPT=${GRAPHITE_FIXTURE64_REPRODUCIBILITY_RECEIPT:-}
+REGRESSION_ONLY=${GRAPHITE_PRESSURE_REGRESSION_ONLY:-false}
+MINIMUM_SPEEDUP=${GRAPHITE_PRESSURE_MINIMUM_SPEEDUP:-10}
+[[ "${REGRESSION_ONLY}" == true || "${REGRESSION_ONLY}" == false ]]
+[[ "${MINIMUM_SPEEDUP}" == 10 ]]
+COMPARISON_OPTIONS=()
+if [[ "${REGRESSION_ONLY}" == true ]]; then COMPARISON_OPTIONS+=(--regression-only); fi
+# A regression-only report must never publish the legacy strict-target success context.
+if [[ "${REGRESSION_ONLY}" == true && "${PUBLISH_EVIDENCE}" == true ]]; then
+  echo 'Regression-only evaluation cannot publish a strict target status' >&2
+  exit 1
+fi
 
 test -f "${MANIFEST}"
 test -f "${FIXTURE_PROVENANCE}"
@@ -196,6 +207,7 @@ IFS=, BASE_JSON_LIST="${BASE_JSON_FILES[*]}"
 IFS=, BASE_OBSERVATION_LIST="${BASE_OBSERVATION_FILES[*]}"
 IFS=, CANDIDATE_JSON_LIST="${CANDIDATE_JSON_FILES[*]}"
 IFS=, CANDIDATE_OBSERVATION_LIST="${CANDIDATE_OBSERVATION_FILES[*]}"
+COMPARISON_EXIT=0
 node "${CANDIDATE_TREE}/${COMPARATOR_PATH}" compare-global-wide-pressure \
   --bases "${BASE_JSON_LIST}" \
   --candidates "${CANDIDATE_JSON_LIST}" \
@@ -204,10 +216,11 @@ node "${CANDIDATE_TREE}/${COMPARATOR_PATH}" compare-global-wide-pressure \
   --run-orders candidate-base,base-candidate,candidate-base \
   --graph-manifest "${MANIFEST}" \
   --correctness-oracle "${ORACLE}" \
-  --minimum-speedup 5 \
+  --minimum-speedup "${MINIMUM_SPEEDUP}" "${COMPARISON_OPTIONS[@]}" \
   --report "${OUTPUT_DIR}/global-wide-report.md" \
-  --status "${OUTPUT_DIR}/global-wide-status.json"
-jq -e '.passed == true' "${OUTPUT_DIR}/global-wide-status.json" >/dev/null
+  --status "${OUTPUT_DIR}/global-wide-status.json" || COMPARISON_EXIT=$?
+# Keep exact provenance and all observations even when the numerical comparison fails.
+test -f "${OUTPUT_DIR}/global-wide-status.json"
 
 cp "${MANIFEST}" "${OUTPUT_DIR}/graphs.tsv"
 cp "${FIXTURE_PROVENANCE}" "${OUTPUT_DIR}/fixture-provenance.tsv"
@@ -261,6 +274,8 @@ jq -n --arg schema graphite-fixture64-global-wide-evidence-v2 --arg repository "
     statusContext:$statusContext,description:$description,files:$files}' \
   > "${OUTPUT_DIR}/evidence-manifest.json"
 EVIDENCE_FILES+=("${OUTPUT_DIR}/evidence-manifest.json")
+if (( COMPARISON_EXIT != 0 )); then exit "${COMPARISON_EXIT}"; fi
+jq -e '.passed == true' "${OUTPUT_DIR}/global-wide-status.json" >/dev/null
 if [[ "${PUBLISH_EVIDENCE}" == false ]]; then
   echo "Produced trusted local global-wide evidence in ${OUTPUT_DIR}: ${DESCRIPTION}"
   exit 0

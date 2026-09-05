@@ -1,0 +1,35 @@
+{
+  "operation": "Repository copies normalize only trailing newline count; JSON values unchanged. Original measured JMH outputs remain unchanged in /private/tmp/graphite-attempt136.zr21l653/old34-pairs.",
+  "files": [
+    {
+      "file": "base-global-wide-1.json",
+      "originalArtifactSha256": "3f0ef80c79fada64b5f1ea856d8e463eb124553999d638334542ecd19ff3abda",
+      "repositoryCopySha256": "9eba390ce4aa12e78d9ca644613a8a3332f72369cbf2a9351a8b2faea368bb18"
+    },
+    {
+      "file": "base-global-wide-2.json",
+      "originalArtifactSha256": "6424c09d3f0cf9d83fb743df60da19d8e7db3e2f3091dda999e6e1f84658a6e0",
+      "repositoryCopySha256": "e72760ce86f71b1698f278d0df0afd5466199c8a28f3d7edac09ad676ac737c4"
+    },
+    {
+      "file": "base-global-wide-3.json",
+      "originalArtifactSha256": "4ffd31f91373670960bee2f7dbdeaaea1cd8e5bcc02a8f36dfc4a3dc85b16df5",
+      "repositoryCopySha256": "c0136ed3b2a90e547b49ab3535740a60497846d742ff73e2d79dccb9e39ce01d"
+    },
+    {
+      "file": "candidate-global-wide-1.json",
+      "originalArtifactSha256": "bce6b3e187e3545985b2269009d95529e5e1d038c37484f733d5cb00822aa95c",
+      "repositoryCopySha256": "18fa2bc113af97a73a7f89795b8fdae8639edbe93387534b6ce2194981d112f9"
+    },
+    {
+      "file": "candidate-global-wide-2.json",
+      "originalArtifactSha256": "08086ae92a36a3335ca83cc505f30eadcddd168c047d6e7bf45de5410ad41b43",
+      "repositoryCopySha256": "652954059ae4f5de2fd6eae5b7559d0ee9b3b673d55fd80b527996465889876c"
+    },
+    {
+      "file": "candidate-global-wide-3.json",
+      "originalArtifactSha256": "9912b3c372df17a5b68a12e6f4b3951682b25ff6a4670179114fe2df46beb6ea",
+      "repositoryCopySha256": "ef04fb42f61943500fb9e7230b5071d86cda4b21b0409df3863bcf618fd811a8"
+    }
+  ]
+}

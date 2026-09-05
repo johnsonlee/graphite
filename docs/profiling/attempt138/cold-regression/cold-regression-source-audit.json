@@ -1,0 +1,308 @@
+{
+  "schema": "rejected138-cold-source-audit-v1",
+  "decision": "rejected-remains-final",
+  "base": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "candidate": "470df7cea888240b87380f1a4a650638ea713815",
+  "sourceEvidence": {
+    "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt": {
+      "4e328b0109e13c896b74004823fb049fcb19251a": {
+        "sha256": "9133289c4382b59f4bc880f9de3d8aee0930d449a32f9a487893dabb56255cb7",
+        "lines": {
+          "fun distinctStringPropertyDisjunction(": [
+            369
+          ],
+          "fun matchingNodeIds(": [
+            2857,
+            2862
+          ],
+          "fun parallelRawDistinctCallSiteStringProjection(": [
+            481
+          ],
+          "fun mappedCallSiteStringIndexView(": [
+            1659
+          ],
+          "fun stringMatches(": [
+            3064
+          ]
+        }
+      },
+      "470df7cea888240b87380f1a4a650638ea713815": {
+        "sha256": "7ec58e121beabf3d792cc31075d9a399cd4fe3055e94865e1347bd0ad1e9bac4",
+        "lines": {
+          "fun distinctStringPropertyDisjunction(": [
+            369
+          ],
+          "fun matchingNodeIds(": [
+            2936,
+            2941
+          ],
+          "fun mappedSparseDistinctCallSiteStringProjection(": [
+            490
+          ],
+          "fun readRawCallSiteStringIds(": [
+            530
+          ],
+          "fun parallelRawDistinctCallSiteStringProjection(": [
+            560
+          ],
+          "fun mappedCallSiteStringIndexView(": [
+            1738
+          ],
+          "fun stringMatches(": [
+            3143
+          ]
+        }
+      }
+    },
+    "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexView.kt": {
+      "4e328b0109e13c896b74004823fb049fcb19251a": {
+        "sha256": "6abdd90ff1f4676dbfeae568e13e3f4419c45fc62d63ab1b9ec981ea1282a7a5",
+        "lines": {
+          "fun exactMatchingStringIds(": [
+            69,
+            205
+          ],
+          "fun exactMatchesCanFillLimit(": [
+            84
+          ],
+          "fun matchingNodeIds(": [
+            111
+          ],
+          "fun validatedPostingCursor(": [
+            161
+          ],
+          "fun postingRange(": [
+            193
+          ],
+          "class PersistentIndexViewValidator": [
+            436
+          ],
+          "fun load(": [
+            263
+          ]
+        }
+      },
+      "470df7cea888240b87380f1a4a650638ea713815": {
+        "sha256": "7cd7b21f0ac451f265f4014cfa2c0cee09cc4630318c4f3092a897eba668f0aa",
+        "lines": {
+          "fun selectedProjectionHits(": [
+            77
+          ],
+          "fun selectedTupleStringIds(": [
+            152
+          ],
+          "fun selectedTupleAnchor(": [
+            185
+          ],
+          "fun selectedTupleEncounterOrder(": [
+            134
+          ],
+          "fun exactMatchingStringIds(": [
+            200,
+            336
+          ],
+          "fun exactMatchesCanFillLimit(": [
+            215
+          ],
+          "fun matchingNodeIds(": [
+            242
+          ],
+          "fun validatedPostingCursor(": [
+            292
+          ],
+          "fun postingRange(": [
+            324
+          ],
+          "class PersistentIndexViewValidator": [
+            567
+          ],
+          "fun load(": [
+            394
+          ]
+        }
+      }
+    }
+  },
+  "catalogSha256": "bbc5ac76df7f3109aaeb9f45fd4acb5234117da4f0f03365cbb0e196c1d785f3",
+  "query": {
+    "id": "or-four-broad-distinct",
+    "logicalId": "or-four-broad",
+    "query": "MATCH (n) WHERE ((toLower(coalesce(n.caller_class, '')) CONTAINS 'com.android.internal.app.iappopsservice$stub$proxy' OR toLower(coalesce(n.caller_name, '')) CONTAINS 'com.android.internal.app.iappopsservice$stub$proxy' OR toLower(coalesce(n.callee_class, '')) CONTAINS 'com.android.internal.app.iappopsservice$stub$proxy' OR toLower(coalesce(n.callee_name, '')) CONTAINS 'com.android.internal.app.iappopsservice$stub$proxy') OR (toLower(coalesce(n.caller_class, '')) CONTAINS 'recycle' OR toLower(coalesce(n.caller_name, '')) CONTAINS 'recycle' OR toLower(coalesce(n.callee_class, '')) CONTAINS 'recycle' OR toLower(coalesce(n.callee_name, '')) CONTAINS 'recycle') OR (toLower(coalesce(n.caller_class, '')) CONTAINS 'org.jetbrains.kotlin.backend.jvm.lower.jvmmultifieldvalueclassloweringkt$extractvariablessetterstoouterpossibleblock$1' OR toLower(coalesce(n.caller_name, '')) CONTAINS 'org.jetbrains.kotlin.backend.jvm.lower.jvmmultifieldvalueclassloweringkt$extractvariablessetterstoouterpossibleblock$1' OR toLower(coalesce(n.callee_class, '')) CONTAINS 'org.jetbrains.kotlin.backend.jvm.lower.jvmmultifieldvalueclassloweringkt$extractvariablessetterstoouterpossibleblock$1' OR toLower(coalesce(n.callee_name, '')) CONTAINS 'org.jetbrains.kotlin.backend.jvm.lower.jvmmultifieldvalueclassloweringkt$extractvariablessetterstoouterpossibleblock$1') OR (toLower(coalesce(n.caller_class, '')) CONTAINS 'visitstatementcontainer' OR toLower(coalesce(n.caller_name, '')) CONTAINS 'visitstatementcontainer' OR toLower(coalesce(n.callee_class, '')) CONTAINS 'visitstatementcontainer' OR toLower(coalesce(n.callee_name, '')) CONTAINS 'visitstatementcontainer')) RETURN DISTINCT n.caller_class, n.caller_name, n.callee_class, n.callee_name LIMIT 200",
+    "distinct": true,
+    "expectedHitGraphIds": [
+      "fixture-android-00",
+      "fixture-android-01",
+      "fixture-android-02",
+      "fixture-android-03",
+      "fixture-android-04",
+      "fixture-android-05",
+      "fixture-android-06",
+      "fixture-android-07",
+      "fixture-android-08",
+      "fixture-android-09",
+      "fixture-android-10",
+      "fixture-android-11",
+      "fixture-android-12",
+      "fixture-android-13",
+      "fixture-android-14",
+      "fixture-android-15",
+      "fixture-tika-00",
+      "fixture-tika-01",
+      "fixture-tika-02",
+      "fixture-tika-03",
+      "fixture-tika-04",
+      "fixture-tika-05",
+      "fixture-tika-06",
+      "fixture-tika-07",
+      "fixture-tika-08",
+      "fixture-tika-09",
+      "fixture-tika-10",
+      "fixture-tika-11",
+      "fixture-tika-12",
+      "fixture-tika-14",
+      "fixture-tika-15",
+      "fixture-hive-00",
+      "fixture-hive-01",
+      "fixture-hive-02",
+      "fixture-hive-03",
+      "fixture-hive-04",
+      "fixture-hive-05",
+      "fixture-hive-06",
+      "fixture-hive-07",
+      "fixture-hive-08",
+      "fixture-hive-09",
+      "fixture-hive-10",
+      "fixture-hive-11",
+      "fixture-hive-12",
+      "fixture-hive-13",
+      "fixture-hive-14",
+      "fixture-hive-15",
+      "fixture-kotlin-compiler-00",
+      "fixture-kotlin-compiler-06",
+      "fixture-kotlin-compiler-07",
+      "fixture-kotlin-compiler-08",
+      "fixture-kotlin-compiler-09",
+      "fixture-kotlin-compiler-10",
+      "fixture-kotlin-compiler-14",
+      "fixture-kotlin-compiler-15"
+    ],
+    "totalMatches": 50461,
+    "totalDistinctMatches": 18915
+  },
+  "oracleFacts": {
+    "selectedCount": 200,
+    "selectedProvenanceOnlyGraph": "fixture-android-00",
+    "completeQueryHitGraphCount": 55,
+    "totalMatches": 50461,
+    "totalDistinctMatches": 18915,
+    "firstGraphCallSites": 100606,
+    "firstGraphMatches": 3370,
+    "firstGraphDistinctMatches": 1608,
+    "selectedUniqueStrings": 189,
+    "selectedPropertyValueCounts": [
+      14,
+      81,
+      28,
+      105
+    ],
+    "selectedFirstMatchingPredicateOneBasedIfReached": {
+      "8": 20,
+      "6": 4,
+      "7": 3,
+      "5": 173
+    },
+    "termExclusiveMatchCounts": [
+      473,
+      49431,
+      260,
+      68
+    ],
+    "selectedRowsSha256": "49cffd06880788859569587f8f77a604a22e71ac9a1df0c256c4a8ac5db7f0a8"
+  },
+  "originalRejectedTiming": [
+    {
+      "pair": 1,
+      "base": {
+        "latencyNanos": "149365542",
+        "graphWorkUnits": "57697051",
+        "rowCount": "200",
+        "digest": "49cffd06880788859569587f8f77a604a22e71ac9a1df0c256c4a8ac5db7f0a8",
+        "hitGraphIds": "fixture-android-00",
+        "inputSourceCount": "64",
+        "resetMode": "per-query-cold"
+      },
+      "candidate": {
+        "latencyNanos": "185582709",
+        "graphWorkUnits": "57699276",
+        "rowCount": "200",
+        "digest": "49cffd06880788859569587f8f77a604a22e71ac9a1df0c256c4a8ac5db7f0a8",
+        "hitGraphIds": "fixture-android-00",
+        "inputSourceCount": "64",
+        "resetMode": "per-query-cold"
+      },
+      "latencyIncreasePercent": 24.247337448151196
+    },
+    {
+      "pair": 2,
+      "base": {
+        "latencyNanos": "150640750",
+        "graphWorkUnits": "57697051",
+        "rowCount": "200",
+        "digest": "49cffd06880788859569587f8f77a604a22e71ac9a1df0c256c4a8ac5db7f0a8",
+        "hitGraphIds": "fixture-android-00",
+        "inputSourceCount": "64",
+        "resetMode": "per-query-cold"
+      },
+      "candidate": {
+        "latencyNanos": "167722459",
+        "graphWorkUnits": "57699276",
+        "rowCount": "200",
+        "digest": "49cffd06880788859569587f8f77a604a22e71ac9a1df0c256c4a8ac5db7f0a8",
+        "hitGraphIds": "fixture-android-00",
+        "inputSourceCount": "64",
+        "resetMode": "per-query-cold"
+      },
+      "latencyIncreasePercent": 11.339367999694637
+    },
+    {
+      "pair": 3,
+      "base": {
+        "latencyNanos": "152262625",
+        "graphWorkUnits": "57697051",
+        "rowCount": "200",
+        "digest": "49cffd06880788859569587f8f77a604a22e71ac9a1df0c256c4a8ac5db7f0a8",
+        "hitGraphIds": "fixture-android-00",
+        "inputSourceCount": "64",
+        "resetMode": "per-query-cold"
+      },
+      "candidate": {
+        "latencyNanos": "192266333",
+        "graphWorkUnits": "57699276",
+        "rowCount": "200",
+        "digest": "49cffd06880788859569587f8f77a604a22e71ac9a1df0c256c4a8ac5db7f0a8",
+        "hitGraphIds": "fixture-android-00",
+        "inputSourceCount": "64",
+        "resetMode": "per-query-cold"
+      },
+      "latencyIncreasePercent": 26.272834847028292
+    }
+  ],
+  "facts": [
+    "Candidate and main both load/CRC-validate the mapped view before either selected or initial specialization. Validator source logic is unchanged.",
+    "The first graph can produce 200 distinct rows; valid-index occurrence upper-bound reaches LIMIT, so candidate initial sparse helper returns null and uses existing raw projection for this query.",
+    "The remaining 63 source checks receive the selected 200 complete four-column tuples under the unchanged balanced DISTINCT provenance flow. Full-hit graph count 55 is not selected provenance count.",
+    "Main exact matching reuses matching strings by transform/mode/expected (four keys for the sixteen predicates), then converts selected values with local string-ID/property-membership reuse before optional raw scan.",
+    "Candidate selected success bypasses exact predicate string discovery and raw scan, but adds per-tuple concrete predicate matching, four posting range lookups for viable tuples, full chosen-range validation if not cached, posting tuple comparison, and final encounter-order sort.",
+    "Candidate ID/membership reuse was already present in main raw conversion. It does not cache postingRange results across selected tuples.",
+    "For this oracle every remaining-source selected result is empty; sorting selected hit rows cannot process a large nonempty result in this query.",
+    "Candidate bills selected column/predicate/posting visits, while main raw conversion does not bill each selected column/findId step. Both use existing explicit work consumers and exception propagation; workUnits are not CPU instructions or bytes."
+  ],
+  "unknowns": [
+    "Actual per-graph selected feasibility and early-exit counts, chosen posting lengths, reused validation cache entries/collisions, and StringTable.findId call counts require event/profile evidence or separate verified instrumentation.",
+    "Cold shared CRC validation remains, and cache/JIT/GC scheduling may affect time; source and total work counts cannot attribute the 36-40ms regression.",
+    "A warm mapped view does not imply all selected posting validation entries are already cached.",
+    "The new recording is diagnostic only and cannot reopen, override or replace the rejected original paired timing."
+  ],
+  "noJavaBuildOrMeasurementStarted": true,
+  "recordedCandidateJarSha256": "2c419ac0b9d996af0890d1c857f81fa3479c170f59306fe35517a6e90cf7b5bf"
+}

@@ -1,0 +1,9 @@
+{
+  "recordings": 2,
+  "queriesPerRecording": 80,
+  "status": "complete",
+  "graphFilesUnchanged": true,
+  "jarHashesUnchanged": true,
+  "notP95": true,
+  "notAcceptanceEvidence": true
+}

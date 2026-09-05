@@ -1,0 +1,12 @@
+{
+  "attempt": 138,
+  "candidateRevision": "470df7cea888240b87380f1a4a650638ea713815",
+  "restoreReference": "e6c932c5e1d0fb7b583ceb9e14c8ef88ec9d9694",
+  "frozenMain": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "productionAndJmhFilesByteEqualFrozenMain": 130,
+  "testFilesByteEqualParent": 168,
+  "rejectedProductionAndCandidateDependentTestsRestored": true,
+  "accepted": false,
+  "newCi": "pending revert push; no candidate CI after local rejection",
+  "verification": "Byte equality of all tracked source/test files; no inference that failed performance can be waived"
+}

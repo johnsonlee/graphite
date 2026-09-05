@@ -1,0 +1,13 @@
+[
+  "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+  "-cp",
+  "/private/tmp/graphite-main-profiling-n50joikp",
+  "ProfileWindows",
+  "/private/tmp/graphite-attempt138.7ihszrob/cold-regression-profile/candidate.jfr",
+  "/private/tmp/graphite-attempt138.7ihszrob/cold-regression-profile/candidate.tsv",
+  "/private/tmp/graphite-attempt138.7ihszrob/cold-regression-profile/candidate-analysis",
+  "--expected-count",
+  "80",
+  "--catalog",
+  "/private/tmp/graphite-main-profiling-n50joikp/four-or/profile-workloads.tsv"
+]

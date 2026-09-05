@@ -1,0 +1,142 @@
+{
+  "passed": false,
+  "errors": [
+    "pair-2: process CPU 3870000000 exceeds paired base 3280000000 by >15%",
+    "pair-1/global-wide-class-pair/zero: aligned latency 10567829 exceeds base 7752720 by >15% and >1 ms; repeated in 2 independent pairs",
+    "pair-1/global-wide-aliased/targeted: aligned latency 12420924 exceeds base 9655432 by >15% and >1 ms; repeated in 3 independent pairs",
+    "pair-1/global-wide-parameterized/targeted: aligned latency 7839121 exceeds base 5832781 by >15% and >1 ms; repeated in 2 independent pairs",
+    "pair-1/global-wide-distribution-localized-early/dense: aligned latency 7593872 exceeds base 3601546 by >15% and >1 ms; repeated in 3 independent pairs",
+    "pair-2/global-wide-four-properties/dense: aligned latency 13866179 exceeds base 10909952 by >15% and >1 ms; repeated in 2 independent pairs",
+    "pair-2/global-wide-class-pair/targeted: aligned latency 11780115 exceeds base 10217513 by >15% and >1 ms; repeated in 2 independent pairs"
+  ],
+  "regressionPassed": false,
+  "targetAchieved": false,
+  "targetErrors": [
+    "pair-1: P95 speedup 1.09x; required 10.00x in every independent fork",
+    "pair-1: global-wide-wrapped-case-insensitive P95 speedup 1.48x; required 10.00x",
+    "pair-1: global-wide-wrapped-case-insensitive-distinct P95 speedup 1.09x; required 10.00x",
+    "pair-2: P95 speedup 0.92x; required 10.00x in every independent fork",
+    "pair-2: global-wide-wrapped-case-insensitive P95 speedup 0.81x; required 10.00x",
+    "pair-2: global-wide-wrapped-case-insensitive-distinct P95 speedup 0.92x; required 10.00x",
+    "pair-3: P95 speedup 1.56x; required 10.00x in every independent fork",
+    "pair-3: global-wide-wrapped-case-insensitive P95 speedup 1.01x; required 10.00x",
+    "pair-3: global-wide-wrapped-case-insensitive-distinct P95 speedup 1.56x; required 10.00x"
+  ],
+  "regressionOnly": true,
+  "minimumSpeedup": 10,
+  "runs": [
+    {
+      "order": "candidate-base",
+      "baseP50LatencyNanos": 7413804,
+      "baseP95LatencyNanos": 130939067,
+      "p50LatencyNanos": 7629979,
+      "p95LatencyNanos": 120137039,
+      "p50Speedup": 0.971667680867798,
+      "p95Speedup": 1.0899142187115165,
+      "baseWrappedP95LatencyNanos": 130939067,
+      "wrappedP95LatencyNanos": 120137039,
+      "wrappedP95Speedup": 1.0899142187115165,
+      "wrappedShapeRuns": [
+        {
+          "shape": "global-wide-wrapped-case-insensitive",
+          "baseLatencyNanos": 9789003,
+          "latencyNanos": 6616960,
+          "speedup": 1.479380712593094
+        },
+        {
+          "shape": "global-wide-wrapped-case-insensitive-distinct",
+          "baseLatencyNanos": 130939067,
+          "latencyNanos": 120137039,
+          "speedup": 1.0899142187115165
+        }
+      ],
+      "baseProcessCpuNanos": 3920000000,
+      "processCpuNanos": 4050000000,
+      "cpuCoreUtilizationPermille": 3137,
+      "basePeakUsedHeapBytes": 4306433504,
+      "peakUsedHeapBytes": 4560966648,
+      "basePeakResidentSetBytes": 5135392768,
+      "peakResidentSetBytes": 5354749952
+    },
+    {
+      "order": "base-candidate",
+      "baseP50LatencyNanos": 5836417,
+      "baseP95LatencyNanos": 130636671,
+      "p50LatencyNanos": 6475453,
+      "p95LatencyNanos": 142437091,
+      "p50Speedup": 0.9013140856709175,
+      "p95Speedup": 0.9171534611023473,
+      "baseWrappedP95LatencyNanos": 5946182,
+      "wrappedP95LatencyNanos": 7346279,
+      "wrappedP95Speedup": 0.8094141265258235,
+      "wrappedShapeRuns": [
+        {
+          "shape": "global-wide-wrapped-case-insensitive",
+          "baseLatencyNanos": 5946182,
+          "latencyNanos": 7346279,
+          "speedup": 0.8094141265258235
+        },
+        {
+          "shape": "global-wide-wrapped-case-insensitive-distinct",
+          "baseLatencyNanos": 130636671,
+          "latencyNanos": 142437091,
+          "speedup": 0.9171534611023473
+        }
+      ],
+      "baseProcessCpuNanos": 3280000000,
+      "processCpuNanos": 3870000000,
+      "cpuCoreUtilizationPermille": 3204,
+      "basePeakUsedHeapBytes": 4318809512,
+      "peakUsedHeapBytes": 4317135808,
+      "basePeakResidentSetBytes": 5213782016,
+      "peakResidentSetBytes": 5105881088
+    },
+    {
+      "order": "candidate-base",
+      "baseP50LatencyNanos": 6119467,
+      "baseP95LatencyNanos": 191349031,
+      "p50LatencyNanos": 6935609,
+      "p95LatencyNanos": 122319238,
+      "p50Speedup": 0.8823258346887779,
+      "p95Speedup": 1.5643412608571026,
+      "baseWrappedP95LatencyNanos": 7793988,
+      "wrappedP95LatencyNanos": 7720121,
+      "wrappedP95Speedup": 1.0095681142821467,
+      "wrappedShapeRuns": [
+        {
+          "shape": "global-wide-wrapped-case-insensitive",
+          "baseLatencyNanos": 7793988,
+          "latencyNanos": 7720121,
+          "speedup": 1.0095681142821467
+        },
+        {
+          "shape": "global-wide-wrapped-case-insensitive-distinct",
+          "baseLatencyNanos": 191349031,
+          "latencyNanos": 122319238,
+          "speedup": 1.5643412608571026
+        }
+      ],
+      "baseProcessCpuNanos": 4420000000,
+      "processCpuNanos": 4000000000,
+      "cpuCoreUtilizationPermille": 3169,
+      "basePeakUsedHeapBytes": 4522348816,
+      "peakUsedHeapBytes": 4379850800,
+      "basePeakResidentSetBytes": 5311705088,
+      "peakResidentSetBytes": 5134831616
+    }
+  ],
+  "orderSummaries": [
+    {
+      "order": "candidate-base",
+      "runCount": 2,
+      "medianP50Speedup": 0.9269967577782879,
+      "medianP95Speedup": 1.3271277397843095
+    },
+    {
+      "order": "base-candidate",
+      "runCount": 1,
+      "medianP50Speedup": 0.9013140856709175,
+      "medianP95Speedup": 0.9171534611023473
+    }
+  ]
+}

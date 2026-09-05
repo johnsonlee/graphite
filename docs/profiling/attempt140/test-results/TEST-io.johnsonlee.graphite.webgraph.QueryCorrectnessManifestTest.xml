@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.johnsonlee.graphite.webgraph.QueryCorrectnessManifestTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-09-05T22:02:30.531Z" hostname="johnsonlee.local" time="0.166">
+  <properties/>
+  <testcase name="verification rejects every observable result difference" classname="io.johnsonlee.graphite.webgraph.QueryCorrectnessManifestTest" time="0.142"/>
+  <testcase name="manifest decoding rejects malformed hard gate records" classname="io.johnsonlee.graphite.webgraph.QueryCorrectnessManifestTest" time="0.011"/>
+  <testcase name="oracle rejects timeout and missing coverage" classname="io.johnsonlee.graphite.webgraph.QueryCorrectnessManifestTest" time="0.008"/>
+  <testcase name="verification rejects missing unexpected and duplicate query ids" classname="io.johnsonlee.graphite.webgraph.QueryCorrectnessManifestTest" time="0.001"/>
+  <testcase name="round trip preserves a complete correctness record" classname="io.johnsonlee.graphite.webgraph.QueryCorrectnessManifestTest" time="0.004"/>
+  <testcase name="record mode rejects any incomplete query" classname="io.johnsonlee.graphite.webgraph.QueryCorrectnessManifestTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

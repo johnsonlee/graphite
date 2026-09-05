@@ -1,0 +1,61 @@
+{
+  "files": [
+    {
+      "source": "/private/tmp/graphite-main-raw-frame-sensitivity/README.md",
+      "destination": "docs/profiling/distinct-projection-work/raw-frame-sensitivity/README.md",
+      "sha256": "069a6314df6cdb95286c6cb4ec2c000297eb92571762f1130007467935c9ec13"
+    },
+    {
+      "source": "/private/tmp/graphite-main-raw-frame-sensitivity/summary.json",
+      "destination": "docs/profiling/distinct-projection-work/raw-frame-sensitivity/summary.json",
+      "sha256": "2e6398d56f93f1ee96b40290666a1e19fb006abae54b35b371e016bd7052215f"
+    },
+    {
+      "source": "/private/tmp/graphite-main-raw-frame-sensitivity/analyze.py",
+      "destination": "docs/profiling/distinct-projection-work/raw-frame-sensitivity/analyze.py",
+      "sha256": "bace482cd7bcfbbe8938ac947f6023bf7e1c872f5a0fc279224ed8677ca2d391"
+    },
+    {
+      "source": "/private/tmp/graphite-main-raw-frame-sensitivity/RawFrameSensitivity.java",
+      "destination": "docs/profiling/distinct-projection-work/raw-frame-sensitivity/RawFrameSensitivity.java",
+      "sha256": "01876cbdfbe63965f49dc32539c35002b52d4802487e17285f58f7aefe23ac1b"
+    },
+    {
+      "source": "/private/tmp/graphite-main-raw-frame-sensitivity/ProfileWindows.java",
+      "destination": "docs/profiling/distinct-projection-work/raw-frame-sensitivity/ProfileWindows.java",
+      "sha256": "e69970ae896839fee24bfbceaec18209750cc938ee6cc4255b4be39a50e9a650"
+    },
+    {
+      "source": "/private/tmp/graphite-main-raw-frame-sensitivity/export-receipt.json",
+      "destination": "docs/profiling/distinct-projection-work/raw-frame-sensitivity/export-receipt.json",
+      "sha256": "b33790a368e7a07e3c2bc364c8cd2d857b3ffd6ffa12873cbcb52969095e1ffe"
+    },
+    {
+      "source": "/private/tmp/graphite-main-raw-frame-sensitivity/cpu-3.json",
+      "destination": "docs/profiling/distinct-projection-work/raw-frame-sensitivity/cpu-3.json",
+      "sha256": "26a7f609693d7763372370bf8ff70f6d11a976c66bd0ab5809b5764b93fda402"
+    },
+    {
+      "source": "/private/tmp/graphite-main-raw-frame-sensitivity/cpu-4.json",
+      "destination": "docs/profiling/distinct-projection-work/raw-frame-sensitivity/cpu-4.json",
+      "sha256": "53d9423b9501ae1343bf0476526f760dbd00627be4f84f3d96aff299aa3c6c06"
+    },
+    {
+      "source": "/private/tmp/graphite-main-raw-frame-sensitivity/cpu-5.json",
+      "destination": "docs/profiling/distinct-projection-work/raw-frame-sensitivity/cpu-5.json",
+      "sha256": "3be2ad9e863d8529014627c6a66c03d5909f183ef93e9b35a7c18e65d2b44d9c"
+    },
+    {
+      "source": "/private/tmp/graphite-main-raw-frame-sensitivity/root-count-audit.py",
+      "destination": "docs/profiling/distinct-projection-work/raw-frame-sensitivity/root-count-audit.py",
+      "sha256": "dcec56c172b0b87accdd103180d74e679c2d5440987c4a28618e60be31b3ed5e"
+    },
+    {
+      "source": "/private/tmp/graphite-main-raw-frame-sensitivity/root-count-audit.json",
+      "destination": "docs/profiling/distinct-projection-work/raw-frame-sensitivity/root-count-audit.json",
+      "sha256": "dac3d32c03e824411e54c50990917a6bb15b4425f7d99d1e18a1d3f3fdcb14ca"
+    }
+  ],
+  "newRecordings": false,
+  "productionChanges": false
+}

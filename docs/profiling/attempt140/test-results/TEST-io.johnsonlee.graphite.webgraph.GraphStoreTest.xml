@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.johnsonlee.graphite.webgraph.GraphStoreTest" tests="167" skipped="0" failures="0" errors="0" timestamp="2026-09-05T22:02:21.192Z" hostname="johnsonlee.local" time="4.08">
+  <properties/>
+  <testcase name="readHeader with legacy version via DataInputStream succeeds" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.034"/>
+  <testcase name="round-trip preserves AnnotationNode" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.477"/>
+  <testcase name="readHeader with legacy version via RandomAccessFile succeeds" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.0"/>
+  <testcase name="persisted CallSite index is rejected when it belongs to another graph" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.058"/>
+  <testcase name="round-trip save and load preserves nodes" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.009"/>
+  <testcase name="writeHeader and readHeader round-trip via DataInputStream" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.0"/>
+  <testcase name="methods with pattern filter on loaded graph" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.009"/>
+  <testcase name="buffered graph work does not replay a failed batch" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.009"/>
+  <testcase name="collectMetadata handles AnnotationNode correctly" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.005"/>
+  <testcase name="mapped string lookup keeps admission specific to the query limit" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.017"/>
+  <testcase name="reified nodes type filtering on loaded graph" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.005"/>
+  <testcase name="mappedDistinctProjectionFallsBackForUnsupportedCallSiteProperties" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.142"/>
+  <testcase name="save writes mmap node offset and type indexes" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.006"/>
+  <testcase name="loading a graph without a resource store reports resources unavailable" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.012"/>
+  <testcase name="bounded raw projection reuses matches even when the persisted index is loaded" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.073"/>
+  <testcase name="node type index default ranged traversal stops early" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.003"/>
+  <testcase name="production CallSite persistence declines missing identity and unavailable index memory" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.003"/>
+  <testcase name="round-trip preserves type hierarchy" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.005"/>
+  <testcase name="mapped comparison lookup binary search covers lower and upper misses" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.004"/>
+  <testcase name="BranchScopeData equals with equal values" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.001"/>
+  <testcase name="round-trip preserves outgoing edges" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.007"/>
+  <testcase name="MappedWebGraphBackedGraph close is safe" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.009"/>
+  <testcase name="mapped graph typed outgoing and incoming edges" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.009"/>
+  <testcase name="legacy v1 graph directory migrates end to end" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.012"/>
+  <testcase name="CallSite trigram posting budget exhaustion preserves dictionary scan correctness" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.009"/>
+  <testcase name="loadMapped without node index throws" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.004"/>
+  <testcase name="readHeader with unknown version throws" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.001"/>
+  <testcase name="mutable node offset indexes and loaded string tables expose fallback behavior" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.002"/>
+  <testcase name="load with AUTO mode preserves all graph operations" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.008"/>
+  <testcase name="saving a graph without resources writes an empty resource store" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.004"/>
+  <testcase name="load with explicit EAGER mode preserves all graph operations" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.011"/>
+  <testcase name="mapped string lookup bounds predicate admission state" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.016"/>
+  <testcase name="round-trip preserves call sites" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.004"/>
+  <testcase name="BranchScopeData not equal when method differs" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.0"/>
+  <testcase name="mapped posting validation stays bounded when complete index memory is unavailable" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.081"/>
+  <testcase name="mapped CallSite trigram postings preserve Unicode matching and prune zero hits" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.015"/>
+  <testcase name="incoming typed edges on loaded graph" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.008"/>
+  <testcase name="mapped CallSite disjunction falls back to bounded raw scan when index budget is occupied" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.006"/>
+  <testcase name="mapped fused lowercase scan preserves ASCII and Unicode string semantics" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.012"/>
+  <testcase name="mapped disjunction tolerates disabled match cache and observes interruption" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.009"/>
+  <testcase name="lazy persisted CallSite restore charges sidecar read validation and checksum work" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.101"/>
+  <testcase name="save preserves its published three argument JVM descriptor" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.0"/>
+  <testcase name="corrupt and missing persisted CallSite indexes rebuild atomically then restore" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.009"/>
+  <testcase name="callSites with pattern filtering on loaded graph" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.004"/>
+  <testcase name="round-trip preserves artifact dependencies" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.009"/>
+  <testcase name="node string collection accepts an iterable batch" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.0"/>
+  <testcase name="readHeader with invalid magic via RandomAccessFile throws" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.0"/>
+  <testcase name="AUTO mode dispatches to MAPPED for large node count" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.004"/>
+  <testcase name="BranchScopeData equals with different type returns false" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.0"/>
+  <testcase name="mapped node indexes reject invalid headers and ranges" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.001"/>
+  <testcase name="save from core mmap graph uses streaming outgoing traversal" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.014"/>
+  <testcase name="mapped comparison lookup handles empty and corrupt comparison files" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.001"/>
+  <testcase name="mapped graph branch scopes round-trip" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.004"/>
+  <testcase name="combined CallSite string index preserves modes order limits and conjunction residuals" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.017"/>
+  <testcase name="legacy v1 metadata decodes annotation values as strings" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.001"/>
+  <testcase name="mapped string property lookup uses raw node fields and falls back when unsupported" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.017"/>
+  <testcase name="class overview store bounds reads and provider cache" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.001"/>
+  <testcase name="round-trip preserves backward adjacency" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.006"/>
+  <testcase name="encodeEdge and decodeEdge round-trip for all edge variants" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.001"/>
+  <testcase name="loadMapped preserves all graph operations" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.017"/>
+  <testcase name="split candidate interruption cancels and joins the background worker" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.002"/>
+  <testcase name="outgoing and incoming return empty for isolated node on loaded graph" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.006"/>
+  <testcase name="saving a graph without resources replaces stale persisted resources" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.008"/>
+  <testcase name="round-trip preserves ControlFlowEdge with BranchComparison" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.004"/>
+  <testcase name="enumValues returns null for missing enum on loaded graph" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.006"/>
+  <testcase name="mapped disjunction builds and clears one combined CallSite string index" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.012"/>
+  <testcase name="BranchScopeData not equal when comparison differs" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.0"/>
+  <testcase name="outgoing and incoming return empty for out-of-bounds NodeId on loaded graph" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.005"/>
+  <testcase name="round-trip preserves enum constructor args with all value types" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.004"/>
+  <testcase name="persisted CallSite index resolves selected four-property tuples with a bounded exact lookup" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.072"/>
+  <testcase name="mapped string index isolates raw and exact lowercase match caches" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.0"/>
+  <testcase name="round-trip preserves typed edge queries" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.004"/>
+  <testcase name="split worker metrics can reset immediately after every completed execution" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.002"/>
+  <testcase name="supertypes and subtypes return empty for unknown type on loaded graph" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.005"/>
+  <testcase name="mapped indexed distinct projection preserves matching non CallSite nodes" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.012"/>
+  <testcase name="split raw scans reuse exact matches from the existing persisted index" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.079"/>
+  <testcase name="dense mapped matches scan ordered prefix waves and corrupt counts fall back" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.141"/>
+  <testcase name="default save does not materialize the optional CallSite index" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.003"/>
+  <testcase name="typeHierarchyTypes on loaded graph" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.008"/>
+  <testcase name="StringTable size returns correct count" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.0"/>
+  <testcase name="mapped string lookup resets predicate admission after LRU eviction" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.008"/>
+  <testcase name="load with MAPPED mode preserves all graph operations" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.01"/>
+  <testcase name="empty graph round-trips" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.003"/>
+  <testcase name="mapped load with parallel IO preserves graph" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.006"/>
+  <testcase name="round-trip preserves incoming edges" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.008"/>
+  <testcase name="round-trip preserves ResourceValueNode" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.006"/>
+  <testcase name="round-trip preserves class origins" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.003"/>
+  <testcase name="round-trip preserves ReturnNode with actualType" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.005"/>
+  <testcase name="BranchScopeData hashCode is consistent" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.0"/>
+  <testcase name="first lazy persisted CallSite restore charges graph identity validation to query work" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.039"/>
+  <testcase name="BranchScopeData not equal when falseBranchNodeIds differ" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.001"/>
+  <testcase name="comparison lookup is skipped for non-control-flow edge labels" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.0"/>
+  <testcase name="round-trip preserves all constant node types" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.003"/>
+  <testcase name="mapped load preparation budget denial preserves CallSite query correctness" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.004"/>
+  <testcase name="node serializer helpers cover value io and direct edge decoders" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.002"/>
+  <testcase name="mapped incoming query persists compressed backward graph lazily" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.01"/>
+  <testcase name="mapped comparison lookup reads persisted comparisons by edge key" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.003"/>
+  <testcase name="mapped raw string scan keeps match states query local and accounts budgeted work" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.006"/>
+  <testcase name="round-trip exposes precomputed edge count" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.006"/>
+  <testcase name="best effort CallSite index persistence failure leaves the prepared query path usable" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.003"/>
+  <testcase name="readHeader via RandomAccessFile round-trip" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.0"/>
+  <testcase name="persistent index read wraps a rejected final accounting batch" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.001"/>
+  <testcase name="trigram budget exhaustion falls back to dictionary scan" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.0"/>
+  <testcase name="persisted raw disjunction scans properties through the shared segment pool" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.005"/>
+  <testcase name="interrupted request cache release does not persist a query-built CallSite index" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.031"/>
+  <testcase name="ensureNodeIndex is idempotent" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.006"/>
+  <testcase name="mapped broad disjunction preserves stored order while deduplicating property streams" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.007"/>
+  <testcase name="BranchScopeData not equal when conditionNodeId differs" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.0"/>
+  <testcase name="large trigram posting sort preserves every key in ascending order" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.126"/>
+  <testcase name="invalid magic in metadata file throws on load" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.004"/>
+  <testcase name="round-trip preserves branch scopes" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.004"/>
+  <testcase name="round-trip preserves list enum constructor arg" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.006"/>
+  <testcase name="round-trip preserves null annotation attribute value" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.003"/>
+  <testcase name="zero hit query reuses a bounded index and repairs legacy sidecars on graph close" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.72"/>
+  <testcase name="trigram posting sort accounts temporary memory and declines when the index budget is full" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.079"/>
+  <testcase name="load from nonexistent directory throws" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.0"/>
+  <testcase name="projection cache rejects decoded string payload beyond its retained byte cap" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.041"/>
+  <testcase name="BranchScopeData not equal when trueBranchNodeIds differ" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.0"/>
+  <testcase name="mapped CallSite index reuses verified trigram matches within its memory reservation" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.027"/>
+  <testcase name="bounded mapped CallSite scan uses ordered intra graph workers before index admission" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.987"/>
+  <testcase name="mapped graph out-of-bounds NodeId returns empty" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.006"/>
+  <testcase name="memberAnnotations returns empty for unknown member on loaded graph" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.008"/>
+  <testcase name="mapped graph resources preserves persisted text resources" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.004"/>
+  <testcase name="mapped graph nodes with supertype returns all subtypes" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.003"/>
+  <testcase name="default lazy CallSite query persists a complete index for the next mapped process" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.004"/>
+  <testcase name="node offset indexes preserve missing sentinel grow and wide offsets" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.0"/>
+  <testcase name="save with custom compression threads" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.006"/>
+  <testcase name="mapped limited lookup flushes work before the lazy sequence is abandoned" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.01"/>
+  <testcase name="save writes label prefix and mapped load falls back when missing" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.006"/>
+  <testcase name="mapped string lookup admits an index only after a long raw scan" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.005"/>
+  <testcase name="large trigram posting sort stays on bounded workers and stops when request is interrupted" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.006"/>
+  <testcase name="combined CallSite index estimates CSR retention and rejects budget overflow" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.0"/>
+  <testcase name="legacy v1 annotation node decodes as string values" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.0"/>
+  <testcase name="clearing mapped string indexes resets unbounded admission" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.009"/>
+  <testcase name="round-trip preserves CallEdge with isVirtual and isDynamic flags" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.004"/>
+  <testcase name="loadMapped from nonexistent directory throws" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.0"/>
+  <testcase name="mapped string index retains two argument JVM lookup method" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.001"/>
+  <testcase name="round-trip preserves methods" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.003"/>
+  <testcase name="mapped load rebuilds mmap indexes from legacy node index" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.008"/>
+  <testcase name="no backward files written on save" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.006"/>
+  <testcase name="decodeEdge throws on unknown edge family" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.0"/>
+  <testcase name="long missing contains skips the combined index while prefix builds it" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.01"/>
+  <testcase name="split candidate executor enforces one shared background budget across graph callers" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.001"/>
+  <testcase name="preferred persisted lookup builds once in parallel then reuses the retained index" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.019"/>
+  <testcase name="interrupted lazy persisted CallSite restore escapes without publishing the sidecar" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.027"/>
+  <testcase name="round-trip preserves enum values" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.004"/>
+  <testcase name="projection cache evicts its least recently used entry at the entry cap" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.005"/>
+  <testcase name="byte buffer data input reads primitives and counting output stream flush delegate correctly" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.001"/>
+  <testcase name="round-trip preserves typed annotation values" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.003"/>
+  <testcase name="raw string match states evict least recently used entries within graph memory bound" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.001"/>
+  <testcase name="class overview builders keep only top class edges" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.0"/>
+  <testcase name="node tag helpers expose stable defensive mappings" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.0"/>
+  <testcase name="mapped posting merge falls back before limit when a checksum-valid range is out of order" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.005"/>
+  <testcase name="loaded graphs expose persisted class overview" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.003"/>
+  <testcase name="cold distinct CallSite projection builds the combined index and rejects an invalid type" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.004"/>
+  <testcase name="readHeader with invalid magic via DataInputStream throws" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.0"/>
+  <testcase name="warm mapped zero hit aggregate charges inspected strings to the query budget" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.01"/>
+  <testcase name="BranchScopeData equals identity" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.0"/>
+  <testcase name="split candidate failure joins an interrupted background worker before returning" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.0"/>
+  <testcase name="save collects metadata from graph fallback scans" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.005"/>
+  <testcase name="round-trip preserves member annotations" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.003"/>
+  <testcase name="decodeEdge supports legacy v2 labels" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.0"/>
+  <testcase name="mapped load restores persisted CallSite index lazily and can opt in to eager preparation" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.006"/>
+  <testcase name="mapped graph exposes method count and limited method slices" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.006"/>
+  <testcase name="cold mapped aggregate charges inspected call sites to the query budget" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.004"/>
+  <testcase name="loaded graph resources preserves persisted text resources" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.003"/>
+  <testcase name="round-trip preserves TypeEdge" classname="io.johnsonlee.graphite.webgraph.GraphStoreTest" time="0.008"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

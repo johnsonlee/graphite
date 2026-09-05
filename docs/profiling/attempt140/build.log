@@ -1,0 +1,78 @@
+Picked up JAVA_TOOL_OPTIONS: -XX:ActiveProcessorCount=4
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.13/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+
+> Configure project :
+[root project 'graphite'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+
+> Configure project :core
+[project ':core'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+
+> Configure project :cypher
+[project ':cypher'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+
+> Configure project :sootup
+[project ':sootup'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+
+> Configure project :webgraph
+[project ':webgraph'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+
+> Task :core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :core:compileKotlin FROM-CACHE
+> Task :core:compileJava NO-SOURCE
+> Task :core:processResources NO-SOURCE
+> Task :core:classes UP-TO-DATE
+> Task :core:jar
+> Task :webgraph:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :webgraph:processResources NO-SOURCE
+> Task :cypher:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :cypher:generateGrammarSource FROM-CACHE
+> Task :cypher:compileKotlin FROM-CACHE
+> Task :cypher:compileJava FROM-CACHE
+> Task :cypher:processResources NO-SOURCE
+> Task :cypher:classes UP-TO-DATE
+> Task :cypher:jar
+> Task :sootup:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :sootup:compileKotlin FROM-CACHE
+> Task :sootup:compileJava NO-SOURCE
+> Task :sootup:processResources NO-SOURCE
+> Task :sootup:classes UP-TO-DATE
+> Task :sootup:jar
+> Task :webgraph:processJmhResources NO-SOURCE
+> Task :webgraph:koverFindJar FROM-CACHE
+> Task :webgraph:processTestResources NO-SOURCE
+> Task :webgraph:detekt
+> Task :webgraph:compileKotlin
+> Task :webgraph:compileJava NO-SOURCE
+> Task :webgraph:classes UP-TO-DATE
+> Task :webgraph:jar
+> Task :webgraph:compileJmhKotlin
+> Task :webgraph:compileJmhJava NO-SOURCE
+> Task :webgraph:jmhClasses UP-TO-DATE
+
+> Task :webgraph:jmhRunBytecodeGenerator
+Picked up JAVA_TOOL_OPTIONS: -XX:ActiveProcessorCount=4
+Processing 0 classes from /private/tmp/graphite-attempt140._5jztd0a/repo/graphite-webgraph/build/classes/java/jmh with "reflection" generator
+Writing out Java source to /private/tmp/graphite-attempt140._5jztd0a/repo/graphite-webgraph/build/jmh-generated-sources and resources to /private/tmp/graphite-attempt140._5jztd0a/repo/graphite-webgraph/build/jmh-generated-resources
+Picked up JAVA_TOOL_OPTIONS: -XX:ActiveProcessorCount=4
+Processing 115 classes from /private/tmp/graphite-attempt140._5jztd0a/repo/graphite-webgraph/build/classes/kotlin/jmh with "reflection" generator
+Writing out Java source to /private/tmp/graphite-attempt140._5jztd0a/repo/graphite-webgraph/build/jmh-generated-sources and resources to /private/tmp/graphite-attempt140._5jztd0a/repo/graphite-webgraph/build/jmh-generated-resources
+
+> Task :webgraph:compileTestKotlin
+> Task :webgraph:jmhCompileGeneratedClasses
+> Task :webgraph:jmhJar
+> Task :webgraph:compileTestJava NO-SOURCE
+> Task :webgraph:testClasses UP-TO-DATE
+
+> Task :webgraph:test
+Picked up JAVA_TOOL_OPTIONS: -XX:ActiveProcessorCount=4
+Picked up JAVA_TOOL_OPTIONS: -XX:ActiveProcessorCount=4
+Picked up JAVA_TOOL_OPTIONS: -XX:ActiveProcessorCount=4
+Picked up JAVA_TOOL_OPTIONS: -XX:ActiveProcessorCount=4
+Picked up JAVA_TOOL_OPTIONS: -XX:ActiveProcessorCount=4
+Picked up JAVA_TOOL_OPTIONS: -XX:ActiveProcessorCount=4
+
+> Task :webgraph:verifyJmhJarExcludesTests
+
+BUILD SUCCESSFUL in 2m 7s
+19 actionable tasks: 13 executed, 6 from cache

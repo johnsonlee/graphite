@@ -1,0 +1,10 @@
+{
+  "source": "/private/tmp/graphite-attempt137.dcywsuq7/ci/terminal-receipt.json",
+  "destination": "docs/profiling/attempt137/ci/terminal-receipt.json",
+  "sourceSha256": "aa0dfdab11ef2350f77b0896af4a6ce120b730d62271baa008ef3d28b15249f4",
+  "archivedSha256": "aa0dfdab11ef2350f77b0896af4a6ce120b730d62271baa008ef3d28b15249f4",
+  "sourceBytes": 1259,
+  "archivedBytes": 1259,
+  "trailingNewlineOnlyNormalization": false,
+  "parsedJsonUnchanged": true
+}

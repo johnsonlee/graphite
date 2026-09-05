@@ -1682,9 +1682,15 @@ export function compareGlobalWidePressure(
     correctnessOracle,
     minimumSpeedup = 10,
     runOrders = [],
-    graphManifestContents = ""
+    graphManifestContents = "",
+    { regressionOnly = false } = {}
 ) {
     const errors = [];
+    const targetErrors = [];
+    if (typeof regressionOnly !== "boolean") errors.push("regressionOnly must be a boolean");
+    if (!Number.isFinite(minimumSpeedup) || minimumSpeedup <= 0) {
+        errors.push("minimumSpeedup must be a positive finite number");
+    }
     const manifest = parseGlobalWideGraphManifest(graphManifestContents, errors);
     const expectedBenchmark =
         "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries";
@@ -1985,13 +1991,25 @@ export function compareGlobalWidePressure(
         const basePeakResidentSetBytes = pressureMetric(baseResult, "peakResidentSetBytes") ?? 0;
         const peakResidentSetBytes = pressureMetric(result, "peakResidentSetBytes") ?? 0;
         if (p95Speedup < minimumSpeedup) {
-            errors.push(`pair-${index + 1}: P95 speedup ${p95Speedup.toFixed(2)}x; ` +
+            targetErrors.push(`pair-${index + 1}: P95 speedup ${p95Speedup.toFixed(2)}x; ` +
                 `required ${minimumSpeedup.toFixed(2)}x in every independent fork`);
         }
         for (const wrapped of wrappedShapeRuns) {
             if (wrapped.speedup < minimumSpeedup) {
-                errors.push(`pair-${index + 1}: ${wrapped.shape} P95 speedup ` +
+                targetErrors.push(`pair-${index + 1}: ${wrapped.shape} P95 speedup ` +
                     `${wrapped.speedup.toFixed(2)}x; required ${minimumSpeedup.toFixed(2)}x`);
+            }
+        }
+        for (const [label, reference, measured] of [
+            ["aggregate P95", baseP95, p95],
+            ...wrappedShapeRuns.map((wrapped) =>
+                [`${wrapped.shape} P95`, wrapped.baseLatencyNanos, wrapped.latencyNanos])
+        ]) {
+            if (measured > reference * 1.15 && measured - reference > 1_000_000) {
+                const samples = alignedLatencyRegressions.get(label) ?? [];
+                samples.push(`pair-${index + 1}/${label}: latency ${measured} exceeds base ` +
+                    `${reference} by >15% and >1 ms`);
+                alignedLatencyRegressions.set(label, samples);
             }
         }
         const baseRows = new Map((baseRowsByRun[index] ?? []).map((row) => [row.id, row]));
@@ -2063,9 +2081,15 @@ export function compareGlobalWidePressure(
         // Order medians remain diagnostic; every independent pair is gated above.
         return { order, runCount: orderedRuns.length, medianP50Speedup, medianP95Speedup };
     });
+    const regressionPassed = errors.length === 0;
+    const targetAchieved = regressionPassed && targetErrors.length === 0;
     return {
-        passed: errors.length === 0,
-        errors,
+        passed: regressionPassed && (regressionOnly || targetAchieved),
+        errors: regressionOnly ? errors : [...errors, ...targetErrors],
+        regressionPassed,
+        targetAchieved,
+        targetErrors,
+        regressionOnly,
         minimumSpeedup,
         runs,
         orderSummaries
@@ -2090,7 +2114,14 @@ export function renderGlobalWidePressureReport(comparison) {
     return [
         "### 64 fixture-derived global wide-query pressure gate",
         "",
-        `Required P95 speedup in every independent paired fork: **${comparison.minimumSpeedup.toFixed(1)}x**`,
+        `Evaluation: **${comparison.regressionOnly ? "non-regression" : "strict target"}**`,
+        `P95 target in every independent paired fork: **${comparison.minimumSpeedup.toFixed(1)}x**`,
+        `Regression checks: **${comparison.regressionPassed ? "PASS" : "FAIL"}**; ` +
+            `target achieved: **${comparison.targetAchieved ? "YES" : "NO"}**`,
+        ...(comparison.regressionOnly && !comparison.targetAchieved ? [
+            "Target remains unmet; a passing regression evaluation does not establish the speedup target.",
+            ...comparison.targetErrors
+        ] : []),
         "",
         `- Worst paired base P50 / P95: **${ms(worst.baseP50LatencyNanos)} / ` +
             `${ms(worst.baseP95LatencyNanos)}**`,
@@ -3034,7 +3065,8 @@ function compareGlobalWidePressureCommand(args) {
         fs.readFileSync(requireArg(args, "correctness-oracle"), "utf8"),
         Number(args["minimum-speedup"] ?? 10),
         requireArg(args, "run-orders").split(",").map((order) => order.trim()).filter(Boolean),
-        fs.readFileSync(requireArg(args, "graph-manifest"), "utf8")
+        fs.readFileSync(requireArg(args, "graph-manifest"), "utf8"),
+        { regressionOnly: args["regression-only"] === true }
     );
     writeFile(requireArg(args, "report"), renderGlobalWidePressureReport(comparison));
     writeJson(requireArg(args, "status"), comparison);

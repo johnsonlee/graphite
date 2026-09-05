@@ -1,0 +1,44 @@
+{
+  "output": "/private/tmp/graphite-attempt139._p0bc7zf/revert-ci/ci-audit.json",
+  "integrityFiles": 51,
+  "globalWorkDifferences": [
+    0,
+    0,
+    0
+  ],
+  "repeatedAligned": [
+    {
+      "id": "global-wide-callee-class-zero",
+      "pairs": [
+        {
+          "pair": 2,
+          "baseNanos": 4235666,
+          "candidateNanos": 6008926
+        },
+        {
+          "pair": 3,
+          "baseNanos": 3465365,
+          "candidateNanos": 5646283
+        }
+      ]
+    }
+  ],
+  "workflowRuns": {
+    "33992947613": {
+      "conclusion": "success",
+      "snapshotSha256": "acd8a563c8fe949598e5e9c8551115788459ffc527c0af6c136733c2dc0524c3",
+      "failedJobs": []
+    },
+    "33992947567": {
+      "conclusion": "failure",
+      "snapshotSha256": "637c268f545266e10724ec54135de15e32736890f5444cafa8e8fb4b9f5bd86c",
+      "failedJobs": [
+        "method-compatibility-4-string",
+        "method-compatibility-gate",
+        "graph-routing-pressure-evidence",
+        "global-wide-pressure-evidence",
+        "benchmark-regression-gate"
+      ]
+    }
+  }
+}

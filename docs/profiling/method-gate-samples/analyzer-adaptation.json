@@ -1,0 +1,13 @@
+{
+  "source": "/private/tmp/graphite-main-profiling-n50joikp/ProfileWindows.java",
+  "sourceSha256": "e69970ae896839fee24bfbceaec18209750cc938ee6cc4255b4be39a50e9a650",
+  "adaptedSha256": "22942434e9823f59cc76094d2b0820246c2e75ff3e5da156db9ff98b9fd8c8fc",
+  "changes": [
+    "Trace exact MethodDiscoveryCompatibilityBenchmark.methodScenarioGate(MethodBenchmarkCompatibilityCounters):long; Kotlin source uses a typealias",
+    "Require a JMH worker thread and exactly one operation by default",
+    "Rename rowCount to operationCount; this is a whole scenario, not one query"
+  ],
+  "compiled": false,
+  "profiled": false,
+  "productionChanges": false
+}

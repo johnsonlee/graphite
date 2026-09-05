@@ -1,0 +1,37 @@
+{
+  "head": "536f585aab37da0888dd021cf9355d73dad1c545",
+  "benchmarkRun": 33988242513,
+  "benchmarkTerminalConclusion": "cancelled",
+  "unitRun": 33988242502,
+  "unitTerminalConclusion": "success",
+  "rejectionStillConfirmed": true,
+  "rejectionAuditSha256": "37499c2a510a751b01b49d895405a33fc73ba8b14481862f8eaf80c8d9c7f149",
+  "failedJobs": [
+    {
+      "name": "method-compatibility-4-aggregate",
+      "id": 101366512911,
+      "conclusion": "failure"
+    },
+    {
+      "name": "method-compatibility-4-position",
+      "id": 101366512952,
+      "conclusion": "failure"
+    },
+    {
+      "name": "method-compatibility-gate",
+      "id": 101366790244,
+      "conclusion": "failure"
+    },
+    {
+      "name": "benchmark-regression-gate",
+      "id": 101367342276,
+      "conclusion": "failure"
+    }
+  ],
+  "cancelledJobs": [
+    "large-corpus-benchmarks",
+    "graph-routing-pressure-evidence",
+    "global-wide-pressure-evidence"
+  ],
+  "interpretation": "The workflow was actually cancelled after revert; the two already-completed confirmed Method4 CPU failures remain rejection evidence. Cancelled global-wide/routing/large-corpus jobs do not establish numeric pass/fail or target attainment. ci-audit remains the immutable early rejection audit."
+}

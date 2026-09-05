@@ -1,0 +1,27 @@
+{
+  "offlineOnly": true,
+  "newCaptures": 0,
+  "inputs": [
+    {
+      "recording": 1,
+      "newSummaryExactlyEqualsOriginal": true,
+      "jfrSha256": "5f4423b8f8df8f78505e68aa3110fc82994827a8ddd7828c841c5c6beebd4dd1",
+      "tsvSha256": "be402f0bd18cef591830048b9620aa8ebc170b79eebd242fc99ce26b59084a98",
+      "outputSha256": "03095f3d87c3594b0c7a20ba16c9164fcef6378d9ad0b6161a9636001b4f1d80"
+    },
+    {
+      "recording": 2,
+      "newSummaryExactlyEqualsOriginal": true,
+      "jfrSha256": "4a89b7d9371f774451f582cc46d18718adf35eb518f6d6833db1c6e43dae2875",
+      "tsvSha256": "5122874edcc8f5c96829e29a609113be46b5829ea8a679304fb5d6a68103e24e",
+      "outputSha256": "520c3758b7bcd9bf3844f5b2cd25460683739e6f77630e90c324a18032ebd8cb"
+    },
+    {
+      "recording": 3,
+      "newSummaryExactlyEqualsOriginal": true,
+      "jfrSha256": "e88f85126ed1a6569480d8c528b0e7d03aa0ff928e106e722c2050f3ec5623f1",
+      "tsvSha256": "700d1380982056d2931d7f0a68639f614598b957d55a71bb1851332b849ba545",
+      "outputSha256": "26749ede58297ca9a7812d7491528f52aaa5f7e83b68c482f7abd8da642101c0"
+    }
+  ]
+}

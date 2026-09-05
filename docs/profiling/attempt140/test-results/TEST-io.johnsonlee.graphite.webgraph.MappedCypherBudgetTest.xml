@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="io.johnsonlee.graphite.webgraph.MappedCypherBudgetTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-09-05T22:02:25.809Z" hostname="johnsonlee.local" time="0.783">
+  <properties/>
+  <testcase name="mapped first string index build charges every inspected node" classname="io.johnsonlee.graphite.webgraph.MappedCypherBudgetTest" time="0.74"/>
+  <testcase name="mapped raw string miss charges every inspected node" classname="io.johnsonlee.graphite.webgraph.MappedCypherBudgetTest" time="0.019"/>
+  <testcase name="mapped existing string index charges internal candidate scans" classname="io.johnsonlee.graphite.webgraph.MappedCypherBudgetTest" time="0.023"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

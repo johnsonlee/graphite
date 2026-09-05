@@ -1,0 +1,219 @@
+{
+  "schema_version": 1,
+  "kind": "read_only_source_work_audit",
+  "head": "e6c932c5e1d0fb7b583ceb9e14c8ef88ec9d9694",
+  "baseline": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "workspace": "/Users/johnsonlee/.codex/worktrees/ac7b5da2-2450-48c5-894c-5fd84ab6cb7d/graphite",
+  "source_verification": [
+    {
+      "path": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt",
+      "sha256": "9133289c4382b59f4bc880f9de3d8aee0930d449a32f9a487893dabb56255cb7",
+      "byte_identical_to_frozen_main": true
+    },
+    {
+      "path": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexView.kt",
+      "sha256": "6abdd90ff1f4676dbfeae568e13e3f4419c45fc62d63ab1b9ec981ea1282a7a5",
+      "byte_identical_to_frozen_main": true
+    },
+    {
+      "path": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndex.kt",
+      "sha256": "c1c4f07d818a4a25f712ad25094b30723fa25fa7531f424b2391bba792938a77",
+      "byte_identical_to_frozen_main": true
+    },
+    {
+      "path": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/NodeTypeIndex.kt",
+      "sha256": "476ffd5884114dc18beb37e03cf1da9e2a5fcb64092a244564d09b688a46ab2e",
+      "byte_identical_to_frozen_main": true
+    },
+    {
+      "path": "graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/QueryPipeline.kt",
+      "sha256": "9522dff099e2843f32115ae52f01adfb29c14d147dd3b9919daf907181c4f4ae",
+      "byte_identical_to_frozen_main": true
+    },
+    {
+      "path": "graphite-core/src/main/kotlin/io/johnsonlee/graphite/graph/Graph.kt",
+      "sha256": "9f82ae8246869468415967f95c0107670c662e79f4baa3276b4ed389aa8638b2",
+      "byte_identical_to_frozen_main": true
+    }
+  ],
+  "instructions": {
+    "AGENTS": "User-provided AGENTS instructions applied; no AGENTS.md file in cwd",
+    "CONVENTIONS": "Read workspace CONVENTIONS.md; real persisted graphs required for performance"
+  },
+  "no_candidate_or_java_or_measurement_started": true,
+  "apis": [
+    {
+      "api": "MappedCallSiteStringIndexView.exactMatchingStringIds",
+      "ref": {
+        "path": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexView.kt",
+        "line": 69
+      },
+      "availability": "internal class method; returns nullable list of per-predicate exact string IDs, matcher-key cache local to call",
+      "constraints": "CONTAINS, length >= 3; LOWERCASE or raw ASCII expected; verifies actual string match after trigram candidate discovery. Property-independent IDs must still be joined to corresponding property postings."
+    },
+    {
+      "api": "MappedCallSiteStringIndexView.containsPropertyStringId",
+      "ref": {
+        "path": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexView.kt",
+        "line": 60
+      },
+      "availability": "CallSiteStringIdMembership interface; binary-search directory",
+      "constraints": "Necessary property membership, not same-node tuple evidence."
+    },
+    {
+      "api": "MappedCallSiteStringIndexView.exactMatchesCanFillLimit",
+      "ref": {
+        "path": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexView.kt",
+        "line": 85
+      },
+      "availability": "method sums posting counts until bound",
+      "constraints": "Overlaps/duplicate terms can overcount nodes and tuples. Cannot establish DISTINCT cardinality or use as exact sparsity measure."
+    },
+    {
+      "api": "MappedCallSiteStringIndexView.matchingNodeIds",
+      "ref": {
+        "path": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexView.kt",
+        "line": 111
+      },
+      "availability": "method returns Sequence<Int>?; eager selected-range validation before returning lazy ordered merge",
+      "constraints": "All selected ranges checked before caller take(LIMIT); physical order, deduplicate node IDs; null enables fallback."
+    },
+    {
+      "api": "MappedCallSiteStringIndexView.postingRange / validatedPostingCursor",
+      "ref": {
+        "path": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexView.kt",
+        "line": 160
+      },
+      "availability": "both private; direct shortest-tuple-posting interface is absent on current mapped view",
+      "constraints": "Full physical-order walk uncached; bounded 1024-entry/16 KiB cache stores valid/invalid decisions, not full rank table. Cold transient LongArray stores selected range orders."
+    },
+    {
+      "api": "MappedCallSiteStringIndex.distinctProjection",
+      "ref": {
+        "path": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndex.kt",
+        "line": 765
+      },
+      "availability": "retained heap-index method",
+      "constraints": "Initial matchingRanges + mergedNodeIds; selected values tries tuple lookup then broad bitset fallback. Not mapped-view capability."
+    },
+    {
+      "api": "MappedCallSiteStringIndex.selectedProjectionHitsByTuple",
+      "ref": {
+        "path": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndex.kt",
+        "line": 798
+      },
+      "availability": "private heap-index selected tuple path; may create ExactCallSiteProjectionTupleIndex",
+      "constraints": "First resolves tuple IDs, shortest PropertyCsr posting, checks entire projected tuple plus predicate. Existing full tuple index creation is whole-graph work, not free."
+    },
+    {
+      "api": "PropertyCsr.postingRange / postingNodeId; PostingRanges.mergedNodeIds / matchedNodeBitSet",
+      "ref": {
+        "path": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndex.kt",
+        "line": 1170
+      },
+      "availability": "nested heap index methods, backed by retained arrays; matchingRanges private at line 255",
+      "constraints": "Not reusable mapped buffers; ordering heap merge vs node-ID bitset traversal are distinct. Full persisted heap load already checks each posting order at line 1563."
+    },
+    {
+      "api": "StringPropertyLookupOrder.stringPropertyNodeOrder / nodeOrder callback",
+      "ref": {
+        "path": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt",
+        "line": 269
+      },
+      "availability": "order is nodeOffsets.offset(nodeId), supplied to mapped view at line 1682",
+      "constraints": "Physical byte offset; not numeric node ID or a retained ordinal/rank array. No mapped rank/select or mapped selected-tuple seek API present."
+    },
+    {
+      "api": "NodeTypeIndex.ids / idIterator / forEachIdWhile",
+      "ref": {
+        "path": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/NodeTypeIndex.kt",
+        "line": 29
+      },
+      "availability": "full type enumeration / ordinal segment iteration",
+      "constraints": "Scans physical type stream; cannot directly jump to predicate matches."
+    },
+    {
+      "api": "withRawCallSiteStringIds / rawCallSiteStringPropertyId",
+      "ref": {
+        "path": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt",
+        "line": 2448
+      },
+      "availability": "private graph helpers; reads raw mapped node fields by node-offset lookup",
+      "constraints": "Four-ID projection avoids Node materialization, but reads remain work; null, repeated, reordered and graphId columns need mapping."
+    }
+  ],
+  "targeted": {
+    "reference_call_sites": 5046935,
+    "matched_nodes": 12,
+    "distinct_tuples": 12,
+    "hit_graphs": [
+      {
+        "id": "fixture-kotlin-compiler-11",
+        "hits": 11
+      },
+      {
+        "id": "fixture-kotlin-compiler-15",
+        "hits": 1
+      }
+    ],
+    "call_sites_in_hit_graphs": 104566,
+    "recorded_work_units": 106706,
+    "recorded_raw_parallel_scans": 2,
+    "initial_calls": 64,
+    "provenance_calls": 0,
+    "evidence": "docs/profiling/distinct-phase-boundaries/README.md and targeted-reference-census.json; values reused as existing evidence, not newly measured",
+    "cause_refs": [
+      {
+        "path": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt",
+        "line": 397
+      },
+      {
+        "path": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt",
+        "line": 407
+      },
+      {
+        "path": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt",
+        "line": 568
+      },
+      {
+        "path": "graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/QueryPipeline.kt",
+        "line": 2266
+      }
+    ]
+  },
+  "dense": {
+    "initial_calls": 1,
+    "provenance_calls": 63,
+    "selected_tuples": 200,
+    "mechanism": "Each remaining eligible source is queried once with the selected tuple set. It is not 200 independent Cypher queries. The storage raw path resolves IDs/membership after eager predicate discovery, rejects impossible tuple sets, otherwise scans predicate matches until all requested local tuples found or source exhausted.",
+    "source_refs": [
+      {
+        "path": "graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/QueryPipeline.kt",
+        "line": 2243
+      },
+      {
+        "path": "graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/QueryPipeline.kt",
+        "line": 2285
+      },
+      {
+        "path": "graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/QueryPipeline.kt",
+        "line": 2307
+      },
+      {
+        "path": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt",
+        "line": 508
+      }
+    ]
+  },
+  "history": {
+    "attempt133": "Mapped shortest selected tuple posting lookup, selected-only. Rejected by exact-head Method17 zero CPU twice. No initial selection change; targeted became P95 in all three local pairs.",
+    "attempt135": "Deferred predicate discovery until selected-tuple feasibility; rejected by repeated targeted latency regression. No mapped posting projection.",
+    "attempt123_124_125_128": "Keep complete sidecar validation separate from selected posting physical order validation; selected full-range before LIMIT mandatory (124); do not add eager all-node rank/order walk (125 rejected); bounded cache retained (128)."
+  },
+  "performance_claim": null,
+  "next_profiling_questions": [
+    "Quantify candidate postings, distinct IDs and selected-range cache state by query/source; current 12-node census is not posting work.",
+    "Separate eager predicate discovery and actual raw projection from selected tuple string ID/membership setup, projection/tuple equality, and full posting order validation.",
+    "Any future mapped initial-DISTINCT path must cover pure four-term OR as well as old single-keyword/four-property OR and retain all source provenance; this audit chooses no implementation."
+  ]
+}

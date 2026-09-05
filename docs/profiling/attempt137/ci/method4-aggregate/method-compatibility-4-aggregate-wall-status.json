@@ -1,0 +1,29 @@
+{
+  "passed": true,
+  "errors": [],
+  "thresholdOnly": true,
+  "rows": [
+    {
+      "key": "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate[graphCount=4,scenario=count]",
+      "baseScore": 381.044149,
+      "candidateScore": 398.351772,
+      "unit": "ms/op",
+      "delta": 4.542156872221126,
+      "threshold": 15,
+      "aboveThreshold": false,
+      "confidenceSeparated": true,
+      "blocked": false
+    },
+    {
+      "key": "io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate[graphCount=4,scenario=order]",
+      "baseScore": 487.375677,
+      "candidateScore": 437.218844,
+      "unit": "ms/op",
+      "delta": -10.29120560729172,
+      "threshold": 15,
+      "aboveThreshold": false,
+      "confidenceSeparated": true,
+      "blocked": false
+    }
+  ]
+}

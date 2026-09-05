@@ -1,0 +1,28 @@
+{
+  "attempt": 140,
+  "candidateParent": "aede4c82f66a925ba9df3fc8588c6e1399c17f61",
+  "baseRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "direction": "Use a primitive IntArray for predicate property indexes in the mapped parallel raw DISTINCT callback, eliminating its per-node List.get/Number.intValue access.",
+  "scope": [
+    "Only predicatePropertyIndexes preparation in parallelRawDistinctCallSiteStringProjection changes; existing OR traversal, predicate order, projection, budgets/cancellation and worker lifecycle remain.",
+    "No range/iterator loop rewrite from rejected136, no posting strategy from rejected138, no validator change from rejected139, no pool/cache/format/benchmark/threshold change."
+  ],
+  "evidence": [
+    "Frozen-main targeted node callback leaf samples at BCI283 and291 identify List.get and Number.intValue,8 samples each;18 leaf samples in the property-index-read region.",
+    "These are sampled bytecode locations, not exclusive instruction costs, expected speedup or unprofiled JIT-state proof.",
+    "139 is already rejected and explicitly reverted; its terminal failed revert CI remains a failure and is not waived or rerun. No previous optimization is retained or accepted."
+  ],
+  "validation": [
+    "Independent130main/JMH source comparison versus frozenmain; only intended private method preparation changes.",
+    "Full WebGraph tests, detekt, JMH packaging/test exclusion, actual callback bytecode and Code length verification.",
+    "One real v3 36-query complete values/order/provenance correctness control with input hashes.",
+    "Three unchanged original34 alternating pairs C/B,B/C,C/B: all14fieldoracle signatures, unchanged regression bounds and strict full global P95 improvement in every pair.",
+    "Only old34pass permits three additional v3 alternating pairs: repeated same-query >15% and >1ms regressions reject, with full output correctness.",
+    "Local pass only permits exact-head full CI for acceptance. Any local failure is recorded in one attempt commit then explicit source revert, without candidate CI.",
+    "No build,profiling,export or other localJava task alongside timed acceptance measurements. No retry-to-green."
+  ],
+  "fixtureManifest": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/graphs.tsv",
+  "fixtureManifestSha256": "fe66cc84f6d8ee95c49b49ad500f921b304f0160c2ae094621683bb4db94ea6b",
+  "accepted": false,
+  "finalObjective": "Remove all CallSite-related pools and reach10x frozen-main full global query P95 without functionality or performance regressions; incremental progress does not fulfill the final goal."
+}
