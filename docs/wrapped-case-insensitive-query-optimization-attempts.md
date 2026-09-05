@@ -6378,3 +6378,65 @@ materialization without changing the separate pure-string wrapped path or any gr
 **Conclusion:** submit only graphId-injected one-time materialization to hosted CI. Its retention
 depends on the next exact-head provenance-dense rows; no other gate is claimed fixed. PR #114
 remains not ready to merge and no merge is authorized.
+
+**Hosted result and scope correction:** Exact candidate
+`aed459d73e0df72e4165c4aaf5960404213824d7` completed workflow `33957736955`, global-wide job
+`101285199688`. The provenance-dense row clears all three pairs against both references:
+
+| Reference | Base latency, pairs 1/2/3 | Candidate latency, pairs 1/2/3 |
+| --- | --- | --- |
+| v2.4.7 | 2.582 / 2.264 / 2.288 ms | 1.309 / 2.537 / 1.473 ms |
+| current main | 2.176 / 2.705 / 2.047 ms | 1.370 / 1.678 / 1.704 ms |
+
+Candidate provenance work remains 200 units and results remain 200 rows. Retain the graphId
+one-time materialization on this hosted evidence, subject to the correctness repair below.
+This is not a full-gate pass. Frozen-goal aggregate P95 speedups are 12.317x / 14.187x / 12.750x,
+but wrapped-dense still fails all three pairs: candidate 4.818 / 4.304 / 4.459 ms versus
+base 2.451 / 2.186 / 3.021 ms. The current-main gate also reports repeated targeted/zero rows and
+localized-early regressions. Per-query failures remain blocking regardless of aggregate speedup.
+Global report/status SHA-256 is
+`9ebf927f1c7c942b86c0bc809675c4d3a97f863e5c809f346566b34530933e81` /
+`ca2569b2ca20913e0030d1864d4a0f45b19c5340a10748c001112af4f4238f84`.
+
+Graph-routing passes this run, including cold K64 P95 3.185 -> 3.178 ms. Method compatibility
+still fails after reverse-order confirmation: 17/late RSS +15.8%, 4/contains CPU +15.2%, and
+17/early CPU +32.7%. In the 17/late confirmation, 370,089,984 of the final 400,465,920 bytes
+of candidate-minus-base RSS difference already exists before the query. This supports CI
+setup-memory attribution, not an unverified Method production rewrite or a noise exemption.
+
+The earlier statement that the pure-string path is unchanged was inaccurate. The new overload
+also receives pure-string raw projections, and the generalized shared builder adds column
+dispatch to cached mapped/scoped result construction. Cache policy and capacity are unchanged,
+but the builder is not. A future wrapped-dense experiment must isolate this boundary rather than
+claiming that its effect was already tested independently. Full `:cypher:test` and `:cypher:detekt`
+did pass before the Attempt 166 push. Those checks establish correctness coverage only.
+
+### 2026-09-05 - Attempt 167: Preserve internal-alias cleanup for direct rows
+
+**Hypothesis:** The one-time public-row representation must preserve the generic materializer's
+reserved-key filtering. A backtick alias containing the literal internal provenance key is accepted
+by the parser. When the raw-leading source fills LIMIT, the new all-direct passthrough exposes that
+key; when results continue into a later source, generic materialization removes it. Restore the
+existing behavior by declining passthrough once per query when its columns contain that key.
+This is a correctness repair to the optimization, not a latency optimization claim.
+
+**Evidence:**
+
+- Base is exact Attempt 166 `aed459d73e0df72e4165c4aaf5960404213824d7`; real hosted fixture,
+  v2.4.7/current references, and the latest CI results are recorded immediately above. No synthetic
+  graph or local timing is used as performance evidence.
+- A deterministic 40-source correctness test reproduces the exposed internal alias at LIMIT 1
+  before the fix. It then checks exact public columns, row maps, graph ids, and provenance at both
+  LIMIT 1 (all direct rows) and LIMIT 2 (mixed direct/scanned rows). This preserves the existing
+  column-list behavior while keeping the internal key out of public row maps.
+- The fix adds a query-level reserved-column guard to `materializeDirectProjectionRows`; ordinary
+  direct results retain their representation and cancellation polling. It does not change indexes,
+  caches, graph selection, thread pools, CPU architecture, fixtures, thresholds, or gate policy.
+- The new test fails on the pre-fix production bytes with the unexpected internal-key entry, then
+  the exact changed module passes full `:cypher:test` and `:cypher:detekt` in the normal verification
+  clone. `git diff --check` passes. Performance, process CPU, heap, and RSS for this new candidate
+  remain pending hosted CI; Attempt 166's numbers are not attributed to this revision.
+
+**Conclusion:** retain the verified correctness repair and submit it as a separate commit. The
+next performance hypothesis remains the hosted wrapped-dense failure; do not fold unrelated Method
+or routing edits into this repair. PR #114 remains blocked by benchmark gates and must not be merged.

@@ -584,7 +584,8 @@ private fun materializeDirectProjectionRows(
     raw: CypherResult,
     workTracker: CypherWorkTracker?
 ): CypherResult? {
-    if (raw.rows.any { it !is DirectProjectionCypherRow }) return null
+    // Reserved aliases still need the generic materializer's internal-key filtering.
+    if (INTERNAL_PROVENANCE_KEY in raw.columns || raw.rows.any { it !is DirectProjectionCypherRow }) return null
     raw.rows.forEachIndexed { index, _ ->
         if ((index and CANCELLATION_POLL_MASK) == 0) workTracker?.checkCancelled()
     }

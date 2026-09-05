@@ -418,6 +418,52 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
+    fun `raw leading projection hides internal provenance aliases for full and partial results`() {
+        val returnType = TypeDescriptor("void")
+        val laterHit = CallSiteNode(
+            NodeId(1),
+            MethodDescriptor(TypeDescriptor("LaterCaller"), "call", emptyList(), returnType),
+            MethodDescriptor(TypeDescriptor("Dependency"), "invoke", emptyList(), returnType),
+            1,
+            null,
+            emptyList()
+        )
+        val graphs = List(40) { sourceIndex ->
+            val backing = if (sourceIndex == 1) graph(laterHit) else graph()
+            CypherGraph("graph-$sourceIndex", object : Graph by backing, StringPropertyDisjunctionProjection {
+                override fun projectStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>,
+                    projectedProperties: List<String>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer?
+                ): List<StringPropertyProjectionRow> {
+                    check(sourceIndex == 0)
+                    assertEquals(listOf("caller_class"), projectedProperties)
+                    return listOf(StringPropertyProjectionRow(listOf("LeadingCaller")))
+                }
+            })
+        }
+        for (limit in listOf(1, 2)) {
+            val result = CrossGraphCypherExecutor(graphs).execute(
+                "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'Call' " +
+                    "RETURN n.graphId AS graph, n.caller_class AS `$INTERNAL_PROVENANCE_KEY` LIMIT $limit"
+            )
+
+            assertEquals(listOf("graph", INTERNAL_PROVENANCE_KEY), result.columns)
+            assertEquals(
+                (0 until limit).map { sourceIndex ->
+                    mapOf(
+                        "graph" to "graph-$sourceIndex",
+                        RESULT_METADATA_KEY to mapOf(RESULT_GRAPH_IDS_KEY to listOf("graph-$sourceIndex"))
+                    )
+                },
+                result.rows
+            )
+        }
+    }
+
+    @Test
     fun `raw leading projection declines safely outside its exact query shape`() {
         val returnType = TypeDescriptor("void")
         val hit = CallSiteNode(
