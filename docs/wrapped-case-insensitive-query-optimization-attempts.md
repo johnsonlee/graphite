@@ -6440,3 +6440,36 @@ This is a correctness repair to the optimization, not a latency optimization cla
 **Conclusion:** retain the verified correctness repair and submit it as a separate commit. The
 next performance hypothesis remains the hosted wrapped-dense failure; do not fold unrelated Method
 or routing edits into this repair. PR #114 remains blocked by benchmark gates and must not be merged.
+
+### 2026-09-05 - Attempt 168: Fail closed on unsuccessful child gate statuses
+
+**Hypothesis:** The dual-baseline combiner must independently reject either child whose `passed`
+field is not exactly `true`, even if the driver exits zero and the child's error array is empty.
+Previously `passed: false, errors: []` appended no errors, allowing the combined status to pass.
+Normal nonzero driver failures protect the current CI path, so this is an acceptance-correctness
+repair, not an explanation of existing latency failures or a performance optimization.
+
+**Evidence:**
+
+- Base is Attempt 167 `2adf1e01eaead8c463e2112d106d8f2de3ca9596`. No production source, JVM
+  option, CPU architecture, fixture, benchmark measurement, baseline, or numerical threshold changes.
+  v2.4.7 remains `78ce46b57b2d88ae0f1823432ffefc5c7685bc1b`; current main remains
+  `4e328b0109e13c896b74004823fb049fcb19251a`.
+- The new regression fails before the repair. It checks both children with `false`, absent, and
+  null pass flags, empty or absent error arrays, and zero driver exit codes. Every case must reject
+  with an explicit child-specific diagnostic. Existing valid-pass and detailed-failure cases stay
+  covered by the adjacent test.
+- After requiring a nonempty error array before reusing child diagnostics, all 118 tests from
+  `node --test .github/scripts/benchmark-*.test.mjs` pass. `git diff --check` passes. Recombining
+  Attempt 166's archived real CI goal/current statuses produces a deeply equal failure object;
+  no existing failure is waived by the repair.
+- There is no new latency, CPU, heap, or RSS claim. Those metrics for the identical production tree
+  are being measured by Attempt 167's hosted run `33959031107`. Its unit tests, Method compatibility,
+  routing, resource, capacity, method-level, and end-to-end jobs have passed; the global-wide job
+  `101288640132` is still live at the time of this commit. Do not attribute an unfinished result to
+  this new SHA or interrupt that measurement with a push.
+
+**Conclusion:** retain this fail-closed correction as a separate commit. Keep it local until the
+active exact-head measurement finishes; any next production experiment must follow the returned
+CI failure and remain a separate commit. This repair strengthens acceptance but does not establish
+the 10x/no-regression objective or make PR #114 ready to merge.

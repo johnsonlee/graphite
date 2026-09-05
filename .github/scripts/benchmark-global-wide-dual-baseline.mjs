@@ -190,7 +190,8 @@ export function combineDualBaselineComparisons({
     } else {
         if (goal.minimumSpeedup !== 10) errors.push("v2.4.7 goal must enforce an exact 10x minimum");
         if (goal.passed !== true) {
-            const details = Array.isArray(goal.errors) ? goal.errors : ["status did not pass"];
+            const details = Array.isArray(goal.errors) && goal.errors.length > 0
+                ? goal.errors : ["status did not pass"];
             errors.push(...details.map((error) => `v2.4.7 goal: ${error}`));
         }
     }
@@ -201,7 +202,8 @@ export function combineDualBaselineComparisons({
             errors.push("current-main status does not use the non-regression policy");
         }
         if (current.passed !== true) {
-            const details = Array.isArray(current.errors) ? current.errors : ["status did not pass"];
+            const details = Array.isArray(current.errors) && current.errors.length > 0
+                ? current.errors : ["status did not pass"];
             errors.push(...details.map((error) => `current-main: ${error}`));
         }
     }

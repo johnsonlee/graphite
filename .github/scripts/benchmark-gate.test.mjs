@@ -954,6 +954,30 @@ test("global-wide dual-baseline result requires both exact policies and reports 
     assert.match(wrongAnchor.errors.join("\n"), /goal baseline must remain frozen at v2\.4\.7/);
 });
 
+test("global-wide dual-baseline result rejects unsuccessful child statuses without errors", () => {
+    const input = {
+        goal: { passed: true, errors: [], minimumSpeedup: 10, runs: [{}, {}, {}] },
+        current: applyCurrentMainNonRegressionPolicy(currentMainStructuralComparison()),
+        goalBaseSha: GLOBAL_WIDE_GOAL_BASE_SHA,
+        currentBaseSha: "4e328b0109e13c896b74004823fb049fcb19251a",
+        candidateSha: "802e89714fbc27d549db3814109cd80c75c69b33",
+        goalExitCode: 0,
+        currentExitCode: 0
+    };
+    for (const [child, label] of [["goal", "v2.4.7 goal"], ["current", "current-main"]]) {
+        for (const passed of [false, undefined, null]) {
+            for (const errors of [[], undefined]) {
+                const result = combineDualBaselineComparisons({
+                    ...input,
+                    [child]: { ...input[child], passed, errors }
+                });
+                assert.equal(result.passed, false, `${child}: passed=${passed}, errors=${errors}`);
+                assert.deepEqual(result.errors, [`${label}: status did not pass`]);
+            }
+        }
+    }
+});
+
 test("fixture64 global-wide driver binds pinned JAR provenance and alternates paired forks", () => {
     const driver = fs.readFileSync(new URL("./run-real64-global-wide.sh", import.meta.url), "utf8");
     assert.match(driver, /<fixture-jar-directory>/);
