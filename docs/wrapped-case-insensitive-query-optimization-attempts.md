@@ -5832,3 +5832,123 @@ does not affect the projection-first samples that block this PR and does not jus
 state in the goal path. The final Attempt 158 commit retains only this record; production, test, and
 JMH changes are removed. The next attempt must reduce the serial retained-index first-miss range
 collection or projection cost rather than rely on a later cache hit.
+
+### 2026-09-05 - Attempt 159: Merge broad retained matches by ordered join
+
+**Hypothesis:** Attempt 158 identified the first projection miss, rather than later cache admission,
+as the startup-prepared P95 sample. The retained index currently resolves every already-verified
+trigram candidate with a separate binary search over the property's sorted string ids. For broad
+candidate sets that repeats the same logarithmic traversal hundreds of times. Since trigram
+postings and their intersections preserve ascending string-id order, merge the candidate ids with
+the property's ascending used ids in one linear pass whenever its conservative work bound is no
+worse than binary lookup. Keep binary lookup for narrow sets. This should reduce the first-miss work
+without adding threads, scans, retained state, or a cache-only benefit.
+
+**Evidence:**
+
+- Attempt base is rejected-record commit `b4cfa7aa` on top of Attempt 157. The first measured
+  production/test candidate was `706d78bc110f6c46536b03cb72e43100523bce4a`; the final
+  cancellation refinement polls the existing 1,024-operation interruption cadence inside the new
+  merge loop. The exact fully built and measured checkout is
+  `7029d848a14e5829a4f722225bbf3d5d216dbe7c`; the final evidence-only amendment leaves its
+  production, tests, gates, and harness bytes unchanged. The measured production/test diff
+  SHA-256 is `08cdf86de7c7ad47e74bd780042521fbd1e3f6e037cfb0e085c7a2599fa27558`.
+  The merge branch is selected only when
+  `candidateCount + usedStringCount <= candidateCount * (binaryComparisonBound + 1)`; otherwise the
+  existing per-candidate binary lookup remains unchanged. Both arrays are strictly ordered by
+  existing construction/invariants, so a two-pointer join preserves posting-range encounter order.
+- The focused `GraphStoreTest` constructs 128 sorted persisted values with every second value as a
+  known candidate. It verifies the exact ordered node ids, bounds charged graph work by the sum of
+  both input widths, and proves an interrupted merge still raises `CancellationException`. The
+  focused test passes in the clean build clone.
+- The routing protocol is unchanged from Attempt 157: 64 distinct real persisted graphs, the same
+  correctness oracle, byte-identical current-main/candidate harness at SHA-256
+  `a4844ba66446ebfc117066fc347985d8494cb08bebc3772b586ce56da3fbc65b`, JDK 17.0.18,
+  `-XX:ActiveProcessorCount=4`, `-Xmx8g`, fresh JVMs, and 1,137 graph-routing queries. Every selected
+  base/candidate correctness manifest is byte-identical at SHA-256
+  `35fc69539c3080dbb801cca4ec7f1e7541f3ccd190d8774861f6109f7c58b6dd`; every run has zero failure,
+  timeout, raw CallSite scan, or active CallSite scan worker.
+
+  | State / order | Current main overall P50/P95 | Candidate overall P50/P95 | Main/candidate graph-id P95 | Main/candidate parameter P95 | Result |
+  | :--- | :--- | :--- | :--- | :--- | :--- |
+  | cold, candidate-base | 0.056/13.305 ms | 0.109/1.533 ms | 17.886/2.067 ms | 0.088/0.284 ms | pass |
+  | warm, candidate-base | 0.024/0.076 ms | 0.041/0.358 ms | 0.091/0.292 ms | 0.060/0.273 ms | pass |
+  | startup, base-candidate | 0.058/1.002 ms | 0.058/0.971 ms | 1.158/1.119 ms | 0.082/0.081 ms | pass |
+
+  Startup's candidate graph work falls from Attempt 157's `12,006,216` to `2,470,864` units
+  (`-79.4%`) while process CPU is `3.927 s` versus current main's `4.090 s`; a second candidate run
+  reproduces graph-id P95 at `1.124 ms`. The previous exact-final blocker was `1.392 ms`, so the new
+  first-miss reduction has a causal margin rather than Attempt 158's cache-neutral noise. The
+  startup lifecycle remains 64 retained indexes, 2,043 lookups distributed 30..39, and zero mapped
+  views/cache entries. Cold and warm retain zero heap indexes, use 64 mapped views, exactly 1,920
+  lookups distributed 30..30, and end at exactly 464 mapped-prefix entries / 643,296 bytes.
+- The reversed warm pair confirms a real but sub-jitter absolute tradeoff against v2.4.8's 359 MiB
+  retained heap index: graph-id P95 is `0.091 -> 0.292 ms` and parameter P95 is
+  `0.060 -> 0.273 ms`, while peak RSS is `6.64 -> 5.63 GiB`. Both are within the frozen 0.25 ms
+  absolute regression allowance and the comparator passes; this is recorded explicitly rather than
+  presenting the large relative ratios at sub-millisecond scale as neutral. Against the requested
+  v2.4.7 goal, the global-wide gate remains the controlling no-regression/speedup comparison.
+- Cold/warm/startup report/status SHA-256 is
+  `9c6ad89361efd008834fea411953900caa467bbea6b21b007ded5780d8c7c79b` /
+  `e9f76c7ace7ce4bc753be4ba8cefdec1d26aba501bb387e85a8ee4abd637f36a`,
+  `7728c2b59a0e570dd4923de717f3abcc52d9466522c8483a6cee68ce9bcc61d2` /
+  `1f6203d97444e68a1411c4686341a06a8be2d66edcce666dac628e0566a9c12a`, and
+  `46de060d089966a0326f279370ce1d8a1ccfdb4e58bc81ed7bf3edf1ada4e60c` /
+  `ddf1dfc6b22131bb0a23fcf71eafe753bd6f7955506a56d6666efc2ad7a2f63c`.
+- The exact global-wide protocol was rerun against both frozen v2.4.7
+  `78ce46b57b2d88ae0f1823432ffefc5c7685bc1b` and current main
+  `4e328b0109e13c896b74004823fb049fcb19251a`, with three fresh pairs in
+  candidate-base/base-candidate/candidate-base order. All revisions used the same 64 real persisted
+  graphs (manifest SHA-256
+  `809c8b8ceed25428af65350edfa2c391f449051bf069b12555df245099f26ae2`), byte-identical harness,
+  and 34-record oracle SHA-256
+  `ca62e20e7b043e7a89af44c60dd06d5bd01261bd0eda1630775b68921d449f51`.
+
+  | Pair | v2.4.7 P50/P95 | Current-main P50/P95 | Candidate P50/P95 | Goal P95 speedup | Current P95 speedup |
+  | ---: | :--- | :--- | :--- | ---: | ---: |
+  | 1 | 238.118/397.065 ms | 1.669/51.442 ms | 1.707/20.062 ms | 19.79x | 2.56x |
+  | 2 | 236.333/430.580 ms | 1.754/44.490 ms | 1.718/24.560 ms | 17.53x | 1.81x |
+  | 3 | 239.798/407.036 ms | 1.731/54.241 ms | 1.720/21.259 ms | 19.15x | 2.55x |
+
+  Worst global P95 speedup is `17.53x` and worst wrapped-family P95 speedup is `17.63x`. Candidate
+  max latency is `159.311/174.115/158.483 ms`, below current main's
+  `244.913/243.679/244.930 ms` in every pair. Candidate process CPU is
+  `1.439/1.514/1.442 s`, also below current main's `1.642/1.556/1.566 s`. Both dual-baseline
+  comparators pass every correctness, aligned latency, work, CPU, heap, RSS, allocation, and worker
+  rule; candidate telemetry remains four graph workers, zero segment workers, and zero CallSite
+  scans. Goal report/status SHA-256 is
+  `90fa033df3b6e0fc75423abf49b11071b0aab768a7a2e9d510c3fcea03ae6cd0` /
+  `aaea46224dd3a07d4bb2c4b38a22c97d064c8176cb6b131fcf82ef083ad19e19`; current-main
+  report/status SHA-256 is
+  `3a269b0076c6cbc9eadb229933e3238edcc62938129adf34b1ef7ebab26d3cc7` /
+  `560b8db0a46f754ca4089116593cf9b27666a29ba0da9c279f01549c39d2a5ec`.
+- An earlier manual global-wide sequence omitted the hosted fixture-verifier precondition. Its
+  first candidate cold zero-match request faulted persisted pages at `307.771 ms` versus the
+  following current-main process at `230.641 ms`, so the current-main comparator correctly failed
+  that incomplete protocol. Running the exact verifier used by the workflow before the paired
+  forks produced `159.311 ms` versus current main's `244.913 ms` and the complete protocol above.
+  The invalid run is retained as a diagnostic, not selected as evidence and not addressed by
+  weakening any threshold.
+- The exact Method-17 string shard (`late,prefix,suffix`) also passes. Initial wall deltas are
+  `+0.5/+2.5/+3.6%`. Initial CPU deltas for late/suffix are `+21.2/+18.3%`, so the workflow-required
+  candidate-first confirmation was run; those same keys reproduce at `-15.9/-3.8%`. Initial RSS
+  keys above 15% reproduce at `+6.9/-1.8%`. All four correctness outputs are byte-identical at
+  SHA-256 `db4504a0ce8ec10fdd576d6d62fa858a4a407e34e3a301ad8b61f06ff0ba60ab`.
+  Final shard report/status SHA-256 is
+  `b66eafd5d1355a19e74110471da065cfdffe836bc8daa17efc013d81516e8745` /
+  `995fedb00fb417a972cfc56c33d1141bb2ac9e496e76343a4062cda7439a9f45`.
+- The exact measured checkout passed `./gradlew test detekt :webgraph:jmhJar :explore:jmhJar
+  --no-daemon`, all 91 benchmark-gate Node tests, and `git diff --check`. Its WebGraph JMH JAR
+  raw/canonical SHA-256 is
+  `e6a49f70f8cef6bd79b1fd8fc44c509326cc71829db7da4b021bc989b3ebf4ad` /
+  `4f4154c8855a76f626162d4fdf6dbc125b9bb8c800f24e626e30a455c1c271c2`; Explore JMH is
+  `460c70946c816b384d3b8fd15cccece6bfb0636192c066b1931a29ae6e0e1a34` /
+  `753020c7edd0eb91b8fbe3d6ecd5f5a11f95fd7663839094048345610ec3fd5c`.
+
+**Conclusion:** retain. The startup-prepared blocker is removed twice with a measured 79.4%
+reduction in the specific work that caused it, the global-wide P95 floor is `17.53x` against
+v2.4.7, and every local dual-baseline, compatibility, correctness, resource, and repository gate
+passes. This attempt adds no executor or worker pool: the candidate remains four graph workers,
+zero segment workers, and an unused `graphite-callsite-scan-*` fallback. The production bytes are
+ready for hosted reproduction; the PR itself must not be marked ready to merge until the final
+remote SHA passes required checks and outstanding review threads are resolved.

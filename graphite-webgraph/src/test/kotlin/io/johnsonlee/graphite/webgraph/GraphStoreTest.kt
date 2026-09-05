@@ -2307,6 +2307,68 @@ class GraphStoreTest {
     }
 
     @Test
+    fun `retained CallSite index merge-joins broad known string matches in encounter order`() {
+        val dir = Files.createTempDirectory("webgraph-callsite-known-match-merge")
+        try {
+            val values = (0 until 128).map { index -> "value-${index.toString().padStart(3, '0')}" }
+            val strings = StringTable.build(values, dir)
+            val usedStringIds = values.map(strings::indexOf).sorted().toIntArray()
+            val candidates = usedStringIds.filterIndexed { index, _ -> index % 2 == 0 }.toIntArray()
+            val property = MappedCallSiteStringIndex.PropertyCsr(
+                postingEnds = IntArray(usedStringIds.size) { index -> index + 1 },
+                usedStringIds = usedStringIds,
+                postingNodeIds = IntArray(usedStringIds.size) { index -> index }
+            )
+            val ranges = MappedCallSiteStringIndex.PostingRanges(arrayOf(property))
+            val runtime = MappedCallSiteStringIndex.PredicateRuntime(
+                StringPropertyPredicate(
+                    "caller_class",
+                    StringValueTransform.LOWERCASE,
+                    StringMatchMode.CONTAINS,
+                    "value"
+                ),
+                mutableMapOf(),
+                strings,
+                LongArray(strings.size())
+            )
+            var work = 0L
+
+            property.collectMatchingRanges(
+                propertyIndex = 0,
+                runtime = runtime,
+                candidateStringIds = candidates,
+                candidatesAreKnownMatches = true,
+                target = ranges,
+                workConsumer = GraphWorkConsumer { work++ }
+            )
+
+            assertEquals(
+                (0 until usedStringIds.size step 2).toList(),
+                ranges.mergedNodeIds(nodeOrder = Int::toLong, workConsumer = null).toList()
+            )
+            assertTrue(work <= usedStringIds.size + candidates.size)
+
+            Thread.currentThread().interrupt()
+            try {
+                assertFailsWith<CancellationException> {
+                    property.collectMatchingRanges(
+                        propertyIndex = 0,
+                        runtime = runtime,
+                        candidateStringIds = candidates,
+                        candidatesAreKnownMatches = true,
+                        target = MappedCallSiteStringIndex.PostingRanges(arrayOf(property)),
+                        workConsumer = null
+                    )
+                }
+            } finally {
+                Thread.interrupted()
+            }
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
     fun `projection cache evicts its least recently used entry at the entry cap`() {
         val returnType = TypeDescriptor("void")
         val graph = DefaultGraph.Builder().addNode(

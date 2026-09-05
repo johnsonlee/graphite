@@ -735,6 +735,11 @@ internal class MappedCallSiteStringIndex(
                     return
                 }
                 candidateStringIds?.let { candidates ->
+                    // Trigram posting ranges are ordered by string id, and intersections preserve that order.
+                    if (candidatesAreKnownMatches && shouldMergeKnownCandidates(candidates.size)) {
+                        collectKnownMatchingRangesByMerge(propertyIndex, candidates, target, accounting)
+                        return
+                    }
                     for (stringId in candidates) {
                         accounting.consume()
                         val row = findStringRow(stringId, accounting)
@@ -753,6 +758,40 @@ internal class MappedCallSiteStringIndex(
                 }
             } finally {
                 accounting.flush()
+            }
+        }
+
+        private fun shouldMergeKnownCandidates(candidateCount: Int): Boolean {
+            if (candidateCount == 0 || usedStringIds.isEmpty()) return false
+            val binaryComparisons = Int.SIZE_BITS - Integer.numberOfLeadingZeros(usedStringIds.size)
+            val binaryWork = candidateCount.toLong() * (binaryComparisons + 1L)
+            val mergeWork = candidateCount.toLong() + usedStringIds.size
+            return mergeWork <= binaryWork
+        }
+
+        private fun collectKnownMatchingRangesByMerge(
+            propertyIndex: Int,
+            candidates: IntArray,
+            target: PostingRanges,
+            accounting: BufferedGraphWorkConsumer
+        ) {
+            var candidateIndex = 0
+            var row = 0
+            var inspected = 0
+            while (candidateIndex < candidates.size && row < usedStringIds.size) {
+                if ((inspected++ and CALL_SITE_STRING_INDEX_INTERRUPTION_POLL_MASK) == 0) {
+                    checkCallSiteIndexInterrupted()
+                }
+                accounting.consume()
+                when {
+                    candidates[candidateIndex] < usedStringIds[row] -> candidateIndex++
+                    candidates[candidateIndex] > usedStringIds[row] -> row++
+                    else -> {
+                        addRange(propertyIndex, row, target)
+                        candidateIndex++
+                        row++
+                    }
+                }
             }
         }
 
