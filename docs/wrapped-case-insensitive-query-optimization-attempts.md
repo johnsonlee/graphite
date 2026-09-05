@@ -5487,3 +5487,10 @@ is unavailable, not passing. No repeat-to-green, changed threshold or new direct
 is added. Preserve this single attempt commit and all evidence, then revert only
 its production change. CallSite pools remain and the final 10x goal is unmet.
 [Decision](profiling/attempt140/decision.json), [readable report](profiling/attempt140/README.md).
+
+Rejected candidate commit is `4215b66e462675baeb3e1b1f2013cf7e6de01812`.
+The explicit source-only revert restores all 130 main/JMH files byte-identical
+to frozen main and preserves all 168 tests byte-identical to parent aede4c82.
+[Revert verification](profiling/attempt140/revert-source-receipt.json) retains
+the failed candidate's evidence. Revert-head CI is separate and not presumed
+passing from source equality.

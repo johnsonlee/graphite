@@ -499,8 +499,8 @@ internal class MappedWebGraphBackedGraph(
         )
         val workerCount = minOf(nodeCount.toInt(), backgroundWorkerCount + 1)
         val chunkSize = (nodeCount + workerCount - 1L) / workerCount
-        val predicatePropertyIndexes = IntArray(predicates.size) { index ->
-            requiredCallSiteStringPropertyIndex(predicates[index].property)
+        val predicatePropertyIndexes = predicates.map { predicate ->
+            requiredCallSiteStringPropertyIndex(predicate.property)
         }
         val projectedPropertyIndexes = projectedProperties.map(::callSiteStringPropertyIndex)
         val selectedStringIds = HashMap<String, Int>()

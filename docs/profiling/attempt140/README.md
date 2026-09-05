@@ -58,3 +58,7 @@ JAR 与完整隔离 checkout 保存在 `/private/tmp/graphite-attempt140._5jztd0
 [控制审计](independent-control-audit.md)、[最终拒绝](decision.json)、
 [复制哈希](copy-receipt.json) 均保留原始输入与命令。
 本轮没有接受的优化，CallSite 池仍须移除，最终 10x 尚未达到。
+
+失败尝试提交为 `4215b66e462675baeb3e1b1f2013cf7e6de01812`。
+显式回退恢复全部 130 个 main/JMH 文件与冻结 main 逐字节相同，168 个测试文件
+与候选父提交相同；[回退核验](revert-source-receipt.json)。原始诊断和测量全部保留。
