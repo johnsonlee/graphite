@@ -563,6 +563,19 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
+    fun `scoped graph sets cap outer waves at half of exposed processors`() {
+        assertEquals(1, resolveScopedStringGraphParallelism(processors = 1, configuredGraphWorkers = null))
+        assertEquals(1, resolveScopedStringGraphParallelism(processors = 2, configuredGraphWorkers = null))
+        assertEquals(2, resolveScopedStringGraphParallelism(processors = 4, configuredGraphWorkers = null))
+        assertEquals(4, resolveScopedStringGraphParallelism(processors = 8, configuredGraphWorkers = null))
+        assertEquals(4, resolveScopedStringGraphParallelism(processors = 64, configuredGraphWorkers = null))
+        assertEquals(1, resolveScopedStringGraphParallelism(processors = 64, configuredGraphWorkers = "1"))
+        assertEquals(3, resolveScopedStringGraphParallelism(processors = 64, configuredGraphWorkers = "3"))
+        assertEquals(4, resolveScopedStringGraphParallelism(processors = 64, configuredGraphWorkers = "99"))
+        assertEquals(4, resolveScopedStringGraphParallelism(processors = 64, configuredGraphWorkers = "invalid"))
+    }
+
+    @Test
     fun `warm mapped suffix retains serial execution without graph worker fanout`() {
         val graphs = List(40) { index -> ColdMappedLookupGraph(graph(), initiallyCold = index != 1) }
         val context = CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 1_000))

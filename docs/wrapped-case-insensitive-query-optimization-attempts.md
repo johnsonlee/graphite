@@ -6038,3 +6038,50 @@ graph-routing mapped-view regression while preserving correctness, bounded memor
 work accounting, existing worker topology, and the retained startup path. It does not claim to fix
 the independently failing global-wide shapes, method-compatibility CPU sample, or Cypher-capacity
 tail sample; those require separate attempts and commits before the PR can be ready to merge.
+
+### 2026-09-05 - Attempt 161: Cap cold scoped graph-set waves on four CPUs
+
+**Hypothesis:** the exact Attempt 160 GitHub runner exposed a cold graph-routing failure that the
+local Apple preflight did not reproduce. On the hosted four-vCPU Linux runner the candidate used a
+four-source outer wave while current main used two graph workers. The candidate raised effective
+CPU use from `2.05` to `2.52` cores but made the first cold K=64 request `277.633 ms` slower. For an
+already graph-scoped request only, cap the outer wave to half the exposed processors, up to the
+existing four-worker ceiling. On the hosted runner that means two concurrent sources; unscoped
+global-wide execution remains at four. If the next exact-head CI run does not remove the first-K=64
+failure, reject this scheduling hypothesis rather than using a local timing result to retain it.
+
+**Evidence:**
+
+- Attempt base is exact pushed Attempt 160 `8bee36de3474744d22c931033b219fa62dd3c0a1`;
+  current-main reference is v2.4.8 `4e328b0109e13c896b74004823fb049fcb19251a`; the exact
+  pre-record candidate is `4214999d961a41ffc5bc36409e0bfc3d061c15b8`. The final record
+  amendment changes documentation only; production and test bytes are identical to that candidate.
+- The root evidence is GitHub Actions run `33946868294`, job `101255455956`, using 64 real
+  persisted Android/Tika/Hive/Kotlin compiler shards on Linux x64 with four exposed processors and
+  an 8-GiB heap. Fixture manifest/provenance SHA-256 is
+  `3c019438680a5e95e8ccc335e001c6b6e54b4e5b904871750b5742e3c17037d5` /
+  `4a87e194346a32d2b348b79780bfd9a35136365cb5fc7388edc67a957ea0ece9`.
+  Base and candidate completed all `1,137/1,137` queries with byte-identical correctness SHA-256
+  `35fc69539c3080dbb801cca4ec7f1e7541f3ccd190d8774861f6109f7c58b6dd`.
+- The hosted first cold request was `505.094 -> 782.728 ms`, beyond the `755.094 ms` hard cap by
+  `27.633 ms`. Cold K=64 graph-set P50/P95 was `0.316/2.565 -> 0.707/3.211 ms`.
+  Candidate/base peak heap was `4.86/4.96 GiB`, RSS was `5.78/5.98 GiB`, and GC was
+  `8/44 ms` versus `11/78 ms`; memory pressure and GC therefore do not explain the latency miss.
+  Candidate graph-routing wall time and process CPU still improved overall
+  (`7.043 -> 5.136 s`, `14.260 -> 12.690 s`), isolating the failure to the cold scoped latency
+  boundary rather than aggregate throughput.
+- This attempt changes only the wave-width resolver used after a graphId/request scope has already
+  selected multiple cold sources. It preserves the existing executor, serial-per-graph storage,
+  source-ordered merge, limit behavior, cancellation, configured worker override, and the separate
+  four-worker unscoped cold suffix. It adds no thread or pool. Resolver checks cover one through 64
+  exposed processors plus configured caps and invalid values.
+- Local verification is deliberately non-performance-only: the exact production/test bytes passed
+  `:cypher:test --tests io.johnsonlee.graphite.cypher.CrossGraphCypherExecutorTest`,
+  `:cypher:detekt`, and `git diff --check` in a clean normal clone. Candidate latency, CPU, and
+  memory evidence is unavailable until the exact pushed SHA runs on GitHub; no local timing is
+  substituted for it.
+
+**Conclusion:** submit only for hosted reproduction. This attempt targets the first cold K=64
+graph-routing error and makes no claim about the separate cold K=64 steady-state, startup K=8,
+global-wide, or Method-17 failures. The production change is retained or reverted solely from the
+next exact-head CI result, and the PR remains not ready to merge.

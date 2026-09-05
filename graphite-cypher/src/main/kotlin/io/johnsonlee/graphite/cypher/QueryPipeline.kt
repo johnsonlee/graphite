@@ -136,6 +136,15 @@ internal fun resolveColdMappedStringGraphParallelism(
     return minOf(COLD_MAPPED_SUFFIX_MAX_GRAPH_WORKERS, available, configured)
 }
 
+internal fun resolveScopedStringGraphParallelism(
+    processors: Int = Runtime.getRuntime().availableProcessors(),
+    configuredGraphWorkers: String? = System.getProperty(DIRECT_STRING_PARALLELISM_PROPERTY)
+): Int {
+    val available = processors.coerceAtLeast(1)
+    val configured = configuredGraphWorkers?.toIntOrNull()?.coerceIn(1, available) ?: available
+    return minOf(COLD_MAPPED_SUFFIX_MAX_GRAPH_WORKERS, maxOf(1, available / 2), configured)
+}
+
 private val directStringParallelism: Int by lazy {
     val processors = Runtime.getRuntime().availableProcessors().coerceAtLeast(1)
     System.getProperty(DIRECT_STRING_PARALLELISM_PROPERTY)
@@ -153,6 +162,9 @@ private val directStringExecutor by lazy {
 
 private fun coldMappedStringGraphParallelism(): Int =
     minOf(directStringParallelism, resolveColdMappedStringGraphParallelism())
+
+private fun scopedStringGraphParallelism(): Int =
+    minOf(directStringParallelism, resolveScopedStringGraphParallelism())
 
 private class WorkTrackingSequence<T>(
     private val source: Sequence<T>,
@@ -1639,9 +1651,14 @@ class QueryPipeline private constructor(
             )
         }
         val rows = rawLeadingRows?.toMutableList() ?: mutableListOf()
+        val waveParallelism = if (allowRetainedGraphSetProjection) {
+            scopedStringGraphParallelism()
+        } else {
+            directStringParallelism
+        }
         var waveStart = firstUnprojectedSource
         while (waveStart < scanners.size && rows.size < limit) {
-            val wave = scanners.subList(waveStart, minOf(scanners.size, waveStart + directStringParallelism))
+            val wave = scanners.subList(waveStart, minOf(scanners.size, waveStart + waveParallelism))
             val batches = runDirectStringTasks(wave.map { scanner ->
                 { scanner.nextRows(limit) }
             })
