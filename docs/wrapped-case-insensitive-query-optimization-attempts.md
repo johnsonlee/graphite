@@ -6473,3 +6473,68 @@ repair, not an explanation of existing latency failures or a performance optimiz
 active exact-head measurement finishes; any next production experiment must follow the returned
 CI failure and remain a separate commit. This repair strengthens acceptance but does not establish
 the 10x/no-regression objective or make PR #114 ready to merge.
+
+### 2026-09-05 - Attempt 169: Restore initialized leading-view projection
+
+**Hypothesis:** Attempt 167's exact hosted current-main comparison repeats
+`global-wide-distribution-localized-early/dense` in all three pairs. Both revisions visit the
+leading source and charge 1,053 work units, but main's initialized mapped-view projection avoids
+constructing complete CallSite nodes. The candidate lost that leading projection path during its
+v2.4.7-based rebuild and instead enters `DirectStringSourceScanner`. Restore direct projection
+only when the leading graph reports an already-warm mapped view. Keep cold and unsupported paths
+authoritative and leave the separate bounded raw-leading method unchanged.
+
+**Evidence:**
+
+- Attempt base is `5118dfbc18074ef09f3db91131a3fa70ed6656b2` (Attempt 168), whose production
+  tree is identical to the CI-measured Attempt 167
+  `2adf1e01eaead8c463e2112d106d8f2de3ca9596`. The sole performance input is hosted workflow
+  `33959031107`, global-wide job `101288640132`, using the same authenticated 64 persisted graphs
+  derived from pinned Android, Tika, Hive, and Kotlin compiler JARs. No local performance run is used.
+  References remain v2.4.7 `78ce46b57b2d88ae0f1823432ffefc5c7685bc1b` and current main
+  `4e328b0109e13c896b74004823fb049fcb19251a`.
+
+| Hosted localized-early pair | Current-main latency | Attempt 167 latency | Candidate work |
+| ---: | ---: | ---: | ---: |
+| 1 | 3.512 ms | 7.161 ms | 1,053 |
+| 2 | 3.684 ms | 8.140 ms | 1,053 |
+| 3 | 4.371 ms | 7.398 ms | 1,053 |
+
+- The completed Attempt 167 run passes unit tests, all Method compatibility shards, method-level
+  JMH, end-to-end, capacity, resources, and routing. Only global-wide and its aggregate gate fail.
+  Frozen aggregate P95 speedups are 15.63x / 12.61x / 11.62x, but wrapped-dense remains red in
+  every pair: candidate 5.449 / 3.869 / 4.624 ms versus 2.589 / 2.163 / 2.114 ms. Current-main
+  also retains repeated provenance-zero/targeted, four-properties-targeted, and aliased-targeted
+  failures. Aggregate speedup does not waive any of them. Report/status SHA-256 is
+  `7a77c93538144f4a6bdcbf082ad04267b6db726621db4c71a20cf8bc95ad278d` /
+  `6656163a571aae03da2418952464640e8a384dbbc5da78ca134da49397bf214e`.
+- The earlier inference that equal wrapped work proves fixed projection overhead was too strong:
+  frozen v2.4.7 uses serial raw matching plus node deserialization, while the candidate projects raw
+  strings directly. Matcher-cache capacity and other work inside a charged unit differ. That root
+  remains unproven. This attempt instead targets the separate 3/3 regression with a concrete
+  missing main-path capability. It does not adjust matcher caches or claim to fix wrapped-dense.
+- `projectWarmMappedLeadingRows` is separate from the unchanged `projectRawLeadingRows` method.
+  Only unscoped sets of at least 40 sources with LIMIT 1..200 reach the new probe, after the
+  short-term raw path. Larger limits retain the ordinary scanner to bound eager materialization.
+  It preserves property-owner and node-type checks, checks existing warm capability before
+  requesting preferred mapped projection, injects graph-id aliases using the existing immutable
+  result builder, and does not admit request-local rows to the global LRU. A complete leading
+  prefix returns before suffix capability checks. A partial prefix continues at source one with
+  the remaining LIMIT; cold or unsupported probes retain the ordinary scanner.
+- Five new correctness tests check full warm projection, a partial duplicate prefix, cold-view
+  refusal with deliberately incorrect projection data, larger-limit refusal, and an unbound property
+  owner's null fallback. They assert concrete values, source order, metadata, limits, projection consumer type,
+  no leading node lookup, and no suffix access for a complete prefix. Full and partial tests fail
+  on pre-change production bytes. With the fix, full `:cypher:test` and `:cypher:detekt` pass in
+  the normal verification clone, and exact modified source/test bytes match this worktree.
+  `git diff --check` passes. Production/test diff SHA-256 is
+  `9cd7927890fbd6d186e1d377cb0b246c5b2146875c72437d2bc7fd73d8338e56`.
+- Routing's first cold K64 request remains a separately recorded risk: Attempt 167 is
+  447.510 -> 597.152 ms. It passes the existing maximum-of-15%-or-250-ms allowance, not a
+  zero-regression standard. Its tracked scoped scheduling is outside this experiment and unchanged.
+
+**Conclusion:** submit this single production hypothesis after the completed Attempt 167 run.
+Retention requires hosted localized-early evidence and preservation of the other contracts;
+performance, CPU, heap, and RSS for the new head are pending CI. The separately committed
+Attempt 168 fail-closed repair changes no measurement or threshold. Do not merge, change CPU
+architecture, weaken a gate, or substitute these local correctness results for hosted acceptance.

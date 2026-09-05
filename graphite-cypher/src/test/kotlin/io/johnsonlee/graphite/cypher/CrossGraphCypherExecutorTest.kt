@@ -352,6 +352,151 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
+    fun `unscoped warm leading projection fills limit without accessing nodes or suffix sources`() {
+        val leading = ColdMappedLookupGraph(
+            graph(),
+            initiallyCold = false,
+            rawProjectionRows = listOf(
+                StringPropertyProjectionRow(listOf("example.FeatureFirst", "invoke1")),
+                StringPropertyProjectionRow(listOf("example.FeatureSecond", "invoke2"))
+            )
+        )
+        val suffix = List(39) { ColdMappedLookupGraph(graph()) }
+        val result = CrossGraphCypherExecutor(
+            (listOf(leading) + suffix).mapIndexed { index, source -> CypherGraph("graph-$index", source) },
+            CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 100_000))
+        ).execute(
+            "MATCH (n:CallSiteNode) WHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'feature' " +
+                "RETURN n.graphId AS graph, n.caller_class AS caller, n.callee_name AS callee LIMIT 2"
+        )
+
+        assertEquals(listOf("graph", "caller", "callee"), result.columns)
+        assertEquals(
+            listOf("example.FeatureFirst" to "invoke1", "example.FeatureSecond" to "invoke2"),
+            result.rows.map { row -> row["caller"] to row["callee"] }
+        )
+        assertTrue(result.rows.all { row -> row["graph"] == "graph-0" && row is DirectProjectionCypherRow })
+        assertEquals(listOf(listOf("graph-0"), listOf("graph-0")), result.rows.map(::graphIds))
+        assertEquals(1, leading.warmChecks.get())
+        assertEquals(1, leading.projectionLookups.get())
+        assertEquals(listOf(2), leading.projectionLimits.toList())
+        assertEquals(listOf(listOf("caller_class", "callee_name")), leading.projectionProperties.toList())
+        assertEquals(listOf(true), leading.projectionPreferredMappedConsumers.toList())
+        assertEquals(0, leading.lookups.get())
+        assertTrue(suffix.all { source ->
+            source.warmChecks.get() == 0 && source.coldChecks.get() == 0 &&
+                source.lookups.get() == 0 && source.projectionLookups.get() == 0
+        })
+    }
+
+    @Test
+    fun `partial warm leading projection preserves duplicates and continues after the leading source`() {
+        val leading = ColdMappedLookupGraph(
+            graph(),
+            initiallyCold = false,
+            rawProjectionRows = listOf(
+                StringPropertyProjectionRow(listOf("example.FeatureDuplicate")),
+                StringPropertyProjectionRow(listOf("example.FeatureDuplicate"))
+            )
+        )
+        val second = ColdMappedLookupGraph(graph(callSite(3, "example.FeatureLater")))
+        val graphs = listOf(leading, second) + List(38) { ColdMappedLookupGraph(graph()) }
+        val result = CrossGraphCypherExecutor(
+            graphs.mapIndexed { index, source -> CypherGraph("graph-$index", source) }
+        ).execute(
+            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'Feature' " +
+                "RETURN n.graphId AS graph, n.caller_class AS caller LIMIT 3"
+        )
+
+        assertEquals(
+            listOf(
+                "graph-0" to "example.FeatureDuplicate",
+                "graph-0" to "example.FeatureDuplicate",
+                "graph-1" to "example.FeatureLater"
+            ),
+            result.rows.map { row -> row["graph"] to row["caller"] }
+        )
+        assertEquals(listOf(listOf("graph-0"), listOf("graph-0"), listOf("graph-1")), result.rows.map(::graphIds))
+        assertEquals(1, leading.projectionLookups.get())
+        assertEquals(listOf(3), leading.projectionLimits.toList())
+        assertEquals(listOf(true), leading.projectionPreferredMappedConsumers.toList())
+        assertEquals(0, leading.lookups.get())
+        assertEquals(1, second.lookups.get())
+        assertEquals(listOf(1), second.lookupLimits.toList())
+    }
+
+    @Test
+    fun `unscoped cold leading graph declines projection and uses the ordinary lookup`() {
+        val leading = ColdMappedLookupGraph(
+            graph(callSite(4, "example.FeatureCold")),
+            rawProjectionRows = listOf(StringPropertyProjectionRow(listOf("must-not-project-a-cold-view")))
+        )
+        val graphs = listOf(leading) + List(39) { ColdMappedLookupGraph(graph()) }
+        val result = CrossGraphCypherExecutor(
+            graphs.mapIndexed { index, source -> CypherGraph("graph-$index", source) },
+            CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 100_000))
+        ).execute(
+            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'Feature' " +
+                "RETURN n.caller_class AS caller LIMIT 1"
+        )
+
+        assertEquals(listOf("example.FeatureCold"), result.rows.map { it["caller"] })
+        assertEquals(listOf("graph-0"), graphIds(result.rows.single()))
+        assertEquals(1, leading.warmChecks.get())
+        assertEquals(0, leading.projectionLookups.get())
+        assertEquals(1, leading.lookups.get())
+        assertEquals(listOf(1), leading.lookupLimits.toList())
+    }
+
+    @Test
+    fun `warm leading projection leaves limits beyond the bounded probe on ordinary lookup`() {
+        val leading = ColdMappedLookupGraph(
+            graph(callSite(6, "example.FeatureCaller")),
+            initiallyCold = false,
+            rawProjectionRows = listOf(StringPropertyProjectionRow(listOf("must-not-project-an-unbounded-result")))
+        )
+        val graphs = listOf(leading) + List(39) { ColdMappedLookupGraph(graph()) }
+        val result = CrossGraphCypherExecutor(
+            graphs.mapIndexed { index, source -> CypherGraph("graph-$index", source) },
+            CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 100_000))
+        ).execute(
+            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'Feature' " +
+                "RETURN n.caller_class AS caller LIMIT 201"
+        )
+
+        assertEquals(listOf("example.FeatureCaller"), result.rows.map { it["caller"] })
+        assertEquals(listOf("graph-0"), graphIds(result.rows.single()))
+        assertEquals(0, leading.projectionLookups.get())
+        assertEquals(1, leading.lookups.get())
+        // The ordinary scanner caps its request at the source's single available node.
+        assertEquals(listOf(1), leading.lookupLimits.toList())
+    }
+
+    @Test
+    fun `warm leading projection rejects a property owned by an unbound variable`() {
+        val leading = ColdMappedLookupGraph(
+            graph(callSite(5, "example.FeatureCaller")),
+            initiallyCold = false,
+            rawProjectionRows = listOf(StringPropertyProjectionRow(listOf("must-not-project-wrong-owner")))
+        )
+        val graphs = listOf(leading) + List(39) { ColdMappedLookupGraph(graph()) }
+        val result = CrossGraphCypherExecutor(
+            graphs.mapIndexed { index, source -> CypherGraph("graph-$index", source) },
+            CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 100_000))
+        ).execute(
+            "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'Feature' " +
+                "RETURN n.graphId AS graph, x.caller_class AS caller LIMIT 1"
+        )
+
+        assertEquals(listOf("graph", "caller"), result.columns)
+        assertEquals("graph-0", result.rows.single()["graph"])
+        assertNull(result.rows.single()["caller"])
+        assertEquals(listOf("graph-0"), graphIds(result.rows.single()))
+        assertEquals(0, leading.projectionLookups.get())
+        assertEquals(1, leading.lookups.get())
+    }
+
+    @Test
     @Suppress("UNCHECKED_CAST")
     fun `partial raw leading projection preserves duplicates source order limit and provenance`() {
         val returnType = TypeDescriptor("void")
@@ -3383,6 +3528,7 @@ class CrossGraphCypherExecutorTest {
         StringPropertyDisjunctionProjection {
         private val cold = AtomicBoolean(initiallyCold)
         val coldChecks = AtomicInteger()
+        val warmChecks = AtomicInteger()
         val lookups = AtomicInteger()
         val lookupLimits = java.util.concurrent.ConcurrentLinkedQueue<Int>()
         val serialConsumers = java.util.concurrent.ConcurrentLinkedQueue<Boolean>()
@@ -3391,6 +3537,7 @@ class CrossGraphCypherExecutorTest {
         val lookupThreads = java.util.concurrent.ConcurrentLinkedQueue<String>()
         val projectionLookups = AtomicInteger()
         val projectionLimits = java.util.concurrent.ConcurrentLinkedQueue<Int>()
+        val projectionProperties = java.util.concurrent.ConcurrentLinkedQueue<List<String>>()
         val projectionPreferredMappedConsumers = java.util.concurrent.ConcurrentLinkedQueue<Boolean>()
 
         override fun hasColdMappedStringPropertyDisjunction(
@@ -3404,7 +3551,10 @@ class CrossGraphCypherExecutorTest {
         override fun hasWarmMappedStringPropertyDisjunction(
             type: Class<out Node>,
             predicates: List<StringPropertyPredicate>
-        ): Boolean = type == CallSiteNode::class.java && predicates.isNotEmpty() && !cold.get()
+        ): Boolean {
+            warmChecks.incrementAndGet()
+            return type == CallSiteNode::class.java && predicates.isNotEmpty() && !cold.get()
+        }
 
         override fun <T : Node> nodesByStringPropertyDisjunction(
             type: Class<T>,
@@ -3439,6 +3589,7 @@ class CrossGraphCypherExecutorTest {
         ): List<StringPropertyProjectionRow>? {
             projectionLookups.incrementAndGet()
             projectionLimits += limit
+            projectionProperties += projectedProperties.toList()
             projectionPreferredMappedConsumers +=
                 workConsumer is PreferredSerialMappedStringIndexViewGraphWorkBatchConsumer
             return rawProjectionRows?.take(limit)
