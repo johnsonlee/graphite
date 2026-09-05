@@ -1,0 +1,32 @@
+{
+  "existingCompanionRecordingsOnly": true,
+  "profileJfc": "/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home/lib/jfr/profile.jfc",
+  "profileJfcSha256": "9da7ab71c763344677cabe8898496b0aad1fb42fe49363d5e1ae00df8a1baded",
+  "compilationThreshold": "100 ms",
+  "exports": [
+    {
+      "command": [
+        "/opt/homebrew/opt/openjdk@17/bin/jfr",
+        "print",
+        "--json",
+        "--events",
+        "jdk.Compilation,jdk.Deoptimization,jdk.GarbageCollection,jdk.GCPhasePause",
+        "/private/tmp/graphite-attempt138.7ihszrob/cold-regression-profile/jvm-base.jfr"
+      ],
+      "stdout": "/private/tmp/graphite-attempt138.7ihszrob/cold-regression-profile/base-runtime-events.json",
+      "outputSha256": "a536890bd952a72932ae7dc7a433b096a20408d4f85152feb25846a36d443fa2"
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/openjdk@17/bin/jfr",
+        "print",
+        "--json",
+        "--events",
+        "jdk.Compilation,jdk.Deoptimization,jdk.GarbageCollection,jdk.GCPhasePause",
+        "/private/tmp/graphite-attempt138.7ihszrob/cold-regression-profile/jvm-candidate.jfr"
+      ],
+      "stdout": "/private/tmp/graphite-attempt138.7ihszrob/cold-regression-profile/candidate-runtime-events.json",
+      "outputSha256": "40e6c0edb25d870d6334b875708e1569e7d464d239d924a93e8c8af4c789d3af"
+    }
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "attempt": 139,
+  "parent": "27de1f5ebd318fb5f60b24596712a5b3a6a3836e",
+  "frozenMain": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "comparedMainAndJmhFiles": 130,
+  "changedFiles": [
+    {
+      "file": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexView.kt",
+      "sourceSha256": "e702dd25666c83a98e6222d4634fd985b78b6edb3dcda5d1ae0f2b6269e14793"
+    }
+  ],
+  "bodyChanges": false,
+  "onlyAddedTwoInlineModifiers": true,
+  "testResults": {
+    "tests": 187,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "testSuites": 6,
+  "suites": [
+    {
+      "file": "graphite-webgraph/build/test-results/test/TEST-io.johnsonlee.graphite.webgraph.AndroidSdkIntegrationTest.xml",
+      "sha256": "5fdbabe123a36e140728d5cd4580f275c2ea4f482c0f053b67c0867770c3e100",
+      "counts": {
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "graphite-webgraph/build/test-results/test/TEST-io.johnsonlee.graphite.webgraph.GraphStoreTest.xml",
+      "sha256": "e0cfdaab06d450224b92da84615f584f251c92e378240dc5823189328e2d8def",
+      "counts": {
+        "tests": 167,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "graphite-webgraph/build/test-results/test/TEST-io.johnsonlee.graphite.webgraph.MappedCypherBudgetTest.xml",
+      "sha256": "41c5f5f3b5250126a79bb76664a816c6a3e797f6ed14834b05eaaada281a6b40",
+      "counts": {
+        "tests": 3,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "graphite-webgraph/build/test-results/test/TEST-io.johnsonlee.graphite.webgraph.MethodQueryPersistenceTest.xml",
+      "sha256": "0454901ebe096595e490322df0694237f7dc24a6a8ca09eca96d01b37d2f91e9",
+      "counts": {
+        "tests": 4,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "graphite-webgraph/build/test-results/test/TEST-io.johnsonlee.graphite.webgraph.ParallelDistinctDisjunctionTest.xml",
+      "sha256": "49650485bcb84aff3e454402b01e812abaab01c272e59eb922c9f659226afa18",
+      "counts": {
+        "tests": 4,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "file": "graphite-webgraph/build/test-results/test/TEST-io.johnsonlee.graphite.webgraph.QueryCorrectnessManifestTest.xml",
+      "sha256": "22d0e8e7f2593f776bd7cc7bb911e3a3b67fb49562c1dda9b52dbd4134997888",
+      "counts": {
+        "tests": 6,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    }
+  ],
+  "buildExit": 0,
+  "buildSuccessful": true,
+  "elapsedSeconds": 123.8588171005249,
+  "checks": [
+    ":webgraph:test",
+    ":webgraph:detekt",
+    ":webgraph:jmhJar",
+    ":webgraph:verifyJmhJarExcludesTests"
+  ],
+  "jmhJarSha256": "9d0bfd1d6cfcb9891c064a3a3784d7742c45b5692be004e1ce90996e02cec4ca",
+  "builtJar": "/private/tmp/graphite-attempt139._p0bc7zf/repo/graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar",
+  "frozenJar": "/private/tmp/graphite-attempt139._p0bc7zf/candidate-jmh.jar",
+  "buildLogSha256": "cd3f70cc72bafd84cd77ccfadefc0b9e6cf0b6d0912f718a97965f8246e53ae6",
+  "buildCommandSha256": "360931dcfbd1137b747fcb655bc1472fe7bb7c280789f7a2061ade73234fadfe",
+  "performanceNotRun": true
+}

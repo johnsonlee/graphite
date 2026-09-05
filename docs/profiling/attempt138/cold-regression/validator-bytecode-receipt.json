@@ -1,0 +1,6 @@
+{
+  "validatorJavapInstructionsByteIdentical": true,
+  "baseSha256": "2d32c910fd0040d9b19249b32946d4ac3928883672ee944b042cd661a8136973",
+  "candidateSha256": "2d32c910fd0040d9b19249b32946d4ac3928883672ee944b042cd661a8136973",
+  "scope": "javap -c -p whole validator class; this does not compare native JIT output or establish a runtime cause"
+}

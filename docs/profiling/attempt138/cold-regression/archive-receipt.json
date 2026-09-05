@@ -1,0 +1,126 @@
+{
+  "rawDirectory": "/private/tmp/graphite-attempt138.7ihszrob/cold-regression-profile",
+  "entries": [
+    {
+      "file": "input-receipt.json",
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/cold-regression-profile/input-receipt.json",
+      "sha256": "239189d3fa1f82efb52fb509a02c533ea60383a4b8fd9c725cbf04cb99a6687f"
+    },
+    {
+      "file": "completed.json",
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/cold-regression-profile/completed.json",
+      "sha256": "306db86ad9182b88a15b4b463f2f2b32a04a4565aa5971d8a7a333684bea3bf3"
+    },
+    {
+      "file": "summary.json",
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/cold-regression-profile/summary.json",
+      "sha256": "7904bc3d1e1302a4dc58d3ff67dd98c2442678f47f59cf3216ec6280a60c1ae6"
+    },
+    {
+      "file": "runtime-summary.json",
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/cold-regression-profile/runtime-summary.json",
+      "sha256": "ce7ab391c21093b4d54eb088aa1effffa1a2d0988216b4714be85ea110624ec4"
+    },
+    {
+      "file": "validator-bytecode-receipt.json",
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/cold-regression-profile/validator-bytecode-receipt.json",
+      "sha256": "7c307ddf5b267de2b89572340ffba59f110a80a8d6373f856846a194ad60a36b"
+    },
+    {
+      "file": "base.tsv",
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/cold-regression-profile/base.tsv",
+      "sha256": "cef0d5a36c3aade48b56d677235afd5e2edfbdf70e98b700f5f50aeb152a9910"
+    },
+    {
+      "file": "candidate.tsv",
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/cold-regression-profile/candidate.tsv",
+      "sha256": "b3acb65dadad26a3c4a9efcc6277c62592c32f8606cfd081453a1b13d26ef0eb"
+    },
+    {
+      "file": "base-correctness.json",
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/cold-regression-profile/base-correctness.json",
+      "sha256": "4d20cd2498d57e87fba69ed25265c3751af9dba7dff7b73ca429d2858dfbbb42"
+    },
+    {
+      "file": "candidate-correctness.json",
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/cold-regression-profile/candidate-correctness.json",
+      "sha256": "4d20cd2498d57e87fba69ed25265c3751af9dba7dff7b73ca429d2858dfbbb42"
+    },
+    {
+      "file": "base-command.json",
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/cold-regression-profile/base-command.json",
+      "sha256": "969561c4fa9562b6795c03052d768f6e16081f22cc42af46a0c07afa69a22d90"
+    },
+    {
+      "file": "candidate-command.json",
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/cold-regression-profile/candidate-command.json",
+      "sha256": "cb7b9c55891c920c86c0b0a011e0fc3b975158eaa06e0433f73135a67fe676b9"
+    },
+    {
+      "file": "base-analysis-command.json",
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/cold-regression-profile/base-analysis-command.json",
+      "sha256": "aa85b45b6240a0e02a87614e44665fc0da135317540c8e46c4744da057ae0ad5"
+    },
+    {
+      "file": "candidate-analysis-command.json",
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/cold-regression-profile/candidate-analysis-command.json",
+      "sha256": "5f8b68e80952f873f740a7d4d5f4543972eb083f396fd75ce66a5388c422cf33"
+    },
+    {
+      "file": "base-validator-javap-command.json",
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/cold-regression-profile/base-validator-javap-command.json",
+      "sha256": "c24e772884b5e386386dd1899e0594c6b0cb956c0ead8c5ef656aaa87cf428d1"
+    },
+    {
+      "file": "candidate-validator-javap-command.json",
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/cold-regression-profile/candidate-validator-javap-command.json",
+      "sha256": "a350f2b3d9851344dd96283f097eba520066baf4fe2fc5ef9dcd20b8772fc098"
+    },
+    {
+      "file": "base-validator-javap.txt",
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/cold-regression-profile/base-validator-javap.txt",
+      "sha256": "2d32c910fd0040d9b19249b32946d4ac3928883672ee944b042cd661a8136973"
+    },
+    {
+      "file": "candidate-validator-javap.txt",
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/cold-regression-profile/candidate-validator-javap.txt",
+      "sha256": "2d32c910fd0040d9b19249b32946d4ac3928883672ee944b042cd661a8136973"
+    },
+    {
+      "file": "profile-cold-regression.py",
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/profile-cold-regression.py",
+      "sha256": "743f9461dfd0d14f304862b27dd08c9d6aafb6f93b4e56d0ecb2f6618056670e"
+    },
+    {
+      "file": "analyze-cold-regression.py",
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/analyze-cold-regression.py",
+      "sha256": "7f345f21a9a3d7b35801763df8aee44130cbf07ed5b395b73cc48977db950936"
+    },
+    {
+      "file": "analyze-cold-runtime.py",
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/analyze-cold-runtime.py",
+      "sha256": "0ebe80d0370abd2545336ef9306059126ed12675ac85fdac93e000b94f47b818"
+    },
+    {
+      "file": "cold-regression-source-audit.md",
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/cold-regression-source-audit.md",
+      "sha256": "36ccb8dc4e0b160dd49689d5d96ae64087e563909747378942b447e98221920d"
+    },
+    {
+      "file": "cold-regression-source-audit.json",
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/cold-regression-source-audit.json",
+      "sha256": "48eebf5c73456b459e847bd197ba633ea01eddab0f7d7f0a53f55657ca324b61"
+    },
+    {
+      "file": "cold-profile-independent-audit.md",
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/cold-profile-independent-audit.md",
+      "sha256": "edc938c6279ae6856759240e06585473ae916ee31ed8f411d97ca7736e07a25a"
+    },
+    {
+      "file": "cold-profile-independent-audit.json",
+      "source": "/private/tmp/graphite-attempt138.7ihszrob/cold-profile-independent-audit.json",
+      "sha256": "669ea05dd4a532630a46401228ec012743efd32ed12daa5e44161d6926354ccd"
+    }
+  ],
+  "originalJfrAndRuntimeEventJsonRetainedOutsideRepository": true
+}

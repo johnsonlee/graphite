@@ -5261,3 +5261,108 @@ is accepted, CallSite pools remain, and the final 10x goal is unmet.
 
 
 The rejected attempt is commit `470df7cea888240b87380f1a4a650638ea713815`. The explicit revert verifies all 130 main/JMH files byte-identical to frozen main and all 168 test files byte-identical to e6c; [source receipt](profiling/attempt138/revert-source-receipt.json). This is source restoration evidence, not a passing performance comparison.
+
+
+**Post-rejection cold four-OR diagnostic:** one fresh CPU/allocation recording
+per immutable revision, each with 40 rows and 40 DISTINCT repetitions, verifies
+160 full outputs / 32,000 rows plus unchanged input/JAR hashes. Independent
+recomputation checks all 320 metric stacks and thread partitions. DISTINCT
+application CPU samples are 12,254→13,159; validator-inclusive samples are
+11,216→12,420 while non-validator application samples fall 1,038→739. The new
+selected path has only 86 samples. Validator javap instructions are identical;
+no native JIT equivalence is inferred. GC/deoptimization observations likewise
+cannot explain the original unprofiled failures. The cold regression cause
+remains unproven and rejection stands; this is not an acceptance rerun.
+[Source, runtime and independent sampling evidence](profiling/attempt138/cold-regression/README.md).
+
+
+Attempt 138 显式回退 `27de1f5ebd318fb5f60b24596712a5b3a6a3836e` 的 CI 已终态：unit `33991414367` 成功，benchmark `33991414379` 失败。12 个 Method compatibility shards 与总 gate、method-level JMH、large-corpus、routing 均通过；global-wide 和最终 regression gate 失败。三组 P95 为 130.939067→120.137039、130.636671→142.437091、191.349031→122.319238 ms；第 2 组 whole-process CPU 3.28→3.87 s（+17.9878%），且 class-pair-zero、aliased-targeted、parameterized-targeted、distribution-localized-early、four-properties-dense、class-pair-targeted 六条查询重复超过 >15% 且 >1 ms。204 个 global correctness 签名与 6,822 个 routing 签名及 51 个原始文件 hash 核验一致；记录的两边 JAR 内容 hash 相同仍不豁免失败或解释其原因。原候选 138 的 v3 拒绝保持不变；[回退 CI 终态与原值](profiling/attempt138/revert-ci/README.md) 已归档，未重试 CI 或增加测量。
+
+
+### 2026-09-06 - Attempt 139: Specialize validator callbacks at compile time
+
+**Hypothesis:** frozen-main cold pure-four-OR DISTINCT repeatedly places most
+application CPU and sampled allocation in the complete mapped-index validator.
+Compile-time expansion of its existing callback bodies can remove generic
+element dispatch and boxed values while preserving all checks and work boundaries.
+The latest paired diagnostic has 11,216/12,254 frozen-main application CPU samples
+and 48,960,411,632 allocation sample bytes in validator; this is sampled evidence,
+not exact allocation or a prediction of warm P95 gain.
+[Verified profiling and limits](profiling/attempt138/cold-regression/README.md).
+
+Only two `inline` modifiers are added to callback-taking `updateInts` and
+`updateLongs`. Their bodies and every callback, CRC byte sequence, iteration,
+interruption and budget boundary remain byte-identical. No source-selection,
+projection, cache, StringTable, checksum algorithm, format, benchmark, threshold,
+scheduler or thread pool change is included. This differs from rejected 137's
+runtime primitive consumer interface: actual call-site specialization is required.
+It neither revives 137/138 nor claims to fix 138's still-unproven regression cause.
+
+Candidate parent: explicit revert `27de1f5ebd318fb5f60b24596712a5b3a6a3836e`.
+Comparison remains frozen main `4e328b0109e13c896b74004823fb049fcb19251a`.
+Real fixture64 manifest SHA256:
+`fe66cc84f6d8ee95c49b49ad500f921b304f0160c2ae094621683bb4db94ea6b`;
+64 persisted class shards from Android 14, Tika 2.9.2, Hive 4.0.0 and Kotlin
+compiler 2.0.21, not synthetic performance data. Artifacts and exact commands:
+`/private/tmp/graphite-attempt139._p0bc7zf`. The prespecified
+[plan](profiling/attempt139/measurement-plan.json) requires strict P95 progress
+in every unchanged old34 pair before additional v3 pairs and exact-head CI.
+
+**Implementation and correctness:** all 187 WebGraph tests in six suites pass,
+with zero failures/errors/skips; detekt, JMH packaging and test-exclusion pass.
+No tests are modified. Independent root reversal of just the two modifiers gives
+byte-identical frozen-main source; all 130 main/JMH files were compared.
+Candidate source SHA256:
+`e702dd25666c83a98e6222d4634fd985b78b6edb3dcda5d1ae0f2b6269e14793`;
+immutable JAR SHA256:
+`9d0bfd1d6cfcb9891c064a3a3784d7742c45b5692be004e1ce90996e02cec4ca`.
+[Build receipt](profiling/attempt139/build-receipt.json),
+[root source/XML/JAR audit](profiling/attempt139/root-premeasurement-audit.json).
+
+Actual class-file Code lengths: `load` remains 1,065 bytes;
+`validatePersistentIndex` grows from 340 to 1,232 bytes. Its five batch callback
+method call sites, four lambda creation sites and three captured Ref constructions
+are gone. The expanded validation path has no Function1.invoke or numeric
+valueOf call. Generic inline declarations/default stubs remain in the JAR;
+there is no claim that all JAR boxing disappears, or that a JVM-native compilation
+threshold/benefit was measured. [Bytecode mechanism](profiling/attempt139/mechanism-receipt.json).
+The real v3 control verifies all 36 full values/order/provenance outputs and
+before/after input hashes; one control is not a P95 or paired gain measurement.
+
+**Original-34 local paired evidence:** all 204 oracle signatures pass. The
+unchanged repeated-regression comparison passes, but strict per-pair P95 progress
+fails and the final 10x target is unmet.
+
+| Pair/order | Main → candidate P95 (ms) | Main → candidate CPU (s) | Peak heap (GiB) | Peak RSS (GiB) |
+|---|---:|---:|---:|---:|
+| 1 candidate-base | 118.032459 → 112.874042 | 1.748474 → 1.545742 | 4.38 → 3.58 | 4.88 → 4.05 |
+| 2 base-candidate | 58.594458 → 137.031292 | 1.424759 → 1.463312 | 4.39 → 3.58 | 4.89 → 4.05 |
+| 3 candidate-base | 54.235000 → 49.776750 | 1.446098 → 1.226040 | 4.01 → 3.46 | 4.53 → 4.09 |
+
+Pair 2 dense DISTINCT is +133.864% / +78.436834 ms. This is a single aligned-row
+failure, so it does not trigger the existing repeated-row regression bound;
+it still necessarily fails the separately required progress in every pair.
+Pair 3 baseline P95 is targeted DISTINCT, whereas its candidate P95 is dense;
+do not describe all six determining rows as dense. CPU increases 2.71% in pair 2
+and decreases in the other pairs; lower heap/RSS does not override failed progress.
+The original P95 ranks 34 different queries, not repeated samples of one query.
+[Full original comparison](profiling/attempt139/old34-pairs/global-wide-report.md)
+and [status](profiling/attempt139/old34-pairs/global-wide-status.json).
+
+**Final decision: rejected; explicit production-only revert follows.**
+Additional v3 pairs and candidate CI are not run after this local failure.
+Candidate method-level/end-to-end CI performance is unavailable, not passing;
+local whole-run CPU evidence does not replace those checks. No failed comparison
+is rerun or its bounds relaxed. The attempted source stays reproducible in one
+attempt commit, with the two modifiers explicitly removed in its revert. All
+existing tests and complete diagnostic evidence remain. No optimization is
+accepted, CallSite pools remain, and the full final 10x goal is still unmet.
+[Decision](profiling/attempt139/decision.json).
+
+
+[Independent 139 audit](profiling/attempt139/independent-old34-audit.md) recomputes
+all 204 complete signatures, P95/shape ranks and original JMH resources. All
+non-latency TSV fields, including total work 58,071,626, are equal across each
+pair. It retains 55/102 slower observations and the three IDs slower in all
+pairs; only pair 2 dense meets both per-row regression bounds. The strict
+progress rejection is independently confirmed.

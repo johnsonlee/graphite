@@ -1,0 +1,106 @@
+{
+  "source": "ci-audit.json",
+  "rule": "candidateNanos * 100 > baseNanos * 115 and candidateNanos - baseNanos > 1000000, in at least two of three pairs",
+  "queries": [
+    {
+      "id": "global-wide-class-pair-zero",
+      "pairs": [
+        {
+          "pair": 1,
+          "baseNanos": 7752720,
+          "candidateNanos": 10567829
+        },
+        {
+          "pair": 2,
+          "baseNanos": 7085889,
+          "candidateNanos": 10954236
+        }
+      ]
+    },
+    {
+      "id": "global-wide-aliased-targeted",
+      "pairs": [
+        {
+          "pair": 1,
+          "baseNanos": 9655432,
+          "candidateNanos": 12420924
+        },
+        {
+          "pair": 2,
+          "baseNanos": 8708113,
+          "candidateNanos": 12869438
+        },
+        {
+          "pair": 3,
+          "baseNanos": 12304968,
+          "candidateNanos": 16395394
+        }
+      ]
+    },
+    {
+      "id": "global-wide-parameterized-targeted",
+      "pairs": [
+        {
+          "pair": 1,
+          "baseNanos": 5832781,
+          "candidateNanos": 7839121
+        },
+        {
+          "pair": 3,
+          "baseNanos": 6457241,
+          "candidateNanos": 8181506
+        }
+      ]
+    },
+    {
+      "id": "global-wide-distribution-localized-early",
+      "pairs": [
+        {
+          "pair": 1,
+          "baseNanos": 3601546,
+          "candidateNanos": 7593872
+        },
+        {
+          "pair": 2,
+          "baseNanos": 2814158,
+          "candidateNanos": 3963596
+        },
+        {
+          "pair": 3,
+          "baseNanos": 4015209,
+          "candidateNanos": 6736075
+        }
+      ]
+    },
+    {
+      "id": "global-wide-four-properties-dense",
+      "pairs": [
+        {
+          "pair": 2,
+          "baseNanos": 10909952,
+          "candidateNanos": 13866179
+        },
+        {
+          "pair": 3,
+          "baseNanos": 12062314,
+          "candidateNanos": 14203873
+        }
+      ]
+    },
+    {
+      "id": "global-wide-class-pair-targeted",
+      "pairs": [
+        {
+          "pair": 2,
+          "baseNanos": 10217513,
+          "candidateNanos": 11780115
+        },
+        {
+          "pair": 3,
+          "baseNanos": 11735852,
+          "candidateNanos": 14529413
+        }
+      ]
+    }
+  ]
+}
