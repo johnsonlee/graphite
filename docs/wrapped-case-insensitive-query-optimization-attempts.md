@@ -5770,3 +5770,65 @@ floor to `18.15x`, without adding `graphite-callsite-segment-*` or activating th
 `graphite-callsite-scan-*` fallback. The exact final checkout still fails startup-prepared graph-id
 P95, so the next independent attempt must address the retained heap index's exact-limit admission
 gap and re-run every gate before the PR can be marked ready.
+
+### 2026-09-05 - Attempt 158: Admit retained-index exact-limit node prefixes
+
+**Hypothesis:** the retained heap index publishes its bounded node-id cache only after its source
+sequence is exhausted. An outer `LIMIT 200` can stop immediately after the 200th element and prevent
+that final continuation. Publish a fully verified 200-element prefix immediately before yielding its
+last element, matching the safe mapped-view behavior from Attempt 157. Repeated startup-prepared
+graph-id queries should then avoid rebuilding the same posting merge and move graph-id P95 safely
+inside the current-main guard.
+
+**Evidence:**
+
+- Attempt base is the corrected Attempt 157 record commit
+  `0197e53e9df4b5a5ddc2df94438a585610d60207`; current-main reference is v2.4.8
+  `4e328b0109e13c896b74004823fb049fcb19251a`; exact measured candidate is
+  `ad8ab28468ca0d9c828a91ef71a0754f58f2199f`. The candidate used a fixed primitive array for
+  eligible limits, admitted before the exact-limit final yield, preserved no-admission for partial
+  consumption, moved cache-hit work callbacks outside the cache monitor, and restored interruption
+  checking. Temporary metrics exposed retained node-prefix entry/byte counts.
+- The focused `GraphStoreTest` passed. It proved that consuming only one of 200 results did not
+  admit a node prefix, consuming the exact 200 through an outer `take(200)` did admit it, the next
+  request reused the ordered IDs with the expected work charge, interruption still cancelled a
+  cache hit, and closing the graph returned the shared reservation to its starting value.
+- The exact startup-prepared protocol used the same 64 distinct real persisted graphs and oracle as
+  Attempt 157 (fixture manifest SHA-256
+  `809c8b8ceed25428af65350edfa2c391f449051bf069b12555df245099f26ae2`), JDK 17.0.18,
+  `-XX:ActiveProcessorCount=4`, and `-Xmx8g`. The command remained
+  `LargeBroadQueryPressureBenchmark.replayBroadQueries -p graphCount=64
+  -p coverageFamily=graph-routing -p indexState=startup-prepared -wi 0 -i 1 -f 1 -prof gc`.
+  Main and candidate used byte-identical temporary harness source at SHA-256
+  `ffc5515a12d4bc5b4f32ff4a512b16a1efcf98b26d2eead6832856a1ae24f9c8`.
+- Main and both candidate runs completed `1,137/1,137` queries with no failure or timeout. Their
+  correctness manifests are byte-identical at SHA-256
+  `35fc69539c3080dbb801cca4ec7f1e7541f3ccd190d8774861f6109f7c58b6dd`. Candidate runs retained
+  464 node-prefix entries / 476,256 bytes across 64 heap indexes and still reported zero mapped
+  views, raw scans, scan workers, or segment workers.
+
+  | Run | Overall P50/P95 | Graph-id P95 | Parameter P95 | Process CPU | Gate margin |
+  | :--- | :--- | :--- | :--- | :--- | :--- |
+  | current main | 0.058/0.988 ms | 1.147 ms | 0.087 ms | 3.858 s | reference |
+  | candidate, candidate-first | 0.058/1.159 ms | 1.358 ms | 0.086 ms | 4.132 s | pass by 0.039 ms |
+  | candidate, base-first confirmation | 0.059/1.156 ms | 1.375 ms | 0.081 ms | 4.191 s | pass by 0.022 ms |
+
+  Candidate JMH JSON SHA-256 is
+  `4395b5da053fde175695edf62614ffa38cb609dde1785d10b5e0dd44c2612d88` /
+  `fb8cf054cf6f6af18dcf0940bbc99769e0e80ae5f170d838d721ab4e5d86132b`; current-main JSON is
+  `0a0ca4bdcef158c93c3d2c327a9624469f6351df76e3f1029b871342afa0c1f8`.
+- Expanding the percentile identifies the flaw in the hypothesis: rank 548 of 576 is always the
+  first `graph-id-property-wrapped-contains-*-dense` lookup for a graph. That query uses the direct
+  projection path, whose `projectRows` operation already consumes the complete bounded node
+  sequence and admits the cache even before this attempt. Later graph-id/function/parameter forms
+  reuse the projection-row cache, so publishing a node prefix one continuation earlier cannot
+  remove the first-miss work that determines P95. Relative to Attempt 157's exact candidate sample,
+  graph-id P95 changes only `1.392 -> 1.358/1.375 ms` while process CPU changes
+  `3.998 -> 4.132/4.191 s`. Passing the absolute guard by only 0.022--0.039 ms is consistent with
+  run noise, not a durable causal improvement.
+
+**Conclusion:** reject and revert. Exact-limit admission is valid for node-only consumers, but it
+does not affect the projection-first samples that block this PR and does not justify extra retained
+state in the goal path. The final Attempt 158 commit retains only this record; production, test, and
+JMH changes are removed. The next attempt must reduce the serial retained-index first-miss range
+collection or projection cost rather than rely on a later cache hit.
