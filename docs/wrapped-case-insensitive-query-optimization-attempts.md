@@ -5578,3 +5578,76 @@ but repeated exact-string resolution in the mapped view creates material cold se
 latency/CPU regressions. The next independent attempt must bound and reuse mapped-view query state;
 if that does not close all three graph-routing states, revert this production change rather than
 weakening the comparator.
+
+### 2026-09-05 - Attempt 156: Cache exact string IDs in mapped views
+
+**Hypothesis:** Attempt 155 repeats trigram lookup and exact string comparison for the same
+`(transform, mode, expected)` predicates during the graph-routing replay. Add a lazy, view-lifetime
+LRU of exact matching string IDs, bounded to 32 entries and 256 KiB per mapped view, and publish an
+entry only after the lookup and buffered work accounting complete successfully. Reusing these IDs
+should remove enough repeated mapped work to close the cold set-width and warm latency guards
+without creating a new executor or using the legacy CallSite scan pool.
+
+**Evidence:**
+
+- Attempt base is retained building-block commit
+  `85b2b4f49f6e307ad34b8dcf781ebaca1da2fd98`; current-main reference is v2.4.8
+  `4e328b0109e13c896b74004823fb049fcb19251a`; the exact measured candidate is temporary commit
+  `b75d9203b0694196b987e45bc05baf8c5fe0315a`. The measured production/test diff SHA-256 is
+  `68cf024c6c2bef8162e48f678d3ce6b3d045351960a28c334b0e7fc90916076b`. The final Attempt 156
+  commit reverts that diff and retains only this record.
+- The authoritative candidate used the same real 64-graph fixture, oracle, byte-identical harness,
+  JDK 17, four-CPU/8-GiB limit, and fresh-process `cold`, `warm`, and `startup-prepared` commands as
+  Attempt 155. Candidate JMH JAR SHA-256 is
+  `567420c903037348fcc58a0b44493c4854b2745ea168075012e0cc73601bac71`. Every state completed
+  `1,137/1,137` queries with zero failure or timeout; all candidate and current-main correctness
+  manifests are byte-identical at SHA-256
+  `35fc69539c3080dbb801cca4ec7f1e7541f3ccd190d8774861f6109f7c58b6dd`.
+- Cold and warm retain exactly 64 mapped views, zero full-index admissions, and 1,920 mapped
+  lookups distributed exactly 30 per graph. Both report zero intra-graph scans, zero scanned
+  graphs, and zero peak `graphite-callsite-scan-*` workers. Startup remains the unchanged
+  full-index lifecycle with 64 retained indexes, 2,043 lookups, and no mapped view. This isolates
+  the result from either removed `graphite-callsite-segment-*` scheduling or legacy scan fallback.
+
+  | State | Current main overall P50/P95 | Candidate overall P50/P95 | Candidate graph-id / parameter P95 | Result |
+  | :--- | :--- | :--- | :--- | :--- |
+  | cold | 0.060/13.479 ms | 0.114/1.725 ms | 2.359/1.329 ms | fail |
+  | warm | 0.024/0.077 ms | 0.043/1.380 ms | 1.510/1.390 ms | fail |
+  | startup-prepared | 0.063/1.025 ms | 0.057/1.175 ms | 1.408/0.080 ms | pass |
+
+  The cold first K64 request improves from Attempt 155's `419.290 ms` to `366.557 ms` and stays
+  below the current-main `255.501 + 250 ms` limit. The blocking cold residual is instead K64
+  graph-set P50/P95: current main `0.100/1.471 ms`, candidate `0.527/1.725 ms`. K2 changes
+  `0.054/0.208 -> 0.130/0.497 ms`, and K8 changes
+  `0.071/0.618 -> 0.190/0.595 ms`; those two remain inside the material absolute allowances.
+  Warm K2/K8/K64 is respectively `0.039/0.398`, `0.057/0.399`, and `0.173/0.341 ms`, but the
+  stricter overall graph-id and graph-parameter guards still fail: their P95 changes from roughly
+  `0.083/0.064 ms` to `1.510/1.390 ms`.
+- Versus Attempt 155, exact-ID reuse reduces cold work only
+  `109,278,906 -> 108,544,147` and warm work only
+  `51,636,912 -> 50,660,958` units. Candidate cold wall/CPU is `2.304/5.524 s`, peak used
+  heap/RSS `4.828/5.549 GiB`, and allocation `13.768 GiB/op`; warm is `1.582/2.488 s`,
+  `4.855/5.683 GiB`, and `23.275 GiB/op`. The warm CPU reduction does not compensate for the
+  latency regression. The remaining dominant work is posting-range validation, encounter-order
+  merge, node materialization, and projection after exact IDs have already been resolved.
+- The focused mapped-view test passed and proved successful, empty, eviction, and consumer-failure
+  behavior before the performance run. A subsequent review found two additional reasons not to
+  ship the isolated cache: a hit, especially an empty hit, bypasses interruption and minimum work
+  charging; and its per-view byte cap is not reserved from the shared mapped-index memory budget,
+  while `close()` has no generation guard against a concurrent late publication. No full suite was
+  claimed after the authoritative performance gate failed.
+- Candidate cold/warm/startup JSON SHA-256 is
+  `e06916a4c2e45a3d3442377c273c33e89062d36778f4b48dccc418f9a6644686` /
+  `c4328f3285c6fe8c82baac39d7bb86cb7521bb267483c2588637f9efe845af39` /
+  `8a85e44d8f79439eec25e9e5aa65d644afbbd2134ac5fcd1f6a576c05ccb2df`; comparator status
+  SHA-256 is `81527cccea5bb4e87a6f78feca4c6dde7bdfe4841a18ec064ad3ad62db15ebc6` /
+  `77de7c3baee5da8c79a0a9736898d7f647b8195818657db1de7570efab99df90` /
+  `7b82b352eeef89bf80ac23935f8e8f4157454a9c8a357cb9aa6778f6a11ce543` in the same state order.
+
+**Conclusion:** reject and revert. Exact string-ID reuse helps a narrow repeated-term component but
+does not remove the mapped posting validation and node projection that dominate warm latency, and
+it introduces cancellation and memory-accounting semantics that are not justified by the failed
+gate. Keep only this record. The next independent attempt should cache a fully validated,
+encounter-ordered, limit-aware mapped result prefix under the shared memory budget, with cancellation
+and close-generation safety; if the strict warm guard still fails, direct bounded projection must be
+measured as a separate hypothesis.
