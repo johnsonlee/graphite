@@ -5258,3 +5258,6 @@ candidate are restored to e6c in the explicit revert; their exact attempted
 versions remain in the attempt commit. Existing pure-four-OR correctness tests,
 all profiling evidence and this chronological record remain. No optimization
 is accepted, CallSite pools remain, and the final 10x goal is unmet.
+
+
+The rejected attempt is commit `470df7cea888240b87380f1a4a650638ea713815`. The explicit revert verifies all 130 main/JMH files byte-identical to frozen main and all 168 test files byte-identical to e6c; [source receipt](profiling/attempt138/revert-source-receipt.json). This is source restoration evidence, not a passing performance comparison.
