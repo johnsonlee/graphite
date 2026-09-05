@@ -584,6 +584,37 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
+    fun `warm mapped graph set projects rows without materializing nodes`() {
+        val graphs = listOf(
+            ColdMappedLookupGraph(
+                graph(),
+                initiallyCold = false,
+                rawProjectionRows = listOf(StringPropertyProjectionRow(listOf("example.First")))
+            ),
+            ColdMappedLookupGraph(
+                graph(),
+                initiallyCold = false,
+                rawProjectionRows = listOf(StringPropertyProjectionRow(listOf("example.Second")))
+            )
+        )
+
+        val result = CrossGraphCypherExecutor(graphs.mapIndexed { index, source ->
+            CypherGraph("graph-$index", source)
+        }).execute(
+            "MATCH (n:CallSiteNode) WHERE n.graphId IN ['graph-0', 'graph-1'] AND " +
+                "n.caller_class CONTAINS 'Target' RETURN n.caller_class AS caller LIMIT 2"
+        )
+
+        assertEquals(listOf("example.First", "example.Second"), result.rows.map { row -> row["caller"] })
+        assertEquals(listOf(listOf("graph-0"), listOf("graph-1")), result.rows.map(::graphIds))
+        assertTrue(graphs.all { graph -> graph.lookups.get() == 0 })
+        assertTrue(graphs.all { graph -> graph.projectionLookups.get() == 1 })
+        assertEquals(listOf(2), graphs[0].projectionLimits.toList())
+        assertEquals(listOf(1), graphs[1].projectionLimits.toList())
+        assertTrue(graphs.all { graph -> graph.projectionPreferredMappedConsumers.single() })
+    }
+
+    @Test
     fun `fully warm mapped suffix reuses bounded outer workers and preferred views`() {
         val expectedWorkers = resolveColdMappedStringGraphParallelism()
         if (expectedWorkers <= 1) return
@@ -3298,6 +3329,9 @@ class CrossGraphCypherExecutorTest {
         val preferredMappedConsumers = java.util.concurrent.ConcurrentLinkedQueue<Boolean>()
         val preferredPersistedConsumers = java.util.concurrent.ConcurrentLinkedQueue<Boolean>()
         val lookupThreads = java.util.concurrent.ConcurrentLinkedQueue<String>()
+        val projectionLookups = AtomicInteger()
+        val projectionLimits = java.util.concurrent.ConcurrentLinkedQueue<Int>()
+        val projectionPreferredMappedConsumers = java.util.concurrent.ConcurrentLinkedQueue<Boolean>()
 
         override fun hasColdMappedStringPropertyDisjunction(
             type: Class<out Node>,
@@ -3342,7 +3376,13 @@ class CrossGraphCypherExecutorTest {
             projectedProperties: List<String>,
             limit: Int,
             workConsumer: GraphWorkConsumer?
-        ): List<StringPropertyProjectionRow>? = rawProjectionRows?.take(limit)
+        ): List<StringPropertyProjectionRow>? {
+            projectionLookups.incrementAndGet()
+            projectionLimits += limit
+            projectionPreferredMappedConsumers +=
+                workConsumer is PreferredSerialMappedStringIndexViewGraphWorkBatchConsumer
+            return rawProjectionRows?.take(limit)
+        }
     }
 
     private fun callSite(

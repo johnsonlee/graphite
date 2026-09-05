@@ -202,9 +202,9 @@ is restored after the trial. `startup-prepared` explicitly uses the `true` load-
 The candidate cold fork must prove one complete lifecycle across all 64 graphs: 64 bounded raw
 builds followed by exactly 1,979 retained-index lookups distributed 29..38 per graph; zero raw
 builds followed by 2,043 persisted-index lookups distributed 30..39; or 64 open mapped views, zero
-raw builds, and exactly 1,920 mapped-view lookups distributed 30..30. After warmup metrics are
-reset, the warm fork must report zero scans and either the complete 2,043-lookup retained lifecycle
-or the complete 1,920-lookup mapped-view lifecycle. A mixed or partial lifecycle fails. The
+raw builds, and exactly 2,043 mapped-view lookups distributed 30..39. After warmup metrics are
+reset, the warm fork must report zero scans and the complete 2,043-lookup retained or mapped-view
+lifecycle. A mixed or partial lifecycle fails. The
 `startup-prepared` fork performs no query warmup and must restore all 64 persisted indexes, execute
 2,043 indexed lookups distributed 30..39, and perform zero scans. Aggregate totals alone cannot
 hide a distribution such as `[641, 1, ..., 1]`. This rejects an implementation that happens to meet
@@ -218,9 +218,16 @@ consumer cannot publish a prefix, while a result that reaches its exact limit is
 the last element is yielded so an outer `LIMIT` does not suppress admission. Cache memory is
 reserved from the shared mapped-index budget, hits still check interruption and charge graph work,
 and closing the view clears the entries and prevents a concurrent late publication. The fixture64
-mapped workload must end with exactly 464 entries within the aggregate 16 MiB ceiling; the observed
-real-fixture footprint is 643,296 bytes. Retained-index, raw-build, and `startup-prepared` lifecycles
-must report zero mapped-prefix entries and bytes.
+graph-routing path can also retain immutable projected string rows in a separate access-ordered LRU
+of at most 16 entries and 512 KiB per view. Its key additionally includes the projected property
+list, and it shares the same global mapped-index reservation, interruption, work-accounting, and
+clear/close semantics. The pressure output reports node-prefix and projection cache entries/bytes
+separately; the comparator fails unless both are present and within their independent bounds for a
+mapped-view lifecycle, or both are zero for a retained-index lifecycle. The fixture64
+mapped workload must end with exactly 464 node-prefix entries within the aggregate 16 MiB ceiling
+and 464 projection entries within the aggregate 32 MiB ceiling; the observed real-fixture
+footprints are 643,296 and 7,663,418 bytes respectively. Retained-index, raw-build, and
+`startup-prepared` lifecycles must report zero entries and bytes for both mapped caches.
 
 In the raw-build lifecycle, a bounded scan that reaches the end of the selected graph reuses the
 already-read node and string ids to publish the combined CallSite CSR index instead of discarding

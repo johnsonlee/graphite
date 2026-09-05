@@ -509,6 +509,178 @@ class GraphStoreTest {
 
     @Test
     @Suppress("LongMethod")
+    fun `mapped projection cache reuses rows stays bounded and preserves cancellation`() {
+        val graph = DefaultGraph.Builder().apply {
+            repeat(8) { index ->
+                addNode(
+                    CallSiteNode(
+                        NodeId(index),
+                        MethodDescriptor(
+                            TypeDescriptor(if (index % 2 == 0) "example.TargetCaller$index" else "example.Caller$index"),
+                            "call$index",
+                            emptyList(),
+                            TypeDescriptor("void")
+                        ),
+                        MethodDescriptor(
+                            TypeDescriptor("example.Dependency$index"),
+                            "invoke$index",
+                            emptyList(),
+                            TypeDescriptor("void")
+                        ),
+                        index,
+                        null,
+                        emptyList()
+                    )
+                )
+            }
+        }.build()
+        val predicates = listOf(
+            StringPropertyPredicate(
+                "caller_class",
+                StringValueTransform.LOWERCASE,
+                StringMatchMode.CONTAINS,
+                "target"
+            )
+        )
+        val projectedProperties = listOf("caller_class", "callee_name")
+        val dir = Files.createTempDirectory("webgraph-mapped-projection-cache")
+        val property = GraphStore.MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY
+        val previous = System.getProperty(property)
+        val retainedBefore = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
+        try {
+            System.clearProperty(property)
+            GraphStore.save(graph, dir, prepareCallSiteStringIndex = true)
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                val nodeIds = loaded.nodesByStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    predicates,
+                    4,
+                    PreferredSerialMappedStringIndexViewGraphWorkBatchConsumer { }
+                ).orEmpty().map { node -> node.id.value }.toList()
+                assertEquals(setOf(0, 2, 4, 6), nodeIds.toSet())
+                assertEquals(1, loaded.mappedCallSiteStringIndexViewCacheEntries())
+                val nodeCacheBytes = loaded.mappedCallSiteStringIndexViewCacheBytes()
+                assertTrue(nodeCacheBytes > 0L)
+                assertEquals(0, loaded.mappedCallSiteStringIndexViewProjectionCacheEntries())
+                assertEquals(0L, loaded.mappedCallSiteStringIndexViewProjectionCacheBytes())
+                val retainedAfterNodeCache = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
+
+                val firstWork = AtomicLong()
+                val first = loaded.projectStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    predicates,
+                    projectedProperties,
+                    4,
+                    PreferredSerialMappedStringIndexViewGraphWorkBatchConsumer(firstWork::addAndGet)
+                )
+                assertEquals(
+                    nodeIds.map { nodeId -> listOf("example.TargetCaller$nodeId", "invoke$nodeId") },
+                    first.orEmpty().map { row -> row.values }
+                )
+                assertEquals(1, loaded.mappedCallSiteStringIndexViewCacheEntries())
+                assertEquals(nodeCacheBytes, loaded.mappedCallSiteStringIndexViewCacheBytes())
+                assertEquals(1, loaded.mappedCallSiteStringIndexViewProjectionCacheEntries())
+                assertTrue(loaded.mappedCallSiteStringIndexViewProjectionCacheBytes() > 0L)
+                assertTrue(MappedCallSiteStringIndexMemoryBudget.retainedBytes() > retainedAfterNodeCache)
+
+                val repeatedWork = AtomicLong()
+                val repeated = loaded.projectStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    predicates,
+                    projectedProperties,
+                    4,
+                    PreferredSerialMappedStringIndexViewGraphWorkBatchConsumer(repeatedWork::addAndGet)
+                )
+                assertSame(first, repeated)
+                assertEquals(4L, repeatedWork.get())
+                assertTrue(firstWork.get() >= repeatedWork.get())
+
+                val cachedFailure = IllegalStateException("cached projection work rejected")
+                val propagated = assertFailsWith<IllegalStateException> {
+                    loaded.projectStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        predicates,
+                        projectedProperties,
+                        4,
+                        PreferredSerialMappedStringIndexViewGraphWorkBatchConsumer { throw cachedFailure }
+                    )
+                }
+                assertSame(cachedFailure, propagated)
+
+                val interruptedFailure = AtomicReference<Throwable>()
+                val interrupted = Thread {
+                    Thread.currentThread().interrupt()
+                    interruptedFailure.set(
+                        runCatching {
+                            loaded.projectStringPropertyDisjunction(
+                                CallSiteNode::class.java,
+                                predicates,
+                                projectedProperties,
+                                4,
+                                PreferredSerialMappedStringIndexViewGraphWorkBatchConsumer { }
+                            )
+                        }.exceptionOrNull()
+                    )
+                }
+                interrupted.start()
+                interrupted.join(5_000)
+                assertFalse(interrupted.isAlive)
+                assertTrue(interruptedFailure.get() is CancellationException)
+
+                val projectionEntriesBeforeDenied = loaded.mappedCallSiteStringIndexViewProjectionCacheEntries()
+                val available = MappedCallSiteStringIndexMemoryBudget.maxBytes -
+                    MappedCallSiteStringIndexMemoryBudget.retainedBytes()
+                checkNotNull(MappedCallSiteStringIndexMemoryBudget.tryReserve(available)).use {
+                    assertNotNull(
+                        loaded.projectStringPropertyDisjunction(
+                            CallSiteNode::class.java,
+                            predicates,
+                            listOf("caller_name"),
+                            4,
+                            PreferredSerialMappedStringIndexViewGraphWorkBatchConsumer { }
+                        )
+                    )
+                    assertEquals(
+                        projectionEntriesBeforeDenied,
+                        loaded.mappedCallSiteStringIndexViewProjectionCacheEntries()
+                    )
+                }
+
+                (1..40).forEach { limit ->
+                    assertNotNull(
+                        loaded.projectStringPropertyDisjunction(
+                            CallSiteNode::class.java,
+                            predicates,
+                            projectedProperties,
+                            limit,
+                            PreferredSerialMappedStringIndexViewGraphWorkBatchConsumer { }
+                        )
+                    )
+                }
+                assertEquals(16, loaded.mappedCallSiteStringIndexViewProjectionCacheEntries())
+                assertTrue(
+                    loaded.mappedCallSiteStringIndexViewProjectionCacheBytes() in 1L..(512L * 1024)
+                )
+
+                loaded.clearStringPropertyIndexes()
+                assertEquals(0, loaded.mappedCallSiteStringIndexViewCacheEntries())
+                assertEquals(0L, loaded.mappedCallSiteStringIndexViewCacheBytes())
+                assertEquals(0, loaded.mappedCallSiteStringIndexViewProjectionCacheEntries())
+                assertEquals(0L, loaded.mappedCallSiteStringIndexViewProjectionCacheBytes())
+                assertEquals(retainedBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
+            } finally {
+                loaded.close()
+            }
+        } finally {
+            previous?.let { System.setProperty(property, it) } ?: System.clearProperty(property)
+            dir.toFile().deleteRecursively()
+        }
+        assertEquals(retainedBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
+    }
+
+    @Test
+    @Suppress("LongMethod")
     fun `routed mapped prefix cache is bounded limit aware and preserves cancellation`() {
         val graph = DefaultGraph.Builder().apply {
             repeat(8) { index ->

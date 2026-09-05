@@ -5,6 +5,7 @@ package io.johnsonlee.graphite.webgraph
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.StringMatchMode
 import io.johnsonlee.graphite.graph.StringPropertyPredicate
+import io.johnsonlee.graphite.graph.StringPropertyProjectionRow
 import io.johnsonlee.graphite.graph.StringValueTransform
 import it.unimi.dsi.lang.MutableString
 import java.io.Closeable
@@ -18,6 +19,7 @@ import java.nio.channels.FileChannel
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
+import java.util.Collections
 import java.util.PriorityQueue
 import java.util.concurrent.CancellationException
 import java.util.zip.CRC32
@@ -34,6 +36,9 @@ internal interface MappedCallSiteNodeAccessor {
     fun encounterOrder(nodeId: Int): Long
 
     fun tupleMatches(nodeId: Int, propertyIndexes: IntArray, stringIds: IntArray): Boolean
+
+    fun stringPropertyId(nodeId: Int, propertyIndex: Int): Int =
+        error("Mapped CallSite string projection is unavailable")
 }
 
 /**
@@ -61,6 +66,12 @@ internal class MappedCallSiteStringIndexView private constructor(
         true
     )
     private var matchingNodeCacheBytes = 0L
+    private val projectedRows = LinkedHashMap<MappedProjectionKey, CachedMappedProjectionRows>(
+        MAX_MAPPED_PROJECTION_CACHE_ENTRIES + 1,
+        MAPPED_NODE_MATCH_CACHE_LOAD_FACTOR,
+        true
+    )
+    private var projectedRowCacheBytes = 0L
     private var closed = false
 
     override fun close() {
@@ -71,15 +82,86 @@ internal class MappedCallSiteStringIndexView private constructor(
                 closed = true
                 matchingNodeIds.clear()
                 matchingNodeCacheBytes = 0L
+                projectedRows.clear()
+                projectedRowCacheBytes = 0L
                 true
             }
         }
         if (releaseReservation) reservation.close()
     }
 
-    internal fun retainedQueryCacheBytes(): Long = synchronized(cacheLock) { matchingNodeCacheBytes }
+    internal fun retainedQueryCacheStats(): MappedCacheStats = synchronized(cacheLock) {
+        MappedCacheStats(matchingNodeIds.size, matchingNodeCacheBytes)
+    }
 
-    internal fun retainedQueryCacheEntries(): Int = synchronized(cacheLock) { matchingNodeIds.size }
+    internal fun retainedProjectionCacheStats(): MappedCacheStats = synchronized(cacheLock) {
+        MappedCacheStats(projectedRows.size, projectedRowCacheBytes)
+    }
+
+    fun projectRows(
+        predicates: List<StringPropertyPredicate>,
+        projectedProperties: List<String>,
+        workConsumer: GraphWorkConsumer?,
+        limit: Int
+    ): List<StringPropertyProjectionRow>? {
+        if (limit <= 0) return emptyList()
+        if (!supportsPredicates(predicates)) return null
+        val propertyIndexes = projectedProperties.map(::callSiteStringPropertyIndex).toIntArray()
+        if (propertyIndexes.any { propertyIndex -> propertyIndex < 0 }) return null
+        val key = if (limit <= MAX_MAPPED_NODE_MATCH_CACHE_LIMIT) {
+            MappedProjectionKey(predicates.toList(), projectedProperties.toList(), limit)
+        } else {
+            null
+        }
+        val cachedRows = key?.let { cacheKey ->
+            synchronized(cacheLock) {
+                if (closed) null else projectedRows[cacheKey]?.rows
+            }
+        }
+        if (cachedRows != null) {
+            checkViewInterrupted()
+            consumeGraphWork(workConsumer, cachedRows.size.coerceAtLeast(1).toLong())
+            return cachedRows
+        }
+
+        val nodeIds = matchingNodeIds(predicates, workConsumer, limit) ?: return null
+        val rows = nodeIds.map { nodeId ->
+            StringPropertyProjectionRow(propertyIndexes.map { propertyIndex ->
+                stringTable.get(nodeAccessor.stringPropertyId(nodeId, propertyIndex))
+            })
+        }.toList()
+        return if (key == null) rows else cacheProjectedRows(key, rows)
+    }
+
+    private fun cacheProjectedRows(
+        key: MappedProjectionKey,
+        rows: List<StringPropertyProjectionRow>
+    ): List<StringPropertyProjectionRow> {
+        val retainedRows = Collections.unmodifiableList(rows.map { row ->
+            StringPropertyProjectionRow(Collections.unmodifiableList(row.values.toList()))
+        })
+        val entryBytes = estimatedMappedProjectionCacheBytes(key, retainedRows)
+        if (entryBytes > MAX_MAPPED_PROJECTION_CACHE_BYTES) return retainedRows
+        synchronized(cacheLock) {
+            if (closed) return retainedRows
+            projectedRows[key]?.let { cached -> return cached.rows }
+            while (projectedRows.isNotEmpty() &&
+                (projectedRows.size >= MAX_MAPPED_PROJECTION_CACHE_ENTRIES ||
+                    projectedRowCacheBytes > MAX_MAPPED_PROJECTION_CACHE_BYTES - entryBytes)
+            ) {
+                val eldest = projectedRows.entries.iterator().next()
+                projectedRows.remove(eldest.key)
+                projectedRowCacheBytes -= eldest.value.retainedBytes
+                reservation.shrinkTo(reservation.bytes - eldest.value.retainedBytes)
+            }
+            val retainedAfter = runCatching { Math.addExact(reservation.bytes, entryBytes) }.getOrNull()
+                ?: return retainedRows
+            if (!reservation.tryGrowTo(retainedAfter)) return retainedRows
+            projectedRows[key] = CachedMappedProjectionRows(retainedRows, entryBytes)
+            projectedRowCacheBytes += entryBytes
+            return retainedRows
+        }
+    }
 
     override fun containsPropertyStringId(
         propertyIndex: Int,
@@ -199,12 +281,10 @@ internal class MappedCallSiteStringIndexView private constructor(
                 matchingNodeCacheBytes -= eldest.value.retainedBytes
                 reservation.shrinkTo(reservation.bytes - eldest.value.retainedBytes)
             }
-            val retainedAfter = runCatching {
-                Math.addExact(matchingNodeCacheBytes, entryBytes)
-            }.getOrNull() ?: return
+            val retainedAfter = runCatching { Math.addExact(reservation.bytes, entryBytes) }.getOrNull() ?: return
             if (!reservation.tryGrowTo(retainedAfter)) return
             matchingNodeIds[key] = CachedMappedNodeIds(nodeIds, entryBytes)
-            matchingNodeCacheBytes = retainedAfter
+            matchingNodeCacheBytes += entryBytes
         }
     }
 
@@ -755,6 +835,22 @@ private data class CachedMappedNodeIds(
     val retainedBytes: Long
 )
 
+private data class MappedProjectionKey(
+    val predicates: List<StringPropertyPredicate>,
+    val projectedProperties: List<String>,
+    val limit: Int
+)
+
+private data class CachedMappedProjectionRows(
+    val rows: List<StringPropertyProjectionRow>,
+    val retainedBytes: Long
+)
+
+internal data class MappedCacheStats(
+    val entries: Int,
+    val bytes: Long
+)
+
 private fun estimatedMappedNodeMatchCacheBytes(
     key: MappedNodeMatchKey,
     nodeIds: IntArray
@@ -774,6 +870,43 @@ private fun estimatedMappedNodeMatchCacheBytes(
             Math.addExact(
                 Math.multiplyExact(keyCharacters, Char.SIZE_BYTES.toLong()),
                 Math.multiplyExact(nodeIds.size.toLong(), Int.SIZE_BYTES.toLong())
+            )
+        )
+    )
+} catch (_: ArithmeticException) {
+    Long.MAX_VALUE
+}
+
+private fun estimatedMappedProjectionCacheBytes(
+    key: MappedProjectionKey,
+    rows: List<StringPropertyProjectionRow>
+): Long = try {
+    val keyCharacters = key.predicates.sumOf { predicate ->
+        predicate.property.length.toLong() + predicate.expected.length
+    } + key.projectedProperties.sumOf { property -> property.length.toLong() }
+    val valueReferences = rows.sumOf { row -> row.values.size.toLong() }
+    var decodedStringBytes = 0L
+    rows.forEach { row ->
+        row.values.filterNotNull().forEach { value ->
+            decodedStringBytes = Math.addExact(
+                decodedStringBytes,
+                Math.addExact(
+                    MAPPED_PROJECTION_STRING_ESTIMATED_BYTES + MAPPED_PRIMITIVE_ARRAY_HEADER_ESTIMATED_BYTES,
+                    Math.multiplyExact(value.length.toLong(), Char.SIZE_BYTES.toLong())
+                )
+            )
+        }
+    }
+    Math.addExact(
+        MAPPED_PROJECTION_CACHE_ENTRY_ESTIMATED_BYTES,
+        Math.addExact(
+            Math.multiplyExact(keyCharacters, Char.SIZE_BYTES.toLong()),
+            Math.addExact(
+                Math.multiplyExact(rows.size.toLong(), MAPPED_PROJECTION_ROW_ESTIMATED_BYTES),
+                Math.addExact(
+                    Math.multiplyExact(valueReferences, MAPPED_REFERENCE_ESTIMATED_BYTES),
+                    decodedStringBytes
+                )
             )
         )
     )
@@ -819,7 +952,13 @@ private const val MIN_INDEX_VIEW_BYTES = CALL_SITE_STRING_INDEX_HEADER_BYTES + L
 private const val MAX_MAPPED_NODE_MATCH_CACHE_ENTRIES = 16
 private const val MAX_MAPPED_NODE_MATCH_CACHE_BYTES = 256L * 1024
 private const val MAX_MAPPED_NODE_MATCH_CACHE_LIMIT = 200
+private const val MAX_MAPPED_PROJECTION_CACHE_ENTRIES = 16
+private const val MAX_MAPPED_PROJECTION_CACHE_BYTES = 512L * 1024
 private const val MAPPED_NODE_MATCH_CACHE_LOAD_FACTOR = 0.75f
 private const val MAPPED_NODE_MATCH_CACHE_ENTRY_ESTIMATED_BYTES = 192L
 private const val MAPPED_NODE_MATCH_CACHE_PREDICATE_ESTIMATED_BYTES = 72L
 private const val MAPPED_PRIMITIVE_ARRAY_HEADER_ESTIMATED_BYTES = 24L
+private const val MAPPED_PROJECTION_CACHE_ENTRY_ESTIMATED_BYTES = 192L
+private const val MAPPED_PROJECTION_ROW_ESTIMATED_BYTES = 64L
+private const val MAPPED_PROJECTION_STRING_ESTIMATED_BYTES = 24L
+private const val MAPPED_REFERENCE_ESTIMATED_BYTES = 8L

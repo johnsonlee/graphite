@@ -5952,3 +5952,89 @@ passes. This attempt adds no executor or worker pool: the candidate remains four
 zero segment workers, and an unused `graphite-callsite-scan-*` fallback. The production bytes are
 ready for hosted reproduction; the PR itself must not be marked ready to merge until the final
 remote SHA passes required checks and outstanding review threads are resolved.
+
+### 2026-09-05 - Attempt 160: Cache projected rows in mapped CallSite index views
+
+**Hypothesis:** the hosted graph-routing failure is specific to the cold/warm mapped-index
+lifecycle. Attempt 157 cached only the matching node-id prefix, so every repeated graph-scoped
+projection still reconstructs `CallSiteNode` objects, resolves each requested string property, and
+rebuilds the public rows. Let the mapped storage view return and retain the final immutable string
+rows for the same bounded projection. This should remove that repeated materialization without
+changing the unscoped global-wide executor, introducing another worker pool, or re-enabling raw
+CallSite scans.
+
+**Evidence:**
+
+- Attempt base is the retained Attempt 159 commit
+  `cd7b13914782e1027ab21f55e22b0f5b0cf86499`; current-main reference is v2.4.8
+  `4e328b0109e13c896b74004823fb049fcb19251a`. The exact measured production/test candidate is
+  `bb8ba9dfc28696583b95c72055fc06c316b5fe9b`; the following evidence-only amendment leaves its
+  production, test, gate, and harness bytes unchanged. Their combined measured diff SHA-256 is
+  `0d71b11cdd31a10a85d39d95cf022672250a15a252851981dd1722b722917681`.
+- `MappedCallSiteStringIndexView` now resolves requested persisted string ids directly into final
+  projected rows and keeps completed results in an access-ordered LRU. The cache is bounded to 16
+  entries and 512 KiB per mapped view, reserves bytes from the existing shared mapped-index memory
+  budget, charges graph work on hits, polls interruption, never publishes partially consumed or
+  failed results, and releases every reservation on clear/close. The cache key includes the query
+  and projected property list. `QueryPipeline` selects this storage projection only for a preferred
+  graph-scoped mapped source; the multi-source unscoped global-wide branch is unchanged.
+- A sizing experiment used the same complete warm workload. Eight entries / 512 KiB retained only
+  443 of 464 workload keys and produced `0.143 ms` graph-id P95. Sixteen entries / 512 KiB retained
+  all 464 keys and produced `0.095 ms` graph-id P95; 32 entries / 2 MiB retained the same 464 keys
+  and produced `0.081 ms` overall P95, within run noise but with four times the theoretical byte allowance. The selected
+  16-entry limit is the smallest complete policy. Across the 64 real views its actual footprint is
+  464 entries / 7,663,418 bytes, versus a 32 MiB aggregate ceiling; the independent node-prefix
+  cache remains 464 entries / 643,296 bytes under its existing 16 MiB ceiling.
+- The exact fixture contains 64 distinct real persisted graph shards derived from Android, Tika,
+  Hive, and Kotlin compiler graphs. Its manifest SHA-256 is
+  `05df7237fb4a8876d4be83f3454135d559c866789d252679b702d76332090d41`; the independent
+  single-source oracle SHA-256 is
+  `2432752fbf81477508980bb04966b282330d3a2b705690f034ca3c6317b808d6`. Current main and
+  candidate ran in fresh JDK 17.0.18 JVMs on the same local Apple host with 16 available processors,
+  `-Xmx8g`, and
+  `LargeBroadQueryPressureBenchmark.replayBroadQueries -p graphCount=64
+  -p coverageFamily=graph-routing -p indexState=<cold|warm|startup-prepared> -wi 0 -i 1 -f 1
+  -prof gc`. This is local preflight evidence only; the GitHub workflow remains unchanged on its
+  existing Linux x64 runner.
+- Every run completed `1,137/1,137` queries, 78,824 rows, with no failure or timeout. All six
+  selected base/candidate correctness outputs are byte-identical at SHA-256
+  `7a1b9b41bd8220ef823f7a2012958aaec4499d9457e4aeb2286d104de43d9ea7`.
+
+  | State | Current-main overall P50/P95 | Candidate overall P50/P95 | Main/candidate graph-id P95 | Main/candidate parameter P95 | Result |
+  | :--- | :--- | :--- | :--- | :--- | :--- |
+  | cold | 0.063/13.537 ms | 0.070/1.439 ms | 18.031/1.987 ms | 0.090/0.094 ms | pass |
+  | warm | 0.025/0.080 ms | 0.029/0.087 ms | 0.092/0.095 ms | 0.064/0.066 ms | pass |
+  | startup-prepared | 0.067/0.966 ms | 0.067/1.050 ms | 1.149/1.290 ms | 0.100/0.101 ms | pass |
+
+  Cold overall P95 improves `9.41x` and the blocking graph-id P95 improves `9.08x`. Warm and
+  startup-prepared stay inside the existing 15%/0.25 ms absolute regression policy. K=64 P95 is
+  `1.214 -> 1.450 ms` cold, `0.101 -> 0.230 ms` warm, and `1.364 -> 1.410 ms`
+  startup-prepared; the cold first K=64 request is `158.164 -> 406.204 ms`, still below its explicit
+  408.164 ms page-fault allowance.
+- Cold/warm candidate process CPU is `4.912/1.963 s` versus current main's `6.593/2.161 s`; peak
+  RSS is `5.56/5.62 GiB` versus `6.51/6.77 GiB`, and normalized allocation is
+  `13.48/22.54 GiB/op` versus `14.34/23.81 GiB/op`. Startup candidate/current-main process CPU is
+  `4.469/4.637 s`, with `5.88/5.80 GiB` peak RSS. Cold/warm use 64 mapped views, zero retained heap indexes, zero raw scans,
+  and exactly 2,043 indexed lookups distributed 30..39 per graph. Startup remains 64 retained
+  indexes, zero mapped views/caches/scans, and the same exact lookup distribution. All states report
+  four graph workers and zero segment or active CallSite scan workers.
+- Cold/warm/startup report/status SHA-256 is
+  `3cdebc0ba47df8f7857b9a688af1c4e8c31788ea8b60b31d5d39624fde06f01d` /
+  `f7b114e3ecdefc63e14294ddc7dd5cb9dc5bd919d419ef4d757e65aab827c14d`,
+  `56a30107b1f894179b081b61436323c21d940df6a16a6a878e3dc6088036ab65` /
+  `d2f6ffd1445afb4b9be1d94185d56998831ed6d45e1cc37f767bb96e84797137`, and
+  `c81ee0a4f9d638b0b69c14009d93e5beb4fa03443dbd9cd1f59dc127083ce4f3` /
+  `66f6e7d136005cd38237af0f5fb1d3f428715769ab731b5f79e672c93821cf9e`.
+- Tests verify exact projected values and encounter order, source provenance and global limits,
+  cache identity on a hit, work accounting, interruption, consumer exception identity, budget
+  denial, LRU bounds, and shared reservation release. The exact code passed `:webgraph:test`,
+  `:cypher:test`, all 91 benchmark-gate Node tests, and `git diff --check`. The gate now requires
+  the exact mapped projection lifecycle and fails closed on a missing/oversized cache; the four
+  comparator integrity hashes were updated to the comparator's exact SHA-256
+  `7d0327a123ab5b54b55a25a1804184ed6cdbff912b62fdd1a3c1417fed971b20`.
+
+**Conclusion:** retain for hosted reproduction. This causally removes the old remote
+graph-routing mapped-view regression while preserving correctness, bounded memory, cancellation,
+work accounting, existing worker topology, and the retained startup path. It does not claim to fix
+the independently failing global-wide shapes, method-compatibility CPU sample, or Cypher-capacity
+tail sample; those require separate attempts and commits before the PR can be ready to merge.

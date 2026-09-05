@@ -1857,22 +1857,36 @@ class QueryPipeline private constructor(
         val projections = candidateSources.map { source ->
             source.graph as? StringPropertyDisjunctionProjection ?: return null
         }
+        val retainedProjectionSources = candidateSources.map { source ->
+            (source.graph as? RetainedStringPropertyDisjunctionLookup)
+                ?.hasRetainedStringPropertyDisjunction(CallSiteNode::class.java, predicates) == true
+        }
+        val mappedProjectionSources = candidateSources.map { source ->
+            hasWarmMappedCallSiteStringIndexView(source.graph, nodeClass, filter)
+        }
         if (candidateSources.size > 1 && candidateSources.indices.any { index ->
-                val retained = candidateSources[index].graph as? RetainedStringPropertyDisjunctionLookup
-                    ?: return@any true
-                !retained.hasRetainedStringPropertyDisjunction(CallSiteNode::class.java, predicates)
+                !retainedProjectionSources[index] && !mappedProjectionSources[index]
             }
         ) return null
         val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
         val rows = mutableListOf<Map<String, Any?>>()
         candidateSources.indices.forEach { index ->
             val source = candidateSources[index]
+            val storageWorkConsumer = if (mappedProjectionSources[index] && !retainedProjectionSources[index]) {
+                stringStorageWorkConsumer(
+                    candidateSources.size,
+                    tracker,
+                    preferMappedStringIndexView = true
+                )
+            } else {
+                tracker
+            }
             val projectedRows = projections[index].projectStringPropertyDisjunction(
                 CallSiteNode::class.java,
                 predicates,
                 projectedProperties,
                 limit - rows.size,
-                tracker
+                storageWorkConsumer
             ) ?: return null
             val projected = DirectProjectionResultCache.getOrCreate(projectedRows, columns, source.id)
             if (candidateSources.size == 1) return projected

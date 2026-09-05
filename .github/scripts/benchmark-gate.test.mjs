@@ -121,6 +121,8 @@ function graphIdPressureResult(overrides = {}, indexState = "cold") {
         callSiteMappedIndexViewGraphs: 0,
         callSiteMappedIndexViewCacheBytes: 0,
         callSiteMappedIndexViewCacheEntries: 0,
+        callSiteMappedIndexViewProjectionCacheBytes: 0,
+        callSiteMappedIndexViewProjectionCacheEntries: 0,
         callSiteParallelScanCount: warm ? 0 : 64,
         callSiteParallelScanGraphCount: warm ? 0 : 64,
         callSiteStringIndexLookupCount: warm ? 2043 : 1979,
@@ -1274,12 +1276,14 @@ test("fixture64 graphId pressure accepts only complete mapped-view lifecycles", 
         callSiteMappedIndexViewGraphs: 64,
         callSiteMappedIndexViewCacheBytes: 643_296,
         callSiteMappedIndexViewCacheEntries: 464,
+        callSiteMappedIndexViewProjectionCacheBytes: 7_663_418,
+        callSiteMappedIndexViewProjectionCacheEntries: 464,
         callSiteParallelScanCount: 0,
         callSiteParallelScanGraphCount: 0,
-        callSiteStringIndexLookupCount: 1920,
+        callSiteStringIndexLookupCount: 2043,
         callSiteStringIndexLookupGraphCount: 64,
         callSiteStringIndexLookupMinPerGraph: 30,
-        callSiteStringIndexLookupMaxPerGraph: 30,
+        callSiteStringIndexLookupMaxPerGraph: 39,
         callSiteScanPeakActiveWorkers: 0
     };
     const cold = compareGraphIdPressure(
@@ -1291,6 +1295,7 @@ test("fixture64 graphId pressure accepts only complete mapped-view lifecycles", 
     assert.equal(cold.passed, true, cold.errors.join("\n"));
     assert.match(renderGraphIdPressureReport(cold), /Open mapped-index views: \*\*0 → 64\*\*/);
     assert.match(renderGraphIdPressureReport(cold), /464 entries \/ 643296 bytes/);
+    assert.match(renderGraphIdPressureReport(cold), /464 entries \/ 7663418 bytes/);
 
     const warm = compareGraphIdPressure(
         [graphIdPressureResult({}, "warm")],
@@ -1326,11 +1331,24 @@ test("fixture64 graphId pressure accepts only complete mapped-view lifecycles", 
     assert.equal(mixed.passed, false);
     assert.match(mixed.errors.join("\n"), /admitted=1, trigram=1, mapped=64/);
 
+    const missingProjectionCache = compareGraphIdPressure(
+        [graphIdPressureResult()],
+        [graphIdPressureResult({
+            ...mappedResources,
+            callSiteMappedIndexViewProjectionCacheBytes: 0,
+            callSiteMappedIndexViewProjectionCacheEntries: 0
+        })],
+        graphIdObservations(20_000_000_000, "success", 20_000_000_000),
+        graphIdObservations(1_000_000_000, "success", 1_000_000_000)
+    );
+    assert.equal(missingProjectionCache.passed, false);
+    assert.match(missingProjectionCache.errors.join("\n"), /464 bounded projection rows/);
+
     const undercounted = compareGraphIdPressure(
         [graphIdPressureResult()],
         [graphIdPressureResult({
             ...mappedResources,
-            callSiteStringIndexLookupCount: 1919
+            callSiteStringIndexLookupCount: 2042
         })],
         graphIdObservations(20_000_000_000, "success", 20_000_000_000),
         graphIdObservations(1_000_000_000, "success", 1_000_000_000)

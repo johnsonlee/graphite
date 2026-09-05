@@ -648,6 +648,17 @@ internal class MappedWebGraphBackedGraph(
             callSiteStringIndexLookupCount.incrementAndGet()
             return index.projectRows(predicates, projectedProperties, limit, workConsumer)
         }
+        if (workConsumer is PreferredSerialMappedStringIndexViewGraphWorkBatchConsumer) {
+            mappedCallSiteStringIndexView(workConsumer)?.projectRows(
+                predicates,
+                projectedProperties,
+                workConsumer,
+                limit
+            )?.let { rows ->
+                callSiteStringIndexLookupCount.incrementAndGet()
+                return rows
+            }
+        }
         if (workConsumer is PreferredRawGraphWorkBatchConsumer) {
             return rawCallSiteStringProjection(predicates, projectedProperties, limit, workConsumer)
         }
@@ -1767,10 +1778,16 @@ internal class MappedWebGraphBackedGraph(
     internal fun callSiteStringIndexBytes(): Long = callSiteStringIndex?.retainedBytes ?: 0L
 
     internal fun mappedCallSiteStringIndexViewCacheBytes(): Long =
-        mappedCallSiteStringIndexView?.retainedQueryCacheBytes() ?: 0L
+        mappedCallSiteStringIndexView?.retainedQueryCacheStats()?.bytes ?: 0L
 
     internal fun mappedCallSiteStringIndexViewCacheEntries(): Int =
-        mappedCallSiteStringIndexView?.retainedQueryCacheEntries() ?: 0
+        mappedCallSiteStringIndexView?.retainedQueryCacheStats()?.entries ?: 0
+
+    internal fun mappedCallSiteStringIndexViewProjectionCacheBytes(): Long =
+        mappedCallSiteStringIndexView?.retainedProjectionCacheStats()?.bytes ?: 0L
+
+    internal fun mappedCallSiteStringIndexViewProjectionCacheEntries(): Int =
+        mappedCallSiteStringIndexView?.retainedProjectionCacheStats()?.entries ?: 0
 
     internal fun isCallSiteStringIndexInitialized(): Boolean = callSiteStringIndex != null
 
@@ -1954,6 +1971,9 @@ internal class MappedWebGraphBackedGraph(
                 nodeOffsets.size,
                 nodeAccessor = object : MappedCallSiteNodeAccessor {
                     override fun encounterOrder(nodeId: Int): Long = nodeOffsets.offset(nodeId)
+
+                    override fun stringPropertyId(nodeId: Int, propertyIndex: Int): Int =
+                        rawCallSiteStringPropertyId(nodeId, propertyIndex)
 
                     override fun tupleMatches(
                         nodeId: Int,

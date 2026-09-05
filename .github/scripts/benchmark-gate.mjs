@@ -884,6 +884,7 @@ export function compareGraphIdPressure(
         "gcCount", "gcMillis", "callSiteIndexAdmittedGraphs", "callSiteIndexRetainedBytes",
         "callSiteTrigramIndexedGraphs", "callSiteMappedIndexViewGraphs",
         "callSiteMappedIndexViewCacheBytes", "callSiteMappedIndexViewCacheEntries",
+        "callSiteMappedIndexViewProjectionCacheBytes", "callSiteMappedIndexViewProjectionCacheEntries",
         "callSiteParallelScanCount", "callSiteParallelScanGraphCount",
         "callSiteStringIndexLookupCount", "callSiteStringIndexLookupGraphCount",
         "callSiteStringIndexLookupMinPerGraph", "callSiteStringIndexLookupMaxPerGraph",
@@ -950,9 +951,9 @@ export function compareGraphIdPressure(
                 `trigram=${candidateResources.callSiteTrigramIndexedGraphs}, ` +
                 `mapped=${candidateResources.callSiteMappedIndexViewGraphs}`);
         }
-        const expectedColdLookupCount = mappedViewLifecycle ? 1920 : persistedLoadLifecycle ? 2043 : 1979;
+        const expectedColdLookupCount = mappedViewLifecycle || persistedLoadLifecycle ? 2043 : 1979;
         const expectedColdLookupMinimum = mappedViewLifecycle || persistedLoadLifecycle ? 30 : 29;
-        const expectedColdLookupMaximum = mappedViewLifecycle ? 30 : persistedLoadLifecycle ? 39 : 38;
+        const expectedColdLookupMaximum = mappedViewLifecycle || persistedLoadLifecycle ? 39 : 38;
         if (candidateResources.callSiteStringIndexLookupCount !== expectedColdLookupCount ||
             candidateResources.callSiteStringIndexLookupGraphCount !== 64 ||
             candidateResources.callSiteStringIndexLookupMinPerGraph !== expectedColdLookupMinimum ||
@@ -987,9 +988,9 @@ export function compareGraphIdPressure(
                 `scans=${candidateResources.callSiteParallelScanCount}, ` +
                 `graphs=${candidateResources.callSiteParallelScanGraphCount}`);
         }
-        const expectedWarmLookupCount = mappedWarmLifecycle ? 1920 : 2043;
+        const expectedWarmLookupCount = 2043;
         const expectedWarmLookupMinimum = 30;
-        const expectedWarmLookupMaximum = mappedWarmLifecycle ? 30 : 39;
+        const expectedWarmLookupMaximum = 39;
         if (candidateResources.callSiteStringIndexLookupCount !== expectedWarmLookupCount ||
             candidateResources.callSiteStringIndexLookupGraphCount !== 64 ||
             candidateResources.callSiteStringIndexLookupMinPerGraph !== expectedWarmLookupMinimum ||
@@ -1033,6 +1034,7 @@ export function compareGraphIdPressure(
         }
     }
     const maximumMappedViewCacheBytes = 64 * 256 * 1024;
+    const maximumMappedViewProjectionCacheBytes = 64 * 512 * 1024;
     if (candidateIndexLifecycle === "mapped-view") {
         if (candidateResources.callSiteMappedIndexViewCacheEntries !== 464 ||
             candidateResources.callSiteMappedIndexViewCacheBytes <= 0 ||
@@ -1043,12 +1045,25 @@ export function compareGraphIdPressure(
                 `${candidateResources.callSiteMappedIndexViewCacheEntries}, bytes=` +
                 `${candidateResources.callSiteMappedIndexViewCacheBytes}`);
         }
+        if (candidateResources.callSiteMappedIndexViewProjectionCacheEntries !== 464 ||
+            candidateResources.callSiteMappedIndexViewProjectionCacheBytes <= 0 ||
+            candidateResources.callSiteMappedIndexViewProjectionCacheBytes > maximumMappedViewProjectionCacheBytes
+        ) {
+            errors.push("candidate: mapped-view routing must retain exactly 464 bounded projection rows " +
+                `within ${maximumMappedViewProjectionCacheBytes} bytes; entries=` +
+                `${candidateResources.callSiteMappedIndexViewProjectionCacheEntries}, bytes=` +
+                `${candidateResources.callSiteMappedIndexViewProjectionCacheBytes}`);
+        }
     } else if (candidateResources.callSiteMappedIndexViewCacheEntries !== 0 ||
-        candidateResources.callSiteMappedIndexViewCacheBytes !== 0
+        candidateResources.callSiteMappedIndexViewCacheBytes !== 0 ||
+        candidateResources.callSiteMappedIndexViewProjectionCacheEntries !== 0 ||
+        candidateResources.callSiteMappedIndexViewProjectionCacheBytes !== 0
     ) {
-        errors.push("candidate: non-mapped lifecycle must not retain mapped-view query prefixes; " +
+        errors.push("candidate: non-mapped lifecycle must not retain mapped-view query caches; " +
             `entries=${candidateResources.callSiteMappedIndexViewCacheEntries}, ` +
-            `bytes=${candidateResources.callSiteMappedIndexViewCacheBytes}`);
+            `bytes=${candidateResources.callSiteMappedIndexViewCacheBytes}, ` +
+            `projectionEntries=${candidateResources.callSiteMappedIndexViewProjectionCacheEntries}, ` +
+            `projectionBytes=${candidateResources.callSiteMappedIndexViewProjectionCacheBytes}`);
     }
 
     const baseRows = parsePressureObservations(baseObservations, "base", errors);
@@ -2284,6 +2299,9 @@ export function renderGraphIdPressureReport(comparison) {
         `- Mapped-view query-prefix cache: **` +
             `${candidateResources.callSiteMappedIndexViewCacheEntries.toFixed(0)} entries / ` +
             `${candidateResources.callSiteMappedIndexViewCacheBytes.toFixed(0)} bytes**`,
+        `- Mapped-view projection cache: **` +
+            `${candidateResources.callSiteMappedIndexViewProjectionCacheEntries.toFixed(0)} entries / ` +
+            `${candidateResources.callSiteMappedIndexViewProjectionCacheBytes.toFixed(0)} bytes**`,
         "",
         "| Query | Target graph | Base | PR | Speedup |",
         "|---|---|---:|---:|---:|"
