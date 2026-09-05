@@ -4214,3 +4214,24 @@ file, format, magic, version, writer, or configuration. It deliberately does not
 separate wrapped-dense aligned regression. Full CI, hosted real64 gates, and every review thread must
 pass before completion. This commit is not authorization to merge or tag; either action requires a
 new explicit user instruction.
+
+### 2026-09-05 - Baseline reset: withdraw v2.4.8 implementation
+
+The user rejected PR #114's accumulated experiments and requested a fresh,
+sequential process. That closed PR is not a source of accepted optimizations.
+This standalone rollback reverses production commit
+`4e328b0109e13c896b74004823fb049fcb19251a` (PR #113 / v2.4.8).
+Every production source file is identical to v2.4.7
+`78ce46b57b2d88ae0f1823432ffefc5c7685bc1b`; its corresponding tests and storage
+notes are restored with it. Main's current CI workflows, benchmark scripts,
+JMH harnesses, conventions, and experiment history remain unchanged so the
+rollback cannot remove or weaken the checks that evaluate it.
+
+**Verification:** `git diff v2.4.7 HEAD -- '*/src/main/*'` is empty, as is
+`git diff origin/main HEAD -- .github '*/src/jmh/*'`. Remote v2.4.7 and v2.4.8
+tags still point to the two SHAs above. Local module tests/lint, benchmark
+harness compilation, and exact-head hosted CI are pending. No latency, CPU,
+heap, RSS, compatibility, or merge-readiness claim is made before those checks.
+The unchanged performance gate can reject this rollback; a red result remains
+red and must be reported. Do not start another optimization while this change
+is unverified. This is the withdrawal/baseline step, not a 10x optimization.

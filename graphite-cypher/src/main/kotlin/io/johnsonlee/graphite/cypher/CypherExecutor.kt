@@ -478,28 +478,21 @@ class CypherExecutor internal constructor(
 class CrossGraphCypherExecutor private constructor(
     graphs: List<CypherGraph>,
     workTrackingEnabled: Boolean,
-    workTrackerFactory: () -> CypherWorkTracker?,
-    graphSourceScopeApplied: Boolean
+    workTrackerFactory: () -> CypherWorkTracker?
 ) {
     private val delegate: CypherExecutor
 
-    constructor(graphs: List<CypherGraph>) : this(graphs, false, { null }, false)
+    constructor(graphs: List<CypherGraph>) : this(graphs, false, { null })
 
     constructor(graphs: List<CypherGraph>, executionBudget: CypherExecutionBudget) :
-        this(graphs, true, { CypherWorkTracker(executionBudget) }, false)
+        this(graphs, true, { CypherWorkTracker(executionBudget) })
 
     constructor(graphs: List<CypherGraph>, executionContext: CypherExecutionContext) :
-        this(graphs, true, { executionContext.workTracker }, false)
-
-    constructor(
-        graphs: List<CypherGraph>,
-        executionContext: CypherExecutionContext,
-        graphSourceScopeApplied: Boolean
-    ) : this(graphs, true, { executionContext.workTracker }, graphSourceScopeApplied)
+        this(graphs, true, { executionContext.workTracker })
 
     init {
         delegate = CypherExecutor(
-            QueryPipeline(graphs, workTrackingEnabled, graphSourceScopeApplied),
+            QueryPipeline(graphs, workTrackingEnabled),
             workTrackerFactory
         )
     }

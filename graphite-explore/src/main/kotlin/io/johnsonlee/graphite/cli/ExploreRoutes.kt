@@ -830,8 +830,7 @@ internal class ExploreRoutes(
                         require(!request.includeGraphRows) { "includeGraphRows is only valid in fanout mode" }
                         val result = CrossGraphCypherExecutor(
                             leases.map { lease -> CypherGraph(lease.id, lease.graph) },
-                            executionContext,
-                            graphSourceScopeApplied = !request.allGraphs
+                            executionContext
                         ).execute(request.query, request.limit)
                         mapOf(
                             API_PARAM_MODE to request.mode.wireName,
