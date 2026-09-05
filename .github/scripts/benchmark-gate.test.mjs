@@ -118,6 +118,7 @@ function graphIdPressureResult(overrides = {}, indexState = "cold") {
         callSiteIndexAdmittedGraphs: 0,
         callSiteIndexRetainedBytes: 0,
         callSiteTrigramIndexedGraphs: 0,
+        callSiteMappedIndexViewGraphs: 0,
         callSiteParallelScanCount: warm ? 0 : 64,
         callSiteParallelScanGraphCount: warm ? 0 : 64,
         callSiteStringIndexLookupCount: warm ? 2043 : 1979,
@@ -1023,7 +1024,7 @@ test("fixture64 startup-prepared graphId pressure guards the optimization alread
         graphIdObservations(1_000_000_000, "success", 1_000_000_000)
     );
     assert.equal(serialCandidate.passed, false);
-    assert.match(serialCandidate.errors.join("\n"), /build one parallel index per graph or restore all 64/);
+    assert.match(serialCandidate.errors.join("\n"), /build one parallel index per graph or reuse\/restore all 64/);
 
     const sidecarCandidate = compareGraphIdPressure(
         [graphIdPressureResult()],
@@ -1150,7 +1151,7 @@ test("fixture64 warm pressure proves the trigram path instead of requiring a raw
         graphIdObservations(1_000_000_000, "success", 1_000_000_000)
     );
     assert.equal(missingTrigram.passed, false);
-    assert.match(missingTrigram.errors.join("\n"), /all 64 graphs/);
+    assert.match(missingTrigram.errors.join("\n"), /all 64 mapped views/);
 
     const partialWarmCoverage = compareGraphIdPressure(
         [warmBase],
@@ -1179,7 +1180,7 @@ test("fixture64 warm pressure proves the trigram path instead of requiring a raw
         graphIdObservations(1_000_000_000, "success", 1_000_000_000)
     );
     assert.equal(hiddenWarmScan.passed, false);
-    assert.match(hiddenWarmScan.errors.join("\n"), /must not fall back to raw scans/);
+    assert.match(hiddenWarmScan.errors.join("\n"), /without raw scans/);
 
     const partialIndexUse = compareGraphIdPressure(
         [warmBase],
@@ -1193,7 +1194,7 @@ test("fixture64 warm pressure proves the trigram path instead of requiring a raw
         graphIdObservations(1_000_000_000, "success", 1_000_000_000)
     );
     assert.equal(partialIndexUse.passed, false);
-    assert.match(partialIndexUse.errors.join("\n"), /exactly 2,043 retained-index lookups/);
+    assert.match(partialIndexUse.errors.join("\n"), /exactly 2,043 string-index lookups/);
 
     const imbalancedColdIndexUse = compareGraphIdPressure(
         [graphIdPressureResult()],
@@ -1261,6 +1262,76 @@ test("fixture64 cold graphId pressure accepts persisted-load lookup accounting",
     );
     assert.equal(undercounted.passed, false);
     assert.match(undercounted.errors.join("\n"), /cold persisted-load lifecycle/);
+});
+
+test("fixture64 graphId pressure accepts only complete mapped-view lifecycles", () => {
+    const mappedResources = {
+        callSiteIndexAdmittedGraphs: 0,
+        callSiteIndexRetainedBytes: 0,
+        callSiteTrigramIndexedGraphs: 0,
+        callSiteMappedIndexViewGraphs: 64,
+        callSiteParallelScanCount: 0,
+        callSiteParallelScanGraphCount: 0,
+        callSiteStringIndexLookupCount: 1920,
+        callSiteStringIndexLookupGraphCount: 64,
+        callSiteStringIndexLookupMinPerGraph: 30,
+        callSiteStringIndexLookupMaxPerGraph: 30,
+        callSiteScanPeakActiveWorkers: 0
+    };
+    const cold = compareGraphIdPressure(
+        [graphIdPressureResult()],
+        [graphIdPressureResult(mappedResources)],
+        graphIdObservations(20_000_000_000, "success", 20_000_000_000),
+        graphIdObservations(1_000_000_000, "success", 1_000_000_000)
+    );
+    assert.equal(cold.passed, true, cold.errors.join("\n"));
+    assert.match(renderGraphIdPressureReport(cold), /Open mapped-index views: \*\*0 → 64\*\*/);
+
+    const warm = compareGraphIdPressure(
+        [graphIdPressureResult({}, "warm")],
+        [graphIdPressureResult(mappedResources, "warm")],
+        graphIdObservations(20_000_000_000, "success", 20_000_000_000),
+        graphIdObservations(1_000_000_000, "success", 1_000_000_000)
+    );
+    assert.equal(warm.passed, true, warm.errors.join("\n"));
+
+    const partial = compareGraphIdPressure(
+        [graphIdPressureResult()],
+        [graphIdPressureResult({
+            ...mappedResources,
+            callSiteMappedIndexViewGraphs: 63
+        })],
+        graphIdObservations(20_000_000_000, "success", 20_000_000_000),
+        graphIdObservations(1_000_000_000, "success", 1_000_000_000)
+    );
+    assert.equal(partial.passed, false);
+    assert.match(partial.errors.join("\n"), /mapped=63/);
+
+    const mixed = compareGraphIdPressure(
+        [graphIdPressureResult()],
+        [graphIdPressureResult({
+            ...mappedResources,
+            callSiteIndexAdmittedGraphs: 1,
+            callSiteIndexRetainedBytes: 1024,
+            callSiteTrigramIndexedGraphs: 1
+        })],
+        graphIdObservations(20_000_000_000, "success", 20_000_000_000),
+        graphIdObservations(1_000_000_000, "success", 1_000_000_000)
+    );
+    assert.equal(mixed.passed, false);
+    assert.match(mixed.errors.join("\n"), /admitted=1, trigram=1, mapped=64/);
+
+    const undercounted = compareGraphIdPressure(
+        [graphIdPressureResult()],
+        [graphIdPressureResult({
+            ...mappedResources,
+            callSiteStringIndexLookupCount: 1919
+        })],
+        graphIdObservations(20_000_000_000, "success", 20_000_000_000),
+        graphIdObservations(1_000_000_000, "success", 1_000_000_000)
+    );
+    assert.equal(undercounted.passed, false);
+    assert.match(undercounted.errors.join("\n"), /cold mapped-view lifecycle/);
 });
 
 test("fixture64 startup-prepared pressure measures load-time readiness without query warmup", () => {

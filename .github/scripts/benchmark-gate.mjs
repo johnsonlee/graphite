@@ -882,7 +882,8 @@ export function compareGraphIdPressure(
     const resourceMetricNames = [
         "cpuCoreUtilizationPermille", "peakUsedHeapBytes", "peakResidentSetBytes",
         "gcCount", "gcMillis", "callSiteIndexAdmittedGraphs", "callSiteIndexRetainedBytes",
-        "callSiteTrigramIndexedGraphs", "callSiteParallelScanCount", "callSiteParallelScanGraphCount",
+        "callSiteTrigramIndexedGraphs", "callSiteMappedIndexViewGraphs",
+        "callSiteParallelScanCount", "callSiteParallelScanGraphCount",
         "callSiteStringIndexLookupCount", "callSiteStringIndexLookupGraphCount",
         "callSiteStringIndexLookupMinPerGraph", "callSiteStringIndexLookupMaxPerGraph",
         "callSiteScanPeakActiveWorkers"
@@ -894,6 +895,7 @@ export function compareGraphIdPressure(
     }));
     const baseResources = resourceSnapshot(baseResult, "base");
     const candidateResources = resourceSnapshot(candidateResult, "candidate");
+    let candidateIndexLifecycle = null;
     if (candidateIndexState === "startup-prepared") {
         if (baseResources.callSiteIndexAdmittedGraphs !== 64 ||
             baseResources.callSiteTrigramIndexedGraphs !== 64 ||
@@ -928,25 +930,34 @@ export function compareGraphIdPressure(
             candidateResources.callSiteScanPeakActiveWorkers === 0 &&
             candidateResources.callSiteIndexAdmittedGraphs === 64 &&
             candidateResources.callSiteTrigramIndexedGraphs === 64;
-        if (!rawBuildLifecycle && !persistedLoadLifecycle) {
+        const mappedViewLifecycle = candidateResources.callSiteParallelScanCount === 0 &&
+            candidateResources.callSiteParallelScanGraphCount === 0 &&
+            candidateResources.callSiteScanPeakActiveWorkers === 0 &&
+            candidateResources.callSiteIndexAdmittedGraphs === 0 &&
+            candidateResources.callSiteIndexRetainedBytes === 0 &&
+            candidateResources.callSiteTrigramIndexedGraphs === 0 &&
+            candidateResources.callSiteMappedIndexViewGraphs === 64;
+        candidateIndexLifecycle = mappedViewLifecycle ? "mapped-view" :
+            persistedLoadLifecycle ? "persisted-load" : "raw-build";
+        if (!rawBuildLifecycle && !persistedLoadLifecycle && !mappedViewLifecycle) {
             errors.push("candidate: cold selected-graph workload must either build one parallel index per graph " +
-                "or restore all 64 persisted sidecars; " +
+                "or reuse/restore all 64 persisted sidecars; " +
                 `scans=${candidateResources.callSiteParallelScanCount}, ` +
                 `graphs=${candidateResources.callSiteParallelScanGraphCount}, ` +
                 `peak=${candidateResources.callSiteScanPeakActiveWorkers}, ` +
                 `admitted=${candidateResources.callSiteIndexAdmittedGraphs}, ` +
-                `trigram=${candidateResources.callSiteTrigramIndexedGraphs}`);
+                `trigram=${candidateResources.callSiteTrigramIndexedGraphs}, ` +
+                `mapped=${candidateResources.callSiteMappedIndexViewGraphs}`);
         }
-        const expectedColdLookupCount = persistedLoadLifecycle ? 2043 : 1979;
-        const expectedColdLookupMinimum = persistedLoadLifecycle ? 30 : 29;
-        const expectedColdLookupMaximum = persistedLoadLifecycle ? 39 : 38;
+        const expectedColdLookupCount = mappedViewLifecycle ? 1920 : persistedLoadLifecycle ? 2043 : 1979;
+        const expectedColdLookupMinimum = mappedViewLifecycle || persistedLoadLifecycle ? 30 : 29;
+        const expectedColdLookupMaximum = mappedViewLifecycle ? 30 : persistedLoadLifecycle ? 39 : 38;
         if (candidateResources.callSiteStringIndexLookupCount !== expectedColdLookupCount ||
             candidateResources.callSiteStringIndexLookupGraphCount !== 64 ||
             candidateResources.callSiteStringIndexLookupMinPerGraph !== expectedColdLookupMinimum ||
             candidateResources.callSiteStringIndexLookupMaxPerGraph !== expectedColdLookupMaximum
         ) {
-            const lifecycle = persistedLoadLifecycle ? "persisted-load" : "raw-build";
-            errors.push(`candidate: cold ${lifecycle} lifecycle must reuse the retained index for ` +
+            errors.push(`candidate: cold ${candidateIndexLifecycle} lifecycle must execute exactly ` +
                 `${expectedColdLookupCount.toLocaleString("en-US")} accesses distributed ` +
                 `${expectedColdLookupMinimum}..${expectedColdLookupMaximum} per graph; ` +
                 `lookups=${candidateResources.callSiteStringIndexLookupCount}, ` +
@@ -954,7 +965,45 @@ export function compareGraphIdPressure(
                 `perGraph=${candidateResources.callSiteStringIndexLookupMinPerGraph}..` +
                 `${candidateResources.callSiteStringIndexLookupMaxPerGraph}`);
         }
-    } else if (candidateIndexState === "warm" || candidateIndexState === "startup-prepared") {
+    } else if (candidateIndexState === "warm") {
+        const noRawScans = candidateResources.callSiteParallelScanCount === 0 &&
+            candidateResources.callSiteParallelScanGraphCount === 0 &&
+            candidateResources.callSiteScanPeakActiveWorkers === 0;
+        const retainedWarmLifecycle = noRawScans &&
+            candidateResources.callSiteIndexAdmittedGraphs === 64 &&
+            candidateResources.callSiteTrigramIndexedGraphs === 64;
+        const mappedWarmLifecycle = noRawScans &&
+            candidateResources.callSiteIndexAdmittedGraphs === 0 &&
+            candidateResources.callSiteIndexRetainedBytes === 0 &&
+            candidateResources.callSiteTrigramIndexedGraphs === 0 &&
+            candidateResources.callSiteMappedIndexViewGraphs === 64;
+        candidateIndexLifecycle = mappedWarmLifecycle ? "mapped-view" : "retained-index";
+        if (!retainedWarmLifecycle && !mappedWarmLifecycle) {
+            errors.push("candidate: warm selected-graph workload must reuse either the retained index or " +
+                `all 64 mapped views without raw scans; admitted=${candidateResources.callSiteIndexAdmittedGraphs}, ` +
+                `trigram=${candidateResources.callSiteTrigramIndexedGraphs}, ` +
+                `mapped=${candidateResources.callSiteMappedIndexViewGraphs}, ` +
+                `scans=${candidateResources.callSiteParallelScanCount}, ` +
+                `graphs=${candidateResources.callSiteParallelScanGraphCount}`);
+        }
+        const expectedWarmLookupCount = mappedWarmLifecycle ? 1920 : 2043;
+        const expectedWarmLookupMinimum = 30;
+        const expectedWarmLookupMaximum = mappedWarmLifecycle ? 30 : 39;
+        if (candidateResources.callSiteStringIndexLookupCount !== expectedWarmLookupCount ||
+            candidateResources.callSiteStringIndexLookupGraphCount !== 64 ||
+            candidateResources.callSiteStringIndexLookupMinPerGraph !== expectedWarmLookupMinimum ||
+            candidateResources.callSiteStringIndexLookupMaxPerGraph !== expectedWarmLookupMaximum
+        ) {
+            errors.push(`candidate: warm ${candidateIndexLifecycle} lifecycle must execute exactly ` +
+                `${expectedWarmLookupCount.toLocaleString("en-US")} string-index lookups distributed ` +
+                `${expectedWarmLookupMinimum}..${expectedWarmLookupMaximum} per graph; ` +
+                `lookups=${candidateResources.callSiteStringIndexLookupCount}, ` +
+                `graphs=${candidateResources.callSiteStringIndexLookupGraphCount}, ` +
+                `perGraph=${candidateResources.callSiteStringIndexLookupMinPerGraph}..` +
+                `${candidateResources.callSiteStringIndexLookupMaxPerGraph}`);
+        }
+    } else if (candidateIndexState === "startup-prepared") {
+        candidateIndexLifecycle = "retained-index";
         if (candidateResources.callSiteIndexAdmittedGraphs !== 64 ||
             candidateResources.callSiteTrigramIndexedGraphs !== 64
         ) {
@@ -2179,7 +2228,7 @@ export function renderGraphIdPressureReport(comparison) {
         `- Candidate intra-graph scans: **${candidateResources.callSiteParallelScanCount.toFixed(0)}**; ` +
             `graphs scanned: **${candidateResources.callSiteParallelScanGraphCount.toFixed(0)}**; ` +
             `peak simultaneously active workers: **${candidateResources.callSiteScanPeakActiveWorkers.toFixed(0)}**`,
-        `- Candidate retained-index lookups: **${candidateResources.callSiteStringIndexLookupCount.toFixed(0)}**; ` +
+        `- Candidate string-index lookups: **${candidateResources.callSiteStringIndexLookupCount.toFixed(0)}**; ` +
             `graphs covered: **${candidateResources.callSiteStringIndexLookupGraphCount.toFixed(0)}**; ` +
             `per graph: **${candidateResources.callSiteStringIndexLookupMinPerGraph.toFixed(0)}..` +
             `${candidateResources.callSiteStringIndexLookupMaxPerGraph.toFixed(0)}**`,
@@ -2197,6 +2246,8 @@ export function renderGraphIdPressureReport(comparison) {
             `${gibibytes(candidateResources.callSiteIndexRetainedBytes)}**`,
         `- Trigram-indexed graphs: **${baseResources.callSiteTrigramIndexedGraphs.toFixed(0)} → ` +
             `${candidateResources.callSiteTrigramIndexedGraphs.toFixed(0)}**`,
+        `- Open mapped-index views: **${baseResources.callSiteMappedIndexViewGraphs.toFixed(0)} → ` +
+            `${candidateResources.callSiteMappedIndexViewGraphs.toFixed(0)}**`,
         "",
         "| Query | Target graph | Base | PR | Speedup |",
         "|---|---|---:|---:|---:|"

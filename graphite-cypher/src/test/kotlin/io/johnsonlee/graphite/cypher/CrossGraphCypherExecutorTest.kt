@@ -2740,6 +2740,36 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
+    fun `single routed lookup reuses a warm mapped view before requesting a persisted index`() {
+        fun execute(initiallyCold: Boolean): ColdMappedLookupGraph {
+            val measured = ColdMappedLookupGraph(
+                graph(callSite(7, "com.example.VoucherService")),
+                initiallyCold = initiallyCold
+            )
+            val result = CrossGraphCypherExecutor(
+                listOf(CypherGraph("selected", measured))
+            ).execute(
+                "MATCH (n) WHERE n.graphId = 'selected' " +
+                    "AND toLower(coalesce(n.caller_class, '')) CONTAINS 'voucher' " +
+                    "RETURN n.graphId AS graph, n.caller_class AS caller LIMIT 200"
+            )
+            assertEquals(listOf("selected"), result.rows.map { row -> row["graph"] })
+            assertEquals(listOf("com.example.VoucherService"), result.rows.map { row -> row["caller"] })
+            assertEquals(2, measured.lookups.get())
+            assertTrue(measured.serialConsumers.all { it })
+            return measured
+        }
+
+        val cold = execute(initiallyCold = true)
+        assertTrue(cold.preferredPersistedConsumers.all { it })
+        assertTrue(cold.preferredMappedConsumers.none { it })
+
+        val warm = execute(initiallyCold = false)
+        assertTrue(warm.preferredPersistedConsumers.none { it })
+        assertTrue(warm.preferredMappedConsumers.all { it })
+    }
+
+    @Test
     fun `execution diagnostics distinguish graph routing from an already selected source`() {
         val returnType = TypeDescriptor("void")
         fun callSite(id: Int, callerClass: String) = CallSiteNode(
@@ -3265,6 +3295,7 @@ class CrossGraphCypherExecutorTest {
         val lookupLimits = java.util.concurrent.ConcurrentLinkedQueue<Int>()
         val serialConsumers = java.util.concurrent.ConcurrentLinkedQueue<Boolean>()
         val preferredMappedConsumers = java.util.concurrent.ConcurrentLinkedQueue<Boolean>()
+        val preferredPersistedConsumers = java.util.concurrent.ConcurrentLinkedQueue<Boolean>()
         val lookupThreads = java.util.concurrent.ConcurrentLinkedQueue<String>()
 
         override fun hasColdMappedStringPropertyDisjunction(
@@ -3296,6 +3327,7 @@ class CrossGraphCypherExecutorTest {
             lookupLimits += limit
             serialConsumers += workConsumer is SerialGraphWorkBatchConsumer
             preferredMappedConsumers += workConsumer is PreferredSerialMappedStringIndexViewGraphWorkBatchConsumer
+            preferredPersistedConsumers += workConsumer is PreferredPersistedStringIndexGraphWorkBatchConsumer
             lookupThreads += Thread.currentThread().name
             beforeLookup()
             (workConsumer as? GraphWorkBatchConsumer)?.consume(1L) ?: workConsumer.consume()

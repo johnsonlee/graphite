@@ -1545,7 +1545,10 @@ class QueryPipeline private constructor(
         candidateSources: List<CypherGraph> = sources,
         allowRetainedGraphSetProjection: Boolean = false
     ): CypherResult {
-        val preferPersistedStringIndex = allowRetainedGraphSetProjection && candidateSources.size == 1
+        val scopedSingleSource = allowRetainedGraphSetProjection && candidateSources.size == 1
+        val preferWarmMappedStringIndexView = scopedSingleSource &&
+            hasWarmMappedCallSiteStringIndexView(candidateSources.single().graph, nodeClass, filter)
+        val preferPersistedStringIndex = scopedSingleSource && !preferWarmMappedStringIndexView
         executeIndexedStringProjectionRows(
             nodeClass,
             variable,
@@ -1606,7 +1609,8 @@ class QueryPipeline private constructor(
                     filter,
                     limit = if (nodePredicate == null) limit - rows.size else Int.MAX_VALUE,
                     storageSourceCount = candidateSources.size,
-                    preferPersistedStringIndex = preferPersistedStringIndex
+                    preferPersistedStringIndex = preferPersistedStringIndex,
+                    preferMappedStringIndexView = preferWarmMappedStringIndexView
                 )
                     .let { nodes -> nodePredicate?.let { predicate -> nodes.filter(predicate) } ?: nodes }
                 for (node in candidates) {
@@ -1630,7 +1634,8 @@ class QueryPipeline private constructor(
                 columns,
                 tracker,
                 nodePredicateFactory,
-                preferPersistedStringIndex = preferPersistedStringIndex
+                preferPersistedStringIndex = preferPersistedStringIndex,
+                preferMappedStringIndexView = preferWarmMappedStringIndexView
             )
         }
         val rows = rawLeadingRows?.toMutableList() ?: mutableListOf()
@@ -1647,6 +1652,20 @@ class QueryPipeline private constructor(
             waveStart += wave.size
         }
         return CypherResult(columns, rows)
+    }
+
+    private fun hasWarmMappedCallSiteStringIndexView(
+        graph: Graph,
+        nodeClass: Class<out Node>,
+        filter: DirectStringDisjunction
+    ): Boolean {
+        if (!nodeClass.isAssignableFrom(CallSiteNode::class.java)) return false
+        val predicates = filter.filters.map { candidate ->
+            if (candidate.property !in CALL_SITE_DIRECT_STRING_PROPERTIES) return false
+            StringPropertyPredicate(candidate.property, candidate.transform, candidate.mode, candidate.expected)
+        }
+        return (graph as? WarmMappedStringPropertyDisjunctionLookup)
+            ?.hasWarmMappedStringPropertyDisjunction(CallSiteNode::class.java, predicates) == true
     }
 
     /**

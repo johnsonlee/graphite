@@ -166,11 +166,10 @@ graph. The production CLI and fixture64 builder persist the combined CallSite CS
 CallSite-index heap. Legacy or invalid graph files rebuild it once and atomically persist it when
 the complete index is released or the mapped graph closes. If index admission is denied, the graph retains the
 correct raw-scan fallback; that fallback partitions the mapped CallSite type index onto
-`graphite-callsite-scan-N` workers. The default fallback background-worker count is the segment
-half of the additive NCPU plan (`NCPU - floor(NCPU / 2)`), overridable with
-`-Dgraphite.webgraph.callSiteScanParallelism=N`. `graphite-cypher-scan-N` names the separate
-cross-graph source pool and is not evidence that a query restricted to one graph used intra-graph
-parallelism.
+`graphite-callsite-scan-N` workers. The v2.4.7-based replacement defaults that fallback pool to
+`min(8, NCPU)`, overridable with `-Dgraphite.webgraph.callSiteScanParallelism=N`; it does not create
+v2.4.8's `graphite-callsite-segment-N` pool. `graphite-cypher-scan-N` names the separate cross-graph
+source pool and is not evidence that a query restricted to one graph used intra-graph parallelism.
 
 The v2.4.7-based global-wide path does not retain that complete heap index. For supported serial
 queries it opens an integrity-checked read-only view of the same version-2
@@ -198,23 +197,24 @@ Before loading graphs, the harness sets
 load-time preparation without disabling production's lazy persisted-sidecar restore. The property
 is restored after the trial. `startup-prepared` explicitly uses the `true` load-time preparation path.
 
-The candidate cold fork must report 64 scans followed by exactly 1,979 index lookups, distributed
-29..38 per graph because dense queries stop at the global limit. After warmup metrics are reset, the
-warm fork must report zero scans and exactly 2,043 index lookups, distributed 30..39 per graph, with
-all 64 graphs represented in both cases. The `startup-prepared` fork
-performs no query warmup: main must retain its one lazy-build scan per graph, while the candidate
-must restore all 64 persisted indexes and execute 2,043 indexed lookups with zero scans. Main has no
-set routing in the comparison revision, so startup-prepared exposes 64 lazy-build scans plus 14,139
-lookups, distributed 181..266 per graph. Aggregate totals alone
-cannot hide a distribution such as `[641, 1, ..., 1]`. This rejects an implementation that happens
-to meet the percentile target while routing only part of the workload or silently falling back to
-raw scans.
+The candidate cold fork must prove one complete lifecycle across all 64 graphs: 64 bounded raw
+builds followed by exactly 1,979 retained-index lookups distributed 29..38 per graph; zero raw
+builds followed by 2,043 persisted-index lookups distributed 30..39; or 64 open mapped views, zero
+raw builds, and exactly 1,920 mapped-view lookups distributed 30..30. After warmup metrics are
+reset, the warm fork must report zero scans and either the complete 2,043-lookup retained lifecycle
+or the complete 1,920-lookup mapped-view lifecycle. A mixed or partial lifecycle fails. The
+`startup-prepared` fork performs no query warmup and must restore all 64 persisted indexes, execute
+2,043 indexed lookups distributed 30..39, and perform zero scans. Aggregate totals alone cannot
+hide a distribution such as `[641, 1, ..., 1]`. This rejects an implementation that happens to meet
+the percentile target while routing only part of the workload or silently falling back to raw
+scans.
 
-When a bounded scan reaches the end of the selected graph, the candidate reuses the already-read
-node and string ids to publish the combined CallSite CSR index instead of discarding them and later
-performing two more mapped-file passes. Subsequent routing queries for that graph use the retained
-index. The global CallSite-index budget defaults to half of `-Xmx` (4 GiB under this gate's 8 GiB
-heap) and can be overridden with `-Dgraphite.webgraph.callSiteStringIndexBudgetBytes=N`.
+In the raw-build lifecycle, a bounded scan that reaches the end of the selected graph reuses the
+already-read node and string ids to publish the combined CallSite CSR index instead of discarding
+them and later performing two more mapped-file passes. The persisted and mapped-view lifecycles
+reuse the validated sidecar instead. The global retained CallSite-index budget defaults to half of
+`-Xmx` (4 GiB under this gate's 8 GiB heap) and can be overridden with
+`-Dgraphite.webgraph.callSiteStringIndexBudgetBytes=N`.
 
 The Cypher boundary also reuses immutable materialized rows for repeated bounded projections. This
 is a process-wide LRU keyed by the storage projection generation, column layout, and graph id, so
@@ -238,6 +238,8 @@ node .github/scripts/benchmark-gate.mjs compare-graph-id-pressure \
   --candidate results/candidate-graph-routing-cold.json \
   --base-observations results/main-graph-routing-cold.tsv \
   --candidate-observations results/candidate-graph-routing-cold.tsv \
+  --base-correctness results/main-graph-routing-warm.correctness \
+  --candidate-correctness results/base-single-source-oracle.manifest \
   --minimum-speedup 10 \
   --report results/graph-id-cold-report.md \
   --status results/graph-id-cold-status.json
@@ -248,12 +250,12 @@ complete without timeout/failure, every manifest graph id has all four routing f
 selectivities, and the already-correct request-selected P50/P95 do not regress by more than 15% for
 material latency; microsecond-scale request-selected and graph-set paths have a 0.25ms absolute
 jitter allowance. Set-width P95 must still avoid regression and is reported independently.
-Cold/warm compatibility gates require query-level graphId P50 and P95 to improve by 10x. The
-production-relevant `startup-prepared` gate requires graphId P95 to improve by 10x and P50 not to
-regress by more than 15%, because its P50 is already an indexed microsecond-scale request. A warm result is rejected unless all 64
-graphs retain the combined CallSite index and all
-64 initialize the lowercase trigram postings; proving the indexed path on only one graph is not
-coverage. It independently
+The graph-routing gate is a current-main non-regression check: query-level graphId and
+request-selected P50/P95 may regress by at most 15% for material latency, with the documented
+absolute jitter allowance. The separate global-wide dual-baseline gate enforces the requested 10x
+improvement against v2.4.7. A warm result is rejected unless all 64 graphs either retain the
+combined CallSite index and initialize lowercase trigram postings or expose all 64 validated mapped
+views; proving an indexed path on only one graph is not coverage. It independently
 rejects any request-selected reference outside `zero=0`, `targeted=1..199`, and `dense=200`, so an all-zero
 workload cannot pass. This prevents accepting a graphId speedup when the already-selected
 single-graph request path regresses. The request-selected path is the correctness reference and a non-regression
@@ -366,7 +368,8 @@ all three comparator reports plus the JMH JSON, observation TSV, correctness man
 
 JMH JSON exposes the suite and family P50/P95/max latency, timeouts, process CPU time and effective
 core utilization, sampled peak process CPU load, heap before/peak/after, committed/max heap, RSS
-before/peak/after, GC count/time, raw match-state bytes, and admitted/retained CallSite indexes.
+before/peak/after, GC count/time, raw match-state bytes, admitted/retained CallSite indexes, and open
+mapped-index views.
 The graph-routing comparison report prints base-to-candidate effective CPU cores, peak heap, peak
 RSS, GC count/time, retained-index memory, parallel-scan count, and peak active workers alongside
 latency. These are measured diffs rather than a requirement to consume the full 8 GiB heap: `-Xmx8g`

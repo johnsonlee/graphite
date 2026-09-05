@@ -5503,3 +5503,78 @@ K2/K8 and unscoped global paths remain outside the new branch.
 queries extremely fast, but moves too much work into the first K64 request and violates the exact
 current-main cold guard. Keep only this record; do not retain the production or test change. The
 next attempt should reuse the already-open mapped views rather than materializing every full index.
+
+### 2026-09-05 - Attempt 155: Reuse warm mapped views for single-graph routes
+
+**Hypothesis:** Attempt 154 proved that restoring every full index before returning the leading K64
+request moves too much latency into that request. The same request has already opened and validated
+the persisted mapped view for every graph. For a later route that selects exactly one graph, prefer
+that warm view and skip full-index restoration; retain Attempt 153's persisted-only fallback when
+the view is not already open. This should remove both raw rebuilds and per-graph restore spikes
+without adding another executor or reintroducing v2.4.8's segment pool.
+
+**Evidence:**
+
+- Attempt base is rejected-record commit `203324541fce9bb3a766afaa8967e2f36e1e8b86`; current-main
+  reference is v2.4.8 `4e328b0109e13c896b74004823fb049fcb19251a`; measured candidate is exact
+  temporary commit `80d6117fec6ef51d1b231cb74fca16aa65811232`. The final record amendment has
+  identical production, test, gate, workflow, and JMH bytes. The non-document diff SHA-256 is
+  `0101103c3f5d29c9f0bda2be5694b04e8a825ef4b054294297ef1346c0b47d00`.
+- The production change is confined to the already graph-scoped single-source branch. It asks a
+  `WarmMappedStringPropertyDisjunctionLookup` whether all current CallSite predicates are supported
+  and already open, then passes the serial mapped-view marker instead of the persisted-index marker.
+  Unsupported predicates, cold views, multiple selected graphs, unscoped queries, and graphs
+  without the capability retain their prior paths. The benchmark adds an explicit open-mapped-view
+  counter, and the comparator rejects partial or mixed mapped lifecycles.
+- The real fixture is the same 64 distinct persisted Android, Tika, Hive, and Kotlin compiler
+  shards used by the exact gate; manifest SHA-256 is
+  `809c8b8ceed25428af65350edfa2c391f449051bf069b12555df245099f26ae2`. The command was
+  `LargeBroadQueryPressureBenchmark.replayBroadQueries -p graphCount=64
+  -p coverageFamily=graph-routing -p indexState=<cold|warm|startup-prepared> -wi 0 -i 1 -f 1
+  -prof gc`, with `-Xmx8g -XX:ActiveProcessorCount=4`, JDK 17.0.18 on Apple M3 Max/macOS 14.3.
+  Current main and candidate used the byte-identical candidate harness, whose source SHA-256 is
+  `30d755738d74e91826cee07ec064029bdbc9723c33fd8d189458fa563e991efc`.
+- Current-main/candidate JMH JAR raw SHA-256 is
+  `e44332f002b754291b259875b2eac7dc11cc58d9aa1b3bfe5cd02239580e9b7a` /
+  `af20f8d2505ec3f988695a342f3ed313bace3ad3663233ce8ba34d99fa1bb8ad`; canonical ZIP content
+  SHA-256 is `a37a2e3ce17a6cb93a1871cfe703d1d6f99347faf4a396eb6f41ed63bb0f4f76` /
+  `8f6798bf3f6a814d54ddf7ad655f6d519a132ded5ced3bdf1e38f062ccc29f65`.
+- Every state completed all `1,137/1,137` queries with zero failure or timeout. All six independent
+  correctness manifests are byte-identical at SHA-256
+  `35fc69539c3080dbb801cca4ec7f1e7541f3ccd190d8774861f6109f7c58b6dd`, and access, source
+  pruning, row order, provenance, response size, and digest match the oracle. Cold and warm end with
+  exactly 64 open mapped views, zero retained/admitted/trigram indexes, zero raw scans, and 1,920
+  mapped lookups distributed exactly 30 per graph. The 1,920 total is 576 graph-id, 192 graph
+  parameter, 768 graph-id-set, and 384 request-selected-set lookups; dense set projections do not
+  add an index lookup. Startup-prepared remains the unchanged 64-retained-index lifecycle with
+  2,043 lookups distributed 30..39.
+
+  | State | Current main overall P50/P95 | Candidate overall P50/P95 | Main/candidate graph-id P95 | Result |
+  | :--- | :--- | :--- | :--- | :--- |
+  | cold | 0.060/13.479 ms | 0.165/1.979 ms | 18.172/2.156 ms | fail |
+  | warm | 0.024/0.077 ms | 0.120/1.910 ms | 0.083/2.010 ms | fail |
+  | startup-prepared | 0.063/1.025 ms | 0.061/1.202 ms | 1.203/1.382 ms | pass |
+
+  The exact cold first K64 request is `255.501 -> 419.290 ms`, within the comparator's
+  `base + 250 ms` cap and far below Attempt 154's `596.973 ms`. Three preceding candidate-only
+  probes measured `716.0/412.7/424.4 ms`; the first was a non-repeating page-cache outlier, but it
+  is retained here rather than discarded.
+- The mapped lifecycle is not yet a current-main non-regression. Cold K8 graph-set P50/P95 changes
+  `0.071/0.618 -> 0.366/0.722 ms`, and K64 changes
+  `0.100/1.471 -> 0.391/1.853 ms`; both fail the material guard. Warm K64 changes
+  `0.053/0.082 -> 0.299/1.546 ms` and fails. Warm overall process CPU changes
+  `2.065 -> 2.770 s`, although candidate peak heap/RSS is lower at `4.853/5.657 GiB` versus
+  `5.581/6.502 GiB`. Cold candidate wall/CPU is `2.480/5.307 s`, peak heap/RSS
+  `4.812/5.547 GiB`, and allocation `13.758 GiB/op`; startup candidate wall/CPU is
+  `1.727/4.112 s`, peak heap/RSS `5.429/5.844 GiB`, and allocation `12.857 GiB/op`.
+- The complete `CrossGraphCypherExecutorTest` passed `77/77`, all benchmark JavaScript tests passed
+  `117/117`, the JMH JAR rebuilt, and `git diff --check` passed. The focused Cypher test proves the
+  cold persisted marker and already-warm mapped marker are mutually exclusive for the real
+  unlabeled query shape.
+
+**Conclusion:** retain only as the next experiment's narrow base, not as a mergeable performance
+result. It closes the single-graph restore spike without new threads and preserves exact results,
+but repeated exact-string resolution in the mapped view creates material cold set-width and warm
+latency/CPU regressions. The next independent attempt must bound and reuse mapped-view query state;
+if that does not close all three graph-routing states, revert this production change rather than
+weakening the comparator.

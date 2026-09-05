@@ -508,6 +508,9 @@ open class LargeBroadQueryPressureBenchmark {
         counters.callSiteTrigramIndexedGraphs = graphs.count { graph ->
             invokeInternalMetric(graph, "isCallSiteTrigramIndexInitialized") == true
         }.toLong()
+        counters.callSiteMappedIndexViewGraphs = graphs.count { graph ->
+            invokeInternalMetric(graph, "isMappedCallSiteStringIndexViewInitialized") == true
+        }.toLong()
         counters.requestSelectedSourceQueryCount = samples.count {
             it.execution.path == BroadQueryExecutionPath.REQUEST_SELECTED_SOURCE
         }.toLong()
@@ -789,6 +792,7 @@ open class LargeBroadQueryPressureCounters {
     @JvmField var callSiteIndexAdmittedGraphs: Long = 0
     @JvmField var callSiteIndexRetainedBytes: Long = 0
     @JvmField var callSiteTrigramIndexedGraphs: Long = 0
+    @JvmField var callSiteMappedIndexViewGraphs: Long = 0
     @JvmField var callSiteParallelScanCount: Long = 0
     @JvmField var callSiteParallelScanGraphCount: Long = 0
     @JvmField var callSiteStringIndexLookupCount: Long = 0
