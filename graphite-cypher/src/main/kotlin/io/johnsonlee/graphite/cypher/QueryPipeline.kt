@@ -76,14 +76,7 @@ private const val INTERNAL_CURRENT_NODE_KEY = "\u0000graphite.currentNode"
 private const val INTERNAL_PATH_START_NODE_KEY = "\u0000graphite.pathStartNode"
 private const val INTERNAL_RELATIONSHIP_MATCH_STATE_KEY = "\u0000graphite.relationshipMatchState"
 private const val INTERNAL_ORDER_VALUES_KEY = "\u0000graphite.orderValues"
-private class ParallelStringGraphWorkConsumer(private val consumeBatch: (Long) -> Unit) :
-    ParallelGraphWorkBatchConsumer {
-    override fun consume() = consumeBatch(1L)
-
-    override fun consume(workUnits: Long) = consumeBatch(workUnits)
-}
-
-private val noOpParallelGraphWorkConsumer = ParallelStringGraphWorkConsumer { }
+private val noOpParallelGraphWorkConsumer = ParallelGraphWorkBatchConsumer { }
 
 private data class MatchedPathSegment(
     val tail: List<Any>,
@@ -229,7 +222,7 @@ internal fun directStringStorageWorkConsumer(
     consumeBatch?.let(::PreferredPersistedStringIndexGraphWorkConsumer)
         ?: noOpPreferredPersistedStringIndexGraphWorkConsumer
 } else if (sourceCount == 1) {
-    consumeBatch?.let(::ParallelStringGraphWorkConsumer) ?: noOpParallelGraphWorkConsumer
+    consumeBatch?.let { consume -> ParallelGraphWorkBatchConsumer(consume) } ?: noOpParallelGraphWorkConsumer
 } else if (configuredGraphWorkers == null && sourceCount < BALANCED_STRING_SCAN_MIN_SOURCE_COUNT) {
     consumeBatch?.let(::SerialStringGraphWorkConsumer) ?: noOpSerialStringGraphWorkConsumer
 } else {
@@ -3239,22 +3232,11 @@ class QueryPipeline private constructor(
                         return DirectStringCandidatePlan(DirectStringDisjunction(listOf(filter)))
                     }
                 }
-                return when (expression) {
-                    is CypherExpr.And -> listOfNotNull(
-                        compile(expression.left, variable, parameters),
-                        compile(expression.right, variable, parameters)
-                    ).minByOrNull(DirectStringCandidatePlan::selectivityRank)
-                    is CypherExpr.Or -> {
-                        // Every disjunct needs a candidate superset. The caller still
-                        // evaluates the original expression on the resulting union.
-                        val left = compile(expression.left, variable, parameters) ?: return null
-                        val right = compile(expression.right, variable, parameters) ?: return null
-                        DirectStringCandidatePlan(
-                            DirectStringDisjunction((left.candidates.filters + right.candidates.filters).distinct())
-                        )
-                    }
-                    else -> null
-                }
+                val and = expression as? CypherExpr.And ?: return null
+                return listOfNotNull(
+                    compile(and.left, variable, parameters),
+                    compile(and.right, variable, parameters)
+                ).minByOrNull(DirectStringCandidatePlan::selectivityRank)
             }
         }
 

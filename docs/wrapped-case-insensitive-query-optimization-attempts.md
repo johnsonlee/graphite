@@ -4719,3 +4719,14 @@ fixture64 exclusively. Candidate production/test sources and exact build receipt
 remain archived with the immutable JAR; the experiment commit preserves the
 attempt, followed by a production/test revert. Profiling tools, representative
 query coverage, flamegraphs and the failure record remain available.
+
+
+**Revert:** rejected experiment commit `610fcc6e8d8e57c952f4cbb5ff6485447c54bc13` is followed by an explicit
+production/test revert. The complete production and JMH source trees again match
+frozen main `4e328b0109e13c896b74004823fb049fcb19251a` byte for byte. The private
+callback adapter is reverted together with the compound plan; it is not silently
+retained as a second change. The nine candidate-only tests are retained in the
+experiment history and archived receipts, not left failing against reverted main.
+The 57 profiling/oracle Python tests are also wired into the existing candidate
+gate test job; no numerical acceptance threshold is relaxed. Revert CI is pending
+at the time of this record; this is not an accepted optimization.
