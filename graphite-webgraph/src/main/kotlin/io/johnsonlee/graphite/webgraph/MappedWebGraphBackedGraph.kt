@@ -395,22 +395,23 @@ internal class MappedWebGraphBackedGraph(
             null
         }
         val mappedView = if (retainedIndex == null) mappedCallSiteStringIndexView(workConsumer) else null
-        if (workConsumer is SplitGraphWorkBatchConsumer && (retainedIndex != null || mappedView != null)) {
-            val matchingStringIds by lazy(LazyThreadSafetyMode.NONE) {
-                retainedIndex?.exactMatchingStringIds(predicates, workConsumer)
-                    ?: mappedView?.exactMatchingStringIds(predicates, workConsumer)
-            }
+        val exactMatches = if (workConsumer is SplitGraphWorkBatchConsumer) {
+            retainedIndex?.exactMatchingStringIds(predicates, workConsumer)
+                ?: mappedView?.exactMatchingStringIds(predicates, workConsumer)
+        } else {
+            null
+        }
+        if (exactMatches?.all(IntArray::isEmpty) == true) return emptyList()
+        if (exactMatches != null && workConsumer is SplitGraphWorkBatchConsumer) {
             parallelRawDistinctCallSiteStringProjection(
                 predicates,
                 projectedProperties,
                 limit,
                 selectedValues,
                 workConsumer,
-                { matchingStringIds },
+                exactMatches,
                 retainedIndex ?: mappedView
             )?.let { return it }
-            // The raw path declines small graphs and unbounded limits before invoking the provider.
-            if (matchingStringIds?.all(IntArray::isEmpty) == true) return emptyList()
         }
         retainedIndex?.let { index ->
             callSiteStringProjectionLookupCount.incrementAndGet()
@@ -483,7 +484,7 @@ internal class MappedWebGraphBackedGraph(
         limit: Int,
         selectedValues: Set<List<String?>>?,
         workConsumer: SplitGraphWorkBatchConsumer,
-        matchingStringIds: (() -> List<IntArray>?)? = null,
+        exactMatchingStringIds: List<IntArray>? = null,
         propertyStringFilter: CallSiteStringIdMembership? = null
     ): List<StringPropertyDistinctRow>? {
         if (limit <= 0 || selectedValues?.isEmpty() == true) return emptyList()
@@ -530,9 +531,6 @@ internal class MappedWebGraphBackedGraph(
             }
         }
         if (selectedIdValues?.isEmpty() == true) return emptyList()
-        val exactMatchingStringIds = matchingStringIds?.invoke()
-        if (matchingStringIds != null && exactMatchingStringIds == null) return null
-        if (exactMatchingStringIds?.all(IntArray::isEmpty) == true) return emptyList()
         val sharedStates = mutableMapOf<StringPredicateKey, ByteArray>()
         val matchStates = if (exactMatchingStringIds == null) {
             predicates.map { predicate ->

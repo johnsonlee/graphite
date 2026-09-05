@@ -4848,3 +4848,6 @@ timings are not real-data performance proof. The production change and its nine
 candidate-only tests are recorded in one attempt commit, then explicitly reverted.
 No failure is waived or retried until green. No optimization has been accepted;
 CallSite pools remain and the 10x target remains active.
+
+
+**Explicit revert:** rejected experiment `40e1d401e5d8086464a673cfaedc96cccac4029e` is followed by a production/test revert. Profiling/reference evidence and the failed comparison remain. Revert-head CI is pending; this does not constitute acceptance.
