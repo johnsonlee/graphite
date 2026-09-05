@@ -696,6 +696,7 @@ internal class MappedWebGraphBackedGraph(
         val rows = ArrayList<StringPropertyProjectionRow>(minOf(limit, RAW_PROJECTION_MAX_PROBE_NODES))
         val matchedNodeIds = IntArray(minOf(limit, RAW_PROJECTION_MAX_PROBE_NODES))
         val stringIds = IntArray(CALL_SITE_STRING_PROPERTY_COUNT)
+        val projectedStrings = RawProjectionStringDecoder(stringTable)
         val accounting = BufferedGraphWorkConsumer(workConsumer)
         val nodeIds = nodeTypeIndex.idIterator(CallSiteNode::class.java)
         val maxInspected = maxOf(
@@ -731,7 +732,7 @@ internal class MappedWebGraphBackedGraph(
                 if (!matched) continue
                 matchedNodeIds[rows.size] = nodeId
                 rows += StringPropertyProjectionRow(projectedPropertyIndexes.map { propertyIndex ->
-                    stringTable.get(stringIds[propertyIndex]).toString()
+                    projectedStrings.decode(stringIds[propertyIndex])
                 })
                 if (rows.size >= limit) break
             }
@@ -749,6 +750,7 @@ internal class MappedWebGraphBackedGraph(
         projectedPropertyIndexes: List<Int>
     ): List<StringPropertyProjectionRow> {
         val stringIds = IntArray(CALL_SITE_STRING_PROPERTY_COUNT)
+        val projectedStrings = RawProjectionStringDecoder(stringTable)
         return nodeIds.map { nodeId ->
             withRawCallSiteStringIds(nodeId) { callerClass, callerName, calleeClass, calleeName ->
                 stringIds[CALLER_CLASS_PROPERTY_INDEX] = callerClass
@@ -757,7 +759,7 @@ internal class MappedWebGraphBackedGraph(
                 stringIds[CALLEE_NAME_PROPERTY_INDEX] = calleeName
             }
             StringPropertyProjectionRow(projectedPropertyIndexes.map { propertyIndex ->
-                stringTable.get(stringIds[propertyIndex]).toString()
+                projectedStrings.decode(stringIds[propertyIndex])
             })
         }
     }
@@ -2357,6 +2359,7 @@ private const val MAX_RAW_STRING_MATCH_STATES = 32
 private const val LOCAL_STRING_MATCH_CACHE_CAPACITY = 1 shl 16
 private const val LOCAL_STRING_MATCH_CACHE_HASH_SHIFT = 16
 private const val RAW_PROJECTION_STRING_MATCH_CACHE_CAPACITY = 1 shl 12
+private const val RAW_PROJECTION_STRING_DECODE_CACHE_CAPACITY = 1 shl 9
 private const val RAW_PROJECTION_MIN_PROBE_NODES = 64
 private const val RAW_PROJECTION_MAX_PROBE_NODES = 1_024
 private const val RAW_PROJECTION_PROBE_FACTOR = 4
@@ -2493,6 +2496,22 @@ private class BoundedStringMatcher(
     private fun cacheSlot(stringId: Int): Int {
         val spread = stringId xor (stringId ushr LOCAL_STRING_MATCH_CACHE_HASH_SHIFT)
         return spread and (capacity - 1)
+    }
+}
+
+/** Reuses decoded projected values within one bounded raw projection without retaining graph state. */
+private class RawProjectionStringDecoder(private val stringTable: StringTable) {
+    private val keys = IntArray(RAW_PROJECTION_STRING_DECODE_CACHE_CAPACITY)
+    private val values = arrayOfNulls<String>(RAW_PROJECTION_STRING_DECODE_CACHE_CAPACITY)
+
+    fun decode(stringId: Int): String {
+        val slot = (stringId xor (stringId ushr LOCAL_STRING_MATCH_CACHE_HASH_SHIFT)) and
+            (RAW_PROJECTION_STRING_DECODE_CACHE_CAPACITY - 1)
+        if (keys[slot] == stringId + 1) return checkNotNull(values[slot])
+        return stringTable.get(stringId).also { decoded ->
+            values[slot] = decoded
+            keys[slot] = stringId + 1
+        }
     }
 }
 

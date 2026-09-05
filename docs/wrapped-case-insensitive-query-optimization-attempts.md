@@ -6085,3 +6085,60 @@ failure, reject this scheduling hypothesis rather than using a local timing resu
 graph-routing error and makes no claim about the separate cold K=64 steady-state, startup K=8,
 global-wide, or Method-17 failures. The production change is retained or reverted solely from the
 next exact-head CI result, and the PR remains not ready to merge.
+
+### 2026-09-05 - Attempt 162: Reuse decoded strings within the bounded raw projection
+
+**Hypothesis:** the exact Attempt 161 hosted result proves that the remaining
+`global-wide-wrapped-case-insensitive/dense` failure is inside the single leading-graph projection,
+not graph fanout. All three candidate forks return the same 200 rows and digest from the first
+graph with exactly 665 charged work units, but each projection decodes four front-coded values for
+every row even when method/class string ids repeat. Reuse decoded values only within that one
+bounded projection invocation. This should remove duplicate decode/allocation cost without changing
+the selected node ids, work accounting, query plan, thread topology, or graph-lifetime retained
+state.
+
+**Evidence:**
+
+- Attempt base is exact pushed Attempt 161
+  `7150c9b494399fed37279146b29c4c49ced90e99`; current-main remains v2.4.8
+  `4e328b0109e13c896b74004823fb049fcb19251a`. The production/test candidate before this record is
+  `fc73da3972005bf579031c45ba9d424190776c2f`; the final record amendment is documentation only.
+  Its production/test commit patch SHA-256 is
+  `3fc9823514b0099f0cdfc5e1e1d50cf47c86c9a9a207c8d1dfd903166a999db4`.
+- GitHub Actions run `33948326870` is the sole performance input for this attempt. It confirms
+  Attempt 161's scoped scheduling hypothesis: graph-routing job `101259278743` passed every
+  cold/warm/startup rule. The first cold K=64 request changed from current main's `424.437 ms` to
+  `535.691 ms`, inside its `674.437 ms` cap; cold K=64 graph-set P95 was
+  `2.800 -> 2.234 ms`, and startup K=8 P95 was `0.877 -> 0.952 ms`. The report/status SHA-256 is
+  `1a365ae0a20a8d19e6168017896354d517578896c0d799dc0c767bc878167b31` /
+  `2bc2417edc5e6130d8225f2b489ddddc9b0bb2a89f949e3ff90fe2b77dc6d753`; Attempt 161 is therefore
+  retained rather than inferred from a local timing result.
+- The same hosted run still fails the global-wide job `101259278726`. The frozen-v2.4.7 aggregate
+  goal has ample tail margin—worst individual P95 speedup `13.74x`, worst wrapped P95 speedup
+  `17.39x`, and worst order-median P95 speedup `14.12x`—but its per-shape non-regression rule rejects
+  wrapped dense in all three pairs. Candidate/base aligned latency is
+  `4.741/3.348 ms`, `4.220/2.550 ms`, and `3.442/1.982 ms`. Against current main the same row is
+  `6.049/3.769 ms`, `7.047/3.190 ms`, and `4.991/4.076 ms`, repeating the material regression in
+  two pairs. Every candidate observation has identical row count, digest, first-source provenance,
+  and 665 work units, which isolates fixed decode/projection cost rather than missing pruning or
+  excess graph work. Global report/status SHA-256 is
+  `94c4d73f513f8192675e85efcadf3cb8515b46d06282bf869b8c82a3573cc10f` /
+  `9e6aa2ee17837a9c6d08ded1b327f8e844f5e1121915acd069c60979a8c317e7`.
+- The new 512-slot direct-mapped decoder is allocated per bounded raw projection. A hit reuses the
+  already decoded immutable `String`; a collision merely decodes that id again. Nothing is shared
+  across requests or graphs, and the cache cannot affect predicate matching, row order, duplicate
+  preservation, cancellation, or memory-budget admission. Both an initial raw scan and a cached
+  node-id projection use the same decoder.
+- The focused storage regression now projects a repeated `callee_name` across two matched rows and
+  proves the decoded value is reused while exact rows, work units, raw match-cache lifecycle, and
+  retained-index precedence remain unchanged. In a clean normal clone, the exact production/test
+  bytes passed the focused `GraphStoreTest`, full `:webgraph:test`, `:webgraph:detekt`, and
+  `git diff --check`. These are correctness/static preflights only; no local latency number is used
+  as evidence.
+- Method-4 `contains` CPU and Method-17 `or` RSS remain separate hosted failures. This attempt does
+  not modify Method execution and deliberately does not combine either follow-up with the
+  global-wide root cause.
+
+**Conclusion:** submit this single raw-projection hypothesis to the same hosted dual-baseline gate.
+Retain it only if the repeated wrapped-dense error disappears without creating another hard
+regression. PR #114 remains not ready to merge, and no merge is authorized.
