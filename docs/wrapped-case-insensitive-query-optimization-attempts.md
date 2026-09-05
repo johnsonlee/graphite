@@ -5651,3 +5651,122 @@ gate. Keep only this record. The next independent attempt should cache a fully v
 encounter-ordered, limit-aware mapped result prefix under the shared memory budget, with cancellation
 and close-generation safety; if the strict warm guard still fails, direct bounded projection must be
 measured as a separate hypothesis.
+
+### 2026-09-05 - Attempt 157: Cache complete bounded mapped node prefixes
+
+**Hypothesis:** Attempt 156 showed that exact string-id lookup is not the dominant repeated work.
+Cache the complete, encounter-ordered node-id prefix for the exact `(ordered predicates, limit)`
+request instead, but only after every posting range and every returned node has been validated.
+This should remove repeated posting validation and merge work from graph-scoped routes without
+adding a thread pool, weakening work/cancellation semantics, or retaining projected object rows.
+
+**Evidence:**
+
+- Attempt base is rejected-record commit
+  `de5228d1704faee71a1f4d105523ab516f96b9cb`; current-main reference is v2.4.8
+  `4e328b0109e13c896b74004823fb049fcb19251a`; frozen goal reference is v2.4.7
+  `78ce46b57b2d88ae0f1823432ffefc5c7685bc1b`. The preliminary measured candidate is temporary
+  commit `c7ce19432abd0af3a4192753ed8b872141d85502`; the measured production/test/harness diff SHA-256
+  is `0bc8a9e3ce8f152bb782291db7783b232c6b574600af5617a3ee220e29ca388c`.
+  The exact fully built and measured checkout is
+  `1bda8a0123bc662038c77aa419340e21796247f5`; the final record-only amendment leaves its
+  production, tests, gate, workflow, and harness bytes unchanged. Its WebGraph JMH JAR
+  raw/canonical SHA-256 is
+  `b256157c0484947a06d42cdc49e54e659fbed4e9706371fe213f9a9c565aa171` /
+  `0cd87dda023685c695f3dd64876c7f1d33ddea61a7b85ef1e0f5f2da2ecf61c3`.
+- Each mapped view owns an access-ordered LRU capped at 16 entries and 256 KiB. Only limits up to
+  200 are eligible. Keys retain the full ordered predicates and exact limit; values are private
+  primitive node-id arrays. A hit checks interruption and charges at least one work unit. A miss
+  admits only a complete result: a short result after exhaustion, or an exact-limit prefix before
+  yielding its last item so an outer `LIMIT` cannot prevent publication. Partial iteration below
+  the limit never admits. Entries reserve the shared mapped-index memory budget, evict by LRU,
+  shrink their reservation, clear on close, and cannot publish after a concurrent close.
+- The implementation was refined within this one hypothesis rather than selecting a favorable
+  run. Caching only the preferred single-source branch produced 128 entries and did not close the
+  set-width gate. Applying the same safe lookup to the general mapped branch produced 400 entries
+  but still did not cache exact-limit results because the outer pipeline never requested the final
+  `hasNext`. Publishing immediately before the verified limit-th yield produced the expected 464
+  entries and closed the gate while the partial-consumption test remained non-admitting.
+- The routing protocol used the same 64 distinct real Android/Tika/Hive/Kotlin compiler shards,
+  correctness oracle, fresh JVMs, JDK 17.0.18, four active processors, and 8 GiB heap as the hosted
+  gate. The harness is byte-identical across current main and candidate at SHA-256
+  `a4844ba66446ebfc117066fc347985d8494cb08bebc3772b586ce56da3fbc65b`. All six measured
+  correctness outputs contain `1,137/1,137` successful queries and have SHA-256
+  `35fc69539c3080dbb801cca4ec7f1e7541f3ccd190d8774861f6109f7c58b6dd`.
+
+  | State | Current main overall P50/P95 | Candidate overall P50/P95 | Main/candidate graph-id P95 | Main/candidate parameter P95 | Result |
+  | :--- | :--- | :--- | :--- | :--- | :--- |
+  | cold | 0.058/16.025 ms | 0.115/1.677 ms | 22.528/2.167 ms | 0.090/0.309 ms | pass |
+  | warm | 0.024/0.077 ms | 0.041/0.363 ms | 0.086/0.294 ms | 0.060/0.276 ms | pass |
+  | startup-prepared | 0.059/0.993 ms | 0.057/1.182 ms | 1.191/1.419 ms | 0.100/0.081 ms | pass |
+
+  Cold and warm end with 64 mapped views, exactly 1,920 lookups distributed 30..30, zero raw
+  scans, zero scan workers, and exactly 464 cache entries / 643,296 bytes. Startup remains the
+  unchanged 64-retained-index lifecycle with 2,043 lookups distributed 30..39 and zero cache
+  entries/bytes. The first cold K64 request improves `518.295 -> 440.170 ms`; K2/K8/K64 P95 is
+  `0.522/0.733/1.487 ms` cold and `0.416/0.446/0.369 ms` warm. All three strict state comparators
+  passed this preliminary candidate run without changing their latency or resource tolerances.
+- A fresh base/candidate rerun from the exact final Attempt 157 checkout reproduced the cold and
+  warm passes, including the exact 464-entry / 643,296-byte mapped-cache lifecycle, but exposed a
+  blocking startup-prepared tail result. Graph-id P95 changed `1.109083 -> 1.391917 ms`; the
+  comparator permits 15% or 0.25 ms of absolute jitter, so this is 0.033 ms beyond the absolute
+  allowance. Startup still had 64 retained indexes, zero mapped views/cache entries, zero scans,
+  and otherwise matching correctness and resource behavior. This proves that the mapped-prefix
+  change is a valid cold/warm building block but does not close the final merge gate. Exact-final
+  cold/warm/startup status SHA-256 is
+  `b0e3b902911ad15bacbd2a04e17f8368e86bd3b33d10849c3147518267038a97` /
+  `c7f0fb37db3e3aead195afaa63e4b7a7c069a87b950edba5b8708f271b56605a` /
+  `d8689633b65be2dcf056f4d59bacf8fe2cfa91d994fc921ccd29859aaa16d50b`.
+- Candidate cold/warm/startup wall time is `2.282/1.369/1.694 s`, process CPU
+  `5.171/2.341/3.989 s`, peak used heap `5.68/4.86/5.52 GiB`, peak RSS
+  `6.41/5.56/5.85 GiB`, and normalized allocation `13.59/22.79/12.97 GiB/op`. The cache itself is
+  only `0.61 MiB`; every lifecycle remains inside the existing CPU, heap, RSS, allocation, and
+  lookup-distribution rules. Routing report/status SHA-256 is
+  `65a9ae982d1eb4ff8f469bcd5087d0add3111d35ae1240ee4a8612ff0cf22896` /
+  `7106ad6e0f5407c78af193afeaccebbee591ecd02372e290a40b3296f7f4c5bb` cold,
+  `2b1e5430f9d2f0783b62a2fcede6c737dcad02d36c7566d785776f2f637db050` /
+  `56cff48aabeba9c3856e29b77e58985f63b485cb307c5eaa8b9ce83b1d7224e8` warm, and
+  `508cab0df4369e027b474862ef770a79e32b2ed75a97a4e9df7ef36f3489998a` /
+  `14cf07af50245a440d687555762a6aed4450ec18a42290c5d8a3aadbc47e6a3d`
+  startup-prepared.
+- Because the general mapped path changed, the complete nine-process global-wide protocol was
+  rerun rather than reusing Attempt 152 timings. Goal/current/candidate used byte-identical harness
+  bytes and the same 34-case oracle SHA-256
+  `ca62e20e7b043e7a89af44c60dd06d5bd01261bd0eda1630775b68921d449f51`.
+
+  | Pair | Order | v2.4.7 P50/P95 | Candidate P50/P95 | P95 speedup | Current-main P95 -> candidate P95 |
+  | ---: | :--- | :--- | :--- | ---: | :--- |
+  | 1 | candidate-base | 239.826/439.283 ms | 1.636/21.248 ms | 20.67x | 53.172 -> 21.248 ms |
+  | 2 | base-candidate | 242.052/359.510 ms | 1.536/19.811 ms | 18.15x | 55.494 -> 19.811 ms |
+  | 3 | candidate-base | 240.144/383.477 ms | 1.610/19.140 ms | 20.03x | 43.324 -> 19.140 ms |
+
+  Worst individual and order-median P95 speedup is `18.15x`, and worst wrapped-family speedup is
+  `20.98x`. Both the frozen v2.4.7 10x gate and every current-main aligned correctness, access,
+  latency, work, CPU, heap, RSS, allocation, and worker-policy rule pass. The candidate reports
+  four graph workers, zero segment workers, zero CallSite scans, and zero active CallSite scan
+  workers. Goal report/status SHA-256 is
+  `bc6014ddd9fc3ce31f365256c88d547b35bfd718dd63902c76001bcd95be1e27` /
+  `2f864db03da74d8b3b125eece9de7ff2b36e047f2894fe7925a15bcbe63f8c23`; current report/status is
+  `55d29b4073f85459750348e91e8ac5cd331568db5ca9e9442510576233e42248` /
+  `96fdb2d92fc12bbb24f3b28ae2d29e4cdff1e73e330affe44fa78829623a53ca`.
+- The exact Method-17 string shard was also rerun against current main. Its previously hosted
+  suffix CPU failure did not reproduce: late/prefix/suffix changed by `+18.1/+7.1/+5.5%` in the
+  initial base-first run, and the required candidate-first confirmation reduced the only initial
+  failure (late) to `+5.3%`. Correctness text is identical and the final CPU comparator passes;
+  report/status SHA-256 is
+  `872cb6d9b628240ecba9dadc59e685b18b5d48433460dc8c0c56ce04b0e0a568` /
+  `8be1696241296dc0f93e42b62bb5b978a9dcdca0305e1b6ad068984425d7904c`.
+- Tests cover full/empty/exact-limit/partial prefixes, ordered predicate and limit isolation,
+  consumer exceptions, interruption, budget denial, LRU eviction, clear/release, and a forced
+  close-versus-late-publication race over 4,096 real mapped nodes. The comparator now fails with an
+  explicit graph-id/request-selected percentile error instead of the former empty error array,
+  validates the exact mapped-prefix lifecycle, and reports its entries and bytes.
+
+**Conclusion:** retain as a building block, not as a mergeable final result. The bounded primitive
+prefix is the first mapped-view cache that removes the dominant repeated validation/merge work while
+preserving correctness, cancellation, accounting, memory, and close semantics. It closes cold and
+warm graph routing and improves the already-qualified global-wide result from the prior `15.50x`
+floor to `18.15x`, without adding `graphite-callsite-segment-*` or activating the
+`graphite-callsite-scan-*` fallback. The exact final checkout still fails startup-prepared graph-id
+P95, so the next independent attempt must address the retained heap index's exact-limit admission
+gap and re-run every gate before the PR can be marked ready.

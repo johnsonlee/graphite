@@ -2565,6 +2565,7 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
+    @Suppress("LongMethod")
     fun `graph id equality prunes unselected sources from broad string limit scans`() {
         val scanCounts = List(4) { AtomicInteger() }
         val lookupLimits = List(4) { mutableListOf<Int>() }

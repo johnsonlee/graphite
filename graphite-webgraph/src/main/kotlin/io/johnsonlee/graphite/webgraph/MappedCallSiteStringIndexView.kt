@@ -51,9 +51,35 @@ internal class MappedCallSiteStringIndexView private constructor(
     private val callSiteCount: Int,
     private val stringCount: Int,
     private val stringTable: StringTable,
-    private val nodeAccessor: MappedCallSiteNodeAccessor
+    private val nodeAccessor: MappedCallSiteNodeAccessor,
+    private val reservation: MappedCallSiteStringIndexMemoryBudget.Reservation
 ) : CallSiteStringIdMembership, Closeable {
-    override fun close() = Unit
+    private val cacheLock = Any()
+    private val matchingNodeIds = LinkedHashMap<MappedNodeMatchKey, CachedMappedNodeIds>(
+        MAX_MAPPED_NODE_MATCH_CACHE_ENTRIES + 1,
+        MAPPED_NODE_MATCH_CACHE_LOAD_FACTOR,
+        true
+    )
+    private var matchingNodeCacheBytes = 0L
+    private var closed = false
+
+    override fun close() {
+        val releaseReservation = synchronized(cacheLock) {
+            if (closed) {
+                false
+            } else {
+                closed = true
+                matchingNodeIds.clear()
+                matchingNodeCacheBytes = 0L
+                true
+            }
+        }
+        if (releaseReservation) reservation.close()
+    }
+
+    internal fun retainedQueryCacheBytes(): Long = synchronized(cacheLock) { matchingNodeCacheBytes }
+
+    internal fun retainedQueryCacheEntries(): Int = synchronized(cacheLock) { matchingNodeIds.size }
 
     override fun containsPropertyStringId(
         propertyIndex: Int,
@@ -109,6 +135,77 @@ internal class MappedCallSiteStringIndexView private constructor(
             }
         }
         return false
+    }
+
+    /**
+     * Returns a fully validated prefix for the routed single-graph path and admits it only after
+     * the caller consumes that complete bounded prefix. The cached array is never exposed.
+     */
+    fun matchingNodeIds(
+        predicates: List<StringPropertyPredicate>,
+        workConsumer: GraphWorkConsumer?,
+        limit: Int
+    ): Sequence<Int>? {
+        if (limit <= 0) return emptySequence()
+        if (predicates.any { predicate -> !predicate.canUseMappedCallSiteIndexView() }) return null
+        val cacheKey = if (limit <= MAX_MAPPED_NODE_MATCH_CACHE_LIMIT) {
+            MappedNodeMatchKey(predicates.toList(), limit)
+        } else {
+            null
+        }
+        val cachedNodeIds = cacheKey?.let { key ->
+            synchronized(cacheLock) {
+                if (closed) null else matchingNodeIds[key]?.nodeIds
+            }
+        }
+        if (cachedNodeIds != null) {
+            checkViewInterrupted()
+            consumeGraphWork(workConsumer, cachedNodeIds.size.coerceAtLeast(1).toLong())
+            return cachedNodeIds.asSequence()
+        }
+
+        checkViewInterrupted()
+        val exactMatches = exactMatchingStringIds(predicates, workConsumer) ?: return null
+        val source = matchingNodeIds(predicates, exactMatches, workConsumer) ?: return null
+        if (cacheKey == null) return source.take(limit)
+        return cacheMatchingNodeIdsOnComplete(cacheKey, source.take(limit))
+    }
+
+    private fun cacheMatchingNodeIdsOnComplete(
+        key: MappedNodeMatchKey,
+        source: Sequence<Int>
+    ): Sequence<Int> = sequence {
+        val consumed = IntArray(key.limit)
+        var size = 0
+        for (nodeId in source) {
+            consumed[size++] = nodeId
+            if (size == key.limit) cacheMatchingNodeIds(key, consumed)
+            yield(nodeId)
+        }
+        if (size < key.limit) cacheMatchingNodeIds(key, consumed.copyOf(size))
+    }
+
+    private fun cacheMatchingNodeIds(key: MappedNodeMatchKey, nodeIds: IntArray) {
+        val entryBytes = estimatedMappedNodeMatchCacheBytes(key, nodeIds)
+        if (entryBytes > MAX_MAPPED_NODE_MATCH_CACHE_BYTES) return
+        synchronized(cacheLock) {
+            if (closed || matchingNodeIds.containsKey(key)) return
+            while (matchingNodeIds.isNotEmpty() &&
+                (matchingNodeIds.size >= MAX_MAPPED_NODE_MATCH_CACHE_ENTRIES ||
+                    matchingNodeCacheBytes > MAX_MAPPED_NODE_MATCH_CACHE_BYTES - entryBytes)
+            ) {
+                val eldest = matchingNodeIds.entries.iterator().next()
+                matchingNodeIds.remove(eldest.key)
+                matchingNodeCacheBytes -= eldest.value.retainedBytes
+                reservation.shrinkTo(reservation.bytes - eldest.value.retainedBytes)
+            }
+            val retainedAfter = runCatching {
+                Math.addExact(matchingNodeCacheBytes, entryBytes)
+            }.getOrNull() ?: return
+            if (!reservation.tryGrowTo(retainedAfter)) return
+            matchingNodeIds[key] = CachedMappedNodeIds(nodeIds, entryBytes)
+            matchingNodeCacheBytes = retainedAfter
+        }
     }
 
     fun matchingNodeIds(
@@ -392,6 +489,7 @@ internal class MappedCallSiteStringIndexView private constructor(
                             workConsumer
                         )
                     )
+                    val reservation = MappedCallSiteStringIndexMemoryBudget.tryReserve(0L) ?: return null
                     MappedCallSiteStringIndexView(
                         propertyStrings,
                         propertyEnds,
@@ -400,7 +498,8 @@ internal class MappedCallSiteStringIndexView private constructor(
                         callSiteCount,
                         stringCount,
                         stringTable,
-                        nodeAccessor
+                        nodeAccessor,
+                        reservation
                     )
                 }
             } catch (error: Exception) {
@@ -646,6 +745,42 @@ private data class MappedPredicateKey(
     val expected: String
 )
 
+private data class MappedNodeMatchKey(
+    val predicates: List<StringPropertyPredicate>,
+    val limit: Int
+)
+
+private data class CachedMappedNodeIds(
+    val nodeIds: IntArray,
+    val retainedBytes: Long
+)
+
+private fun estimatedMappedNodeMatchCacheBytes(
+    key: MappedNodeMatchKey,
+    nodeIds: IntArray
+): Long = try {
+    var keyCharacters = 0L
+    key.predicates.forEach { predicate ->
+        keyCharacters = Math.addExact(keyCharacters, predicate.property.length.toLong())
+        keyCharacters = Math.addExact(keyCharacters, predicate.expected.length.toLong())
+    }
+    Math.addExact(
+        MAPPED_NODE_MATCH_CACHE_ENTRY_ESTIMATED_BYTES + MAPPED_PRIMITIVE_ARRAY_HEADER_ESTIMATED_BYTES,
+        Math.addExact(
+            Math.multiplyExact(
+                key.predicates.size.toLong(),
+                MAPPED_NODE_MATCH_CACHE_PREDICATE_ESTIMATED_BYTES
+            ),
+            Math.addExact(
+                Math.multiplyExact(keyCharacters, Char.SIZE_BYTES.toLong()),
+                Math.multiplyExact(nodeIds.size.toLong(), Int.SIZE_BYTES.toLong())
+            )
+        )
+    )
+} catch (_: ArithmeticException) {
+    Long.MAX_VALUE
+}
+
 private data class IndexedPostingRange(val positions: IntRange)
 
 private data class MappedPostingSource(val postings: IntBuffer, val positions: IntRange)
@@ -681,3 +816,10 @@ private const val ASCII_MAX = 0x7f
 private const val VIEW_INTERRUPTION_POLL_MASK = 1_023
 private const val CHECKSUM_CHUNK_BYTES = 1 shl 20
 private const val MIN_INDEX_VIEW_BYTES = CALL_SITE_STRING_INDEX_HEADER_BYTES + Long.SIZE_BYTES
+private const val MAX_MAPPED_NODE_MATCH_CACHE_ENTRIES = 16
+private const val MAX_MAPPED_NODE_MATCH_CACHE_BYTES = 256L * 1024
+private const val MAX_MAPPED_NODE_MATCH_CACHE_LIMIT = 200
+private const val MAPPED_NODE_MATCH_CACHE_LOAD_FACTOR = 0.75f
+private const val MAPPED_NODE_MATCH_CACHE_ENTRY_ESTIMATED_BYTES = 192L
+private const val MAPPED_NODE_MATCH_CACHE_PREDICATE_ESTIMATED_BYTES = 72L
+private const val MAPPED_PRIMITIVE_ARRAY_HEADER_ESTIMATED_BYTES = 24L

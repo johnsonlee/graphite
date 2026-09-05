@@ -374,6 +374,7 @@ class GraphStoreTest {
     }
 
     @Test
+    @Suppress("LongMethod")
     fun `cold mapped CallSite hint is read only and preferred serial access opens only the view`() {
         val graph = DefaultGraph.Builder().apply {
             repeat(4) { index ->
@@ -410,6 +411,7 @@ class GraphStoreTest {
         val dir = Files.createTempDirectory("webgraph-cold-mapped-hint")
         val property = GraphStore.MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY
         val previous = System.getProperty(property)
+        val retainedBefore = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
         try {
             System.clearProperty(property)
             GraphStore.save(graph, dir, prepareCallSiteStringIndex = true)
@@ -435,12 +437,13 @@ class GraphStoreTest {
                     )
                 )
 
+                val firstWork = AtomicLong()
                 loaded.resetCallSiteScanMetrics()
                 val ids = loaded.nodesByStringPropertyDisjunction(
                     CallSiteNode::class.java,
                     predicates,
                     1,
-                    PreferredSerialMappedStringIndexViewGraphWorkBatchConsumer { }
+                    PreferredSerialMappedStringIndexViewGraphWorkBatchConsumer(firstWork::addAndGet)
                 ).orEmpty().map { node -> node.id.value }.toList()
                 assertEquals(listOf(2), ids)
                 assertFalse(loaded.isCallSiteStringIndexInitialized())
@@ -462,8 +465,22 @@ class GraphStoreTest {
                     )
                 )
                 assertEquals(1L, loaded.callSiteStringIndexLookupCount())
+                assertEquals(1, loaded.mappedCallSiteStringIndexViewCacheEntries())
+                assertTrue(loaded.mappedCallSiteStringIndexViewCacheBytes() > 0L)
+
+                val repeatedWork = AtomicLong()
+                val repeatedIds = loaded.nodesByStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    predicates,
+                    1,
+                    PreferredSerialMappedStringIndexViewGraphWorkBatchConsumer(repeatedWork::addAndGet)
+                ).orEmpty().map { node -> node.id.value }.toList()
+                assertEquals(ids, repeatedIds)
+                assertEquals(1L, repeatedWork.get())
+                assertTrue(firstWork.get() > repeatedWork.get())
 
                 loaded.clearStringPropertyIndexes()
+                assertEquals(retainedBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
                 assertTrue(loaded.hasColdMappedStringPropertyDisjunction(CallSiteNode::class.java, predicates))
                 assertFalse(loaded.hasWarmMappedStringPropertyDisjunction(CallSiteNode::class.java, predicates))
                 assertFalse(loaded.isMappedCallSiteStringIndexViewInitialized())
@@ -487,6 +504,262 @@ class GraphStoreTest {
             previous?.let { System.setProperty(property, it) } ?: System.clearProperty(property)
             dir.toFile().deleteRecursively()
         }
+        assertEquals(retainedBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
+    }
+
+    @Test
+    @Suppress("LongMethod")
+    fun `routed mapped prefix cache is bounded limit aware and preserves cancellation`() {
+        val graph = DefaultGraph.Builder().apply {
+            repeat(8) { index ->
+                addNode(
+                    CallSiteNode(
+                        NodeId(index),
+                        MethodDescriptor(
+                            TypeDescriptor("example.TargetCaller$index"),
+                            if (index % 2 == 0) "targetMethod$index" else "call$index",
+                            emptyList(),
+                            TypeDescriptor("void")
+                        ),
+                        MethodDescriptor(
+                            TypeDescriptor("example.Dependency$index"),
+                            "invoke$index",
+                            emptyList(),
+                            TypeDescriptor("void")
+                        ),
+                        index,
+                        null,
+                        emptyList()
+                    )
+                )
+            }
+        }.build()
+        val classPredicate = StringPropertyPredicate(
+            "caller_class",
+            StringValueTransform.LOWERCASE,
+            StringMatchMode.CONTAINS,
+            "target"
+        )
+        val methodPredicate = classPredicate.copy(property = "caller_name")
+        val dir = Files.createTempDirectory("webgraph-mapped-prefix-cache")
+        val property = GraphStore.MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY
+        val previous = System.getProperty(property)
+        val retainedBefore = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
+        try {
+            System.clearProperty(property)
+            GraphStore.save(graph, dir, prepareCallSiteStringIndex = true)
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                fun lookup(
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int,
+                    work: AtomicLong = AtomicLong()
+                ): Pair<List<Int>, Long> {
+                    val ids = loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        predicates,
+                        limit,
+                        PreferredSerialMappedStringIndexViewGraphWorkBatchConsumer(work::addAndGet)
+                    ).orEmpty().map { node -> node.id.value }.toList()
+                    return ids to work.get()
+                }
+
+                val partial = loaded.nodesByStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    listOf(classPredicate),
+                    4,
+                    PreferredSerialMappedStringIndexViewGraphWorkBatchConsumer { }
+                ).orEmpty().take(1).map { node -> node.id.value }.toList()
+                assertEquals(listOf(0), partial)
+                assertEquals(0, loaded.mappedCallSiteStringIndexViewCacheEntries())
+                assertEquals(0L, loaded.mappedCallSiteStringIndexViewCacheBytes())
+
+                val (first, firstWork) = lookup(listOf(classPredicate), 4)
+                val retainedAfterFirst = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
+                val (repeated, repeatedWork) = lookup(listOf(classPredicate), 4)
+                assertEquals(partial, first.take(1))
+                assertEquals(4, first.size)
+                assertEquals(first.size, first.toSet().size)
+                assertEquals(first, repeated)
+                assertTrue(firstWork > repeatedWork)
+                assertEquals(first.size.toLong(), repeatedWork)
+                assertEquals(1, loaded.mappedCallSiteStringIndexViewCacheEntries())
+                assertTrue(loaded.mappedCallSiteStringIndexViewCacheBytes() > 0L)
+                assertEquals(retainedAfterFirst, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
+
+                val (shorter, shorterWork) = lookup(listOf(classPredicate), 2)
+                assertEquals(first.take(2), shorter)
+                assertTrue(shorterWork > shorter.size)
+                assertEquals(2, loaded.mappedCallSiteStringIndexViewCacheEntries())
+
+                val orderedPredicates = listOf(classPredicate, methodPredicate)
+                assertEquals(4, lookup(orderedPredicates, 4).first.size)
+                assertEquals(4, lookup(orderedPredicates.reversed(), 4).first.size)
+                assertEquals(4, loaded.mappedCallSiteStringIndexViewCacheEntries())
+
+                val missingPredicate = classPredicate.copy(expected = "not-present-anywhere")
+                val (_, missingWork) = lookup(listOf(missingPredicate), 4)
+                val entriesAfterMissing = loaded.mappedCallSiteStringIndexViewCacheEntries()
+                val (_, repeatedMissingWork) = lookup(listOf(missingPredicate), 4)
+                assertTrue(missingWork >= 1L)
+                assertEquals(1L, repeatedMissingWork)
+                assertEquals(5, entriesAfterMissing)
+                assertEquals(entriesAfterMissing, loaded.mappedCallSiteStringIndexViewCacheEntries())
+
+                val sentinel = IllegalStateException("cached work rejected")
+                val cachedFailure = assertFailsWith<IllegalStateException> {
+                    loaded.nodesByStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(classPredicate),
+                        4,
+                        PreferredSerialMappedStringIndexViewGraphWorkBatchConsumer { throw sentinel }
+                    ).orEmpty().toList()
+                }
+                assertSame(sentinel, cachedFailure)
+
+                val interruptedFailure = AtomicReference<Throwable>()
+                val interrupted = Thread {
+                    Thread.currentThread().interrupt()
+                    interruptedFailure.set(
+                        runCatching {
+                            loaded.nodesByStringPropertyDisjunction(
+                                CallSiteNode::class.java,
+                                listOf(classPredicate),
+                                4,
+                                PreferredSerialMappedStringIndexViewGraphWorkBatchConsumer { }
+                            ).orEmpty().toList()
+                        }.exceptionOrNull()
+                    )
+                }
+                interrupted.start()
+                interrupted.join(5_000)
+                assertFalse(interrupted.isAlive)
+                assertTrue(interruptedFailure.get() is CancellationException)
+
+                val entriesBeforeDenied = loaded.mappedCallSiteStringIndexViewCacheEntries()
+                val available = MappedCallSiteStringIndexMemoryBudget.maxBytes -
+                    MappedCallSiteStringIndexMemoryBudget.retainedBytes()
+                checkNotNull(MappedCallSiteStringIndexMemoryBudget.tryReserve(available)).use {
+                    val deniedPredicate = classPredicate.copy(expected = "targetcaller")
+                    assertEquals(8, lookup(listOf(deniedPredicate), 8).first.size)
+                    assertEquals(entriesBeforeDenied, loaded.mappedCallSiteStringIndexViewCacheEntries())
+                }
+
+                repeat(20) { cacheIndex ->
+                    lookup(listOf(classPredicate.copy(expected = "absent-cache-key-$cacheIndex")), 4)
+                }
+                assertEquals(16, loaded.mappedCallSiteStringIndexViewCacheEntries())
+                val (_, evictedWork) = lookup(listOf(classPredicate), 4)
+                assertTrue(evictedWork > 4L)
+
+                loaded.clearStringPropertyIndexes()
+                assertEquals(0, loaded.mappedCallSiteStringIndexViewCacheEntries())
+                assertEquals(retainedBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
+            } finally {
+                loaded.close()
+            }
+        } finally {
+            previous?.let { System.setProperty(property, it) } ?: System.clearProperty(property)
+            dir.toFile().deleteRecursively()
+        }
+        assertEquals(retainedBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
+    }
+
+    @Test
+    fun `closing a mapped view during a prefix miss cannot resurrect its reservation`() {
+        val graph = DefaultGraph.Builder().apply {
+            repeat(4_096) { index ->
+                addNode(
+                    CallSiteNode(
+                        NodeId(index),
+                        MethodDescriptor(
+                            TypeDescriptor("example.TargetCaller$index"),
+                            "call$index",
+                            emptyList(),
+                            TypeDescriptor("void")
+                        ),
+                        MethodDescriptor(
+                            TypeDescriptor("example.Dependency$index"),
+                            "invoke$index",
+                            emptyList(),
+                            TypeDescriptor("void")
+                        ),
+                        index,
+                        null,
+                        emptyList()
+                    )
+                )
+            }
+        }.build()
+        val predicate = StringPropertyPredicate(
+            "caller_class",
+            StringValueTransform.LOWERCASE,
+            StringMatchMode.CONTAINS,
+            "target"
+        )
+        val dir = Files.createTempDirectory("webgraph-mapped-prefix-close-race")
+        val property = GraphStore.MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY
+        val previous = System.getProperty(property)
+        val retainedBefore = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
+        try {
+            System.clearProperty(property)
+            GraphStore.save(graph, dir, prepareCallSiteStringIndex = true)
+            val loaded = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            try {
+                loaded.nodesByStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    listOf(predicate.copy(expected = "not-present-anywhere")),
+                    1,
+                    PreferredSerialMappedStringIndexViewGraphWorkBatchConsumer { }
+                ).orEmpty().toList()
+                assertEquals(1, loaded.mappedCallSiteStringIndexViewCacheEntries())
+
+                val workReached = CountDownLatch(1)
+                val resumeWork = CountDownLatch(1)
+                val blocked = AtomicBoolean()
+                val result = AtomicReference<List<Int>>()
+                val failure = AtomicReference<Throwable>()
+                val request = Thread {
+                    try {
+                        result.set(
+                            loaded.nodesByStringPropertyDisjunction(
+                                CallSiteNode::class.java,
+                                listOf(predicate),
+                                200,
+                                PreferredSerialMappedStringIndexViewGraphWorkBatchConsumer {
+                                    if (blocked.compareAndSet(false, true)) {
+                                        workReached.countDown()
+                                        check(resumeWork.await(5, TimeUnit.SECONDS))
+                                    }
+                                }
+                            ).orEmpty().map { node -> node.id.value }.toList()
+                        )
+                    } catch (error: Throwable) {
+                        failure.set(error)
+                    }
+                }
+                request.start()
+                assertTrue(workReached.await(5, TimeUnit.SECONDS))
+
+                loaded.clearStringPropertyIndexes()
+                assertEquals(retainedBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
+                assertEquals(0, loaded.mappedCallSiteStringIndexViewCacheEntries())
+                resumeWork.countDown()
+                request.join(5_000)
+
+                assertFalse(request.isAlive)
+                assertNull(failure.get())
+                assertEquals(200, result.get().size)
+                assertEquals(0, loaded.mappedCallSiteStringIndexViewCacheEntries())
+                assertEquals(retainedBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
+            } finally {
+                loaded.close()
+            }
+        } finally {
+            previous?.let { System.setProperty(property, it) } ?: System.clearProperty(property)
+            dir.toFile().deleteRecursively()
+        }
+        assertEquals(retainedBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
     }
 
     @Test

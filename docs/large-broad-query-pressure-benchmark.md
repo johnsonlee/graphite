@@ -189,9 +189,11 @@ During a real run, verify actual use in JFR/VisualVM by filtering for
 during one selected-graph query. The benchmark's process-CPU-time / wall-time effective-core
 ratio is the numeric utilization baseline; thread count alone is not sufficient.
 The harness also records the number of bounded intra-graph scans and the peak number of workers
-simultaneously inside one scan. The fixture64 comparator fails closed unless the candidate executes at
-exactly one such scan on each of the 64 graphs and observes at least two active workers; merely
-creating eight threads cannot satisfy the gate. It also counts retained-index lookups per graph.
+simultaneously inside one scan. If the candidate takes the raw-build lifecycle, the fixture64
+comparator fails closed unless it executes exactly one such scan on each of the 64 graphs and
+observes at least two active workers; merely creating eight threads cannot satisfy the gate.
+Persisted-index and mapped-view lifecycles must instead report zero raw scans and zero active scan
+workers. The harness also counts retained-index lookups per graph.
 Before loading graphs, the harness sets
 `graphite.webgraph.prepareCallSiteStringIndexOnLoad=lazy` for cold and warm forks. This disables
 load-time preparation without disabling production's lazy persisted-sidecar restore. The property
@@ -208,6 +210,17 @@ or the complete 1,920-lookup mapped-view lifecycle. A mixed or partial lifecycle
 hide a distribution such as `[641, 1, ..., 1]`. This rejects an implementation that happens to meet
 the percentile target while routing only part of the workload or silently falling back to raw
 scans.
+
+For the mapped-view lifecycle, the repeated routed workload retains only complete, validated node-id
+prefixes. Each view uses an access-ordered LRU of at most 16 entries and 256 KiB; only limits up to
+200 are eligible, and the full ordered predicate list plus exact limit is part of the key. A partial
+consumer cannot publish a prefix, while a result that reaches its exact limit is published before
+the last element is yielded so an outer `LIMIT` does not suppress admission. Cache memory is
+reserved from the shared mapped-index budget, hits still check interruption and charge graph work,
+and closing the view clears the entries and prevents a concurrent late publication. The fixture64
+mapped workload must end with exactly 464 entries within the aggregate 16 MiB ceiling; the observed
+real-fixture footprint is 643,296 bytes. Retained-index, raw-build, and `startup-prepared` lifecycles
+must report zero mapped-prefix entries and bytes.
 
 In the raw-build lifecycle, a bounded scan that reaches the end of the selected graph reuses the
 already-read node and string ids to publish the combined CallSite CSR index instead of discarding

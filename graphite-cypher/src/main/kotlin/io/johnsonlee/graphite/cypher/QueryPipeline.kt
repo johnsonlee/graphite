@@ -4350,6 +4350,7 @@ class QueryPipeline private constructor(
         }
     }
 
+    @Suppress("LongParameterList")
     private fun <T : Node> stringPropertyDisjunctionCandidates(
         graph: Graph,
         type: Class<T>,

@@ -119,6 +119,8 @@ function graphIdPressureResult(overrides = {}, indexState = "cold") {
         callSiteIndexRetainedBytes: 0,
         callSiteTrigramIndexedGraphs: 0,
         callSiteMappedIndexViewGraphs: 0,
+        callSiteMappedIndexViewCacheBytes: 0,
+        callSiteMappedIndexViewCacheEntries: 0,
         callSiteParallelScanCount: warm ? 0 : 64,
         callSiteParallelScanGraphCount: warm ? 0 : 64,
         callSiteStringIndexLookupCount: warm ? 2043 : 1979,
@@ -1270,6 +1272,8 @@ test("fixture64 graphId pressure accepts only complete mapped-view lifecycles", 
         callSiteIndexRetainedBytes: 0,
         callSiteTrigramIndexedGraphs: 0,
         callSiteMappedIndexViewGraphs: 64,
+        callSiteMappedIndexViewCacheBytes: 643_296,
+        callSiteMappedIndexViewCacheEntries: 464,
         callSiteParallelScanCount: 0,
         callSiteParallelScanGraphCount: 0,
         callSiteStringIndexLookupCount: 1920,
@@ -1286,6 +1290,7 @@ test("fixture64 graphId pressure accepts only complete mapped-view lifecycles", 
     );
     assert.equal(cold.passed, true, cold.errors.join("\n"));
     assert.match(renderGraphIdPressureReport(cold), /Open mapped-index views: \*\*0 → 64\*\*/);
+    assert.match(renderGraphIdPressureReport(cold), /464 entries \/ 643296 bytes/);
 
     const warm = compareGraphIdPressure(
         [graphIdPressureResult({}, "warm")],
@@ -1409,6 +1414,18 @@ test("graphId pressure hard-gates request-selected source parity and latency", (
     assert.equal(regressed.graphParameterP95Regression, 1);
     assert.equal(regressed.graphParameterP50Speedup, 0.5);
     assert.equal(regressed.graphParameterP95Speedup, 0.5);
+    assert.match(regressed.errors.join("\n"), /request-selected P50 latency regressed/);
+    assert.match(regressed.errors.join("\n"), /request-selected P95 latency regressed/);
+
+    const graphIdRegressed = compareGraphIdPressure(
+        [graphIdPressureResult()],
+        [graphIdPressureResult()],
+        graphIdObservations(1_000_000_000, "success", 1_000_000_000),
+        graphIdObservations(2_000_000_000, "success", 1_000_000_000)
+    );
+    assert.equal(graphIdRegressed.passed, false);
+    assert.match(graphIdRegressed.errors.join("\n"), /graph-id P50 latency regressed/);
+    assert.match(graphIdRegressed.errors.join("\n"), /graph-id P95 latency regressed/);
 
     const routingOnly = compareGraphIdPressure(
         [graphIdPressureResult()],

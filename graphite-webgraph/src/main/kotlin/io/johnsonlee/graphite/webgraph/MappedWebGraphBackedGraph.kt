@@ -779,15 +779,12 @@ internal class MappedWebGraphBackedGraph(
                 predicates.all(StringPropertyPredicate::canUseMappedCallSiteIndexView)
             ) {
                 mappedCallSiteStringIndexView(workConsumer)?.let { view ->
-                    val exactMatches = view.exactMatchingStringIds(predicates, workConsumer)
-                    if (exactMatches != null) {
-                        val matchedNodeIds = view.matchingNodeIds(predicates, exactMatches, workConsumer)
-                        if (matchedNodeIds != null) {
-                            callSiteStringIndexLookupCount.incrementAndGet()
-                            return matchedNodeIds.take(limit)
-                                .mapNotNull { nodeId -> node(NodeId(nodeId)) as? CallSiteNode }
-                                .map(type::cast)
-                        }
+                    val matchedNodeIds = view.matchingNodeIds(predicates, workConsumer, limit)
+                    if (matchedNodeIds != null) {
+                        callSiteStringIndexLookupCount.incrementAndGet()
+                        return matchedNodeIds
+                            .mapNotNull { nodeId -> node(NodeId(nodeId)) as? CallSiteNode }
+                            .map(type::cast)
                     }
                 }
             }
@@ -796,15 +793,12 @@ internal class MappedWebGraphBackedGraph(
             }
             if (predicates.all(StringPropertyPredicate::canUseMappedCallSiteIndexView)) {
                 mappedCallSiteStringIndexView(workConsumer)?.let { view ->
-                    val exactMatches = view.exactMatchingStringIds(predicates, workConsumer)
-                    if (exactMatches != null) {
-                        val matchedNodeIds = view.matchingNodeIds(predicates, exactMatches, workConsumer)
-                        if (matchedNodeIds != null) {
-                            callSiteStringIndexLookupCount.incrementAndGet()
-                            return matchedNodeIds.take(limit)
-                                .mapNotNull { nodeId -> node(NodeId(nodeId)) as? CallSiteNode }
-                                .map(type::cast)
-                        }
+                    val matchedNodeIds = view.matchingNodeIds(predicates, workConsumer, limit)
+                    if (matchedNodeIds != null) {
+                        callSiteStringIndexLookupCount.incrementAndGet()
+                        return matchedNodeIds
+                            .mapNotNull { nodeId -> node(NodeId(nodeId)) as? CallSiteNode }
+                            .map(type::cast)
                     }
                 }
             }
@@ -1771,6 +1765,12 @@ internal class MappedWebGraphBackedGraph(
     internal fun rawProjectionMatchCount(): Int = rawProjectionMatches.size()
 
     internal fun callSiteStringIndexBytes(): Long = callSiteStringIndex?.retainedBytes ?: 0L
+
+    internal fun mappedCallSiteStringIndexViewCacheBytes(): Long =
+        mappedCallSiteStringIndexView?.retainedQueryCacheBytes() ?: 0L
+
+    internal fun mappedCallSiteStringIndexViewCacheEntries(): Int =
+        mappedCallSiteStringIndexView?.retainedQueryCacheEntries() ?: 0
 
     internal fun isCallSiteStringIndexInitialized(): Boolean = callSiteStringIndex != null
 

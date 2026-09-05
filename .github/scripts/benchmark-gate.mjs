@@ -883,6 +883,7 @@ export function compareGraphIdPressure(
         "cpuCoreUtilizationPermille", "peakUsedHeapBytes", "peakResidentSetBytes",
         "gcCount", "gcMillis", "callSiteIndexAdmittedGraphs", "callSiteIndexRetainedBytes",
         "callSiteTrigramIndexedGraphs", "callSiteMappedIndexViewGraphs",
+        "callSiteMappedIndexViewCacheBytes", "callSiteMappedIndexViewCacheEntries",
         "callSiteParallelScanCount", "callSiteParallelScanGraphCount",
         "callSiteStringIndexLookupCount", "callSiteStringIndexLookupGraphCount",
         "callSiteStringIndexLookupMinPerGraph", "callSiteStringIndexLookupMaxPerGraph",
@@ -1030,6 +1031,24 @@ export function compareGraphIdPressure(
                 `perGraph=${candidateResources.callSiteStringIndexLookupMinPerGraph}..` +
                 `${candidateResources.callSiteStringIndexLookupMaxPerGraph}`);
         }
+    }
+    const maximumMappedViewCacheBytes = 64 * 256 * 1024;
+    if (candidateIndexLifecycle === "mapped-view") {
+        if (candidateResources.callSiteMappedIndexViewCacheEntries !== 464 ||
+            candidateResources.callSiteMappedIndexViewCacheBytes <= 0 ||
+            candidateResources.callSiteMappedIndexViewCacheBytes > maximumMappedViewCacheBytes
+        ) {
+            errors.push("candidate: mapped-view routing must retain exactly 464 bounded query prefixes " +
+                `within ${maximumMappedViewCacheBytes} bytes; entries=` +
+                `${candidateResources.callSiteMappedIndexViewCacheEntries}, bytes=` +
+                `${candidateResources.callSiteMappedIndexViewCacheBytes}`);
+        }
+    } else if (candidateResources.callSiteMappedIndexViewCacheEntries !== 0 ||
+        candidateResources.callSiteMappedIndexViewCacheBytes !== 0
+    ) {
+        errors.push("candidate: non-mapped lifecycle must not retain mapped-view query prefixes; " +
+            `entries=${candidateResources.callSiteMappedIndexViewCacheEntries}, ` +
+            `bytes=${candidateResources.callSiteMappedIndexViewCacheBytes}`);
     }
 
     const baseRows = parsePressureObservations(baseObservations, "base", errors);
@@ -1484,6 +1503,14 @@ export function compareGraphIdPressure(
         baseGraphParameterP95 * (1 + maximumGraphParameterRegression),
         baseGraphParameterP95 + maximumGraphParameterAbsoluteRegressionNanos
     );
+    if (!graphParameterP50Passed) {
+        errors.push(`request-selected P50 latency regressed; base/candidate ` +
+            `${baseGraphParameterP50}/${candidateGraphParameterP50}`);
+    }
+    if (!graphParameterP95Passed) {
+        errors.push(`request-selected P95 latency regressed; base/candidate ` +
+            `${baseGraphParameterP95}/${candidateGraphParameterP95}`);
+    }
     const routingOverheadP50 = candidateRoutingOverheads.length === 0 ? Number.POSITIVE_INFINITY :
         pressurePercentile(candidateRoutingOverheads, 0.50);
     const routingOverheadP95 = candidateRoutingOverheads.length === 0 ? Number.POSITIVE_INFINITY :
@@ -1544,6 +1571,12 @@ export function compareGraphIdPressure(
     );
     const p50Passed = candidateGraphIdP50 <= graphIdP50Limit;
     const p95Passed = candidateGraphIdP95 <= graphIdP95Limit;
+    if (!p50Passed) {
+        errors.push(`graph-id P50 latency regressed; base/candidate ${baseGraphIdP50}/${candidateGraphIdP50}`);
+    }
+    if (!p95Passed) {
+        errors.push(`graph-id P95 latency regressed; base/candidate ${baseGraphIdP95}/${candidateGraphIdP95}`);
+    }
     const gateP50Speedup = p50Speedup;
     const gateP95Speedup = p95Speedup;
     const passed = errors.length === 0 && p50Passed && p95Passed &&
@@ -2248,6 +2281,9 @@ export function renderGraphIdPressureReport(comparison) {
             `${candidateResources.callSiteTrigramIndexedGraphs.toFixed(0)}**`,
         `- Open mapped-index views: **${baseResources.callSiteMappedIndexViewGraphs.toFixed(0)} → ` +
             `${candidateResources.callSiteMappedIndexViewGraphs.toFixed(0)}**`,
+        `- Mapped-view query-prefix cache: **` +
+            `${candidateResources.callSiteMappedIndexViewCacheEntries.toFixed(0)} entries / ` +
+            `${candidateResources.callSiteMappedIndexViewCacheBytes.toFixed(0)} bytes**`,
         "",
         "| Query | Target graph | Base | PR | Speedup |",
         "|---|---|---:|---:|---:|"
