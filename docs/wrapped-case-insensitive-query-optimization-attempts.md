@@ -4487,3 +4487,235 @@ passes 183 tests with no failures or skips, detekt, and 98.1199% line coverage.
 All three reverted files match frozen main byte-for-byte in both the workspace
 and verification clone. The exact revert still requires hosted CI; no claim of
 an accepted optimization or final target completion is made.
+
+**Exact revert hosted outcome (2026-09-06):** unit run
+[33970493936](https://github.com/johnsonlee/graphite/actions/runs/33970493936)
+passes, but benchmark run
+[33970493937](https://github.com/johnsonlee/graphite/actions/runs/33970493937)
+fails at revert HEAD `21c236cf8ded154ffc41978d3ea64ffa172ca57c`.
+All 103 production source files and 27 JMH source files match frozen main.
+The hosted global-wide provenance also records equal base/candidate JAR content
+hashes (`ddfed3136e1c443d1cbd1cc96285de133fb84ba2a6a252b43326f82020250275`).
+The failed measurements therefore do not establish a regression caused by the
+reverted production change; they also do not establish harmless measurement
+noise or justify waiving the checks.
+
+| Revert check | Initial base / candidate | Reverse-order base / candidate | Result |
+| --- | ---: | ---: | --- |
+| Method 4 / zero process CPU | 0.43 / 0.51 s (+18.60%) | 0.39 / 0.48 s (+23.08%) | Fail |
+| Method 17 / count process CPU | 2.12 / 2.62 s (+23.58%) | 1.91 / 2.69 s (+40.84%) | Fail |
+
+The three global-wide case-distribution P95 pairs are 293.377 / 145.108 ms,
+153.705 / 146.345 ms, and 129.971 / 378.808 ms. Pair three also fails process
+CPU (3.97 / 4.65 s, +17.13%). Wrapped non-DISTINCT targeted query latency fails
+the aligned regression bound in all three pairs; four other aligned rows fail
+in pairs one and two. All 34 result rows in each pair succeed and match the
+reference values, digests, and provenance. Routing pressure passes. Method-level
+JMH and large-corpus end-to-end comparisons pass; the separate Method CPU and
+global-wide comparisons fail. No strict progress or final 10x result is accepted.
+The benchmark run is terminal; no retry-until-green was performed.
+
+**Profiling and coverage follow-up:** the previous 34 queries contain one keyword
+per query, repeated across properties. Their percentile is over heterogeneous
+query cases, not repeated observations of a fixed query. Independent frozen-main
+profiling now includes 24 additional queries: two-keyword AND/OR on single hit
+graphs at early/middle/late positions, two-graph and all-64-graph hits, four-keyword
+mixed conditions, and a zero-result conjunction whose operands independently
+occur in different graphs. Each condition has ordinary and DISTINCT projections.
+Full pre-LIMIT hit distributions and returned row provenance are separately
+checked against a direct scan of 5,046,935 real CallSites. This is additional
+verification work, not a new production optimization or a replacement for the
+original comparison contract.
+
+The mixed four-keyword DISTINCT query returns 71 rows from two graphs. Its
+unprofiled control latency is 38.375816 s; diagnostic CPU/wall captures take
+42.642898 / 40.549959 s. In the CPU capture, 42,516 of 44,322 samples belong to
+the request thread, with expression evaluation and string processing dominating.
+Top-level GC pause interval unions are only 25.962416 / 54.765126 ms. The actual
+diagnostics report one filtered-node-LIMIT execution and zero general fallbacks;
+the sampled expression evaluation occurs within that path. These individual
+captures neither prove a repeated-query P95 nor identify thread scheduling as
+the bottleneck. The full report, raw JFRs, query catalog, independently verified
+rows, exact commands, and flamegraphs are retained in
+`/private/tmp/graphite-main-profiling-n50joikp/REPORT.md`.
+
+**Pure four-keyword OR follow-up:** append ordinary and DISTINCT projections of
+the same four terms combined as `A OR B OR C OR D`. The versioned v2 oracle now
+contains 26 queries and preserves the first 24 verbatim. Independent reference
+data shows 55 hit graphs, 50,461 matching nodes and 18,915 distinct tuples before
+LIMIT. Both projections compile to the existing 16-predicate string disjunction;
+the mixed-condition candidate-plan hypothesis does not apply to this pure OR.
+The full 26-query control passes values, order, provenance and before/after
+persisted graph-content hashes. Cold single-query observations are 34.421916 ms
+for ordinary rows and 149.975958 ms for DISTINCT; these are not P95 measurements.
+
+Forty repetitions per projection in each separate CPU/wall diagnostic capture
+all match the independent oracle. For cold DISTINCT, 11,183 of 13,830 CPU-mode
+samples (80.86%) include `PersistentIndexViewValidator`; 94.24% of sampled
+allocation weights have boxed Integer/Long leaf frames. Recorded top-level GC
+pauses account for approximately 0.03% of the traced DISTINCT time. The request
+thread waits for real computation on the existing scan workers; those samples
+do not establish thread-pool scheduling as the main overhead.
+
+A separate index-warm control and CPU/wall captures retain indexes after the
+first pair. Excluding that pair leaves 39 observations per projection in each
+JVM, all independently verified. Unprofiled medians are 3.018250 / 8.163958 ms;
+nearest-rank empirical P95 values are 5.871833 / 11.321750 ms. Index validation
+samples disappear, while background JIT activity remains substantial. These
+correlated diagnostic samples are not an independent-fork P95 gate or an
+optimization result. Cold and warm costs must not be conflated.
+
+The incomplete 24-query repeated baseline was explicitly stopped when the user
+requested pure four-keyword OR coverage; four complete forks and a partial fifth
+are retained with failed/interrupted status and are not used as a completed P95
+baseline. A brief compiler-inspection overlap is also recorded in its limitation
+receipt. The final 26-query workload is used for subsequent baseline collection.
+The user-readable report, query catalog and standalone flamegraphs are now in
+[`docs/profiling/main-wide-query-findings.md`](profiling/main-wide-query-findings.md),
+and reproducible tooling is under `.github/scripts/wide-query-profile`.
+
+
+**Repeated baseline and pure-OR distribution completion:** the v2 workload has
+now completed 20 fresh JVM forks, all 520 queries independently verified against
+the full-value/order/provenance oracle; persisted graph-content hashes match
+before and after. Per-query cold-index empirical P95 is 38.741083 ms for the
+55-graph pure four-term OR ordinary projection and 154.172875 ms for DISTINCT.
+The mixed-condition DISTINCT P95 is 39,716.441166 ms. These are frozen-main
+observations, not candidate improvement or CI acceptance. At 20 observations,
+nearest rank selects the 19th value; no stability guarantee is inferred.
+
+The user also requires pure four-term OR to cover both single and multiple hit
+graphs. V3 preserves all 26 v2 query texts and expected results, appending ten
+queries: ordinary/DISTINCT for single graphs at positions 0/31/63, two graphs at
+0+63, and all 64 graphs. Independent full-hit node counts are 704 / 2,646 / 299 /
+972 / 2,455,554 respectively. All six pure four-term OR predicates (including the
+existing 55-graph predicate) record a positive exclusive contribution for each
+keyword. No branch can be removed without losing matched nodes. The all-graph
+terms are `get`, `set`, `read`, and `write` across the same four properties.
+
+The complete v3 36-query frozen-main control passes full values, order,
+provenance and before/after graph-content hashes. New cases have one observation
+each and no P95 claim. V1/v2 contracts remain accepted by the diagnostic verifier;
+v3 enforces 18 logical IDs / 36 queries, exact pure-OR query rendering, fixed new
+hit distributions and positive exclusive counts. This expands measurement
+coverage, not the production optimization or existing CI acceptance contract.
+Durable summaries and the updated query list are in `docs/profiling/`; raw
+receipts remain under `oracle-v3/` and `control-v3-36/` in the profiling directory.
+
+
+### 2026-09-06 - Attempt 134: Use indexed candidate supersets for compound OR
+
+**Hypothesis:** frozen main's `(A AND B) OR (C AND D)` cannot compile a direct
+string candidate plan and evaluates the complete predicate over all 19,431,891
+nodes for DISTINCT. Independent reference data identifies 962 candidates for
+`A OR C`, of which 229 nodes satisfy the full predicate and project to 71 tuples.
+Recursively union one safe candidate superset from each OR branch, then retain
+the original residual predicate, canonical order, DISTINCT provenance, budget
+and cancellation handling. If either branch has no safe superset, retain the
+original execution. Pure string OR already compiles before this new branch;
+this hypothesis does not directly affect the old 34-query workload or pure OR.
+
+**Single direction and necessary compatibility repair:** the only changed
+production file is `QueryPipeline.kt`. Enabling lookup on compound conditions
+also exposes existing no-op parallel work-consumer lambda incompatibility for
+storage implementations that call the original `consume()` method. A private
+concrete consumer explicitly implements both individual and batched charges,
+preserving its existing parallel capability marker and exact charged units.
+This is needed for the newly enabled lookup path to preserve functionality; it
+does not remove a pool or change the parallelism policy. An initial test helper
+used the batch API, but review rejected bypassing the original callback contract.
+The final helper calls `consume()` and the production adapter handles it.
+
+**Base and candidate identity:** frozen comparison main is
+`4e328b0109e13c896b74004823fb049fcb19251a`; candidate checkout starts at full revert
+`21c236cf8ded154ffc41978d3ea64ffa172ca57c`, whose production and JMH sources match
+frozen main before this patch. At measurement time the uncommitted candidate source SHA256 was
+`885a36e7bf1c5046cd71b84357f24926ec5d81191d4680abd59f16e659bedbe9`;
+its immutable measurement JAR SHA256 is
+`8590788daa0e9bb9f4d567016982ffe91771389d8e22ee55184a3d80277433f4`.
+The normal verification clone and immutable artifacts are under
+`/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-attempt134.lwussg_q`.
+The compatible final candidate artifacts are in `compatible-v2/`; earlier
+`candidate-jmh.jar` and paired results are preserved as superseded diagnostics,
+not final-candidate evidence.
+
+**Correctness:** Java 17 candidate `:cypher:test` (1,241 tests), `:cypher:detekt`,
+`:cypher:filteredRelationshipMemoryTest`, and `:webgraph:jmhJar` pass. Nine added
+tests verify both OR branches, false-positive residuals before LIMIT, overlap
+counts/order, each pure-OR term, unsupported numeric/null fallback, Annotation
+dynamic properties, cross-graph selected tuple provenance, budget/cancellation,
+and individual/batched work callback compatibility. A separate clean frozen-main
+clone executes the exact same tests: the six compound tests show missing lookup
+coverage; pure OR and the explicit callback test expose the pre-existing no-op
+consumer failure; numeric/null fallback passes. These results do not claim that
+baseline compound result values or its general cancellation behavior are wrong.
+The original baseline-with-batch-helper eight-test receipt is archived separately.
+
+**Real-data verification in progress:** the unchanged persisted fixture64 contains
+5,046,935 CallSites across Android 14, Tika 2.9.2, Hive 4.0.0 and Kotlin compiler
+2.0.21, each split into 16 graphs. The independent v3 oracle preserves all prior
+26 queries and expands to 36 ordinary/DISTINCT queries, including pure four-term
+OR with single-graph early/middle/late, two-graph, 55-graph and all-graph hits.
+Final-candidate runs are paired candidate-base / base-candidate / candidate-base
+using fresh JVMs and identical immutable input files; no build/test/profile
+process runs concurrently with timed queries. Per-query cold-index observations
+are kept separate from the old 34-query cold-on-replay comparison. Three paired
+observations are not reported as a per-query P95.
+
+**Decision:** rejected by the unchanged local regression/progress checks below;
+revert this candidate before proceeding to another optimization. No optimization
+is accepted, no CI success is claimed, and CallSite pools remain. The old
+regression/progress/final-target thresholds have not been changed.
+
+
+**Final-candidate v3 paired observations:** all 216 executions (36 queries ×
+2 revisions × 3 pairs) pass the independent full-row/order/provenance reference;
+all six run receipts are complete with matching graph-content endpoint hashes.
+
+| Paired fork | Main mixed rows | Candidate mixed rows | Main mixed DISTINCT | Candidate mixed DISTINCT |
+| --- | ---: | ---: | ---: | ---: |
+| 1, candidate-base | 548.662 ms | 96.127 ms | 38,856.822 ms | 211.031 ms |
+| 2, base-candidate | 639.417 ms | 83.400 ms | 38,254.018 ms | 210.610 ms |
+| 3, candidate-base | 648.624 ms | 79.296 ms | 39,249.166 ms | 214.955 ms |
+
+This is approximately 181.6–184.1x on the selected mixed DISTINCT query and
+5.7–8.2x on its ordinary projection. These are corresponding individual paired
+latencies, not per-query P95 or overall 10x proof. Old 34-query regression/progress
+and resource results remain required. The unchanged pure-OR path does not share
+this candidate-plan coverage gap. Every exact command and observation is retained
+under `compatible-v2/v3-pair-*`; the durable paired latency list is
+[`docs/profiling/attempt134-v3-paired-latencies.json`](profiling/attempt134-v3-paired-latencies.json).
+
+
+**Unchanged old-34 regression gate: rejected.** Six fresh JVMs execute the
+original real fixture64 workload against its frozen-main correctness oracle.
+The original command remains the Attempt 133 command above, with immutable
+final Attempt 134 candidate JAR and new artifact prefixes. Exact commands and
+complete JSON/TSV observations are retained in `compatible-v2/old34-pairs/`.
+All 204 query results match the oracle; the statistical/resource comparison fails.
+
+| Paired fork | Main old-34 P95 | Candidate old-34 P95 | Process CPU main / candidate | Peak heap main / candidate | Peak RSS main / candidate |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 1, candidate-base | 52.132 ms | 101.659 ms | 1.643 / 1.817 s | 4.711 / 4.716 GB | 5.259 / 5.292 GB |
+| 2, base-candidate | 73.699 ms | 45.519 ms | 1.654 / 1.502 s | 4.216 / 4.705 GB | 4.770 / 5.259 GB |
+| 3, candidate-base | 47.265 ms | 70.090 ms | 1.463 / 1.721 s | 4.308 / 4.714 GB | 4.946 / 5.265 GB |
+
+The aggregate and wrapped DISTINCT dense latencies exceed the unchanged 15% and
+1 ms repeated-row bounds in two pairs. Pair three CPU is +17.64%, above the 15%
+resource bound. Heap/RSS do not trigger their existing bounds. Strict P95 progress
+in every pair and the frozen-main 10x target are both false. The source analysis
+already showed that old-34 predicates bypass the new compound OR branch, so these
+observations do not independently establish that branch as the cause of the old
+query differences; neither do they justify waiving failed checks or accepting a
+regression. No rerun-until-green is performed.
+
+The failed local preflight is sufficient to reject the candidate. Candidate
+method-level and end-to-end CI performance results are therefore unavailable;
+no partial local correctness result is presented as full CI acceptance. The
+standard `CypherBenchmark` source currently constructs synthetic data, so its
+historical timing must not be used as real-data performance proof under the
+repository conventions. The measured acceptance evidence here uses persisted
+fixture64 exclusively. Candidate production/test sources and exact build receipts
+remain archived with the immutable JAR; the experiment commit preserves the
+attempt, followed by a production/test revert. Profiling tools, representative
+query coverage, flamegraphs and the failure record remain available.

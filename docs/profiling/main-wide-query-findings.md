@@ -1,0 +1,127 @@
+# main 宽查询：已测到的优化机会
+
+最明确的机会是让混合布尔条件使用已有字符串候选筛选，减少全图节点上的通用表达式求值。
+Attempt 134 已验证这项局部收益：三组真实数据配对中，混合 DISTINCT 约从 38–39 秒降到 211–215 ms。但旧 34 条查询出现重复延迟差异及 CPU 超限，本轮被拒绝并回退；没有接受任何生产优化，也未证明整体 P95 达到 10x。详见 [失败比较](attempt134-old34-global-wide-report.md) 和 [混合查询配对数据](attempt134-v3-paired-latencies.json)。
+
+原先临时目录的链接未能在用户端打开，因此这里将结论、查询清单和可独立打开的 HTML 火焰图放进工作区。关键数字全部列在正文，无需打开附件才能理解结论。
+
+## 已观测事实
+
+数据是 frozen main `4e328b0109e13c896b74004823fb049fcb19251a`，64 张真实持久化分片图，来自 Android、Tika、Hive、Kotlin compiler 四个语料，不是 64 个独立应用。
+
+慢查询的逻辑是 `(A AND B) OR (C AND D)`，每个关键词分别搜索 caller/callee 的 class/name 四个属性，使用 `toLower(coalesce(..., '')) CONTAINS`。无标签 `MATCH (n)`，四字段 DISTINCT，LIMIT 200。
+
+| 观测 | 结果 |
+| --- | ---: |
+| 完整命中图数 | 2 / 64 |
+| LIMIT 前匹配节点 | 229 |
+| 去重后返回元组 | 71 |
+| 无 profiler 单次控制耗时 | 38.375816 秒 |
+| CPU / wall 录制查询耗时 | 42.642898 / 40.549959 秒 |
+| 记录的图访问工作量 | 19,431,891 |
+| 独立 fixture provenance 中全部节点数 | 19,431,891 |
+| CPU 样本归于请求线程 | 42,516 / 44,322，95.93% |
+| 记录的顶层 GC 暂停 | 25.962 / 54.765 毫秒 |
+
+CPU 叶子样本主要包括 `ExpressionEvaluator.evaluateStringOp`（7,514）、`ExpressionEvaluator.evaluate`（5,068）、`StringLatin1.toLowerCase`（3,086）。这是通用表达式求值和字符串处理的运行时证据，不能据此认定线程调度是主要瓶颈。
+
+实际诊断计数为 `filteredNodeLimitFastPathExecutions=1`、`generalFallbackExecutions=0`。这条查询在 filtered-node-LIMIT 路径内部走逐节点通用求值；不能把它称为 general fallback。
+
+对同一 frozen JAR、同一查询 AST 调用现有编译器，得到：
+
+```text
+DirectStringFilter = null
+DirectStringDisjunction = null
+DirectStringConjunction = null
+DirectStringCandidatePlan = null
+```
+
+源码与此一致：[候选计划编译器](https://github.com/johnsonlee/graphite/blob/4e328b0109e13c896b74004823fb049fcb19251a/graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/QueryPipeline.kt#L3215) 能从 AND 分支提取必要条件，但不支持顶层 OR 连接的两个复合子树。因此这条查询进入 [逐节点求值循环](https://github.com/johnsonlee/graphite/blob/4e328b0109e13c896b74004823fb049fcb19251a/graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/QueryPipeline.kt#L1480)，工作量与完整节点数相等。
+
+## 第一项应验证的假设
+
+对 `(A AND B) OR (C AND D)`，如果左右子树分别能提取不漏结果的必要条件 `A` 和 `C`，则候选集可以取 `A OR C`。只对候选执行原始完整条件，仍由现有逻辑完成投影、去重、LIMIT 和来源图汇集。
+
+这个方向针对 profile 中已经观察到的全节点通用求值成本。不能用 229 个最终匹配节点假冒候选数量，也不能把这条查询可能的收益当作所有宽查询的 P95 收益。
+
+进一步核对独立目录发现，`or-few-early-late` 恰好就是同一组 `A OR C`：完整扫描统计为 **962 个候选节点、两图命中**。因此可以验证一个具体假设：把这条查询原本对 19,431,891 个节点进行的完整布尔求值，缩小到 962 个候选。这个数字是独立参考扫描得到的候选集合大小；实际索引读取工作量和耗时仍需测量，不能按节点比率直接宣称加速倍数。
+
+正确性边界必须保持：OR 的每个分支都要有完整候选覆盖；无法证明时保持原路径；保留 null/三值逻辑、结果顺序、预算取消及跨图 DISTINCT 来源。不会仅因当前 fixture 没有某类节点就把无标签查询硬改为 CallSite 标签查询。
+
+重复大小写转换、函数参数列表分配也有采样依据，但它们属于后续可单独验证的方向。本轮不把这些改动与候选计划混入同一次尝试。CallSite 线程池移除及相对起点 main 的全图查询 P95 10x 目标仍须独立兑现。
+
+## 四关键词纯 OR：不同的路径和机会
+
+同样四个关键词改成 `A OR B OR C OR D` 时，必须保留四个词的并集；`A OR C` 会漏掉只满足 B 或 D 的结果。独立参考扫描确认，该条件命中 **55 张图、50,461 个节点、18,915 个不同元组**，不是原混合条件的两图和 71 个元组。
+
+同一 frozen JAR 的编译器成功生成包含 16 项的 `DirectStringDisjunction`（4 关键词 × 4 属性）。控制运行实测：普通投影 34.421916 ms，DISTINCT 149.975958 ms；两者都返回前 200 行，完整返回值和来源图均与独立参考一致。这是单次冷索引诊断，不是 P95 或优化收益。
+
+每种投影又分别采集了 40 次冷索引执行的 CPU 和 wall profile，全部 160 次结果均核对通过。DISTINCT 的 13,830 个 CPU-mode 样本中，11,183（80.86%）包含 `PersistentIndexViewValidator` 调用栈；原先的 `ExpressionEvaluator.evaluate` 为零。普通投影对应占比为 32.49%。不能把混合条件的热点套用到纯 OR 上。
+
+DISTINCT 的采样分配权重中，94.24% 的叶子归于 `Long.valueOf` / `Integer.valueOf`。对应源码是 [索引校验的 Int/Long 循环与泛型回调](https://github.com/johnsonlee/graphite/blob/4e328b0109e13c896b74004823fb049fcb19251a/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexView.kt#L465)。因此这组纯 OR 冷查询的另一项可验证机会是减少完整校验过程中的装箱和数据转换开销，同时保留 CRC、范围检查、取消和工作预算语义。该方向必须作为独立尝试验证。
+
+CPU 工作主要发生在四个现有扫描线程，请求线程会等待这些任务。它们承担的是实际校验工作；不能把线程上的 CPU 样本当成线程池调度自身的开销。DISTINCT 取满 200 个元组后，还须确认其他图是否包含这些元组，以完整汇集来源图；前 200 行只来自一图并不允许直接跳过其他图。
+
+这组数据每条查询前都清理索引，反映冷加载开销。随后另采一组只在整轮开始清理索引的 control / CPU / wall 录制，每组 80 次，仍逐次核对完整结果。预先排除第一对冷查询后，保留每种投影 39 次热索引查询：
+
+| 同一 JVM 内热索引控制运行 | 中位数 | 经验 P95 | 样本数 |
+| --- | ---: | ---: | ---: |
+| 普通投影 | 3.018250 ms | 5.871833 ms | 39 |
+| DISTINCT | 8.163958 ms | 11.321750 ms | 39 |
+
+这里按固定查询计算 nearest-rank 经验 P95。这些是同一 JVM 内的连续诊断样本，不是独立 forks，也不证明稳定性或最终目标；JIT 没有被人为重置或充分预热。
+
+热索引 CPU 采样中，`PersistentIndexViewValidator` 为零，冷态校验热点消失。普通投影共有 598 个样本，其中应用查询线程 283 个；DISTINCT 共 1,528 个，其中应用查询线程 659 个。其余包含较多后台编译活动。应用样本分布在原始 CallSite 匹配、集合成员检查、trigram posting 查找、工作预算计数和结果处理，尚不能据此认定某一项是普遍的热态瓶颈。
+
+因此，混合条件的候选计划缺失、纯 OR 的冷索引校验、纯 OR 的热态匹配应分别判断。不能把冷转热的差异当作新优化收益，也不能假定调整混合条件计划会加速已经走专用路径的纯 OR。
+
+## 冻结 main 的 20 个独立 JVM 观测
+
+v2 的 26 条查询已完成 20 个独立 JVM 的重复运行，共 520 次查询，全部通过完整返回值、顺序和来源图核对。运行前后持久化图内容哈希一致。每条查询之前清理字符串索引；JIT 和 OS 页缓存不重置。
+
+| 固定查询 | 中位数 | 经验 P95 | 样本数 |
+| --- | ---: | ---: | ---: |
+| 四关键词纯 OR，55 图，普通投影 | 35.725229 ms | 38.741083 ms | 20 |
+| 四关键词纯 OR，55 图，DISTINCT | 151.273355 ms | 154.172875 ms | 20 |
+| 四关键词混合条件，两图，普通投影 | 349.089416 ms | 767.150583 ms | 20 |
+| 四关键词混合条件，两图，DISTINCT | 39,108.900042 ms | 39,716.441166 ms | 20 |
+
+这些分位数分别取每个查询 20 个耗时的第 19 个顺序统计量；不混合不同查询，也不能用 20 个样本保证稳定性。它们是未修改 frozen main 的诊断基线，既不是新代码收益，也不是 CI 接受结果。原始凭据为 `main-v2-repeated-20/run.json`。
+
+## 纯四关键词 OR 的单图／多图覆盖补齐
+
+v3 保留 v2 全部 26 条查询和预期结果，增加 5 组纯四关键词 OR，每组包含普通投影和 DISTINCT，共 36 条。冻结 main 的完整 36 条控制回放已通过返回值、顺序、来源图核对，运行前后持久化图内容哈希一致。
+
+| 纯四关键词 OR 条件的完整命中分布 | LIMIT 前节点数 | 全量 DISTINCT 元组数 |
+| --- | ---: | ---: |
+| 单图，位置 0 | 704 | 444 |
+| 单图，位置 31 | 2,646 | 2,356 |
+| 单图，位置 63 | 299 | 206 |
+| 两图，位置 0 和 63 | 972 | 626 |
+| 原四词，55 图 | 50,461 | 18,915 |
+| `get OR set OR read OR write`，全部 64 图 | 2,455,554 | 1,771,173 |
+
+每个关键词分别查四个 caller/callee 属性，仍为无标签查询，没有用 graphId 过滤人为限定命中范围。所有六组纯四词 OR 都验证了每个词至少有一个只命中该词的节点，因此任何分支都不能直接删掉。目录中的 `termExclusiveMatchCounts` 保留四个精确独立贡献计数。
+
+表中命中图数是完整条件在 LIMIT 前的分布。两图用例可以由首图填满前 200 行；全 64 图的 DISTINCT 返回前缀只涉及两图。这些都不会把完整条件变成单图或两图查询。单图位置变化也必须保留，用来观察源扫描顺序和提前结束的影响。
+
+新增十条查询目前各一轮控制执行，只证明本次正确性并提供单次观测，不报告 P95；前面的 20 轮分位数仅适用于 v2 原有查询。没有据此把 55 图用例的采样热点推广为所有新增分布的热点。可读取 [36 条回放及覆盖凭据](main-v3-control-summary.json) 和 [原 26 条的 20 轮统计](main-v2-repeated-20-summary.json)。
+
+## 覆盖与附件
+
+最初的 24 条查询覆盖单图位于前/中/后、两图、全 64 图、零命中，两关键词 AND/OR 和四关键词混合条件。v2 保留原有用例，追加纯四关键词 OR 的普通投影与 DISTINCT，共 **26 条**，均已通过完整返回值、顺序与来源图独立核对。v3 再追加单图前／中／后、两图和全 64 图的纯四词 OR，当前共 **36 条**。完整命中集合在 LIMIT 前统计，另行核对实际返回前缀的来源。
+
+- [完整关键词和查询清单](main-multi-keyword-queries.md)
+- [CPU 火焰图](main-mixed-distinct-cpu.html)
+- [采样分配火焰图](main-mixed-distinct-allocation.html)
+- [请求线程 wall 火焰图](main-mixed-distinct-wall.html)
+- [纯四关键词 OR DISTINCT CPU 火焰图](main-four-or-distinct-cpu.html)
+- [纯四关键词 OR DISTINCT 分配火焰图](main-four-or-distinct-allocation.html)
+- [纯四关键词 OR 普通投影 CPU 火焰图](main-four-or-rows-cpu.html)
+- [纯四关键词 OR 热索引 DISTINCT CPU（仅应用线程）](main-four-or-warm-distinct-cpu.html)
+- [纯四关键词 OR 热索引普通投影 CPU（仅应用线程）](main-four-or-warm-rows-cpu.html)
+- [可重复执行和核对的工具](../../.github/scripts/wide-query-profile/README.md)
+
+这些 profile 是单次诊断。原有 34 条的 P95 是不同查询各一次的分布，不能替代固定查询重复运行的 P95。新工具保留每个 JVM 的全部原始观测，按查询分别计算经验 P95；不足 20 次时不报告 P95，20 次也不是稳定性保证。
+
+原始 JFR、精确命令、独立导出及校验凭据保留于执行机器 `/private/tmp/graphite-main-profiling-n50joikp`。本工作区复制的 HTML 可独立打开。分配采样权重不是精确分配量；inclusive 样本不可相加；idle 线程 wall 时间不是请求阻塞；完整 safepoint 时长因未记录结束事件而未知。

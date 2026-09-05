@@ -1,0 +1,139 @@
+{
+  "passed": false,
+  "errors": [
+    "pair-3: process CPU 1720888000 exceeds paired base 1462809000 by >15%",
+    "pair-1/aggregate P95: latency 101659125 exceeds base 52132041 by >15% and >1 ms; repeated in 2 independent pairs",
+    "pair-1/global-wide-wrapped-case-insensitive-distinct P95: latency 101659125 exceeds base 52132041 by >15% and >1 ms; repeated in 2 independent pairs",
+    "pair-1/global-wide-wrapped-case-insensitive-distinct/dense: aligned latency 101659125 exceeds base 52132041 by >15% and >1 ms; repeated in 2 independent pairs"
+  ],
+  "regressionPassed": false,
+  "targetAchieved": false,
+  "targetErrors": [
+    "pair-1: P95 speedup 0.51x; required 10.00x in every independent fork",
+    "pair-1: global-wide-wrapped-case-insensitive P95 speedup 1.13x; required 10.00x",
+    "pair-1: global-wide-wrapped-case-insensitive-distinct P95 speedup 0.51x; required 10.00x",
+    "pair-2: P95 speedup 1.62x; required 10.00x in every independent fork",
+    "pair-2: global-wide-wrapped-case-insensitive P95 speedup 0.99x; required 10.00x",
+    "pair-2: global-wide-wrapped-case-insensitive-distinct P95 speedup 1.62x; required 10.00x",
+    "pair-3: P95 speedup 0.67x; required 10.00x in every independent fork",
+    "pair-3: global-wide-wrapped-case-insensitive P95 speedup 0.95x; required 10.00x",
+    "pair-3: global-wide-wrapped-case-insensitive-distinct P95 speedup 0.67x; required 10.00x"
+  ],
+  "regressionOnly": true,
+  "minimumSpeedup": 10,
+  "runs": [
+    {
+      "order": "candidate-base",
+      "baseP50LatencyNanos": 1917084,
+      "baseP95LatencyNanos": 52132041,
+      "p50LatencyNanos": 1869750,
+      "p95LatencyNanos": 101659125,
+      "p50Speedup": 1.025315683914962,
+      "p95Speedup": 0.5128122143486873,
+      "baseWrappedP95LatencyNanos": 52132041,
+      "wrappedP95LatencyNanos": 101659125,
+      "wrappedP95Speedup": 0.5128122143486873,
+      "wrappedShapeRuns": [
+        {
+          "shape": "global-wide-wrapped-case-insensitive",
+          "baseLatencyNanos": 2399583,
+          "latencyNanos": 2115625,
+          "speedup": 1.1342194387001476
+        },
+        {
+          "shape": "global-wide-wrapped-case-insensitive-distinct",
+          "baseLatencyNanos": 52132041,
+          "latencyNanos": 101659125,
+          "speedup": 0.5128122143486873
+        }
+      ],
+      "baseProcessCpuNanos": 1642950000,
+      "processCpuNanos": 1817217000,
+      "cpuCoreUtilizationPermille": 3265,
+      "basePeakUsedHeapBytes": 4710823104,
+      "peakUsedHeapBytes": 4715612256,
+      "basePeakResidentSetBytes": 5258805248,
+      "peakResidentSetBytes": 5291655168
+    },
+    {
+      "order": "base-candidate",
+      "baseP50LatencyNanos": 1663500,
+      "baseP95LatencyNanos": 73699416,
+      "p50LatencyNanos": 1874833,
+      "p95LatencyNanos": 45518666,
+      "p50Speedup": 0.8872790269853368,
+      "p95Speedup": 1.6191031608878872,
+      "baseWrappedP95LatencyNanos": 2267125,
+      "wrappedP95LatencyNanos": 2300375,
+      "wrappedP95Speedup": 0.9855458349182199,
+      "wrappedShapeRuns": [
+        {
+          "shape": "global-wide-wrapped-case-insensitive",
+          "baseLatencyNanos": 2267125,
+          "latencyNanos": 2300375,
+          "speedup": 0.9855458349182199
+        },
+        {
+          "shape": "global-wide-wrapped-case-insensitive-distinct",
+          "baseLatencyNanos": 73699416,
+          "latencyNanos": 45518666,
+          "speedup": 1.6191031608878872
+        }
+      ],
+      "baseProcessCpuNanos": 1654015000,
+      "processCpuNanos": 1501512000,
+      "cpuCoreUtilizationPermille": 3008,
+      "basePeakUsedHeapBytes": 4215820008,
+      "peakUsedHeapBytes": 4705415656,
+      "basePeakResidentSetBytes": 4769562624,
+      "peakResidentSetBytes": 5258592256
+    },
+    {
+      "order": "candidate-base",
+      "baseP50LatencyNanos": 1736083,
+      "baseP95LatencyNanos": 47265292,
+      "p50LatencyNanos": 1912875,
+      "p95LatencyNanos": 70089667,
+      "p50Speedup": 0.9075778605502189,
+      "p95Speedup": 0.6743546377528088,
+      "baseWrappedP95LatencyNanos": 47265292,
+      "wrappedP95LatencyNanos": 70089667,
+      "wrappedP95Speedup": 0.6743546377528088,
+      "wrappedShapeRuns": [
+        {
+          "shape": "global-wide-wrapped-case-insensitive",
+          "baseLatencyNanos": 2206459,
+          "latencyNanos": 2329708,
+          "speedup": 0.9470968035479125
+        },
+        {
+          "shape": "global-wide-wrapped-case-insensitive-distinct",
+          "baseLatencyNanos": 47265292,
+          "latencyNanos": 70089667,
+          "speedup": 0.6743546377528088
+        }
+      ],
+      "baseProcessCpuNanos": 1462809000,
+      "processCpuNanos": 1720888000,
+      "cpuCoreUtilizationPermille": 3191,
+      "basePeakUsedHeapBytes": 4307969768,
+      "peakUsedHeapBytes": 4713546992,
+      "basePeakResidentSetBytes": 4945625088,
+      "peakResidentSetBytes": 5264867328
+    }
+  ],
+  "orderSummaries": [
+    {
+      "order": "candidate-base",
+      "runCount": 2,
+      "medianP50Speedup": 0.9664467722325905,
+      "medianP95Speedup": 0.593583426050748
+    },
+    {
+      "order": "base-candidate",
+      "runCount": 1,
+      "medianP50Speedup": 0.8872790269853368,
+      "medianP95Speedup": 1.6191031608878872
+    }
+  ]
+}

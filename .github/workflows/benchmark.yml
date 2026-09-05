@@ -46,6 +46,9 @@ jobs:
     - name: Test candidate benchmark gate logic
       run: node --test candidate/.github/scripts/benchmark-*.test.mjs
 
+    - name: Test wide-query profiling and oracle verification
+      run: python3 -m unittest discover -s candidate/.github/scripts/wide-query-profile -p 'test_*.py'
+
   build-explore-jmh:
     name: build-explore-jmh-${{ matrix.revision }}
     runs-on: ubuntu-latest
