@@ -462,7 +462,7 @@ private class PersistentIndexViewValidator(
         consumeGraphWork(workConsumer, values.size.toLong())
     }
 
-    inline fun updateInts(values: IntBuffer, validate: (Int) -> Unit = {}) {
+    fun updateInts(values: IntBuffer, validate: (Int) -> Unit = {}) {
         var index = 0
         while (index < values.limit()) {
             checkViewInterrupted()
@@ -483,7 +483,7 @@ private class PersistentIndexViewValidator(
         updateInts(mappedSlice(offset, count, Int.SIZE_BYTES).asIntBuffer())
     }
 
-    inline fun updateLongs(offset: Long, count: Int, validate: (Long) -> Unit = {}) {
+    fun updateLongs(offset: Long, count: Int, validate: (Long) -> Unit = {}) {
         val values = mappedSlice(offset, count, Long.SIZE_BYTES).asLongBuffer()
         var index = 0
         while (index < values.limit()) {

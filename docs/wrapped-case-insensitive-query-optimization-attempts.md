@@ -5366,3 +5366,6 @@ non-latency TSV fields, including total work 58,071,626, are equal across each
 pair. It retains 55/102 slower observations and the three IDs slower in all
 pairs; only pair 2 dense meets both per-row regression bounds. The strict
 progress rejection is independently confirmed.
+
+
+Rejected candidate is `2acfd4fe8eddf684374170575d6380adbc8544ca`. Explicit revert restores all 130 main/JMH files byte-identical to frozen main and preserves all 168 test files byte-identical to parent 27de; [source receipt](profiling/attempt139/revert-source-receipt.json). Source equality is not a passing CI/performance result.
