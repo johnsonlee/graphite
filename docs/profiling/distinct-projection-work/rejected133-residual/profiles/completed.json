@@ -1,0 +1,10 @@
+{
+  "status": "complete",
+  "verifiedQueries": 68,
+  "recordings": 2,
+  "jarHashesUnchanged": true,
+  "graphFilesUnchanged": true,
+  "diagnosticOnly": true,
+  "notP95": true,
+  "rejectedAttemptRemainsRejected": true
+}

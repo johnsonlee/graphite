@@ -1,0 +1,201 @@
+{
+  "passed": true,
+  "baseRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "candidateParent": "e6c932c5e1d0fb7b583ceb9e14c8ef88ec9d9694",
+  "comparedMainAndJmhFiles": 130,
+  "changedFiles": [
+    {
+      "file": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexView.kt",
+      "sourceSha256": "7cd7b21f0ac451f265f4014cfa2c0cee09cc4630318c4f3092a897eba668f0aa"
+    },
+    {
+      "file": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt",
+      "sourceSha256": "7ec58e121beabf3d792cc31075d9a399cd4fe3055e94865e1347bd0ad1e9bac4"
+    }
+  ],
+  "testResults": {
+    "tests": 192,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "suites": [
+    {
+      "file": "repo/graphite-webgraph/build/test-results/test/TEST-io.johnsonlee.graphite.webgraph.AndroidSdkIntegrationTest.xml",
+      "sha256": "04d4344ea81eeec75f3a723e5c8264d9f66107f74f0a9e0538b0c02a0d0bb943",
+      "attributes": {
+        "name": "io.johnsonlee.graphite.webgraph.AndroidSdkIntegrationTest",
+        "tests": "3",
+        "skipped": "0",
+        "failures": "0",
+        "errors": "0",
+        "timestamp": "2026-09-05T20:34:39.624Z",
+        "hostname": "johnsonlee.local",
+        "time": "91.479"
+      }
+    },
+    {
+      "file": "repo/graphite-webgraph/build/test-results/test/TEST-io.johnsonlee.graphite.webgraph.GraphStoreTest.xml",
+      "sha256": "db60c1d55998edb44d0b79fb915323297895435f47825a1035f5d4d46e5a5e9e",
+      "attributes": {
+        "name": "io.johnsonlee.graphite.webgraph.GraphStoreTest",
+        "tests": "171",
+        "skipped": "0",
+        "failures": "0",
+        "errors": "0",
+        "timestamp": "2026-09-05T20:36:11.680Z",
+        "hostname": "johnsonlee.local",
+        "time": "4.273"
+      }
+    },
+    {
+      "file": "repo/graphite-webgraph/build/test-results/test/TEST-io.johnsonlee.graphite.webgraph.MappedCypherBudgetTest.xml",
+      "sha256": "ec7ad9f7e5737fc4edd2edc694e25faf9d1fc6ef9792e93ec81f28e94d55f1bf",
+      "attributes": {
+        "name": "io.johnsonlee.graphite.webgraph.MappedCypherBudgetTest",
+        "tests": "3",
+        "skipped": "0",
+        "failures": "0",
+        "errors": "0",
+        "timestamp": "2026-09-05T20:36:16.513Z",
+        "hostname": "johnsonlee.local",
+        "time": "0.766"
+      }
+    },
+    {
+      "file": "repo/graphite-webgraph/build/test-results/test/TEST-io.johnsonlee.graphite.webgraph.MethodQueryPersistenceTest.xml",
+      "sha256": "a3d6f4eea3f4c30192c854b19a88375167c892eae923829b66eb1824e555811a",
+      "attributes": {
+        "name": "io.johnsonlee.graphite.webgraph.MethodQueryPersistenceTest",
+        "tests": "4",
+        "skipped": "0",
+        "failures": "0",
+        "errors": "0",
+        "timestamp": "2026-09-05T20:36:17.838Z",
+        "hostname": "johnsonlee.local",
+        "time": "1.452"
+      }
+    },
+    {
+      "file": "repo/graphite-webgraph/build/test-results/test/TEST-io.johnsonlee.graphite.webgraph.ParallelDistinctDisjunctionTest.xml",
+      "sha256": "e682b244bbf9fdeb5d3030dbeb3b40723951aa5fcc388692f30e4d36d619d579",
+      "attributes": {
+        "name": "io.johnsonlee.graphite.webgraph.ParallelDistinctDisjunctionTest",
+        "tests": "5",
+        "skipped": "0",
+        "failures": "0",
+        "errors": "0",
+        "timestamp": "2026-09-05T20:36:19.824Z",
+        "hostname": "johnsonlee.local",
+        "time": "0.963"
+      }
+    },
+    {
+      "file": "repo/graphite-webgraph/build/test-results/test/TEST-io.johnsonlee.graphite.webgraph.QueryCorrectnessManifestTest.xml",
+      "sha256": "1af21681e5ef20594ff0160c79eb9c6135f0cba79a23ec04a773496b358e4570",
+      "attributes": {
+        "name": "io.johnsonlee.graphite.webgraph.QueryCorrectnessManifestTest",
+        "tests": "6",
+        "skipped": "0",
+        "failures": "0",
+        "errors": "0",
+        "timestamp": "2026-09-05T20:36:21.290Z",
+        "hostname": "johnsonlee.local",
+        "time": "0.165"
+      }
+    }
+  ],
+  "newFiveTests": {
+    "mapped selected tuples preserve earliest source order and reject recombined strings": {
+      "suite": "io.johnsonlee.graphite.webgraph.GraphStoreTest",
+      "timeSeconds": "0.028",
+      "passed": true
+    },
+    "mapped selected tuples preserve duplicate and null columns with partial projection fallback": {
+      "suite": "io.johnsonlee.graphite.webgraph.GraphStoreTest",
+      "timeSeconds": "0.03",
+      "passed": true
+    },
+    "mapped selected tuple validates the whole chosen posting before limit one": {
+      "suite": "io.johnsonlee.graphite.webgraph.GraphStoreTest",
+      "timeSeconds": "0.011",
+      "passed": true
+    },
+    "mapped selected tuple work rejection and cancellation preserve retry correctness": {
+      "suite": "io.johnsonlee.graphite.webgraph.GraphStoreTest",
+      "timeSeconds": "0.012",
+      "passed": true
+    },
+    "sparse initial posting projection preserves reordered duplicate and null columns": {
+      "suite": "io.johnsonlee.graphite.webgraph.ParallelDistinctDisjunctionTest",
+      "timeSeconds": "0.707",
+      "passed": true
+    }
+  },
+  "retainedFourOrTests": {
+    "four keyword OR keeps every exclusive term and deduplicates overlap in stored order": {
+      "suite": "io.johnsonlee.graphite.webgraph.ParallelDistinctDisjunctionTest",
+      "timeSeconds": "0.099",
+      "passed": true
+    },
+    "selected tuples filter the OR result without changing its physical order": {
+      "suite": "io.johnsonlee.graphite.webgraph.ParallelDistinctDisjunctionTest",
+      "timeSeconds": "0.072",
+      "passed": true
+    },
+    "raw and lowercase predicates do not share a match state for the same string": {
+      "suite": "io.johnsonlee.graphite.webgraph.ParallelDistinctDisjunctionTest",
+      "timeSeconds": "0.044",
+      "passed": true
+    },
+    "different lowercase terms keep separate match states and preserve a complete miss": {
+      "suite": "io.johnsonlee.graphite.webgraph.ParallelDistinctDisjunctionTest",
+      "timeSeconds": "0.039",
+      "passed": true
+    }
+  },
+  "testSourceHashes": {
+    "GraphStoreTest.kt": "2189a077f3d5e41fd3d7627d0ea28064b8fca3f9d7b8d147552a0a206b4ade80",
+    "ParallelDistinctDisjunctionTest.kt": "521db43f2599e71cf85a4ad0422f2ee22c692bf2ce9cf40cc92e0f26fad8e1b1"
+  },
+  "buildCommand": {
+    "cwd": "/private/tmp/graphite-attempt138.7ihszrob/repo",
+    "command": [
+      "./gradlew",
+      ":webgraph:test",
+      ":webgraph:detekt",
+      ":webgraph:jmhJar",
+      ":webgraph:verifyJmhJarExcludesTests",
+      "--no-daemon"
+    ],
+    "environment": {
+      "JAVA_HOME": "/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home",
+      "JAVA_TOOL_OPTIONS": "-XX:ActiveProcessorCount=4"
+    }
+  },
+  "taskLines": [
+    "> Task :webgraph:detekt",
+    "> Task :webgraph:jmhJar",
+    "> Task :webgraph:test",
+    "> Task :webgraph:verifyJmhJarExcludesTests"
+  ],
+  "evidenceHashes": {
+    "build.log": "46ed5319e0a376ee7e5651db01e70c23e85d073de298466d32d079a73951075c",
+    "build-command.json": "7b022f42247ae01145fb97bf368d7d287115a41c7926b4e42484d9d588b3d998",
+    "build-receipt.json": "5fdea2edbc156a3c0b07031a490cd9166b0e25d950d7c82b943ed0d59f61cbde",
+    "prebuild-source-receipt.json": "6f2518cc58bb7112f5bded527eb4d42fb7f33650cc2d55e7d3f6dc67699ff162"
+  },
+  "jarExclusion": {
+    "testOutputEntryCount": 72,
+    "jarEntryCount": 30469,
+    "leakedEntries": [],
+    "checkedCentralDirectoryOnly": true
+  },
+  "recordedFrozenJarSha256": "2c419ac0b9d996af0890d1c857f81fa3479c170f59306fe35517a6e90cf7b5bf",
+  "limitations": [
+    "No Java/build/benchmark was started.",
+    "Recorded process exit 0 agrees with successful terminal log; the auditor did not observe the original process directly.",
+    "Only the JAR central directory was read for an independent test-output exclusion check; the full frozen JAR hash was not recomputed while timed work may run.",
+    "Synthetic tests establish correctness/path coverage only, not performance or final 10x acceptance."
+  ]
+}

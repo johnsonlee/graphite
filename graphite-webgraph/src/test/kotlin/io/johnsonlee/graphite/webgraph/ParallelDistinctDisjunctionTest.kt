@@ -33,8 +33,8 @@ class ParallelDistinctDisjunctionTest {
                 assertEquals(OR_VALUES.take(5).toSet(), expected.toSet())
                 assertEquals(5, expected.size)
 
-                assertRawResult(graph, predicates, expected)
-                assertRawResult(graph, predicates, expected.take(2), limit = 2)
+                assertProjectionResult(graph, predicates, expected, expectedRawScans = if (persistIndex) 0 else 1)
+                assertProjectionResult(graph, predicates, expected.take(2), limit = 2)
                 assertEquals(persistIndex, graph.isMappedCallSiteStringIndexViewInitialized())
             }
         }
@@ -51,9 +51,35 @@ class ParallelDistinctDisjunctionTest {
                 val expected = reference(graph, predicates, selected)
                 assertEquals(all.drop(1).take(3), expected)
 
-                assertRawResult(graph, predicates, expected, selected)
-                assertRawResult(graph, predicates, expected.take(2), selected, limit = 2)
-                assertRawResult(graph, predicates, all)
+                val expectedRawScans = if (persistIndex) 0L else 1L
+                assertProjectionResult(graph, predicates, expected, selected, expectedRawScans = expectedRawScans)
+                assertProjectionResult(graph, predicates, expected.take(2), selected, limit = 2,
+                    expectedRawScans = expectedRawScans)
+                assertProjectionResult(graph, predicates, all, expectedRawScans = expectedRawScans)
+            }
+        }
+    }
+
+    @Test
+    fun `sparse initial posting projection preserves reordered duplicate and null columns`() {
+        for (persistIndex in listOf(false, true)) {
+            withGraph(OR_VALUES, persistIndex) { graph ->
+                val predicates = TERMS.flatMap { term -> PROPERTIES.map { predicate(it, term) } }
+                val properties = listOf("callee_name", "caller_class", "graphId", "caller_name",
+                    "callee_class", "class", "caller_name", "name")
+                val expected = reference(graph, predicates).map { row ->
+                    listOf(row[3], row[0], null, row[1], row[2], null, row[1], null)
+                }
+                assertEquals(5, expected.size)
+                val rows = assertNotNull(graph.distinctStringPropertyDisjunction(
+                    CallSiteNode::class.java, predicates, properties, 20, null, SplitWork
+                ))
+                assertEquals(expected, rows.map { it.values })
+                assertTrue(rows.zipWithNext().all { (left, right) -> left.encounterOrder < right.encounterOrder })
+                assertEquals(if (persistIndex) 0L else 1L, graph.callSiteParallelScanCount())
+                assertEquals(persistIndex, graph.isMappedCallSiteStringIndexViewInitialized())
+                assertFalse(graph.isCallSiteStringIndexInitialized())
+                assertEquals(0, graph.callSiteScanActiveWorkers())
             }
         }
     }
@@ -73,9 +99,9 @@ class ParallelDistinctDisjunctionTest {
             val expected = reference(graph, predicates)
             assertEquals(rows.take(2).toSet(), expected.toSet())
 
-            assertRawResult(graph, predicates, expected)
-            assertRawResult(graph, predicates.reversed(), expected)
-            assertRawResult(graph, predicates, listOf(rows.first()), setOf(rows.first()))
+            assertProjectionResult(graph, predicates, expected)
+            assertProjectionResult(graph, predicates.reversed(), expected)
+            assertProjectionResult(graph, predicates, listOf(rows.first()), setOf(rows.first()))
         }
     }
 
@@ -91,20 +117,21 @@ class ParallelDistinctDisjunctionTest {
             val expected = reference(graph, predicates)
             assertEquals(rows.take(2).toSet(), expected.toSet())
 
-            assertRawResult(graph, predicates, expected)
-            assertRawResult(graph, predicates.reversed(), expected)
+            assertProjectionResult(graph, predicates, expected)
+            assertProjectionResult(graph, predicates.reversed(), expected)
             val misses = PROPERTIES.map { predicate(it, "qz") }
             assertEquals(emptyList(), reference(graph, misses))
-            assertRawResult(graph, misses, emptyList())
+            assertProjectionResult(graph, misses, emptyList())
         }
     }
 
-    private fun assertRawResult(
+    private fun assertProjectionResult(
         graph: MappedWebGraphBackedGraph,
         predicates: List<StringPropertyPredicate>,
         expected: List<List<String>>,
         selected: Set<List<String?>>? = null,
-        limit: Int = 20
+        limit: Int = 20,
+        expectedRawScans: Long = 1
     ) {
         graph.resetCallSiteScanMetrics()
         val actual = assertNotNull(graph.distinctStringPropertyDisjunction(
@@ -112,7 +139,7 @@ class ParallelDistinctDisjunctionTest {
         ))
         assertEquals(expected, actual.map { it.values })
         assertTrue(actual.zipWithNext().all { (left, right) -> left.encounterOrder < right.encounterOrder })
-        assertEquals(1L, graph.callSiteParallelScanCount(), "The assertion must exercise raw DISTINCT")
+        assertEquals(expectedRawScans, graph.callSiteParallelScanCount(), "Expected DISTINCT projection path")
         assertEquals(0, graph.callSiteScanActiveWorkers())
         assertFalse(graph.isCallSiteStringIndexInitialized())
     }

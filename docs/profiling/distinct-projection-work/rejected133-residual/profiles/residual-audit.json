@@ -1,0 +1,1523 @@
+{
+  "result": "pass",
+  "offlineOnly": true,
+  "newJavaOrMeasurement": false,
+  "rejectedAttempt133RemainsRejected": true,
+  "verification": [
+    {
+      "side": "base",
+      "queries": 34,
+      "oracleSignaturesMatch": true,
+      "allCpuAllocationFullStacksEqualOuter": true,
+      "allDurationPartitionsConserve": true,
+      "jarHashMatchesInputReceipt": true,
+      "jfrAndTsvHashesMatchOuterAnalysis": true
+    },
+    {
+      "side": "rejected133",
+      "queries": 34,
+      "oracleSignaturesMatch": true,
+      "allCpuAllocationFullStacksEqualOuter": true,
+      "allDurationPartitionsConserve": true,
+      "jarHashMatchesInputReceipt": true,
+      "jfrAndTsvHashesMatchOuterAnalysis": true
+    }
+  ],
+  "phaseMetricPartitions": 132,
+  "threadMetricPartitions": 457,
+  "currentGraphFilesMatchPreCaptureReceipt": 1088,
+  "applicationThreadPrefixes": [
+    "broad-query-pressure-worker [",
+    "graphite-cypher-scan-",
+    "graphite-callsite-scan-",
+    "graphite-callsite-segment-"
+  ],
+  "threadDefinition": "JIT compiler threads and all other threads excluded from application denominator; all work on application threads included.",
+  "categoryPrefixes": {
+    "findId": "io.johnsonlee.graphite.webgraph.StringTable.findId$webgraph(",
+    "selectedTupleStringIds": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.selectedTupleStringIds(",
+    "selectedProjectionHits": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.selectedProjectionHits(",
+    "rawProjection": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection",
+    "matchingStringDiscovery": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.exactMatchingStringIds(",
+    "postingValidation": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.validatedPostingCursor("
+  },
+  "inclusiveNotAdditive": true,
+  "rows": [
+    {
+      "side": "base",
+      "query": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "phase": "initial",
+      "metric": "cpuSamples",
+      "threadClasses": {
+        "jit": 73,
+        "other": 7,
+        "application": 89
+      },
+      "inclusiveCategories": {
+        "rawProjection": 82,
+        "matchingStringDiscovery": 4
+      },
+      "categoryIntersections": [
+        {
+          "categories": [
+            "rawProjection"
+          ],
+          "weight": 82
+        },
+        {
+          "categories": [],
+          "weight": 3
+        },
+        {
+          "categories": [
+            "matchingStringDiscovery"
+          ],
+          "weight": 4
+        }
+      ],
+      "applicationLeaves": [
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef:Ljava/util/concurrent/atomic/AtomicBoolean:Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/HashSet:Ljava/util/List:Ljava/util/HashSet:Ljava/util/ArrayList:I[ILjava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:I)Z",
+          "weight": 46
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedNodeTypeIndex.forEachIdWhile(Ljava/lang/Class:IILjava/util/function/IntPredicate:)V",
+          "weight": 7
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.ints.IntOpenHashSet.contains(I)Z",
+          "weight": 4
+        },
+        {
+          "frame": "kotlin.ranges.IntProgressionIterator.<init>(III)V",
+          "weight": 3
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$236.0x00000070011afc90.test(I)Z",
+          "weight": 3
+        },
+        {
+          "frame": "kotlin.ranges.IntProgressionIterator.nextInt()I",
+          "weight": 3
+        },
+        {
+          "frame": "java.util.ArrayList.get(I)Ljava/lang/Object:",
+          "weight": 2
+        },
+        {
+          "frame": "kotlin.ranges.IntProgression.iterator()Lkotlin/collections/IntIterator:",
+          "weight": 2
+        },
+        {
+          "frame": "libsystem_kernel.dylib.__psynch_mutexwait()L:",
+          "weight": 2
+        },
+        {
+          "frame": "java.lang.Integer.intValue()I",
+          "weight": 1
+        },
+        {
+          "frame": "kotlin.ranges.IntProgressionIterator.hasNext()Z",
+          "weight": 1
+        },
+        {
+          "frame": "libjvm.dylib.Arena::Amalloc_4()L:",
+          "weight": 1
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.access$getNodeOffsets$p(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:)Lio/johnsonlee/graphite/webgraph/NodeOffsetIndex:",
+          "weight": 1
+        },
+        {
+          "frame": "java.nio.Buffer.checkIndex(II)I",
+          "weight": 1
+        },
+        {
+          "frame": "kotlin.collections.CollectionsKt__CollectionsKt.getIndices(Ljava/util/Collection:)Lkotlin/ranges/IntRange:",
+          "weight": 1
+        },
+        {
+          "frame": "libjvm.dylib.Method::invocation_count()L:",
+          "weight": 1
+        },
+        {
+          "frame": "libjvm.dylib.RelocIterator::next()L:",
+          "weight": 1
+        },
+        {
+          "frame": "libsystem_kernel.dylib.__psynch_cvwait()L:",
+          "weight": 1
+        },
+        {
+          "frame": "java.util.HashMap.putVal(ILjava/lang/Object:Ljava/lang/Object:ZZ)Ljava/lang/Object:",
+          "weight": 1
+        },
+        {
+          "frame": "java.lang.String.isLatin1()Z",
+          "weight": 1
+        },
+        {
+          "frame": "java.lang.invoke.DirectMethodHandle.preparedLambdaForm(Ljava/lang/invoke/MemberName:Z)Ljava/lang/invoke/LambdaForm:",
+          "weight": 1
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.trigramPostingRange(I)Lkotlin/ranges/IntRange:",
+          "weight": 1
+        },
+        {
+          "frame": "libsystem_pthread.dylib.pthread_jit_write_protect_np()L:",
+          "weight": 1
+        },
+        {
+          "frame": "jdk.internal.misc.ScopedMemoryAccess.getLongUnalignedInternal(Ljdk/internal/misc/ScopedMemoryAccess$Scope:Ljava/lang/Object:JZ)J",
+          "weight": 1
+        },
+        {
+          "frame": "libjvm.dylib.stub:pthread_jit_write_protect_np()L:",
+          "weight": 1
+        },
+        {
+          "frame": "java.lang.ref.Cleaner$1.apply(Ljava/lang/Object:)Ljava/lang/Object:",
+          "weight": 1
+        }
+      ],
+      "findIdLeaves": []
+    },
+    {
+      "side": "base",
+      "query": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "phase": "initial",
+      "metric": "allocationSampledBytes",
+      "threadClasses": {
+        "application": 4718592
+      },
+      "inclusiveCategories": {
+        "rawProjection": 4718592
+      },
+      "categoryIntersections": [
+        {
+          "categories": [
+            "rawProjection"
+          ],
+          "weight": 4718592
+        }
+      ],
+      "applicationLeaves": [
+        {
+          "frame": "kotlin.ranges.IntProgression.iterator()Lkotlin/collections/IntIterator:",
+          "weight": 3145728
+        },
+        {
+          "frame": "kotlin.collections.CollectionsKt__CollectionsKt.getIndices(Ljava/util/Collection:)Lkotlin/ranges/IntRange:",
+          "weight": 1048576
+        },
+        {
+          "frame": "java.util.Arrays.copyOfRange([BII)[B",
+          "weight": 262144
+        },
+        {
+          "frame": "jdk.internal.org.objectweb.asm.ByteVector.enlarge(I)V",
+          "weight": 262144
+        }
+      ],
+      "findIdLeaves": []
+    },
+    {
+      "side": "base",
+      "query": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "phase": "other",
+      "metric": "cpuSamples",
+      "threadClasses": {
+        "jit": 3,
+        "application": 1
+      },
+      "inclusiveCategories": {},
+      "categoryIntersections": [
+        {
+          "categories": [],
+          "weight": 1
+        }
+      ],
+      "applicationLeaves": [
+        {
+          "frame": "kotlin.collections.MapsKt__MapsKt.emptyMap()Ljava/util/Map:",
+          "weight": 1
+        }
+      ],
+      "findIdLeaves": []
+    },
+    {
+      "side": "base",
+      "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "phase": "initial",
+      "metric": "allocationSampledBytes",
+      "threadClasses": {
+        "application": 1835008
+      },
+      "inclusiveCategories": {
+        "matchingStringDiscovery": 262144,
+        "rawProjection": 1310720
+      },
+      "categoryIntersections": [
+        {
+          "categories": [],
+          "weight": 262144
+        },
+        {
+          "categories": [
+            "matchingStringDiscovery"
+          ],
+          "weight": 262144
+        },
+        {
+          "categories": [
+            "rawProjection"
+          ],
+          "weight": 1310720
+        }
+      ],
+      "applicationLeaves": [
+        {
+          "frame": "kotlin.ranges.IntProgression.iterator()Lkotlin/collections/IntIterator:",
+          "weight": 524288
+        },
+        {
+          "frame": "java.util.LinkedHashMap.newNode(ILjava/lang/Object:Ljava/lang/Object:Ljava/util/HashMap$Node:)Ljava/util/HashMap$Node:",
+          "weight": 262144
+        },
+        {
+          "frame": "java.util.Arrays.copyOf([II)[I",
+          "weight": 262144
+        },
+        {
+          "frame": "java.util.concurrent.ExecutorCompletionService.<init>(Ljava/util/concurrent/Executor:)V",
+          "weight": 262144
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.getArray(I)[C",
+          "weight": 262144
+        },
+        {
+          "frame": "kotlin.collections.CollectionsKt__CollectionsKt.getIndices(Ljava/util/Collection:)Lkotlin/ranges/IntRange:",
+          "weight": 262144
+        }
+      ],
+      "findIdLeaves": []
+    },
+    {
+      "side": "base",
+      "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "phase": "initial",
+      "metric": "cpuSamples",
+      "threadClasses": {
+        "jit": 15,
+        "application": 8
+      },
+      "inclusiveCategories": {
+        "matchingStringDiscovery": 3,
+        "rawProjection": 4
+      },
+      "categoryIntersections": [
+        {
+          "categories": [],
+          "weight": 1
+        },
+        {
+          "categories": [
+            "matchingStringDiscovery"
+          ],
+          "weight": 3
+        },
+        {
+          "categories": [
+            "rawProjection"
+          ],
+          "weight": 4
+        }
+      ],
+      "applicationLeaves": [
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef:Ljava/util/concurrent/atomic/AtomicBoolean:Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/HashSet:Ljava/util/List:Ljava/util/HashSet:Ljava/util/ArrayList:I[ILjava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:I)Z",
+          "weight": 2
+        },
+        {
+          "frame": "libjvm.dylib.Method::is_setter()L:",
+          "weight": 1
+        },
+        {
+          "frame": "it.unimi.dsi.lang.MutableString.charAt(I)C",
+          "weight": 1
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.Arrays.ensureOffsetLength(III)V",
+          "weight": 1
+        },
+        {
+          "frame": "kotlin.jvm.internal.Intrinsics.checkNotNullParameter(Ljava/lang/Object:Ljava/lang/String:)V",
+          "weight": 1
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.StringTable.get(I)Ljava/lang/String:",
+          "weight": 1
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.ints.IntOpenHashSet.add(I)Z",
+          "weight": 1
+        }
+      ],
+      "findIdLeaves": []
+    },
+    {
+      "side": "base",
+      "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "phase": "provenance",
+      "metric": "cpuSamples",
+      "threadClasses": {
+        "jit": 83,
+        "application": 103,
+        "other": 1
+      },
+      "inclusiveCategories": {
+        "rawProjection": 42,
+        "matchingStringDiscovery": 57,
+        "findId": 2
+      },
+      "categoryIntersections": [
+        {
+          "categories": [],
+          "weight": 4
+        },
+        {
+          "categories": [
+            "rawProjection"
+          ],
+          "weight": 40
+        },
+        {
+          "categories": [
+            "matchingStringDiscovery"
+          ],
+          "weight": 57
+        },
+        {
+          "categories": [
+            "findId",
+            "rawProjection"
+          ],
+          "weight": 2
+        }
+      ],
+      "applicationLeaves": [
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef:Ljava/util/concurrent/atomic/AtomicBoolean:Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/HashSet:Ljava/util/List:Ljava/util/HashSet:Ljava/util/ArrayList:I[ILjava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:I)Z",
+          "weight": 16
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.extract(I[CII)I",
+          "weight": 9
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.ints.IntOpenHashSet.contains(I)Z",
+          "weight": 8
+        },
+        {
+          "frame": "java.lang.CharacterDataLatin1.toLowerCase(I)I",
+          "weight": 7
+        },
+        {
+          "frame": "jshort_disjoint_arraycopy()L:",
+          "weight": 6
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraphKt.reusableContains(Lit/unimi/dsi/lang/MutableString:Lio/johnsonlee/graphite/graph/StringValueTransform:Ljava/lang/String:)Z",
+          "weight": 5
+        },
+        {
+          "frame": "it.unimi.dsi.lang.MutableString.length(I)Lit/unimi/dsi/lang/MutableString:",
+          "weight": 5
+        },
+        {
+          "frame": "java.util.Arrays.fill([CIIC)V",
+          "weight": 4
+        },
+        {
+          "frame": "it.unimi.dsi.lang.MutableString.length()I",
+          "weight": 4
+        },
+        {
+          "frame": "it.unimi.dsi.util.FrontCodedStringList.get(ILit/unimi/dsi/lang/MutableString:)V",
+          "weight": 3
+        },
+        {
+          "frame": "java.nio.Buffer.scope()Ljdk/internal/misc/ScopedMemoryAccess$Scope:",
+          "weight": 2
+        },
+        {
+          "frame": "java.util.ArrayList.hashCodeRange(II)I",
+          "weight": 2
+        },
+        {
+          "frame": "java.nio.DirectByteBuffer.getInt(J)I",
+          "weight": 2
+        },
+        {
+          "frame": "slow_subtype_check Runtime1 stub()L:",
+          "weight": 2
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.exactMatchingStringIds(Lio/johnsonlee/graphite/graph/StringPropertyPredicate:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)[I",
+          "weight": 2
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.StringTable.get$webgraph(ILit/unimi/dsi/lang/MutableString:)V",
+          "weight": 2
+        },
+        {
+          "frame": "java.lang.Character.toLowerCase(I)I",
+          "weight": 2
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection(Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:Ljava/util/List:Lio/johnsonlee/graphite/webgraph/CallSiteStringIdMembership:)Ljava/util/List:",
+          "weight": 2
+        },
+        {
+          "frame": "libsystem_kernel.dylib.__psynch_cvwait()L:",
+          "weight": 1
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedNodeTypeIndex.forEachIdWhile(Ljava/lang/Class:IILjava/util/function/IntPredicate:)V",
+          "weight": 1
+        },
+        {
+          "frame": "vtable stub()L:",
+          "weight": 1
+        },
+        {
+          "frame": "kotlin.ranges.IntProgression.iterator()Lkotlin/collections/IntIterator:",
+          "weight": 1
+        },
+        {
+          "frame": "libjvm.dylib.CompilerConfig::is_interpreter_only()L:",
+          "weight": 1
+        },
+        {
+          "frame": "libsystem_malloc.dylib.free_tiny()L:",
+          "weight": 1
+        },
+        {
+          "frame": "libjvm.dylib.RegisterMap::RegisterMap()L:",
+          "weight": 1
+        },
+        {
+          "frame": "io.johnsonlee.graphite.graph.StringPropertyPredicate.getTransform()Lio/johnsonlee/graphite/graph/StringValueTransform:",
+          "weight": 1
+        },
+        {
+          "frame": "java.lang.String.charAt(I)C",
+          "weight": 1
+        },
+        {
+          "frame": "java.lang.CharacterData.of(I)Ljava/lang/CharacterData:",
+          "weight": 1
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.count(I)I",
+          "weight": 1
+        },
+        {
+          "frame": "java.lang.String.<init>([CIILjava/lang/Void:)V",
+          "weight": 1
+        },
+        {
+          "frame": "java.util.concurrent.atomic.AtomicInteger.accumulateAndGet(ILjava/util/function/IntBinaryOperator:)I",
+          "weight": 1
+        },
+        {
+          "frame": "java.lang.Integer.valueOf(I)Ljava/lang/Integer:",
+          "weight": 1
+        },
+        {
+          "frame": "java.util.ArrayList.elementData(I)Ljava/lang/Object:",
+          "weight": 1
+        },
+        {
+          "frame": "libjvm.dylib.InstanceKlass::find_method_index()L:",
+          "weight": 1
+        },
+        {
+          "frame": "it.unimi.dsi.lang.MutableString.charAt(I)C",
+          "weight": 1
+        },
+        {
+          "frame": "it.unimi.dsi.lang.MutableString.indexOf(Ljava/lang/CharSequence:III)I",
+          "weight": 1
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.objects.AbstractObjectList.ensureRestrictedIndex(I)V",
+          "weight": 1
+        },
+        {
+          "frame": "libjvm.dylib.Arena::Amalloc()L:",
+          "weight": 1
+        }
+      ],
+      "findIdLeaves": [
+        {
+          "frame": "java.lang.String.<init>([CIILjava/lang/Void:)V",
+          "weight": 1
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.extract(I[CII)I",
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "side": "base",
+      "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "phase": "provenance",
+      "metric": "allocationSampledBytes",
+      "threadClasses": {
+        "application": 10747904
+      },
+      "inclusiveCategories": {
+        "rawProjection": 9699328,
+        "findId": 2621440,
+        "matchingStringDiscovery": 1048576
+      },
+      "categoryIntersections": [
+        {
+          "categories": [
+            "rawProjection"
+          ],
+          "weight": 7077888
+        },
+        {
+          "categories": [
+            "findId",
+            "rawProjection"
+          ],
+          "weight": 2621440
+        },
+        {
+          "categories": [
+            "matchingStringDiscovery"
+          ],
+          "weight": 1048576
+        }
+      ],
+      "applicationLeaves": [
+        {
+          "frame": "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.getArray(I)[C",
+          "weight": 1572864
+        },
+        {
+          "frame": "java.lang.Integer.valueOf(I)Ljava/lang/Integer:",
+          "weight": 1310720
+        },
+        {
+          "frame": "java.util.ArrayList.<init>(I)V",
+          "weight": 1310720
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$32$lambda$31$lambda$30(Lkotlin/jvm/internal/Ref$IntRef:Ljava/util/concurrent/atomic/AtomicBoolean:Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/HashSet:Ljava/util/List:Ljava/util/HashSet:Ljava/util/ArrayList:I[ILjava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:I)Z",
+          "weight": 1048576
+        },
+        {
+          "frame": "kotlin.collections.CollectionsKt__CollectionsKt.getIndices(Ljava/util/Collection:)Lkotlin/ranges/IntRange:",
+          "weight": 1048576
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection(Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/SplitGraphWorkBatchConsumer:Ljava/util/List:Lio/johnsonlee/graphite/webgraph/CallSiteStringIdMembership:)Ljava/util/List:",
+          "weight": 1048576
+        },
+        {
+          "frame": "kotlin.ranges.IntProgression.iterator()Lkotlin/collections/IntIterator:",
+          "weight": 1048576
+        },
+        {
+          "frame": "java.lang.StringUTF16.compress([CII)[B",
+          "weight": 524288
+        },
+        {
+          "frame": "it.unimi.dsi.lang.MutableString.expand(I)V",
+          "weight": 524288
+        },
+        {
+          "frame": "it.unimi.dsi.lang.MutableString.toString()Ljava/lang/String:",
+          "weight": 524288
+        },
+        {
+          "frame": "java.util.ArrayList.iterator()Ljava/util/Iterator:",
+          "weight": 262144
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.exactMatchingStringIds(Lio/johnsonlee/graphite/graph/StringPropertyPredicate:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:)[I",
+          "weight": 262144
+        },
+        {
+          "frame": "java.util.Arrays.copyOf([II)[I",
+          "weight": 262144
+        }
+      ],
+      "findIdLeaves": [
+        {
+          "frame": "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.getArray(I)[C",
+          "weight": 1572864
+        },
+        {
+          "frame": "java.lang.StringUTF16.compress([CII)[B",
+          "weight": 524288
+        },
+        {
+          "frame": "it.unimi.dsi.lang.MutableString.toString()Ljava/lang/String:",
+          "weight": 524288
+        }
+      ]
+    },
+    {
+      "side": "base",
+      "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "phase": "other",
+      "metric": "allocationSampledBytes",
+      "threadClasses": {
+        "application": 1310720
+      },
+      "inclusiveCategories": {},
+      "categoryIntersections": [
+        {
+          "categories": [],
+          "weight": 1310720
+        }
+      ],
+      "applicationLeaves": [
+        {
+          "frame": "java.util.HashMap.resize()[Ljava/util/HashMap$Node:",
+          "weight": 262144
+        },
+        {
+          "frame": "kotlin.collections.MapsKt__MapsKt.toMutableMap(Ljava/util/Map:)Ljava/util/Map:",
+          "weight": 262144
+        },
+        {
+          "frame": "java.util.LinkedHashMap.newNode(ILjava/lang/Object:Ljava/lang/Object:Ljava/util/HashMap$Node:)Ljava/util/HashMap$Node:",
+          "weight": 262144
+        },
+        {
+          "frame": "java.util.Arrays.copyOf([BI)[B",
+          "weight": 262144
+        },
+        {
+          "frame": "java.lang.StringLatin1.replace([BCC)Ljava/lang/String:",
+          "weight": 262144
+        }
+      ],
+      "findIdLeaves": []
+    },
+    {
+      "side": "base",
+      "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "phase": "other",
+      "metric": "cpuSamples",
+      "threadClasses": {
+        "jit": 8,
+        "application": 3
+      },
+      "inclusiveCategories": {},
+      "categoryIntersections": [
+        {
+          "categories": [],
+          "weight": 3
+        }
+      ],
+      "applicationLeaves": [
+        {
+          "frame": "io.johnsonlee.graphite.cypher.CypherExecutor.materializeResult(Lio/johnsonlee/graphite/cypher/CypherResult:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 1
+        },
+        {
+          "frame": "libjvm.dylib.methodHandle::~methodHandle()L:",
+          "weight": 1
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.visibleRow(Ljava/util/Map:)Ljava/util/Map:",
+          "weight": 1
+        }
+      ],
+      "findIdLeaves": []
+    },
+    {
+      "side": "rejected133",
+      "query": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "phase": "initial",
+      "metric": "allocationSampledBytes",
+      "threadClasses": {
+        "application": 6553600,
+        "other": 262144
+      },
+      "inclusiveCategories": {
+        "rawProjection": 6029312,
+        "matchingStringDiscovery": 524288
+      },
+      "categoryIntersections": [
+        {
+          "categories": [
+            "rawProjection"
+          ],
+          "weight": 6029312
+        },
+        {
+          "categories": [
+            "matchingStringDiscovery"
+          ],
+          "weight": 524288
+        }
+      ],
+      "applicationLeaves": [
+        {
+          "frame": "kotlin.ranges.IntProgression.iterator()Lkotlin/collections/IntIterator:",
+          "weight": 2883584
+        },
+        {
+          "frame": "kotlin.collections.CollectionsKt__CollectionsKt.getIndices(Ljava/util/Collection:)Lkotlin/ranges/IntRange:",
+          "weight": 1048576
+        },
+        {
+          "frame": "java.util.HashMap.newNode(ILjava/lang/Object:Ljava/lang/Object:Ljava/util/HashMap$Node:)Ljava/util/HashMap$Node:",
+          "weight": 524288
+        },
+        {
+          "frame": "java.util.Arrays.copyOfRange([BII)[B",
+          "weight": 262144
+        },
+        {
+          "frame": "java.lang.ClassLoader.defineClass0(Ljava/lang/ClassLoader:Ljava/lang/Class:Ljava/lang/String:[BIILjava/security/ProtectionDomain:ZILjava/lang/Object:)Ljava/lang/Class:",
+          "weight": 262144
+        },
+        {
+          "frame": "java.util.concurrent.ConcurrentHashMap.transfer([Ljava/util/concurrent/ConcurrentHashMap$Node:[Ljava/util/concurrent/ConcurrentHashMap$Node:)V",
+          "weight": 262144
+        },
+        {
+          "frame": "java.lang.Object.clone()Ljava/lang/Object:",
+          "weight": 262144
+        },
+        {
+          "frame": "java.util.zip.InflaterInputStream.<init>(Ljava/io/InputStream:Ljava/util/zip/Inflater:I)V",
+          "weight": 262144
+        },
+        {
+          "frame": "java.util.Arrays.copyOf([BI)[B",
+          "weight": 262144
+        },
+        {
+          "frame": "java.lang.AbstractStringBuilder.<init>(I)V",
+          "weight": 262144
+        },
+        {
+          "frame": "jdk.internal.org.objectweb.asm.SymbolTable.addType(Ljava/lang/String:)I",
+          "weight": 262144
+        }
+      ],
+      "findIdLeaves": []
+    },
+    {
+      "side": "rejected133",
+      "query": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "phase": "initial",
+      "metric": "cpuSamples",
+      "threadClasses": {
+        "jit": 91,
+        "other": 12,
+        "application": 113
+      },
+      "inclusiveCategories": {
+        "rawProjection": 110
+      },
+      "categoryIntersections": [
+        {
+          "categories": [],
+          "weight": 3
+        },
+        {
+          "categories": [
+            "rawProjection"
+          ],
+          "weight": 110
+        }
+      ],
+      "applicationLeaves": [
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$35$lambda$34$lambda$33(Lkotlin/jvm/internal/Ref$IntRef:Ljava/util/concurrent/atomic/AtomicBoolean:Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/HashSet:Ljava/util/List:Ljava/util/HashSet:Ljava/util/ArrayList:I[ILjava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:I)Z",
+          "weight": 60
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph$$Lambda$235.0x00000070011afd00.test(I)Z",
+          "weight": 7
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.ints.IntOpenHashSet.contains(I)Z",
+          "weight": 5
+        },
+        {
+          "frame": "java.nio.DirectByteBuffer.getInt(I)I",
+          "weight": 5
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedNodeTypeIndex.forEachIdWhile(Ljava/lang/Class:IILjava/util/function/IntPredicate:)V",
+          "weight": 4
+        },
+        {
+          "frame": "kotlin.ranges.IntProgressionIterator.<init>(III)V",
+          "weight": 4
+        },
+        {
+          "frame": "java.nio.Buffer.checkIndex(II)I",
+          "weight": 3
+        },
+        {
+          "frame": "kotlin.ranges.IntProgressionIterator.nextInt()I",
+          "weight": 3
+        },
+        {
+          "frame": "java.util.ArrayList.get(I)Ljava/lang/Object:",
+          "weight": 2
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.BufferedGraphWorkConsumer.consume()V",
+          "weight": 2
+        },
+        {
+          "frame": "kotlin.ranges.IntProgression.iterator()Lkotlin/collections/IntIterator:",
+          "weight": 2
+        },
+        {
+          "frame": "kotlin.ranges.IntProgressionIterator.hasNext()Z",
+          "weight": 2
+        },
+        {
+          "frame": "libsystem_kernel.dylib.__psynch_cvwait()L:",
+          "weight": 1
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedNodeOffsetIndex.offset(I)J",
+          "weight": 1
+        },
+        {
+          "frame": "java.nio.DirectByteBuffer.getLong(J)J",
+          "weight": 1
+        },
+        {
+          "frame": "libjvm.dylib.outputStream::update_position()L:",
+          "weight": 1
+        },
+        {
+          "frame": "java.nio.DirectByteBuffer.getInt(J)I",
+          "weight": 1
+        },
+        {
+          "frame": "java.lang.invoke.DirectMethodHandle.makePreparedLambdaForm(Ljava/lang/invoke/MethodType:I)Ljava/lang/invoke/LambdaForm:",
+          "weight": 1
+        },
+        {
+          "frame": "java.util.concurrent.ConcurrentHashMap.transfer([Ljava/util/concurrent/ConcurrentHashMap$Node:[Ljava/util/concurrent/ConcurrentHashMap$Node:)V",
+          "weight": 1
+        },
+        {
+          "frame": "libsystem_pthread.dylib.pthread_jit_write_protect_np()L:",
+          "weight": 1
+        },
+        {
+          "frame": "I2C/C2I adapters(0xba)()L:",
+          "weight": 1
+        },
+        {
+          "frame": "libsystem_malloc.dylib.tiny_free_no_lock()L:",
+          "weight": 1
+        },
+        {
+          "frame": "libz.1.dylib.inflateSetDictionary()L:",
+          "weight": 1
+        },
+        {
+          "frame": "libjvm.dylib.method_matches()L:",
+          "weight": 1
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.access$getMappedNodeData$p(Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:)Ljava/nio/MappedByteBuffer:",
+          "weight": 1
+        },
+        {
+          "frame": "java.util.Objects.checkIndex(II)I",
+          "weight": 1
+        }
+      ],
+      "findIdLeaves": []
+    },
+    {
+      "side": "rejected133",
+      "query": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "phase": "other",
+      "metric": "cpuSamples",
+      "threadClasses": {
+        "jit": 1,
+        "application": 2
+      },
+      "inclusiveCategories": {},
+      "categoryIntersections": [
+        {
+          "categories": [],
+          "weight": 2
+        }
+      ],
+      "applicationLeaves": [
+        {
+          "frame": "libsystem_kernel.dylib.__psynch_cvwait()L:",
+          "weight": 2
+        }
+      ],
+      "findIdLeaves": []
+    },
+    {
+      "side": "rejected133",
+      "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "phase": "initial",
+      "metric": "cpuSamples",
+      "threadClasses": {
+        "jit": 13,
+        "application": 10
+      },
+      "inclusiveCategories": {
+        "matchingStringDiscovery": 3,
+        "rawProjection": 6
+      },
+      "categoryIntersections": [
+        {
+          "categories": [],
+          "weight": 1
+        },
+        {
+          "categories": [
+            "matchingStringDiscovery"
+          ],
+          "weight": 3
+        },
+        {
+          "categories": [
+            "rawProjection"
+          ],
+          "weight": 6
+        }
+      ],
+      "applicationLeaves": [
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$35$lambda$34$lambda$33(Lkotlin/jvm/internal/Ref$IntRef:Ljava/util/concurrent/atomic/AtomicBoolean:Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/HashSet:Ljava/util/List:Ljava/util/HashSet:Ljava/util/ArrayList:I[ILjava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:I)Z",
+          "weight": 3
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.rawProjectionRow(Ljava/util/List:Ljava/util/List:Ljava/util/List:Ljava/lang/String:)Ljava/util/Map:",
+          "weight": 1
+        },
+        {
+          "frame": "java.lang.CharacterDataLatin1.toLowerCase(I)I",
+          "weight": 1
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.readInt([[CJ)I",
+          "weight": 1
+        },
+        {
+          "frame": "java.util.Arrays.fill([CIIC)V",
+          "weight": 1
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.count(I)I",
+          "weight": 1
+        },
+        {
+          "frame": "java.util.ArrayList.add(Ljava/lang/Object:[Ljava/lang/Object:I)V",
+          "weight": 1
+        },
+        {
+          "frame": "kotlin.ranges.IntProgression.iterator()Lkotlin/collections/IntIterator:",
+          "weight": 1
+        }
+      ],
+      "findIdLeaves": []
+    },
+    {
+      "side": "rejected133",
+      "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "phase": "initial",
+      "metric": "allocationSampledBytes",
+      "threadClasses": {
+        "application": 1572864
+      },
+      "inclusiveCategories": {
+        "rawProjection": 1572864
+      },
+      "categoryIntersections": [
+        {
+          "categories": [
+            "rawProjection"
+          ],
+          "weight": 1572864
+        }
+      ],
+      "applicationLeaves": [
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.parallelRawDistinctCallSiteStringProjection$lambda$35$lambda$34$lambda$33(Lkotlin/jvm/internal/Ref$IntRef:Ljava/util/concurrent/atomic/AtomicBoolean:Lio/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:Ljava/util/HashSet:Ljava/util/List:Ljava/util/HashSet:Ljava/util/ArrayList:I[ILjava/util/List:Ljava/util/List:Ljava/util/List:Ljava/util/List:I)Z",
+          "weight": 262144
+        },
+        {
+          "frame": "it.unimi.dsi.lang.MutableString.toString()Ljava/lang/String:",
+          "weight": 262144
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.ints.IntOpenHashSet.<init>(IF)V",
+          "weight": 262144
+        },
+        {
+          "frame": "it.unimi.dsi.lang.MutableString.wrap([C)Lit/unimi/dsi/lang/MutableString:",
+          "weight": 262144
+        },
+        {
+          "frame": "java.util.ArrayList.<init>(I)V",
+          "weight": 262144
+        },
+        {
+          "frame": "java.util.ArrayList.iterator()Ljava/util/Iterator:",
+          "weight": 262144
+        }
+      ],
+      "findIdLeaves": []
+    },
+    {
+      "side": "rejected133",
+      "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "phase": "provenance",
+      "metric": "allocationSampledBytes",
+      "threadClasses": {
+        "other": 262144,
+        "application": 39321600
+      },
+      "inclusiveCategories": {
+        "selectedTupleStringIds": 38535168,
+        "selectedProjectionHits": 39059456,
+        "findId": 38273024
+      },
+      "categoryIntersections": [
+        {
+          "categories": [
+            "selectedTupleStringIds",
+            "selectedProjectionHits"
+          ],
+          "weight": 262144
+        },
+        {
+          "categories": [
+            "findId",
+            "selectedTupleStringIds",
+            "selectedProjectionHits"
+          ],
+          "weight": 38273024
+        },
+        {
+          "categories": [
+            "selectedProjectionHits"
+          ],
+          "weight": 524288
+        },
+        {
+          "categories": [],
+          "weight": 262144
+        }
+      ],
+      "applicationLeaves": [
+        {
+          "frame": "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.getArray(I)[C",
+          "weight": 17563648
+        },
+        {
+          "frame": "java.lang.StringUTF16.compress([CII)[B",
+          "weight": 10747904
+        },
+        {
+          "frame": "it.unimi.dsi.lang.MutableString.toString()Ljava/lang/String:",
+          "weight": 5767168
+        },
+        {
+          "frame": "it.unimi.dsi.lang.MutableString.wrap([C)Lit/unimi/dsi/lang/MutableString:",
+          "weight": 4194304
+        },
+        {
+          "frame": "java.lang.StringLatin1.toLowerCase(Ljava/lang/String:[BLjava/util/Locale:)Ljava/lang/String:",
+          "weight": 524288
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.selectedTupleStringIds([ILjava/util/List:Lio/johnsonlee/graphite/webgraph/BufferedGraphWorkConsumer:)[I",
+          "weight": 262144
+        },
+        {
+          "frame": "java.util.concurrent.LinkedBlockingQueue.offer(Ljava/lang/Object:)Z",
+          "weight": 262144
+        }
+      ],
+      "findIdLeaves": [
+        {
+          "frame": "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.getArray(I)[C",
+          "weight": 17563648
+        },
+        {
+          "frame": "java.lang.StringUTF16.compress([CII)[B",
+          "weight": 10747904
+        },
+        {
+          "frame": "it.unimi.dsi.lang.MutableString.toString()Ljava/lang/String:",
+          "weight": 5767168
+        },
+        {
+          "frame": "it.unimi.dsi.lang.MutableString.wrap([C)Lit/unimi/dsi/lang/MutableString:",
+          "weight": 4194304
+        }
+      ]
+    },
+    {
+      "side": "rejected133",
+      "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "phase": "provenance",
+      "metric": "cpuSamples",
+      "threadClasses": {
+        "jit": 68,
+        "other": 2,
+        "application": 64
+      },
+      "inclusiveCategories": {
+        "selectedProjectionHits": 59,
+        "findId": 56,
+        "selectedTupleStringIds": 56
+      },
+      "categoryIntersections": [
+        {
+          "categories": [],
+          "weight": 5
+        },
+        {
+          "categories": [
+            "selectedProjectionHits"
+          ],
+          "weight": 3
+        },
+        {
+          "categories": [
+            "findId",
+            "selectedTupleStringIds",
+            "selectedProjectionHits"
+          ],
+          "weight": 56
+        }
+      ],
+      "applicationLeaves": [
+        {
+          "frame": "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.extract(I[CII)I",
+          "weight": 8
+        },
+        {
+          "frame": "java.lang.StringUTF16.compress([CI[BII)I",
+          "weight": 7
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.StringTable.findId$webgraph(Ljava/lang/String:)I",
+          "weight": 5
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.length(I)I",
+          "weight": 4
+        },
+        {
+          "frame": "java.lang.StringUTF16.compress([CII)[B",
+          "weight": 4
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexView.selectedProjectionHits(Ljava/util/List:Ljava/util/List:ILjava/util/Set:Lio/johnsonlee/graphite/graph/GraphWorkConsumer:Lkotlin/jvm/functions/Function2:)Ljava/util/List:",
+          "weight": 3
+        },
+        {
+          "frame": "it.unimi.dsi.lang.MutableString.wrap([C)Lit/unimi/dsi/lang/MutableString:",
+          "weight": 3
+        },
+        {
+          "frame": "it.unimi.dsi.lang.MutableString.toString()Ljava/lang/String:",
+          "weight": 3
+        },
+        {
+          "frame": "libsystem_kernel.dylib.__psynch_cvwait()L:",
+          "weight": 2
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.BigArrays.copyFromBig([[CJ[CII)V",
+          "weight": 2
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.BigArrays.displacement(J)I",
+          "weight": 2
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.readInt([[CJ)I",
+          "weight": 2
+        },
+        {
+          "frame": "java.lang.String.compareTo(Ljava/lang/String:)I",
+          "weight": 2
+        },
+        {
+          "frame": "it.unimi.dsi.util.FrontCodedStringList.get(I)Lit/unimi/dsi/lang/MutableString:",
+          "weight": 2
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.count(I)I",
+          "weight": 2
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.getArray(I)[C",
+          "weight": 2
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.runDirectStringTasks$submit([Ljava/util/concurrent/CountDownLatch:[Ljava/util/concurrent/atomic/AtomicBoolean:[Ljava/util/concurrent/Future:Ljava/util/concurrent/ExecutorCompletionService:Ljava/util/List:I)V",
+          "weight": 1
+        },
+        {
+          "frame": "java.util.concurrent.FutureTask.<init>(Ljava/util/concurrent/Callable:)V",
+          "weight": 1
+        },
+        {
+          "frame": "jshort_disjoint_arraycopy()L:",
+          "weight": 1
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.objects.AbstractObjectList.ensureRestrictedIndex(I)V",
+          "weight": 1
+        },
+        {
+          "frame": "java.lang.String.coder()B",
+          "weight": 1
+        },
+        {
+          "frame": "java.lang.String.<init>([CIILjava/lang/Void:)V",
+          "weight": 1
+        },
+        {
+          "frame": "java.lang.Math.min(II)I",
+          "weight": 1
+        },
+        {
+          "frame": "libsystem_platform.dylib._platform_memmove()L:",
+          "weight": 1
+        },
+        {
+          "frame": "io.johnsonlee.graphite.cypher.QueryPipeline.executeIndexedDistinctStringProjection$lambda$155$lambda$154(Ljava/util/List:ILjava/util/List:Lio/johnsonlee/graphite/cypher/QueryPipeline:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:ZLjava/util/LinkedHashSet:Ljava/util/List:Ljava/util/List:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringSelectedRowMatcher:Ljava/lang/Class:Lio/johnsonlee/graphite/cypher/QueryPipeline$DirectStringDisjunction:Ljava/util/Set:Ljava/util/List:)Ljava/util/Set:",
+          "weight": 1
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.BigArrays.segment(J)I",
+          "weight": 1
+        },
+        {
+          "frame": "java.lang.StringLatin1.compareTo([B[BII)I",
+          "weight": 1
+        }
+      ],
+      "findIdLeaves": [
+        {
+          "frame": "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.extract(I[CII)I",
+          "weight": 8
+        },
+        {
+          "frame": "java.lang.StringUTF16.compress([CI[BII)I",
+          "weight": 7
+        },
+        {
+          "frame": "io.johnsonlee.graphite.webgraph.StringTable.findId$webgraph(Ljava/lang/String:)I",
+          "weight": 5
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.length(I)I",
+          "weight": 4
+        },
+        {
+          "frame": "java.lang.StringUTF16.compress([CII)[B",
+          "weight": 4
+        },
+        {
+          "frame": "it.unimi.dsi.lang.MutableString.wrap([C)Lit/unimi/dsi/lang/MutableString:",
+          "weight": 3
+        },
+        {
+          "frame": "it.unimi.dsi.lang.MutableString.toString()Ljava/lang/String:",
+          "weight": 3
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.BigArrays.copyFromBig([[CJ[CII)V",
+          "weight": 2
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.BigArrays.displacement(J)I",
+          "weight": 2
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.readInt([[CJ)I",
+          "weight": 2
+        },
+        {
+          "frame": "java.lang.String.compareTo(Ljava/lang/String:)I",
+          "weight": 2
+        },
+        {
+          "frame": "it.unimi.dsi.util.FrontCodedStringList.get(I)Lit/unimi/dsi/lang/MutableString:",
+          "weight": 2
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.count(I)I",
+          "weight": 2
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList.getArray(I)[C",
+          "weight": 2
+        },
+        {
+          "frame": "jshort_disjoint_arraycopy()L:",
+          "weight": 1
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.objects.AbstractObjectList.ensureRestrictedIndex(I)V",
+          "weight": 1
+        },
+        {
+          "frame": "java.lang.String.coder()B",
+          "weight": 1
+        },
+        {
+          "frame": "java.lang.String.<init>([CIILjava/lang/Void:)V",
+          "weight": 1
+        },
+        {
+          "frame": "java.lang.Math.min(II)I",
+          "weight": 1
+        },
+        {
+          "frame": "libsystem_platform.dylib._platform_memmove()L:",
+          "weight": 1
+        },
+        {
+          "frame": "it.unimi.dsi.fastutil.BigArrays.segment(J)I",
+          "weight": 1
+        },
+        {
+          "frame": "java.lang.StringLatin1.compareTo([B[BII)I",
+          "weight": 1
+        }
+      ]
+    },
+    {
+      "side": "rejected133",
+      "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "phase": "other",
+      "metric": "cpuSamples",
+      "threadClasses": {
+        "jit": 7,
+        "application": 3
+      },
+      "inclusiveCategories": {},
+      "categoryIntersections": [
+        {
+          "categories": [],
+          "weight": 3
+        }
+      ],
+      "applicationLeaves": [
+        {
+          "frame": "io.johnsonlee.graphite.cypher.CypherExecutor.materializeResult(Lio/johnsonlee/graphite/cypher/CypherResult:Lio/johnsonlee/graphite/cypher/CypherWorkTracker:)Lio/johnsonlee/graphite/cypher/CypherResult:",
+          "weight": 1
+        },
+        {
+          "frame": "java.lang.invoke.InvokerBytecodeGenerator.classFilePrologue()Ljdk/internal/org/objectweb/asm/ClassWriter:",
+          "weight": 1
+        },
+        {
+          "frame": "java.util.HashMap.putVal(ILjava/lang/Object:Ljava/lang/Object:ZZ)Ljava/lang/Object:",
+          "weight": 1
+        }
+      ],
+      "findIdLeaves": []
+    },
+    {
+      "side": "rejected133",
+      "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "phase": "other",
+      "metric": "allocationSampledBytes",
+      "threadClasses": {
+        "application": 786432
+      },
+      "inclusiveCategories": {},
+      "categoryIntersections": [
+        {
+          "categories": [],
+          "weight": 786432
+        }
+      ],
+      "applicationLeaves": [
+        {
+          "frame": "java.util.LinkedHashMap.newNode(ILjava/lang/Object:Ljava/lang/Object:Ljava/util/HashMap$Node:)Ljava/util/HashMap$Node:",
+          "weight": 262144
+        },
+        {
+          "frame": "java.util.HashMap.resize()[Ljava/util/HashMap$Node:",
+          "weight": 262144
+        },
+        {
+          "frame": "java.util.Arrays.copyOf([BI)[B",
+          "weight": 262144
+        }
+      ],
+      "findIdLeaves": []
+    }
+  ],
+  "limitations": [
+    "One captured replay per revision; no stability, latency fraction, speedup or acceptance conclusion.",
+    "Full-stack serialization checked against independent outer collapsed files; JFR not decoded again by this audit.",
+    "Allocation weights are sampled TLAB/outside-TLAB bytes, not exact objects or total allocated bytes.",
+    "Input versus current graph/JAR hashes independently match; completed.json separately records root pre/post checks."
+  ],
+  "sourceFindings": {
+    "rejected133SelectedTupleLoop": {
+      "path": "/private/tmp/graphite-rejected133-mechanism-ivkvn783/repo/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexView.kt",
+      "lines": [
+        96,
+        98,
+        142,
+        156
+      ],
+      "finding": "Every selected tuple invokes selectedTupleStringIds; each non-null projected value calls findId directly, with no per-call value-ID or property membership map. Missing IDs short circuit the current tuple; successful duplicates/repeated values repeat lookup."
+    },
+    "frozenMainRawLocalCaches": {
+      "path": "/Users/johnsonlee/.codex/worktrees/ac7b5da2-2450-48c5-894c-5fd84ab6cb7d/graphite/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt",
+      "lines": [
+        508,
+        509,
+        520,
+        523
+      ],
+      "finding": "selectedStringIds.getOrPut caches positive and negative value-to-ID results across selected tuples in this storage call; selectedPropertyMembership caches property-specific membership by packed property/string ID."
+    },
+    "stringTableLookup": {
+      "path": "/private/tmp/graphite-rejected133-mechanism-ivkvn783/repo/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/StringTable.kt",
+      "lines": [
+        40,
+        46,
+        115
+      ],
+      "sameSourceInBothRevisions": true,
+      "finding": "Loaded tables have null indexMap. findId binary searches and calls list.get(middle).toString().compareTo(s), causing repeated front-coded extraction and temporary strings. Existing work accounting per selected projection field is not an exact count of internal binary-search comparisons or allocations."
+    }
+  }
+}

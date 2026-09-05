@@ -580,6 +580,236 @@ class GraphStoreTest {
     }
 
     @Test
+    fun `mapped selected tuples preserve earliest source order and reject recombined strings`() {
+        withMappedTupleFixture { _, values, dir ->
+            (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { loaded ->
+                val selected = linkedSetOf(
+                    values[1],
+                    listOf(values[0][0], values[0][1], values[1][2], values[1][3]),
+                    values[0],
+                    listOf("missing", values[0][1], values[0][2], values[0][3])
+                )
+                val rows = assertNotNull(loaded.distinctStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    listOf(mappedTuplePredicate()),
+                    mappedTupleProperties,
+                    limit = 10,
+                    selectedValues = selected,
+                    workConsumer = mappedTupleWorkConsumer()
+                ))
+                val expected = loaded.nodes(CallSiteNode::class.java).map { node ->
+                    mappedTupleValues(node) to loaded.stringPropertyNodeOrder(node)
+                }.filter { it.first in selected }.distinctBy { it.first }.toList()
+                assertEquals(setOf(values[0], values[1]), expected.map { it.first }.toSet())
+                assertEquals(expected.map { it.first }, rows.map { it.values })
+                assertEquals(expected.map { it.second }, rows.map { it.encounterOrder })
+                val limited = loaded.distinctStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    listOf(mappedTuplePredicate()),
+                    mappedTupleProperties,
+                    limit = 1,
+                    selectedValues = selected,
+                    workConsumer = mappedTupleWorkConsumer()
+                )
+                assertEquals(expected.take(1).map { it.first }, limited?.map { it.values })
+                val disjunction = loaded.distinctStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    listOf(mappedTuplePredicate().copy(expected = "missing"),
+                        StringPropertyPredicate("callee_name", null, StringMatchMode.EQUALS, "invokeY")),
+                    mappedTupleProperties,
+                    limit = 10,
+                    selectedValues = selected,
+                    workConsumer = mappedTupleWorkConsumer()
+                )
+                assertEquals(listOf(values[1]), disjunction?.map { it.values })
+                assertTrue(loaded.isMappedCallSiteStringIndexViewInitialized())
+                assertFalse(loaded.isCallSiteStringIndexInitialized())
+                assertFalse(loaded.hasExactCallSiteProjectionTupleIndex())
+                assertEquals(0L, loaded.callSiteStringIndexBytes())
+                assertEquals(0L, loaded.callSiteParallelScanCount())
+            }
+        }
+    }
+
+    @Test
+    fun `mapped selected tuples preserve duplicate and null columns with partial projection fallback`() {
+        withMappedTupleFixture { _, values, dir ->
+            (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { loaded ->
+                val properties = listOf("callee_name", "caller_class", "graphId", "caller_name",
+                    "callee_class", "class", "caller_name", "name")
+                fun projected(index: Int): List<String?> = listOf(values[index][3], values[index][0], null,
+                    values[index][1], values[index][2], null, values[index][1], null)
+                val first = projected(0)
+                val second = projected(1)
+                val selected = linkedSetOf(
+                    second,
+                    first.toMutableList().apply { this[6] = values[1][1] },
+                    first.toMutableList().apply { this[2] = "another-graph" },
+                    first.toMutableList().apply { this[5] = "not-null" },
+                    first.toMutableList().apply { this[4] = null },
+                    emptyList(),
+                    first
+                )
+                val rows = loaded.distinctStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    listOf(mappedTuplePredicate()),
+                    properties,
+                    limit = 10,
+                    selectedValues = selected,
+                    workConsumer = mappedTupleWorkConsumer()
+                )
+                val expected = loaded.nodes(CallSiteNode::class.java).map(::mappedTupleValues)
+                    .filter { it == values[0] || it == values[1] }.distinct().map { row ->
+                        listOf(row[3], row[0], null, row[1], row[2], null, row[1], null)
+                    }.toList()
+                assertEquals(setOf(first, second), expected.toSet())
+                assertEquals(expected, rows?.map { it.values })
+                assertEquals(0L, loaded.callSiteParallelScanCount())
+                val partial = loaded.distinctStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    listOf(StringPropertyPredicate("callee_name", null, StringMatchMode.CONTAINS, "invokeY")),
+                    projectedProperties = listOf("caller_class"),
+                    limit = 1,
+                    selectedValues = setOf(listOf("example.TargetA"), listOf("example.TargetB")),
+                    workConsumer = mappedTupleWorkConsumer()
+                )
+                assertEquals(listOf(listOf("example.TargetB")), partial?.map { it.values })
+                assertEquals(1L, loaded.callSiteParallelScanCount())
+                assertFalse(loaded.isCallSiteStringIndexInitialized())
+                assertFalse(loaded.hasExactCallSiteProjectionTupleIndex())
+            }
+        }
+    }
+
+    @Test
+    fun `mapped selected tuple validates the whole chosen posting before limit one`() {
+        withMappedTupleFixture { graph, values, dir ->
+            val indexFile = dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE)
+            val bytes = Files.readAllBytes(indexFile)
+            val mapped = ByteBuffer.wrap(bytes).order(ByteOrder.BIG_ENDIAN)
+            val uniqueCount = mapped.getInt(4 * Int.SIZE_BYTES + CALL_SITE_STRING_INDEX_CONTENT_IDENTITY_BYTES)
+            val selectedClassId = StringTable.load(dir).findId(values[0][0])
+            val row = (0 until uniqueCount).single { index ->
+                mapped.getInt(CALL_SITE_STRING_INDEX_HEADER_BYTES + index * Int.SIZE_BYTES) == selectedClassId
+            }
+            val endsOffset = CALL_SITE_STRING_INDEX_HEADER_BYTES + uniqueCount * Int.SIZE_BYTES
+            val start = if (row == 0) 0 else mapped.getInt(endsOffset + (row - 1) * Int.SIZE_BYTES)
+            val end = mapped.getInt(endsOffset + row * Int.SIZE_BYTES)
+            assertEquals(3, end - start)
+            val offset = CALL_SITE_STRING_INDEX_HEADER_BYTES + uniqueCount * Int.SIZE_BYTES * 2 + start * Int.SIZE_BYTES
+            val postings = (0 until 3).map { mapped.getInt(offset + it * Int.SIZE_BYTES) }
+            assertEquals(0, postings.first())
+            assertEquals(setOf(0, 2, 3), postings.toSet())
+            // Keep the first valid hit intact; LIMIT 1 must not hide corruption later in its posting.
+            mapped.putInt(offset + Int.SIZE_BYTES, postings[2])
+            mapped.putInt(offset + 2 * Int.SIZE_BYTES, postings[1])
+            rewriteCallSiteStringIndexChecksum(bytes)
+            Files.write(indexFile, bytes)
+
+            (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { loaded ->
+                val rows = loaded.distinctStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    listOf(mappedTuplePredicate()),
+                    mappedTupleProperties,
+                    limit = 1,
+                    selectedValues = setOf(values[0]),
+                    workConsumer = mappedTupleWorkConsumer()
+                )
+                assertEquals(listOf(values[0]), rows?.map { it.values })
+                assertEquals(loaded.stringPropertyNodeOrder(assertNotNull(graph.node(NodeId(0)))), rows?.single()?.encounterOrder)
+                assertEquals(1L, loaded.callSiteParallelScanCount(), "Invalid posting must use the complete raw fallback")
+                assertTrue(loaded.isMappedCallSiteStringIndexViewInitialized())
+                assertFalse(loaded.isCallSiteStringIndexInitialized())
+            }
+        }
+    }
+
+    @Test
+    fun `mapped selected tuple work rejection and cancellation preserve retry correctness`() {
+        withMappedTupleFixture { _, values, dir ->
+            (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { loaded ->
+                fun lookup(work: PreferredMappedStringIndexViewGraphWorkBatchConsumer) =
+                    loaded.distinctStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(mappedTuplePredicate()),
+                        mappedTupleProperties,
+                        limit = 1,
+                        selectedValues = setOf(values[0]),
+                        workConsumer = work
+                    )
+                assertEquals(emptyList(), loaded.distinctStringPropertyDisjunction(
+                    CallSiteNode::class.java, listOf(mappedTuplePredicate()), mappedTupleProperties,
+                    limit = 1, selectedValues = emptySet(), workConsumer = mappedTupleWorkConsumer()
+                ))
+                assertEquals(listOf(values[0]), lookup(mappedTupleWorkConsumer())?.map { it.values })
+                val workUnits = AtomicLong()
+                val rejection = CypherBudgetExceededException(0)
+                val budgetFailure = assertFailsWith<CypherBudgetExceededException> {
+                    lookup(mappedTupleWorkConsumer { work ->
+                        workUnits.addAndGet(work)
+                        throw rejection
+                    })
+                }
+                assertSame(rejection, budgetFailure)
+                assertTrue(workUnits.get() > 0)
+                val cancellation = CancellationException("cancelled selected tuple lookup")
+                assertSame(cancellation, assertFailsWith<CancellationException> {
+                    lookup(mappedTupleWorkConsumer { throw cancellation })
+                })
+                assertEquals(listOf(values[0]), lookup(mappedTupleWorkConsumer())?.map { it.values })
+                assertEquals(0L, loaded.callSiteParallelScanCount())
+                assertFalse(loaded.isCallSiteStringIndexInitialized())
+                assertFalse(loaded.hasExactCallSiteProjectionTupleIndex())
+            }
+        }
+    }
+
+    private fun mappedTupleValues(node: CallSiteNode): List<String> = listOf(
+        node.caller.declaringClass.className, node.caller.name,
+        node.callee.declaringClass.className, node.callee.name
+    )
+
+    private val mappedTupleProperties = listOf("caller_class", "caller_name", "callee_class", "callee_name")
+
+    private fun mappedTuplePredicate() =
+        StringPropertyPredicate("caller_class", StringValueTransform.LOWERCASE, StringMatchMode.CONTAINS, "target")
+
+    private fun mappedTupleWorkConsumer(onWork: (Long) -> Unit = {}) =
+        object : PreferredMappedStringIndexViewGraphWorkBatchConsumer {
+            override val segmentWorkerCount: Int = 1
+            override fun consume() = onWork(1L)
+            override fun consume(workUnits: Long) = onWork(workUnits)
+        }
+
+    private fun withMappedTupleFixture(action: (Graph, List<List<String>>, Path) -> Unit) {
+        val values = listOf(
+            listOf("example.TargetA", "callA", "example.DependencyX", "invokeX"),
+            listOf("example.TargetB", "callB", "example.DependencyY", "invokeY"),
+            listOf("example.TargetA", "callA", "example.DependencyX", "invokeX"),
+            listOf("example.TargetA", "callB", "example.DependencyY", "invokeX"),
+            listOf("example.TargetB", "callA", "example.DependencyX", "invokeY")
+        )
+        val methodReturn = TypeDescriptor("void")
+        val graph = DefaultGraph.Builder().apply {
+            repeat(4_096) { index ->
+                val tuple = values.getOrElse(index) { listOf("example.Other", "other", "example.OtherDependency", "ignore") }
+                addNode(CallSiteNode(NodeId(index),
+                    MethodDescriptor(TypeDescriptor(tuple[0]), tuple[1], emptyList(), methodReturn),
+                    MethodDescriptor(TypeDescriptor(tuple[2]), tuple[3], emptyList(), methodReturn),
+                    index, null, emptyList()))
+            }
+        }.build()
+        val dir = Files.createTempDirectory("webgraph-mapped-selected-tuples")
+        try {
+            System.clearProperty(GraphStore.MAPPED_CALL_SITE_INDEX_PREPARATION_PROPERTY)
+            GraphStore.save(graph, dir, prepareCallSiteStringIndex = true)
+            action(graph, values, dir)
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
     fun `mapped posting merge falls back before limit when a checksum-valid range is out of order`() {
         val returnType = TypeDescriptor("void")
         val graph = DefaultGraph.Builder().apply {

@@ -5132,3 +5132,129 @@ method compatibility is a regression; end-to-end and hosted global/routing
 conclusions remain unavailable until their own authoritative results exist.
 
 [Independent CI failure audit](profiling/attempt137/ci/ci-audit.md) confirms the original JMH CPU scores, reverse confirmations and ten matching scenario signatures.
+
+
+**Terminal CI follow-up:** Attempt 137 candidate benchmark `33988242513` ultimately
+ended cancelled after the revert; its two completed, reverse-confirmed Method 4
+CPU failures remain the rejection evidence. Cancelled large-corpus/routing/global
+jobs are unavailable, not passes. Revert `e6c932c5` unit `33988848638` passes and
+benchmark `33988848640` fails: Method 17 OR CPU is 1.95→3.17 s and 2.18→3.41 s in
+confirmation; Method 36 contains is 5.00→5.88 s and 5.11→6.02 s. Global-wide P95
+regresses in all three pairs; routing passes. Equal recorded binary hashes do not
+waive the failures. [Candidate terminal receipt](profiling/attempt137/ci/terminal-receipt.json)
+and [complete revert audit](profiling/attempt137/revert-ci/README.md) preserve the
+original values and terminal snapshots.
+
+**Profiling follow-up, not a new accepted attempt:** a diagnostic JAR rebuilt from
+exact rejected Attempt 133 source retains its original rejection. One original-34
+recording per revision verifies 68 oracle signatures and full phase/outer-stack
+conservation. Rebuilt-133 dense provenance has 56/64 application CPU samples in
+findId, nested inside selectedTupleStringIds/selectedProjectionHits; these counts
+are not additive. FindId sampled allocation is 38,273,024 bytes versus main's
+2,621,440 bytes. Source inspection shows repeated tuple string resolution bypassed
+main raw's invocation-local ID/membership reuse. This identifies work omitted by
+small posting-cardinality counts, not stable speedup or acceptance evidence.
+[Rebuild provenance and residual audit](profiling/distinct-projection-work/rejected133-residual/README.md).
+
+
+### 2026-09-06 - Attempt 138: Project DISTINCT candidates through validated mapped postings
+
+**Hypothesis:** warm DISTINCT has two measured costs: initial selection still
+raw-scans 104,566 CallSites for 12 matches; dense selected-tuple provenance
+performs both predicate discovery and raw projection. Use the immutable mapped
+index for candidate projection. Initial selection uses its existing physical-order
+posting merge only when the exact occurrence upper bound cannot fill LIMIT;
+selected complete-four-property tuples use their shortest fully validated
+posting. Preserve main raw's invocation-local String→ID and property-membership
+reuse in that selected-tuple path. The rejected-133 diagnostic above explains
+why tiny candidate cardinality alone did not remove repeated dictionary work.
+[Phase attribution, source audit and independent candidate census](profiling/distinct-projection-work/README.md).
+
+This is one mapped candidate-projection direction; no StringTable implementation,
+persisted format, global cache, validator, compiler, scheduler, thread pool,
+benchmark or gate changes are included. Retained-heap, raw and unsupported
+fallback paths remain. Posting order must be fully validated before LIMIT;
+null/repeated/graphId columns, original predicates, physical order, complete
+source provenance, budget and cancellation semantics remain required.
+
+Candidate parent is explicit revert `e6c932c5e1d0fb7b583ceb9e14c8ef88ec9d9694`;
+reference remains frozen main `4e328b0109e13c896b74004823fb049fcb19251a`.
+The unchanged real fixture64 manifest SHA256 is
+`fe66cc84f6d8ee95c49b49ad500f921b304f0160c2ae094621683bb4db94ea6b`:
+64 persisted class shards across Android 14, Tika 2.9.2, Hive 4.0.0 and Kotlin
+compiler 2.0.21, 5,046,935 CallSites, not synthetic performance data.
+Exact commands/artifacts: `/private/tmp/graphite-attempt138.7ihszrob`.
+The prespecified [measurement plan](profiling/attempt138/measurement-plan.json)
+requires unchanged regression bounds plus strict global P95 progress in every
+old34 pair before additional v3 pairs and exact-head full CI. There is no
+accepted optimization at this point.
+
+**Correctness:** 192 WebGraph tests in six suites pass, with zero failures,
+errors or skips; detekt, JMH packaging and test-exclusion checks pass. All five
+new behavior tests actually ran. Independent source review compares all 130
+main/JMH files with frozen main; only the two intended production files differ.
+Candidate JAR SHA256:
+`2c419ac0b9d996af0890d1c857f81fa3479c170f59306fe35517a6e90cf7b5bf`.
+[Build receipt](profiling/attempt138/build-receipt.json),
+[independent build audit](profiling/attempt138/independent-build-audit.md),
+[combined source review](profiling/attempt138/combined-review.md).
+The separate real v3 control passes all 36 complete value/order/provenance
+comparisons and before/after graph-content checks; it is not a P95 measurement.
+
+**Original-34 local paired result:** unchanged regression-only comparison passes,
+and global P95 strictly improves in all three pairs. Final 10x is false.
+
+| Pair/order | Main → candidate P95 (ms) | Main → candidate CPU (s) | Peak heap (GiB) | Peak RSS (GiB) |
+|---|---:|---:|---:|---:|
+| 1 candidate-base | 56.735 → 19.399 | 1.573797 → 1.275374 | 4.38 → 4.38 | 4.92 → 4.86 |
+| 2 base-candidate | 53.315 → 22.333 | 1.576525 → 1.305471 | 4.39 → 4.11 | 4.91 → 4.57 |
+| 3 candidate-base | 37.082 → 20.844 | 1.445943 → 1.256500 | 4.39 → 4.27 | 4.91 → 4.75 |
+
+This is the original percentile across 34 different query cases, not repeated
+samples of one query. Pair 1 wrapped non-DISTINCT shape P95 is slightly slower
+(0.94x); no universal improvement is claimed. Full per-row and resource evidence
+is in the [original comparison](profiling/attempt138/old34-pairs/global-wide-report.md)
+and [status](profiling/attempt138/old34-pairs/global-wide-status.json).
+Additional pure-four-OR/multi-keyword v3 pairs and exact-head CI remain pending.
+No CallSite pool has been removed; the final 10x goal remains unmet.
+
+
+[Independent old34 audit](profiling/attempt138/independent-old34-audit.md) verifies
+all 204 complete 14-field oracle signatures and recomputes all six rank-33 P95
+values; DISTINCT dense remains the determining row in both revisions. It
+retains 47 slower observations out of 102 comparisons, including three IDs
+slower in every pair. None simultaneously exceeds +15% and +1 ms; smaller
+slowdowns remain visible. Targeted work falls 106,706→2,370 and raw parallel
+scans 2→0; dense work falls 283,544→22,365 and scans 2→1. All hit/source/access,
+execution-path and index-lookup counters are unchanged. Work counts are not
+CPU instructions or proof of speedup; the measured paired latency is separate.
+
+
+**Final decision: rejected; explicit source/test revert follows the attempt record.**
+All 216 v3 observations match full values/order/provenance (37,026 returned rows),
+with six unchanged before/after graph inventories. However, the added workload
+finds two repeated regressions under the same >15% and >1 ms per-query bounds:
+
+| Query | Pair 1 main → candidate (ms) | Pair 3 main → candidate (ms) |
+|---|---:|---:|
+| Four-term mixed, two-hit-graph rows | 210.399375 → 271.733125 (+29.151%) | 312.862792 → 720.623958 (+130.332%) |
+| Pure four-OR, 55-hit-graph DISTINCT | 149.365542 → 185.582709 (+24.247%) | 152.262625 → 192.266333 (+26.273%) |
+
+The audit retains all 108 paired observations, including 86 slower values and
+40 work-counter changes; all other observed fields match. Pure four-OR has 32
+slower observations out of 36 pairs. Faster all-64 DISTINCT observations and the
+old34 aggregate P95 pass do not override these repeated regressions. There are
+only three observations per query; no repeated-query P95 is asserted.
+[Full 36-query table](profiling/attempt138/v3-pairs/README.md),
+[independent full-output audit](profiling/attempt138/independent-v3-audit.md),
+[decision](profiling/attempt138/decision.json).
+
+No candidate CI is submitted after this local rejection; method-level and
+end-to-end CI performance are therefore unavailable for Attempt 138, not passes.
+The original-34 local CPU/heap/RSS results above are separate evidence and do not
+supply those missing conclusions. No failing measurement is rerun or waived.
+Both production files and the two tests whose path assertions require the
+candidate are restored to e6c in the explicit revert; their exact attempted
+versions remain in the attempt commit. Existing pure-four-OR correctness tests,
+all profiling evidence and this chronological record remain. No optimization
+is accepted, CallSite pools remain, and the final 10x goal is unmet.

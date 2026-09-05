@@ -162,3 +162,11 @@ Attempt 137 只把持久索引完整校验的逐元素回调改为 `IntConsumer`
 
 
 [Attempt 137 机制复核](attempt137/mechanism/README.md) 确认校验逐元素回调的装箱热点大幅减少，但 [Method4 count](attempt137/ci/method4-aggregate/method-compatibility-4-aggregate-cpu-report.md) 和 [middle](attempt137/ci/method4-position/method-compatibility-4-position-cpu-report.md) 的重复 CPU 退化阻止验收。局部热点改善没有成为可保留的整体优化。
+
+
+Attempt 138 基于上述 warm 阶段诊断尝试 mapped posting DISTINCT 投影：稀疏初始选择
+使用已验证 posting 合并，所选元组来源补全使用最短 posting 并保留调用内字符串解析复用。
+旧 34 条 P95 三组改善 2.92×、2.39×、1.78×，但新增 36 条覆盖发现纯四词 OR 的
+55 图 DISTINCT 两次退化：149.366→185.583 ms、152.263→192.266 ms；混合四词
+普通投影也重复退化。完整结果正确不能抵消性能回归，这轮拒绝并显式回退，未提交
+候选 CI。[完整配对表](attempt138/v3-pairs/README.md)、[独立审计](attempt138/independent-v3-audit.md)。

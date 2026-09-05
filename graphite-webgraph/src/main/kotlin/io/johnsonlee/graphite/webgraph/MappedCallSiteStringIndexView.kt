@@ -4,6 +4,7 @@ package io.johnsonlee.graphite.webgraph
 
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.StringMatchMode
+import io.johnsonlee.graphite.graph.StringPropertyDistinctRow
 import io.johnsonlee.graphite.graph.StringPropertyPredicate
 import io.johnsonlee.graphite.graph.StringValueTransform
 import it.unimi.dsi.lang.MutableString
@@ -64,6 +65,136 @@ internal class MappedCallSiteStringIndexView private constructor(
     ): Boolean {
         val values = propertyStringIds.getOrNull(propertyIndex) ?: return false
         return binarySearch(values, stringId, workConsumer) >= 0
+    }
+
+    /**
+     * A provenance recheck already knows each complete tuple. Search its shortest existing
+     * property posting rather than enumerating predicate matches and scanning the graph again.
+     * Resolve repeated values and property membership once per invocation, as the raw path does.
+     * Unsupported projections and invalid posting order retain the caller's raw-scan fallback.
+     */
+    @Suppress("CyclomaticComplexMethod", "LoopWithTooManyJumpStatements")
+    fun selectedProjectionHits(
+        predicates: List<StringPropertyPredicate>,
+        projectedProperties: List<String>,
+        limit: Int,
+        selectedValues: Set<List<String?>>,
+        workConsumer: GraphWorkConsumer?,
+        readStringIds: (Int, IntArray) -> Unit
+    ): List<StringPropertyDistinctRow>? {
+        val propertyIndexes = projectedProperties.map(::callSiteStringPropertyIndex).toIntArray()
+        if ((0 until CALL_SITE_STRING_PROPERTY_COUNT).any { it !in propertyIndexes }) return null
+        val predicateValueIndexes = predicates.map { predicate ->
+            val propertyIndex = callSiteStringPropertyIndex(predicate.property)
+            if (propertyIndex < 0) return null
+            propertyIndexes.indexOf(propertyIndex).takeIf { it >= 0 } ?: return null
+        }
+        if (limit <= 0 || selectedValues.isEmpty()) return emptyList()
+        val rows = ArrayList<StringPropertyDistinctRow>(minOf(limit, selectedValues.size))
+        val actualIds = IntArray(CALL_SITE_STRING_PROPERTY_COUNT)
+        val selectedStringIds = HashMap<String, Int>()
+        val selectedPropertyMembership = HashMap<Long, Boolean>()
+        val accounting = BufferedGraphWorkConsumer(workConsumer)
+        try {
+            for (values in selectedValues) {
+                checkViewInterrupted()
+                val ids = selectedTupleStringIds(
+                    propertyIndexes,
+                    values,
+                    accounting,
+                    selectedStringIds,
+                    selectedPropertyMembership,
+                    workConsumer
+                ) ?: continue
+                val matches = predicates.indices.any { index ->
+                    accounting.consume()
+                    val predicate = predicates[index]
+                    val actual = values[predicateValueIndexes[index]] ?: return@any false
+                    stringMatches(actual, predicate.transform, predicate.mode, predicate.expected)
+                }
+                if (!matches) continue
+                val anchor = selectedTupleAnchor(ids, workConsumer) ?: continue
+                val (propertyIndex, range) = anchor
+                val cursor = validatedPostingCursor(
+                    propertyIndex,
+                    range.row,
+                    propertyPostingNodeIds[propertyIndex],
+                    range.positions,
+                    workConsumer
+                ) ?: return null
+                val order = selectedTupleEncounterOrder(cursor, ids, actualIds, accounting, readStringIds) ?: continue
+                rows += StringPropertyDistinctRow(order, values)
+            }
+        } finally {
+            accounting.flush()
+        }
+        return rows.sortedBy(StringPropertyDistinctRow::encounterOrder).take(limit)
+    }
+
+    private fun selectedTupleEncounterOrder(
+        cursor: MappedPostingCursor,
+        ids: IntArray,
+        actualIds: IntArray,
+        accounting: BufferedGraphWorkConsumer,
+        readStringIds: (Int, IntArray) -> Unit
+    ): Long? {
+        var visited = 0
+        while (cursor.hasCurrent()) {
+            if ((visited++ and VIEW_INTERRUPTION_POLL_MASK) == 0) checkViewInterrupted()
+            accounting.consume()
+            readStringIds(cursor.nodeId, actualIds)
+            if (actualIds.contentEquals(ids)) return cursor.order
+            cursor.advance()
+        }
+        return null
+    }
+
+    private fun selectedTupleStringIds(
+        propertyIndexes: IntArray,
+        values: List<String?>,
+        accounting: BufferedGraphWorkConsumer,
+        selectedStringIds: MutableMap<String, Int>,
+        selectedPropertyMembership: MutableMap<Long, Boolean>,
+        workConsumer: GraphWorkConsumer?
+    ): IntArray? {
+        if (values.size != propertyIndexes.size) return null
+        val ids = IntArray(CALL_SITE_STRING_PROPERTY_COUNT) { -1 }
+        for (index in propertyIndexes.indices) {
+            accounting.consume()
+            val propertyIndex = propertyIndexes[index]
+            val value = values[index]
+            if (propertyIndex < 0) {
+                if (value != null) return null
+            } else {
+                if (value == null) return null
+                val stringId = selectedStringIds.getOrPut(value) { stringTable.findId(value) }
+                if (stringId < 0) return null
+                if (ids[propertyIndex] >= 0 && ids[propertyIndex] != stringId) return null
+                val membershipKey = propertyIndex.toLong() shl Int.SIZE_BITS or
+                    (stringId.toLong() and UINT_MASK)
+                val present = selectedPropertyMembership.getOrPut(membershipKey) {
+                    containsPropertyStringId(propertyIndex, stringId, workConsumer)
+                }
+                if (!present) return null
+                ids[propertyIndex] = stringId
+            }
+        }
+        return ids
+    }
+
+    private fun selectedTupleAnchor(
+        ids: IntArray,
+        workConsumer: GraphWorkConsumer?
+    ): Pair<Int, IndexedPostingRange>? {
+        var anchor: Pair<Int, IndexedPostingRange>? = null
+        for (propertyIndex in ids.indices) {
+            val range = postingRange(propertyIndex, ids[propertyIndex], workConsumer) ?: return null
+            val previous = anchor?.second?.positions
+            if (previous == null || range.positions.last - range.positions.first < previous.last - previous.first) {
+                anchor = propertyIndex to range
+            }
+        }
+        return anchor
     }
 
     fun exactMatchingStringIds(

@@ -395,6 +395,21 @@ internal class MappedWebGraphBackedGraph(
             null
         }
         val mappedView = if (retainedIndex == null) mappedCallSiteStringIndexView(workConsumer) else null
+        if (selectedValues != null && mappedView != null &&
+            workConsumer is PreferredMappedStringIndexViewGraphWorkBatchConsumer
+        ) {
+            mappedView.selectedProjectionHits(
+                predicates,
+                projectedProperties,
+                limit,
+                selectedValues,
+                workConsumer,
+                ::readRawCallSiteStringIds
+            )?.let { rows ->
+                callSiteStringProjectionLookupCount.incrementAndGet()
+                return rows
+            }
+        }
         val exactMatches = if (workConsumer is SplitGraphWorkBatchConsumer) {
             retainedIndex?.exactMatchingStringIds(predicates, workConsumer)
                 ?: mappedView?.exactMatchingStringIds(predicates, workConsumer)
@@ -402,6 +417,21 @@ internal class MappedWebGraphBackedGraph(
             null
         }
         if (exactMatches?.all(IntArray::isEmpty) == true) return emptyList()
+        if (selectedValues == null && mappedView != null && exactMatches != null &&
+            workConsumer is PreferredMappedStringIndexViewGraphWorkBatchConsumer
+        ) {
+            mappedSparseDistinctCallSiteStringProjection(
+                mappedView,
+                predicates,
+                projectedProperties,
+                limit,
+                exactMatches,
+                workConsumer
+            )?.let { rows ->
+                callSiteStringProjectionLookupCount.incrementAndGet()
+                return rows
+            }
+        }
         if (exactMatches != null && workConsumer is SplitGraphWorkBatchConsumer) {
             parallelRawDistinctCallSiteStringProjection(
                 predicates,
@@ -455,6 +485,55 @@ internal class MappedWebGraphBackedGraph(
             selectedValues,
             workConsumer
         )
+    }
+
+    private fun mappedSparseDistinctCallSiteStringProjection(
+        mappedView: MappedCallSiteStringIndexView,
+        predicates: List<StringPropertyPredicate>,
+        projectedProperties: List<String>,
+        limit: Int,
+        exactMatchingStringIds: List<IntArray>,
+        workConsumer: GraphWorkConsumer
+    ): List<StringPropertyDistinctRow>? {
+        if (limit <= 0) return emptyList()
+        if (mappedView.exactMatchesCanFillLimit(predicates, exactMatchingStringIds, limit, workConsumer)) {
+            return null
+        }
+        val nodeIds = mappedView.matchingNodeIds(predicates, exactMatchingStringIds, workConsumer) ?: return null
+        val propertyIndexes = projectedProperties.map(::callSiteStringPropertyIndex)
+        val stringIds = IntArray(CALL_SITE_STRING_PROPERTY_COUNT)
+        val seen = HashSet<List<Int>>()
+        val rows = ArrayList<StringPropertyDistinctRow>()
+        val accounting = BufferedGraphWorkConsumer(workConsumer)
+        try {
+            for (nodeId in nodeIds) {
+                if (Thread.currentThread().isInterrupted) {
+                    throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED)
+                }
+                accounting.consume()
+                readRawCallSiteStringIds(nodeId, stringIds)
+                val values = propertyIndexes.map { index -> if (index < 0) -1 else stringIds[index] }
+                if (seen.add(values)) {
+                    rows += StringPropertyDistinctRow(
+                        nodeOffsets.offset(nodeId),
+                        values.map { id -> if (id < 0) null else stringTable.get(id) }
+                    )
+                    if (rows.size >= limit) break
+                }
+            }
+        } finally {
+            accounting.flush()
+        }
+        return rows
+    }
+
+    private fun readRawCallSiteStringIds(nodeId: Int, stringIds: IntArray) {
+        withRawCallSiteStringIds(nodeId) { callerClass, callerName, calleeClass, calleeName ->
+            stringIds[CALLER_CLASS_PROPERTY_INDEX] = callerClass
+            stringIds[CALLER_NAME_PROPERTY_INDEX] = callerName
+            stringIds[CALLEE_CLASS_PROPERTY_INDEX] = calleeClass
+            stringIds[CALLEE_NAME_PROPERTY_INDEX] = calleeName
+        }
     }
 
     private fun serialCallSitePredicatesCannotMatch(

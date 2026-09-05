@@ -1,0 +1,11 @@
+{
+  "frozenTargetRef": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "targetSpeedup": 10,
+  "currentHead": "e6c932c5e1d0fb7b583ceb9e14c8ef88ec9d9694",
+  "currentPrBase": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "lastAcceptedRef": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "regressionRefs": [
+    "4e328b0109e13c896b74004823fb049fcb19251a"
+  ],
+  "acceptedRunIds": null
+}

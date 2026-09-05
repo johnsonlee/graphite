@@ -1,0 +1,25 @@
+{
+  "baseRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "candidateParent": "e6c932c5e1d0fb7b583ceb9e14c8ef88ec9d9694",
+  "direction": "Use validated mapped postings for DISTINCT candidate projection: sparse initial selection and selected tuple provenance use the same existing immutable index, preserving main-style invocation-local string-ID/property-membership reuse.",
+  "evidence": [
+    "Main targeted initial raw projection includes75/76,74/79,60/66 application CPU samples and scans104566CallSites for12matches.",
+    "Dense main provenance has material raw projection and matching-string-discovery samples; reference selected anchor postings sum53 across later63sources, not a runtime cost.",
+    "Reconstructed rejected133 still spends56/64 provenance application CPU samples and38273024sampled allocation bytes in repeated StringTable.findId; source lacked main raw invocation-local ID/membership reuse. Rejection remains final."
+  ],
+  "scope": [
+    "Preferred mapped view DISTINCT only; keep retained heap and unsupported fallback behavior.",
+    "Initial posting projection only when exact occurrence count cannot fill LIMIT; use existing eager selected-range validation and physical-order merge.",
+    "Selected complete-four-property tuples resolve each distinct string and corresponding-property membership once per invocation, then inspect shortest fully validated posting; preserve exact predicate, repeated/null/graphId columns, encounter order and full provenance.",
+    "No persisted format, global cache, validator, scheduler, thread pool, compiler, benchmark or threshold change."
+  ],
+  "verification": [
+    "Relevant webgraph tests and detekt; JMH build/exclusion, independent source review.",
+    "One real v3 36-query full correctness control.",
+    "Three unchanged original34 alternating pairs; require regression bounds and strict global P95 progress in every pair.",
+    "Only if local conditions pass, three v3 alternating pairs then exact-head full CI.",
+    "One attempt commit; failed implementation explicitly reverted; no gate relaxation/retry."
+  ],
+  "accepted": false,
+  "finalGoal": "Remove CallSite pools and reach10x frozen-main global P95 without regressions; this attempt alone does not assert completion."
+}

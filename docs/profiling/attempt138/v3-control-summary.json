@@ -1,0 +1,449 @@
+{
+  "schema": "graphite-multi-keyword-profile-v2",
+  "catalogSchema": "graphite-wide-query-oracle-v3",
+  "queryCount": 36,
+  "inputs": {
+    "trustedJar": {
+      "path": "/private/tmp/graphite-next-baseline.T2FTs9/graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT-jmh.jar",
+      "sha256": "a5c2db2b0020798488916ec86902459d1044a7dcef606a73e00055883cdf5abe"
+    },
+    "runtimeJar": {
+      "path": "/private/tmp/graphite-attempt138.7ihszrob/candidate-jmh.jar",
+      "sha256": "2c419ac0b9d996af0890d1c857f81fa3479c170f59306fe35517a6e90cf7b5bf"
+    },
+    "manifest": {
+      "path": "/private/tmp/pr113-attempt131-ascii.JqgmHw/fixture64/graphs.tsv",
+      "sha256": "fe66cc84f6d8ee95c49b49ad500f921b304f0160c2ae094621683bb4db94ea6b"
+    },
+    "catalog": {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/oracle-v3/catalog.json",
+      "sha256": "bbc5ac76df7f3109aaeb9f45fd4acb5234117da4f0f03365cbb0e196c1d785f3"
+    },
+    "workloads": {
+      "path": "/private/tmp/graphite-main-profiling-n50joikp/oracle-v3/workloads.tsv",
+      "sha256": "e62b5d7bee68e83fc81f215fd886473c3a22a3dcfae743b6bdcf76dcd6c5afd9"
+    },
+    "adapterSource": {
+      "path": "/Users/johnsonlee/.codex/worktrees/ac7b5da2-2450-48c5-894c-5fd84ab6cb7d/graphite/.github/scripts/wide-query-profile/MultiKeywordProfileRunner.java",
+      "sha256": "05bf55718595c9327609705dc35dc23fb9baa42168b02b081f93d2e010936c6c"
+    },
+    "runnerSource": {
+      "path": "/Users/johnsonlee/.codex/worktrees/ac7b5da2-2450-48c5-894c-5fd84ab6cb7d/graphite/.github/scripts/wide-query-profile/run.py",
+      "sha256": "cbe0ab440c1151948b0798fe00dafe87a4d06bfa3f7cce64e5f991a7f7dd6542"
+    },
+    "verifierSource": {
+      "path": "/Users/johnsonlee/.codex/worktrees/ac7b5da2-2450-48c5-894c-5fd84ab6cb7d/graphite/.github/scripts/wide-query-profile/verify_run.py",
+      "sha256": "e4f644b5bda6b3f3227cc3d5f2c53b71411534c43de4863c12bdf1ef8a545533"
+    }
+  },
+  "javaVersion": "openjdk version \"17.0.18\" 2026-01-20\nOpenJDK Runtime Environment Homebrew (build 17.0.18+0)\nOpenJDK 64-Bit Server VM Homebrew (build 17.0.18+0, mixed mode, sharing)\n",
+  "requestedForks": 1,
+  "completedVerifiedForks": 1,
+  "resetMode": "per-query-cold",
+  "measurement": "One observation per query per fresh JVM; fixed catalog order; indexes cleared before every query; JIT and OS page cache are not reset",
+  "percentile": "Per-query nearest-rank empirical P95, reported only at >=20 forks; no confidence/stability guarantee and no pooled workload P95",
+  "performanceGate": false,
+  "status": "complete",
+  "graphContentSha256": "1eb97cabd94cb61459610d1360f7955f9a5cf1a7ada6782f125492729be129c6",
+  "compiledClasses": {
+    "MultiKeywordProfileRunner.class": "2334f8271a8c44c9dd85aec1ce0ef4d644e1965fe496b52fabd5b313b00d233f"
+  },
+  "queries": [
+    {
+      "id": "or-single-early-rows",
+      "sampleCount": 1,
+      "latencyNanosInForkOrder": [
+        90726584
+      ],
+      "minLatencyNanos": 90726584,
+      "maxLatencyNanos": 90726584,
+      "medianLatencyNanos": 90726584.0,
+      "empiricalP95LatencyNanos": null
+    },
+    {
+      "id": "or-single-early-distinct",
+      "sampleCount": 1,
+      "latencyNanosInForkOrder": [
+        246128583
+      ],
+      "minLatencyNanos": 246128583,
+      "maxLatencyNanos": 246128583,
+      "medianLatencyNanos": 246128583.0,
+      "empiricalP95LatencyNanos": null
+    },
+    {
+      "id": "and-single-early-rows",
+      "sampleCount": 1,
+      "latencyNanosInForkOrder": [
+        36687625
+      ],
+      "minLatencyNanos": 36687625,
+      "maxLatencyNanos": 36687625,
+      "medianLatencyNanos": 36687625.0,
+      "empiricalP95LatencyNanos": null
+    },
+    {
+      "id": "and-single-early-distinct",
+      "sampleCount": 1,
+      "latencyNanosInForkOrder": [
+        196333958
+      ],
+      "minLatencyNanos": 196333958,
+      "maxLatencyNanos": 196333958,
+      "medianLatencyNanos": 196333958.0,
+      "empiricalP95LatencyNanos": null
+    },
+    {
+      "id": "or-single-middle-rows",
+      "sampleCount": 1,
+      "latencyNanosInForkOrder": [
+        123380500
+      ],
+      "minLatencyNanos": 123380500,
+      "maxLatencyNanos": 123380500,
+      "medianLatencyNanos": 123380500.0,
+      "empiricalP95LatencyNanos": null
+    },
+    {
+      "id": "or-single-middle-distinct",
+      "sampleCount": 1,
+      "latencyNanosInForkOrder": [
+        177734416
+      ],
+      "minLatencyNanos": 177734416,
+      "maxLatencyNanos": 177734416,
+      "medianLatencyNanos": 177734416.0,
+      "empiricalP95LatencyNanos": null
+    },
+    {
+      "id": "and-single-middle-rows",
+      "sampleCount": 1,
+      "latencyNanosInForkOrder": [
+        102019625
+      ],
+      "minLatencyNanos": 102019625,
+      "maxLatencyNanos": 102019625,
+      "medianLatencyNanos": 102019625.0,
+      "empiricalP95LatencyNanos": null
+    },
+    {
+      "id": "and-single-middle-distinct",
+      "sampleCount": 1,
+      "latencyNanosInForkOrder": [
+        163060000
+      ],
+      "minLatencyNanos": 163060000,
+      "maxLatencyNanos": 163060000,
+      "medianLatencyNanos": 163060000.0,
+      "empiricalP95LatencyNanos": null
+    },
+    {
+      "id": "or-single-late-rows",
+      "sampleCount": 1,
+      "latencyNanosInForkOrder": [
+        152874417
+      ],
+      "minLatencyNanos": 152874417,
+      "maxLatencyNanos": 152874417,
+      "medianLatencyNanos": 152874417.0,
+      "empiricalP95LatencyNanos": null
+    },
+    {
+      "id": "or-single-late-distinct",
+      "sampleCount": 1,
+      "latencyNanosInForkOrder": [
+        163368709
+      ],
+      "minLatencyNanos": 163368709,
+      "maxLatencyNanos": 163368709,
+      "medianLatencyNanos": 163368709.0,
+      "empiricalP95LatencyNanos": null
+    },
+    {
+      "id": "and-single-late-rows",
+      "sampleCount": 1,
+      "latencyNanosInForkOrder": [
+        159806875
+      ],
+      "minLatencyNanos": 159806875,
+      "maxLatencyNanos": 159806875,
+      "medianLatencyNanos": 159806875.0,
+      "empiricalP95LatencyNanos": null
+    },
+    {
+      "id": "and-single-late-distinct",
+      "sampleCount": 1,
+      "latencyNanosInForkOrder": [
+        157758416
+      ],
+      "minLatencyNanos": 157758416,
+      "maxLatencyNanos": 157758416,
+      "medianLatencyNanos": 157758416.0,
+      "empiricalP95LatencyNanos": null
+    },
+    {
+      "id": "or-few-early-late-rows",
+      "sampleCount": 1,
+      "latencyNanosInForkOrder": [
+        13967333
+      ],
+      "minLatencyNanos": 13967333,
+      "maxLatencyNanos": 13967333,
+      "medianLatencyNanos": 13967333.0,
+      "empiricalP95LatencyNanos": null
+    },
+    {
+      "id": "or-few-early-late-distinct",
+      "sampleCount": 1,
+      "latencyNanosInForkOrder": [
+        158882375
+      ],
+      "minLatencyNanos": 158882375,
+      "maxLatencyNanos": 158882375,
+      "medianLatencyNanos": 158882375.0,
+      "empiricalP95LatencyNanos": null
+    },
+    {
+      "id": "or-few-early-middle-rows",
+      "sampleCount": 1,
+      "latencyNanosInForkOrder": [
+        14601917
+      ],
+      "minLatencyNanos": 14601917,
+      "maxLatencyNanos": 14601917,
+      "medianLatencyNanos": 14601917.0,
+      "empiricalP95LatencyNanos": null
+    },
+    {
+      "id": "or-few-early-middle-distinct",
+      "sampleCount": 1,
+      "latencyNanosInForkOrder": [
+        157144208
+      ],
+      "minLatencyNanos": 157144208,
+      "maxLatencyNanos": 157144208,
+      "medianLatencyNanos": 157144208.0,
+      "empiricalP95LatencyNanos": null
+    },
+    {
+      "id": "or-broad-all-rows",
+      "sampleCount": 1,
+      "latencyNanosInForkOrder": [
+        6061959
+      ],
+      "minLatencyNanos": 6061959,
+      "maxLatencyNanos": 6061959,
+      "medianLatencyNanos": 6061959.0,
+      "empiricalP95LatencyNanos": null
+    },
+    {
+      "id": "or-broad-all-distinct",
+      "sampleCount": 1,
+      "latencyNanosInForkOrder": [
+        163839792
+      ],
+      "minLatencyNanos": 163839792,
+      "maxLatencyNanos": 163839792,
+      "medianLatencyNanos": 163839792.0,
+      "empiricalP95LatencyNanos": null
+    },
+    {
+      "id": "and-broad-all-rows",
+      "sampleCount": 1,
+      "latencyNanosInForkOrder": [
+        13754166
+      ],
+      "minLatencyNanos": 13754166,
+      "maxLatencyNanos": 13754166,
+      "medianLatencyNanos": 13754166.0,
+      "empiricalP95LatencyNanos": null
+    },
+    {
+      "id": "and-broad-all-distinct",
+      "sampleCount": 1,
+      "latencyNanosInForkOrder": [
+        995466458
+      ],
+      "minLatencyNanos": 995466458,
+      "maxLatencyNanos": 995466458,
+      "medianLatencyNanos": 995466458.0,
+      "empiricalP95LatencyNanos": null
+    },
+    {
+      "id": "mixed-four-few-rows",
+      "sampleCount": 1,
+      "latencyNanosInForkOrder": [
+        679100541
+      ],
+      "minLatencyNanos": 679100541,
+      "maxLatencyNanos": 679100541,
+      "medianLatencyNanos": 679100541.0,
+      "empiricalP95LatencyNanos": null
+    },
+    {
+      "id": "mixed-four-few-distinct",
+      "sampleCount": 1,
+      "latencyNanosInForkOrder": [
+        39201034917
+      ],
+      "minLatencyNanos": 39201034917,
+      "maxLatencyNanos": 39201034917,
+      "medianLatencyNanos": 39201034917.0,
+      "empiricalP95LatencyNanos": null
+    },
+    {
+      "id": "and-zero-disjoint-graphs-rows",
+      "sampleCount": 1,
+      "latencyNanosInForkOrder": [
+        162959208
+      ],
+      "minLatencyNanos": 162959208,
+      "maxLatencyNanos": 162959208,
+      "medianLatencyNanos": 162959208.0,
+      "empiricalP95LatencyNanos": null
+    },
+    {
+      "id": "and-zero-disjoint-graphs-distinct",
+      "sampleCount": 1,
+      "latencyNanosInForkOrder": [
+        161748625
+      ],
+      "minLatencyNanos": 161748625,
+      "maxLatencyNanos": 161748625,
+      "medianLatencyNanos": 161748625.0,
+      "empiricalP95LatencyNanos": null
+    },
+    {
+      "id": "or-four-broad-rows",
+      "sampleCount": 1,
+      "latencyNanosInForkOrder": [
+        35081041
+      ],
+      "minLatencyNanos": 35081041,
+      "maxLatencyNanos": 35081041,
+      "medianLatencyNanos": 35081041.0,
+      "empiricalP95LatencyNanos": null
+    },
+    {
+      "id": "or-four-broad-distinct",
+      "sampleCount": 1,
+      "latencyNanosInForkOrder": [
+        176816458
+      ],
+      "minLatencyNanos": 176816458,
+      "maxLatencyNanos": 176816458,
+      "medianLatencyNanos": 176816458.0,
+      "empiricalP95LatencyNanos": null
+    },
+    {
+      "id": "or-four-single-early-rows",
+      "sampleCount": 1,
+      "latencyNanosInForkOrder": [
+        17829417
+      ],
+      "minLatencyNanos": 17829417,
+      "maxLatencyNanos": 17829417,
+      "medianLatencyNanos": 17829417.0,
+      "empiricalP95LatencyNanos": null
+    },
+    {
+      "id": "or-four-single-early-distinct",
+      "sampleCount": 1,
+      "latencyNanosInForkOrder": [
+        151405167
+      ],
+      "minLatencyNanos": 151405167,
+      "maxLatencyNanos": 151405167,
+      "medianLatencyNanos": 151405167.0,
+      "empiricalP95LatencyNanos": null
+    },
+    {
+      "id": "or-four-single-middle-rows",
+      "sampleCount": 1,
+      "latencyNanosInForkOrder": [
+        100804625
+      ],
+      "minLatencyNanos": 100804625,
+      "maxLatencyNanos": 100804625,
+      "medianLatencyNanos": 100804625.0,
+      "empiricalP95LatencyNanos": null
+    },
+    {
+      "id": "or-four-single-middle-distinct",
+      "sampleCount": 1,
+      "latencyNanosInForkOrder": [
+        164544833
+      ],
+      "minLatencyNanos": 164544833,
+      "maxLatencyNanos": 164544833,
+      "medianLatencyNanos": 164544833.0,
+      "empiricalP95LatencyNanos": null
+    },
+    {
+      "id": "or-four-single-late-rows",
+      "sampleCount": 1,
+      "latencyNanosInForkOrder": [
+        165002417
+      ],
+      "minLatencyNanos": 165002417,
+      "maxLatencyNanos": 165002417,
+      "medianLatencyNanos": 165002417.0,
+      "empiricalP95LatencyNanos": null
+    },
+    {
+      "id": "or-four-single-late-distinct",
+      "sampleCount": 1,
+      "latencyNanosInForkOrder": [
+        165077209
+      ],
+      "minLatencyNanos": 165077209,
+      "maxLatencyNanos": 165077209,
+      "medianLatencyNanos": 165077209.0,
+      "empiricalP95LatencyNanos": null
+    },
+    {
+      "id": "or-four-few-early-late-rows",
+      "sampleCount": 1,
+      "latencyNanosInForkOrder": [
+        16700583
+      ],
+      "minLatencyNanos": 16700583,
+      "maxLatencyNanos": 16700583,
+      "medianLatencyNanos": 16700583.0,
+      "empiricalP95LatencyNanos": null
+    },
+    {
+      "id": "or-four-few-early-late-distinct",
+      "sampleCount": 1,
+      "latencyNanosInForkOrder": [
+        163455292
+      ],
+      "minLatencyNanos": 163455292,
+      "maxLatencyNanos": 163455292,
+      "medianLatencyNanos": 163455292.0,
+      "empiricalP95LatencyNanos": null
+    },
+    {
+      "id": "or-four-all-rows",
+      "sampleCount": 1,
+      "latencyNanosInForkOrder": [
+        15568292
+      ],
+      "minLatencyNanos": 15568292,
+      "maxLatencyNanos": 15568292,
+      "medianLatencyNanos": 15568292.0,
+      "empiricalP95LatencyNanos": null
+    },
+    {
+      "id": "or-four-all-distinct",
+      "sampleCount": 1,
+      "latencyNanosInForkOrder": [
+        163415000
+      ],
+      "minLatencyNanos": 163415000,
+      "maxLatencyNanos": 163415000,
+      "medianLatencyNanos": 163415000.0,
+      "empiricalP95LatencyNanos": null
+    }
+  ]
+}
