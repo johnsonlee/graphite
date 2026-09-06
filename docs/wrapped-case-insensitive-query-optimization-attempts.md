@@ -4886,3 +4886,27 @@ absent.
 lookup is O(1). Local latency rows within noise (see the follow-up above for the paired A/B).
 
 **Conclusion:** kept.
+
+### 2026-09-06 - Attempt 156: Reject verification candidates shorter than the term before lowercasing
+
+**Hypothesis:** replaying the 64-graph wrapped targeted shape one graph at a time showed the
+cost sitting in the graphs of the term's own corpus: every trigram of a long class-name term is
+present there, so the plan verifies the anchor span, and each candidate costs a decode, a full
+lowercase pass and a search, about 4-5 µs on interpreted code, for 0.4-1.2 ms per graph that
+holds no match. Most of those candidates are shorter than the term (method names against a
+class-name term above all), and a string shorter than the expected value cannot equal, start
+with, end with or contain it. A second-rarest-trigram filter was tried first and measured no
+gain: the two rarest trigrams of a term are usually adjacent and select the same strings.
+
+**Change:** the view's `reusableMatches` and the graph's `stringMatches` and `reusableContains`
+return false when the candidate is shorter than the expected value, before any character is
+inspected.
+
+**Evidence (local, 64 fixtures, eight runs forward and six reverse, wall medians forward /
+reverse):** four-properties-targeted `6.92 -> 6.37 / 6.56 -> 6.54 ms`, name-pair-targeted
+`5.38 -> 4.81 / 5.77 -> 4.67 ms`, caller-class-targeted `3.24 -> 2.62 / 3.54 -> 2.63 ms`, the
+64-graph wrapped targeted shape `2.59 -> 2.32 / 2.71 -> 1.93 ms` (CPU `2.05 -> 1.86 /
+2.15 -> 1.62 ms`), distinct-dense first execution `8.18 -> 7.71 / 8.92 -> 8.68 ms`; the dense
+and wrapped DISTINCT rows within the jar-order band.
+
+**Conclusion:** kept.

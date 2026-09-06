@@ -1528,8 +1528,14 @@ private fun StringPropertyPredicate.canUseTrigramPostings(): Boolean =
     expected.length >= TRIGRAM_LENGTH &&
         (transform == StringValueTransform.LOWERCASE || transform == null && expected.all { it.code <= ASCII_MAX })
 
-/** Matches one decoded string; lowercase transforms reuse the buffer for ASCII values. */
+/**
+ * Matches one decoded string; lowercase transforms reuse the buffer for ASCII values. A string
+ * shorter than the expected value cannot equal, start with, end with or contain it, so it is
+ * rejected before any character is inspected: a long term such as a full class name meets
+ * mostly shorter candidates, and lowercasing them was the bulk of the verification cost.
+ */
 internal fun reusableMatches(actual: MutableString, predicate: StringPropertyPredicate): Boolean {
+    if (actual.length < predicate.expected.length) return false
     if (predicate.transform == StringValueTransform.LOWERCASE) {
         var index = 0
         while (index < actual.length) {

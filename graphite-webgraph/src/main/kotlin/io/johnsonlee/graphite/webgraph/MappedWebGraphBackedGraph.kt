@@ -2489,6 +2489,7 @@ internal fun stringMatches(
     mode: StringMatchMode,
     expected: String
 ): Boolean {
+    if (actual.length < expected.length) return false
     val transformed = transformString(actual, transform)
     // Compared by identity rather than switched on, so a cold request never loads a when-mapping class.
     return if (mode == StringMatchMode.EQUALS) {
@@ -2507,6 +2508,7 @@ internal fun reusableContains(
     transform: StringValueTransform?,
     expected: String
 ): Boolean {
+    if (actual.length < expected.length) return false
     if (transform == StringValueTransform.LOWERCASE) {
         var index = 0
         while (index < actual.length) {
