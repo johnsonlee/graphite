@@ -4260,6 +4260,13 @@ pool is never consulted for CallSite projections.
   Request-selected P50 is at parity; its P95 and the six-sample K64 rows sit inside the
   `15% / 0.25 ms` jitter rule on roughly half of the local runs, with `1..3 ms` single-row spikes
   on rows charging one work unit, so the hosted paired gate remains the authoritative reading.
+- The first hosted run of PR #117 failed the wrapped-query resource guard with "invalid
+  loaded/retained/peak heap relationship": the view's in-heap trigram directory (about 128 KiB per
+  graph, 4.6 MiB across the 36 resource-benchmark graphs) was retained after the query and exceeded
+  the sampled peak. The directory now lives in direct buffers, still reserved against the CallSite
+  index budget, so a request retains no heap for it; the same run's method-compatibility aggregate
+  shards flagged process CPU time on Method-label count/order scenarios that this change does not
+  touch, with the base itself measuring `3.21 s` CPU on one of those single-shot runs.
 - Focused WebGraph, Cypher, and core tests cover the planner probe kinds, selected-tuple provenance,
   legacy build-and-persist, the block-aware string-table search, and the tuple set grouping; the
   gate comparator's 87 node tests cover the serial worker contract, the mapped-view lifecycle, and

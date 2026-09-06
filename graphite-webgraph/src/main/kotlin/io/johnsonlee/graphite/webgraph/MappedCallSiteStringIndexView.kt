@@ -1068,7 +1068,7 @@ private class ViewLoadScratch {
     val directoryStarts = IntArrayList(INITIAL_DIRECTORY_CAPACITY)
 
     companion object {
-        private val pool = ArrayDeque<java.lang.ref.SoftReference<ViewLoadScratch>>()
+        private val pool = ArrayDeque<java.lang.ref.WeakReference<ViewLoadScratch>>()
 
         fun borrow(): ViewLoadScratch {
             synchronized(pool) {
@@ -1083,7 +1083,7 @@ private class ViewLoadScratch {
             scratch.directoryTrigrams.clear()
             scratch.directoryStarts.clear()
             synchronized(pool) {
-                if (pool.size < MAX_POOLED_LOAD_SCRATCH) pool.addLast(java.lang.ref.SoftReference(scratch))
+                if (pool.size < MAX_POOLED_LOAD_SCRATCH) pool.addLast(java.lang.ref.WeakReference(scratch))
             }
         }
     }
@@ -1098,21 +1098,25 @@ private class ViewLoadScratch {
  * absent. The arrays are charged to the shared index budget; a graph that cannot reserve them
  * searches the mapped postings directly.
  */
+/**
+ * Sorted trigram keys, their posting run starts, and an ASCII presence bit set kept in direct
+ * (off-heap) buffers: the directory is derived index state like the mapped postings themselves, so
+ * it must not count as heap retained by the request that opened the view.
+ */
 private class TrigramDirectory private constructor(
-    private val trigrams: IntArray,
-    private val starts: IntArray,
-    private val asciiBits: LongArray,
+    private val trigrams: IntBuffer,
+    private val starts: IntBuffer,
+    private val asciiBits: LongBuffer,
     private val reservation: MappedCallSiteStringIndexMemoryBudget.Reservation
 ) : Closeable {
     @Volatile
     private var closed = false
 
-
     fun range(trigram: Int): IntRange? {
         if (!contains(trigram)) return null
-        val index = java.util.Arrays.binarySearch(trigrams, trigram)
+        val index = binarySearch(trigrams, trigram, 0, trigrams.limit() - 1)
         if (index < 0) return null
-        return starts[index] until starts[index + 1]
+        return starts.get(index) until starts.get(index + 1)
     }
 
     /**
@@ -1120,10 +1124,10 @@ private class TrigramDirectory private constructor(
      * rejecting a value whose trigrams are not all indexed touches almost no memory.
      */
     fun contains(trigram: Int): Boolean {
-        if (trigram < 0 || trigram >= (asciiBits.size shl BITSET_WORD_SHIFT)) {
-            return java.util.Arrays.binarySearch(trigrams, trigram) >= 0
+        if (trigram < 0 || trigram >= (asciiBits.limit() shl BITSET_WORD_SHIFT)) {
+            return binarySearch(trigrams, trigram, 0, trigrams.limit() - 1) >= 0
         }
-        return asciiBits[trigram ushr BITSET_WORD_SHIFT] and (1L shl (trigram and BITSET_WORD_MASK)) != 0L
+        return asciiBits.get(trigram ushr BITSET_WORD_SHIFT) and (1L shl (trigram and BITSET_WORD_MASK)) != 0L
     }
 
     override fun close() {
@@ -1138,16 +1142,19 @@ private class TrigramDirectory private constructor(
             val bytes = (trigrams.size.toLong() * 2 + 1) * Int.SIZE_BYTES +
                 wordCount.toLong() * Long.SIZE_BYTES + TRIGRAM_DIRECTORY_HEADER_BYTES
             val reservation = MappedCallSiteStringIndexMemoryBudget.tryReserve(bytes) ?: return null
-            val ends = IntArray(starts.size + 1)
-            starts.getElements(0, ends, 0, starts.size)
-            ends[starts.size] = postingCount
-            val keys = trigrams.toIntArray()
-            val bits = LongArray(wordCount)
-            keys.forEach { trigram ->
+            val keys = ByteBuffer.allocateDirect(trigrams.size * Int.SIZE_BYTES).order(ByteOrder.nativeOrder()).asIntBuffer()
+            val ends = ByteBuffer.allocateDirect((starts.size + 1) * Int.SIZE_BYTES).order(ByteOrder.nativeOrder()).asIntBuffer()
+            val bits = ByteBuffer.allocateDirect(wordCount * Long.SIZE_BYTES).order(ByteOrder.nativeOrder()).asLongBuffer()
+            for (index in 0 until trigrams.size) {
+                val trigram = trigrams.getInt(index)
+                keys.put(index, trigram)
+                ends.put(index, starts.getInt(index))
                 if (trigram in 0 until ASCII_TRIGRAM_HASH_LIMIT) {
-                    bits[trigram ushr BITSET_WORD_SHIFT] = bits[trigram ushr BITSET_WORD_SHIFT] or (1L shl (trigram and BITSET_WORD_MASK))
+                    val word = trigram ushr BITSET_WORD_SHIFT
+                    bits.put(word, bits.get(word) or (1L shl (trigram and BITSET_WORD_MASK)))
                 }
             }
+            ends.put(starts.size, postingCount)
             return TrigramDirectory(keys, ends, bits, reservation)
         }
     }
@@ -1260,8 +1267,10 @@ private class IntTupleKey(private val values: IntArray) {
 private class BoundedPostingRangeValidationCache private constructor(
     private val reservation: MappedCallSiteStringIndexMemoryBudget.Reservation
 ) : Closeable {
-    private val keys = LongArray(VALIDATED_POSTING_RANGE_CACHE_CAPACITY)
-    private val states = ByteArray(VALIDATED_POSTING_RANGE_CACHE_CAPACITY)
+    // Allocated on the first insert so a view that only answers absent or dense terms retains
+    // nothing for validation state.
+    private var keys = EMPTY_LONGS
+    private var states = EMPTY_BYTES
     private var entries = 0
     private var closed = false
 
@@ -1270,6 +1279,7 @@ private class BoundedPostingRangeValidationCache private constructor(
 
     @Synchronized
     operator fun get(key: Long): Boolean? {
+        if (states.isEmpty()) return null
         if (closed) return null
         val slot = slot(key)
         if (states[slot] == VALIDATION_EMPTY || keys[slot] != key) return null
@@ -1278,6 +1288,10 @@ private class BoundedPostingRangeValidationCache private constructor(
 
     @Synchronized
     fun putIfAbsent(key: Long, valid: Boolean): Boolean {
+        if (keys.isEmpty()) {
+            keys = LongArray(VALIDATED_POSTING_RANGE_CACHE_CAPACITY)
+            states = ByteArray(VALIDATED_POSTING_RANGE_CACHE_CAPACITY)
+        }
         if (closed) return valid
         val slot = slot(key)
         if (states[slot] != VALIDATION_EMPTY && keys[slot] == key) {
@@ -1462,6 +1476,8 @@ private class PostingCursorHeap(cursors: List<MappedPostingCursor>) {
 }
 
 private val EMPTY_INTS = IntArray(0)
+private val EMPTY_LONGS = LongArray(0)
+private val EMPTY_BYTES = ByteArray(0)
 
 internal const val MAPPED_POSTING_RANGE_VALIDATION_CACHE_CAPACITY = 1 shl 10
 internal const val MAPPED_POSTING_RANGE_VALIDATION_CACHE_RETAINED_BYTES = 16L * 1024
