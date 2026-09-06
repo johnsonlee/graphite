@@ -440,7 +440,7 @@ internal class MappedWebGraphBackedGraph(
         val seenValues = HashSet<List<String?>>()
         // The string table is sorted and deduplicated, so equal projected tuples share their
         // raw string ids: deduplicating on ids decodes only the tuples that become rows.
-        val seenStringIds = HashSet<RawStringIdTuple>()
+        val seenStringIds = HashSet<IntTupleKey>()
         val projectedIds = IntArray(projectedPropertyIndexes.size)
         val decodeKeys = IntArray(RAW_PROJECTION_DECODE_SLOTS)
         val decodeValues = arrayOfNulls<String>(RAW_PROJECTION_DECODE_SLOTS)
@@ -478,7 +478,7 @@ internal class MappedWebGraphBackedGraph(
                         val propertyIndex = projectedPropertyIndexes[index]
                         projectedIds[index] = if (propertyIndex < 0) -1 else stringIds[propertyIndex]
                     }
-                    if (!seenStringIds.add(RawStringIdTuple(projectedIds.copyOf()))) continue
+                    if (!seenStringIds.add(IntTupleKey(projectedIds.copyOf()))) continue
                 }
                 val values = List(projectedPropertyIndexes.size) { index ->
                     val propertyIndex = projectedPropertyIndexes[index]
@@ -2546,12 +2546,6 @@ internal fun consumeGraphWork(consumer: GraphWorkConsumer?, workUnits: Long) {
     } else {
         repeat(workUnits.coerceAtMost(Int.MAX_VALUE.toLong()).toInt()) { consumer.consume() }
     }
-}
-
-/** Projected raw string ids of one CallSite, hashed by content for id-level DISTINCT. */
-private class RawStringIdTuple(private val ids: IntArray) {
-    override fun equals(other: Any?): Boolean = other is RawStringIdTuple && ids.contentEquals(other.ids)
-    override fun hashCode(): Int = ids.contentHashCode()
 }
 
 internal class BufferedGraphWorkConsumer(private val delegate: GraphWorkConsumer?) {
