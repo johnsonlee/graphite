@@ -4720,3 +4720,27 @@ kotlin-compiler `100/97 -> 100/105 ms`; the table build overlaps the forward-gra
 tables cost 9-26 ms per 64-fixture graph to build and about half a megabyte of heap each.
 
 **Conclusion:** keep for exact-head hosted validation.
+
+### 2026-09-06 - Attempt 150: Decode front-coded strings in one walk over the raw characters (rejected)
+
+**Hypothesis:** with the DISTINCT dense row at 9 ms after Attempt 149, the candidate P95 moved to
+the targeted projection rows, and a phase split of those rows charged their verification and
+projection decodes at 10-15 µs each on the first execution. The list's decode walks a block
+twice and reads every length code through two static big-array calls, so a single walk over the
+raw character segment appending straight into the target buffer should cut that cost several
+times.
+
+**Change (not kept):** `StringTable` reached the char-coded list's single segment and block
+starts through reflection and decoded with one walk; a multi-segment list kept the list's
+decode.
+
+**Evidence (local, 64 fixtures, fresh JVM in benchmark order, ten alternating runs):**
+four-properties-targeted wall median `7.79 -> 7.67 ms`, dense `5.32 -> 5.28 ms`,
+class-pair-targeted `3.69 -> 3.62 ms`, name-pair-targeted `5.55 -> 5.32 ms`; distinct-dense
+first execution `7.76 -> 8.57 ms`, second `4.07 -> 4.38 ms`; `add` unchanged. Nothing outside
+the noise band.
+
+**Conclusion:** reverted. Since Attempt 149 the load-time tables decode every directory string
+of every graph while the graph is mapped, so the decode path is compiled before the first
+request and the per-decode cost the split attributed to it is the interpreted matcher and
+accounting around it, not the decode.
