@@ -1,0 +1,5 @@
+# github.com/johnsonlee/graphite/graphite-server/internal/server
+# [github.com/johnsonlee/graphite/graphite-server/internal/server]
+vet: open internal/server/readonly_audit_test.go: no such file or directory
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/server [build failed]
+FAIL

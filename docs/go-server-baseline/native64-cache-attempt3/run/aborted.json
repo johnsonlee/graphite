@@ -1,0 +1,12 @@
+{
+  "time": "2026-09-06T19:58:42.354934+00:00",
+  "reason": "Independent correctness review reproduced map-order-dependent inline property errors; result cache can freeze a success and suppress subsequent errors. Abort general cache candidate until original evaluator order is repaired.",
+  "completedColdCases": 11,
+  "completedCasesMatch": true,
+  "requiredCases": 42,
+  "complete": false,
+  "warmSamples": 0,
+  "decision": "Do not integrate this candidate; preserve source and partial results.",
+  "serverPID": 61642,
+  "runnerPID": 61637
+}

@@ -1,0 +1,7 @@
+{
+  "pid": 61642,
+  "platform": "macOS-14.3-arm64-arm-64bit-Mach-O",
+  "machine": "arm64",
+  "GODEBUG": "gctrace=1",
+  "note": "Only candidate live; other agent correctness/compilation work coexists. Cached main responses are correctness oracle, not simultaneous performance comparison."
+}

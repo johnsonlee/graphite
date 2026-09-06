@@ -1,0 +1,117 @@
+diff --git a/graphite-server/internal/server/cross.go b/graphite-server/internal/server/cross.go
+index a12718d6..44d78239 100644
+--- a/graphite-server/internal/server/cross.go
++++ b/graphite-server/internal/server/cross.go
+@@ -213,32 +213,35 @@ func (s *Server) crossCypher(w http.ResponseWriter, r *http.Request) {
+ 				return nil, errors.New("includeGraphRows is only valid in fanout mode")
+ 			}
+ 		}
+-		var response map[string]any
+-		if mode == "fanout" {
+-			if perGraph < 0 {
+-				perGraph = 0
+-				if len(graphs) > 0 {
+-					perGraph = (limit + len(graphs) - 1) / len(graphs)
++		key := makeResponseKey(text, r.URL.Path, mode, limit, perGraph, includeRows, leases)
++		return s.memoizedCypher(ctx, key, text, func() (any, error) {
++			var response map[string]any
++			if mode == "fanout" {
++				if perGraph < 0 {
++					perGraph = 0
++					if len(graphs) > 0 {
++						perGraph = (limit + len(graphs) - 1) / len(graphs)
++					}
++				}
++				response, err = fanout(ctx, graphs, text, limit, perGraph, includeRows)
++			} else {
++				var result query.Result
++				result, err = query.ExecuteCross(ctx, graphs, text, nil, limit)
++				response = map[string]any{"columns": result.Columns, "rows": result.Rows, "rowCount": len(result.Rows), "graphCount": len(graphs)}
++				if explicit {
++					response["mode"] = mode
++					response["graphs"] = ids
++					response["limit"] = limit
+ 				}
+ 			}
+-			response, err = fanout(ctx, graphs, text, limit, perGraph, includeRows)
+-		} else {
+-			var result query.Result
+-			result, err = query.ExecuteCross(ctx, graphs, text, nil, limit)
+-			response = map[string]any{"columns": result.Columns, "rows": result.Rows, "rowCount": len(result.Rows), "graphCount": len(graphs)}
+-			if explicit {
+-				response["mode"] = mode
+-				response["graphs"] = ids
+-				response["limit"] = limit
++			if err != nil {
++				return nil, err
+ 			}
+-		}
+-		if err != nil {
+-			return nil, err
+-		}
+-		if err := ctx.Err(); err != nil {
+-			return nil, err
+-		}
+-		return json.Marshal(omitNullFields(response))
++			if err := ctx.Err(); err != nil {
++				return nil, err
++			}
++			return json.Marshal(omitNullFields(response))
++		})
+ 	})
+ 	if err != nil {
+ 		writeQueryError(w, err)
+diff --git a/graphite-server/internal/server/cypher.go b/graphite-server/internal/server/cypher.go
+index e857886e..87b31ad8 100644
+--- a/graphite-server/internal/server/cypher.go
++++ b/graphite-server/internal/server/cypher.go
+@@ -68,15 +68,18 @@ func (s *Server) cypher(w http.ResponseWriter, r *http.Request) {
+ 		return
+ 	}
+ 	encoded, err := s.Guard.Execute(queryContext(r), timeout, func(ctx context.Context) (any, error) {
+-		result, err := query.Execute(ctx, g.Store, text, nil, limit)
+-		if err != nil {
+-			return nil, err
+-		}
+-		response := map[string]any{"columns": result.Columns, "rows": result.Rows, "rowCount": len(result.Rows)}
+-		if err := ctx.Err(); err != nil {
+-			return nil, err
+-		}
+-		return json.Marshal(omitNullFields(response))
++		key := makeResponseKey(text, "scoped", "", limit, -1, false, []*Lease{l})
++		return s.memoizedCypher(ctx, key, text, func() (any, error) {
++			result, err := query.Execute(ctx, g.Store, text, nil, limit)
++			if err != nil {
++				return nil, err
++			}
++			response := map[string]any{"columns": result.Columns, "rows": result.Rows, "rowCount": len(result.Rows)}
++			if err := ctx.Err(); err != nil {
++				return nil, err
++			}
++			return json.Marshal(omitNullFields(response))
++		})
+ 	})
+ 	if err != nil {
+ 		writeQueryError(w, err)
+diff --git a/graphite-server/internal/server/http.go b/graphite-server/internal/server/http.go
+index 5b394ff5..f3251b35 100644
+--- a/graphite-server/internal/server/http.go
++++ b/graphite-server/internal/server/http.go
+@@ -15,11 +15,12 @@ import (
+ )
+ 
+ type Server struct {
+-	Registry *Registry
+-	Guard    *Guard
+-	Version  string
+-	Topology *TopologyService
+-	Metrics  *PerformanceMetrics
++	queryCache queryResponseCache
++	Registry   *Registry
++	Guard      *Guard
++	Version    string
++	Topology   *TopologyService
++	Metrics    *PerformanceMetrics
+ }
+ 
+ func (s *Server) Handler() http.Handler {

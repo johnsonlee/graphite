@@ -1,0 +1,17 @@
+{
+  "command": [
+    "go",
+    "test",
+    "-overlay",
+    "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-cache-readonly-audit-bxr9bp2j/overlay.json",
+    "./internal/server",
+    "-run",
+    "TestReadonlyAuditPropertyOrder",
+    "-v",
+    "-count=1"
+  ],
+  "cwd": "/tmp/graphite-go-query-cache-8fccf511/graphite-server",
+  "exitCode": 1,
+  "purpose": "Correctness only; repeated evaluation verifies stable outcomes, no timing measurements",
+  "sourceSHA256": "7721370d7bd846895ae688608e2473647cf06c63ef4b7f829a1c23f7136f157f"
+}

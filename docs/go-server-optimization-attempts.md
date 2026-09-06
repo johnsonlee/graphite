@@ -84,3 +84,26 @@ base profiles and source identities are in `native64-profile-a7de0bec/`. Later
 function/Unicode feature changes are outside this isolated profile and require
 subsequent full-corpus verification. Integration preserves their row-order
 helpers; do not attribute these isolated timings to the complete later server.
+
+## 2026-09-07 — Attempt 3: bounded deterministic response cache
+
+Hypothesis: reuse successful deterministic query bodies across repeated requests,
+with graph-generation, selection-order, mode and limit identity, while retaining
+normal admission/cancellation and a bounded byte LRU.
+
+| Item | Evidence / status |
+|---|---|
+| Base / candidate | Native `8fccf511`, isolated cache diff and complete file manifest under `native64-cache-attempt3/`; exact binary hash and command in `run/identity.json` |
+| Real fixture | All 64 `/tmp/pr113-exp037-fixture.nXn4fg` graphs; all catalog counts checked; all 1,152 manifest files freshly hashed and verified |
+| Correctness | Server race/vet and cache lifecycle tests passed. Independent review then reproduced nondeterministic inline-property error order in the existing query evaluator; caching could freeze the first success and suppress other errors |
+| Counterexample | External tiny correctness fixture, identical query repeated: 181 successes / 19 division errors uncached; cache subsequently reused a success after one build. Exact overlay/source/log retained; no synthetic performance claims |
+| Real replay | Intentionally stopped after 11/42 complete first-replay responses, all 11 matching main. Remaining 31 unverified; no warm samples collected |
+| Latency | Raw single first-replay observations retained per completed query. No P95, paired comparison or speedup result |
+| CPU / memory | GC trace retained; request allocation, paired CPU and peak RSS evidence incomplete. No improvement claim |
+| Decision | Reject this frozen candidate. Cache production code was never integrated. Keep only the experiment/audit record; repair property evaluation order before a fresh numbered cache attempt |
+
+This failure is not a reason to hide exceptions with caching. Main's ordered
+property evaluation and source-visible error behavior must be established first.
+`native64-cache-attempt3/README.md` explains the exact incomplete denominator,
+commands, scope and intentional process shutdown. Later successful runs must not
+replace this record.

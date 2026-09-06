@@ -1,0 +1,6 @@
+=== RUN   TestReadonlyAuditPropertyOrder
+    readonly_audit_test.go:14: identical uncached execution: success=181 DivisionByZero=19
+    readonly_audit_test.go:18: same cacheable expression after first success: builds=1 cacheEntries=1
+--- PASS: TestReadonlyAuditPropertyOrder (0.02s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/server	0.279s
