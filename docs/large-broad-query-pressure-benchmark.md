@@ -188,8 +188,11 @@ the first cold access that opens a graph's persisted sidecar view, is one serial
 requesting thread, and dense queries stop at the global limit. The base revision predates the
 mapped-view counters, so a missing counter there reads as zero while the candidate harness must
 report all four. The `startup-prepared` fork performs no query warmup: main must retain its one
-lazy-build scan per graph, while the candidate must restore all 64 persisted indexes and execute
-2,043 retained-index lookups with zero scans and zero mapped-view lookups. Main has no set routing
+lazy-build scan per graph, while the candidate opens and validates all 64 persisted sidecar views
+at load time (building and persisting a missing sidecar first) and then answers the same 2,043
+mapped-view lookups with zero scans, no admitted or retained heap index, and zero retained-index
+lookups, so the only difference from the cold fork is that no request pays for opening a view.
+Main has no set routing
 in the comparison revision, so startup-prepared exposes 64 lazy-build scans plus 14,139 lookups,
 distributed 181..266 per graph. Aggregate totals alone cannot hide a distribution such as
 `[641, 1, ..., 1]`. This rejects an implementation that happens to meet the percentile target while

@@ -4298,6 +4298,16 @@ pool is never consulted for CallSite projections.
   `12.4 ms → 3.1 ms` (`4.0x`). Repeated identical replays let the base's retained heap index and
   result caches absorb its scans, so no state of this workload separates the revisions by 10x;
   the candidate's tail in every state is the per-query cross-graph floor of the harness.
+- The startup-prepared routing fork regressed its one K64 targeted row (`4.37 → 8.47 ms`,
+  `3.44 → 7.15 ms` on two hosted runs): the candidate answered it with 64 serial retained-index
+  lookups on the requesting thread while the base fans the same lookups over the runner's cores,
+  and the mapped view answers the same row in `2.9 ms`. Startup preparation
+  (`prepareCallSiteStringIndexOnLoad=true`) now opens and validates the mapped sidecar view at load
+  time, building and persisting a missing sidecar first, instead of restoring a heap index; a
+  store with the sidecar disabled keeps the heap preparation, and `prepareCallSiteStringIndex()`
+  keeps its heap semantics for direct callers. The candidate's startup-prepared gate contract is
+  the cold/warm mapped-view contract, and the view load scratch pool and lazily allocated
+  validation cache keep the per-request retained heap at the cold-fork level.
 - Focused WebGraph, Cypher, and core tests cover the planner probe kinds, selected-tuple provenance,
   legacy build-and-persist, the block-aware string-table search, and the tuple set grouping; the
   gate comparator's 87 node tests cover the serial worker contract, the mapped-view lifecycle, and

@@ -929,11 +929,12 @@ export function compareGraphIdPressure(
                 `${baseResources.callSiteStringIndexLookupMaxPerGraph}`);
         }
     }
-    if (candidateIndexState === "cold" || candidateIndexState === "warm") {
-        // Cold and warm forks answer every selected-graph access from the mapped sidecar view on
-        // the requesting thread: no raw scan, no worker, and no retained heap index. The first
-        // cold access of a graph opens its view and still counts as one lookup, so both states
-        // see the same 2,043 accesses distributed 30..39 per graph.
+    if (GRAPH_ROUTING_STATES.includes(candidateIndexState)) {
+        // Every fork answers every selected-graph access from the mapped sidecar view on the
+        // requesting thread: no raw scan, no worker, and no retained heap index. The first cold
+        // access of a graph opens its view and still counts as one lookup, and startup
+        // preparation opens the view at load instead of retaining a heap index, so all three
+        // states see the same 2,043 accesses distributed 30..39 per graph.
         if (candidateResources.callSiteParallelScanCount !== 0 ||
             candidateResources.callSiteParallelScanGraphCount !== 0 ||
             candidateResources.callSiteScanPeakActiveWorkers !== 0
@@ -966,37 +967,6 @@ export function compareGraphIdPressure(
                 `graphs=${candidateResources.callSiteMappedViewLookupGraphCount}, ` +
                 `perGraph=${candidateResources.callSiteMappedViewLookupMinPerGraph}..` +
                 `${candidateResources.callSiteMappedViewLookupMaxPerGraph}`);
-        }
-    } else if (candidateIndexState === "startup-prepared") {
-        if (candidateResources.callSiteIndexAdmittedGraphs !== 64 ||
-            candidateResources.callSiteTrigramIndexedGraphs !== 64
-        ) {
-            errors.push("candidate: startup-prepared selected-graph workload must execute the retained trigram " +
-                `index path for all 64 graphs; admitted=${candidateResources.callSiteIndexAdmittedGraphs}, ` +
-                `trigram=${candidateResources.callSiteTrigramIndexedGraphs}`);
-        }
-        if (candidateResources.callSiteParallelScanCount !== 0 ||
-            candidateResources.callSiteParallelScanGraphCount !== 0 ||
-            candidateResources.callSiteScanPeakActiveWorkers !== 0
-        ) {
-            errors.push("candidate: startup-prepared selected-graph workload must not fall back to raw scans; " +
-                `scans=${candidateResources.callSiteParallelScanCount}, ` +
-                `graphs=${candidateResources.callSiteParallelScanGraphCount}, ` +
-                `peak=${candidateResources.callSiteScanPeakActiveWorkers}`);
-        }
-        if (candidateResources.callSiteStringIndexLookupCount !== 2043 ||
-            candidateResources.callSiteStringIndexLookupGraphCount !== 64 ||
-            candidateResources.callSiteStringIndexLookupMinPerGraph !== 30 ||
-            candidateResources.callSiteStringIndexLookupMaxPerGraph !== 39 ||
-            candidateResources.callSiteMappedViewLookupCount !== 0
-        ) {
-            errors.push("candidate: startup-prepared selected-graph workload must execute exactly 2,043 " +
-                "retained-index lookups distributed 30..39 per graph and no mapped-view lookups; " +
-                `lookups=${candidateResources.callSiteStringIndexLookupCount}, ` +
-                `graphs=${candidateResources.callSiteStringIndexLookupGraphCount}, ` +
-                `perGraph=${candidateResources.callSiteStringIndexLookupMinPerGraph}..` +
-                `${candidateResources.callSiteStringIndexLookupMaxPerGraph}, ` +
-                `mappedViewLookups=${candidateResources.callSiteMappedViewLookupCount}`);
         }
     }
 

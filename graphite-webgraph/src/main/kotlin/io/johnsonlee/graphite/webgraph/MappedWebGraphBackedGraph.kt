@@ -1318,6 +1318,17 @@ internal class MappedWebGraphBackedGraph(
         callSiteStringIndexLoadedFromPersistence
 
     /**
+     * Opens the validated mapped CallSite sidecar view before the graph is exposed to queries,
+     * building and persisting the sidecar first for a legacy store. Startup preparation retains
+     * no heap index this way: every later request is served from the view on its own thread.
+     * Returns false when the sidecar is disabled or the view cannot be opened, in which case the
+     * caller may fall back to [prepareCallSiteStringIndex].
+     */
+    internal fun prepareMappedCallSiteStringIndexView(
+        workConsumer: GraphWorkConsumer = CALL_SITE_INDEX_PREPARATION_WORK_CONSUMER
+    ): Boolean = persistentCallSiteStringIndexEnabled && mappedCallSiteStringIndexView(workConsumer) != null
+
+    /**
      * Prepares the complete CallSite string search path before the graph is exposed to queries.
      * A denied shared-memory reservation is a normal fallback and leaves raw scans available.
      */

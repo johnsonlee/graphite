@@ -922,16 +922,18 @@ class GraphStoreTest {
             System.setProperty(property, "true")
             val eager = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
             try {
-                assertTrue(eager.isCallSiteStringIndexInitialized())
-                assertTrue(eager.isCallSiteTrigramIndexInitialized())
-                assertTrue(eager.isCallSiteStringIndexLoadedFromPersistence())
+                // "true" opens the validated sidecar view at load and retains no heap index.
+                assertTrue(eager.isMappedCallSiteStringIndexViewInitialized())
+                assertFalse(eager.isCallSiteStringIndexInitialized())
+                assertFalse(eager.isCallSiteTrigramIndexInitialized())
                 assertEquals(
                     listOf(1),
                     eager.nodesByStringPropertyDisjunction(CallSiteNode::class.java, listOf(predicate))
                         .orEmpty().map { node -> node.id.value }.toList()
                 )
-                assertEquals(1L, eager.callSiteStringIndexLookupCount())
-                assertFalse(eager.isMappedCallSiteStringIndexViewInitialized())
+                assertEquals(1L, eager.callSiteMappedViewLookupCount())
+                assertEquals(0L, eager.callSiteStringIndexLookupCount())
+                assertFalse(eager.isCallSiteStringIndexInitialized())
             } finally {
                 eager.close()
             }
@@ -1832,7 +1834,9 @@ class GraphStoreTest {
             }
             val restoredAfterTrailingData = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
             try {
-                assertTrue(restoredAfterTrailingData.isCallSiteStringIndexLoadedFromPersistence())
+                // Startup preparation restores the persisted sidecar as the mapped view.
+                assertTrue(restoredAfterTrailingData.isMappedCallSiteStringIndexViewInitialized())
+                assertFalse(restoredAfterTrailingData.isCallSiteStringIndexInitialized())
             } finally {
                 restoredAfterTrailingData.close()
             }
@@ -1855,7 +1859,9 @@ class GraphStoreTest {
             }
             val restoredAfterCorruption = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
             try {
-                assertTrue(restoredAfterCorruption.isCallSiteStringIndexLoadedFromPersistence())
+                // Startup preparation restores the persisted sidecar as the mapped view.
+                assertTrue(restoredAfterCorruption.isMappedCallSiteStringIndexViewInitialized())
+                assertFalse(restoredAfterCorruption.isCallSiteStringIndexInitialized())
             } finally {
                 restoredAfterCorruption.close()
             }
@@ -1870,7 +1876,9 @@ class GraphStoreTest {
             }
             val restoredAfterMigration = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
             try {
-                assertTrue(restoredAfterMigration.isCallSiteStringIndexLoadedFromPersistence())
+                // Startup preparation restores the persisted sidecar as the mapped view.
+                assertTrue(restoredAfterMigration.isMappedCallSiteStringIndexViewInitialized())
+                assertFalse(restoredAfterMigration.isCallSiteStringIndexInitialized())
             } finally {
                 restoredAfterMigration.close()
             }

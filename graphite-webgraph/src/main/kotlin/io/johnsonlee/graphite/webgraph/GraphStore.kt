@@ -953,7 +953,11 @@ object GraphStore {
         )
         if (prepareCallSiteStringIndex) {
             try {
-                if (graph.prepareCallSiteStringIndex()) graph.persistPreparedCallSiteStringIndex()
+                // Startup preparation opens the validated mapped sidecar view (persisting it first
+                // for a legacy store); only a store with the sidecar disabled retains a heap index.
+                if (!graph.prepareMappedCallSiteStringIndexView() && graph.prepareCallSiteStringIndex()) {
+                    graph.persistPreparedCallSiteStringIndex()
+                }
             } catch (error: Exception) {
                 graph.close()
                 throw error

@@ -869,11 +869,7 @@ test("fixture64 startup-prepared graphId pressure guards the optimization alread
         callSiteIndexRetainedBytes: 1024,
         callSiteTrigramIndexedGraphs: 64
     }, "startup-prepared");
-    const startupCandidate = graphIdPressureResult({
-        callSiteIndexAdmittedGraphs: 64,
-        callSiteIndexRetainedBytes: 1024,
-        callSiteTrigramIndexedGraphs: 64
-    }, "startup-prepared");
+    const startupCandidate = mappedViewPressureResult({}, "startup-prepared");
     const passed = compareGraphIdPressure(
         [startupBase],
         [startupCandidate],
@@ -888,7 +884,8 @@ test("fixture64 startup-prepared graphId pressure guards the optimization alread
     assert.equal(passed.gateP50Speedup, 20);
     assert.equal(passed.gateP95Speedup, 20);
     assert.equal(passed.resources.candidate.callSiteParallelScanCount, 0);
-    assert.equal(passed.resources.candidate.callSiteStringIndexLookupCount, 2043);
+    assert.equal(passed.resources.candidate.callSiteStringIndexLookupCount, 0);
+    assert.equal(passed.resources.candidate.callSiteMappedViewLookupCount, 2043);
     assert.equal(passed.resources.candidate.callSiteScanPeakActiveWorkers, 0);
     assert.deepEqual(passed.graphSetLatencyByWidth.map((summary) => summary.width), [2, 8, 64]);
     assert.deepEqual(passed.graphSetLatencyByWidth.map((summary) => summary.sampleCount), [192, 48, 6]);
@@ -1147,11 +1144,7 @@ test("fixture64 startup-prepared pressure measures load-time readiness without q
         callSiteIndexRetainedBytes: 1024,
         callSiteTrigramIndexedGraphs: 64
     }, "startup-prepared");
-    const candidate = graphIdPressureResult({
-        callSiteIndexAdmittedGraphs: 64,
-        callSiteIndexRetainedBytes: 1024,
-        callSiteTrigramIndexedGraphs: 64
-    }, "startup-prepared");
+    const candidate = mappedViewPressureResult({}, "startup-prepared");
     const comparison = compareGraphIdPressure(
         [base],
         [candidate],
@@ -1178,22 +1171,24 @@ test("fixture64 startup-prepared pressure measures load-time readiness without q
     assert.equal(lazyScanRegression.passed, false);
     assert.match(lazyScanRegression.errors.join("\n"), /must use the retained index without raw scans/);
 
-    const mappedViewFallback = compareGraphIdPressure(
+    // A candidate that still retains a heap index at startup no longer satisfies the contract:
+    // startup preparation must open the mapped view and answer every lookup from it.
+    const retainedIndexCandidate = compareGraphIdPressure(
         [base],
         [graphIdPressureResult({
             callSiteIndexAdmittedGraphs: 64,
             callSiteIndexRetainedBytes: 1024,
-            callSiteTrigramIndexedGraphs: 64,
-            callSiteMappedViewLookupCount: 3,
-            callSiteMappedViewLookupGraphCount: 1,
-            callSiteMappedViewLookupMinPerGraph: 3,
-            callSiteMappedViewLookupMaxPerGraph: 3
+            callSiteTrigramIndexedGraphs: 64
         }, "startup-prepared")],
         graphIdObservations(20_000_000_000, "success", 20_000_000_000),
         graphIdObservations(1_000_000_000, "success", 1_000_000_000)
     );
-    assert.equal(mappedViewFallback.passed, false);
-    assert.match(mappedViewFallback.errors.join("\n"), /no mapped-view lookups; .*mappedViewLookups=3/);
+    assert.equal(retainedIndexCandidate.passed, false);
+    assert.match(
+        retainedIndexCandidate.errors.join("\n"),
+        /startup-prepared selected-graph workload must serve every graph from its mapped CallSite index view without retaining a heap index/
+    );
+    assert.match(retainedIndexCandidate.errors.join("\n"), /must execute exactly 2,043 mapped-view lookups/);
 });
 
 test("graphId pressure rejects repeated graph paths and failed candidate queries", () => {
@@ -1259,11 +1254,7 @@ test("graphId pressure hard-gates request-selected source parity and latency", (
             callSiteIndexRetainedBytes: 1024,
             callSiteTrigramIndexedGraphs: 64
         }, "startup-prepared")],
-        [graphIdPressureResult({
-            callSiteIndexAdmittedGraphs: 64,
-            callSiteIndexRetainedBytes: 1024,
-            callSiteTrigramIndexedGraphs: 64
-        }, "startup-prepared")],
+        [mappedViewPressureResult({}, "startup-prepared")],
         graphIdObservations(20_000_000, "success", 30_000),
         graphIdObservations(1_000_000, "success", 40_000)
     );
