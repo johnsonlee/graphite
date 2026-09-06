@@ -1,0 +1,3989 @@
+{
+  "summary": {
+    "graphs": 64,
+    "indexPresent": 64,
+    "allMagicGRCS": true,
+    "versions": [
+      2
+    ],
+    "indexBytes": 368089488,
+    "headerCallSites": 5046935,
+    "headerStrings": 2793940,
+    "headerTrigramPostings": 31587846,
+    "allSizesMatch": true,
+    "allIndexIdentitySidecarsMatch": true,
+    "fullCRCValidated": false,
+    "postingsValidated": false,
+    "manifestSHA256": "809c8b8ceed25428af65350edfa2c391f449051bf069b12555df245099f26ae2"
+  },
+  "graphs": [
+    {
+      "id": "fixture-android-00",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-android-00",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 7054100,
+          "mtime_ns": 1788569202498995678
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369040551693367,
+          "hex": "075ce18354884352db0beae94d85e6359001460e5c19713652d4a5a25dd48d5e"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369040069980244,
+          "hex": "e6025211fc3779260698fef6e69f4f09eee52422778f88303d4483db6b54c914"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 1835913,
+          "mtime_ns": 1788369040049704212
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 15129518,
+          "mtime_ns": 1788369040551313156
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 2881728,
+          "mtime_ns": 1788369040551147781
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 1441072,
+          "mtime_ns": 1788369040550415943
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 61909,
+        "callSites": 100606,
+        "contentIdentity": "075ce18354884352db0beae94d85e6359001460e5c19713652d4a5a25dd48d5e",
+        "uniquePropertyStrings": [
+          2440,
+          9096,
+          6319,
+          12989
+        ],
+        "trigramPostingCount": 587787,
+        "retainedBytes": 7054496,
+        "expectedFileBytes": 7054100,
+        "sizeMatches": true,
+        "storedCRC32asLong": 2720212970,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-android-01",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-android-01",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 7318228,
+          "mtime_ns": 1788569202476730905
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369043166976700,
+          "hex": "4af7185bc98278ac476cfbceb041b48922781185d56f57e399838967268dbd2b"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369042866574862,
+          "hex": "f6be9b7c38d2bb46f0cb5024364a1ee3f7e6694136d8d54c973b2a50190e51c3"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 1805701,
+          "mtime_ns": 1788369042851632985
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 16212820,
+          "mtime_ns": 1788369043166635406
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 5911416,
+          "mtime_ns": 1788369043166265529
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 1515060,
+          "mtime_ns": 1788369043165513400
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 62746,
+        "callSites": 110875,
+        "contentIdentity": "4af7185bc98278ac476cfbceb041b48922781185d56f57e399838967268dbd2b",
+        "uniquePropertyStrings": [
+          2530,
+          9730,
+          6484,
+          12545
+        ],
+        "trigramPostingCount": 598983,
+        "retainedBytes": 7318624,
+        "expectedFileBytes": 7318228,
+        "sizeMatches": true,
+        "storedCRC32asLong": 2243166908,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-android-02",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-android-02",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 7373324,
+          "mtime_ns": 1788569202453941257
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369045508005135,
+          "hex": "e23df0ecd27614df24fc1f8641ea63c51069b5f5b160c3d25a3ffc9c90497207"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369045229406838,
+          "hex": "1d7eb300a955618f0526159fc1a31622e703cd053b1fa7bc9b2f611608408da2"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 1853807,
+          "mtime_ns": 1788369045216855058
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 15400996,
+          "mtime_ns": 1788369045507682634
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 8840160,
+          "mtime_ns": 1788369045507264631
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 1464588,
+          "mtime_ns": 1788369045506528335
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 63385,
+        "callSites": 102233,
+        "contentIdentity": "e23df0ecd27614df24fc1f8641ea63c51069b5f5b160c3d25a3ffc9c90497207",
+        "uniquePropertyStrings": [
+          2465,
+          9962,
+          6584,
+          14170
+        ],
+        "trigramPostingCount": 620623,
+        "retainedBytes": 7373720,
+        "expectedFileBytes": 7373324,
+        "sizeMatches": true,
+        "storedCRC32asLong": 113041664,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-android-03",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-android-03",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 7632604,
+          "mtime_ns": 1788569202430926443
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369047705096875,
+          "hex": "2ce4b2f810f13d00dba9628d60fa9bf48ef27b42fdfdfcbfc7e42f969c72572f"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369047430692351,
+          "hex": "66c46410e32bba031c1254324a781afd897b90f4d82a643a9e7dfc9270777f10"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 1879629,
+          "mtime_ns": 1788369047418959534
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 15957257,
+          "mtime_ns": 1788369047704789457
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 11890600,
+          "mtime_ns": 1788369047704275204
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 1525436,
+          "mtime_ns": 1788369047703520616
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 65023,
+        "callSites": 108305,
+        "contentIdentity": "2ce4b2f810f13d00dba9628d60fa9bf48ef27b42fdfdfcbfc7e42f969c72572f",
+        "uniquePropertyStrings": [
+          2478,
+          9774,
+          6740,
+          14246
+        ],
+        "trigramPostingCount": 639194,
+        "retainedBytes": 7633000,
+        "expectedFileBytes": 7632604,
+        "sizeMatches": true,
+        "storedCRC32asLong": 1256002038,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-android-04",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-android-04",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 6984596,
+          "mtime_ns": 1788569202406954129
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369049807747868,
+          "hex": "2b68783a30a2a908524fa1f4df01341dd2d7f5c503d3270644eb3564ad382395"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369049510848132,
+          "hex": "38eb0cb867a8d762c9eaaf11367a7f621fb42807a16a938ffc256453723f0c59"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 1927371,
+          "mtime_ns": 1788369049499165358
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 15534874,
+          "mtime_ns": 1788369049807426824
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 14802056,
+          "mtime_ns": 1788369049806500652
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 1455944,
+          "mtime_ns": 1788369049805732315
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 64808,
+        "callSites": 102157,
+        "contentIdentity": "2b68783a30a2a908524fa1f4df01341dd2d7f5c503d3270644eb3564ad382395",
+        "uniquePropertyStrings": [
+          2453,
+          8863,
+          6338,
+          12473
+        ],
+        "trigramPostingCount": 573815,
+        "retainedBytes": 6984992,
+        "expectedFileBytes": 6984596,
+        "sizeMatches": true,
+        "storedCRC32asLong": 2897359466,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-android-05",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-android-05",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 6988300,
+          "mtime_ns": 1788569202385096648
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369051923985812,
+          "hex": "0eb86ef33d1d8b4efa0cb97040dab02a15a194b5e36360a489bdd9c727c61d2a"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369051637255761,
+          "hex": "6850592bd51c8146dcdda008cf591fb7fa7f45941a0532c737575ac7ce1881cb"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 1809887,
+          "mtime_ns": 1788369051625522610
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 14794086,
+          "mtime_ns": 1788369051923690519
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 17660136,
+          "mtime_ns": 1788369051922513970
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 1429256,
+          "mtime_ns": 1788369051921764758
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 62177,
+        "callSites": 98095,
+        "contentIdentity": "0eb86ef33d1d8b4efa0cb97040dab02a15a194b5e36360a489bdd9c727c61d2a",
+        "uniquePropertyStrings": [
+          2481,
+          9025,
+          6442,
+          12696
+        ],
+        "trigramPostingCount": 584516,
+        "retainedBytes": 6988696,
+        "expectedFileBytes": 6988300,
+        "sizeMatches": true,
+        "storedCRC32asLong": 383295098,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-android-06",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-android-06",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 7894004,
+          "mtime_ns": 1788569202359094086
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369054206643373,
+          "hex": "a94f7bbf0ae83b25679862d7736605981260dda66eee79e54521e308558461ae"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369053889118271,
+          "hex": "ca47392b1bd4a37d9075c145b449f01e8f7a152713db5d0166dd5c7d78a224f6"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 1980183,
+          "mtime_ns": 1788369053877059911
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 16654405,
+          "mtime_ns": 1788369054205976869
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 20824272,
+          "mtime_ns": 1788369054205793202
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 1582284,
+          "mtime_ns": 1788369054204778529
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 66775,
+        "callSites": 114190,
+        "contentIdentity": "a94f7bbf0ae83b25679862d7736605981260dda66eee79e54521e308558461ae",
+        "uniquePropertyStrings": [
+          2551,
+          10457,
+          6950,
+          14933
+        ],
+        "trigramPostingCount": 656694,
+        "retainedBytes": 7894400,
+        "expectedFileBytes": 7894004,
+        "sizeMatches": true,
+        "storedCRC32asLong": 772681514,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-android-07",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-android-07",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 7498956,
+          "mtime_ns": 1788569202334604148
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369056507986166,
+          "hex": "362fb2ec28068bd1cb5aca25688b2fe45d18914a4ce0df8dc9aaf307501da7ad"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369056193295746,
+          "hex": "6a5c0faaeca03a96172c5580f63c8468cd001c808b585d7cdbe249456a132aef"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 1942097,
+          "mtime_ns": 1788369056181218010
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 16157282,
+          "mtime_ns": 1788369056507670831
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 23894448,
+          "mtime_ns": 1788369056507508663
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 1535304,
+          "mtime_ns": 1788369056506691158
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 66901,
+        "callSites": 108587,
+        "contentIdentity": "362fb2ec28068bd1cb5aca25688b2fe45d18914a4ce0df8dc9aaf307501da7ad",
+        "uniquePropertyStrings": [
+          2553,
+          9904,
+          6867,
+          13802
+        ],
+        "trigramPostingCount": 620158,
+        "retainedBytes": 7499352,
+        "expectedFileBytes": 7498956,
+        "sizeMatches": true,
+        "storedCRC32asLong": 1242094367,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-android-08",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-android-08",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 7757220,
+          "mtime_ns": 1788569202311064626
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369058900265518,
+          "hex": "6665fe423b149c81f144922cbc80ed24748d9be6e80362f27f5903f60ad58365"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369058541244596,
+          "hex": "e37c920b7f97f65a968f94c22ff53cde1256a8392e868484e9b27d516ecfb6d7"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 1973351,
+          "mtime_ns": 1788369058528065104
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 16115518,
+          "mtime_ns": 1788369058899934433
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 26994312,
+          "mtime_ns": 1788369058899756724
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 1550148,
+          "mtime_ns": 1788369058898897427
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 68236,
+        "callSites": 111032,
+        "contentIdentity": "6665fe423b149c81f144922cbc80ed24748d9be6e80362f27f5903f60ad58365",
+        "uniquePropertyStrings": [
+          2524,
+          10648,
+          6613,
+          14671
+        ],
+        "trigramPostingCount": 644886,
+        "retainedBytes": 7757616,
+        "expectedFileBytes": 7757220,
+        "sizeMatches": true,
+        "storedCRC32asLong": 1138565276,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-android-09",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-android-09",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 7570260,
+          "mtime_ns": 1788569202286759480
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369061206072295,
+          "hex": "901366d5b6c108f60d355540a3066125ced9be2641af49f1a619a9bf98bb3a59"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369060880139561,
+          "hex": "4c6a07e87ed14f862258fd64a7f85fa3fdede3072c9eb678090a842905b3f7fd"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 1952665,
+          "mtime_ns": 1788369060868045951
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 16596625,
+          "mtime_ns": 1788369061205699543
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 30111704,
+          "mtime_ns": 1788369061205529083
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 1558912,
+          "mtime_ns": 1788369061204421202
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 67481,
+        "callSites": 110050,
+        "contentIdentity": "901366d5b6c108f60d355540a3066125ced9be2641af49f1a619a9bf98bb3a59",
+        "uniquePropertyStrings": [
+          2484,
+          9896,
+          6723,
+          13919
+        ],
+        "trigramPostingCount": 625669,
+        "retainedBytes": 7570656,
+        "expectedFileBytes": 7570260,
+        "sizeMatches": true,
+        "storedCRC32asLong": 949507792,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-android-10",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-android-10",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 7281292,
+          "mtime_ns": 1788569202263094208
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369063498006367,
+          "hex": "a753f5f8a9d8a984ed08ca14987f51fdd727814f8018bd9adb6abaf1d2c7491b"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369063167083604,
+          "hex": "0d56df46f8d2abd9d536c6c23ce8a1fc711e5f8a5657eb271f77c4b5dc2d202e"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 2075903,
+          "mtime_ns": 1788369063154456074
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 15996439,
+          "mtime_ns": 1788369063497682074
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 33150336,
+          "mtime_ns": 1788369063497506739
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 1519532,
+          "mtime_ns": 1788369063496620151
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 70254,
+        "callSites": 103391,
+        "contentIdentity": "a753f5f8a9d8a984ed08ca14987f51fdd727814f8018bd9adb6abaf1d2c7491b",
+        "uniquePropertyStrings": [
+          2455,
+          9280,
+          6666,
+          13793
+        ],
+        "trigramPostingCount": 600921,
+        "retainedBytes": 7281688,
+        "expectedFileBytes": 7281292,
+        "sizeMatches": true,
+        "storedCRC32asLong": 3313070445,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-android-11",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-android-11",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 6981628,
+          "mtime_ns": 1788569202240396643
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369065718242406,
+          "hex": "e243b4efe79f2c13b5443287f87e2ad7ff31610311619faa57468082967dd329"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369065408975141,
+          "hex": "91f961fb60b30841dd5da6f54048d37935a95b5f05f515d317d800bfcc9b6a34"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 1766825,
+          "mtime_ns": 1788369065398531665
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 14369265,
+          "mtime_ns": 1788369065717978987
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 35925584,
+          "mtime_ns": 1788369065717827903
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 1387840,
+          "mtime_ns": 1788369065717129358
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 61743,
+        "callSites": 94712,
+        "contentIdentity": "e243b4efe79f2c13b5443287f87e2ad7ff31610311619faa57468082967dd329",
+        "uniquePropertyStrings": [
+          2464,
+          9170,
+          6416,
+          12971
+        ],
+        "trigramPostingCount": 590505,
+        "retainedBytes": 6982024,
+        "expectedFileBytes": 6981628,
+        "sizeMatches": true,
+        "storedCRC32asLong": 2057137894,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-android-12",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-android-12",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 7888532,
+          "mtime_ns": 1788569202218547120
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369068112840396,
+          "hex": "b8f27e3a7f6a5bb06e6478ee44bba79ab084054b536e1eaec3b4595adf720951"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369067738852347,
+          "hex": "7760b28619637cc4855c10b721361ee5ac73270cb741acb5f900412ce871464d"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 2117303,
+          "mtime_ns": 1788369067725968065
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 18082589,
+          "mtime_ns": 1788369068112664728
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 39401560,
+          "mtime_ns": 1788369068112498519
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 1738204,
+          "mtime_ns": 1788369068111492430
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 72531,
+        "callSites": 121945,
+        "contentIdentity": "b8f27e3a7f6a5bb06e6478ee44bba79ab084054b536e1eaec3b4595adf720951",
+        "uniquePropertyStrings": [
+          2565,
+          10619,
+          6642,
+          14486
+        ],
+        "trigramPostingCount": 635323,
+        "retainedBytes": 7888928,
+        "expectedFileBytes": 7888532,
+        "sizeMatches": true,
+        "storedCRC32asLong": 944883059,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-android-13",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-android-13",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 7632396,
+          "mtime_ns": 1788569202193837599
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369070533562953,
+          "hex": "6b76efb6e1e01946edcc105e19e5a61f0b92ec67bb148bd28a58ef94b2472ef4"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369070174080944,
+          "hex": "a79e3d6c340dd805b3c1b8a68203612bf9f265c7c74ccea34d666c0551246a31"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 2055397,
+          "mtime_ns": 1788369070161276204
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 16978027,
+          "mtime_ns": 1788369070528398590
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 42608416,
+          "mtime_ns": 1788369070528227923
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 1603644,
+          "mtime_ns": 1788369070527409668
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 66264,
+        "callSites": 117348,
+        "contentIdentity": "6b76efb6e1e01946edcc105e19e5a61f0b92ec67bb148bd28a58ef94b2472ef4",
+        "uniquePropertyStrings": [
+          2489,
+          10474,
+          6502,
+          13612
+        ],
+        "trigramPostingCount": 620002,
+        "retainedBytes": 7632792,
+        "expectedFileBytes": 7632396,
+        "sizeMatches": true,
+        "storedCRC32asLong": 2424564474,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-android-14",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-android-14",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 7243460,
+          "mtime_ns": 1788569202170004244
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369072926568184,
+          "hex": "abd2da2f7e0aa280010bd59d60274d3ac20062dfea4c2462634e7f65a6aecd12"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369072556438449,
+          "hex": "fc59b0ac3f57d787486931d4613457f29e2ea27bf3e18909750e66b9ba094374"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 1906907,
+          "mtime_ns": 1788369072544847008
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 16202251,
+          "mtime_ns": 1788369072926259266
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 45683920,
+          "mtime_ns": 1788369072926100140
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 1537968,
+          "mtime_ns": 1788369072925180843
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 64956,
+        "callSites": 108560,
+        "contentIdentity": "abd2da2f7e0aa280010bd59d60274d3ac20062dfea4c2462634e7f65a6aecd12",
+        "uniquePropertyStrings": [
+          2586,
+          9168,
+          6703,
+          12929
+        ],
+        "trigramPostingCount": 591960,
+        "retainedBytes": 7243856,
+        "expectedFileBytes": 7243460,
+        "sizeMatches": true,
+        "storedCRC32asLong": 918515956,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-android-15",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-android-15",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 6812300,
+          "mtime_ns": 1788569202147401971
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369075116329466,
+          "hex": "f8f6c2f8e6a44cf9bd4645c6af45beadea7870f271d9c0c5660e5ca9ba8d5920"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369074779708546,
+          "hex": "94f1ba44fe785bcc3d936f17faed3b0f96f1bdd5297fa6434eef4348fbf90766"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 1668007,
+          "mtime_ns": 1788369074768599233
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 13766977,
+          "mtime_ns": 1788369075116076381
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 48329824,
+          "mtime_ns": 1788369075115876588
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 1323168,
+          "mtime_ns": 1788369075115200126
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 58416,
+        "callSites": 94748,
+        "contentIdentity": "f8f6c2f8e6a44cf9bd4645c6af45beadea7870f271d9c0c5660e5ca9ba8d5920",
+        "uniquePropertyStrings": [
+          2537,
+          8526,
+          6214,
+          12235
+        ],
+        "trigramPostingCount": 574103,
+        "retainedBytes": 6812696,
+        "expectedFileBytes": 6812300,
+        "sizeMatches": true,
+        "storedCRC32asLong": 753213328,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-tika-00",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-tika-00",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 4187980,
+          "mtime_ns": 1788569202126033114
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369084290955210,
+          "hex": "31dea801eadf32ebcda733174c207f6e884dc89f9fa2bcc114e0be1a436714e2"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369084031672940,
+          "hex": "c7c42cc8c03dd8bf36990e376ebb0b1539bd19fcf9344ed6e95af9a7cb2e4cfa"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 905203,
+          "mtime_ns": 1788369084026352534
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 8784067,
+          "mtime_ns": 1788369084290802709
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 50110536,
+          "mtime_ns": 1788369084290689792
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 890572,
+          "mtime_ns": 1788369084290078955
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 34568,
+        "callSites": 55707,
+        "contentIdentity": "31dea801eadf32ebcda733174c207f6e884dc89f9fa2bcc114e0be1a436714e2",
+        "uniquePropertyStrings": [
+          1700,
+          5714,
+          4768,
+          6781
+        ],
+        "trigramPostingCount": 358542,
+        "retainedBytes": 4188376,
+        "expectedFileBytes": 4187980,
+        "sizeMatches": true,
+        "storedCRC32asLong": 3394389384,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-tika-01",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-tika-01",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 4572404,
+          "mtime_ns": 1788569202112706625
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369085874452951,
+          "hex": "6b33ddb340781eb312d713a261949ea4052f2a4787874bc3f62f1670bf1fe0b9"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369085599508257,
+          "hex": "cf3e3b0d4b550053d99a7533d6f0396afe469edda9b830a02e80e3cf74e4171c"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 918073,
+          "mtime_ns": 1788369085593707849
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 10342712,
+          "mtime_ns": 1788369085874278866
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 52210296,
+          "mtime_ns": 1788369085874160574
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 1050096,
+          "mtime_ns": 1788369085873383986
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 36988,
+        "callSites": 67073,
+        "contentIdentity": "6b33ddb340781eb312d713a261949ea4052f2a4787874bc3f62f1670bf1fe0b9",
+        "uniquePropertyStrings": [
+          1745,
+          6562,
+          5084,
+          7449
+        ],
+        "trigramPostingCount": 379566,
+        "retainedBytes": 4572800,
+        "expectedFileBytes": 4572404,
+        "sizeMatches": true,
+        "storedCRC32asLong": 2723637277,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-tika-02",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-tika-02",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 4357156,
+          "mtime_ns": 1788569202098263137
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369087474422243,
+          "hex": "19497c4cf611ec9eddb59e15346d261f3bdd2a6757b397006fb7051ff74dbb8b"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369087197852998,
+          "hex": "df3e91754395d1b3f40d0d8b31f5a2f69a9ffe1aee2411ad9fb6a5fa31e0ce9e"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 954477,
+          "mtime_ns": 1788369087191957756
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 9820340,
+          "mtime_ns": 1788369087474266533
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 54237840,
+          "mtime_ns": 1788369087474147324
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 1013988,
+          "mtime_ns": 1788369087473478946
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 36148,
+        "callSites": 60764,
+        "contentIdentity": "19497c4cf611ec9eddb59e15346d261f3bdd2a6757b397006fb7051ff74dbb8b",
+        "uniquePropertyStrings": [
+          1763,
+          6311,
+          5025,
+          6799
+        ],
+        "trigramPostingCount": 367060,
+        "retainedBytes": 4357552,
+        "expectedFileBytes": 4357156,
+        "sizeMatches": true,
+        "storedCRC32asLong": 3493607267,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-tika-03",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-tika-03",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 4160404,
+          "mtime_ns": 1788569202084512565
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369088885537208,
+          "hex": "c8fcadf3e5d6a3e0726730484bf8592315a5e45e7e23abdb642a0af162c24455"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369088606756618,
+          "hex": "ed739e151a66e2cbef97ef0239d006fa70922e66c4750813e5f38c010f69d717"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 866289,
+          "mtime_ns": 1788369088601590963
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 8718428,
+          "mtime_ns": 1788369088884138033
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 55995440,
+          "mtime_ns": 1788369088884016199
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 879016,
+          "mtime_ns": 1788369088883352529
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 34228,
+        "callSites": 54516,
+        "contentIdentity": "c8fcadf3e5d6a3e0726730484bf8592315a5e45e7e23abdb642a0af162c24455",
+        "uniquePropertyStrings": [
+          1691,
+          5341,
+          4842,
+          7382
+        ],
+        "trigramPostingCount": 357524,
+        "retainedBytes": 4160800,
+        "expectedFileBytes": 4160404,
+        "sizeMatches": true,
+        "storedCRC32asLong": 1475925029,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-tika-04",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-tika-04",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 4599764,
+          "mtime_ns": 1788569202071484742
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369090397463747,
+          "hex": "841e414bde20a955d734a8cbd987ceea9a2998c2937bf7433e5a87e22dc0c55d"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369090116949647,
+          "hex": "e986f20ff3253c99e9508aed969eae71fd586402664ade03fa41b6039b4dd99f"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 952253,
+          "mtime_ns": 1788369090110806487
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 9871532,
+          "mtime_ns": 1788369090397281246
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 57996256,
+          "mtime_ns": 1788369090397152204
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 1000624,
+          "mtime_ns": 1788369090396428617
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 38548,
+        "callSites": 65357,
+        "contentIdentity": "841e414bde20a955d734a8cbd987ceea9a2998c2937bf7433e5a87e22dc0c55d",
+        "uniquePropertyStrings": [
+          1787,
+          6535,
+          5248,
+          7314
+        ],
+        "trigramPostingCount": 384814,
+        "retainedBytes": 4600160,
+        "expectedFileBytes": 4599764,
+        "sizeMatches": true,
+        "storedCRC32asLong": 183895431,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-tika-05",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-tika-05",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 4375556,
+          "mtime_ns": 1788569202057113504
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369091893830991,
+          "hex": "e3d1c3d7900c12b37689c2da610812804bb280b99e5fd8b71764950850182a04"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369091612343427,
+          "hex": "1b49db7d2467aad4bf12464b743dd8919acc18690b659a46108c0122fd559db9"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 859845,
+          "mtime_ns": 1788369091606925813
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 9375436,
+          "mtime_ns": 1788369091893670532
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 59895280,
+          "mtime_ns": 1788369091893536489
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 949728,
+          "mtime_ns": 1788369091892812485
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 35531,
+        "callSites": 59823,
+        "contentIdentity": "e3d1c3d7900c12b37689c2da610812804bb280b99e5fd8b71764950850182a04",
+        "uniquePropertyStrings": [
+          1679,
+          6577,
+          5024,
+          6840
+        ],
+        "trigramPostingCount": 371637,
+        "retainedBytes": 4375952,
+        "expectedFileBytes": 4375556,
+        "sizeMatches": true,
+        "storedCRC32asLong": 2778693177,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-tika-06",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-tika-06",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 4367028,
+          "mtime_ns": 1788569202043409599
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369093406214741,
+          "hex": "bba09f34e9e4bf763bbd8e00d843e348a2f8b721194745806b68a11625e9f780"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369093107599621,
+          "hex": "6d2a01f567be4d7d6be32283240c44a8eb2cb79f941e6cdbbc94db15e52ae37a"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 888189,
+          "mtime_ns": 1788369093102026714
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 9747555,
+          "mtime_ns": 1788369093406065866
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 61841224,
+          "mtime_ns": 1788369093405957907
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 973188,
+          "mtime_ns": 1788369093405274778
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 37850,
+        "callSites": 58836,
+        "contentIdentity": "bba09f34e9e4bf763bbd8e00d843e348a2f8b721194745806b68a11625e9f780",
+        "uniquePropertyStrings": [
+          1716,
+          5982,
+          5107,
+          6990
+        ],
+        "trigramPostingCount": 370551,
+        "retainedBytes": 4367424,
+        "expectedFileBytes": 4367028,
+        "sizeMatches": true,
+        "storedCRC32asLong": 2158078183,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-tika-07",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-tika-07",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 4228900,
+          "mtime_ns": 1788569202029726526
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369094909515940,
+          "hex": "ed62b5f49c0f7862a3fdc46638fb9ea5d47edd8f0800258ce5684454c628b620"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369094605954918,
+          "hex": "034cf1e48d0a59d6ca03f32b0a70c550cdd2d05734a26449dea9978c4e355c19"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 878711,
+          "mtime_ns": 1788369094600226968
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 9244631,
+          "mtime_ns": 1788369094909338981
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 63781928,
+          "mtime_ns": 1788369094909222814
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 970568,
+          "mtime_ns": 1788369094908637685
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 35220,
+        "callSites": 57832,
+        "contentIdentity": "ed62b5f49c0f7862a3fdc46638fb9ea5d47edd8f0800258ce5684454c628b620",
+        "uniquePropertyStrings": [
+          1772,
+          5923,
+          4845,
+          7303
+        ],
+        "trigramPostingCount": 357875,
+        "retainedBytes": 4229296,
+        "expectedFileBytes": 4228900,
+        "sizeMatches": true,
+        "storedCRC32asLong": 3996666807,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-tika-08",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-tika-08",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 4704356,
+          "mtime_ns": 1788569202016470621
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369096428793856,
+          "hex": "d696874dafa24efbeac44f2a369bd47e912e48cf9ae0167cdba23d28cb229944"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369096132490457,
+          "hex": "962a3c8a143f8e82c620838db0e71b2e17c8dfc0a8f0663771adeb5c02c64173"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 981727,
+          "mtime_ns": 1788369096126612674
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 9779930,
+          "mtime_ns": 1788369096428639605
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 65743440,
+          "mtime_ns": 1788369096428511813
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 980972,
+          "mtime_ns": 1788369096427789059
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 38341,
+        "callSites": 63677,
+        "contentIdentity": "d696874dafa24efbeac44f2a369bd47e912e48cf9ae0167cdba23d28cb229944",
+        "uniquePropertyStrings": [
+          1754,
+          6617,
+          5300,
+          8582
+        ],
+        "trigramPostingCount": 400086,
+        "retainedBytes": 4704752,
+        "expectedFileBytes": 4704356,
+        "sizeMatches": true,
+        "storedCRC32asLong": 2303987760,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-tika-09",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-tika-09",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 4644372,
+          "mtime_ns": 1788569202001687258
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369098006783314,
+          "hex": "cc8bb21c8979e74a86f2b0622662d379155fcec3b48b74a4e6425622fc7b1fad"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369097702413412,
+          "hex": "44ee3e7f81b27b09804650a25f1388b5d5cd799959d985e25f4ae1e88a18df01"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 1076871,
+          "mtime_ns": 1788369097696911214
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 10293780,
+          "mtime_ns": 1788369098006615521
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 67814864,
+          "mtime_ns": 1788369098006487437
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 1035928,
+          "mtime_ns": 1788369098005745933
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 36612,
+        "callSites": 66311,
+        "contentIdentity": "cc8bb21c8979e74a86f2b0622662d379155fcec3b48b74a4e6425622fc7b1fad",
+        "uniquePropertyStrings": [
+          1814,
+          6752,
+          5195,
+          8035
+        ],
+        "trigramPostingCount": 389506,
+        "retainedBytes": 4644768,
+        "expectedFileBytes": 4644372,
+        "sizeMatches": true,
+        "storedCRC32asLong": 2966306523,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-tika-10",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-tika-10",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 4942876,
+          "mtime_ns": 1788569201987098395
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369099658840862,
+          "hex": "ff095dd48e39a64138776deaf8bb188eb0ab5ebaf33015b73703ab7998c0ff3f"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369099342067138,
+          "hex": "9899d88b2a16ae3b4798f7f6714965ce1dde1b78ec1414669d5350055b66edeb"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 1073605,
+          "mtime_ns": 1788369099335322225
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 10679492,
+          "mtime_ns": 1788369099658662569
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 69988064,
+          "mtime_ns": 1788369099658536985
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 1086816,
+          "mtime_ns": 1788369099657734106
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 41195,
+        "callSites": 68948,
+        "contentIdentity": "ff095dd48e39a64138776deaf8bb188eb0ab5ebaf33015b73703ab7998c0ff3f",
+        "uniquePropertyStrings": [
+          1836,
+          7533,
+          5364,
+          8112
+        ],
+        "trigramPostingCount": 415913,
+        "retainedBytes": 4943272,
+        "expectedFileBytes": 4942876,
+        "sizeMatches": true,
+        "storedCRC32asLong": 1330111886,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-tika-11",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-tika-11",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 4535860,
+          "mtime_ns": 1788569201971616491
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369101267260160,
+          "hex": "f93a0788673e4034bbe2a78b212c2718efc4f85855c7ce2d7a7ece4f936e8d5a"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369100931255327,
+          "hex": "af004f875ef8bd8318b54e9d7b8b806353a1d080b414ef59c21140058cf343d3"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 1040661,
+          "mtime_ns": 1788369100925770046
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 9881048,
+          "mtime_ns": 1788369101267118660
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 71960640,
+          "mtime_ns": 1788369101266996826
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 986504,
+          "mtime_ns": 1788369101266341572
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 38094,
+        "callSites": 62554,
+        "contentIdentity": "f93a0788673e4034bbe2a78b212c2718efc4f85855c7ce2d7a7ece4f936e8d5a",
+        "uniquePropertyStrings": [
+          1782,
+          6164,
+          5192,
+          7980
+        ],
+        "trigramPostingCount": 382652,
+        "retainedBytes": 4536256,
+        "expectedFileBytes": 4535860,
+        "sizeMatches": true,
+        "storedCRC32asLong": 2386479919,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-tika-12",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-tika-12",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 4613932,
+          "mtime_ns": 1788569201957447128
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369102869984302,
+          "hex": "1a83f5c2a1f741e306640d675c26b18f4986a50a508aa0151323c0ff32db7b9d"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369102554070125,
+          "hex": "029b5eec61867b340adc4545c3c2106d911a1a67414ee16fe2be82220b51449b"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 952737,
+          "mtime_ns": 1788369102548739136
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 9912508,
+          "mtime_ns": 1788369102869786134
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 73952448,
+          "mtime_ns": 1788369102869654675
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 996120,
+          "mtime_ns": 1788369102868781712
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 38552,
+        "callSites": 62181,
+        "contentIdentity": "1a83f5c2a1f741e306640d675c26b18f4986a50a508aa0151323c0ff32db7b9d",
+        "uniquePropertyStrings": [
+          1778,
+          5906,
+          5343,
+          7937
+        ],
+        "trigramPostingCount": 392853,
+        "retainedBytes": 4614328,
+        "expectedFileBytes": 4613932,
+        "sizeMatches": true,
+        "storedCRC32asLong": 995847607,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-tika-13",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-tika-13",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 4290212,
+          "mtime_ns": 1788569201943097932
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369104445477913,
+          "hex": "3452fe2c40ea8af40c8512871bd5559cd8dba7bc7734a5d263a47bc796c9e6a2"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369104102687291,
+          "hex": "7cffff6f008524e8e755481b19ed03184e67ad0310034c7ec8c11a8069bd3233"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 852353,
+          "mtime_ns": 1788369104097344302
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 9501672,
+          "mtime_ns": 1788369104445348079
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 75914808,
+          "mtime_ns": 1788369104445233453
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 981396,
+          "mtime_ns": 1788369104444559991
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 35798,
+        "callSites": 59606,
+        "contentIdentity": "3452fe2c40ea8af40c8512871bd5559cd8dba7bc7734a5d263a47bc796c9e6a2",
+        "uniquePropertyStrings": [
+          1717,
+          6232,
+          4749,
+          7433
+        ],
+        "trigramPostingCount": 361125,
+        "retainedBytes": 4290608,
+        "expectedFileBytes": 4290212,
+        "sizeMatches": true,
+        "storedCRC32asLong": 3366197449,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-tika-14",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-tika-14",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 4495332,
+          "mtime_ns": 1788569201929695151
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369106025859301,
+          "hex": "9216c0c674bb1ea41737c48019e8829b8b3406aae372b107d16262fc4051f057"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369105709157412,
+          "hex": "09a203dfef6f005d5635c7339505e30a1465ff0a11178ec702e4927705f072b6"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 940689,
+          "mtime_ns": 1788369105704196342
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 9567279,
+          "mtime_ns": 1788369106025696467
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 77884384,
+          "mtime_ns": 1788369106025577633
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 985004,
+          "mtime_ns": 1788369106024916962
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 37652,
+        "callSites": 59770,
+        "contentIdentity": "9216c0c674bb1ea41737c48019e8829b8b3406aae372b107d16262fc4051f057",
+        "uniquePropertyStrings": [
+          1719,
+          6282,
+          5161,
+          7469
+        ],
+        "trigramPostingCount": 384083,
+        "retainedBytes": 4495728,
+        "expectedFileBytes": 4495332,
+        "sizeMatches": true,
+        "storedCRC32asLong": 3447346903,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-tika-15",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-tika-15",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 5240924,
+          "mtime_ns": 1788569201915576663
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369107790904702,
+          "hex": "dc48e42151f71c592d9edd784e4d85337133616d0bbab37aa28029c72f629ad4"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369107433467705,
+          "hex": "a1a9163bd007bc63b816fc18d5a6511791ea73d8fa9b35be4466ed1eeca7ae2c"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 1033787,
+          "mtime_ns": 1788369107426972626
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 11613197,
+          "mtime_ns": 1788369107790729785
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 80224616,
+          "mtime_ns": 1788369107790601867
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 1170332,
+          "mtime_ns": 1788369107789881696
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 42951,
+        "callSites": 79133,
+        "contentIdentity": "dc48e42151f71c592d9edd784e4d85337133616d0bbab37aa28029c72f629ad4",
+        "uniquePropertyStrings": [
+          1735,
+          8202,
+          5402,
+          8779
+        ],
+        "trigramPostingCount": 429770,
+        "retainedBytes": 5241320,
+        "expectedFileBytes": 5240924,
+        "sizeMatches": true,
+        "storedCRC32asLong": 1931490772,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-hive-00",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-hive-00",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 6926132,
+          "mtime_ns": 1788569201899142344
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369120217612536,
+          "hex": "3ea054f08f2b5af4543afbd15b038c33de41e3645ecf870ea76b3d2b030ef4fe"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369119740269522,
+          "hex": "a3a48ee5bbea5f0b7345ea80ca76e7c8f1857c072209e5e11e20934d0bec3714"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 1216471,
+          "mtime_ns": 1788369119732585270
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 17532738,
+          "mtime_ns": 1788369120217464577
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 83548880,
+          "mtime_ns": 1788369120217300951
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 1662348,
+          "mtime_ns": 1788369120216473863
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 43919,
+        "callSites": 102295,
+        "contentIdentity": "3ea054f08f2b5af4543afbd15b038c33de41e3645ecf870ea76b3d2b030ef4fe",
+        "uniquePropertyStrings": [
+          2260,
+          6218,
+          7129,
+          11367
+        ],
+        "trigramPostingCount": 590273,
+        "retainedBytes": 6926528,
+        "expectedFileBytes": 6926132,
+        "sizeMatches": true,
+        "storedCRC32asLong": 3442881091,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-hive-01",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-hive-01",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 5622516,
+          "mtime_ns": 1788569201877351362
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369122643907333,
+          "hex": "81a6775682ff416850c6e9b9fa688c9b86459a03c43c6622842d68217aa6fef0"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369122252712185,
+          "hex": "b2e243e9fb2cfdd8f42d2aabce0c1b8c1cfe4e1deaae646f574b0965b5c5e5b1"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 1002187,
+          "mtime_ns": 1788369122246621650
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 13822866,
+          "mtime_ns": 1788369122643648540
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 86220832,
+          "mtime_ns": 1788369122643495040
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 1336192,
+          "mtime_ns": 1788369122642689743
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 37762,
+        "callSites": 81185,
+        "contentIdentity": "81a6775682ff416850c6e9b9fa688c9b86459a03c43c6622842d68217aa6fef0",
+        "uniquePropertyStrings": [
+          2158,
+          4948,
+          5987,
+          8537
+        ],
+        "trigramPostingCount": 481042,
+        "retainedBytes": 5622912,
+        "expectedFileBytes": 5622516,
+        "sizeMatches": true,
+        "storedCRC32asLong": 441333015,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-hive-02",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-hive-02",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 6585516,
+          "mtime_ns": 1788569201859769501
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369125188448263,
+          "hex": "38fe39c42ae681d54a93b9d53eec879e6653d973f4d3f1d134e0f6cee6335367"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369124721039639,
+          "hex": "c4eacaf95dc0ff074bafc4c0a9cb82497f3f6f76e3af33680542c7accbcac4a6"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 1180041,
+          "mtime_ns": 1788369124714360434
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 18375714,
+          "mtime_ns": 1788369125188293303
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 89513304,
+          "mtime_ns": 1788369125188136053
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 1646452,
+          "mtime_ns": 1788369125187232047
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 41823,
+        "callSites": 96064,
+        "contentIdentity": "38fe39c42ae681d54a93b9d53eec879e6653d973f4d3f1d134e0f6cee6335367",
+        "uniquePropertyStrings": [
+          2313,
+          6270,
+          6915,
+          10462
+        ],
+        "trigramPostingCount": 563268,
+        "retainedBytes": 6585912,
+        "expectedFileBytes": 6585516,
+        "sizeMatches": true,
+        "storedCRC32asLong": 895151574,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-hive-03",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-hive-03",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 6527676,
+          "mtime_ns": 1788569201839147727
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369128088442886,
+          "hex": "0ccdd9601dc867f208bc7db8295e9174f99616c6c08115b3372286321f43d759"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369127606497888,
+          "hex": "3ea394f8249d6660f96231fa27646bed078c930715a8b369afbb72a46410a03b"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 1090149,
+          "mtime_ns": 1788369127599536348
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 16287540,
+          "mtime_ns": 1788369128088138968
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 92672728,
+          "mtime_ns": 1788369128087965550
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 1579928,
+          "mtime_ns": 1788369128086986086
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 41400,
+        "callSites": 94421,
+        "contentIdentity": "0ccdd9601dc867f208bc7db8295e9174f99616c6c08115b3372286321f43d759",
+        "uniquePropertyStrings": [
+          2232,
+          6421,
+          6814,
+          10465
+        ],
+        "trigramPostingCount": 559775,
+        "retainedBytes": 6528072,
+        "expectedFileBytes": 6527676,
+        "sizeMatches": true,
+        "storedCRC32asLong": 1822674637,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-hive-04",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-hive-04",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 6017772,
+          "mtime_ns": 1788569201818768452
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369130607034252,
+          "hex": "05c7b2c4fedd64cd21adf3ee777f5a7ae3efd98c839008a3cf162f5036bb708a"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369130160483537,
+          "hex": "1209b3b1a3aa804321d2ba9d727eb87dac11b2b36f103f0cfd803bdc58e4a6a2"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 1072397,
+          "mtime_ns": 1788369130154129876
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 15376654,
+          "mtime_ns": 1788369130606740291
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 95659640,
+          "mtime_ns": 1788369130606579457
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 1493672,
+          "mtime_ns": 1788369130605673910
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 40911,
+        "callSites": 86012,
+        "contentIdentity": "05c7b2c4fedd64cd21adf3ee777f5a7ae3efd98c839008a3cf162f5036bb708a",
+        "uniquePropertyStrings": [
+          2242,
+          5331,
+          6455,
+          9051
+        ],
+        "trigramPostingCount": 516197,
+        "retainedBytes": 6018168,
+        "expectedFileBytes": 6017772,
+        "sizeMatches": true,
+        "storedCRC32asLong": 2329368303,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-hive-05",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-hive-05",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 6038564,
+          "mtime_ns": 1788569201800083093
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369133029315317,
+          "hex": "a94158a62c1de1a850ae1c937451b26492b6a4fb2ab410ac0fb2f9b59256f2f5"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369132588411219,
+          "hex": "97e04897487253a6777c5ce6dd0e219fa047dcfd4ee69947666ad7eefc96ce58"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 1067517,
+          "mtime_ns": 1788369132581281178
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 14854124,
+          "mtime_ns": 1788369133029021106
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 98551568,
+          "mtime_ns": 1788369133028831105
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 1446180,
+          "mtime_ns": 1788369133027748307
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 39780,
+        "callSites": 82642,
+        "contentIdentity": "a94158a62c1de1a850ae1c937451b26492b6a4fb2ab410ac0fb2f9b59256f2f5",
+        "uniquePropertyStrings": [
+          2250,
+          5749,
+          6489,
+          9238
+        ],
+        "trigramPostingCount": 526020,
+        "retainedBytes": 6038960,
+        "expectedFileBytes": 6038564,
+        "sizeMatches": true,
+        "storedCRC32asLong": 3833894921,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-hive-06",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-hive-06",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 6277108,
+          "mtime_ns": 1788569201781317483
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369135512125561,
+          "hex": "4cfea94186432a8440dbc2f2f1c082fc0bd71f1aade89ac0d34fad5d4cbf8521"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369135067518233,
+          "hex": "1c149b7f3032ddb14489ce0906c73fd310e09b7bc10f613f59b132bcd7a2acf3"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 1191707,
+          "mtime_ns": 1788369135061023238
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 15897877,
+          "mtime_ns": 1788369135511819059
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 101615464,
+          "mtime_ns": 1788369135511649558
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 1532164,
+          "mtime_ns": 1788369135510617511
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 40105,
+        "callSites": 86251,
+        "contentIdentity": "4cfea94186432a8440dbc2f2f1c082fc0bd71f1aade89ac0d34fad5d4cbf8521",
+        "uniquePropertyStrings": [
+          2250,
+          5532,
+          6739,
+          9830
+        ],
+        "trigramPostingCount": 547670,
+        "retainedBytes": 6277504,
+        "expectedFileBytes": 6277108,
+        "sizeMatches": true,
+        "storedCRC32asLong": 1700407901,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-hive-07",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-hive-07",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 6530436,
+          "mtime_ns": 1788569201761689208
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369138566910901,
+          "hex": "8dde2c568781ed4faa9c869480c2a6ad299cfb44224f584babf7359b20ea1714"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369138066029835,
+          "hex": "b1b2ce12485cc043d7df36091f81153ccbd4dbd3416d48f58040862c891d30e8"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 1357077,
+          "mtime_ns": 1788369138057667287
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 16999565,
+          "mtime_ns": 1788369138560154112
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 104987848,
+          "mtime_ns": 1788369138559986445
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 1686408,
+          "mtime_ns": 1788369138559182690
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 47441,
+        "callSites": 102028,
+        "contentIdentity": "8dde2c568781ed4faa9c869480c2a6ad299cfb44224f584babf7359b20ea1714",
+        "uniquePropertyStrings": [
+          2214,
+          6311,
+          6584,
+          9812
+        ],
+        "trigramPostingCount": 539876,
+        "retainedBytes": 6530832,
+        "expectedFileBytes": 6530436,
+        "sizeMatches": true,
+        "storedCRC32asLong": 3125465521,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-hive-08",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-hive-08",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 6862052,
+          "mtime_ns": 1788569201741199142
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369141863625162,
+          "hex": "d235000922fb48e7e44b7ef0401d73cf78d1ddf0341dd4f8a76ff3b9fcdc846c"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369141364322522,
+          "hex": "9a9754fbea4cfb6a108f2c9434e7199bd62acb87bff17c8c7c257ee13e358e3f"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 1206465,
+          "mtime_ns": 1788369141356132601
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 17656518,
+          "mtime_ns": 1788369141863489078
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 108358064,
+          "mtime_ns": 1788369141863333994
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 1685324,
+          "mtime_ns": 1788369141862331613
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 46723,
+        "callSites": 99087,
+        "contentIdentity": "d235000922fb48e7e44b7ef0401d73cf78d1ddf0341dd4f8a76ff3b9fcdc846c",
+        "uniquePropertyStrings": [
+          2298,
+          6193,
+          7118,
+          10331
+        ],
+        "trigramPostingCount": 586909,
+        "retainedBytes": 6862448,
+        "expectedFileBytes": 6862052,
+        "sizeMatches": true,
+        "storedCRC32asLong": 3600491570,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-hive-09",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-hive-09",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 6406092,
+          "mtime_ns": 1788569201719729826
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369144336216389,
+          "hex": "ca0ea5e6ae0558665eb27662db36132be928dd34d77dd3ace4042428835e2591"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369143858664083,
+          "hex": "dd5698bcdb24e938fe735d71fe020f1f2f48168643cb42288b42ab761886d0b1"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 1066389,
+          "mtime_ns": 1788369143852094254
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 14851885,
+          "mtime_ns": 1788369144335966596
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 111291496,
+          "mtime_ns": 1788369144335820470
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 1466932,
+          "mtime_ns": 1788369144334795590
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 40297,
+        "callSites": 82759,
+        "contentIdentity": "ca0ea5e6ae0558665eb27662db36132be928dd34d77dd3ace4042428835e2591",
+        "uniquePropertyStrings": [
+          2126,
+          6027,
+          6826,
+          9945
+        ],
+        "trigramPostingCount": 570012,
+        "retainedBytes": 6406488,
+        "expectedFileBytes": 6406092,
+        "sizeMatches": true,
+        "storedCRC32asLong": 1482980321,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-hive-10",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-hive-10",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 5798364,
+          "mtime_ns": 1788569201699727551
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369146622806056,
+          "hex": "69d3c8521eed401aa4fe2ad27b8becfc404dd741d06f322e3174e6f6eae2b1ae"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369146165475031,
+          "hex": "5ea770b06ab3edd3321e1f815313073b5f0c4a3e4ebe0409b56081bbaa679774"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 996417,
+          "mtime_ns": 1788369146158921077
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 13734807,
+          "mtime_ns": 1788369146622552805
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 113966080,
+          "mtime_ns": 1788369146622399387
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 1337508,
+          "mtime_ns": 1788369146621565591
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 38824,
+        "callSites": 79356,
+        "contentIdentity": "69d3c8521eed401aa4fe2ad27b8becfc404dd741d06f322e3174e6f6eae2b1ae",
+        "uniquePropertyStrings": [
+          2239,
+          5040,
+          6390,
+          8490
+        ],
+        "trigramPostingCount": 505090,
+        "retainedBytes": 5798760,
+        "expectedFileBytes": 5798364,
+        "sizeMatches": true,
+        "storedCRC32asLong": 1271136930,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-hive-11",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-hive-11",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 6262292,
+          "mtime_ns": 1788569201681525941
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369149093659690,
+          "hex": "7eec0508e39ae5769d28fff97076eae702ca7a907858483d6d033522da4d1f62"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369148624684182,
+          "hex": "d8c058e42d53e7dc2c0f3a4e6b34438e9bfe1dce1178b34e091ee1fc181a9f0a"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 1060809,
+          "mtime_ns": 1788369148618485314
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 14395822,
+          "mtime_ns": 1788369149093417356
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 116786344,
+          "mtime_ns": 1788369149093259146
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 1410348,
+          "mtime_ns": 1788369149092345974
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 40824,
+        "callSites": 89373,
+        "contentIdentity": "7eec0508e39ae5769d28fff97076eae702ca7a907858483d6d033522da4d1f62",
+        "uniquePropertyStrings": [
+          2259,
+          5892,
+          6693,
+          9559
+        ],
+        "trigramPostingCount": 538803,
+        "retainedBytes": 6262688,
+        "expectedFileBytes": 6262292,
+        "sizeMatches": true,
+        "storedCRC32asLong": 2191210799,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-hive-12",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-hive-12",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 6300116,
+          "mtime_ns": 1788569201661902375
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369151826647237,
+          "hex": "699650c9209e7b22e96462ec8ba6e023d1c693d761eab108f668e1ae81d99b4e"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369151321333854,
+          "hex": "c432cc53621e840ce43fa466d341e2db06e70fd11cb70538f71cfdfb55ed51bc"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 1262115,
+          "mtime_ns": 1788369151313344892
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 16180182,
+          "mtime_ns": 1788369151826323902
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 119959968,
+          "mtime_ns": 1788369151826129901
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 1587028,
+          "mtime_ns": 1788369151825104395
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 44676,
+        "callSites": 93578,
+        "contentIdentity": "699650c9209e7b22e96462ec8ba6e023d1c693d761eab108f668e1ae81d99b4e",
+        "uniquePropertyStrings": [
+          2207,
+          5959,
+          6638,
+          9666
+        ],
+        "trigramPostingCount": 531202,
+        "retainedBytes": 6300512,
+        "expectedFileBytes": 6300116,
+        "sizeMatches": true,
+        "storedCRC32asLong": 4047172895,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-hive-13",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-hive-13",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 6289828,
+          "mtime_ns": 1788569201642199808
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369154428105199,
+          "hex": "2282926c92f87ee21ab560c31c22be53099d0c35cfac25720fb3e0a94568e910"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369153853722882,
+          "hex": "0f2a94ec644da9b53547d48137e419e65951e547124b03854d17302c8992c667"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 1377701,
+          "mtime_ns": 1788369153845906671
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 14987245,
+          "mtime_ns": 1788369154427853156
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 122911728,
+          "mtime_ns": 1788369154427693822
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 1476096,
+          "mtime_ns": 1788369154426661316
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 42961,
+        "callSites": 86013,
+        "contentIdentity": "2282926c92f87ee21ab560c31c22be53099d0c35cfac25720fb3e0a94568e910",
+        "uniquePropertyStrings": [
+          2296,
+          5473,
+          6832,
+          9036
+        ],
+        "trigramPostingCount": 547594,
+        "retainedBytes": 6290224,
+        "expectedFileBytes": 6289828,
+        "sizeMatches": true,
+        "storedCRC32asLong": 3142065900,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-hive-14",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-hive-14",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 6113340,
+          "mtime_ns": 1788569201622668116
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369157035019151,
+          "hex": "c2b2b416b7712f0153d7bd5ec2d87efc0a0324fef407dcc04bb39531397c8ea5"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369156522970981,
+          "hex": "e87cab0eb1ddae62c0a977bb06896feab953bdeea70df4d850fabec7e94d7738"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 1552263,
+          "mtime_ns": 1788369156510315742
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 14429017,
+          "mtime_ns": 1788369157034773108
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 125773128,
+          "mtime_ns": 1788369157034595023
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 1430916,
+          "mtime_ns": 1788369157033651393
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 44859,
+        "callSites": 88637,
+        "contentIdentity": "c2b2b416b7712f0153d7bd5ec2d87efc0a0324fef407dcc04bb39531397c8ea5",
+        "uniquePropertyStrings": [
+          2136,
+          5508,
+          6352,
+          9680
+        ],
+        "trigramPostingCount": 518348,
+        "retainedBytes": 6113736,
+        "expectedFileBytes": 6113340,
+        "sizeMatches": true,
+        "storedCRC32asLong": 2948084788,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-hive-15",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-hive-15",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 6046236,
+          "mtime_ns": 1788569201603473757
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369159741961132,
+          "hex": "9f7ed10b67b0d0d4fef1af3c76cc0d13867f0114c1df93fa94ecbe92a33c78a9"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369159200764420,
+          "hex": "935aa5be7f2b4fed00996b3e075990f017e19b4db4ba7189e6930064dab691fd"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 1046149,
+          "mtime_ns": 1788369159194295550
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 15769157,
+          "mtime_ns": 1788369159741687381
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 128787688,
+          "mtime_ns": 1788369159741536130
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 1507496,
+          "mtime_ns": 1788369159740616624
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 39489,
+        "callSites": 87946,
+        "contentIdentity": "9f7ed10b67b0d0d4fef1af3c76cc0d13867f0114c1df93fa94ecbe92a33c78a9",
+        "uniquePropertyStrings": [
+          2152,
+          5947,
+          6379,
+          9129
+        ],
+        "trigramPostingCount": 516781,
+        "retainedBytes": 6046632,
+        "expectedFileBytes": 6046236,
+        "sizeMatches": true,
+        "storedCRC32asLong": 2820356469,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-kotlin-compiler-00",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-kotlin-compiler-00",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 4949988,
+          "mtime_ns": 1788569201584438064
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369168748529002,
+          "hex": "7137cadc17656c4ea3ba3fb040b3e7c1ce7af0347f3c7f98cb9cd0a9359ae038"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369168287406579,
+          "hex": "86b44179485af22d64609e17d9801e419b0867ea3a6c8189e2f3b9c55b1982c9"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 1020929,
+          "mtime_ns": 1788369168281380753
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 9506849,
+          "mtime_ns": 1788369168748344292
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 130528664,
+          "mtime_ns": 1788369168748191666
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 870704,
+          "mtime_ns": 1788369168747154827
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 29499,
+        "callSites": 59257,
+        "contentIdentity": "7137cadc17656c4ea3ba3fb040b3e7c1ce7af0347f3c7f98cb9cd0a9359ae038",
+        "uniquePropertyStrings": [
+          1361,
+          4796,
+          5027,
+          7911
+        ],
+        "trigramPostingCount": 451630,
+        "retainedBytes": 4950384,
+        "expectedFileBytes": 4949988,
+        "sizeMatches": true,
+        "storedCRC32asLong": 1190417153,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-kotlin-compiler-01",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-kotlin-compiler-01",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 4728652,
+          "mtime_ns": 1788569201568940827
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369170595903246,
+          "hex": "8a77b3b4ffe68e6ba4023326e09de6bdb0bbaa44e499cb95d23a5b4353d617a4"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369170107479127,
+          "hex": "dfada1ea0411c57aa15ea8385905bf831cd8d06098e9bfc781a07a9c4e3fe1f6"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 1112807,
+          "mtime_ns": 1788369170101852970
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 8858334,
+          "mtime_ns": 1788369170595748579
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 132174704,
+          "mtime_ns": 1788369170595626328
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 823236,
+          "mtime_ns": 1788369170594915616
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 31834,
+        "callSites": 55092,
+        "contentIdentity": "8a77b3b4ffe68e6ba4023326e09de6bdb0bbaa44e499cb95d23a5b4353d617a4",
+        "uniquePropertyStrings": [
+          1388,
+          4700,
+          4775,
+          7563
+        ],
+        "trigramPostingCount": 430627,
+        "retainedBytes": 4729048,
+        "expectedFileBytes": 4728652,
+        "sizeMatches": true,
+        "storedCRC32asLong": 375547097,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-kotlin-compiler-02",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-kotlin-compiler-02",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 4649572,
+          "mtime_ns": 1788569201554289006
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369172342841335,
+          "hex": "951103684ed6e614211d7e01a1df6001e1b9ef0790b6df3dbb9cb8a842e60ca2"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369171857221982,
+          "hex": "0adacf354feddeed764a07465fbd541c59e1e08431356cfeb8db3e963677247d"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 990919,
+          "mtime_ns": 1788369171852235870
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 8240257,
+          "mtime_ns": 1788369172342531708
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 133719928,
+          "mtime_ns": 1788369172342419499
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 772828,
+          "mtime_ns": 1788369172341742162
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 28404,
+        "callSites": 52094,
+        "contentIdentity": "951103684ed6e614211d7e01a1df6001e1b9ef0790b6df3dbb9cb8a842e60ca2",
+        "uniquePropertyStrings": [
+          1459,
+          4340,
+          4929,
+          7111
+        ],
+        "trigramPostingCount": 430755,
+        "retainedBytes": 4649968,
+        "expectedFileBytes": 4649572,
+        "sizeMatches": true,
+        "storedCRC32asLong": 569458575,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-kotlin-compiler-03",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-kotlin-compiler-03",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 4612020,
+          "mtime_ns": 1788569201539940185
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369174000860874,
+          "hex": "0b43311bd47ddd3becb44211cdb0b0ca7303c1bccc26021ee698f1db90ad673c"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369173564697221,
+          "hex": "8d099449ddcc030ffe2a46a6edbdd411a5ee54cb01f3fdd9a8f8763f2c4df99e"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 961137,
+          "mtime_ns": 1788369173559519816
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 7630457,
+          "mtime_ns": 1788369174000567039
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 135146656,
+          "mtime_ns": 1788369174000452289
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 713580,
+          "mtime_ns": 1788369173999474408
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 29023,
+        "callSites": 48917,
+        "contentIdentity": "0b43311bd47ddd3becb44211cdb0b0ca7303c1bccc26021ee698f1db90ad673c",
+        "uniquePropertyStrings": [
+          1462,
+          4079,
+          4947,
+          6869
+        ],
+        "trigramPostingCount": 432278,
+        "retainedBytes": 4612416,
+        "expectedFileBytes": 4612020,
+        "sizeMatches": true,
+        "storedCRC32asLong": 2057389455,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-kotlin-compiler-04",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-kotlin-compiler-04",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 5144116,
+          "mtime_ns": 1788569201525740280
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369175840145366,
+          "hex": "ac6ecb21bfc952ec2d2d8d80df41c3b28fa066d71939b42d6297ebdff201fda9"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369175306060111,
+          "hex": "efdd44beb5a5f5ba21711364e95a63ebc07262180de0b92a1a4a042ffde4cf9f"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 1058111,
+          "mtime_ns": 1788369175300214285
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 9392337,
+          "mtime_ns": 1788369175839970614
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 136888536,
+          "mtime_ns": 1788369175839859447
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 871156,
+          "mtime_ns": 1788369175839182068
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 29773,
+        "callSites": 59098,
+        "contentIdentity": "ac6ecb21bfc952ec2d2d8d80df41c3b28fa066d71939b42d6297ebdff201fda9",
+        "uniquePropertyStrings": [
+          1463,
+          4566,
+          5300,
+          7945
+        ],
+        "trigramPostingCount": 475761,
+        "retainedBytes": 5144512,
+        "expectedFileBytes": 5144116,
+        "sizeMatches": true,
+        "storedCRC32asLong": 2253230833,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-kotlin-compiler-05",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-kotlin-compiler-05",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 5101956,
+          "mtime_ns": 1788569201509715835
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369177777637041,
+          "hex": "b2eb5b07de8946361dc12d5a2785b8a812680f9329c41e39125b3f8db5b6b7eb"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369177271982698,
+          "hex": "cd4c7c09aba422d78a248a51476e7f96e5d492791403196fc69328b670d2b304"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 1048843,
+          "mtime_ns": 1788369177266431333
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 9915883,
+          "mtime_ns": 1788369177777502832
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 138709816,
+          "mtime_ns": 1788369177777396206
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 910856,
+          "mtime_ns": 1788369177776513660
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 30875,
+        "callSites": 62560,
+        "contentIdentity": "b2eb5b07de8946361dc12d5a2785b8a812680f9329c41e39125b3f8db5b6b7eb",
+        "uniquePropertyStrings": [
+          1478,
+          4886,
+          5147,
+          7850
+        ],
+        "trigramPostingCount": 462378,
+        "retainedBytes": 5102352,
+        "expectedFileBytes": 5101956,
+        "sizeMatches": true,
+        "storedCRC32asLong": 3265905346,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-kotlin-compiler-06",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-kotlin-compiler-06",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 4666396,
+          "mtime_ns": 1788569201493879098
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369179451384546,
+          "hex": "8c23d71bd401133856f919d7c39d225e74cb918c587bce3ac7df324f9b7dc3cd"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369179014031551,
+          "hex": "5dc5ec557da8afe4a38afe9ee0bde1df53463b3828936f6cebec28126514c6da"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 947977,
+          "mtime_ns": 1788369179009139981
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 8309639,
+          "mtime_ns": 1788369179450977668
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 140258552,
+          "mtime_ns": 1788369179450856376
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 774584,
+          "mtime_ns": 1788369179449742286
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 27412,
+        "callSites": 52417,
+        "contentIdentity": "8c23d71bd401133856f919d7c39d225e74cb918c587bce3ac7df324f9b7dc3cd",
+        "uniquePropertyStrings": [
+          1378,
+          4475,
+          4876,
+          7330
+        ],
+        "trigramPostingCount": 432984,
+        "retainedBytes": 4666792,
+        "expectedFileBytes": 4666396,
+        "sizeMatches": true,
+        "storedCRC32asLong": 783543524,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-kotlin-compiler-07",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-kotlin-compiler-07",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 4653092,
+          "mtime_ns": 1788569201479354235
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369181298376913,
+          "hex": "995c85409c48f4d8462ccb541f2950eb39ff6b7dae75acd79a1af41248c397a0"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369180852119743,
+          "hex": "5ae3b0f38ad0c6bf963339f5e4059a0827a10701fd258e2e5945c140809cbf38"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 952865,
+          "mtime_ns": 1788369180846849463
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 8689611,
+          "mtime_ns": 1788369181298161578
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 141875440,
+          "mtime_ns": 1788369181298050120
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 808660,
+          "mtime_ns": 1788369181297321782
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 29923,
+        "callSites": 54757,
+        "contentIdentity": "995c85409c48f4d8462ccb541f2950eb39ff6b7dae75acd79a1af41248c397a0",
+        "uniquePropertyStrings": [
+          1410,
+          4550,
+          4826,
+          6948
+        ],
+        "trigramPostingCount": 424455,
+        "retainedBytes": 4653488,
+        "expectedFileBytes": 4653092,
+        "sizeMatches": true,
+        "storedCRC32asLong": 532983521,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-kotlin-compiler-08",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-kotlin-compiler-08",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 4970244,
+          "mtime_ns": 1788569201464882164
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369183161856833,
+          "hex": "3007ff0875486dbc274ebe6a3bc95acd7a207e641a5c7efcda5a3ea97c86e795"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369182634219907,
+          "hex": "8661964fb335ddd3f1c9ae7f5d552579ae005bc0f605c354a39596ef003b6d9a"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 1064305,
+          "mtime_ns": 1788369182628555208
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 9388794,
+          "mtime_ns": 1788369183161681790
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 143634728,
+          "mtime_ns": 1788369183161565373
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 879860,
+          "mtime_ns": 1788369183160838786
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 30303,
+        "callSites": 59877,
+        "contentIdentity": "3007ff0875486dbc274ebe6a3bc95acd7a207e641a5c7efcda5a3ea97c86e795",
+        "uniquePropertyStrings": [
+          1390,
+          4992,
+          5080,
+          7323
+        ],
+        "trigramPostingCount": 452428,
+        "retainedBytes": 4970640,
+        "expectedFileBytes": 4970244,
+        "sizeMatches": true,
+        "storedCRC32asLong": 146204555,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-kotlin-compiler-09",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-kotlin-compiler-09",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 4823436,
+          "mtime_ns": 1788569201449001510
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369185007998029,
+          "hex": "e0fb7294eaf93d9743c185dcd5e722787344a19fd77ab4a7e2aca8532d4b1424"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369184513189874,
+          "hex": "008eafbcc6290a598b8d8b6267ce66ea8bbcf0d0495836d4dabd37751de66a78"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 987363,
+          "mtime_ns": 1788369184507643134
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 9488687,
+          "mtime_ns": 1788369185007828653
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 145435448,
+          "mtime_ns": 1788369185007719694
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 900576,
+          "mtime_ns": 1788369185006979690
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 30494,
+        "callSites": 59459,
+        "contentIdentity": "e0fb7294eaf93d9743c185dcd5e722787344a19fd77ab4a7e2aca8532d4b1424",
+        "uniquePropertyStrings": [
+          1375,
+          4839,
+          4823,
+          7698
+        ],
+        "trigramPostingCount": 434772,
+        "retainedBytes": 4823832,
+        "expectedFileBytes": 4823436,
+        "sizeMatches": true,
+        "storedCRC32asLong": 2877859715,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-kotlin-compiler-10",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-kotlin-compiler-10",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 5412020,
+          "mtime_ns": 1788569201433594273
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369186945078827,
+          "hex": "9420e2f5549342ed944ed40bf482212a523fb624ad4b0a1a5547ca9ef1abd104"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369186465312675,
+          "hex": "f876395650750fd2543ee299f0f1431983ea55946c59cd7c13aaff770352c217"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 1203637,
+          "mtime_ns": 1788369186458853930
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 10354198,
+          "mtime_ns": 1788369186944916410
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 147371392,
+          "mtime_ns": 1788369186944796117
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 968188,
+          "mtime_ns": 1788369186943772320
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 35203,
+        "callSites": 64023,
+        "contentIdentity": "9420e2f5549342ed944ed40bf482212a523fb624ad4b0a1a5547ca9ef1abd104",
+        "uniquePropertyStrings": [
+          1463,
+          5108,
+          5213,
+          8944
+        ],
+        "trigramPostingCount": 492515,
+        "retainedBytes": 5412416,
+        "expectedFileBytes": 5412020,
+        "sizeMatches": true,
+        "storedCRC32asLong": 708497452,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-kotlin-compiler-11",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-kotlin-compiler-11",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 4412204,
+          "mtime_ns": 1788569201416710079
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369188724545394,
+          "hex": "d389eb2083afe310756706992c378db40f031292ba0f187277ec634b66820468"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369188211968303,
+          "hex": "be0961ff68a7054d45c273eb7948172a958e2225fa3f47cdf02bf9835f391d77"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 888895,
+          "mtime_ns": 1788369188207218026
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 8189405,
+          "mtime_ns": 1788369188724248517
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 148910432,
+          "mtime_ns": 1788369188724134433
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 769736,
+          "mtime_ns": 1788369188723416221
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 26540,
+        "callSites": 51565,
+        "contentIdentity": "d389eb2083afe310756706992c378db40f031292ba0f187277ec634b66820468",
+        "uniquePropertyStrings": [
+          1341,
+          4283,
+          4612,
+          6978
+        ],
+        "trigramPostingCount": 404631,
+        "retainedBytes": 4412600,
+        "expectedFileBytes": 4412204,
+        "sizeMatches": true,
+        "storedCRC32asLong": 2788780884,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-kotlin-compiler-12",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-kotlin-compiler-12",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 4638388,
+          "mtime_ns": 1788569201402864507
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369190535829724,
+          "hex": "fdb6a5aab2543915ae5646d7e36695df601a141ec38c9f9c88f0ee8e58e6ace3"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369190055061315,
+          "hex": "5eab3906b22d50831cf1657d2abc40223719a46d99962058ffb41ce41c9dffe4"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 1053357,
+          "mtime_ns": 1788369190049055906
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 8706868,
+          "mtime_ns": 1788369190535313138
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 150548360,
+          "mtime_ns": 1788369190535214179
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 819180,
+          "mtime_ns": 1788369190534251799
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 32550,
+        "callSites": 54287,
+        "contentIdentity": "fdb6a5aab2543915ae5646d7e36695df601a141ec38c9f9c88f0ee8e58e6ace3",
+        "uniquePropertyStrings": [
+          1396,
+          4265,
+          4796,
+          7009
+        ],
+        "trigramPostingCount": 421198,
+        "retainedBytes": 4638784,
+        "expectedFileBytes": 4638388,
+        "sizeMatches": true,
+        "storedCRC32asLong": 2656694438,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-kotlin-compiler-13",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-kotlin-compiler-13",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 5018028,
+          "mtime_ns": 1788569201388090478
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369192368127716,
+          "hex": "9b6818d6aba5a914f8e684d865ae48e01d7c324396557c76c541ce36815f5866"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369191881337399,
+          "hex": "4845225475b56eb9a5ea22815d7dabf18db7a0ff0cbbd6d15f7dd52c07f65f34"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 1124221,
+          "mtime_ns": 1788369191873643397
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 8971361,
+          "mtime_ns": 1788369192367966841
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 152213408,
+          "mtime_ns": 1788369192367858548
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 832740,
+          "mtime_ns": 1788369192367062627
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 31379,
+        "callSites": 57490,
+        "contentIdentity": "9b6818d6aba5a914f8e684d865ae48e01d7c324396557c76c541ce36815f5866",
+        "uniquePropertyStrings": [
+          1418,
+          4931,
+          5070,
+          7967
+        ],
+        "trigramPostingCount": 461498,
+        "retainedBytes": 5018424,
+        "expectedFileBytes": 5018028,
+        "sizeMatches": true,
+        "storedCRC32asLong": 4008837506,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-kotlin-compiler-14",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-kotlin-compiler-14",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 4859356,
+          "mtime_ns": 1788569201370708784
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369194236124121,
+          "hex": "8a67a2a8f694cf13047290f923c6a054837615a80752bda023b74dcd8cd7f9e9"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369193707143271,
+          "hex": "12ca552805e40a9540b9837768f95418094e78e3bb43e74dc614c6da649b1c4e"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 1017889,
+          "mtime_ns": 1788369193701288362
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 8894824,
+          "mtime_ns": 1788369194235979411
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 153834824,
+          "mtime_ns": 1788369194235863786
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 810924,
+          "mtime_ns": 1788369194235082615
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 29241,
+        "callSites": 56472,
+        "contentIdentity": "8a67a2a8f694cf13047290f923c6a054837615a80752bda023b74dcd8cd7f9e9",
+        "uniquePropertyStrings": [
+          1416,
+          4330,
+          5069,
+          7718
+        ],
+        "trigramPostingCount": 446691,
+        "retainedBytes": 4859752,
+        "expectedFileBytes": 4859356,
+        "sizeMatches": true,
+        "storedCRC32asLong": 1690579451,
+        "identitySidecarMatches": true
+      }
+    },
+    {
+      "id": "fixture-kotlin-compiler-15",
+      "path": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-kotlin-compiler-15",
+      "files": {
+        "graph.callsite-string-index": {
+          "exists": true,
+          "bytes": 4617724,
+          "mtime_ns": 1788569201353031215
+        },
+        "graph.callsite-string-content.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369196149027156,
+          "hex": "62d9aadb4946f9ecc897339eb9b0bb8809d6c45e1d70df2764f8dab278a02a87"
+        },
+        "graph.strings.identity": {
+          "exists": true,
+          "bytes": 32,
+          "mtime_ns": 1788369195584182101,
+          "hex": "aae0dc08dca22044def6165eb03cb3d3cb9e3d23bc29f5b505e33b3f642489b5"
+        },
+        "graph.strings": {
+          "exists": true,
+          "bytes": 969325,
+          "mtime_ns": 1788369195577310437
+        },
+        "graph.nodedata": {
+          "exists": true,
+          "bytes": 8507199,
+          "mtime_ns": 1788369196148834446
+        },
+        "graph.nodeoffsets": {
+          "exists": true,
+          "bytes": 155455144,
+          "mtime_ns": 1788369196148721112
+        },
+        "graph.typeindex": {
+          "exists": true,
+          "bytes": 810376,
+          "mtime_ns": 1788369196147904816
+        }
+      },
+      "header": {
+        "magic": "0x47524353",
+        "version": 2,
+        "strings": 27812,
+        "callSites": 53001,
+        "contentIdentity": "62d9aadb4946f9ecc897339eb9b0bb8809d6c45e1d70df2764f8dab278a02a87",
+        "uniquePropertyStrings": [
+          1435,
+          4348,
+          4889,
+          7030
+        ],
+        "trigramPostingCount": 425689,
+        "retainedBytes": 4618120,
+        "expectedFileBytes": 4617724,
+        "sizeMatches": true,
+        "storedCRC32asLong": 4101767664,
+        "identitySidecarMatches": true
+      }
+    }
+  ]
+}

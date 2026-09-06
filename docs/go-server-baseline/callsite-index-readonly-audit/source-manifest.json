@@ -1,0 +1,21 @@
+{
+  "main_revision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "native_head": "90787051c4f92da8e4fa9077b613ae36507d67b2",
+  "main_files": {
+    "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndex.kt": "c1c4f07d818a4a25f712ad25094b30723fa25fa7531f424b2391bba792938a77",
+    "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexView.kt": "6abdd90ff1f4676dbfeae568e13e3f4419c45fc62d63ab1b9ec981ea1282a7a5",
+    "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt": "9133289c4382b59f4bc880f9de3d8aee0930d449a32f9a487893dabb56255cb7",
+    "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/CallSiteIndexPersistenceInput.kt": "5820fa51800efe82f1831e1a397ae5369cb76729b8e842a04f099a0ba30566fd",
+    "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/StringTable.kt": "d7dd6b85cce88f9202ce1e2b4087a0e6ac07211d1e52758f4964be48f2df18a8",
+    "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/GraphStore.kt": "2fe499f043740e7b70970a242613f760bf23577aef45d6fa612161e1d4d546ad",
+    "graphite-core/src/main/kotlin/io/johnsonlee/graphite/graph/Graph.kt": "9f82ae8246869468415967f95c0107670c662e79f4baa3276b4ed389aa8638b2"
+  },
+  "native_files": {
+    "graphite-server/internal/store/store.go": "68f9a0dcf46cd3da625e8a45454d89b2e2f7e16e04f4e876f4662ff139a7f77f",
+    "graphite-server/internal/store/decode.go": "dc4947dbae04dc59124d4a6571872215b17ed534cd46b15539884e6091c6b2bb",
+    "graphite-server/internal/query/traversal.go": "9d5e8b98fc89f8141402f85f90ed2391ed04fa60ea0f90f8c6a8ad132678312b",
+    "graphite-server/internal/query/scan.go": "328eccc0f2496a8b489142a8115538b1a211cd59f6ab16cb9a701e59a5c1d98b",
+    "graphite-server/internal/query/properties.go": "63bb363cbbc66149f0cebb8b8bf12d8dc0f80f33230016bd5afad9f2aeec5076"
+  },
+  "scope": "read-only source/header audit; no full CRC/posting validation, runtime load or performance measurement"
+}
