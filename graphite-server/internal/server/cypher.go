@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/johnsonlee/graphite/graphite-server/internal/query"
@@ -19,24 +18,26 @@ func (s *Server) cypher(w http.ResponseWriter, r *http.Request) {
 		writeQueryError(w, err)
 		return
 	}
-	var object map[string]json.RawMessage
-	bodyErr := error(nil)
-	if strings.TrimSpace(string(body)) != "" {
-		bodyErr = json.Unmarshal(body, &object)
-	}
+	object, bodyErr := jsonObject(body)
 	text := r.URL.Query().Get("query")
+	_, present := r.URL.Query()["query"]
 	if r.Method == http.MethodPost && bodyErr == nil {
-		var q string
-		if err := json.Unmarshal(object["query"], &q); err == nil {
-			text = q
+		if value, ok := object["query"]; ok {
+			if parsed, e := gsonString(value); e == nil {
+				text, present = parsed, true
+			}
 		}
 	}
-	if text == "" {
+	if !present {
 		writeText(w, 400, "Missing 'query' parameter")
 		return
 	}
 	if bodyErr != nil {
-		writeQueryError(w, bodyErr)
+		if json.Valid(body) {
+			writeServerError(w)
+		} else {
+			writeQueryError(w, bodyErr)
+		}
 		return
 	}
 	timeout, err := clientTimeout(r, object)

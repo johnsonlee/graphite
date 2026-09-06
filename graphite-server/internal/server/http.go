@@ -173,26 +173,45 @@ func (s *Server) loadGraph(w http.ResponseWriter, r *http.Request) {
 	}
 	path, mode := r.URL.Query().Get("path"), r.URL.Query().Get("loadMode")
 	_, hasPath := r.URL.Query()["path"]
-	if len(strings.TrimSpace(string(body))) > 0 {
-		var request struct {
-			Path     *string `json:"path"`
-			LoadMode *string `json:"loadMode"`
-		}
-		if err = json.Unmarshal(body, &request); err != nil {
-			writeError(w, 400, err)
+	_, hasMode := r.URL.Query()["loadMode"]
+	if strings.TrimSpace(string(body)) != "" {
+		object, e := jsonObject(body)
+		if e != nil {
+			writeError(w, 400, e)
 			return
 		}
-		hasPath = request.Path != nil
+		var value json.RawMessage
+		value, hasPath = object["path"]
 		if hasPath {
-			path = *request.Path
+			path, e = gsonString(value)
+			if e != nil {
+				writeError(w, 400, e)
+				return
+			}
 		}
+		value, hasMode = object["loadMode"]
 		mode = ""
-		if request.LoadMode != nil {
-			mode = *request.LoadMode
+		if hasMode {
+			mode, e = gsonString(value)
+			if e != nil {
+				writeError(w, 400, e)
+				return
+			}
 		}
 	}
 	if !hasPath {
 		writeError(w, 400, errors.New("Missing 'path' field"))
+		return
+	}
+	if hasMode {
+		mode = strings.ToUpper(mode)
+		if err := ValidateLoadMode(mode); err != nil {
+			writeError(w, 400, errors.New("No enum constant io.johnsonlee.graphite.webgraph.GraphStore.LoadMode."+mode))
+			return
+		}
+	}
+	if strings.ContainsRune(path, 0) {
+		writeError(w, 400, errors.New("Nul character not allowed: "+path))
 		return
 	}
 	d, err := s.Registry.Load(r.PathValue("graphId"), path, strings.ToUpper(mode))

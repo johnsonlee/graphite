@@ -46,6 +46,7 @@ type Node struct {
 	EnumArguments              []any
 	ClassName, MemberName      string
 	Values                     map[string]any
+	ValueOrder                 []string
 	Path, Source, Format, Key  string
 	Profile                    *string
 }
@@ -227,13 +228,21 @@ func (d *decoder) annotationValue() any {
 	return s
 }
 func (d *decoder) annotation() map[string]any {
+	m, _ := d.orderedAnnotation()
+	return m
+}
+func (d *decoder) orderedAnnotation() (map[string]any, []string) {
 	n := d.count()
 	m := make(map[string]any, n)
+	order := make([]string, 0, n)
 	for i := 0; i < n; i++ {
 		k := d.str()
+		if _, exists := m[k]; !exists {
+			order = append(order, k)
+		}
 		m[k] = d.annotationValue()
 	}
-	return m
+	return m, order
 }
 func (d *decoder) comparison() Comparison {
 	c := Comparison{d.i32(), d.i32()}
@@ -304,7 +313,7 @@ func (d *decoder) node() Node {
 		n.Name = d.str()
 		n.ClassName = d.str()
 		n.MemberName = d.str()
-		n.Values = d.annotation()
+		n.Values, n.ValueOrder = d.orderedAnnotation()
 	case 14:
 		n.Path = d.str()
 		n.Key = d.str()

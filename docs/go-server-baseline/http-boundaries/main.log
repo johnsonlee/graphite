@@ -1,0 +1,7 @@
+Loaded graph 'a' from /var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-http-boundaries-3foryto5/fixture using MAPPED mode
+Web UI: http://localhost:19861
+Data: /var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-http-boundaries-3foryto5
+Loaded graphs: a
+Topology: 1 graphs, 0 relations
+Cypher limits: 4 concurrent, 60000ms maximum timeout
+Press Ctrl+C to stop

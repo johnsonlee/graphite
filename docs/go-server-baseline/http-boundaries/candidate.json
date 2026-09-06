@@ -1,0 +1,2538 @@
+{
+  "command": [
+    "/tmp/graphite-server-http-boundaries-candidate",
+    "--data",
+    "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-http-boundaries-3foryto5",
+    "--port",
+    "19862",
+    "--graph",
+    "a:/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-http-boundaries-3foryto5/fixture"
+  ],
+  "candidateSHA256": "f9f33095b5b8f380e0f0f36bf2032c06392d9fedfc907d71f926a40007add008",
+  "responses": [
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "rowCount": 1,
+        "rows": [
+          {
+            "x": 2
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "rowCount": 1,
+        "rows": [
+          {
+            "x": 2
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "rowCount": 1,
+        "rows": [
+          {
+            "x": 2
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "rowCount": 1,
+        "rows": [
+          {
+            "x": 2
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "rowCount": 1,
+        "rows": [
+          {
+            "x": 2
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "rowCount": 1,
+        "rows": [
+          {
+            "x": 2
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "rowCount": 1,
+        "rows": [
+          {
+            "x": 2
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "rowCount": 1,
+        "rows": [
+          {
+            "x": 2
+          }
+        ]
+      }
+    },
+    {
+      "status": 500,
+      "contentType": "application/json",
+      "body": {
+        "details": {},
+        "status": 500,
+        "title": "Server Error",
+        "type": "https://javalin.io/documentation#internalservererrorresponse"
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "rowCount": 1,
+        "rows": [
+          {
+            "x": 2
+          }
+        ]
+      }
+    },
+    {
+      "status": 500,
+      "contentType": "application/json",
+      "body": {
+        "details": {},
+        "status": 500,
+        "title": "Server Error",
+        "type": "https://javalin.io/documentation#internalservererrorresponse"
+      }
+    },
+    {
+      "status": 500,
+      "contentType": "application/json",
+      "body": {
+        "details": {},
+        "status": 500,
+        "title": "Server Error",
+        "type": "https://javalin.io/documentation#internalservererrorresponse"
+      }
+    },
+    {
+      "status": 500,
+      "contentType": "application/json",
+      "body": {
+        "details": {},
+        "status": 500,
+        "title": "Server Error",
+        "type": "https://javalin.io/documentation#internalservererrorresponse"
+      }
+    },
+    {
+      "status": 500,
+      "contentType": "application/json",
+      "body": {
+        "details": {},
+        "status": 500,
+        "title": "Server Error",
+        "type": "https://javalin.io/documentation#internalservererrorresponse"
+      }
+    },
+    {
+      "status": 500,
+      "contentType": "application/json",
+      "body": {
+        "details": {},
+        "status": 500,
+        "title": "Server Error",
+        "type": "https://javalin.io/documentation#internalservererrorresponse"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "text/plain",
+      "body": "Missing 'query' parameter"
+    },
+    {
+      "status": 400,
+      "contentType": "text/plain",
+      "body": "Missing 'query' parameter"
+    },
+    {
+      "status": 400,
+      "contentType": "text/plain",
+      "body": "Missing 'query' parameter"
+    },
+    {
+      "status": 400,
+      "contentType": "text/plain",
+      "body": "Missing 'query' parameter"
+    },
+    {
+      "status": 400,
+      "contentType": "text/plain",
+      "body": "Missing 'query' parameter"
+    },
+    {
+      "status": 400,
+      "contentType": "text/plain",
+      "body": "Missing 'query' parameter"
+    },
+    {
+      "status": 400,
+      "contentType": "text/plain",
+      "body": "Missing 'query' parameter"
+    },
+    {
+      "status": 400,
+      "contentType": "text/plain",
+      "body": "Missing 'query' parameter"
+    },
+    {
+      "status": 400,
+      "contentType": "text/plain",
+      "body": "Missing 'query' parameter"
+    },
+    {
+      "status": 400,
+      "contentType": "text/plain",
+      "body": "Missing 'query' parameter"
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "rowCount": 1,
+        "rows": [
+          {
+            "x": 2
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [],
+        "rowCount": 1,
+        "rows": [
+          {}
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [],
+        "rowCount": 1,
+        "rows": [
+          {}
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "rowCount": 1,
+        "rows": [
+          {
+            "x": 1
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "rowCount": 1,
+        "rows": [
+          {
+            "x": 1
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "rowCount": 1,
+        "rows": [
+          {
+            "x": 2
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "rowCount": 1,
+        "rows": [
+          {
+            "x": 2
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "rowCount": 1,
+        "rows": [
+          {
+            "x": 2
+          }
+        ]
+      }
+    },
+    {
+      "status": 500,
+      "contentType": "application/json",
+      "body": {
+        "details": {},
+        "status": 500,
+        "title": "Server Error",
+        "type": "https://javalin.io/documentation#internalservererrorresponse"
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "rowCount": 1,
+        "rows": [
+          {
+            "x": 2
+          }
+        ]
+      }
+    },
+    {
+      "status": 500,
+      "contentType": "application/json",
+      "body": {
+        "details": {},
+        "status": 500,
+        "title": "Server Error",
+        "type": "https://javalin.io/documentation#internalservererrorresponse"
+      }
+    },
+    {
+      "status": 500,
+      "contentType": "application/json",
+      "body": {
+        "details": {},
+        "status": 500,
+        "title": "Server Error",
+        "type": "https://javalin.io/documentation#internalservererrorresponse"
+      }
+    },
+    {
+      "status": 500,
+      "contentType": "application/json",
+      "body": {
+        "details": {},
+        "status": 500,
+        "title": "Server Error",
+        "type": "https://javalin.io/documentation#internalservererrorresponse"
+      }
+    },
+    {
+      "status": 500,
+      "contentType": "application/json",
+      "body": {
+        "details": {},
+        "status": 500,
+        "title": "Server Error",
+        "type": "https://javalin.io/documentation#internalservererrorresponse"
+      }
+    },
+    {
+      "status": 500,
+      "contentType": "application/json",
+      "body": {
+        "details": {},
+        "status": 500,
+        "title": "Server Error",
+        "type": "https://javalin.io/documentation#internalservererrorresponse"
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "rowCount": 1,
+        "rows": [
+          {
+            "x": 1
+          }
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "'timeoutMs' must be a positive integer",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "'timeoutMs' must be a positive integer",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "'timeoutMs' must be a positive integer",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "'timeoutMs' must be a positive integer",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "'timeoutMs' must be a positive integer",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "'timeoutMs' must be a positive integer",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "'timeoutMs' must be a positive integer",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "'timeoutMs' must be a positive integer",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "rowCount": 1,
+        "rows": [
+          {
+            "x": 1
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "graphCount": 1,
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "x": 2
+          }
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "text/plain",
+      "body": "Missing 'query' parameter"
+    },
+    {
+      "status": 400,
+      "contentType": "text/plain",
+      "body": "Missing 'query' parameter"
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "graphCount": 1,
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "x": 1
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "graphCount": 1,
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "x": 1
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "graphCount": 1,
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "x": 2
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "graphCount": 1,
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "x": 2
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "graphCount": 1,
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "x": 2
+          }
+        ]
+      }
+    },
+    {
+      "status": 500,
+      "contentType": "application/json",
+      "body": {
+        "details": {},
+        "status": 500,
+        "title": "Server Error",
+        "type": "https://javalin.io/documentation#internalservererrorresponse"
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "graphCount": 1,
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "x": 2
+          }
+        ]
+      }
+    },
+    {
+      "status": 500,
+      "contentType": "application/json",
+      "body": {
+        "details": {},
+        "status": 500,
+        "title": "Server Error",
+        "type": "https://javalin.io/documentation#internalservererrorresponse"
+      }
+    },
+    {
+      "status": 500,
+      "contentType": "application/json",
+      "body": {
+        "details": {},
+        "status": 500,
+        "title": "Server Error",
+        "type": "https://javalin.io/documentation#internalservererrorresponse"
+      }
+    },
+    {
+      "status": 500,
+      "contentType": "application/json",
+      "body": {
+        "details": {},
+        "status": 500,
+        "title": "Server Error",
+        "type": "https://javalin.io/documentation#internalservererrorresponse"
+      }
+    },
+    {
+      "status": 500,
+      "contentType": "application/json",
+      "body": {
+        "details": {},
+        "status": 500,
+        "title": "Server Error",
+        "type": "https://javalin.io/documentation#internalservererrorresponse"
+      }
+    },
+    {
+      "status": 500,
+      "contentType": "application/json",
+      "body": {
+        "details": {},
+        "status": 500,
+        "title": "Server Error",
+        "type": "https://javalin.io/documentation#internalservererrorresponse"
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "graphCount": 1,
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "x": 1
+          }
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "'timeoutMs' must be a positive integer",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "'timeoutMs' must be a positive integer",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "'timeoutMs' must be a positive integer",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "'timeoutMs' must be a positive integer",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "'timeoutMs' must be a positive integer",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "'timeoutMs' must be a positive integer",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "'timeoutMs' must be a positive integer",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "'timeoutMs' must be a positive integer",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "graphCount": 1,
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "x": 1
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "graphCount": 1,
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "x": 2
+          }
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "text/plain",
+      "body": "Missing 'query' parameter"
+    },
+    {
+      "status": 400,
+      "contentType": "text/plain",
+      "body": "Missing 'query' parameter"
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "graphCount": 1,
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "x": 1
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "graphCount": 1,
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "x": 1
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "graphCount": 1,
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "x": 2
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "graphCount": 1,
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "x": 2
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "graphCount": 1,
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "x": 2
+          }
+        ]
+      }
+    },
+    {
+      "status": 500,
+      "contentType": "application/json",
+      "body": {
+        "details": {},
+        "status": 500,
+        "title": "Server Error",
+        "type": "https://javalin.io/documentation#internalservererrorresponse"
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "graphCount": 1,
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "x": 2
+          }
+        ]
+      }
+    },
+    {
+      "status": 500,
+      "contentType": "application/json",
+      "body": {
+        "details": {},
+        "status": 500,
+        "title": "Server Error",
+        "type": "https://javalin.io/documentation#internalservererrorresponse"
+      }
+    },
+    {
+      "status": 500,
+      "contentType": "application/json",
+      "body": {
+        "details": {},
+        "status": 500,
+        "title": "Server Error",
+        "type": "https://javalin.io/documentation#internalservererrorresponse"
+      }
+    },
+    {
+      "status": 500,
+      "contentType": "application/json",
+      "body": {
+        "details": {},
+        "status": 500,
+        "title": "Server Error",
+        "type": "https://javalin.io/documentation#internalservererrorresponse"
+      }
+    },
+    {
+      "status": 500,
+      "contentType": "application/json",
+      "body": {
+        "details": {},
+        "status": 500,
+        "title": "Server Error",
+        "type": "https://javalin.io/documentation#internalservererrorresponse"
+      }
+    },
+    {
+      "status": 500,
+      "contentType": "application/json",
+      "body": {
+        "details": {},
+        "status": 500,
+        "title": "Server Error",
+        "type": "https://javalin.io/documentation#internalservererrorresponse"
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "graphCount": 1,
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "x": 1
+          }
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "'timeoutMs' must be a positive integer",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "'timeoutMs' must be a positive integer",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "'timeoutMs' must be a positive integer",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "'timeoutMs' must be a positive integer",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "'timeoutMs' must be a positive integer",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "'timeoutMs' must be a positive integer",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "'timeoutMs' must be a positive integer",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "'timeoutMs' must be a positive integer",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "graphCount": 1,
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "x": 1
+          }
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "JsonNull",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [],
+        "graphCount": 1,
+        "graphs": [
+          "a"
+        ],
+        "limit": 1000,
+        "mode": "cross-graph",
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [],
+        "graphCount": 1,
+        "graphs": [
+          "a"
+        ],
+        "limit": 1000,
+        "mode": "cross-graph",
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "graphCount": 1,
+        "graphs": [
+          "a"
+        ],
+        "limit": 1000,
+        "mode": "cross-graph",
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "x": 1
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "graphCount": 1,
+        "graphs": [
+          "a"
+        ],
+        "limit": 1000,
+        "mode": "cross-graph",
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "x": 1
+          }
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Array must have size 1, but has size 0",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Array must have size 1, but has size 2",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "JsonObject",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Not a JSON Object: null",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Missing 'query' parameter",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Not a JSON Object: []",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Not a JSON Object: [{}]",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Not a JSON Object: \"bad\"",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Not a JSON Object: 42",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Not a JSON Object: true",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "graphCount": 1,
+        "graphs": [
+          "a"
+        ],
+        "limit": 1000,
+        "mode": "cross-graph",
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "x": 1
+          }
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "'timeoutMs' must be a positive integer",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "'timeoutMs' must be a positive integer",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "'timeoutMs' must be a positive integer",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "'timeoutMs' must be a positive integer",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "'timeoutMs' must be a positive integer",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "'timeoutMs' must be a positive integer",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "'timeoutMs' must be a positive integer",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "'timeoutMs' must be a positive integer",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "graphCount": 1,
+        "graphs": [
+          "a"
+        ],
+        "limit": 1000,
+        "mode": "cross-graph",
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "x": 1
+          }
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "JsonNull",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [],
+        "graphCount": 1,
+        "graphs": [
+          "a"
+        ],
+        "limit": 1000,
+        "mode": "cross-graph",
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [],
+        "graphCount": 1,
+        "graphs": [
+          "a"
+        ],
+        "limit": 1000,
+        "mode": "cross-graph",
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "graphCount": 1,
+        "graphs": [
+          "a"
+        ],
+        "limit": 1000,
+        "mode": "cross-graph",
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "x": 1
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "graphCount": 1,
+        "graphs": [
+          "a"
+        ],
+        "limit": 1000,
+        "mode": "cross-graph",
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "x": 1
+          }
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Array must have size 1, but has size 0",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Array must have size 1, but has size 2",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "JsonObject",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Not a JSON Object: null",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Missing 'query' parameter",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Not a JSON Object: []",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Not a JSON Object: [{}]",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Not a JSON Object: \"bad\"",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Not a JSON Object: 42",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Not a JSON Object: true",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "graphCount": 1,
+        "graphs": [
+          "a"
+        ],
+        "limit": 1000,
+        "mode": "cross-graph",
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "x": 1
+          }
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "'timeoutMs' must be a positive integer",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "'timeoutMs' must be a positive integer",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "'timeoutMs' must be a positive integer",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "'timeoutMs' must be a positive integer",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "'timeoutMs' must be a positive integer",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "'timeoutMs' must be a positive integer",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "'timeoutMs' must be a positive integer",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "'timeoutMs' must be a positive integer",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "graphCount": 1,
+        "graphs": [
+          "a"
+        ],
+        "limit": 1000,
+        "mode": "cross-graph",
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "x": 1
+          }
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Invalid 'graphs' field",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 404,
+      "contentType": "application/json",
+      "body": {
+        "error": "Graph not loaded: true"
+      }
+    },
+    {
+      "status": 404,
+      "contentType": "application/json",
+      "body": {
+        "error": "Graph not loaded: 42"
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "graphCount": 1,
+        "graphs": [
+          "a"
+        ],
+        "limit": 1000,
+        "mode": "cross-graph",
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "x": 1
+          }
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Specify exactly one of 'allGraphs=true' or a non-empty 'graphs' list",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "graphCount": 1,
+        "graphs": [
+          "a"
+        ],
+        "limit": 1000,
+        "mode": "cross-graph",
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "x": 1
+          }
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Invalid 'graphs' field",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Graph ids must be unique",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "graphCount": 1,
+        "graphs": [
+          "a"
+        ],
+        "limit": 1000,
+        "mode": "cross-graph",
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "x": 1
+          }
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Specify exactly one of 'allGraphs=true' or a non-empty 'graphs' list",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "graphCount": 1,
+        "graphs": [
+          "a"
+        ],
+        "limit": 1000,
+        "mode": "cross-graph",
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "x": 1
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "graphCount": 1,
+        "graphs": [
+          "a"
+        ],
+        "limit": 1000,
+        "mode": "cross-graph",
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "x": 1
+          }
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Array must have size 1, but has size 0",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "graphCount": 1,
+        "graphs": [
+          "a"
+        ],
+        "limit": 1000,
+        "mode": "cross-graph",
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "x": 1
+          }
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "JsonObject",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Array must have size 1, but has size 2",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "graphCount": 1,
+        "graphs": [
+          "a"
+        ],
+        "limit": 1000,
+        "mode": "cross-graph",
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "x": 1
+          }
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Invalid query mode 'true'. Expected 'cross-graph' or 'fanout'",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Invalid query mode '42'. Expected 'cross-graph' or 'fanout'",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Invalid query mode 'a'. Expected 'cross-graph' or 'fanout'",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Array must have size 1, but has size 0",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Invalid query mode 'a'. Expected 'cross-graph' or 'fanout'",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "JsonObject",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Array must have size 1, but has size 2",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "graphCount": 1,
+        "graphs": [
+          "a"
+        ],
+        "limit": 1000,
+        "mode": "cross-graph",
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "x": 1
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "graphCount": 1,
+        "graphs": [
+          "a"
+        ],
+        "limit": 1000,
+        "mode": "cross-graph",
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "x": 1
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "graphCount": 1,
+        "graphs": [
+          "a"
+        ],
+        "limit": 42,
+        "mode": "cross-graph",
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "x": 1
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "graphCount": 1,
+        "graphs": [
+          "a"
+        ],
+        "limit": 1000,
+        "mode": "cross-graph",
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "x": 1
+          }
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Array must have size 1, but has size 0",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "graphCount": 1,
+        "graphs": [
+          "a"
+        ],
+        "limit": 1000,
+        "mode": "cross-graph",
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "x": 1
+          }
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "JsonObject",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Array must have size 1, but has size 2",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "graphCount": 1,
+        "graphs": [
+          "a"
+        ],
+        "limit": 1000,
+        "mode": "cross-graph",
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "x": 1
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "graphCount": 1,
+        "graphs": [
+          "a"
+        ],
+        "limit": 1000,
+        "mode": "cross-graph",
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "x": 1
+          }
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "perGraphLimit is only valid in fanout mode",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "graphCount": 1,
+        "graphs": [
+          "a"
+        ],
+        "limit": 1000,
+        "mode": "cross-graph",
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "x": 1
+          }
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Array must have size 1, but has size 0",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "graphCount": 1,
+        "graphs": [
+          "a"
+        ],
+        "limit": 1000,
+        "mode": "cross-graph",
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "x": 1
+          }
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "JsonObject",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Array must have size 1, but has size 2",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "graphCount": 1,
+        "graphs": [
+          "a"
+        ],
+        "limit": 1000,
+        "mode": "cross-graph",
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "x": 1
+          }
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "includeGraphRows is only valid in fanout mode",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "graphCount": 1,
+        "graphs": [
+          "a"
+        ],
+        "limit": 1000,
+        "mode": "cross-graph",
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "x": 1
+          }
+        ]
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "graphCount": 1,
+        "graphs": [
+          "a"
+        ],
+        "limit": 1000,
+        "mode": "cross-graph",
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "x": 1
+          }
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Array must have size 1, but has size 0",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 200,
+      "contentType": "application/json",
+      "body": {
+        "columns": [
+          "x"
+        ],
+        "graphCount": 1,
+        "graphs": [
+          "a"
+        ],
+        "limit": 1000,
+        "mode": "cross-graph",
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "x": 1
+          }
+        ]
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "JsonObject",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Array must have size 1, but has size 2",
+        "code": "cypher_query_failed"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "JsonNull"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Graph path is not a directory: /var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-http-boundaries-3foryto5/true"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Graph path is not a directory: /var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-http-boundaries-3foryto5/42"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Graph path is not a directory: /var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-http-boundaries-3foryto5/nonexistent"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Array must have size 1, but has size 0"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Graph path is not a directory: /var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-http-boundaries-3foryto5/nonexistent"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "JsonObject"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Array must have size 1, but has size 2"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "JsonNull"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "No enum constant io.johnsonlee.graphite.webgraph.GraphStore.LoadMode.TRUE"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "No enum constant io.johnsonlee.graphite.webgraph.GraphStore.LoadMode.42"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "No enum constant io.johnsonlee.graphite.webgraph.GraphStore.LoadMode.BOGUS"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Array must have size 1, but has size 0"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "No enum constant io.johnsonlee.graphite.webgraph.GraphStore.LoadMode.BOGUS"
+      }
+    },
+    {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "JsonObject"
+      }
+    }
+  ],
+  "differences": []
+}

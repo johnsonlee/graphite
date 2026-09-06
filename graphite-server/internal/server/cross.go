@@ -13,17 +13,6 @@ import (
 	"github.com/johnsonlee/graphite/graphite-server/internal/query"
 )
 
-func jsonString(object map[string]json.RawMessage, key string) (string, bool) {
-	value, ok := object[key]
-	if !ok || string(value) == "null" {
-		return "", false
-	}
-	var text string
-	if json.Unmarshal(value, &text) == nil {
-		return text, true
-	}
-	return string(value), true
-}
 func truthy(value string) bool {
 	switch strings.ToLower(strings.TrimSpace(value)) {
 	case "true", "1", "yes", "on":
@@ -32,17 +21,17 @@ func truthy(value string) bool {
 	return false
 }
 func (s *Server) crossCypher(w http.ResponseWriter, r *http.Request) {
+	defer recoverJSONAccessor(w)
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		writeQueryError(w, err)
 		return
 	}
-	object := map[string]json.RawMessage{}
-	if strings.TrimSpace(string(body)) != "" {
-		if err := json.Unmarshal(body, &object); err != nil {
-			writeQueryError(w, err)
-			return
-		}
+	explicit := r.URL.Path == "/api/cypher/graphs"
+	object, bodyErr := jsonObject(body)
+	if explicit && bodyErr != nil {
+		writeQueryError(w, bodyErr)
+		return
 	}
 	get := func(keys ...string) (string, bool) {
 		for _, k := range keys {
@@ -57,10 +46,29 @@ func (s *Server) crossCypher(w http.ResponseWriter, r *http.Request) {
 		}
 		return "", false
 	}
-	text, _ := get("query")
+	text, present := r.URL.Query().Get("query"), false
+	_, present = r.URL.Query()["query"]
+	if explicit && object != nil {
+		value, ok := object["query"]
+		if !ok {
+			writeQueryError(w, errors.New("Missing 'query' parameter"))
+			return
+		}
+		text, err = gsonString(value)
+		if err != nil {
+			writeQueryError(w, err)
+			return
+		}
+		present = true
+	} else if !explicit && bodyErr == nil {
+		if value, ok := object["query"]; ok {
+			if parsed, e := gsonString(value); e == nil {
+				text, present = parsed, true
+			}
+		}
+	}
 	text = strings.TrimSpace(text)
-	explicit := r.URL.Path == "/api/cypher/graphs"
-	if text == "" {
+	if !present || !explicit && text == "" {
 		if explicit {
 			writeQueryError(w, errors.New("Missing 'query' parameter"))
 		} else {
@@ -68,19 +76,15 @@ func (s *Server) crossCypher(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	timeout, err := clientTimeout(r, object)
-	if err != nil {
-		writeQueryError(w, err)
+	if bodyErr != nil {
+		if json.Valid(body) {
+			writeServerError(w)
+		} else {
+			writeQueryError(w, bodyErr)
+		}
 		return
 	}
-	limit := 1000
-	if raw, ok := get("limit"); ok {
-		limit = boundedInt(raw, 1000, 5000)
-	}
-	// Root /api/cypher takes its row cap from the URL, matching main.
-	if !explicit {
-		limit = boundedInt(r.URL.Query().Get("limit"), 1000, 5000)
-	}
+	limit := boundedInt(r.URL.Query().Get("limit"), 1000, 5000)
 	var ids []string
 	mode := "cross-graph"
 	perGraph := -1
@@ -95,28 +99,37 @@ func (s *Server) crossCypher(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		}
-		if len(object) > 0 {
+		if object != nil {
 			v, ok := object["graphs"]
 			if !ok {
 				v = object["graph"]
 			}
 			if v != nil {
 				if len(v) > 0 && v[0] == '[' {
-					var list []string
+					var list []json.RawMessage
 					if err := json.Unmarshal(v, &list); err != nil {
 						writeQueryError(w, errors.New("Invalid 'graphs' field"))
 						return
 					}
-					for _, id := range list {
+					for _, rawID := range list {
+						id, err := gsonString(rawID)
+						if err != nil {
+							writeQueryError(w, err)
+							return
+						}
 						id = strings.TrimSpace(id)
 						if id != "" {
 							ids = append(ids, id)
 						}
 					}
 				} else {
-					var list string
-					if err := json.Unmarshal(v, &list); err != nil {
+					if string(v) == "null" || len(v) > 0 && v[0] == '{' {
 						writeQueryError(w, errors.New("Invalid 'graphs' field"))
+						return
+					}
+					list, err := gsonString(v)
+					if err != nil {
+						writeQueryError(w, err)
 						return
 					}
 					appendIDs(list)
@@ -159,18 +172,16 @@ func (s *Server) crossCypher(w http.ResponseWriter, r *http.Request) {
 				perGraph = boundedInt(raw, 0, 5000)
 			}
 		}
+		if raw, ok := get("limit"); ok {
+			limit = boundedInt(raw, 1000, 5000)
+		}
 		inc, _ := get("includeGraphRows")
 		includeRows = truthy(inc)
-		if mode == "cross-graph" {
-			if perGraph >= 0 {
-				writeQueryError(w, errors.New("perGraphLimit is only valid in fanout mode"))
-				return
-			}
-			if includeRows {
-				writeQueryError(w, errors.New("includeGraphRows is only valid in fanout mode"))
-				return
-			}
-		}
+	}
+	timeout, err := clientTimeout(r, object)
+	if err != nil {
+		writeQueryError(w, err)
+		return
 	}
 	leases, err := s.Registry.AcquireSelected(ids)
 	if err != nil {
@@ -194,6 +205,14 @@ func (s *Server) crossCypher(w http.ResponseWriter, r *http.Request) {
 		graphs = append(graphs, query.Graph{ID: l.ID, Store: g.Store})
 	}
 	encoded, err := s.Guard.Execute(queryContext(r), timeout, func(ctx context.Context) (any, error) {
+		if mode == "cross-graph" && explicit {
+			if perGraph >= 0 {
+				return nil, errors.New("perGraphLimit is only valid in fanout mode")
+			}
+			if includeRows {
+				return nil, errors.New("includeGraphRows is only valid in fanout mode")
+			}
+		}
 		var response map[string]any
 		if mode == "fanout" {
 			if perGraph < 0 {
