@@ -5070,6 +5070,15 @@ pinned by `REAL_ONLY_RESOURCE_HARNESS_SHA256` in the workflow and installed over
 copy before the JMH jar is built, so it cannot be changed from a candidate branch; the same
 change is offered as a patch for `main` in the PR thread.
 
-**Next:** read the attribution on the red rows of the next head and decide whether the CPU is a
-property of the diff (then fixed here) or of the measurement (then a gate patch proposed for
-`main`).
+**Outcome:** the counters never ran either: the explore benchmark harness is also a gate-owned
+control, installed from the base checkout over the candidate's copy before the JMH jar is built,
+so the branch's copy is restored to the pinned content. The run itself settled the diagnosis
+without them: on c2c0f70, code identical to 946093c and 9dfb589, the 22 method rows show
+process-CPU deltas from -32.2% to +57.2% (standard deviation 22.1%; 8 rows beyond the 15% line,
+5 as regressions and 3 as improvements) while their wall deltas stay within -9.2% to +12.7%
+(standard deviation 6.0%; none beyond 15%). A single-shot process-CPU sample whose run-to-run
+spread is above the threshold fails some row on nearly every run regardless of the diff, and
+the confirmation pass repeats the same sample. The proposed repair for `main` measures the CPU
+of the Java threads that serve the request, after a collection that removes the setup garbage
+from the window, gates on that, and keeps the process figure advisory; the patch is in the PR
+thread and at `bench/keep/method-cpu-gate.patch` of the session.
