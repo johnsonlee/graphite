@@ -785,12 +785,24 @@ open class MethodDiscoveryCompatibilityBenchmark {
 
     private fun measure(counters: MethodCompatibilityCounters, action: () -> Long): Long {
         val beforeCpu = processCpuTimeNanos()
+        val beforeThreadCpu = javaThreadCpuTimeNanos()
+        val beforeGcTime = gcTimeMillis()
+        val beforeGcCount = gcCount()
+        val beforeJit = jitTimeMillis()
         val beforeRss = residentSetBytes()
         val bytes = action()
         val afterRss = residentSetBytes()
         counters.requestsSucceeded++
         counters.responseBytes += bytes
         counters.processCpuNanos = (processCpuTimeNanos() - beforeCpu).coerceAtLeast(0L)
+        // Attribution of the process CPU window: CPU of the Java threads alive at both ends,
+        // stop-the-world collection time, and JIT compilation time. The remainder of the process
+        // CPU is native work the JVM does off Java threads (concurrent GC workers, compiler
+        // threads beyond the reported compilation time, page faults of mapped files).
+        counters.javaThreadCpuNanos = (javaThreadCpuTimeNanos() - beforeThreadCpu).coerceAtLeast(0L)
+        counters.gcTimeMillis = (gcTimeMillis() - beforeGcTime).coerceAtLeast(0L)
+        counters.gcCount = (gcCount() - beforeGcCount).coerceAtLeast(0L)
+        counters.jitTimeMillis = (jitTimeMillis() - beforeJit).coerceAtLeast(0L)
         counters.residentSetBeforeBytes = beforeRss
         counters.residentSetAfterBytes = afterRss
         counters.residentSetDeltaBytes = (afterRss - beforeRss).coerceAtLeast(0L)
@@ -840,6 +852,26 @@ open class MethodDiscoveryCompatibilityBenchmark {
         (java.lang.management.ManagementFactory.getOperatingSystemMXBean()
             as? com.sun.management.OperatingSystemMXBean)?.processCpuTime ?: 0L
 
+    private fun javaThreadCpuTimeNanos(): Long {
+        val threads = java.lang.management.ManagementFactory.getThreadMXBean()
+        if (!threads.isThreadCpuTimeSupported) return 0L
+        var total = 0L
+        for (id in threads.allThreadIds) {
+            val cpu = threads.getThreadCpuTime(id)
+            if (cpu > 0L) total += cpu
+        }
+        return total
+    }
+
+    private fun gcTimeMillis(): Long = java.lang.management.ManagementFactory.getGarbageCollectorMXBeans()
+        .sumOf { it.collectionTime.coerceAtLeast(0L) }
+
+    private fun gcCount(): Long = java.lang.management.ManagementFactory.getGarbageCollectorMXBeans()
+        .sumOf { it.collectionCount.coerceAtLeast(0L) }
+
+    private fun jitTimeMillis(): Long = java.lang.management.ManagementFactory.getCompilationMXBean()
+        ?.takeIf { it.isCompilationTimeMonitoringSupported }?.totalCompilationTime ?: 0L
+
     private fun residentSetBytes(): Long {
         val status = Path.of("/proc/self/status")
         if (!Files.isRegularFile(status)) return Runtime.getRuntime().totalMemory()
@@ -885,6 +917,18 @@ open class MethodBenchmarkCompatibilityCounters {
 
     @JvmField
     var processCpuNanos: Long = 0
+
+    @JvmField
+    var javaThreadCpuNanos: Long = 0
+
+    @JvmField
+    var gcTimeMillis: Long = 0
+
+    @JvmField
+    var gcCount: Long = 0
+
+    @JvmField
+    var jitTimeMillis: Long = 0
 
     @JvmField
     var residentSetBeforeBytes: Long = 0

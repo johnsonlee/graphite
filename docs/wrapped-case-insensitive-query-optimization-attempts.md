@@ -5048,3 +5048,24 @@ first execution CPU `15.58 -> 17.82 / 15.78 -> 18.32 ms`.
 that build many public rows (class-pair, the DISTINCT provenance rows) measured consistently
 slower with the object-function layout, so the change was dropped and the patch kept outside the
 tree for a later re-measurement on a quieter host.
+
+### 2026-09-06 - Gate repair, step 1: attribute the method-compatibility CPU window and cover the retained read
+
+**Context:** the owner's review on 9dfb589 keeps the PR blocked until the exact-head gate passes
+as a whole. Two checks stay red on identical code: the method-compatibility process-CPU rows,
+where wall time is flat (17/or +0.9%) while process CPU rises by 0.2-1.2 s and the failing shards
+move between runs, and the wrapped-query-resources validity check, where the candidate's retained
+heap exceeds its sampled peak by tens of KB on the 36-graph footprint.
+
+**Change:** `MethodDiscoveryCompatibilityBenchmark.measure()` records, next to the process CPU, the
+CPU of the Java threads alive across the window, the stop-the-world collection time and count,
+and the JIT compilation time (`javaThreadCpuNanos`, `gcTimeMillis`, `gcCount`, `jitTimeMillis`),
+so a shard's JSON says whether the extra process CPU is on request threads, in collections, in
+the compiler, or in native work off Java threads. The compared metrics are unchanged. The resource
+benchmark's heap sampler now runs until the retained value is read after the teardown
+collections, and the peak folds that read in, so the sampled window covers the point it is
+compared against; this can only raise the candidate's peak.
+
+**Next:** read the attribution on the red rows of the next head and decide whether the CPU is a
+property of the diff (then fixed here) or of the measurement (then a gate patch proposed for
+`main`).

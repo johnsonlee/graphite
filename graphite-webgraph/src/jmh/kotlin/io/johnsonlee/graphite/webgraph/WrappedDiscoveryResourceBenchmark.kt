@@ -69,7 +69,7 @@ abstract class WrappedDiscoveryBenchmarkResourceState {
         activeCounters = counters
         counters.maxHeapBytes = Runtime.getRuntime().maxMemory()
         counters.loadedHeapBytes = loadedHeapBytes
-        counters.peakUsedHeapBytes = sampler.stop()
+        counters.peakUsedHeapBytes = sampler.peak()
         counters.queryGcCount = (gcCount() - gcCountBefore).coerceAtLeast(0)
         counters.queryGcTimeMs = (gcTimeMs() - gcTimeBefore).coerceAtLeast(0)
     }
@@ -77,9 +77,12 @@ abstract class WrappedDiscoveryBenchmarkResourceState {
     @TearDown(Level.Invocation)
     fun tearDownInvocation() {
         val counters = checkNotNull(activeCounters) { "Resource benchmark did not publish counters" }
-        sampler.stop()
         forceWrappedDiscoveryGc()
+        // The sampler runs until the retained value is read, so the peak covers the whole
+        // invocation, the teardown collections and the point it is compared against, instead of
+        // stopping before a read that can exceed every earlier sample.
         counters.retainedHeapBytes = usedHeapBytes()
+        counters.peakUsedHeapBytes = maxOf(counters.peakUsedHeapBytes, sampler.stop(), counters.retainedHeapBytes)
         counters.retainedHeapDeltaBytes =
             (counters.retainedHeapBytes - counters.loadedHeapBytes).coerceAtLeast(0)
         activeCounters = null
@@ -142,6 +145,9 @@ private class WrappedDiscoveryBenchmarkHeapSampler : Closeable {
         maximum.set(baseline)
         sampling.set(true)
     }
+
+    /** The maximum sampled so far, including a sample taken now; sampling continues. */
+    fun peak(): Long = maximum.accumulateAndGet(usedHeapBytes(), ::maxOf)
 
     fun stop(): Long {
         sampling.set(false)
