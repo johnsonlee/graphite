@@ -1,0 +1,17 @@
+{
+  "command": [
+    "go",
+    "run",
+    "scripts/native/build.go",
+    "--version",
+    "3.0.0-packaging-audit",
+    "--prebuilt",
+    "/tmp/graphite-native-packaging-build-274cd678/graphite-explore/build/generated/native-resources/graphite-native",
+    "--output",
+    "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-prebuilt-version-counterexample-99a4aiax/valid-all-four/graphite-native"
+  ],
+  "exitCode": 0,
+  "stdout": "",
+  "stderr": "",
+  "scope": "All four architecture/version values validated without executing cross-built binaries."
+}

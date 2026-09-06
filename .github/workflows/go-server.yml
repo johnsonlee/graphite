@@ -7,6 +7,10 @@ on:
       - 'graphite-cypher/src/main/antlr/**'
       - 'graphite-explore/src/main/resources/web/**'
       - '.github/workflows/go-server.yml'
+      - 'scripts/native/**'
+      - 'graphite-explore/build.gradle.kts'
+      - 'graphite-query/build.gradle.kts'
+      - 'graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/NativeServerLauncher.kt'
   push:
     branches: [main]
     paths:
@@ -14,6 +18,10 @@ on:
       - 'graphite-cypher/src/main/antlr/**'
       - 'graphite-explore/src/main/resources/web/**'
       - '.github/workflows/go-server.yml'
+      - 'scripts/native/**'
+      - 'graphite-explore/build.gradle.kts'
+      - 'graphite-query/build.gradle.kts'
+      - 'graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/NativeServerLauncher.kt'
 
 permissions:
   contents: read
@@ -49,6 +57,22 @@ jobs:
         run: go vet ./...
       - name: Verify benchmark failure evidence handling
         run: python3 -W error::ResourceWarning scripts/test_benchmark_http.py
+      - name: Verify native packaging tools
+        working-directory: .
+        run: |
+          go test -race scripts/native/build.go scripts/native/build_test.go
+          go vet scripts/native/build.go scripts/native/build_test.go
+      - name: Verify installed native JARs and distributions
+        working-directory: .
+        run: |
+          ./gradlew :query:shadowJar :explore:shadowJar :query:installDist :explore:installDist --no-daemon -Pversion=0.0.0-ci -Pgraphite.nativeTargets=host
+          python3 -W error::ResourceWarning scripts/native/smoke.py --output native-package-smoke.json
+      - name: Retain package smoke evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-package-smoke-${{ matrix.os }}
+          path: native-package-smoke.json
       - name: Build standalone server without CGo
         run: CGO_ENABLED=0 go build -o /tmp/graphite-server ./cmd/graphite-server
 

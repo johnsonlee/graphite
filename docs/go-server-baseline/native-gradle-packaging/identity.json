@@ -1,0 +1,60 @@
+{
+  "base": "274cd678",
+  "sourceRoot": "/private/tmp/graphite-go-native-packaging-274cd678",
+  "buildSnapshot": "/tmp/graphite-native-packaging-build-274cd678",
+  "source": {
+    ".github/workflows/build.yml": "f73966808e2dc1ab835e04a4a7618a13dd82218bbd39195d455bd85cab13e170",
+    ".github/workflows/go-server.yml": "467848ccd0d03b779b89657b661eb5d9ed49cf6066c5ba62767a7a7746c53d36",
+    "graphite-explore/build.gradle.kts": "1b35e97bcc3355dcb13bb6a22e41bab7f7dd52c248be99c91342952ae1984b39",
+    "scripts/native/build.go": "c2d44a8455441217f2088f4d9ffc03ef4b39beebd5e7a94133601783ef83c4b2",
+    "scripts/native/build_test.go": "c7f2f2d4b5e87c426fa12ade882d835c481e907070c78b1bb7d4163a3348893c",
+    "scripts/native/smoke.py": "5a5d9a0a5f21b299bcea3cd8befd80f1045c23ccadfb6a52f52b522ed0920fa9",
+    "scripts/native/README.md": "deaa81dfa7db0a61fe2fdedabed739ca1206a6a6ee52b754dc19001cbc5d6d45"
+  },
+  "artifacts": {
+    "/tmp/graphite-native-packaging-build-274cd678/graphite-explore/build/generated/native-resources/graphite-native/VERSION": {
+      "sha256": "929cd5926dc2c330d68d9e9429b5e5caa9c448cb74d8e988e1480ad0a934dc02",
+      "bytes": 22
+    },
+    "/tmp/graphite-native-packaging-build-274cd678/graphite-explore/build/generated/native-resources/graphite-native/SHA256SUMS": {
+      "sha256": "da54a5bb01bc8edd383440e0deb9e46ef29e6370a78af6bf17d5035dbe5da59f",
+      "bytes": 378
+    },
+    "/tmp/graphite-native-packaging-build-274cd678/graphite-explore/build/generated/native-resources/graphite-native/darwin-amd64/graphite-server": {
+      "sha256": "ad378138f9a093fdef96e86c2c707bf65bc19a097d2b58b091052764079b9950",
+      "bytes": 15946240
+    },
+    "/tmp/graphite-native-packaging-build-274cd678/graphite-explore/build/generated/native-resources/graphite-native/linux-arm64/graphite-server": {
+      "sha256": "a622107216a7e163ffa479d98b22c0ac9847cf9dd53f61056edddec0eb2822fb",
+      "bytes": 15290628
+    },
+    "/tmp/graphite-native-packaging-build-274cd678/graphite-explore/build/generated/native-resources/graphite-native/linux-amd64/graphite-server": {
+      "sha256": "8ce7488d536f034f18b08cba31ee46f2b0e2a4fb85f23d5421d504cbf1962297",
+      "bytes": 15812919
+    },
+    "/tmp/graphite-native-packaging-build-274cd678/graphite-explore/build/generated/native-resources/graphite-native/darwin-arm64/graphite-server": {
+      "sha256": "f6c2cfb087330d0721bb6275b76a211520f2d675accb1db709a9cdeab9c56488",
+      "bytes": 15517906
+    },
+    "/tmp/graphite-native-packaging-build-274cd678/graphite-query/build/libs/graphite.jar": {
+      "sha256": "84d9c5065fa67a0349ef923bdce22b3d74969ac013051e56ad88175807c7b9eb",
+      "bytes": 65087359
+    },
+    "/tmp/graphite-native-packaging-build-274cd678/graphite-explore/build/libs/graphite-explore.jar": {
+      "sha256": "9a7558aa87da840f191d51a36885e6a2aaccd0b8a2d743e729d2e061ccbbf0f8",
+      "bytes": 54929637
+    }
+  },
+  "goVersion": "go version go1.22.0 darwin/arm64",
+  "javaVersion": "openjdk version \"17.0.18\" 2026-01-20\nOpenJDK Runtime Environment Homebrew (build 17.0.18+0)\nOpenJDK 64-Bit Server VM Homebrew (build 17.0.18+0, mixed mode, sharing)\n",
+  "host": "Darwin johnsonlee.local 23.3.0 Darwin Kernel Version 23.3.0: Wed Dec 20 21:31:10 PST 2023; root:xnu-10002.81.5~7/RELEASE_ARM64_T6031 arm64 arm Darwin",
+  "exitCodes": {
+    "defaultGradle": 0,
+    "prebuiltCopy": 0,
+    "prebuiltGradle": 0,
+    "smoke": 0,
+    "packagingGoRace": 0,
+    "packagingGoVet": 0
+  },
+  "coTenancy": "Root may have been running the separate real64 HTTP correctness replay. These are packaging correctness checks; no performance conclusion."
+}

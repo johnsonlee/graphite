@@ -1,0 +1,23 @@
+{
+  "command": [
+    "go",
+    "run",
+    "/tmp/graphite-go-native-packaging-274cd678/scripts/native/build.go",
+    "--version",
+    "3.0.0-false-label",
+    "--prebuilt",
+    "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-prebuilt-version-counterexample-99a4aiax/source/graphite-native",
+    "--output",
+    "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-prebuilt-version-counterexample-99a4aiax/output/graphite-native"
+  ],
+  "exitCode": 0,
+  "stdout": "",
+  "stderr": "",
+  "originalVersion": "3.0.0-packaging-audit\n",
+  "requestedVersion": "3.0.0-false-label",
+  "copiedVersion": "3.0.0-false-label\n",
+  "binaryBuildInfo": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-prebuilt-version-counterexample-99a4aiax/output/graphite-native/darwin-arm64/graphite-server: go1.22.0\n\tpath\tgithub.com/johnsonlee/graphite/graphite-server/cmd/graphite-server\n\tmod\tgithub.com/johnsonlee/graphite/graphite-server\t(devel)\t\n\tdep\tgithub.com/antlr4-go/antlr/v4\tv4.13.1\th1:SqQKkuVZ+zWkMMNkjy5FZe5mr5WURWnlpmOuzYWrPrQ=\n\tdep\tgolang.org/x/exp\tv0.0.0-20240506185415-9bf2ced13842\th1:vr/HnozRka3pE4EsMEg1lgkXJkTFJCVUX+S/ZT6wYzM=\n\tbuild\t-buildmode=exe\n\tbuild\t-compiler=gc\n\tbuild\t-trimpath=true\n\tbuild\tCGO_ENABLED=0\n\tbuild\tGOARCH=arm64\n\tbuild\tGOOS=darwin\n",
+  "buildInfoExit": 0,
+  "sourceAndCopySHAEqual": true,
+  "temporaryDirectory": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-prebuilt-version-counterexample-99a4aiax"
+}

@@ -1,0 +1,131 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.13/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+
+> Configure project :
+[root project 'graphite'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+
+> Configure project :core
+[project ':core'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+
+> Configure project :cypher
+[project ':cypher'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+
+> Configure project :sootup
+[project ':sootup'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+
+> Configure project :webgraph
+[project ':webgraph'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+
+> Task :core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :core:compileKotlin FROM-CACHE
+> Task :core:compileJava NO-SOURCE
+> Task :core:processResources NO-SOURCE
+> Task :core:classes UP-TO-DATE
+> Task :core:jar
+> Task :cypher:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :cypher:generateGrammarSource FROM-CACHE
+> Task :cypher:compileKotlin FROM-CACHE
+> Task :cypher:compileJava FROM-CACHE
+> Task :cypher:processResources NO-SOURCE
+> Task :cypher:classes UP-TO-DATE
+> Task :cypher:jar
+> Task :explore:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :webgraph:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :webgraph:compileKotlin FROM-CACHE
+> Task :webgraph:compileJava NO-SOURCE
+> Task :webgraph:processResources NO-SOURCE
+> Task :webgraph:classes UP-TO-DATE
+> Task :webgraph:jar
+> Task :explore:compileKotlin FROM-CACHE
+> Task :explore:compileJava NO-SOURCE
+
+> Task :explore:prepareNativeServer
+Building native server darwin-amd64 3.0.0-packaging-audit
+Building native server darwin-arm64 3.0.0-packaging-audit
+Building native server linux-amd64 3.0.0-packaging-audit
+Building native server linux-arm64 3.0.0-packaging-audit
+
+> Task :explore:processResources
+> Task :explore:classes
+> Task :explore:jar
+> Task :query:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :sootup:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :sootup:compileKotlin FROM-CACHE
+> Task :sootup:compileJava NO-SOURCE
+> Task :sootup:processResources NO-SOURCE
+> Task :sootup:classes UP-TO-DATE
+> Task :sootup:jar
+> Task :query:compileKotlin FROM-CACHE
+> Task :query:compileJava NO-SOURCE
+> Task :query:processResources NO-SOURCE
+> Task :query:classes UP-TO-DATE
+> Task :query:jar
+> Task :query:compileTestKotlin
+> Task :query:startScripts
+> Task :query:compileTestJava NO-SOURCE
+> Task :explore:compileJmhKotlin
+
+> Task :explore:compileTestKotlin
+w: file:///private/tmp/graphite-native-packaging-build-274cd678/graphite-explore/src/test/kotlin/io/johnsonlee/graphite/cli/ExploreCommandTest.kt:1981:68 Unchecked cast of 'kotlin.Any?' to 'kotlin.collections.List<kotlin.collections.Map<kotlin.String, kotlin.Any?>>'.
+w: file:///private/tmp/graphite-native-packaging-build-274cd678/graphite-explore/src/test/kotlin/io/johnsonlee/graphite/cli/ExploreCommandTest.kt:3526:80 Unchecked cast of 'kotlin.Any?' to 'kotlin.collections.List<kotlin.collections.Map<kotlin.String, kotlin.Any?>>'.
+w: file:///private/tmp/graphite-native-packaging-build-274cd678/graphite-explore/src/test/kotlin/io/johnsonlee/graphite/cli/ExploreCommandTest.kt:3527:78 Unchecked cast of 'kotlin.Any?' to 'kotlin.collections.List<kotlin.collections.Map<kotlin.String, kotlin.Any?>>'.
+w: file:///private/tmp/graphite-native-packaging-build-274cd678/graphite-explore/src/test/kotlin/io/johnsonlee/graphite/cli/ExploreCommandTest.kt:3553:94 Unchecked cast of 'kotlin.Any?' to 'kotlin.collections.List<kotlin.collections.Map<kotlin.String, kotlin.Any?>>'.
+w: file:///private/tmp/graphite-native-packaging-build-274cd678/graphite-explore/src/test/kotlin/io/johnsonlee/graphite/cli/ExploreCommandTest.kt:3556:92 Unchecked cast of 'kotlin.Any?' to 'kotlin.collections.List<kotlin.collections.Map<kotlin.String, kotlin.Any?>>'.
+
+> Task :query:shadowJar
+> Task :explore:compileJmhJava NO-SOURCE
+> Task :explore:compileTestJava NO-SOURCE
+> Task :explore:shadowJar
+> Task :query:installDist
+> Task :explore:startScripts
+> Task :explore:installDist
+> Task :explore:koverFindJar FROM-CACHE
+> Task :explore:processTestResources NO-SOURCE
+> Task :explore:testClasses UP-TO-DATE
+
+> Task :explore:test
+
+NativeServerLauncherTest > actual child receives whitespace and metacharacters without shell expansion and retains status PASSED
+
+NativeServerLauncherTest > both public command classes dispatch parsed arguments to actual native child PASSED
+
+NativeServerLauncherTest > literal argument-file prefixes survive both command parsers PASSED
+
+NativeServerLauncherTest > selects supported artifact aliases and fails explicitly elsewhere PASSED
+
+NativeServerLauncherTest > missing corrupt duplicate and oversized manifest resources never fall back PASSED
+
+NativeServerLauncherTest > extracts only checksum-verified resource into private executable then removes it PASSED
+
+> Task :query:koverFindJar FROM-CACHE
+> Task :query:processTestResources NO-SOURCE
+> Task :query:testClasses UP-TO-DATE
+
+> Task :query:test
+
+GraphiteCommandTest > build from nonexistent path with verbose returns error with stacktrace PASSED
+
+GraphiteCommandTest > build from nonexistent path returns error PASSED
+
+GraphiteCommandTest > build from jar without persistable resources writes loadable empty store PASSED
+
+GraphiteCommandTest > parent command shows help PASSED
+
+GraphiteCommandTest > build with exclude packages PASSED
+
+GraphiteCommandTest > build from published jar preserves persisted resource bytes PASSED
+
+GraphiteCommandTest > build from empty directory triggers catch block PASSED
+
+GraphiteCommandTest > build help describes android sdk discovery order PASSED
+
+GraphiteCommandTest > build from valid classes directory succeeds PASSED
+
+GraphiteCommandTest > build with includeLibs and libFilters PASSED
+
+GraphiteCommandTest > build from invalid file triggers catch with verbose PASSED
+
+GraphiteCommandTest > parent command shows build version PASSED
+
+BUILD SUCCESSFUL in 39s
+29 actionable tasks: 19 executed, 10 from cache

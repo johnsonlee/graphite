@@ -1,0 +1,8 @@
+{
+  "VERSION": "f0cf13ccb6f4e0c493f0b0d0aa09c0d9a2ab1776902ccf444f74f027c1b2d59e",
+  "SHA256SUMS": "a585f6f15e7ae0aa33b6656d72f2cc565880fb858894f73dc8dda37ff525521a",
+  "darwin-amd64/graphite-server": "5221d2f4a96347087ea6b6dff3f541f783d80ca73e7ac87661a39ff8023d5bf3",
+  "linux-arm64/graphite-server": "6212d9eea501091794bddb328026f1caa71e526d3a1f572c20572822d0a2e7cf",
+  "linux-amd64/graphite-server": "e7c15dbb7eae431673b4dd2530267e8c646783659f524516ed2947f9aac247dd",
+  "darwin-arm64/graphite-server": "344856d07492daf78c99c62f003a2392b9a1605c5b4527793f1cb6ea92a3a429"
+}

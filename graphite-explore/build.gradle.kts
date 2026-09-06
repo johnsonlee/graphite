@@ -114,3 +114,29 @@ tasks.test {
         showStackTraces = true
     }
 }
+
+// All entry points (run, installDist, slim and shadow JARs) use the same verified
+// native resources. The default remains a portable Linux/macOS distribution;
+// -Pgraphite.nativeTargets=host is an explicit local-development shortcut.
+val nativeResources = layout.buildDirectory.dir("generated/native-resources")
+val nativeTargets = providers.gradleProperty("graphite.nativeTargets")
+    .orElse("darwin-amd64,darwin-arm64,linux-amd64,linux-arm64")
+val nativePrebuilt = providers.gradleProperty("graphite.nativePrebuilt")
+val prepareNativeServer by tasks.registering(Exec::class) {
+    inputs.files(rootProject.fileTree("graphite-server") {
+        include("**/*.go", "go.mod", "go.sum", "internal/web/assets/**", "cmd/graphite-server/*.txt")
+        exclude("**/*_test.go", "**/testdata/**")
+    })
+    inputs.files(rootProject.fileTree("scripts/native") { include("*.go") })
+    inputs.property("version", project.version.toString())
+    inputs.property("targets", nativeTargets)
+    if (nativePrebuilt.isPresent) inputs.dir(rootProject.file(nativePrebuilt.get()))
+    outputs.dir(nativeResources)
+    workingDir(rootProject.projectDir)
+    commandLine("go", "run", "scripts/native/build.go",
+        "--output", nativeResources.get().dir("graphite-native").asFile.absolutePath,
+        "--version", project.version.toString(), "--targets", nativeTargets.get())
+    if (nativePrebuilt.isPresent) args("--prebuilt", rootProject.file(nativePrebuilt.get()).absolutePath)
+}
+sourceSets.main { resources.srcDir(nativeResources) }
+tasks.processResources { dependsOn(prepareNativeServer) }

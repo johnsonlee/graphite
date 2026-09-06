@@ -27,6 +27,12 @@ jobs:
         distribution: 'adopt'
         java-version: '17'
 
+    - name: Setup Go for native server resources
+      uses: actions/setup-go@v7
+      with:
+        go-version-file: graphite-server/go.mod
+        cache-dependency-path: graphite-server/go.sum
+
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v6
 

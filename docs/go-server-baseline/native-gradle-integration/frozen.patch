@@ -1,0 +1,1345 @@
+diff --git a/.github/workflows/build.yml b/.github/workflows/build.yml
+index 95968366..f2b9add2 100644
+--- a/.github/workflows/build.yml
++++ b/.github/workflows/build.yml
+@@ -27,6 +27,12 @@ jobs:
+         distribution: 'adopt'
+         java-version: '17'
+ 
++    - name: Setup Go for native server resources
++      uses: actions/setup-go@v7
++      with:
++        go-version-file: graphite-server/go.mod
++        cache-dependency-path: graphite-server/go.sum
++
+     - name: Setup Gradle
+       uses: gradle/actions/setup-gradle@v6
+ 
+diff --git a/.github/workflows/go-server.yml b/.github/workflows/go-server.yml
+index 156700f6..50ef6824 100644
+--- a/.github/workflows/go-server.yml
++++ b/.github/workflows/go-server.yml
+@@ -7,6 +7,10 @@ on:
+       - 'graphite-cypher/src/main/antlr/**'
+       - 'graphite-explore/src/main/resources/web/**'
+       - '.github/workflows/go-server.yml'
++      - 'scripts/native/**'
++      - 'graphite-explore/build.gradle.kts'
++      - 'graphite-query/build.gradle.kts'
++      - 'graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/NativeServerLauncher.kt'
+   push:
+     branches: [main]
+     paths:
+@@ -14,6 +18,10 @@ on:
+       - 'graphite-cypher/src/main/antlr/**'
+       - 'graphite-explore/src/main/resources/web/**'
+       - '.github/workflows/go-server.yml'
++      - 'scripts/native/**'
++      - 'graphite-explore/build.gradle.kts'
++      - 'graphite-query/build.gradle.kts'
++      - 'graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/NativeServerLauncher.kt'
+ 
+ permissions:
+   contents: read
+@@ -49,6 +57,22 @@ jobs:
+         run: go vet ./...
+       - name: Verify benchmark failure evidence handling
+         run: python3 -W error::ResourceWarning scripts/test_benchmark_http.py
++      - name: Verify native packaging tools
++        working-directory: .
++        run: |
++          go test -race scripts/native/build.go scripts/native/build_test.go
++          go vet scripts/native/build.go scripts/native/build_test.go
++      - name: Verify installed native JARs and distributions
++        working-directory: .
++        run: |
++          ./gradlew :query:shadowJar :explore:shadowJar :query:installDist :explore:installDist --no-daemon -Pversion=0.0.0-ci -Pgraphite.nativeTargets=host
++          python3 -W error::ResourceWarning scripts/native/smoke.py --output native-package-smoke.json
++      - name: Retain package smoke evidence
++        if: always()
++        uses: actions/upload-artifact@v4
++        with:
++          name: native-package-smoke-${{ matrix.os }}
++          path: native-package-smoke.json
+       - name: Build standalone server without CGo
+         run: CGO_ENABLED=0 go build -o /tmp/graphite-server ./cmd/graphite-server
+ 
+diff --git a/docs/go-server-baseline/native-gradle-packaging/README.md b/docs/go-server-baseline/native-gradle-packaging/README.md
+new file mode 100644
+index 00000000..4bedb813
+--- /dev/null
++++ b/docs/go-server-baseline/native-gradle-packaging/README.md
+@@ -0,0 +1,52 @@
++# Native Gradle packaging correctness
++
++Base: `274cd678` (CLI bridge, including literal `@` protection). This bounded
++change closes default Gradle resource staging. It does not complete release,
++Homebrew, Docker, native profiling or Windows delivery; those remain separate.
++
++`prepareNativeServer` generates one shared resource directory for `run`, slim and
++shadow JARs, and `installDist`. The default package carries four native binaries:
++Linux/macOS × amd64/arm64. Versions, exact SHA256/path sets, architecture and
++static ELF linkage are checked by the standard-library-only Go packaging tool.
++The prebuilt mode performs the same validation before copying. Build/test details
++and developer options are in `scripts/native/README.md`.
++
++Verified locally on macOS ARM64:
++
++- Default four-target cross-build, both shadow JARs and both `installDist` outputs.
++- Six bridge unit tests and twelve existing unified CLI tests, including real JVM
++  graph construction and persisted resources; JVM build/query remain available.
++- Four actual installed entry points, outside the repository and without a binary
++  override: unified JAR, legacy Explore JAR, and both Gradle application scripts.
++  Each loads the existing JVM-written four-CallSite fixture, returns the expected
++  catalog, and serves exactly the embedded homepage bytes. SIGTERM yields 143,
++  and the launcher's private executable and extraction directory are removed.
++- The same artifacts rebuilt from validated prebuilt resources; hashes unchanged.
++- Packaging tool race tests and vet. Corrupt SHA, duplicate manifest, wrong version,
++  unexpected files/symlinks, truncation, wrong architecture, and unsafe output alias
++  are rejected; invalid input does not replace a complete previous output.
++
++The first install-script smoke invocation failed because the harness supplied an
++unquoted `JAVA_OPTS` temp-directory value containing spaces. Its result is kept in
++`smoke-initial-failure.json`; quoting the harness option fixed it. Production start
++scripts were unchanged. The final four checks are in `smoke.json`.
++
++Reproduction from the source root (Java17, Go per go.mod):
++
++```sh
++go test -race scripts/native/build.go scripts/native/build_test.go
++go vet scripts/native/build.go scripts/native/build_test.go
++./gradlew :query:shadowJar :explore:shadowJar :query:installDist :explore:installDist :explore:test --tests io.johnsonlee.graphite.cli.NativeServerLauncherTest :query:test --tests io.johnsonlee.graphite.cli.GraphiteCommandTest --no-daemon -Dorg.gradle.jvmargs=-Xmx2g -Pversion=3.0.0-packaging-audit
++python3 -W error::ResourceWarning scripts/native/smoke.py --output /tmp/native-package-smoke.json
++go run scripts/native/build.go --version 3.0.0-packaging-audit --prebuilt "$PWD/graphite-explore/build/generated/native-resources/graphite-native" --output /tmp/graphite-native-prebuilt-audit/graphite-native
++./gradlew :query:shadowJar :explore:shadowJar :query:installDist :explore:installDist --no-daemon -Dorg.gradle.jvmargs=-Xmx2g -Pversion=3.0.0-packaging-audit -Pgraphite.nativePrebuilt=/tmp/graphite-native-prebuilt-audit/graphite-native
++```
++
++The local build used a clean `git archive 274cd678` snapshot plus the exact changed
++Gradle/tool files, initialized with `git init` and no commit, because the existing
++Sonatype plugin cannot resolve this detached worktree's JGit directory. Paths,
++source and artifact hashes, runtime identities and completion codes are recorded
++in `identity.json`. No remote CI, release or publishing action was run. Added CI
++steps are a future gate, not local evidence. Only macOS ARM64 execution is proven
++here; the other three artifacts passed format/hash checks, not runtime tests.
++No performance test or claim is made.
+diff --git a/docs/go-server-baseline/native-gradle-packaging/go-test.log b/docs/go-server-baseline/native-gradle-packaging/go-test.log
+new file mode 100644
+index 00000000..03e4139b
+--- /dev/null
++++ b/docs/go-server-baseline/native-gradle-packaging/go-test.log
+@@ -0,0 +1 @@
++ok  	command-line-arguments	1.334s
+diff --git a/docs/go-server-baseline/native-gradle-packaging/go-vet.log b/docs/go-server-baseline/native-gradle-packaging/go-vet.log
+new file mode 100644
+index 00000000..e69de29b
+diff --git a/docs/go-server-baseline/native-gradle-packaging/gradle-default.log b/docs/go-server-baseline/native-gradle-packaging/gradle-default.log
+new file mode 100644
+index 00000000..740923e8
+--- /dev/null
++++ b/docs/go-server-baseline/native-gradle-packaging/gradle-default.log
+@@ -0,0 +1,131 @@
++To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.13/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
++Daemon will be stopped at the end of the build 
++
++> Configure project :
++[root project 'graphite'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
++
++> Configure project :core
++[project ':core'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
++
++> Configure project :cypher
++[project ':cypher'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
++
++> Configure project :sootup
++[project ':sootup'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
++
++> Configure project :webgraph
++[project ':webgraph'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
++
++> Task :core:checkKotlinGradlePluginConfigurationErrors SKIPPED
++> Task :core:compileKotlin FROM-CACHE
++> Task :core:compileJava NO-SOURCE
++> Task :core:processResources NO-SOURCE
++> Task :core:classes UP-TO-DATE
++> Task :core:jar
++> Task :cypher:checkKotlinGradlePluginConfigurationErrors SKIPPED
++> Task :cypher:generateGrammarSource FROM-CACHE
++> Task :cypher:compileKotlin FROM-CACHE
++> Task :cypher:compileJava FROM-CACHE
++> Task :cypher:processResources NO-SOURCE
++> Task :cypher:classes UP-TO-DATE
++> Task :cypher:jar
++> Task :explore:checkKotlinGradlePluginConfigurationErrors SKIPPED
++> Task :webgraph:checkKotlinGradlePluginConfigurationErrors SKIPPED
++> Task :webgraph:compileKotlin FROM-CACHE
++> Task :webgraph:compileJava NO-SOURCE
++> Task :webgraph:processResources NO-SOURCE
++> Task :webgraph:classes UP-TO-DATE
++> Task :webgraph:jar
++> Task :explore:compileKotlin FROM-CACHE
++> Task :explore:compileJava NO-SOURCE
++
++> Task :explore:prepareNativeServer
++Building native server darwin-amd64 3.0.0-packaging-audit
++Building native server darwin-arm64 3.0.0-packaging-audit
++Building native server linux-amd64 3.0.0-packaging-audit
++Building native server linux-arm64 3.0.0-packaging-audit
++
++> Task :explore:processResources
++> Task :explore:classes
++> Task :explore:jar
++> Task :query:checkKotlinGradlePluginConfigurationErrors SKIPPED
++> Task :sootup:checkKotlinGradlePluginConfigurationErrors SKIPPED
++> Task :sootup:compileKotlin FROM-CACHE
++> Task :sootup:compileJava NO-SOURCE
++> Task :sootup:processResources NO-SOURCE
++> Task :sootup:classes UP-TO-DATE
++> Task :sootup:jar
++> Task :query:compileKotlin FROM-CACHE
++> Task :query:compileJava NO-SOURCE
++> Task :query:processResources NO-SOURCE
++> Task :query:classes UP-TO-DATE
++> Task :query:jar
++> Task :query:compileTestKotlin
++> Task :query:startScripts
++> Task :query:compileTestJava NO-SOURCE
++> Task :explore:compileJmhKotlin
++
++> Task :explore:compileTestKotlin
++w: file:///private/tmp/graphite-native-packaging-build-274cd678/graphite-explore/src/test/kotlin/io/johnsonlee/graphite/cli/ExploreCommandTest.kt:1981:68 Unchecked cast of 'kotlin.Any?' to 'kotlin.collections.List<kotlin.collections.Map<kotlin.String, kotlin.Any?>>'.
++w: file:///private/tmp/graphite-native-packaging-build-274cd678/graphite-explore/src/test/kotlin/io/johnsonlee/graphite/cli/ExploreCommandTest.kt:3526:80 Unchecked cast of 'kotlin.Any?' to 'kotlin.collections.List<kotlin.collections.Map<kotlin.String, kotlin.Any?>>'.
++w: file:///private/tmp/graphite-native-packaging-build-274cd678/graphite-explore/src/test/kotlin/io/johnsonlee/graphite/cli/ExploreCommandTest.kt:3527:78 Unchecked cast of 'kotlin.Any?' to 'kotlin.collections.List<kotlin.collections.Map<kotlin.String, kotlin.Any?>>'.
++w: file:///private/tmp/graphite-native-packaging-build-274cd678/graphite-explore/src/test/kotlin/io/johnsonlee/graphite/cli/ExploreCommandTest.kt:3553:94 Unchecked cast of 'kotlin.Any?' to 'kotlin.collections.List<kotlin.collections.Map<kotlin.String, kotlin.Any?>>'.
++w: file:///private/tmp/graphite-native-packaging-build-274cd678/graphite-explore/src/test/kotlin/io/johnsonlee/graphite/cli/ExploreCommandTest.kt:3556:92 Unchecked cast of 'kotlin.Any?' to 'kotlin.collections.List<kotlin.collections.Map<kotlin.String, kotlin.Any?>>'.
++
++> Task :query:shadowJar
++> Task :explore:compileJmhJava NO-SOURCE
++> Task :explore:compileTestJava NO-SOURCE
++> Task :explore:shadowJar
++> Task :query:installDist
++> Task :explore:startScripts
++> Task :explore:installDist
++> Task :explore:koverFindJar FROM-CACHE
++> Task :explore:processTestResources NO-SOURCE
++> Task :explore:testClasses UP-TO-DATE
++
++> Task :explore:test
++
++NativeServerLauncherTest > actual child receives whitespace and metacharacters without shell expansion and retains status PASSED
++
++NativeServerLauncherTest > both public command classes dispatch parsed arguments to actual native child PASSED
++
++NativeServerLauncherTest > literal argument-file prefixes survive both command parsers PASSED
++
++NativeServerLauncherTest > selects supported artifact aliases and fails explicitly elsewhere PASSED
++
++NativeServerLauncherTest > missing corrupt duplicate and oversized manifest resources never fall back PASSED
++
++NativeServerLauncherTest > extracts only checksum-verified resource into private executable then removes it PASSED
++
++> Task :query:koverFindJar FROM-CACHE
++> Task :query:processTestResources NO-SOURCE
++> Task :query:testClasses UP-TO-DATE
++
++> Task :query:test
++
++GraphiteCommandTest > build from nonexistent path with verbose returns error with stacktrace PASSED
++
++GraphiteCommandTest > build from nonexistent path returns error PASSED
++
++GraphiteCommandTest > build from jar without persistable resources writes loadable empty store PASSED
++
++GraphiteCommandTest > parent command shows help PASSED
++
++GraphiteCommandTest > build with exclude packages PASSED
++
++GraphiteCommandTest > build from published jar preserves persisted resource bytes PASSED
++
++GraphiteCommandTest > build from empty directory triggers catch block PASSED
++
++GraphiteCommandTest > build help describes android sdk discovery order PASSED
++
++GraphiteCommandTest > build from valid classes directory succeeds PASSED
++
++GraphiteCommandTest > build with includeLibs and libFilters PASSED
++
++GraphiteCommandTest > build from invalid file triggers catch with verbose PASSED
++
++GraphiteCommandTest > parent command shows build version PASSED
++
++BUILD SUCCESSFUL in 39s
++29 actionable tasks: 19 executed, 10 from cache
+diff --git a/docs/go-server-baseline/native-gradle-packaging/gradle-prebuilt.log b/docs/go-server-baseline/native-gradle-packaging/gradle-prebuilt.log
+new file mode 100644
+index 00000000..39e1752a
+--- /dev/null
++++ b/docs/go-server-baseline/native-gradle-packaging/gradle-prebuilt.log
+@@ -0,0 +1,71 @@
++To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.13/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
++Daemon will be stopped at the end of the build 
++
++> Configure project :
++[root project 'graphite'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
++
++> Configure project :core
++[project ':core'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
++
++> Configure project :cypher
++[project ':cypher'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
++
++> Configure project :sootup
++[project ':sootup'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
++
++> Configure project :webgraph
++[project ':webgraph'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
++
++> Task :core:checkKotlinGradlePluginConfigurationErrors SKIPPED
++> Task :core:compileKotlin UP-TO-DATE
++> Task :core:compileJava NO-SOURCE
++> Task :core:processResources NO-SOURCE
++> Task :core:classes UP-TO-DATE
++> Task :core:jar UP-TO-DATE
++> Task :cypher:checkKotlinGradlePluginConfigurationErrors SKIPPED
++> Task :cypher:generateGrammarSource UP-TO-DATE
++> Task :cypher:compileKotlin UP-TO-DATE
++> Task :cypher:compileJava UP-TO-DATE
++> Task :cypher:processResources NO-SOURCE
++> Task :cypher:classes UP-TO-DATE
++> Task :cypher:jar UP-TO-DATE
++> Task :explore:checkKotlinGradlePluginConfigurationErrors SKIPPED
++> Task :webgraph:checkKotlinGradlePluginConfigurationErrors SKIPPED
++> Task :webgraph:compileKotlin UP-TO-DATE
++> Task :webgraph:compileJava NO-SOURCE
++> Task :webgraph:processResources NO-SOURCE
++> Task :webgraph:classes UP-TO-DATE
++> Task :webgraph:jar UP-TO-DATE
++> Task :explore:compileKotlin UP-TO-DATE
++> Task :explore:compileJava NO-SOURCE
++> Task :explore:prepareNativeServer
++> Task :explore:processResources UP-TO-DATE
++> Task :explore:classes UP-TO-DATE
++> Task :explore:jar UP-TO-DATE
++> Task :query:checkKotlinGradlePluginConfigurationErrors SKIPPED
++> Task :sootup:checkKotlinGradlePluginConfigurationErrors SKIPPED
++> Task :sootup:compileKotlin UP-TO-DATE
++> Task :sootup:compileJava NO-SOURCE
++> Task :sootup:processResources NO-SOURCE
++> Task :sootup:classes UP-TO-DATE
++> Task :sootup:jar UP-TO-DATE
++> Task :query:compileKotlin UP-TO-DATE
++> Task :query:compileJava NO-SOURCE
++> Task :query:processResources NO-SOURCE
++> Task :query:classes UP-TO-DATE
++> Task :query:jar UP-TO-DATE
++> Task :query:compileTestKotlin UP-TO-DATE
++> Task :query:compileTestJava NO-SOURCE
++> Task :query:shadowJar UP-TO-DATE
++> Task :explore:compileJmhKotlin UP-TO-DATE
++> Task :explore:compileJmhJava NO-SOURCE
++> Task :explore:compileTestKotlin UP-TO-DATE
++> Task :explore:compileTestJava NO-SOURCE
++> Task :explore:shadowJar UP-TO-DATE
++> Task :query:startScripts UP-TO-DATE
++> Task :query:installDist UP-TO-DATE
++> Task :explore:startScripts UP-TO-DATE
++> Task :explore:installDist UP-TO-DATE
++
++BUILD SUCCESSFUL in 8s
++25 actionable tasks: 1 executed, 24 up-to-date
+diff --git a/docs/go-server-baseline/native-gradle-packaging/identity.json b/docs/go-server-baseline/native-gradle-packaging/identity.json
+new file mode 100644
+index 00000000..6c44aba0
+--- /dev/null
++++ b/docs/go-server-baseline/native-gradle-packaging/identity.json
+@@ -0,0 +1,60 @@
++{
++  "base": "274cd678",
++  "sourceRoot": "/private/tmp/graphite-go-native-packaging-274cd678",
++  "buildSnapshot": "/tmp/graphite-native-packaging-build-274cd678",
++  "source": {
++    ".github/workflows/build.yml": "f73966808e2dc1ab835e04a4a7618a13dd82218bbd39195d455bd85cab13e170",
++    ".github/workflows/go-server.yml": "467848ccd0d03b779b89657b661eb5d9ed49cf6066c5ba62767a7a7746c53d36",
++    "graphite-explore/build.gradle.kts": "1b35e97bcc3355dcb13bb6a22e41bab7f7dd52c248be99c91342952ae1984b39",
++    "scripts/native/build.go": "c2d44a8455441217f2088f4d9ffc03ef4b39beebd5e7a94133601783ef83c4b2",
++    "scripts/native/build_test.go": "c7f2f2d4b5e87c426fa12ade882d835c481e907070c78b1bb7d4163a3348893c",
++    "scripts/native/smoke.py": "5a5d9a0a5f21b299bcea3cd8befd80f1045c23ccadfb6a52f52b522ed0920fa9",
++    "scripts/native/README.md": "deaa81dfa7db0a61fe2fdedabed739ca1206a6a6ee52b754dc19001cbc5d6d45"
++  },
++  "artifacts": {
++    "/tmp/graphite-native-packaging-build-274cd678/graphite-explore/build/generated/native-resources/graphite-native/VERSION": {
++      "sha256": "929cd5926dc2c330d68d9e9429b5e5caa9c448cb74d8e988e1480ad0a934dc02",
++      "bytes": 22
++    },
++    "/tmp/graphite-native-packaging-build-274cd678/graphite-explore/build/generated/native-resources/graphite-native/SHA256SUMS": {
++      "sha256": "da54a5bb01bc8edd383440e0deb9e46ef29e6370a78af6bf17d5035dbe5da59f",
++      "bytes": 378
++    },
++    "/tmp/graphite-native-packaging-build-274cd678/graphite-explore/build/generated/native-resources/graphite-native/darwin-amd64/graphite-server": {
++      "sha256": "ad378138f9a093fdef96e86c2c707bf65bc19a097d2b58b091052764079b9950",
++      "bytes": 15946240
++    },
++    "/tmp/graphite-native-packaging-build-274cd678/graphite-explore/build/generated/native-resources/graphite-native/linux-arm64/graphite-server": {
++      "sha256": "a622107216a7e163ffa479d98b22c0ac9847cf9dd53f61056edddec0eb2822fb",
++      "bytes": 15290628
++    },
++    "/tmp/graphite-native-packaging-build-274cd678/graphite-explore/build/generated/native-resources/graphite-native/linux-amd64/graphite-server": {
++      "sha256": "8ce7488d536f034f18b08cba31ee46f2b0e2a4fb85f23d5421d504cbf1962297",
++      "bytes": 15812919
++    },
++    "/tmp/graphite-native-packaging-build-274cd678/graphite-explore/build/generated/native-resources/graphite-native/darwin-arm64/graphite-server": {
++      "sha256": "f6c2cfb087330d0721bb6275b76a211520f2d675accb1db709a9cdeab9c56488",
++      "bytes": 15517906
++    },
++    "/tmp/graphite-native-packaging-build-274cd678/graphite-query/build/libs/graphite.jar": {
++      "sha256": "84d9c5065fa67a0349ef923bdce22b3d74969ac013051e56ad88175807c7b9eb",
++      "bytes": 65087359
++    },
++    "/tmp/graphite-native-packaging-build-274cd678/graphite-explore/build/libs/graphite-explore.jar": {
++      "sha256": "9a7558aa87da840f191d51a36885e6a2aaccd0b8a2d743e729d2e061ccbbf0f8",
++      "bytes": 54929637
++    }
++  },
++  "goVersion": "go version go1.22.0 darwin/arm64",
++  "javaVersion": "openjdk version \"17.0.18\" 2026-01-20\nOpenJDK Runtime Environment Homebrew (build 17.0.18+0)\nOpenJDK 64-Bit Server VM Homebrew (build 17.0.18+0, mixed mode, sharing)\n",
++  "host": "Darwin johnsonlee.local 23.3.0 Darwin Kernel Version 23.3.0: Wed Dec 20 21:31:10 PST 2023; root:xnu-10002.81.5~7/RELEASE_ARM64_T6031 arm64 arm Darwin",
++  "exitCodes": {
++    "defaultGradle": 0,
++    "prebuiltCopy": 0,
++    "prebuiltGradle": 0,
++    "smoke": 0,
++    "packagingGoRace": 0,
++    "packagingGoVet": 0
++  },
++  "coTenancy": "Root may have been running the separate real64 HTTP correctness replay. These are packaging correctness checks; no performance conclusion."
++}
+diff --git a/docs/go-server-baseline/native-gradle-packaging/manifest.json b/docs/go-server-baseline/native-gradle-packaging/manifest.json
+new file mode 100644
+index 00000000..b1271721
+--- /dev/null
++++ b/docs/go-server-baseline/native-gradle-packaging/manifest.json
+@@ -0,0 +1,22 @@
++{
++  "base": "274cd678",
++  "files": {
++    ".github/workflows/build.yml": "f73966808e2dc1ab835e04a4a7618a13dd82218bbd39195d455bd85cab13e170",
++    ".github/workflows/go-server.yml": "467848ccd0d03b779b89657b661eb5d9ed49cf6066c5ba62767a7a7746c53d36",
++    "graphite-explore/build.gradle.kts": "1b35e97bcc3355dcb13bb6a22e41bab7f7dd52c248be99c91342952ae1984b39",
++    "scripts/native/build.go": "c2d44a8455441217f2088f4d9ffc03ef4b39beebd5e7a94133601783ef83c4b2",
++    "scripts/native/build_test.go": "c7f2f2d4b5e87c426fa12ade882d835c481e907070c78b1bb7d4163a3348893c",
++    "scripts/native/smoke.py": "5a5d9a0a5f21b299bcea3cd8befd80f1045c23ccadfb6a52f52b522ed0920fa9",
++    "scripts/native/README.md": "deaa81dfa7db0a61fe2fdedabed739ca1206a6a6ee52b754dc19001cbc5d6d45",
++    "docs/go-server-baseline/native-gradle-packaging/README.md": "bdfdfdbf68e760b182b013b81ae67df153d8dcbf15db041e7506d6f0e24ca25f",
++    "docs/go-server-baseline/native-gradle-packaging/go-test.log": "e30323fe336a06ee181e6ce373f844c1b25e3ff4727e0750481421444a067488",
++    "docs/go-server-baseline/native-gradle-packaging/go-vet.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
++    "docs/go-server-baseline/native-gradle-packaging/gradle-default.log": "13468a172da397cf7216a5dad9b68b15e51681f2827b691b6fcfcd7498ca4659",
++    "docs/go-server-baseline/native-gradle-packaging/gradle-prebuilt.log": "a2db1aee6caa6f4f8b45482a37795d19f3edd04ccde97f3c979cef3c26661d9e",
++    "docs/go-server-baseline/native-gradle-packaging/identity.json": "6a143eaecc97636c5662019917bd147b424c54555de0bbd4d1117ef58d875be2",
++    "docs/go-server-baseline/native-gradle-packaging/prebuilt-copy.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
++    "docs/go-server-baseline/native-gradle-packaging/smoke-initial-failure.json": "5d37133e9134d2e18fdc89a51cde61cdbd8842113e76f41923b65ff602c1d31c",
++    "docs/go-server-baseline/native-gradle-packaging/smoke.json": "0d12f14f8b1a68780b57d44b4ba791a634f80c733643e42727c1e59fa80a1677",
++    "docs/go-server-baseline/native-gradle-packaging/smoke.log": "41f596fcc0ce0d6d35cbbc8bfb349c04eb3a1b22c99108dd9dd72cd20050b72b"
++  }
++}
+diff --git a/docs/go-server-baseline/native-gradle-packaging/prebuilt-copy.log b/docs/go-server-baseline/native-gradle-packaging/prebuilt-copy.log
+new file mode 100644
+index 00000000..e69de29b
+diff --git a/docs/go-server-baseline/native-gradle-packaging/smoke-initial-failure.json b/docs/go-server-baseline/native-gradle-packaging/smoke-initial-failure.json
+new file mode 100644
+index 00000000..49b079a1
+--- /dev/null
++++ b/docs/go-server-baseline/native-gradle-packaging/smoke-initial-failure.json
+@@ -0,0 +1,50 @@
++{
++  "passed": false,
++  "error": "AssertionError(('query-installDist', 1, 'Error: Could not find or load main class installed\\nCaused by: java.lang.ClassNotFoundException: installed\\n'))",
++  "checks": [
++    {
++      "name": "query-jar",
++      "command": [
++        "java",
++        "-Djava.io.tmpdir=/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite installed package l4rk61wr",
++        "-Dfile.encoding=UTF-8",
++        "-Xmx128m",
++        "-XX:ActiveProcessorCount=2",
++        "-jar",
++        "/private/tmp/graphite-native-packaging-build-274cd678/graphite-query/build/libs/graphite.jar",
++        "serve",
++        "--id",
++        "tiny",
++        "/private/tmp/graphite-go-native-packaging-274cd678/graphite-server/internal/store/testdata/callsite-index/store",
++        "--port",
++        "0"
++      ],
++      "catalog": {
++        "count": 1,
++        "data": "/private/tmp/graphite-go-native-packaging-274cd678/graphite-server/internal/store/testdata/callsite-index",
++        "graphs": [
++          {
++            "id": "tiny",
++            "path": "/private/tmp/graphite-go-native-packaging-274cd678/graphite-server/internal/store/testdata/callsite-index/store",
++            "loadMode": "MAPPED",
++            "loadedAt": "2026-09-06T22:26:16.482963Z",
++            "nodes": 4,
++            "edges": 0,
++            "methods": 0,
++            "callSites": 4
++          }
++        ],
++        "loadMode": "MAPPED",
++        "totals": {
++          "nodes": 4,
++          "edges": 0,
++          "methods": 0,
++          "callSites": 4
++        }
++      },
++      "uiSHA256": "cde253d3a96ba6fa9562bacdd43373fc1b6a73f73feddacb637a8a2421d61057",
++      "exitCode": 143,
++      "extractionRemoved": true
++    }
++  ]
++}
+diff --git a/docs/go-server-baseline/native-gradle-packaging/smoke.json b/docs/go-server-baseline/native-gradle-packaging/smoke.json
+new file mode 100644
+index 00000000..d760f914
+--- /dev/null
++++ b/docs/go-server-baseline/native-gradle-packaging/smoke.json
+@@ -0,0 +1,168 @@
++{
++  "passed": true,
++  "version": "3.0.0-packaging-audit",
++  "checks": [
++    {
++      "name": "query-jar",
++      "command": [
++        "java",
++        "-Djava.io.tmpdir=/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite installed package t5vrxjal",
++        "-Dfile.encoding=UTF-8",
++        "-Xmx128m",
++        "-XX:ActiveProcessorCount=2",
++        "-jar",
++        "/private/tmp/graphite-native-packaging-build-274cd678/graphite-query/build/libs/graphite.jar",
++        "serve",
++        "--id",
++        "tiny",
++        "/private/tmp/graphite-go-native-packaging-274cd678/graphite-server/internal/store/testdata/callsite-index/store",
++        "--port",
++        "0"
++      ],
++      "catalog": {
++        "count": 1,
++        "data": "/private/tmp/graphite-go-native-packaging-274cd678/graphite-server/internal/store/testdata/callsite-index",
++        "graphs": [
++          {
++            "id": "tiny",
++            "path": "/private/tmp/graphite-go-native-packaging-274cd678/graphite-server/internal/store/testdata/callsite-index/store",
++            "loadMode": "MAPPED",
++            "loadedAt": "2026-09-06T22:28:41.128862Z",
++            "nodes": 4,
++            "edges": 0,
++            "methods": 0,
++            "callSites": 4
++          }
++        ],
++        "loadMode": "MAPPED",
++        "totals": {
++          "nodes": 4,
++          "edges": 0,
++          "methods": 0,
++          "callSites": 4
++        }
++      },
++      "uiSHA256": "cde253d3a96ba6fa9562bacdd43373fc1b6a73f73feddacb637a8a2421d61057",
++      "exitCode": 143,
++      "extractionRemoved": true
++    },
++    {
++      "name": "query-installDist",
++      "command": [
++        "/private/tmp/graphite-native-packaging-build-274cd678/graphite-query/build/install/graphite/bin/graphite",
++        "serve",
++        "--id",
++        "tiny",
++        "/private/tmp/graphite-go-native-packaging-274cd678/graphite-server/internal/store/testdata/callsite-index/store",
++        "--port",
++        "0"
++      ],
++      "catalog": {
++        "count": 1,
++        "data": "/private/tmp/graphite-go-native-packaging-274cd678/graphite-server/internal/store/testdata/callsite-index",
++        "graphs": [
++          {
++            "id": "tiny",
++            "path": "/private/tmp/graphite-go-native-packaging-274cd678/graphite-server/internal/store/testdata/callsite-index/store",
++            "loadMode": "MAPPED",
++            "loadedAt": "2026-09-06T22:28:41.690338Z",
++            "nodes": 4,
++            "edges": 0,
++            "methods": 0,
++            "callSites": 4
++          }
++        ],
++        "loadMode": "MAPPED",
++        "totals": {
++          "nodes": 4,
++          "edges": 0,
++          "methods": 0,
++          "callSites": 4
++        }
++      },
++      "uiSHA256": "cde253d3a96ba6fa9562bacdd43373fc1b6a73f73feddacb637a8a2421d61057",
++      "exitCode": 143,
++      "extractionRemoved": true
++    },
++    {
++      "name": "explore-jar",
++      "command": [
++        "java",
++        "-Djava.io.tmpdir=/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite installed package gog3uo4w",
++        "-Dfile.encoding=UTF-8",
++        "-Xmx128m",
++        "-XX:ActiveProcessorCount=2",
++        "-jar",
++        "/private/tmp/graphite-native-packaging-build-274cd678/graphite-explore/build/libs/graphite-explore.jar",
++        "--id",
++        "tiny",
++        "/private/tmp/graphite-go-native-packaging-274cd678/graphite-server/internal/store/testdata/callsite-index/store",
++        "--port",
++        "0"
++      ],
++      "catalog": {
++        "count": 1,
++        "data": "/private/tmp/graphite-go-native-packaging-274cd678/graphite-server/internal/store/testdata/callsite-index",
++        "graphs": [
++          {
++            "id": "tiny",
++            "path": "/private/tmp/graphite-go-native-packaging-274cd678/graphite-server/internal/store/testdata/callsite-index/store",
++            "loadMode": "MAPPED",
++            "loadedAt": "2026-09-06T22:28:42.168953Z",
++            "nodes": 4,
++            "edges": 0,
++            "methods": 0,
++            "callSites": 4
++          }
++        ],
++        "loadMode": "MAPPED",
++        "totals": {
++          "nodes": 4,
++          "edges": 0,
++          "methods": 0,
++          "callSites": 4
++        }
++      },
++      "uiSHA256": "cde253d3a96ba6fa9562bacdd43373fc1b6a73f73feddacb637a8a2421d61057",
++      "exitCode": 143,
++      "extractionRemoved": true
++    },
++    {
++      "name": "explore-installDist",
++      "command": [
++        "/private/tmp/graphite-native-packaging-build-274cd678/graphite-explore/build/install/explore/bin/explore",
++        "--id",
++        "tiny",
++        "/private/tmp/graphite-go-native-packaging-274cd678/graphite-server/internal/store/testdata/callsite-index/store",
++        "--port",
++        "0"
++      ],
++      "catalog": {
++        "count": 1,
++        "data": "/private/tmp/graphite-go-native-packaging-274cd678/graphite-server/internal/store/testdata/callsite-index",
++        "graphs": [
++          {
++            "id": "tiny",
++            "path": "/private/tmp/graphite-go-native-packaging-274cd678/graphite-server/internal/store/testdata/callsite-index/store",
++            "loadMode": "MAPPED",
++            "loadedAt": "2026-09-06T22:28:42.666579Z",
++            "nodes": 4,
++            "edges": 0,
++            "methods": 0,
++            "callSites": 4
++          }
++        ],
++        "loadMode": "MAPPED",
++        "totals": {
++          "nodes": 4,
++          "edges": 0,
++          "methods": 0,
++          "callSites": 4
++        }
++      },
++      "uiSHA256": "cde253d3a96ba6fa9562bacdd43373fc1b6a73f73feddacb637a8a2421d61057",
++      "exitCode": 143,
++      "extractionRemoved": true
++    }
++  ]
++}
+diff --git a/docs/go-server-baseline/native-gradle-packaging/smoke.log b/docs/go-server-baseline/native-gradle-packaging/smoke.log
+new file mode 100644
+index 00000000..5e8abdc7
+--- /dev/null
++++ b/docs/go-server-baseline/native-gradle-packaging/smoke.log
+@@ -0,0 +1 @@
++{"passed": true, "checks": 4}
+diff --git a/graphite-explore/build.gradle.kts b/graphite-explore/build.gradle.kts
+index 09858bb9..f51c969e 100644
+--- a/graphite-explore/build.gradle.kts
++++ b/graphite-explore/build.gradle.kts
+@@ -114,3 +114,29 @@ tasks.test {
+         showStackTraces = true
+     }
+ }
++
++// All entry points (run, installDist, slim and shadow JARs) use the same verified
++// native resources. The default remains a portable Linux/macOS distribution;
++// -Pgraphite.nativeTargets=host is an explicit local-development shortcut.
++val nativeResources = layout.buildDirectory.dir("generated/native-resources")
++val nativeTargets = providers.gradleProperty("graphite.nativeTargets")
++    .orElse("darwin-amd64,darwin-arm64,linux-amd64,linux-arm64")
++val nativePrebuilt = providers.gradleProperty("graphite.nativePrebuilt")
++val prepareNativeServer by tasks.registering(Exec::class) {
++    inputs.files(rootProject.fileTree("graphite-server") {
++        include("**/*.go", "go.mod", "go.sum", "internal/web/assets/**", "cmd/graphite-server/*.txt")
++        exclude("**/*_test.go", "**/testdata/**")
++    })
++    inputs.files(rootProject.fileTree("scripts/native") { include("*.go") })
++    inputs.property("version", project.version.toString())
++    inputs.property("targets", nativeTargets)
++    if (nativePrebuilt.isPresent) inputs.dir(rootProject.file(nativePrebuilt.get()))
++    outputs.dir(nativeResources)
++    workingDir(rootProject.projectDir)
++    commandLine("go", "run", "scripts/native/build.go",
++        "--output", nativeResources.get().dir("graphite-native").asFile.absolutePath,
++        "--version", project.version.toString(), "--targets", nativeTargets.get())
++    if (nativePrebuilt.isPresent) args("--prebuilt", rootProject.file(nativePrebuilt.get()).absolutePath)
++}
++sourceSets.main { resources.srcDir(nativeResources) }
++tasks.processResources { dependsOn(prepareNativeServer) }
+diff --git a/scripts/native/README.md b/scripts/native/README.md
+new file mode 100644
+index 00000000..ae5f8a00
+--- /dev/null
++++ b/scripts/native/README.md
+@@ -0,0 +1,46 @@
++# Native server packaging
++
++Building the JVM CLI now also requires Go (the version in `graphite-server/go.mod`).
++Graph building and offline `query` still use Java 17. `serve` resolves an embedded
++native binary, verifies its SHA256, and launches it without a Kotlin fallback.
++
++`./gradlew :query:shadowJar :explore:shadowJar :query:installDist :explore:installDist`
++includes the same `graphite-native` resource directory in both JARs and application
++distributions. `run` uses the same resource task. The default contains Linux and
++macOS binaries for amd64 and arm64. `-Pgraphite.nativeTargets=host` is an explicit
++local-development option: that output is **not** a portable four-platform package.
++Windows native serving remains incomplete; JVM build/query are retained.
++
++The resource task runs `go run scripts/native/build.go` from the repository root.
++It cross-builds with CGo disabled and baseline CPU targets, embeds the requested
++version, and checks each executable's format/architecture (and absence of an ELF
++interpreter). `SHA256SUMS` lists the binary bytes; `VERSION` identifies the package
++version. Output is staged and checked before replacing the generated directory.
++No cross-built executable is run by the packaging tool.
++
++CI may provide a prebuilt resource directory:
++
++```sh
++go run scripts/native/build.go --version 1.2.3 --output /tmp/prebuilt/graphite-native
++./gradlew :query:shadowJar -Pversion=1.2.3 -Pgraphite.nativePrebuilt=/tmp/prebuilt/graphite-native
++```
++
++The prebuilt path is relative to the repository root unless absolute. Its exact
++version, target set, path set, architectures and SHA256 values must match; stale,
++extra, symlinked, truncated or mislabelled resources fail the build. Use the same
++`graphite.nativeTargets` for a prebuilt subset.
++
++Correctness checks (no performance measurement):
++
++```sh
++go test -race scripts/native/build.go scripts/native/build_test.go
++go vet scripts/native/build.go scripts/native/build_test.go
++python3 -W error::ResourceWarning scripts/native/smoke.py --output /tmp/native-package-smoke.json
++```
++
++The smoke test checks both actual shadow JARs and both `installDist` scripts,
++without a binary override, outside the repository working directory. It loads a
++JVM-written four-CallSite store, compares the complete homepage bytes, and checks
++SIGTERM and owned extraction cleanup. `--repo` and `--build` select separate source
++and build snapshots. Cross-compilation alone does not establish runtime support;
++local evidence and unrun remote checks are documented separately.
+diff --git a/scripts/native/build.go b/scripts/native/build.go
+new file mode 100644
+index 00000000..00993fbe
+--- /dev/null
++++ b/scripts/native/build.go
+@@ -0,0 +1,295 @@
++// Copyright 2026 Graphite contributors. SPDX-License-Identifier: Apache-2.0
++// Run from the repository root: go run scripts/native/build.go --version VERSION
++// This tool uses only the Go standard library; it does not execute cross-built binaries.
++package main
++
++import (
++	"crypto/sha256"
++	"debug/elf"
++	"debug/macho"
++	"errors"
++	"flag"
++	"fmt"
++	"io"
++	"os"
++	"os/exec"
++	"path/filepath"
++	"runtime"
++	"sort"
++	"strings"
++)
++
++const allTargets = "darwin-amd64,darwin-arm64,linux-amd64,linux-arm64"
++
++func main() {
++	output := flag.String("output", "graphite-explore/build/generated/native-resources/graphite-native", "generated resource directory (must end in graphite-native)")
++	version := flag.String("version", "", "required package version")
++	targets := flag.String("targets", allTargets, "comma-separated OS-ARCH targets, or host")
++	prebuilt := flag.String("prebuilt", "", "verify and copy a previously built graphite-native directory")
++	flag.Parse()
++	if flag.NArg() != 0 {
++		fail(fmt.Errorf("unexpected arguments: %v", flag.Args()))
++	}
++	if err := prepare(*output, *version, *targets, *prebuilt); err != nil {
++		fail(err)
++	}
++}
++
++func fail(err error) { fmt.Fprintln(os.Stderr, "native packaging:", err); os.Exit(1) }
++
++func parseTargets(value string) ([]string, error) {
++	if value == "host" {
++		value = runtime.GOOS + "-" + runtime.GOARCH
++	}
++	valid := strings.Split(allTargets, ",")
++	seen := map[string]bool{}
++	for _, target := range strings.Split(value, ",") {
++		found := false
++		for _, v := range valid {
++			if v == target {
++				found = true
++			}
++		}
++		if !found || seen[target] {
++			return nil, fmt.Errorf("unsupported or duplicate target %q (supported: %s)", target, allTargets)
++		}
++		seen[target] = true
++	}
++	result := make([]string, 0, len(seen))
++	for v := range seen {
++		result = append(result, v)
++	}
++	sort.Strings(result)
++	return result, nil
++}
++
++func validVersion(value string) bool {
++	if value == "" {
++		return false
++	}
++	for _, c := range value {
++		if !(c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || strings.ContainsRune("._+-", c)) {
++			return false
++		}
++	}
++	return true
++}
++
++func prepare(output, version, targetArg, prebuilt string) error {
++	if !validVersion(version) {
++		return fmt.Errorf("invalid or empty version %q", version)
++	}
++	targets, err := parseTargets(targetArg)
++	if err != nil {
++		return err
++	}
++	output, err = filepath.Abs(output)
++	if err != nil {
++		return err
++	}
++	if filepath.Base(output) != "graphite-native" {
++		return errors.New("output directory must be named graphite-native")
++	}
++	if prebuilt != "" {
++		prebuilt, err = filepath.Abs(prebuilt)
++		if err != nil {
++			return err
++		}
++		if prebuilt == output {
++			return errors.New("prebuilt and output directories must differ")
++		}
++		if err := verify(prebuilt, version, targets); err != nil {
++			return fmt.Errorf("prebuilt verification: %w", err)
++		}
++	}
++	if err := os.MkdirAll(filepath.Dir(output), 0755); err != nil {
++		return err
++	}
++	staging, err := os.MkdirTemp(filepath.Dir(output), ".graphite-native-")
++	if err != nil {
++		return err
++	}
++	defer os.RemoveAll(staging)
++	for _, target := range targets {
++		targetDir := filepath.Join(staging, target)
++		if err := os.Mkdir(targetDir, 0755); err != nil {
++			return err
++		}
++		binary := filepath.Join(targetDir, "graphite-server")
++		if prebuilt == "" {
++			parts := strings.Split(target, "-")
++			cmd := exec.Command("go", "build", "-trimpath", "-buildvcs=false", "-ldflags", "-X main.version="+version, "-o", binary, "./cmd/graphite-server")
++			cmd.Dir = "graphite-server"
++			cmd.Env = buildEnvironment(os.Environ(), parts[0], parts[1])
++			cmd.Stdout, cmd.Stderr = os.Stdout, os.Stderr
++			fmt.Fprintln(os.Stderr, "Building native server", target, version)
++			if err := cmd.Run(); err != nil {
++				return fmt.Errorf("build %s: %w", target, err)
++			}
++		} else {
++			if err := copyFile(filepath.Join(prebuilt, target, "graphite-server"), binary, 0755); err != nil {
++				return err
++			}
++		}
++	}
++	manifest, err := checksums(staging, targets)
++	if err != nil {
++		return err
++	}
++	if err := os.WriteFile(filepath.Join(staging, "SHA256SUMS"), []byte(manifest), 0644); err != nil {
++		return err
++	}
++	if err := os.WriteFile(filepath.Join(staging, "VERSION"), []byte(version+"\n"), 0644); err != nil {
++		return err
++	}
++	if err := verify(staging, version, targets); err != nil {
++		return err
++	}
++	// Replace only this task's generated directory, after every binary has passed
++	// validation. Failed builds leave the last complete directory intact.
++	if err := os.RemoveAll(output); err != nil {
++		return err
++	}
++	return os.Rename(staging, output)
++}
++
++func buildEnvironment(env []string, goos, goarch string) []string {
++	result := make([]string, 0, len(env)+5)
++	for _, e := range env {
++		key, _, _ := strings.Cut(e, "=")
++		// Do not let a developer's cross-compile tuning or Go flags produce a
++		// differently targeted or dynamically linked release binary.
++		switch key {
++		case "CGO_ENABLED", "GOOS", "GOARCH", "GOAMD64", "GOARM64", "GOFLAGS":
++			continue
++		}
++		result = append(result, e)
++	}
++	return append(result, "CGO_ENABLED=0", "GOOS="+goos, "GOARCH="+goarch, "GOAMD64=v1", "GOARM64=v8.0", "GOFLAGS=")
++}
++
++func copyFile(source, dest string, mode os.FileMode) error {
++	in, err := os.Open(source)
++	if err != nil {
++		return err
++	}
++	defer in.Close()
++	out, err := os.OpenFile(dest, os.O_CREATE|os.O_EXCL|os.O_WRONLY, mode)
++	if err != nil {
++		return err
++	}
++	_, err = io.Copy(out, in)
++	closeErr := out.Close()
++	if err != nil {
++		return err
++	}
++	return closeErr
++}
++
++func checksums(dir string, targets []string) (string, error) {
++	var result strings.Builder
++	for _, target := range targets {
++		path := filepath.Join(dir, target, "graphite-server")
++		info, err := os.Lstat(path)
++		if err != nil {
++			return "", err
++		}
++		if !info.Mode().IsRegular() || info.Size() <= 0 || info.Size() > 128<<20 {
++			return "", fmt.Errorf("invalid native binary %s", path)
++		}
++		if err := checkArchitecture(path, target); err != nil {
++			return "", err
++		}
++		file, err := os.Open(path)
++		if err != nil {
++			return "", err
++		}
++		h := sha256.New()
++		_, err = io.Copy(h, file)
++		closeErr := file.Close()
++		if err != nil {
++			return "", err
++		}
++		if closeErr != nil {
++			return "", closeErr
++		}
++		fmt.Fprintf(&result, "%x  %s/graphite-server\n", h.Sum(nil), target)
++	}
++	return result.String(), nil
++}
++
++func checkArchitecture(path, target string) error {
++	parts := strings.Split(target, "-")
++	if parts[0] == "linux" {
++		file, err := elf.Open(path)
++		if err != nil {
++			return err
++		}
++		defer file.Close()
++		machine := elf.EM_X86_64
++		if parts[1] == "arm64" {
++			machine = elf.EM_AARCH64
++		}
++		if file.Machine != machine || file.Class != elf.ELFCLASS64 {
++			return fmt.Errorf("wrong ELF architecture for %s", target)
++		}
++		for _, p := range file.Progs {
++			if p.Type == elf.PT_INTERP {
++				return fmt.Errorf("%s has a dynamic interpreter", target)
++			}
++		}
++	} else {
++		file, err := macho.Open(path)
++		if err != nil {
++			return err
++		}
++		defer file.Close()
++		cpu := macho.CpuAmd64
++		if parts[1] == "arm64" {
++			cpu = macho.CpuArm64
++		}
++		if file.Cpu != cpu {
++			return fmt.Errorf("wrong Mach-O architecture for %s", target)
++		}
++	}
++	return nil
++}
++
++func verify(dir, version string, targets []string) error {
++	versionBytes, err := os.ReadFile(filepath.Join(dir, "VERSION"))
++	if err != nil {
++		return err
++	}
++	if string(versionBytes) != version+"\n" {
++		return errors.New("prebuilt version does not match requested version")
++	}
++	expected, err := checksums(dir, targets)
++	if err != nil {
++		return err
++	}
++	actual, err := os.ReadFile(filepath.Join(dir, "SHA256SUMS"))
++	if err != nil {
++		return err
++	}
++	if string(actual) != expected {
++		return errors.New("SHA256SUMS does not match the exact requested targets and bytes")
++	}
++	wanted := map[string]bool{".": true, "VERSION": true, "SHA256SUMS": true}
++	for _, target := range targets {
++		wanted[target] = true
++		wanted[target+"/graphite-server"] = true
++	}
++	return filepath.WalkDir(dir, func(path string, entry os.DirEntry, err error) error {
++		if err != nil {
++			return err
++		}
++		rel, err := filepath.Rel(dir, path)
++		if err != nil {
++			return err
++		}
++		if !wanted[filepath.ToSlash(rel)] || entry.Type()&os.ModeSymlink != 0 {
++			return fmt.Errorf("unexpected prebuilt resource %q", rel)
++		}
++		return nil
++	})
++}
+diff --git a/scripts/native/build_test.go b/scripts/native/build_test.go
+new file mode 100644
+index 00000000..37fd23d8
+--- /dev/null
++++ b/scripts/native/build_test.go
+@@ -0,0 +1,159 @@
++// Copyright 2026 Graphite contributors. SPDX-License-Identifier: Apache-2.0
++package main
++
++import (
++	"fmt"
++	"os"
++	"os/exec"
++	"path/filepath"
++	"reflect"
++	"runtime"
++	"strings"
++	"testing"
++)
++
++var probeBinary string
++
++func TestMain(m *testing.M) {
++	dir, err := os.MkdirTemp("", "native-package-probe-")
++	if err != nil {
++		panic(err)
++	}
++	source := filepath.Join(dir, "main.go")
++	if err := os.WriteFile(source, []byte("package main\nfunc main() {}\n"), 0644); err != nil {
++		panic(err)
++	}
++	probeBinary = filepath.Join(dir, "probe")
++	command := exec.Command("go", "build", "-o", probeBinary, source)
++	command.Env = buildEnvironment(os.Environ(), runtime.GOOS, runtime.GOARCH)
++	if output, err := command.CombinedOutput(); err != nil {
++		fmt.Fprintf(os.Stderr, "%s: %v\n", output, err)
++		os.RemoveAll(dir)
++		os.Exit(1)
++	}
++	code := m.Run()
++	os.RemoveAll(dir)
++	os.Exit(code)
++}
++
++func TestTargetsAndVersion(t *testing.T) {
++	got, err := parseTargets("linux-arm64,darwin-amd64")
++	if err != nil || !reflect.DeepEqual(got, []string{"darwin-amd64", "linux-arm64"}) {
++		t.Fatalf("%v: %v", got, err)
++	}
++	host, err := parseTargets("host")
++	if err != nil || len(host) != 1 || host[0] != runtime.GOOS+"-"+runtime.GOARCH {
++		t.Fatalf("%v: %v", host, err)
++	}
++	for _, s := range []string{"", "windows-amd64", "linux-arm64,linux-arm64", "../linux-arm64", "linux-386", "linux-arm64,"} {
++		if _, err := parseTargets(s); err == nil {
++			t.Errorf("accepted %q", s)
++		}
++	}
++	for _, s := range []string{"", "1.0 -X bad", "$(touch x)", "a\nb", "a/b"} {
++		if validVersion(s) {
++			t.Errorf("accepted version %q", s)
++		}
++	}
++	if !validVersion("1.2.3-SNAPSHOT+abc") {
++		t.Fatal("normal version rejected")
++	}
++}
++
++func resourceFixture(t *testing.T) (string, []string) {
++	t.Helper()
++	dir := filepath.Join(t.TempDir(), "graphite-native")
++	targets, err := parseTargets("host")
++	if err != nil {
++		t.Fatal(err)
++	}
++	if err := os.MkdirAll(filepath.Join(dir, targets[0]), 0755); err != nil {
++		t.Fatal(err)
++	}
++	if err := copyFile(probeBinary, filepath.Join(dir, targets[0], "graphite-server"), 0755); err != nil {
++		t.Fatal(err)
++	}
++	manifest, err := checksums(dir, targets)
++	if err != nil {
++		t.Fatal(err)
++	}
++	if err := os.WriteFile(filepath.Join(dir, "SHA256SUMS"), []byte(manifest), 0644); err != nil {
++		t.Fatal(err)
++	}
++	if err := os.WriteFile(filepath.Join(dir, "VERSION"), []byte("test-version\n"), 0644); err != nil {
++		t.Fatal(err)
++	}
++	return dir, targets
++}
++
++func TestVerifiedPrebuiltCopyAndCorruption(t *testing.T) {
++	source, targets := resourceFixture(t)
++	if err := verify(source, "test-version", targets); err != nil {
++		t.Fatal(err)
++	}
++	output := filepath.Join(t.TempDir(), "graphite-native")
++	if err := prepare(output, "test-version", "host", source); err != nil {
++		t.Fatal(err)
++	}
++	if err := verify(output, "test-version", targets); err != nil {
++		t.Fatal(err)
++	}
++	before, _ := os.ReadFile(filepath.Join(output, "SHA256SUMS"))
++	if err := os.WriteFile(filepath.Join(source, "SHA256SUMS"), []byte(strings.Repeat("0", 64)+"  "+targets[0]+"/graphite-server\n"), 0644); err != nil {
++		t.Fatal(err)
++	}
++	if err := prepare(output, "test-version", "host", source); err == nil {
++		t.Fatal("copied corrupt resource")
++	}
++	after, _ := os.ReadFile(filepath.Join(output, "SHA256SUMS"))
++	if string(before) != string(after) {
++		t.Fatal("failed verification destroyed previous complete output")
++	}
++}
++
++func TestManifestRequiresExactVersionTargetsAndPathSet(t *testing.T) {
++	source, targets := resourceFixture(t)
++	if err := verify(source, "other-version", targets); err == nil {
++		t.Fatal("accepted wrong version")
++	}
++	for _, mutate := range []func(string){
++		func(dir string) { os.WriteFile(filepath.Join(dir, "unlisted"), []byte("unexpected"), 0644) },
++		func(dir string) { os.Symlink("VERSION", filepath.Join(dir, "link")) },
++		func(dir string) {
++			file := filepath.Join(dir, "SHA256SUMS")
++			b, _ := os.ReadFile(file)
++			os.WriteFile(file, append(b, b...), 0644)
++		},
++		func(dir string) {
++			os.WriteFile(filepath.Join(dir, targets[0], "graphite-server"), []byte("truncated"), 0755)
++		},
++	} {
++		dir, ts := resourceFixture(t)
++		mutate(dir)
++		if err := verify(dir, "test-version", ts); err == nil {
++			t.Fatal("accepted invalid resource")
++		}
++	}
++}
++
++func TestArchitectureAndBuildEnvironment(t *testing.T) {
++	source, targets := resourceFixture(t)
++	wrongArch := "amd64"
++	if runtime.GOARCH == "amd64" {
++		wrongArch = "arm64"
++	}
++	if err := checkArchitecture(filepath.Join(source, targets[0], "graphite-server"), runtime.GOOS+"-"+wrongArch); err == nil {
++		t.Fatal("accepted wrong architecture")
++	}
++	env := buildEnvironment([]string{"PATH=/bin", "CGO_ENABLED=1", "GOOS=wrong", "GOARCH=wrong", "GOAMD64=v4", "GOARM64=v9.0", "GOFLAGS=-race", "APP=ok"}, "linux", "arm64")
++	want := []string{"PATH=/bin", "APP=ok", "CGO_ENABLED=0", "GOOS=linux", "GOARCH=arm64", "GOAMD64=v1", "GOARM64=v8.0", "GOFLAGS="}
++	if !reflect.DeepEqual(env, want) {
++		t.Fatalf("%v", env)
++	}
++	if err := prepare(t.TempDir(), "test", "host", ""); err == nil {
++		t.Fatal("accepted unsafe generated directory name")
++	}
++	if err := prepare(source, "test-version", "host", source); err == nil {
++		t.Fatal("allowed source/output alias")
++	}
++}
+diff --git a/scripts/native/smoke.py b/scripts/native/smoke.py
+new file mode 100644
+index 00000000..359b618a
+--- /dev/null
++++ b/scripts/native/smoke.py
+@@ -0,0 +1,105 @@
++#!/usr/bin/env python3
++"""Exercise installed JAR/distribution entry points without a binary override.
++Uses the checked-in, JVM-written four-CallSite correctness fixture; no benchmark.
++"""
++import argparse
++import hashlib
++import json
++import os
++from pathlib import Path
++import re
++import shlex
++import subprocess
++import tempfile
++import time
++import urllib.request
++import zipfile
++
++
++def main():
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument("--repo", type=Path, default=Path.cwd())
++    parser.add_argument("--build", type=Path, default=Path.cwd())
++    parser.add_argument("--output", type=Path, required=True)
++    args = parser.parse_args()
++    repo, build = args.repo.resolve(), args.build.resolve()
++    results = []
++    args.output.parent.mkdir(parents=True, exist_ok=True)
++    resources = build / "graphite-explore/build/generated/native-resources/graphite-native"
++    manifest = (resources / "SHA256SUMS").read_text()
++    version = (resources / "VERSION").read_text().strip()
++    env = {k: v for k, v in os.environ.items() if k not in (
++        "GRAPHITE_SERVER_BINARY", "JAVA_TOOL_OPTIONS", "JDK_JAVA_OPTIONS", "JAVA_OPTS",
++        "GRAPHITE_NATIVE_CPU_PROFILE", "GRAPHITE_PROFILE")}
++    fixture = repo / "graphite-server/internal/store/testdata/callsite-index/store"
++    ui_bytes = (repo / "graphite-server/internal/web/assets/index.html").read_bytes()
++    java = ["java", "-Dfile.encoding=UTF-8", "-Xmx128m", "-XX:ActiveProcessorCount=2"]
++    commands = []
++    for project, jar_name, script_name, prefix in [
++        ("query", "graphite.jar", "graphite", ["serve"]),
++        ("explore", "graphite-explore.jar", "explore", []),
++    ]:
++        jar = build / f"graphite-{project}/build/libs/{jar_name}"
++        with zipfile.ZipFile(jar) as archive:
++            for line in manifest.splitlines():
++                digest, path = line.split("  ")
++                assert hashlib.sha256(archive.read("graphite-native/" + path)).hexdigest() == digest
++            assert archive.read("graphite-native/SHA256SUMS").decode() == manifest
++            assert archive.read("graphite-native/VERSION").decode().strip() == version
++        commands.append((project + "-jar", java + ["-jar", str(jar)] + prefix))
++        # Gradle's application distribution name follows the project name.
++        script = build / f"graphite-{project}/build/install/{script_name}/bin/{script_name}"
++        commands.append((project + "-installDist", [str(script)] + prefix))
++    try:
++        for name, command in commands:
++            with tempfile.TemporaryDirectory(prefix="graphite installed package ") as tmp:
++                folder = Path(tmp)
++                process_env = dict(env, JAVA_OPTS="-Xmx128m " + shlex.quote("-Djava.io.tmpdir=" + tmp))
++                # JAVA_OPTS applies to generated scripts; JAR invocations get the
++                # same explicit temp property so owned extraction is observable.
++                invocation = list(command)
++                if invocation[0] == "java": invocation.insert(1, "-Djava.io.tmpdir=" + tmp)
++                invocation += ["--id", "tiny", str(fixture), "--port", "0"]
++                error_path = folder / "stderr.txt"
++                with error_path.open("w") as stderr, (folder / "stdout.txt").open("w") as stdout:
++                    process = subprocess.Popen(invocation, cwd=folder, env=process_env,
++                                               stdin=subprocess.DEVNULL, stdout=stdout, stderr=stderr)
++                    try:
++                        deadline = time.monotonic() + 30
++                        while True:
++                            text = error_path.read_text()
++                            match = re.search(r"http://localhost:(\d+)", text)
++                            if match: break
++                            if process.poll() is not None or time.monotonic() >= deadline:
++                                raise AssertionError((name, process.poll(), text))
++                            time.sleep(.05)
++                        extracted = list(folder.glob("graphite-native-*/graphite-server"))
++                        assert len(extracted) == 1, (name, extracted)
++                        assert extracted[0].stat().st_mode & 0o777 == 0o700
++                        port = int(match[1])
++                        with urllib.request.urlopen(f"http://localhost:{port}/api/graphs", timeout=10) as response:
++                            catalog = json.load(response)
++                        with urllib.request.urlopen(f"http://localhost:{port}/", timeout=10) as response:
++                            homepage = response.read()
++                        assert catalog["graphs"][0]["id"] == "tiny"
++                        assert catalog["graphs"][0]["nodes"] == 4
++                        assert homepage == ui_bytes
++                        process.terminate()
++                        process.wait(timeout=15)
++                        assert process.returncode == 143, (name, process.returncode)
++                        assert not extracted[0].exists() and not extracted[0].parent.exists()
++                        results.append(dict(name=name, command=invocation, catalog=catalog,
++                                            uiSHA256=hashlib.sha256(homepage).hexdigest(),
++                                            exitCode=process.returncode, extractionRemoved=True))
++                        args.output.write_text(json.dumps(dict(passed=False, checks=results), indent=2)+"\n")
++                    finally:
++                        if process.poll() is None: process.kill(); process.wait()
++        args.output.write_text(json.dumps(dict(passed=True, version=version, checks=results), indent=2)+"\n")
++        print(json.dumps(dict(passed=True, checks=len(results))))
++    except BaseException as error:
++        args.output.write_text(json.dumps(dict(passed=False, error=repr(error), checks=results), indent=2)+"\n")
++        raise
++
++
++if __name__ == "__main__":
++    main()

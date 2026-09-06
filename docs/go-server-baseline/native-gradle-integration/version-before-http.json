@@ -1,0 +1,1259 @@
+{
+  "command": [
+    "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-prebuilt-version-counterexample-99a4aiax/output/graphite-native/darwin-arm64/graphite-server",
+    "serve",
+    "--data",
+    "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-prebuilt-version-counterexample-99a4aiax/runtime-openapi/data",
+    "--port",
+    "0"
+  ],
+  "url": "http://localhost:65519/openapi.json",
+  "manifestVersion": "3.0.0-false-label\n",
+  "openAPI": {
+    "info": {
+      "description": "Graph-qualified single-graph and cross-graph query API for Graphite Explore.",
+      "title": "Graphite Explore API",
+      "version": "3.0.0-packaging-audit"
+    },
+    "openapi": "3.0.3",
+    "paths": {
+      "/api/annotations": {
+        "get": {
+          "parameters": [
+            {
+              "description": "Declaring class name",
+              "in": "query",
+              "name": "class",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "description": "Member name",
+              "in": "query",
+              "name": "member",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Annotation map"
+            },
+            "400": {
+              "description": "Missing required parameters"
+            }
+          },
+          "summary": "Fetch member annotations across all loaded graphs, grouped by graphId"
+        }
+      },
+      "/api/architecture/c4": {
+        "get": {
+          "parameters": [
+            {
+              "description": "context, container, component, or all",
+              "in": "query",
+              "name": "level",
+              "required": false,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "description": "json, dsl, mermaid, or plantuml",
+              "in": "query",
+              "name": "format",
+              "required": false,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Structurizr workspace JSON, Structurizr DSL, Mermaid text, or PlantUML text"
+            },
+            "400": {
+              "description": "Invalid level or format parameter"
+            }
+          },
+          "summary": "Build C4 architecture views for all loaded graphs, grouped by graphId for JSON"
+        }
+      },
+      "/api/cypher": {
+        "get": {
+          "parameters": [
+            {
+              "description": "Cypher query text",
+              "in": "query",
+              "name": "query",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "description": "Server-side maximum result rows",
+              "in": "query",
+              "name": "limit",
+              "required": false,
+              "schema": {
+                "type": "integer"
+              }
+            },
+            {
+              "description": "Positive client timeout in milliseconds, capped by the server maximum",
+              "in": "query",
+              "name": "timeoutMs",
+              "required": false,
+              "schema": {
+                "minimum": 1.0,
+                "type": "integer"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Cypher result"
+            },
+            "400": {
+              "description": "Missing or invalid query"
+            },
+            "429": {
+              "description": "Cypher concurrency limit exceeded"
+            },
+            "503": {
+              "description": "Cypher cancelled while the client remained connected"
+            },
+            "504": {
+              "description": "Cypher query timeout exceeded"
+            }
+          },
+          "summary": "Execute one query over the union of all loaded graphs"
+        },
+        "post": {
+          "parameters": [
+            {
+              "description": "Server-side maximum result rows",
+              "in": "query",
+              "name": "limit",
+              "required": false,
+              "schema": {
+                "type": "integer"
+              }
+            },
+            {
+              "description": "Positive client timeout in milliseconds, capped by the server maximum",
+              "in": "query",
+              "name": "timeoutMs",
+              "required": false,
+              "schema": {
+                "minimum": 1.0,
+                "type": "integer"
+              }
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "query": {
+                      "description": "Cypher query text",
+                      "type": "string"
+                    },
+                    "timeoutMs": {
+                      "description": "Positive client timeout in milliseconds, capped by the server maximum",
+                      "minimum": 1.0,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "query"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "required": true
+          },
+          "responses": {
+            "200": {
+              "description": "Cypher result"
+            },
+            "400": {
+              "description": "Missing or invalid query"
+            },
+            "429": {
+              "description": "Cypher concurrency limit exceeded"
+            },
+            "503": {
+              "description": "Cypher cancelled while the client remained connected"
+            },
+            "504": {
+              "description": "Cypher query timeout exceeded"
+            }
+          },
+          "summary": "Execute one query over the union of all loaded graphs"
+        }
+      },
+      "/api/cypher/graphs": {
+        "get": {
+          "parameters": [
+            {
+              "description": "Cypher query text",
+              "in": "query",
+              "name": "query",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "description": "Query all loaded graphs; mutually exclusive with graph",
+              "in": "query",
+              "name": "allGraphs",
+              "required": false,
+              "schema": {
+                "type": "boolean"
+              }
+            },
+            {
+              "description": "Graph id selection; repeat or comma-separate",
+              "in": "query",
+              "name": "graph",
+              "required": false,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "description": "cross-graph (default) or fanout",
+              "in": "query",
+              "name": "mode",
+              "required": false,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "description": "Maximum total result rows across queried graphs",
+              "in": "query",
+              "name": "limit",
+              "required": false,
+              "schema": {
+                "type": "integer"
+              }
+            },
+            {
+              "description": "Positive client timeout in milliseconds, capped by the server maximum",
+              "in": "query",
+              "name": "timeoutMs",
+              "required": false,
+              "schema": {
+                "minimum": 1.0,
+                "type": "integer"
+              }
+            },
+            {
+              "description": "Optional maximum result rows per graph",
+              "in": "query",
+              "name": "perGraphLimit",
+              "required": false,
+              "schema": {
+                "type": "integer"
+              }
+            },
+            {
+              "description": "Include duplicate per-graph row arrays in graph summaries",
+              "in": "query",
+              "name": "includeGraphRows",
+              "required": false,
+              "schema": {
+                "type": "boolean"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Multi-graph Cypher result with graphId-tagged rows"
+            },
+            "400": {
+              "description": "Missing or invalid query"
+            },
+            "404": {
+              "description": "Requested graph not loaded"
+            },
+            "429": {
+              "description": "Cypher concurrency limit exceeded"
+            },
+            "503": {
+              "description": "Cypher cancelled while the client remained connected"
+            },
+            "504": {
+              "description": "Cypher query timeout exceeded"
+            }
+          },
+          "summary": "Execute one cross-graph query or explicit fanout over selected graphs"
+        },
+        "post": {
+          "parameters": [
+            {
+              "description": "Maximum total result rows across queried graphs",
+              "in": "query",
+              "name": "limit",
+              "required": false,
+              "schema": {
+                "type": "integer"
+              }
+            },
+            {
+              "description": "Positive client timeout in milliseconds, capped by the server maximum",
+              "in": "query",
+              "name": "timeoutMs",
+              "required": false,
+              "schema": {
+                "minimum": 1.0,
+                "type": "integer"
+              }
+            },
+            {
+              "description": "Optional maximum result rows per graph",
+              "in": "query",
+              "name": "perGraphLimit",
+              "required": false,
+              "schema": {
+                "type": "integer"
+              }
+            },
+            {
+              "description": "Include duplicate per-graph row arrays in graph summaries",
+              "in": "query",
+              "name": "includeGraphRows",
+              "required": false,
+              "schema": {
+                "type": "boolean"
+              }
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "allGraphs": {
+                      "description": "Query all loaded graphs; mutually exclusive with graphs",
+                      "type": "boolean"
+                    },
+                    "graphs": {
+                      "description": "Explicit graph ids to query; mutually exclusive with allGraphs",
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "includeGraphRows": {
+                      "description": "Include duplicate per-graph row arrays in graph summaries",
+                      "type": "boolean"
+                    },
+                    "limit": {
+                      "description": "Maximum total result rows across queried graphs",
+                      "type": "integer"
+                    },
+                    "mode": {
+                      "description": "cross-graph (default) or fanout",
+                      "type": "string"
+                    },
+                    "perGraphLimit": {
+                      "description": "Optional maximum result rows per graph",
+                      "type": "integer"
+                    },
+                    "query": {
+                      "description": "Cypher query text",
+                      "type": "string"
+                    },
+                    "timeoutMs": {
+                      "description": "Positive client timeout in milliseconds, capped by the server maximum",
+                      "minimum": 1.0,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "query"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "required": true
+          },
+          "responses": {
+            "200": {
+              "description": "Multi-graph Cypher result with graphId-tagged rows"
+            },
+            "400": {
+              "description": "Missing or invalid query"
+            },
+            "404": {
+              "description": "Requested graph not loaded"
+            },
+            "429": {
+              "description": "Cypher concurrency limit exceeded"
+            },
+            "503": {
+              "description": "Cypher cancelled while the client remained connected"
+            },
+            "504": {
+              "description": "Cypher query timeout exceeded"
+            }
+          },
+          "summary": "Execute one cross-graph query or explicit fanout over selected graphs"
+        }
+      },
+      "/api/endpoints": {
+        "get": {
+          "parameters": [
+            {
+              "description": "Maximum number of endpoints",
+              "in": "query",
+              "name": "limit",
+              "required": false,
+              "schema": {
+                "type": "integer"
+              }
+            },
+            {
+              "description": "Optional controller class filter",
+              "in": "query",
+              "name": "class",
+              "required": false,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Extracted framework HTTP endpoints"
+            }
+          },
+          "summary": "Extract framework API endpoints across all loaded graphs, grouped by graphId"
+        }
+      },
+      "/api/graphs": {
+        "get": {
+          "responses": {
+            "200": {
+              "description": "Loaded graph registry, per-graph statistics, and totals"
+            }
+          },
+          "summary": "List loaded webgraphs with cached statistics and aggregate totals"
+        }
+      },
+      "/api/graphs/{graphId}": {
+        "delete": {
+          "parameters": [
+            {
+              "description": "Unique graph id",
+              "in": "path",
+              "name": "graphId",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "204": {
+              "description": "Graph unloaded"
+            },
+            "404": {
+              "description": "Graph not loaded"
+            }
+          },
+          "summary": "Unload a webgraph by id"
+        },
+        "get": {
+          "parameters": [
+            {
+              "description": "Unique graph id",
+              "in": "path",
+              "name": "graphId",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Loaded graph descriptor and statistics"
+            },
+            "404": {
+              "description": "Graph not loaded"
+            }
+          },
+          "summary": "Get metadata and cached statistics for one graph"
+        },
+        "post": {
+          "parameters": [
+            {
+              "description": "Unique graph id",
+              "in": "path",
+              "name": "graphId",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "loadMode": {
+                      "description": "Optional graph load mode: EAGER, MAPPED, or AUTO",
+                      "type": "string"
+                    },
+                    "path": {
+                      "description": "Absolute graph path, or path relative to --data",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "path"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "required": true
+          },
+          "responses": {
+            "200": {
+              "description": "Loaded graph descriptor"
+            },
+            "400": {
+              "description": "Invalid graph id, path, or graph payload"
+            }
+          },
+          "summary": "Load or replace a webgraph by id"
+        },
+        "put": {
+          "parameters": [
+            {
+              "description": "Unique graph id",
+              "in": "path",
+              "name": "graphId",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "loadMode": {
+                      "description": "Optional graph load mode: EAGER, MAPPED, or AUTO",
+                      "type": "string"
+                    },
+                    "path": {
+                      "description": "Absolute graph path, or path relative to --data",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "path"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "required": true
+          },
+          "responses": {
+            "200": {
+              "description": "Loaded graph descriptor"
+            },
+            "400": {
+              "description": "Invalid graph id, path, or graph payload"
+            }
+          },
+          "summary": "Load or replace a webgraph by id"
+        }
+      },
+      "/api/graphs/{graphId}/annotations": {
+        "get": {
+          "parameters": [
+            {
+              "description": "Unique graph id",
+              "in": "path",
+              "name": "graphId",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "description": "Declaring class name",
+              "in": "query",
+              "name": "class",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "description": "Member name",
+              "in": "query",
+              "name": "member",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Annotation map"
+            },
+            "400": {
+              "description": "Missing required parameters"
+            }
+          },
+          "summary": "Fetch member annotations in one explicit graph"
+        }
+      },
+      "/api/graphs/{graphId}/architecture/c4": {
+        "get": {
+          "parameters": [
+            {
+              "description": "Unique graph id",
+              "in": "path",
+              "name": "graphId",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "description": "context, container, component, or all",
+              "in": "query",
+              "name": "level",
+              "required": false,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "description": "json, dsl, mermaid, or plantuml",
+              "in": "query",
+              "name": "format",
+              "required": false,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Structurizr workspace JSON, Structurizr DSL, Mermaid text, or PlantUML text"
+            },
+            "400": {
+              "description": "Invalid level or format parameter"
+            }
+          },
+          "summary": "Build C4 architecture views for one explicit graph"
+        }
+      },
+      "/api/graphs/{graphId}/cypher": {
+        "get": {
+          "parameters": [
+            {
+              "description": "Unique graph id",
+              "in": "path",
+              "name": "graphId",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "description": "Cypher query text",
+              "in": "query",
+              "name": "query",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "description": "Server-side maximum result rows",
+              "in": "query",
+              "name": "limit",
+              "required": false,
+              "schema": {
+                "type": "integer"
+              }
+            },
+            {
+              "description": "Positive client timeout in milliseconds, capped by the server maximum",
+              "in": "query",
+              "name": "timeoutMs",
+              "required": false,
+              "schema": {
+                "minimum": 1.0,
+                "type": "integer"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Cypher result"
+            },
+            "400": {
+              "description": "Missing or invalid query"
+            },
+            "404": {
+              "description": "Graph not loaded"
+            },
+            "429": {
+              "description": "Cypher concurrency limit exceeded"
+            },
+            "503": {
+              "description": "Cypher cancelled while the client remained connected"
+            },
+            "504": {
+              "description": "Cypher query timeout exceeded"
+            }
+          },
+          "summary": "Execute a Cypher query against a specific graph"
+        },
+        "post": {
+          "parameters": [
+            {
+              "description": "Unique graph id",
+              "in": "path",
+              "name": "graphId",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "description": "Server-side maximum result rows",
+              "in": "query",
+              "name": "limit",
+              "required": false,
+              "schema": {
+                "type": "integer"
+              }
+            },
+            {
+              "description": "Positive client timeout in milliseconds, capped by the server maximum",
+              "in": "query",
+              "name": "timeoutMs",
+              "required": false,
+              "schema": {
+                "minimum": 1.0,
+                "type": "integer"
+              }
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "query": {
+                      "description": "Cypher query text",
+                      "type": "string"
+                    },
+                    "timeoutMs": {
+                      "description": "Positive client timeout in milliseconds, capped by the server maximum",
+                      "minimum": 1.0,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "query"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "required": true
+          },
+          "responses": {
+            "200": {
+              "description": "Cypher result"
+            },
+            "400": {
+              "description": "Missing or invalid query"
+            },
+            "404": {
+              "description": "Graph not loaded"
+            },
+            "429": {
+              "description": "Cypher concurrency limit exceeded"
+            },
+            "503": {
+              "description": "Cypher cancelled while the client remained connected"
+            },
+            "504": {
+              "description": "Cypher query timeout exceeded"
+            }
+          },
+          "summary": "Execute a Cypher query against a specific graph"
+        }
+      },
+      "/api/graphs/{graphId}/endpoints": {
+        "get": {
+          "parameters": [
+            {
+              "description": "Unique graph id",
+              "in": "path",
+              "name": "graphId",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "description": "Maximum number of endpoints",
+              "in": "query",
+              "name": "limit",
+              "required": false,
+              "schema": {
+                "type": "integer"
+              }
+            },
+            {
+              "description": "Optional controller class filter",
+              "in": "query",
+              "name": "class",
+              "required": false,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Extracted framework HTTP endpoints"
+            }
+          },
+          "summary": "Extract framework API endpoints from one explicit graph"
+        }
+      },
+      "/api/graphs/{graphId}/node/{id}": {
+        "get": {
+          "parameters": [
+            {
+              "description": "Unique graph id",
+              "in": "path",
+              "name": "graphId",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "description": "Node identifier",
+              "in": "path",
+              "name": "id",
+              "required": true,
+              "schema": {
+                "type": "integer"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Node payload"
+            },
+            "400": {
+              "description": "Invalid node id"
+            },
+            "404": {
+              "description": "Node not found"
+            }
+          },
+          "summary": "Fetch a node by graph-local id in one explicit graph"
+        }
+      },
+      "/api/graphs/{graphId}/node/{id}/incoming": {
+        "get": {
+          "parameters": [
+            {
+              "description": "Unique graph id",
+              "in": "path",
+              "name": "graphId",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "description": "Node identifier",
+              "in": "path",
+              "name": "id",
+              "required": true,
+              "schema": {
+                "type": "integer"
+              }
+            },
+            {
+              "description": "Maximum number of edges to return",
+              "in": "query",
+              "name": "limit",
+              "required": false,
+              "schema": {
+                "type": "integer"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Incoming edges"
+            },
+            "400": {
+              "description": "Invalid node id"
+            }
+          },
+          "summary": "List incoming edges in one explicit graph"
+        }
+      },
+      "/api/graphs/{graphId}/node/{id}/outgoing": {
+        "get": {
+          "parameters": [
+            {
+              "description": "Unique graph id",
+              "in": "path",
+              "name": "graphId",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "description": "Node identifier",
+              "in": "path",
+              "name": "id",
+              "required": true,
+              "schema": {
+                "type": "integer"
+              }
+            },
+            {
+              "description": "Maximum number of edges to return",
+              "in": "query",
+              "name": "limit",
+              "required": false,
+              "schema": {
+                "type": "integer"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Outgoing edges"
+            },
+            "400": {
+              "description": "Invalid node id"
+            }
+          },
+          "summary": "List outgoing edges in one explicit graph"
+        }
+      },
+      "/api/graphs/{graphId}/overview": {
+        "get": {
+          "parameters": [
+            {
+              "description": "Unique graph id",
+              "in": "path",
+              "name": "graphId",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "description": "Maximum number of classes",
+              "in": "query",
+              "name": "limit",
+              "required": false,
+              "schema": {
+                "type": "integer"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Overview graph"
+            }
+          },
+          "summary": "Build a class-level overview for one explicit graph"
+        }
+      },
+      "/api/graphs/{graphId}/resources": {
+        "get": {
+          "parameters": [
+            {
+              "description": "Unique graph id",
+              "in": "path",
+              "name": "graphId",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "description": "Glob pattern, defaults to **",
+              "in": "query",
+              "name": "pattern",
+              "required": false,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "description": "Maximum number of results",
+              "in": "query",
+              "name": "limit",
+              "required": false,
+              "schema": {
+                "type": "integer"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Resource listing"
+            },
+            "409": {
+              "description": "Graph was built without a persisted resource store and must be rebuilt"
+            }
+          },
+          "summary": "List persisted resources in one explicit graph"
+        }
+      },
+      "/api/graphs/{graphId}/resources/{path}": {
+        "get": {
+          "parameters": [
+            {
+              "description": "Unique graph id",
+              "in": "path",
+              "name": "graphId",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "description": "Resource path inside the graph payload; may include nested segments",
+              "in": "path",
+              "name": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Raw resource content"
+            },
+            "404": {
+              "description": "Resource not found"
+            },
+            "409": {
+              "description": "Graph was built without a persisted resource store and must be rebuilt"
+            },
+            "413": {
+              "description": "Resource exceeds maximum response size"
+            }
+          },
+          "summary": "Read persisted resource content in one explicit graph"
+        }
+      },
+      "/api/graphs/{graphId}/subgraph": {
+        "get": {
+          "parameters": [
+            {
+              "description": "Unique graph id",
+              "in": "path",
+              "name": "graphId",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "description": "Center node id",
+              "in": "query",
+              "name": "center",
+              "required": true,
+              "schema": {
+                "type": "integer"
+              }
+            },
+            {
+              "description": "Traversal depth",
+              "in": "query",
+              "name": "depth",
+              "required": false,
+              "schema": {
+                "type": "integer"
+              }
+            },
+            {
+              "description": "outgoing, incoming, or both",
+              "in": "query",
+              "name": "direction",
+              "required": false,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Subgraph"
+            },
+            "400": {
+              "description": "Missing or invalid parameters"
+            }
+          },
+          "summary": "Build a local subgraph in one explicit graph"
+        }
+      },
+      "/api/overview": {
+        "get": {
+          "parameters": [
+            {
+              "description": "Maximum number of classes",
+              "in": "query",
+              "name": "limit",
+              "required": false,
+              "schema": {
+                "type": "integer"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Overview graph"
+            }
+          },
+          "summary": "Build class-level overviews for all loaded graphs, grouped by graphId"
+        }
+      },
+      "/api/resources": {
+        "get": {
+          "parameters": [
+            {
+              "description": "Glob pattern, defaults to **",
+              "in": "query",
+              "name": "pattern",
+              "required": false,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "description": "Maximum number of results",
+              "in": "query",
+              "name": "limit",
+              "required": false,
+              "schema": {
+                "type": "integer"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Resource listing"
+            },
+            "409": {
+              "description": "Graph was built without a persisted resource store and must be rebuilt"
+            }
+          },
+          "summary": "List persisted resources across all loaded graphs, grouped by graphId"
+        }
+      },
+      "/api/resources/{path}": {
+        "get": {
+          "parameters": [
+            {
+              "description": "Resource path inside the graph payload; may include nested segments",
+              "in": "path",
+              "name": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Raw resource content"
+            },
+            "404": {
+              "description": "Resource not found"
+            },
+            "409": {
+              "description": "Graph was built without a persisted resource store and must be rebuilt"
+            },
+            "413": {
+              "description": "Resource exceeds maximum response size"
+            }
+          },
+          "summary": "Read every matching persisted resource, grouped by graphId"
+        }
+      },
+      "/api/topology": {
+        "get": {
+          "responses": {
+            "200": {
+              "description": "Topology graph with loaded graphs and aggregated call relations"
+            }
+          },
+          "summary": "Get the startup-built graph-to-graph call topology"
+        }
+      },
+      "/openapi.json": {
+        "get": {
+          "responses": {
+            "200": {
+              "description": "OpenAPI specification"
+            }
+          },
+          "summary": "Fetch this OpenAPI document"
+        }
+      },
+      "/swagger.json": {
+        "get": {
+          "responses": {
+            "200": {
+              "description": "OpenAPI specification"
+            }
+          },
+          "summary": "Fetch this API document via Swagger-compatible alias"
+        }
+      }
+    }
+  },
+  "processExit": 0,
+  "initialHarnessErrors": [
+    "Go 1.22 -trimpath omits -ldflags from buildinfo; initial assertion expecting it failed.",
+    "Initial /api/version HTTP probe returned404; registered /openapi.json inspected before retry. Both owned servers stopped."
+  ]
+}

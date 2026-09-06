@@ -1,0 +1,103 @@
+{
+  "base": "bbdfae2a07b629c40d1ef0db6d156bff500989c9",
+  "archive": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-gradle-root-v96ird9_",
+  "files": {
+    ".github/workflows/build.yml": {
+      "sha256": "f73966808e2dc1ab835e04a4a7618a13dd82218bbd39195d455bd85cab13e170",
+      "bytes": 5630,
+      "matchesFreeze": true
+    },
+    ".github/workflows/go-server.yml": {
+      "sha256": "467848ccd0d03b779b89657b661eb5d9ed49cf6066c5ba62767a7a7746c53d36",
+      "bytes": 3119,
+      "matchesFreeze": true
+    },
+    "graphite-explore/build.gradle.kts": {
+      "sha256": "1b35e97bcc3355dcb13bb6a22e41bab7f7dd52c248be99c91342952ae1984b39",
+      "bytes": 4824,
+      "matchesFreeze": true
+    },
+    "scripts/native/build.go": {
+      "sha256": "87436aeca054994d091ecde372b88d823772bbf6a7b9887672bfe43aa33f7394",
+      "bytes": 11209,
+      "matchesFreeze": false
+    },
+    "scripts/native/build_test.go": {
+      "sha256": "228c68e57c86f966e8bc3bd7a2a128647acfc6e190ab2377ff4d9d5fca7d984c",
+      "bytes": 6379,
+      "matchesFreeze": false
+    },
+    "scripts/native/smoke.py": {
+      "sha256": "5a5d9a0a5f21b299bcea3cd8befd80f1045c23ccadfb6a52f52b522ed0920fa9",
+      "bytes": 5934,
+      "matchesFreeze": true
+    },
+    "scripts/native/README.md": {
+      "sha256": "a1bbf774ca93512e6906350bbdae934fca4814658e2b842d81738e8541134e42",
+      "bytes": 2853,
+      "matchesFreeze": false
+    },
+    "docs/go-server-baseline/native-gradle-packaging/README.md": {
+      "sha256": "bdfdfdbf68e760b182b013b81ae67df153d8dcbf15db041e7506d6f0e24ca25f",
+      "bytes": 3708,
+      "matchesFreeze": true
+    },
+    "docs/go-server-baseline/native-gradle-packaging/go-test.log": {
+      "sha256": "e30323fe336a06ee181e6ce373f844c1b25e3ff4727e0750481421444a067488",
+      "bytes": 35,
+      "matchesFreeze": true
+    },
+    "docs/go-server-baseline/native-gradle-packaging/go-vet.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "matchesFreeze": true
+    },
+    "docs/go-server-baseline/native-gradle-packaging/gradle-default.log": {
+      "sha256": "13468a172da397cf7216a5dad9b68b15e51681f2827b691b6fcfcd7498ca4659",
+      "bytes": 6371,
+      "matchesFreeze": true
+    },
+    "docs/go-server-baseline/native-gradle-packaging/gradle-prebuilt.log": {
+      "sha256": "a2db1aee6caa6f4f8b45482a37795d19f3edd04ccde97f3c979cef3c26661d9e",
+      "bytes": 3103,
+      "matchesFreeze": true
+    },
+    "docs/go-server-baseline/native-gradle-packaging/identity.json": {
+      "sha256": "6a143eaecc97636c5662019917bd147b424c54555de0bbd4d1117ef58d875be2",
+      "bytes": 3611,
+      "matchesFreeze": true
+    },
+    "docs/go-server-baseline/native-gradle-packaging/prebuilt-copy.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "matchesFreeze": true
+    },
+    "docs/go-server-baseline/native-gradle-packaging/smoke-initial-failure.json": {
+      "sha256": "5d37133e9134d2e18fdc89a51cde61cdbd8842113e76f41923b65ff602c1d31c",
+      "bytes": 1692,
+      "matchesFreeze": true
+    },
+    "docs/go-server-baseline/native-gradle-packaging/smoke.json": {
+      "sha256": "0d12f14f8b1a68780b57d44b4ba791a634f80c733643e42727c1e59fa80a1677",
+      "bytes": 5557,
+      "matchesFreeze": true
+    },
+    "docs/go-server-baseline/native-gradle-packaging/smoke.log": {
+      "sha256": "41f596fcc0ce0d6d35cbbc8bfb349c04eb3a1b22c99108dd9dd72cd20050b72b",
+      "bytes": 30,
+      "matchesFreeze": true
+    },
+    "docs/go-server-baseline/native-gradle-packaging/manifest.json": {
+      "sha256": "505e5bc156b27215fd48c62ce291047963925da807f44140730683d8a57327f6",
+      "bytes": 2145,
+      "matchesFreeze": null
+    },
+    "graphite-server/README.md": {
+      "sha256": "b548e041ae00e6ad91ecef9e0aceb538f3fedd6124c0d3d52e2410015b9bbf9e",
+      "bytes": 5217,
+      "matchesFreeze": null
+    }
+  },
+  "preparation": "git archive + exact scoped files, git init without commit; explicit version for existing publishing-plugin worktree resolver",
+  "rootCorrection": "Verify actual main.version string in unstripped cross-built ELF/Mach-O, command package identity, and regression against false VERSION with unchanged binary."
+}

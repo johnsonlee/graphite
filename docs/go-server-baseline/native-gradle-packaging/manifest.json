@@ -1,0 +1,22 @@
+{
+  "base": "274cd678",
+  "files": {
+    ".github/workflows/build.yml": "f73966808e2dc1ab835e04a4a7618a13dd82218bbd39195d455bd85cab13e170",
+    ".github/workflows/go-server.yml": "467848ccd0d03b779b89657b661eb5d9ed49cf6066c5ba62767a7a7746c53d36",
+    "graphite-explore/build.gradle.kts": "1b35e97bcc3355dcb13bb6a22e41bab7f7dd52c248be99c91342952ae1984b39",
+    "scripts/native/build.go": "c2d44a8455441217f2088f4d9ffc03ef4b39beebd5e7a94133601783ef83c4b2",
+    "scripts/native/build_test.go": "c7f2f2d4b5e87c426fa12ade882d835c481e907070c78b1bb7d4163a3348893c",
+    "scripts/native/smoke.py": "5a5d9a0a5f21b299bcea3cd8befd80f1045c23ccadfb6a52f52b522ed0920fa9",
+    "scripts/native/README.md": "deaa81dfa7db0a61fe2fdedabed739ca1206a6a6ee52b754dc19001cbc5d6d45",
+    "docs/go-server-baseline/native-gradle-packaging/README.md": "bdfdfdbf68e760b182b013b81ae67df153d8dcbf15db041e7506d6f0e24ca25f",
+    "docs/go-server-baseline/native-gradle-packaging/go-test.log": "e30323fe336a06ee181e6ce373f844c1b25e3ff4727e0750481421444a067488",
+    "docs/go-server-baseline/native-gradle-packaging/go-vet.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "docs/go-server-baseline/native-gradle-packaging/gradle-default.log": "13468a172da397cf7216a5dad9b68b15e51681f2827b691b6fcfcd7498ca4659",
+    "docs/go-server-baseline/native-gradle-packaging/gradle-prebuilt.log": "a2db1aee6caa6f4f8b45482a37795d19f3edd04ccde97f3c979cef3c26661d9e",
+    "docs/go-server-baseline/native-gradle-packaging/identity.json": "6a143eaecc97636c5662019917bd147b424c54555de0bbd4d1117ef58d875be2",
+    "docs/go-server-baseline/native-gradle-packaging/prebuilt-copy.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "docs/go-server-baseline/native-gradle-packaging/smoke-initial-failure.json": "5d37133e9134d2e18fdc89a51cde61cdbd8842113e76f41923b65ff602c1d31c",
+    "docs/go-server-baseline/native-gradle-packaging/smoke.json": "0d12f14f8b1a68780b57d44b4ba791a634f80c733643e42727c1e59fa80a1677",
+    "docs/go-server-baseline/native-gradle-packaging/smoke.log": "41f596fcc0ce0d6d35cbbc8bfb349c04eb3a1b22c99108dd9dd72cd20050b72b"
+  }
+}

@@ -13,10 +13,11 @@ go vet ./...
 ```
 
 The unified JAR's `serve` command and the standalone Explore JAR now launch this
-native executable; JVM build and offline query remain available. Until native
-resource assembly is integrated into distribution builds, set
-`GRAPHITE_SERVER_BINARY=/absolute/path/to/graphite-server` when launching a JAR.
-An absent native binary fails explicitly. See the
+native executable; JVM build and offline query remain available. Gradle packages
+verified Linux/macOS amd64/arm64 executables into both JARs and application
+distributions. `GRAPHITE_SERVER_BINARY=/absolute/path/to/graphite-server` can
+override embedded resolution during development. An absent native binary fails
+explicitly. See the
 [launcher verification](../docs/go-server-baseline/native-cli-bridge-integration/README.md)
 for argument, process, resource and remaining packaging boundaries.
 

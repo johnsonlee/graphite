@@ -1,0 +1,18 @@
+{
+  "command": [
+    "python3",
+    "-W",
+    "error::ResourceWarning",
+    "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-gradle-root-v96ird9_/scripts/native/smoke.py",
+    "--repo",
+    "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-gradle-root-v96ird9_",
+    "--build",
+    "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-gradle-root-v96ird9_",
+    "--output",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-gradle-integration/smoke-final.json"
+  ],
+  "startedAt": "2026-09-06T23:11:00.449178+00:00",
+  "finishedAt": "2026-09-06T23:11:02.908844+00:00",
+  "exitCode": 0,
+  "sequencing": "After prebuilt rebuild terminated; no concurrent artifact writers."
+}

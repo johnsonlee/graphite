@@ -1,0 +1,43 @@
+[
+  {
+    "command": [
+      "go",
+      "test",
+      "-race",
+      "scripts/native/build.go",
+      "scripts/native/build_test.go"
+    ],
+    "exitCode": 0,
+    "log": "packaging-race.log"
+  },
+  {
+    "command": [
+      "go",
+      "vet",
+      "scripts/native/build.go",
+      "scripts/native/build_test.go"
+    ],
+    "exitCode": 0,
+    "log": "packaging-vet.log"
+  },
+  {
+    "command": [
+      "./gradlew",
+      ":query:shadowJar",
+      ":explore:shadowJar",
+      ":query:installDist",
+      ":explore:installDist",
+      ":explore:test",
+      "--tests",
+      "io.johnsonlee.graphite.cli.NativeServerLauncherTest",
+      ":query:test",
+      "--tests",
+      "io.johnsonlee.graphite.cli.GraphiteCommandTest",
+      "--no-daemon",
+      "-Dorg.gradle.jvmargs=-Xmx2g",
+      "-Pversion=3.0.0-root-packaging-audit"
+    ],
+    "exitCode": 0,
+    "log": "gradle-default.log"
+  }
+]
