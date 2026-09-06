@@ -90,9 +90,12 @@ with a separate [26-query main oracle](testdata/constant-membership.md).
 The [literal zero-limit guard](testdata/limit-zero/README.md) reproduces main's
 specific initial filtered-MATCH branch. It can skip even throwing WHERE, inline
 property and projection expressions, as verified against main. It is not general
-lazy LIMIT execution. Parameter/expression counts and general SKIP/LIMIT
-conversion still have documented differences; relationship materialization and
-positive-limit early stopping remain separate work.
+lazy LIMIT execution. [General SKIP/LIMIT conversion](testdata/count-conversion/README.md)
+now follows main value conversion and evaluates each count against the correct
+first projected row. The new corpus matches 312/320 main results, and all 180
+prior zero-limit results now match. The eight remaining discrepancies concern
+early LIMIT evaluation and lazy MATCH; positive-limit early stopping and
+relationship materialization remain separate work.
 
 Valid UTF-8 string predicates avoid temporary UTF-16 arrays while malformed or
 isolated-surrogate strings use the original Java-compatible path. The frozen

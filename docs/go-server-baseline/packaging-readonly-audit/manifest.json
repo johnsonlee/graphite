@@ -1,0 +1,21 @@
+{
+  "files": {
+    "README.md": {
+      "bytes": 15030,
+      "SHA256": "2ab17f32517ea1fb4a0b4ee6c799b814ce133ea0b7038a3b5a97e1c422774afa"
+    },
+    "capture_cli.py": {
+      "bytes": 1035,
+      "SHA256": "3313b411592d4eef1edabdc05dc9a79e6dbcd726bb0110701976b4a47e9f7acc"
+    },
+    "cli-observations.json": {
+      "bytes": 20592,
+      "SHA256": "fd8787b8f6fc96de7198c5821dbc1dfae8a68b8d43983ffd2fed668099063326"
+    },
+    "source-manifest.json": {
+      "bytes": 6540,
+      "SHA256": "31aa8d8d47386b7c482cefe2d5a90ded445f8be3b2a11b88d06da53f2977380f"
+    }
+  },
+  "scope": "audit and small CLI observations only; no production changes or network publication"
+}

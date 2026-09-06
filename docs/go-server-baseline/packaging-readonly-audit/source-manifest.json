@@ -1,0 +1,115 @@
+{
+  "auditedRevision": "3f08ecf27b0607493a40fb7ca9f261ba440184a8",
+  "pinnedMain": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "files": {
+    ".github/workflows/build.yml": {
+      "auditedSHA256": "c61a3d4eec57f4c40cf1a157e1b4b23d76a060fdbfdb8798d55f405f0a1d6f59",
+      "mainSHA256": "c61a3d4eec57f4c40cf1a157e1b4b23d76a060fdbfdb8798d55f405f0a1d6f59"
+    },
+    ".github/workflows/go-server.yml": {
+      "auditedSHA256": "9b8f12f81c7905c168c8606528a3fcb87d4412ce560450756ce358fffdf55ff1",
+      "mainSHA256": null
+    },
+    ".github/workflows/publish.yml": {
+      "auditedSHA256": "fe5412a1a23c8f6f6fb2f54ef9caf0ea7ea826963f306f3f086b1f065efb0990",
+      "mainSHA256": "fe5412a1a23c8f6f6fb2f54ef9caf0ea7ea826963f306f3f086b1f065efb0990"
+    },
+    "graphite-explore/Dockerfile": {
+      "auditedSHA256": "e4c62688b2618a863a47aa12d7841dd6dc331b01b834f8ce504d511140bd9f08",
+      "mainSHA256": "e4c62688b2618a863a47aa12d7841dd6dc331b01b834f8ce504d511140bd9f08"
+    },
+    ".dockerignore": {
+      "auditedSHA256": "88cf28fe6c645fba3762560d0ce82ab57ab07c24054a74b0f8be3114d6dabb43",
+      "mainSHA256": "88cf28fe6c645fba3762560d0ce82ab57ab07c24054a74b0f8be3114d6dabb43"
+    },
+    "graphite-query/build.gradle.kts": {
+      "auditedSHA256": "e07f73e9ec61496b8818fbece0eb46fbffee5611c66408cc488b48cd196c7f8d",
+      "mainSHA256": "e07f73e9ec61496b8818fbece0eb46fbffee5611c66408cc488b48cd196c7f8d"
+    },
+    "graphite-explore/build.gradle.kts": {
+      "auditedSHA256": "c2ed5b4f5d70c4ec1dbce2100ac4e6ebd21c08c8f93eb5bba7785bcd6b614ad3",
+      "mainSHA256": "c2ed5b4f5d70c4ec1dbce2100ac4e6ebd21c08c8f93eb5bba7785bcd6b614ad3"
+    },
+    "graphite-sootup/build.gradle.kts": {
+      "auditedSHA256": "34f89e0e68fcbc6eebbd2e36a26190bf46e66d8797c88b8a4e4b0789924a3ee6",
+      "mainSHA256": "34f89e0e68fcbc6eebbd2e36a26190bf46e66d8797c88b8a4e4b0789924a3ee6"
+    },
+    "settings.gradle.kts": {
+      "auditedSHA256": "13cc29f4137a54ec4d81dd794e5d421502d463f80732a6c936848cc9c8d823cd",
+      "mainSHA256": "13cc29f4137a54ec4d81dd794e5d421502d463f80732a6c936848cc9c8d823cd"
+    },
+    "build.gradle.kts": {
+      "auditedSHA256": "ef80ef8b48e8b24e0c876c74b7aa788cf119da11bc12f687689a54b4e183d4a1",
+      "mainSHA256": "ef80ef8b48e8b24e0c876c74b7aa788cf119da11bc12f687689a54b4e183d4a1"
+    },
+    "README.md": {
+      "auditedSHA256": "bde45712a7da9ef2e8bc84cf458518f731dcc3b245bab4b513f3a985585817e1",
+      "mainSHA256": "bde45712a7da9ef2e8bc84cf458518f731dcc3b245bab4b513f3a985585817e1"
+    },
+    "graphite-query/src/main/kotlin/io/johnsonlee/graphite/cli/GraphiteCommand.kt": {
+      "auditedSHA256": "069a856f2ad39863f4b8c0e128a4308b007feba667a979124fd96295714812f1",
+      "mainSHA256": "069a856f2ad39863f4b8c0e128a4308b007feba667a979124fd96295714812f1"
+    },
+    "graphite-query/src/main/kotlin/io/johnsonlee/graphite/cli/Main.kt": {
+      "auditedSHA256": "38ae84bf9e9c55d29f3fdf4e0ea67da938d8cbd7bc7a083e2c61678504eabecb",
+      "mainSHA256": "38ae84bf9e9c55d29f3fdf4e0ea67da938d8cbd7bc7a083e2c61678504eabecb"
+    },
+    "graphite-query/src/main/kotlin/io/johnsonlee/graphite/cli/BuildCommand.kt": {
+      "auditedSHA256": "3cd79053a8596984aa28347c75bff6fd2cb5b50812377079a8aa3116f5c26a93",
+      "mainSHA256": "3cd79053a8596984aa28347c75bff6fd2cb5b50812377079a8aa3116f5c26a93"
+    },
+    "graphite-query/src/main/kotlin/io/johnsonlee/graphite/cli/QueryCommand.kt": {
+      "auditedSHA256": "0360731709945045c47ccc5208001294bb38a9e89b39040627aa729c31fc2cbf",
+      "mainSHA256": "0360731709945045c47ccc5208001294bb38a9e89b39040627aa729c31fc2cbf"
+    },
+    "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/ExploreCommand.kt": {
+      "auditedSHA256": "b2aa69d3d0f7cca4db158fee9bacea27b7a3c939e0fb36ecf32e892ed896c054",
+      "mainSHA256": "b2aa69d3d0f7cca4db158fee9bacea27b7a3c939e0fb36ecf32e892ed896c054"
+    },
+    "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/ExploreMain.kt": {
+      "auditedSHA256": "3dfd8270b8185899a6230df40fb28142cb77fd2af56f23c910224f5982078396",
+      "mainSHA256": "3dfd8270b8185899a6230df40fb28142cb77fd2af56f23c910224f5982078396"
+    },
+    "graphite-server/cmd/graphite-server/main.go": {
+      "auditedSHA256": "cab08b4fb4c4550de05c2295db9e7e37aba7007c4ebe6fde1577e31af22428fc",
+      "mainSHA256": null
+    },
+    "graphite-server/internal/web/assets.go": {
+      "auditedSHA256": "897726fb9b96e2dd9fdc8821b7c5ccbee49bd53a5e66e38f97a8600fd650492e",
+      "mainSHA256": null
+    },
+    "graphite-server/internal/web/generate.py": {
+      "auditedSHA256": "3c1b63533a2111be585327fc60123557f842fe86651847dade4c6bd04e041250",
+      "mainSHA256": null
+    },
+    "graphite-server/internal/store/mmap_unix.go": {
+      "auditedSHA256": "167e0b9510b857e72da094151c51095593f6d3bfd0153c103f6198d25223c0f7",
+      "mainSHA256": null
+    },
+    "graphite-server/internal/store/mmap_other.go": {
+      "auditedSHA256": "3d651ae17b183d14a561edd749a672ba5f90ff4df05f0abe21729cf337b339fc",
+      "mainSHA256": null
+    },
+    "graphite-mcp/src/index.ts": {
+      "auditedSHA256": "e13228d829f2ba727256cc8d4e12aae6b1d0a3fd228ec1c6645fffc931564218",
+      "mainSHA256": "e13228d829f2ba727256cc8d4e12aae6b1d0a3fd228ec1c6645fffc931564218"
+    },
+    "graphite-mcp/package.json": {
+      "auditedSHA256": "1c5aa17d8dda65cc7f200a70baa472239292ca693bbe2938df58de09f27a42ab",
+      "mainSHA256": "1c5aa17d8dda65cc7f200a70baa472239292ca693bbe2938df58de09f27a42ab"
+    }
+  },
+  "nativeCLI": {
+    "path": "/tmp/graphite-packaging-audit-server",
+    "SHA256": "2a741b4dff96f3e5195e2061bfb19fcdd130ab8cbd15070ff4ca15db03114370",
+    "buildCommand": "CGO_ENABLED=0 go build -trimpath -ldflags '-X main.version=3.0.0-audit' -o /tmp/graphite-packaging-audit-server ./cmd/graphite-server",
+    "cwd": "/private/tmp/graphite-go-packaging-audit-3f08ecf/graphite-server"
+  },
+  "jvmArtifacts": {
+    "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar": "91c3a1d154ca96004c55df195d9f752e077cab3e33ca1570b2c88b872d9bc34d",
+    "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-query/build/libs/query-1.0.0-SNAPSHOT-slim.jar": "4c2563c481f773967c2b7829317445ba6be366afc133db4cf18f70873a9deaa7"
+  },
+  "javaVersion": "openjdk version \"17.0.18\" 2026-01-20\nOpenJDK Runtime Environment Homebrew (build 17.0.18+0)\nOpenJDK 64-Bit Server VM Homebrew (build 17.0.18+0, mixed mode, sharing)\n",
+  "goVersion": "go version go1.22.0 darwin/arm64",
+  "scope": "read-only audit and non-server CLI observations; no network publication, release, build graph or 64 runtime"
+}
