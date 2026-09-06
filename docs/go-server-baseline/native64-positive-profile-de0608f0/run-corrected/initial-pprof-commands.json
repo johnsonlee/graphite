@@ -1,0 +1,27 @@
+[
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-nodecount=20",
+      "docs/go-server-baseline/native64-positive-profile-de0608f0/run-corrected/profiles/wrapped-firstLastGraphBimodalClassPrefix/cpu.pprof"
+    ],
+    "exitCode": 0,
+    "output": "docs/go-server-baseline/native64-positive-profile-de0608f0/run-corrected/profiles/wrapped-firstLastGraphBimodalClassPrefix/cpu-top.txt"
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-cum",
+      "-nodecount=20",
+      "docs/go-server-baseline/native64-positive-profile-de0608f0/run-corrected/profiles/wrapped-firstLastGraphBimodalClassPrefix/cpu.pprof"
+    ],
+    "exitCode": 0,
+    "output": "docs/go-server-baseline/native64-positive-profile-de0608f0/run-corrected/profiles/wrapped-firstLastGraphBimodalClassPrefix/cpu-cum.txt"
+  }
+]

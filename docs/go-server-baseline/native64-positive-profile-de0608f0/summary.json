@@ -1,0 +1,72 @@
+[
+  {
+    "name": "global-wide-distribution-broad-all-64",
+    "requestDeltas": {
+      "frees": 127500339,
+      "mallocs": 168599403,
+      "numGC": 1,
+      "pauseTotalNs": 82500,
+      "systemCPUSeconds": 0.4627560000000006,
+      "totalAllocBytes": 8070837576,
+      "userCPUSeconds": 15.743045999999993
+    },
+    "executeAndMarshalSecondsDiagnostic": 10.714531875,
+    "fullOutputMatchesExpected": true
+  },
+  {
+    "name": "global-wide-wrapped-case-insensitive-distinct-dense",
+    "requestDeltas": {
+      "frees": 127342535,
+      "mallocs": 235785027,
+      "numGC": 1,
+      "pauseTotalNs": 96416,
+      "systemCPUSeconds": 0.5483259999999994,
+      "totalAllocBytes": 12287401632,
+      "userCPUSeconds": 23.321787999999998
+    },
+    "executeAndMarshalSecondsDiagnostic": 18.663146959,
+    "fullOutputMatchesExpected": true
+  },
+  {
+    "name": "global-wide-wrapped-case-insensitive-distinct-dense-repeat",
+    "requestDeltas": {
+      "frees": 127753690,
+      "mallocs": 205174835,
+      "numGC": 1,
+      "pauseTotalNs": 76999,
+      "systemCPUSeconds": 0.48079300000000025,
+      "totalAllocBytes": 10237933488,
+      "userCPUSeconds": 17.973028999999997
+    },
+    "executeAndMarshalSecondsDiagnostic": 12.866963083,
+    "fullOutputMatchesExpected": true
+  },
+  {
+    "name": "wrapped-firstLastGraphBimodalClassPrefix",
+    "requestDeltas": {
+      "frees": 455700070,
+      "mallocs": 563237975,
+      "numGC": 2,
+      "pauseTotalNs": 123166,
+      "systemCPUSeconds": 1.2292569999999998,
+      "totalAllocBytes": 18222452888,
+      "userCPUSeconds": 41.271305999999996
+    },
+    "executeAndMarshalSecondsDiagnostic": 32.314771333,
+    "fullOutputMatchesExpected": true
+  },
+  {
+    "name": "wrapped-firstLastGraphBimodalClassPrefix-repeat",
+    "requestDeltas": {
+      "frees": 211645181,
+      "mallocs": 294196087,
+      "numGC": 2,
+      "pauseTotalNs": 143541,
+      "systemCPUSeconds": 0.6032069999999998,
+      "totalAllocBytes": 15636032040,
+      "userCPUSeconds": 31.131603999999996
+    },
+    "executeAndMarshalSecondsDiagnostic": 19.268857583,
+    "fullOutputMatchesExpected": true
+  }
+]

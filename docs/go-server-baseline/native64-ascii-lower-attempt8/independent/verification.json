@@ -1,0 +1,18 @@
+{
+  "passed": true,
+  "httpCases": 42,
+  "http200": 42,
+  "bodyAndSelectedHeadersEqual": 42,
+  "dynamicPointerMasks": 0,
+  "sourceFilesStillIdentical": true,
+  "defaultServerTimeoutMillis": 60000,
+  "transportTimeoutSeconds": 120,
+  "independentValueAndCallbackComparisons": 20544,
+  "independentCancellationComparisons": 110,
+  "javastringRace": "passed including supplied 16384 Java17 oracle",
+  "moduleVet": "passed",
+  "binarySHA256": "478ab0912560f58be8d1e9d0ff4a9ffb9dff169755dc9d95689a4b37c881fb5c",
+  "sourceIdentitySHA256": "cd6e780a81213591249afd943296b6c57ed96e169b06f9e22645addb8bd8c695",
+  "goVersion": "go version go1.22.0 darwin/arm64",
+  "noP95Claim": true
+}

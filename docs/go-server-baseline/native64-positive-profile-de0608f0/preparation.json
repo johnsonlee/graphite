@@ -1,0 +1,14 @@
+{
+  "revision": "de0608f0",
+  "worktree": "/tmp/graphite-go-positive-profile-de0608f0",
+  "harnessSHA256": "b24ea6bad0f8f6378ccf132dda180bede117203d596dc58f893857e33df74bae",
+  "mainObservationsSHA256": "a435e053ea81a1333b5d16d530d9c7534c9cb4ee06aeffc44b68a45dd16bddd8",
+  "order": [
+    "wrapped-firstLastGraphBimodalClassPrefix",
+    "wrapped-firstLastGraphBimodalClassPrefix-repeat",
+    "global-wide-wrapped-case-insensitive-distinct-dense",
+    "global-wide-wrapped-case-insensitive-distinct-dense-repeat",
+    "global-wide-distribution-broad-all-64"
+  ],
+  "purpose": "Positive-shape allocation/CPU diagnosis; no optimization or P95 claim. All64 fixture hashes rechecked by runner."
+}

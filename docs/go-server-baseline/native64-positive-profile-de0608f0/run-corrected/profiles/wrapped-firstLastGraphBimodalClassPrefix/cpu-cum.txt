@@ -1,0 +1,28 @@
+File: profile-query
+Type: cpu
+Time: Sep 7, 2026 at 8:19am (KST)
+Duration: 32.50s, Total samples = 39.08s (120.25%)
+Showing nodes accounting for 12.72s, 32.55% of 39.08s total
+Dropped 189 nodes (cum <= 0.20s)
+Showing top 20 nodes out of 134
+      flat  flat%   sum%        cum   cum%
+     0.01s 0.026% 0.026%     20.95s 53.61%  runtime.systemstack
+         0     0% 0.026%     16.93s 43.32%  github.com/johnsonlee/graphite/graphite-server/internal/query.ExecuteCross
+         0     0% 0.026%     16.93s 43.32%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.branch
+         0     0% 0.026%     16.93s 43.32%  github.com/johnsonlee/graphite/graphite-server/internal/query.executeSources
+         0     0% 0.026%     16.93s 43.32%  main.main
+         0     0% 0.026%     16.93s 43.32%  main.profile
+         0     0% 0.026%     16.93s 43.32%  main.profile.func1
+         0     0% 0.026%     16.93s 43.32%  runtime.main
+         0     0% 0.026%     16.93s 43.32%  runtime/pprof.Do
+         0     0% 0.026%     13.49s 34.52%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.match
+         0     0% 0.026%     13.49s 34.52%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.matchSingleNode
+         0     0% 0.026%     12.97s 33.19%  runtime.(*mheap).allocSpan
+         0     0% 0.026%     12.96s 33.16%  runtime.(*mheap).alloc.func1
+    12.21s 31.24% 31.27%     12.21s 31.24%  runtime.madvise
+         0     0% 31.27%     12.20s 31.22%  runtime.sysUsed (inline)
+         0     0% 31.27%     12.20s 31.22%  runtime.sysUsedOS (inline)
+         0     0% 31.27%      7.85s 20.09%  runtime.gcBgMarkWorker.func2
+     0.42s  1.07% 32.34%      7.85s 20.09%  runtime.gcDrain
+     0.08s   0.2% 32.55%      7.56s 19.34%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.indexedNodeWalker.func2
+         0     0% 32.55%      7.25s 18.55%  runtime.gcBgMarkWorker

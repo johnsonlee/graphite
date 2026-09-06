@@ -1,0 +1,33 @@
+File: profile-query
+Type: cpu
+Time: Sep 7, 2026 at 8:26am (KST)
+Duration: 8.57s, Total samples = 12.78s (149.20%)
+Showing nodes accounting for 11.74s, 91.86% of 12.78s total
+Dropped 130 nodes (cum <= 0.06s)
+Showing top 25 nodes out of 87
+      flat  flat%   sum%        cum   cum%
+     5.97s 46.71% 46.71%      5.97s 46.71%  runtime.madvise
+     1.11s  8.69% 55.40%      4.02s 31.46%  runtime.scanobject
+     0.88s  6.89% 62.28%      1.42s 11.11%  runtime.greyobject
+     0.67s  5.24% 67.53%      0.87s  6.81%  runtime.findObject
+     0.44s  3.44% 70.97%      0.44s  3.44%  runtime.pthread_kill
+     0.29s  2.27% 73.24%      0.29s  2.27%  runtime.(*mspan).base (inline)
+     0.28s  2.19% 75.43%      4.93s 38.58%  runtime.gcDrain
+     0.28s  2.19% 77.62%      0.28s  2.19%  runtime.typePointers.nextFast (inline)
+     0.24s  1.88% 79.50%      0.24s  1.88%  runtime/internal/atomic.(*Int64).Add (inline)
+     0.21s  1.64% 81.14%      0.21s  1.64%  runtime.pthread_cond_signal
+     0.17s  1.33% 82.47%      0.17s  1.33%  runtime.spanOf (inline)
+     0.15s  1.17% 83.65%      0.15s  1.17%  runtime.duffcopy
+     0.14s  1.10% 84.74%      0.14s  1.10%  runtime.(*mspan).heapBitsSmallForAddr
+     0.13s  1.02% 85.76%      0.15s  1.17%  runtime.typePointers.next
+     0.12s  0.94% 86.70%      0.12s  0.94%  runtime.usleep
+     0.11s  0.86% 87.56%      0.11s  0.86%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.check (partial-inline)
+     0.11s  0.86% 88.42%      0.29s  2.27%  runtime.mallocgc
+     0.07s  0.55% 88.97%      0.19s  1.49%  github.com/johnsonlee/graphite/graphite-server/internal/javastring.Case
+     0.07s  0.55% 89.51%      0.21s  1.64%  runtime.(*mspan).typePointersOfUnchecked
+     0.07s  0.55% 90.06%      0.14s  1.10%  strconv.appendEscapedRune
+     0.06s  0.47% 90.53%      0.07s  0.55%  runtime.mapaccess2_fast32
+     0.06s  0.47% 91.00%      0.10s  0.78%  sort.partition_func
+     0.04s  0.31% 91.31%      0.63s  4.93%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.indexedNodeWalker
+     0.04s  0.31% 91.63%      0.08s  0.63%  runtime.(*mspan).writeHeapBitsSmall
+     0.03s  0.23% 91.86%      0.36s  2.82%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.eval

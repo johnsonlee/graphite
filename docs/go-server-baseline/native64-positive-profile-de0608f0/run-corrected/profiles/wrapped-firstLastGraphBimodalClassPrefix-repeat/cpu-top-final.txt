@@ -1,0 +1,33 @@
+File: profile-query
+Type: cpu
+Time: Sep 7, 2026 at 8:19am (KST)
+Duration: 19.40s, Total samples = 26.03s (134.18%)
+Showing nodes accounting for 21.85s, 83.94% of 26.03s total
+Dropped 192 nodes (cum <= 0.13s)
+Showing top 25 nodes out of 117
+      flat  flat%   sum%        cum   cum%
+     9.57s 36.77% 36.77%      9.57s 36.77%  runtime.madvise
+     2.15s  8.26% 45.02%      6.85s 26.32%  runtime.scanobject
+     1.16s  4.46% 49.48%      2.12s  8.14%  runtime.greyobject
+     0.93s  3.57% 53.05%      1.31s  5.03%  runtime.findObject
+     0.80s  3.07% 56.13%      0.80s  3.07%  runtime/internal/atomic.(*Int64).Add (inline)
+     0.79s  3.03% 59.16%      0.79s  3.03%  runtime.pthread_cond_signal
+     0.68s  2.61% 61.77%      0.99s  3.80%  runtime.mapaccess2_fast32
+     0.60s  2.31% 64.08%      0.60s  2.31%  runtime.typePointers.nextFast (inline)
+     0.59s  2.27% 66.35%      0.59s  2.27%  runtime.pthread_kill
+     0.57s  2.19% 68.54%      8.89s 34.15%  runtime.gcDrain
+     0.53s  2.04% 70.57%      0.53s  2.04%  runtime.(*mspan).base (inline)
+     0.52s  2.00% 72.57%      1.41s  5.42%  runtime.mallocgc
+     0.48s  1.84% 74.41%      0.48s  1.84%  runtime.usleep
+     0.30s  1.15% 75.57%      0.30s  1.15%  runtime.duffcopy
+     0.27s  1.04% 76.60%      0.27s  1.04%  runtime.typePointers.next
+     0.26s     1% 77.60%      0.26s     1%  runtime.spanOf (inline)
+     0.25s  0.96% 78.56%      0.25s  0.96%  runtime.(*mspan).heapBitsSmallForAddr
+     0.20s  0.77% 79.33%      2.59s  9.95%  github.com/johnsonlee/graphite/graphite-server/internal/javastring.Case
+     0.18s  0.69% 80.02%      0.18s  0.69%  runtime.(*bmap).overflow (inline)
+     0.18s  0.69% 80.71%      0.54s  2.07%  strconv.appendQuotedWith
+     0.18s  0.69% 81.41%      0.29s  1.11%  unicode/utf8.AppendRune (inline)
+     0.17s  0.65% 82.06%      0.17s  0.65%  aeshashbody
+     0.17s  0.65% 82.71%      0.19s  0.73%  runtime.nextFreeFast (inline)
+     0.17s  0.65% 83.37%      0.32s  1.23%  strings.(*Builder).WriteRune
+     0.15s  0.58% 83.94%      0.15s  0.58%  runtime.pthread_cond_wait

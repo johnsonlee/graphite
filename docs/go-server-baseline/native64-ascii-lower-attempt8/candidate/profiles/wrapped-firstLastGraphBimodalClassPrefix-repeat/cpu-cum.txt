@@ -1,0 +1,33 @@
+File: profile-query
+Type: cpu
+Time: Sep 7, 2026 at 8:25am (KST)
+Duration: 12.05s, Total samples = 15.99s (132.74%)
+Showing nodes accounting for 10.41s, 65.10% of 15.99s total
+Dropped 149 nodes (cum <= 0.08s)
+Showing top 25 nodes out of 109
+      flat  flat%   sum%        cum   cum%
+         0     0%     0%     13.57s 84.87%  runtime.systemstack
+         0     0%     0%      8.75s 54.72%  runtime.(*mheap).allocSpan
+         0     0%     0%      8.69s 54.35%  runtime.(*mheap).alloc.func1
+     8.52s 53.28% 53.28%      8.52s 53.28%  runtime.madvise
+         0     0% 53.28%      8.50s 53.16%  runtime.sysUsed (inline)
+         0     0% 53.28%      8.50s 53.16%  runtime.sysUsedOS (inline)
+         0     0% 53.28%      4.82s 30.14%  runtime.gcBgMarkWorker.func2
+     0.34s  2.13% 55.41%      4.82s 30.14%  runtime.gcDrain
+         0     0% 55.41%      4.43s 27.70%  runtime.gcBgMarkWorker
+     1.01s  6.32% 61.73%      3.74s 23.39%  runtime.scanobject
+         0     0% 61.73%      3.55s 22.20%  runtime.gcDrainMarkWorkerIdle (inline)
+         0     0% 61.73%      2.19s 13.70%  github.com/johnsonlee/graphite/graphite-server/internal/query.ExecuteCross
+         0     0% 61.73%      2.19s 13.70%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.branch
+         0     0% 61.73%      2.19s 13.70%  github.com/johnsonlee/graphite/graphite-server/internal/query.executeSources
+         0     0% 61.73%      2.19s 13.70%  main.main
+         0     0% 61.73%      2.19s 13.70%  main.profile
+         0     0% 61.73%      2.19s 13.70%  main.profile.func1
+         0     0% 61.73%      2.19s 13.70%  runtime.main
+         0     0% 61.73%      2.19s 13.70%  runtime/pprof.Do
+     0.52s  3.25% 64.98%      1.46s  9.13%  runtime.greyobject
+         0     0% 64.98%      1.32s  8.26%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.match
+         0     0% 64.98%      1.32s  8.26%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.matchSingleNode
+         0     0% 64.98%      1.27s  7.94%  runtime.gcDrainMarkWorkerDedicated (inline)
+         0     0% 64.98%      0.87s  5.44%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.project
+     0.02s  0.13% 65.10%      0.76s  4.75%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.indexedNodeWalker

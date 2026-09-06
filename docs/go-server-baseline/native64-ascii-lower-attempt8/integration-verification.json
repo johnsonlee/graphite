@@ -1,0 +1,23 @@
+{
+  "runs": [
+    {
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./..."
+      ],
+      "exitCode": 0,
+      "log": "integration-race.log"
+    },
+    {
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "exitCode": 0,
+      "log": "integration-vet.log"
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+File: profile-query
+Type: cpu
+Time: Sep 7, 2026 at 8:25am (KST)
+Duration: 12.05s, Total samples = 15.99s (132.74%)
+Showing nodes accounting for 14.45s, 90.37% of 15.99s total
+Dropped 149 nodes (cum <= 0.08s)
+Showing top 25 nodes out of 109
+      flat  flat%   sum%        cum   cum%
+     8.52s 53.28% 53.28%      8.52s 53.28%  runtime.madvise
+     1.01s  6.32% 59.60%      3.74s 23.39%  runtime.scanobject
+     0.58s  3.63% 63.23%      0.73s  4.57%  runtime.findObject
+     0.52s  3.25% 66.48%      1.46s  9.13%  runtime.greyobject
+     0.49s  3.06% 69.54%      0.49s  3.06%  runtime.(*gcBits).bytep (inline)
+     0.34s  2.13% 71.67%      4.82s 30.14%  runtime.gcDrain
+     0.34s  2.13% 73.80%      0.34s  2.13%  runtime.pthread_kill
+     0.30s  1.88% 75.67%      0.30s  1.88%  runtime.typePointers.nextFast (inline)
+     0.30s  1.88% 77.55%      0.30s  1.88%  runtime/internal/atomic.(*Int64).Add (inline)
+     0.22s  1.38% 78.92%      0.22s  1.38%  runtime.(*mspan).base (inline)
+     0.22s  1.38% 80.30%      0.22s  1.38%  runtime.duffcopy
+     0.22s  1.38% 81.68%      0.22s  1.38%  runtime.pthread_cond_signal
+     0.18s  1.13% 82.80%      0.18s  1.13%  runtime.newArenaMayUnlock
+     0.16s  1.00% 83.80%      0.65s  4.07%  runtime.mallocgc
+     0.14s  0.88% 84.68%      0.14s  0.88%  runtime.spanOf (inline)
+     0.13s  0.81% 85.49%      0.13s  0.81%  runtime.usleep
+     0.12s  0.75% 86.24%      0.12s  0.75%  runtime.memmove
+     0.10s  0.63% 86.87%      0.10s  0.63%  runtime.(*mspan).heapBitsSmallForAddr
+     0.09s  0.56% 87.43%      0.09s  0.56%  runtime.(*gcWork).tryGetFast (inline)
+     0.09s  0.56% 87.99%      0.10s  0.63%  runtime.mapaccess2_fast32
+     0.08s   0.5% 88.49%      0.08s   0.5%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.check (inline)
+     0.08s   0.5% 88.99%      0.08s   0.5%  runtime.markBits.setMarked (inline)
+     0.08s   0.5% 89.49%      0.09s  0.56%  runtime.typePointers.next
+     0.08s   0.5% 89.99%      0.19s  1.19%  sort.partition_func
+     0.06s  0.38% 90.37%      0.16s  1.00%  runtime.(*mspan).typePointersOfUnchecked

@@ -1,0 +1,8 @@
+{
+  "base": "f4873238313b73baf42d066c5f26e8dfa4fcf4d5",
+  "files": {
+    "graphite-server/internal/javastring/unicode.go": "56aa5e18232264f35aabea2cf0f22958acf8402344c4cd9f357b206f1e22d07b",
+    "graphite-server/internal/javastring/ascii_lower_test.go": "881635d9d22d8de6f8b1f45ad26747eaeeabcc1741dbf0329d984940941f25bc",
+    "graphite-server/internal/javastring/testdata/ascii-lower-java17.tsv.gz": "6a6ab0300ba2c603342ac66864a6a6abd3ed90057f225179fb8799dd681a5830"
+  }
+}

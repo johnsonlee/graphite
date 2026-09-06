@@ -1,0 +1,10 @@
+{
+  "exitCode": 2,
+  "firstQueryCompleteParsedBodyEqual": false,
+  "onlyDifference": "Engine Rows retain n.graph_id:null; actual HTTP serializer omits null object fields. Applying only null-object omission to entire body yields exact equality, including ordered arrays.",
+  "fullBodyEqualAfterDiagnosticNullObjectOmission": true,
+  "productionFixRequired": false,
+  "correction": "Use result.ResponseRows and call actual server encodeCypherResponse via temporary instrumentation export; compare complete parsed body with object-key-order canonicalization.",
+  "initialHarnessSHA256": "b24ea6bad0f8f6378ccf132dda180bede117203d596dc58f893857e33df74bae",
+  "measurementScopeChanged": "Corrected run includes actual HTTP response shaping+serialization, still excludes HTTP/admission and is not P95; initial measurements not compared."
+}

@@ -1,0 +1,43 @@
+diff --git a/graphite-server/internal/javastring/unicode.go b/graphite-server/internal/javastring/unicode.go
+index 8e6ccd52..6b00bb4a 100644
+--- a/graphite-server/internal/javastring/unicode.go
++++ b/graphite-server/internal/javastring/unicode.go
+@@ -11,6 +11,38 @@ func Case(s string, upper bool, check func()) string {
+ 	if check == nil {
+ 		check = func() {}
+ 	}
++	// Java ROOT lowercase is byte-local for an entirely ASCII input. Validate
++	// the complete input first so non-ASCII contextual mappings still use the
++	// original implementation. Preserve one callback per consumed code point.
++	if !upper {
++		ascii, changed := true, false
++		for i := 0; i < len(s); i++ {
++			if s[i] >= 0x80 {
++				ascii = false
++				break
++			}
++			changed = changed || s[i] >= 'A' && s[i] <= 'Z'
++		}
++		if ascii {
++			if !changed {
++				for i := 0; i < len(s); i++ {
++					check()
++				}
++				return s
++			}
++			var result strings.Builder
++			result.Grow(len(s))
++			for i := 0; i < len(s); i++ {
++				check()
++				c := s[i]
++				if c >= 'A' && c <= 'Z' {
++					c += 'a' - 'A'
++				}
++				result.WriteByte(c)
++			}
++			return result.String()
++		}
++	}
+ 	points := CodePoints(s)
+ 	var boundaries map[int]bool
+ 	if !upper && strings.ContainsRune(s, 'Σ') {

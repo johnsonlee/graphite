@@ -1,0 +1,147 @@
+[
+  {
+    "name": "global-wide-distribution-broad-all-64",
+    "base": {
+      "requestDeltas": {
+        "frees": 127500339,
+        "mallocs": 168599403,
+        "numGC": 1,
+        "pauseTotalNs": 82500,
+        "systemCPUSeconds": 0.4627560000000006,
+        "totalAllocBytes": 8070837576,
+        "userCPUSeconds": 15.743045999999993
+      },
+      "executeAndMarshalSecondsDiagnostic": 10.714531875,
+      "outputSha256": "533473517a4e49aaeae4b8e91790854d92c6df28cd9c51e4ab3005ffe55baaa5"
+    },
+    "candidate": {
+      "requestDeltas": {
+        "frees": 23498448,
+        "mallocs": 94014506,
+        "numGC": 0,
+        "pauseTotalNs": 0,
+        "systemCPUSeconds": 0.24128300000000014,
+        "totalAllocBytes": 4238998704,
+        "userCPUSeconds": 5.815583000000004
+      },
+      "executeAndMarshalSecondsDiagnostic": 5.984791958,
+      "outputSha256": "533473517a4e49aaeae4b8e91790854d92c6df28cd9c51e4ab3005ffe55baaa5"
+    }
+  },
+  {
+    "name": "global-wide-wrapped-case-insensitive-distinct-dense",
+    "base": {
+      "requestDeltas": {
+        "frees": 127342535,
+        "mallocs": 235785027,
+        "numGC": 1,
+        "pauseTotalNs": 96416,
+        "systemCPUSeconds": 0.5483259999999994,
+        "totalAllocBytes": 12287401632,
+        "userCPUSeconds": 23.321787999999998
+      },
+      "executeAndMarshalSecondsDiagnostic": 18.663146959,
+      "outputSha256": "77b68b7458bf7a78929fa43d57d910ab51823abab6eb98172bcc052ead550336"
+    },
+    "candidate": {
+      "requestDeltas": {
+        "frees": 88851217,
+        "mallocs": 148096306,
+        "numGC": 1,
+        "pauseTotalNs": 85750,
+        "systemCPUSeconds": 0.4361130000000002,
+        "totalAllocBytes": 7807821560,
+        "userCPUSeconds": 19.143282000000013
+      },
+      "executeAndMarshalSecondsDiagnostic": 13.423660041,
+      "outputSha256": "77b68b7458bf7a78929fa43d57d910ab51823abab6eb98172bcc052ead550336"
+    }
+  },
+  {
+    "name": "global-wide-wrapped-case-insensitive-distinct-dense-repeat",
+    "base": {
+      "requestDeltas": {
+        "frees": 127753690,
+        "mallocs": 205174835,
+        "numGC": 1,
+        "pauseTotalNs": 76999,
+        "systemCPUSeconds": 0.48079300000000025,
+        "totalAllocBytes": 10237933488,
+        "userCPUSeconds": 17.973028999999997
+      },
+      "executeAndMarshalSecondsDiagnostic": 12.866963083,
+      "outputSha256": "77b68b7458bf7a78929fa43d57d910ab51823abab6eb98172bcc052ead550336"
+    },
+    "candidate": {
+      "requestDeltas": {
+        "frees": 97470023,
+        "mallocs": 130589400,
+        "numGC": 1,
+        "pauseTotalNs": 83834,
+        "systemCPUSeconds": 0.3924720000000006,
+        "totalAllocBytes": 6406013408,
+        "userCPUSeconds": 14.681790000000007
+      },
+      "executeAndMarshalSecondsDiagnostic": 8.461098417,
+      "outputSha256": "77b68b7458bf7a78929fa43d57d910ab51823abab6eb98172bcc052ead550336"
+    }
+  },
+  {
+    "name": "wrapped-firstLastGraphBimodalClassPrefix",
+    "base": {
+      "requestDeltas": {
+        "frees": 455700070,
+        "mallocs": 563237975,
+        "numGC": 2,
+        "pauseTotalNs": 123166,
+        "systemCPUSeconds": 1.2292569999999998,
+        "totalAllocBytes": 18222452888,
+        "userCPUSeconds": 41.271305999999996
+      },
+      "executeAndMarshalSecondsDiagnostic": 32.314771333,
+      "outputSha256": "9c8299fdd85f475db72ade74389abd2376def9f5e494bf921b8e57589a2e12bd"
+    },
+    "candidate": {
+      "requestDeltas": {
+        "frees": 349210109,
+        "mallocs": 449900069,
+        "numGC": 1,
+        "pauseTotalNs": 79708,
+        "systemCPUSeconds": 1.087811,
+        "totalAllocBytes": 11136246944,
+        "userCPUSeconds": 27.185694999999996
+      },
+      "executeAndMarshalSecondsDiagnostic": 22.931143041,
+      "outputSha256": "9c8299fdd85f475db72ade74389abd2376def9f5e494bf921b8e57589a2e12bd"
+    }
+  },
+  {
+    "name": "wrapped-firstLastGraphBimodalClassPrefix-repeat",
+    "base": {
+      "requestDeltas": {
+        "frees": 211645181,
+        "mallocs": 294196087,
+        "numGC": 2,
+        "pauseTotalNs": 143541,
+        "systemCPUSeconds": 0.6032069999999998,
+        "totalAllocBytes": 15636032040,
+        "userCPUSeconds": 31.131603999999996
+      },
+      "executeAndMarshalSecondsDiagnostic": 19.268857583,
+      "outputSha256": "9c8299fdd85f475db72ade74389abd2376def9f5e494bf921b8e57589a2e12bd"
+    },
+    "candidate": {
+      "requestDeltas": {
+        "frees": 96772657,
+        "mallocs": 180858156,
+        "numGC": 1,
+        "pauseTotalNs": 86167,
+        "systemCPUSeconds": 0.4980850000000001,
+        "totalAllocBytes": 8549794336,
+        "userCPUSeconds": 18.007756999999998
+      },
+      "executeAndMarshalSecondsDiagnostic": 11.946203,
+      "outputSha256": "9c8299fdd85f475db72ade74389abd2376def9f5e494bf921b8e57589a2e12bd"
+    }
+  }
+]

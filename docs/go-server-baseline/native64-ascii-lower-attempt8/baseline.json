@@ -1,0 +1,8 @@
+{
+  "path": "../native64-positive-profile-de0608f0/run-corrected",
+  "revision": "de0608f0",
+  "identitySHA256": "b8e4362f6f7261e7a1fef20b707e62f250fd6d7434dbe0158325296b6308ebc2",
+  "harnessSHA256": "3a153120606666ef8da99e55adb7f8d8933e7c1c37bad059ed83a25bb6d9e2e7",
+  "baselineFullOutputsMatch": true,
+  "scope": "same five ordered query shapes and complete64 fixture; diagnostic only, not controlled main-relative P95"
+}

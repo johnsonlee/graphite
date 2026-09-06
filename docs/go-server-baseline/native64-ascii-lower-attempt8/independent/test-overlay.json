@@ -1,0 +1,5 @@
+{
+  "Replace": {
+    "/private/tmp/graphite-go-ascii-lower-attempt8-independent/graphite-server/internal/javastring/ascii_lower_test.go": "/private/tmp/graphite-go-ascii-lower-attempt8-independent/independent-freeze/independent_ascii_test.go"
+  }
+}

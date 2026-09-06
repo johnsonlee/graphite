@@ -1,0 +1,25 @@
+{
+  "runs": [
+    {
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./..."
+      ],
+      "exitCode": 0,
+      "log": "race.log"
+    },
+    {
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "exitCode": 0,
+      "log": "vet.log"
+    }
+  ],
+  "base": "de0608f0",
+  "productionPatchSHA256": "2101021c97cf94f96372c4d4956fec5e55fc4534e1aaaf4ee5553a8986a726d7"
+}

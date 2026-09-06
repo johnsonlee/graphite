@@ -1,0 +1,28 @@
+File: profile-query
+Type: cpu
+Time: Sep 7, 2026 at 8:19am (KST)
+Duration: 32.50s, Total samples = 39080ms (120.25%)
+Showing nodes accounting for 34180ms, 87.46% of 39080ms total
+Dropped 189 nodes (cum <= 195.40ms)
+Showing top 20 nodes out of 134
+      flat  flat%   sum%        cum   cum%
+   12210ms 31.24% 31.24%    12210ms 31.24%  runtime.madvise
+    4550ms 11.64% 42.89%     4550ms 11.64%  runtime.memclrNoHeapPointers
+    3950ms 10.11% 52.99%     3950ms 10.11%  runtime.memmove
+    1580ms  4.04% 57.04%     1580ms  4.04%  runtime.(*gcBits).bytep (inline)
+    1570ms  4.02% 61.05%     6590ms 16.86%  runtime.scanobject
+    1120ms  2.87% 63.92%     4200ms 10.75%  runtime.mallocgc
+     960ms  2.46% 66.38%     1090ms  2.79%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.project.func1
+     890ms  2.28% 68.65%      890ms  2.28%  encoding/binary.bigEndian.Uint32
+     870ms  2.23% 70.88%     2280ms  5.83%  runtime.greyobject
+     860ms  2.20% 73.08%     3440ms  8.80%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.project
+     720ms  1.84% 74.92%      720ms  1.84%  runtime.(*mspan).heapBitsSmallForAddr
+     680ms  1.74% 76.66%      970ms  2.48%  runtime.findObject
+     660ms  1.69% 78.35%      660ms  1.69%  runtime.mmap
+     610ms  1.56% 79.91%      610ms  1.56%  runtime.pthread_kill
+     560ms  1.43% 81.35%      560ms  1.43%  runtime.typePointers.nextFast (inline)
+     540ms  1.38% 82.73%      540ms  1.38%  runtime.pthread_cond_wait
+     490ms  1.25% 83.98%      660ms  1.69%  runtime.mapaccess2_fast32
+     480ms  1.23% 85.21%      480ms  1.23%  runtime.(*mspan).base (inline)
+     460ms  1.18% 86.39%      460ms  1.18%  runtime.pthread_cond_signal
+     420ms  1.07% 87.46%     7850ms 20.09%  runtime.gcDrain

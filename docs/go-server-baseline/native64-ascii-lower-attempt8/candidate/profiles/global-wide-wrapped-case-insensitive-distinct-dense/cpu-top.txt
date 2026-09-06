@@ -1,0 +1,33 @@
+File: profile-query
+Type: cpu
+Time: Sep 7, 2026 at 8:25am (KST)
+Duration: 13.57s, Total samples = 16.92s (124.69%)
+Showing nodes accounting for 15s, 88.65% of 16.92s total
+Dropped 181 nodes (cum <= 0.08s)
+Showing top 25 nodes out of 85
+      flat  flat%   sum%        cum   cum%
+     8.16s 48.23% 48.23%      8.16s 48.23%  runtime.madvise
+        1s  5.91% 54.14%      3.76s 22.22%  runtime.scanobject
+     0.74s  4.37% 58.51%      1.10s  6.50%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*CallSiteStringIndex).trigramBound
+     0.63s  3.72% 62.23%      1.10s  6.50%  runtime.greyobject
+     0.60s  3.55% 65.78%      0.77s  4.55%  runtime.findObject
+     0.55s  3.25% 69.03%      0.55s  3.25%  runtime.typePointers.nextFast (inline)
+     0.40s  2.36% 71.39%      0.40s  2.36%  runtime/internal/atomic.(*Int64).Add (inline)
+     0.34s  2.01% 73.40%      0.34s  2.01%  runtime.(*mspan).base (inline)
+     0.32s  1.89% 75.30%      4.62s 27.30%  runtime.gcDrain
+     0.32s  1.89% 77.19%      0.32s  1.89%  runtime.pthread_cond_signal
+     0.26s  1.54% 78.72%      0.26s  1.54%  encoding/binary.bigEndian.Uint64 (inline)
+     0.23s  1.36% 80.08%      0.40s  2.36%  runtime.mapassign_fast32
+     0.21s  1.24% 81.32%      0.50s  2.96%  runtime.mallocgc
+     0.18s  1.06% 82.39%      0.45s  2.66%  strconv.appendQuotedWith
+     0.16s  0.95% 83.33%      0.16s  0.95%  runtime.usleep
+     0.15s  0.89% 84.22%      0.15s  0.89%  runtime.(*mspan).heapBitsSmallForAddr
+     0.13s  0.77% 84.99%      0.16s  0.95%  runtime.typePointers.next
+     0.12s  0.71% 85.70%      0.27s  1.60%  strconv.appendEscapedRune
+     0.10s  0.59% 86.29%      0.36s  2.13%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*CallSiteStringIndex).trigramAt (inline)
+     0.09s  0.53% 86.82%      0.09s  0.53%  runtime.spanOf (inline)
+     0.09s  0.53% 87.35%      0.09s  0.53%  unicode/utf8.AppendRune (inline)
+     0.08s  0.47% 87.83%      0.10s  0.59%  runtime.mapaccess1_fast32
+     0.05s   0.3% 88.12%      0.13s  0.77%  github.com/johnsonlee/graphite/graphite-server/internal/javastring.Case
+     0.05s   0.3% 88.42%      0.20s  1.18%  runtime.(*mspan).typePointersOfUnchecked
+     0.04s  0.24% 88.65%      0.11s  0.65%  fmt.(*pp).doPrintf

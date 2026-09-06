@@ -1,0 +1,33 @@
+File: profile-query
+Type: cpu
+Time: Sep 7, 2026 at 8:25am (KST)
+Duration: 23.08s, Total samples = 26.47s (114.70%)
+Showing nodes accounting for 24.14s, 91.20% of 26.47s total
+Dropped 146 nodes (cum <= 0.13s)
+Showing top 25 nodes out of 121
+      flat  flat%   sum%        cum   cum%
+    11.89s 44.92% 44.92%     11.89s 44.92%  runtime.madvise
+     3.49s 13.18% 58.10%      3.49s 13.18%  runtime.memmove
+     1.22s  4.61% 62.71%      1.22s  4.61%  runtime.(*mspan).heapBitsSmallForAddr
+     1.09s  4.12% 66.83%      3.95s 14.92%  runtime.scanobject
+     0.78s  2.95% 69.78%      0.78s  2.95%  encoding/binary.bigEndian.Uint32 (inline)
+     0.77s  2.91% 72.69%      0.99s  3.74%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.project.func1
+     0.75s  2.83% 75.52%      0.75s  2.83%  runtime.memclrNoHeapPointers
+     0.47s  1.78% 77.30%      2.87s 10.84%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.project
+     0.42s  1.59% 78.88%      0.42s  1.59%  runtime.(*gcBits).bytep (inline)
+     0.36s  1.36% 80.24%      0.83s  3.14%  runtime.greyobject
+     0.32s  1.21% 81.45%      0.32s  1.21%  runtime.pthread_kill
+     0.29s  1.10% 82.55%      0.29s  1.10%  runtime.pthread_cond_signal
+     0.26s  0.98% 83.53%      1.48s  5.59%  runtime.(*mspan).typePointersOfUnchecked
+     0.25s  0.94% 84.47%      0.25s  0.94%  runtime.pthread_cond_wait
+     0.23s  0.87% 85.34%      1.77s  6.69%  runtime.mallocgc
+     0.21s  0.79% 86.14%      0.21s  0.79%  github.com/johnsonlee/graphite/graphite-server/internal/store.callSiteIndexCRC.func1
+     0.21s  0.79% 86.93%      0.32s  1.21%  runtime.findObject
+     0.19s  0.72% 87.65%      0.21s  0.79%  strings.(*Builder).WriteByte (inline)
+     0.17s  0.64% 88.29%      0.17s  0.64%  runtime.typePointers.nextFast (inline)
+     0.16s   0.6% 88.89%      0.16s   0.6%  runtime.(*mspan).base (inline)
+     0.14s  0.53% 89.42%      0.14s  0.53%  runtime.(*mspan).init
+     0.14s  0.53% 89.95%      4.44s 16.77%  runtime.gcDrain
+     0.12s  0.45% 90.40%      0.17s  0.64%  runtime.heapSetType
+     0.11s  0.42% 90.82%      1.05s  3.97%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.matchSingleNode.func2
+     0.10s  0.38% 91.20%      5.19s 19.61%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.indexedNodeWalker

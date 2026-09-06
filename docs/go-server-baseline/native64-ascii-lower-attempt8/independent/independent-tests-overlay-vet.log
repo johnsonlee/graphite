@@ -1,0 +1,5 @@
+# github.com/johnsonlee/graphite/graphite-server/internal/javastring
+# [github.com/johnsonlee/graphite/graphite-server/internal/javastring]
+vet: internal/javastring/ascii_lower_test.go:4:2: could not import bufio (can't resolve import "")
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/javastring [build failed]
+FAIL

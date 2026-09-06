@@ -224,3 +224,32 @@ instrumented observations with recorded host co-tenancy; very short warm CPU
 profiles have too few samples for fine hotspot attribution. Synthetic data is
 used only for correctness. Previous malformed-core/raw-projection gaps remain
 separate and no failed response is omitted from the denominator.
+
+
+## 2026-09-07 — Attempt 8: ASCII ROOT lowercase without code-point arrays
+
+Hypothesis: entirely ASCII lowercase inputs can preserve Java ROOT output and
+per-code-point cancellation callbacks without allocating UTF16/CodePoints arrays.
+Non-ASCII inputs and uppercase conversion keep the existing path; no case cache,
+query cache or raw projection change is included.
+
+| Item | Evidence / status |
+|---|---|
+| Native base | de0608f075174833a06f31eb3214b3ba9c4e0917; same corrected response-serialization diagnostic harness on both sides, not main latency baseline |
+| Candidate identity | One production file; patch 2101021c97cf94f96372c4d4956fec5e55fc4534e1aaaf4ee5553a8986a726d7; profile binary 682e0c92d9cac0ec10b4af9a8e61587f6a28806dad20e996f4f8198672989b6f |
+| Real fixture | All64 persisted shards, all 1,152 frozen hashes and all catalog counts freshly checked before each profile |
+| Correctness | 16,384 actual Java17 pair oracles; independent 20,544 old-Case output/callback controls and 110 cancellation positions; candidate and integrated full-module race/vet pass |
+| HTTP | Independent clean command: 42/42 HTTP 200, complete ordered body and checked header equality against pinned main, default 60-second deadline |
+| Prefix first / repeat | Allocation 18,222,452,888→11,136,246,944 and 15,636,032,040→8,549,794,336 bytes; GC 2→1 both; CPU 42.501→28.274 and 31.735→18.506 s |
+| Dense DISTINCT first / repeat | Allocation 12,287,401,632→7,807,821,560 and 10,237,933,488→6,406,013,408 bytes; GC 1→1; CPU 23.870→19.579 and 18.454→15.074 s |
+| Ordinary dense | Allocation 8,070,837,576→4,238,998,704 bytes; GC 1→0; CPU 16.206→6.057 s |
+| Diagnostic latency | Prefix first 32.315→22.931 s, repeat 19.269→11.946; DISTINCT first 18.663→13.424, repeat 12.867→8.461; ordinary 10.715→5.985. Single instrumented co-tenant observations, not P95 |
+| Heap limitation | Ordinary request-end heap 10.07→10.52 GB despite less allocation; post-forced-GC about 6.284 GB. No retained-heap reduction or peak-RSS claim |
+| Integration | Exact candidate production/test/oracle files onto f4873238; full module race/vet pass. Independent HTTP executable excludes diagnostic-only serializer export |
+| Decision | Keep verified allocation reduction and fixed-workload parity. Full functional compatibility and repeated paired main-relative 10× P95 remain unproven |
+
+Evidence and commands are in `docs/go-server-baseline/native64-ascii-lower-attempt8/`.
+The baseline diagnostic and its failed raw-engine-serialization harness are
+preserved in `native64-positive-profile-de0608f0/`; the corrected harness calls
+the actual server serializer. All comparison outputs preserve complete arrays,
+values and provenance. No failed run is discarded or treated as a fast success.

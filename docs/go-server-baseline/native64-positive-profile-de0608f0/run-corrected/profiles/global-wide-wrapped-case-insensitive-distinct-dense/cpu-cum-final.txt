@@ -1,0 +1,33 @@
+File: profile-query
+Type: cpu
+Time: Sep 7, 2026 at 8:20am (KST)
+Duration: 18.86s, Total samples = 20.79s (110.24%)
+Showing nodes accounting for 11.82s, 56.85% of 20.79s total
+Dropped 194 nodes (cum <= 0.10s)
+Showing top 25 nodes out of 110
+      flat  flat%   sum%        cum   cum%
+         0     0%     0%     14.56s 70.03%  runtime.systemstack
+     0.01s 0.048% 0.048%     10.70s 51.47%  runtime.(*mheap).allocSpan
+         0     0% 0.048%     10.68s 51.37%  runtime.(*mheap).alloc.func1
+    10.48s 50.41% 50.46%     10.48s 50.41%  runtime.madvise
+         0     0% 50.46%     10.47s 50.36%  runtime.sysUsed (inline)
+         0     0% 50.46%     10.47s 50.36%  runtime.sysUsedOS (inline)
+         0     0% 50.46%      5.38s 25.88%  github.com/johnsonlee/graphite/graphite-server/internal/query.ExecuteCross
+         0     0% 50.46%      5.38s 25.88%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.branch
+         0     0% 50.46%      5.38s 25.88%  github.com/johnsonlee/graphite/graphite-server/internal/query.executeSources
+         0     0% 50.46%      5.38s 25.88%  main.main
+         0     0% 50.46%      5.38s 25.88%  main.profile
+         0     0% 50.46%      5.38s 25.88%  main.profile.func1
+         0     0% 50.46%      5.38s 25.88%  runtime.main
+         0     0% 50.46%      5.38s 25.88%  runtime/pprof.Do
+         0     0% 50.46%      4.33s 20.83%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.match
+         0     0% 50.46%      4.33s 20.83%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.matchSingleNode
+         0     0% 50.46%      3.79s 18.23%  runtime.gcBgMarkWorker.func2
+     0.26s  1.25% 51.71%      3.79s 18.23%  runtime.gcDrain
+         0     0% 51.71%      3.51s 16.88%  runtime.gcBgMarkWorker
+        1s  4.81% 56.52%      2.91s 14.00%  runtime.scanobject
+         0     0% 56.52%      2.72s 13.08%  runtime.gcDrainMarkWorkerIdle (inline)
+         0     0% 56.52%      2.27s 10.92%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.indexedNodeWalker.func2
+     0.04s  0.19% 56.71%      2.21s 10.63%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.eval
+         0     0% 56.71%      2.10s 10.10%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.matchSingleNode.func2
+     0.03s  0.14% 56.85%      2.06s  9.91%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.indexedNodeWalker

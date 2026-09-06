@@ -1,0 +1,202 @@
+[
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-nodecount=25",
+      "docs/go-server-baseline/native64-positive-profile-de0608f0/run-corrected/profiles/global-wide-distribution-broad-all-64/cpu.pprof"
+    ],
+    "exitCode": 0,
+    "output": "docs/go-server-baseline/native64-positive-profile-de0608f0/run-corrected/profiles/global-wide-distribution-broad-all-64/cpu-top-final.txt"
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-cum",
+      "-nodecount=25",
+      "docs/go-server-baseline/native64-positive-profile-de0608f0/run-corrected/profiles/global-wide-distribution-broad-all-64/cpu.pprof"
+    ],
+    "exitCode": 0,
+    "output": "docs/go-server-baseline/native64-positive-profile-de0608f0/run-corrected/profiles/global-wide-distribution-broad-all-64/cpu-cum-final.txt"
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-alloc_space",
+      "-nodecount=25",
+      "-base",
+      "docs/go-server-baseline/native64-positive-profile-de0608f0/run-corrected/profiles/global-wide-distribution-broad-all-64/heap-before.pprof",
+      "docs/go-server-baseline/native64-positive-profile-de0608f0/run-corrected/profiles/global-wide-distribution-broad-all-64/heap-after.pprof"
+    ],
+    "exitCode": 0,
+    "output": "docs/go-server-baseline/native64-positive-profile-de0608f0/run-corrected/profiles/global-wide-distribution-broad-all-64/alloc-space-top-final.txt"
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-nodecount=25",
+      "docs/go-server-baseline/native64-positive-profile-de0608f0/run-corrected/profiles/global-wide-wrapped-case-insensitive-distinct-dense/cpu.pprof"
+    ],
+    "exitCode": 0,
+    "output": "docs/go-server-baseline/native64-positive-profile-de0608f0/run-corrected/profiles/global-wide-wrapped-case-insensitive-distinct-dense/cpu-top-final.txt"
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-cum",
+      "-nodecount=25",
+      "docs/go-server-baseline/native64-positive-profile-de0608f0/run-corrected/profiles/global-wide-wrapped-case-insensitive-distinct-dense/cpu.pprof"
+    ],
+    "exitCode": 0,
+    "output": "docs/go-server-baseline/native64-positive-profile-de0608f0/run-corrected/profiles/global-wide-wrapped-case-insensitive-distinct-dense/cpu-cum-final.txt"
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-alloc_space",
+      "-nodecount=25",
+      "-base",
+      "docs/go-server-baseline/native64-positive-profile-de0608f0/run-corrected/profiles/global-wide-wrapped-case-insensitive-distinct-dense/heap-before.pprof",
+      "docs/go-server-baseline/native64-positive-profile-de0608f0/run-corrected/profiles/global-wide-wrapped-case-insensitive-distinct-dense/heap-after.pprof"
+    ],
+    "exitCode": 0,
+    "output": "docs/go-server-baseline/native64-positive-profile-de0608f0/run-corrected/profiles/global-wide-wrapped-case-insensitive-distinct-dense/alloc-space-top-final.txt"
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-nodecount=25",
+      "docs/go-server-baseline/native64-positive-profile-de0608f0/run-corrected/profiles/global-wide-wrapped-case-insensitive-distinct-dense-repeat/cpu.pprof"
+    ],
+    "exitCode": 0,
+    "output": "docs/go-server-baseline/native64-positive-profile-de0608f0/run-corrected/profiles/global-wide-wrapped-case-insensitive-distinct-dense-repeat/cpu-top-final.txt"
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-cum",
+      "-nodecount=25",
+      "docs/go-server-baseline/native64-positive-profile-de0608f0/run-corrected/profiles/global-wide-wrapped-case-insensitive-distinct-dense-repeat/cpu.pprof"
+    ],
+    "exitCode": 0,
+    "output": "docs/go-server-baseline/native64-positive-profile-de0608f0/run-corrected/profiles/global-wide-wrapped-case-insensitive-distinct-dense-repeat/cpu-cum-final.txt"
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-alloc_space",
+      "-nodecount=25",
+      "-base",
+      "docs/go-server-baseline/native64-positive-profile-de0608f0/run-corrected/profiles/global-wide-wrapped-case-insensitive-distinct-dense-repeat/heap-before.pprof",
+      "docs/go-server-baseline/native64-positive-profile-de0608f0/run-corrected/profiles/global-wide-wrapped-case-insensitive-distinct-dense-repeat/heap-after.pprof"
+    ],
+    "exitCode": 0,
+    "output": "docs/go-server-baseline/native64-positive-profile-de0608f0/run-corrected/profiles/global-wide-wrapped-case-insensitive-distinct-dense-repeat/alloc-space-top-final.txt"
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-nodecount=25",
+      "docs/go-server-baseline/native64-positive-profile-de0608f0/run-corrected/profiles/wrapped-firstLastGraphBimodalClassPrefix/cpu.pprof"
+    ],
+    "exitCode": 0,
+    "output": "docs/go-server-baseline/native64-positive-profile-de0608f0/run-corrected/profiles/wrapped-firstLastGraphBimodalClassPrefix/cpu-top-final.txt"
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-cum",
+      "-nodecount=25",
+      "docs/go-server-baseline/native64-positive-profile-de0608f0/run-corrected/profiles/wrapped-firstLastGraphBimodalClassPrefix/cpu.pprof"
+    ],
+    "exitCode": 0,
+    "output": "docs/go-server-baseline/native64-positive-profile-de0608f0/run-corrected/profiles/wrapped-firstLastGraphBimodalClassPrefix/cpu-cum-final.txt"
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-alloc_space",
+      "-nodecount=25",
+      "-base",
+      "docs/go-server-baseline/native64-positive-profile-de0608f0/run-corrected/profiles/wrapped-firstLastGraphBimodalClassPrefix/heap-before.pprof",
+      "docs/go-server-baseline/native64-positive-profile-de0608f0/run-corrected/profiles/wrapped-firstLastGraphBimodalClassPrefix/heap-after.pprof"
+    ],
+    "exitCode": 0,
+    "output": "docs/go-server-baseline/native64-positive-profile-de0608f0/run-corrected/profiles/wrapped-firstLastGraphBimodalClassPrefix/alloc-space-top-final.txt"
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-nodecount=25",
+      "docs/go-server-baseline/native64-positive-profile-de0608f0/run-corrected/profiles/wrapped-firstLastGraphBimodalClassPrefix-repeat/cpu.pprof"
+    ],
+    "exitCode": 0,
+    "output": "docs/go-server-baseline/native64-positive-profile-de0608f0/run-corrected/profiles/wrapped-firstLastGraphBimodalClassPrefix-repeat/cpu-top-final.txt"
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-cum",
+      "-nodecount=25",
+      "docs/go-server-baseline/native64-positive-profile-de0608f0/run-corrected/profiles/wrapped-firstLastGraphBimodalClassPrefix-repeat/cpu.pprof"
+    ],
+    "exitCode": 0,
+    "output": "docs/go-server-baseline/native64-positive-profile-de0608f0/run-corrected/profiles/wrapped-firstLastGraphBimodalClassPrefix-repeat/cpu-cum-final.txt"
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-alloc_space",
+      "-nodecount=25",
+      "-base",
+      "docs/go-server-baseline/native64-positive-profile-de0608f0/run-corrected/profiles/wrapped-firstLastGraphBimodalClassPrefix-repeat/heap-before.pprof",
+      "docs/go-server-baseline/native64-positive-profile-de0608f0/run-corrected/profiles/wrapped-firstLastGraphBimodalClassPrefix-repeat/heap-after.pprof"
+    ],
+    "exitCode": 0,
+    "output": "docs/go-server-baseline/native64-positive-profile-de0608f0/run-corrected/profiles/wrapped-firstLastGraphBimodalClassPrefix-repeat/alloc-space-top-final.txt"
+  }
+]

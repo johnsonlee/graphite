@@ -1,0 +1,8 @@
+=== RUN   TestIndependentASCIILowerParity
+    ascii_lower_test.go:62: 20544 exact old/new values and callback counts; nil callback also checked
+--- PASS: TestIndependentASCIILowerParity (0.30s)
+=== RUN   TestIndependentASCIILowerCancellation
+    ascii_lower_test.go:69: 110 exact return/panic/callback-count comparisons
+--- PASS: TestIndependentASCIILowerCancellation (0.00s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/javastring	1.621s

@@ -1,0 +1,33 @@
+File: profile-query
+Type: cpu
+Time: Sep 7, 2026 at 8:20am (KST)
+Duration: 13.03s, Total samples = 16.09s (123.44%)
+Showing nodes accounting for 13.64s, 84.77% of 16.09s total
+Dropped 162 nodes (cum <= 0.08s)
+Showing top 25 nodes out of 119
+      flat  flat%   sum%        cum   cum%
+     7.10s 44.13% 44.13%      7.10s 44.13%  runtime.madvise
+     1.11s  6.90% 51.03%      3.01s 18.71%  runtime.scanobject
+     0.69s  4.29% 55.31%      1.34s  8.33%  runtime.mallocgc
+     0.45s  2.80% 58.11%      0.61s  3.79%  runtime.findObject
+     0.44s  2.73% 60.85%      0.80s  4.97%  runtime.greyobject
+     0.44s  2.73% 63.58%      0.44s  2.73%  runtime.pthread_cond_signal
+     0.37s  2.30% 65.88%      0.37s  2.30%  runtime/internal/atomic.(*Int64).Add (inline)
+     0.37s  2.30% 68.18%      0.61s  3.79%  strconv.appendQuotedWith
+     0.28s  1.74% 69.92%      3.96s 24.61%  runtime.gcDrain
+     0.27s  1.68% 71.60%      0.27s  1.68%  runtime.pthread_kill
+     0.27s  1.68% 73.28%      0.27s  1.68%  runtime.usleep
+     0.25s  1.55% 74.83%      0.36s  2.24%  runtime.mapaccess2_fast32
+     0.25s  1.55% 76.38%      0.25s  1.55%  runtime.typePointers.nextFast (inline)
+     0.22s  1.37% 77.75%      0.22s  1.37%  runtime.(*mspan).base (inline)
+     0.15s  0.93% 78.68%      0.15s  0.93%  runtime.duffcopy
+     0.14s  0.87% 79.55%      0.14s  0.87%  runtime.memmove
+     0.12s  0.75% 80.30%      0.95s  5.90%  github.com/johnsonlee/graphite/graphite-server/internal/javastring.Case
+     0.12s  0.75% 81.04%      0.16s  0.99%  unicode/utf8.AppendRune (inline)
+     0.10s  0.62% 81.67%      0.10s  0.62%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.check
+     0.10s  0.62% 82.29%      0.10s  0.62%  runtime.spanOf (inline)
+     0.10s  0.62% 82.91%      0.24s  1.49%  strconv.appendEscapedRune
+     0.08s   0.5% 83.41%      0.35s  2.18%  runtime.mapassign_faststr
+     0.08s   0.5% 83.90%      0.10s  0.62%  runtime.typePointers.next
+     0.07s  0.44% 84.34%      0.10s  0.62%  runtime.(*mspan).writeHeapBitsSmall
+     0.07s  0.44% 84.77%      0.10s  0.62%  runtime.mapiternext
