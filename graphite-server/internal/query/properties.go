@@ -135,7 +135,7 @@ func matchesLabel(n store.Node, label string) bool {
 		return true
 	}
 	if label == "constant" || label == "constantnode" {
-		return strings.HasSuffix(n.Kind, "Constant")
+		return strings.HasSuffix(n.Kind, "Constant") || n.Kind == "ResourceValueNode"
 	}
 	aliases := map[string]string{"callsite": "CallSiteNode", "field": "FieldNode", "parameter": "ParameterNode", "return": "ReturnNode", "resourcefile": "ResourceFileNode", "resourcevalue": "ResourceValueNode", "resource": "ResourceValueNode", "local": "LocalVariable", "annotation": "AnnotationNode"}
 	if kind, ok := aliases[label]; ok {

@@ -1,0 +1,40 @@
+{
+  "baseCommit": "f85418822fbc01e902e08514b4e25aea2a517ef2",
+  "worktree": "/private/tmp/graphite-go-constant-membership-f8541882",
+  "patchSHA256": "c64bb03a9ef7c76076b9a93fabb8ede6f15335eba932fbbc92a0c3bbff5ec0a9",
+  "productionFiles": [
+    "graphite-server/internal/query/properties.go"
+  ],
+  "files": {
+    "graphite-server/internal/query/constant_membership_test.go": {
+      "sha256": "f484954e708ec8563960c0f386c1cbb2968c7fef2b2793219033526db542fdbb",
+      "bytes": 1106
+    },
+    "graphite-server/internal/query/properties.go": {
+      "sha256": "12de265f4bbfa5bdb500f7a99ac7c4124a4084523aec1c18706637000be531be",
+      "bytes": 3221
+    },
+    "graphite-server/internal/query/testdata/constant-membership-jvm-oracle.json": {
+      "sha256": "0a2964873289cd8e4a0ac3c9f82ca3ce10cc3dadf76254008e7b964800e15ef6",
+      "bytes": 22233
+    },
+    "graphite-server/internal/query/testdata/constant-membership.md": {
+      "sha256": "72ca7699ade6cd1015131227a638f4f1f8f86768f98fea515d36ea6c2d73c64a",
+      "bytes": 1747
+    },
+    "graphite-server/internal/query/testdata/regenerate-constant-membership.py": {
+      "sha256": "c82ac7a4201185a67a287256d3221a91c06492854e615c9c6feda7b939f76de9",
+      "bytes": 2223
+    }
+  },
+  "correctness": {
+    "mainJVMQueries": 26,
+    "repetitionsPerQuery": 3,
+    "oracleRegeneration": "byte-for-byte identical",
+    "nodeKindsMembership": 16,
+    "fullModuleRace": "passed",
+    "fullModuleVet": "passed"
+  },
+  "benchmarksRun": 0,
+  "commitsMade": 0
+}
