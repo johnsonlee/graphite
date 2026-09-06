@@ -4744,3 +4744,33 @@ the noise band.
 of every graph while the graph is mapped, so the decode path is compiled before the first
 request and the per-decode cost the split attributed to it is the interpreted matcher and
 accounting around it, not the decode.
+
+### 2026-09-06 - Attempt 151: Load fewer classes on the first targeted projection row
+
+**Hypothesis:** the first targeted projection row of a cold process loaded fourteen classes on
+the request thread, about 100-200 µs each while the loader verifies and links them, and
+preloading nine of them ahead of the request cut the row from 6.8-7.6 ms to 4.6-5.8 ms. Half
+of those classes exist only because of how the code is written, not because of what it does:
+a base class, its companion and a default-value marker interface behind the public row map, a
+separate cache entry class and a lazy-initializer lambda in the result cache, a `when` mapping
+table for the match mode enum, a plan key class, and a posting cursor with a heap for what is
+usually a single posting range.
+
+**Change:** `DirectProjectionCypherRow` implements `Map` directly instead of extending the
+Kotlin `AbstractMap`, and the row layout no longer resolves column positions through the
+default-value map extension. `DirectProjectionResultCache` keeps one key class that also carries
+its stored entry and reads its byte budget eagerly. The view compares the match mode instead of
+switching on it, keys the posting-count cache with pairs, and copies the head of a single
+validated posting range directly, building the cursor heap only when several ranges merge.
+No functional change: the row still satisfies the map contract, including equality, hashing and
+string form against an insertion-ordered map.
+
+**Evidence (local, 64 fixtures, fresh JVM in benchmark order, ten alternating runs, wall
+medians):** four-properties-targeted `7.92 -> 6.74 ms` (classes loaded by the row `14 -> 7`,
+CPU `7.12 -> 5.89 ms`), caller-class-targeted `3.13 -> 2.62 ms`, distinct-dense first execution
+`10.04 -> 8.64 ms`, second `4.53 -> 4.13 ms`; class-pair, name-pair, callee-class, `add` and
+the wrapped single-graph rows within `±0.4 ms`.
+
+**Conclusion:** kept. The seven classes the row still loads are the row, its layout, the
+result cache and the storage projection row, which are the result itself, plus the JDK entry
+and set classes the public map contract requires.

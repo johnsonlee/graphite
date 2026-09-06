@@ -263,10 +263,8 @@ internal class MappedCallSiteStringIndexView private constructor(
          */
         val postingCount: Long by lazy {
             val key = predicates.map { predicate ->
-                PlanPredicateKey(
-                    callSiteStringPropertyIndex(predicate.property),
+                callSiteStringPropertyIndex(predicate.property) to
                     MappedPredicateKey(predicate.transform, predicate.mode, predicate.expected)
-                )
             }
             postingCounts.get(key) ?: run {
                 var total = 0L
@@ -457,7 +455,37 @@ internal class MappedCallSiteStringIndexView private constructor(
      */
     fun orderedMatchingNodeIds(plan: MatchPlan, limit: Int, workConsumer: GraphWorkConsumer?): IntArray? {
         if (limit <= 0 || plan.isEmpty) return EMPTY_INTS
-        val cursors = ArrayList<MappedPostingCursor>()
+        var rangeCount = 0
+        var singleProperty = 0
+        var singleRow = 0
+        var singleStart = 0
+        var singleEnd = 0
+        repeat(CALL_SITE_STRING_PROPERTY_COUNT) { propertyIndex ->
+            plan.rows(propertyIndex).forEach { row ->
+                val start = postingStart(propertyIndex, row)
+                val end = propertyPostingEnds[propertyIndex].get(row)
+                if (start < end) {
+                    rangeCount++
+                    singleProperty = propertyIndex
+                    singleRow = row
+                    singleStart = start
+                    singleEnd = end
+                }
+            }
+        }
+        if (rangeCount == 0) return EMPTY_INTS
+        if (rangeCount == 1) {
+            // One validated range is already in encounter order with distinct nodes: copy its head
+            // without a cursor or a heap, which a cold request would otherwise load and interpret.
+            validatedPostingOrders(singleProperty, singleRow, singleStart until singleEnd, workConsumer)
+                ?: return null
+            val postings = propertyPostingNodeIds[singleProperty]
+            val head = IntArray(minOf(limit, singleEnd - singleStart))
+            for (index in head.indices) head[index] = postings.get(singleStart + index)
+            consumeGraphWork(workConsumer, head.size.toLong())
+            return head
+        }
+        val cursors = ArrayList<MappedPostingCursor>(rangeCount)
         repeat(CALL_SITE_STRING_PROPERTY_COUNT) { propertyIndex ->
             plan.rows(propertyIndex).forEach { row ->
                 val start = postingStart(propertyIndex, row)
@@ -497,10 +525,30 @@ internal class MappedCallSiteStringIndexView private constructor(
         range: IntRange,
         workConsumer: GraphWorkConsumer?
     ): MappedPostingCursor? {
+        val orders = validatedPostingOrders(propertyIndex, row, range, workConsumer) ?: return null
+        val postings = propertyPostingNodeIds[propertyIndex]
+        return if (orders === KNOWN_VALID_ORDERS) {
+            MappedPostingCursor(postings, range, nodeOrder)
+        } else {
+            MappedPostingCursor(postings, range, nodeOrder, orders)
+        }
+    }
+
+    /**
+     * The encounter orders of the postings in [range] when they are strictly ascending, the shared
+     * [KNOWN_VALID_ORDERS] when an earlier validation already accepted the range, or null when the
+     * range was rejected and the caller must use raw storage.
+     */
+    private fun validatedPostingOrders(
+        propertyIndex: Int,
+        row: Int,
+        range: IntRange,
+        workConsumer: GraphWorkConsumer?
+    ): LongArray? {
         val postings = propertyPostingNodeIds[propertyIndex]
         val key = propertyIndex.toLong() shl Int.SIZE_BITS or (row.toLong() and UINT_MASK)
         validatedPostingRanges?.get(key)?.let { valid ->
-            return if (valid) MappedPostingCursor(postings, range, nodeOrder) else null
+            return if (valid) KNOWN_VALID_ORDERS else null
         }
         val accounting = BufferedGraphWorkConsumer(workConsumer)
         val orders = LongArray(range.last - range.first + 1)
@@ -519,8 +567,7 @@ internal class MappedCallSiteStringIndexView private constructor(
             accounting.flush()
         }
         val accepted = validatedPostingRanges?.putIfAbsent(key, valid) ?: valid
-        if (!accepted) return null
-        return MappedPostingCursor(postings, range, nodeOrder, orders)
+        return if (accepted) orders else null
     }
 
     /** Number of distinct nodes selected by [plan]; every selected posting is charged as work. */
@@ -1332,10 +1379,13 @@ internal class TrigramTerm private constructor(val trigrams: IntArray) {
             val key = MappedPredicateKey(predicate.transform, predicate.mode, predicate.expected)
             terms[key]?.let { return it }
             val expected = predicate.expected.lowercase()
-            val positions = when (predicate.mode) {
-                StringMatchMode.STARTS_WITH -> 0..0
-                StringMatchMode.ENDS_WITH -> expected.length - TRIGRAM_LENGTH..expected.length - TRIGRAM_LENGTH
-                else -> 0..expected.length - TRIGRAM_LENGTH
+            val mode = predicate.mode
+            val positions = if (mode == StringMatchMode.STARTS_WITH) {
+                0..0
+            } else if (mode == StringMatchMode.ENDS_WITH) {
+                expected.length - TRIGRAM_LENGTH..expected.length - TRIGRAM_LENGTH
+            } else {
+                0..expected.length - TRIGRAM_LENGTH
             }
             val distinct = LinkedHashSet<Int>()
             for (position in positions) distinct += mappedTrigramHash(expected, position)
@@ -1493,11 +1543,16 @@ internal fun reusableMatches(actual: MutableString, predicate: StringPropertyPre
         }
         actual.toLowerCase()
     }
-    return when (predicate.mode) {
-        StringMatchMode.EQUALS -> actual.equals(predicate.expected)
-        StringMatchMode.STARTS_WITH -> actual.startsWith(predicate.expected)
-        StringMatchMode.ENDS_WITH -> actual.endsWith(predicate.expected)
-        StringMatchMode.CONTAINS -> actual.indexOf(predicate.expected) >= 0
+    // Compared by identity rather than switched on, so a cold request never loads a when-mapping class.
+    val mode = predicate.mode
+    return if (mode == StringMatchMode.EQUALS) {
+        actual.equals(predicate.expected)
+    } else if (mode == StringMatchMode.STARTS_WITH) {
+        actual.startsWith(predicate.expected)
+    } else if (mode == StringMatchMode.ENDS_WITH) {
+        actual.endsWith(predicate.expected)
+    } else {
+        actual.indexOf(predicate.expected) >= 0
     }
 }
 
@@ -1701,17 +1756,15 @@ private class BoundedMatchingStringIdCache private constructor(
     }
 }
 
-private data class PlanPredicateKey(val propertyIndex: Int, val predicate: MappedPredicateKey)
-
 /** Access-ordered posting counts of recently planned predicate sets; a few dozen longs at most. */
 private class PlanPostingCountCache {
-    private val entries = LinkedHashMap<List<PlanPredicateKey>, Long>(PLAN_POSTING_COUNT_ENTRIES + 1, 0.75f, true)
+    private val entries = LinkedHashMap<List<Pair<Int, MappedPredicateKey>>, Long>(PLAN_POSTING_COUNT_ENTRIES + 1, 0.75f, true)
 
     @Synchronized
-    fun get(key: List<PlanPredicateKey>): Long? = entries[key]
+    fun get(key: List<Pair<Int, MappedPredicateKey>>): Long? = entries[key]
 
     @Synchronized
-    fun put(key: List<PlanPredicateKey>, postingCount: Long) {
+    fun put(key: List<Pair<Int, MappedPredicateKey>>, postingCount: Long) {
         if (entries.containsKey(key)) return
         val iterator = entries.entries.iterator()
         while (iterator.hasNext() && entries.size >= PLAN_POSTING_COUNT_ENTRIES) {
@@ -1793,6 +1846,9 @@ private class PostingCursorHeap(cursors: List<MappedPostingCursor>) {
 }
 
 private val EMPTY_INTS = IntArray(0)
+
+/** Marker for a posting range whose ascending order was accepted by an earlier validation. */
+private val KNOWN_VALID_ORDERS = LongArray(0)
 private val EMPTY_LONGS = LongArray(0)
 private val EMPTY_BYTES = ByteArray(0)
 
