@@ -82,12 +82,6 @@ abstract class WrappedDiscoveryBenchmarkResourceState {
         counters.retainedHeapBytes = usedHeapBytes()
         counters.retainedHeapDeltaBytes =
             (counters.retainedHeapBytes - counters.loadedHeapBytes).coerceAtLeast(0)
-        // The sampler reads the used heap through the runtime's free-memory counter, which only
-        // moves when a thread-local allocation buffer is retired, so a query that allocates little
-        // can leave the sampled peak a few kilobytes below the exact post-collection footprint.
-        // The retained heap is live at the end of the query and is therefore a lower bound of the
-        // true peak.
-        counters.peakUsedHeapBytes = maxOf(counters.peakUsedHeapBytes, counters.retainedHeapBytes)
         activeCounters = null
     }
 
