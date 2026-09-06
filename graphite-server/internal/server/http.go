@@ -99,6 +99,8 @@ func omitNullFields(value any) any {
 		return nil
 	}
 	switch n := value.(type) {
+	case string:
+		return gsonWireString(n)
 	case float64:
 		return wireFloat{n, 64}
 	case float32:
@@ -117,7 +119,7 @@ func omitNullFields(value any) any {
 		for iter.Next() {
 			v := omitNullFields(iter.Value().Interface())
 			if v != nil {
-				out[iter.Key().String()] = v
+				out[gsonWireString(iter.Key().String())] = v
 			}
 		}
 		return out

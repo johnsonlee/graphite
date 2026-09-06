@@ -1,0 +1,2424 @@
+{
+  "gsonVersion": "2.11.0",
+  "javaVersion": "17.0.18",
+  "cases": [
+    {
+      "name": "valid",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ\u003d\u003d",
+      "expected": {
+        "kind": "object",
+        "members": [
+          {
+            "nameUnits": [
+              113,
+              117,
+              101,
+              114,
+              121
+            ],
+            "value": {
+              "kind": "string",
+              "units": [
+                82,
+                69,
+                84,
+                85,
+                82,
+                78,
+                32,
+                49,
+                32,
+                65,
+                83,
+                32,
+                120
+              ]
+            }
+          },
+          {
+            "nameUnits": [
+              103,
+              114,
+              97,
+              112,
+              104,
+              115
+            ],
+            "value": {
+              "kind": "array",
+              "items": [
+                {
+                  "kind": "string",
+                  "units": [
+                    97
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "empty",
+      "bodyBase64": "",
+      "expected": {
+        "kind": "null"
+      }
+    },
+    {
+      "name": "whitespace",
+      "bodyBase64": "IAkNCg\u003d\u003d",
+      "expected": {
+        "kind": "null"
+      }
+    },
+    {
+      "name": "nul",
+      "bodyBase64": "AA\u003d\u003d",
+      "expected": {
+        "kind": "string",
+        "units": [
+          0
+        ]
+      }
+    },
+    {
+      "name": "empty-object",
+      "bodyBase64": "e30\u003d",
+      "expected": {
+        "kind": "object",
+        "members": []
+      }
+    },
+    {
+      "name": "null",
+      "bodyBase64": "bnVsbA\u003d\u003d",
+      "expected": {
+        "kind": "null"
+      }
+    },
+    {
+      "name": "array",
+      "bodyBase64": "W10\u003d",
+      "expected": {
+        "kind": "array",
+        "items": []
+      }
+    },
+    {
+      "name": "top-string",
+      "bodyBase64": "ImhpIg\u003d\u003d",
+      "expected": {
+        "kind": "string",
+        "units": [
+          104,
+          105
+        ]
+      }
+    },
+    {
+      "name": "line-comment",
+      "bodyBase64": "Ly8gbGVhZGluZwp7InF1ZXJ5IjoiUkVUVVJOIDEgQVMgeCIsImdyYXBocyI6WyJhIl19",
+      "expected": {
+        "kind": "object",
+        "members": [
+          {
+            "nameUnits": [
+              113,
+              117,
+              101,
+              114,
+              121
+            ],
+            "value": {
+              "kind": "string",
+              "units": [
+                82,
+                69,
+                84,
+                85,
+                82,
+                78,
+                32,
+                49,
+                32,
+                65,
+                83,
+                32,
+                120
+              ]
+            }
+          },
+          {
+            "nameUnits": [
+              103,
+              114,
+              97,
+              112,
+              104,
+              115
+            ],
+            "value": {
+              "kind": "array",
+              "items": [
+                {
+                  "kind": "string",
+                  "units": [
+                    97
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "block-comment",
+      "bodyBase64": "LyogbGVhZGluZyAqL3sicXVlcnkiOiJSRVRVUk4gMSBBUyB4IiwiZ3JhcGhzIjpbImEiXX0vKiB0cmFpbGluZyAqLw\u003d\u003d",
+      "error": "com.google.gson.stream.MalformedJsonException: Use JsonReader.setStrictness(Strictness.LENIENT) to accept malformed JSON at line 1 column 55 path $\nSee https://github.com/google/gson/blob/main/Troubleshooting.md#malformed-json",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "hash-comment",
+      "bodyBase64": "IyBsZWFkaW5nCnsicXVlcnkiOiJSRVRVUk4gMSBBUyB4IiwiZ3JhcGhzIjpbImEiXX0\u003d",
+      "expected": {
+        "kind": "object",
+        "members": [
+          {
+            "nameUnits": [
+              113,
+              117,
+              101,
+              114,
+              121
+            ],
+            "value": {
+              "kind": "string",
+              "units": [
+                82,
+                69,
+                84,
+                85,
+                82,
+                78,
+                32,
+                49,
+                32,
+                65,
+                83,
+                32,
+                120
+              ]
+            }
+          },
+          {
+            "nameUnits": [
+              103,
+              114,
+              97,
+              112,
+              104,
+              115
+            ],
+            "value": {
+              "kind": "array",
+              "items": [
+                {
+                  "kind": "string",
+                  "units": [
+                    97
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "comment-inside",
+      "bodyBase64": "ey8qcXVlcnkqLyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ\u003d\u003d",
+      "expected": {
+        "kind": "object",
+        "members": [
+          {
+            "nameUnits": [
+              113,
+              117,
+              101,
+              114,
+              121
+            ],
+            "value": {
+              "kind": "string",
+              "units": [
+                82,
+                69,
+                84,
+                85,
+                82,
+                78,
+                32,
+                49,
+                32,
+                65,
+                83,
+                32,
+                120
+              ]
+            }
+          },
+          {
+            "nameUnits": [
+              103,
+              114,
+              97,
+              112,
+              104,
+              115
+            ],
+            "value": {
+              "kind": "array",
+              "items": [
+                {
+                  "kind": "string",
+                  "units": [
+                    97
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "comment-unclosed",
+      "bodyBase64": "LyogdW5jbG9zZWQ\u003d",
+      "error": "com.google.gson.stream.MalformedJsonException: Unterminated comment at line 1 column 11 path $\nSee https://github.com/google/gson/blob/main/Troubleshooting.md#malformed-json",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "single-quotes",
+      "bodyBase64": "eydxdWVyeSc6J1JFVFVSTiAxIEFTIHgnLCdncmFwaHMnOlsnYSddfQ\u003d\u003d",
+      "expected": {
+        "kind": "object",
+        "members": [
+          {
+            "nameUnits": [
+              113,
+              117,
+              101,
+              114,
+              121
+            ],
+            "value": {
+              "kind": "string",
+              "units": [
+                82,
+                69,
+                84,
+                85,
+                82,
+                78,
+                32,
+                49,
+                32,
+                65,
+                83,
+                32,
+                120
+              ]
+            }
+          },
+          {
+            "nameUnits": [
+              103,
+              114,
+              97,
+              112,
+              104,
+              115
+            ],
+            "value": {
+              "kind": "array",
+              "items": [
+                {
+                  "kind": "string",
+                  "units": [
+                    97
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "unquoted-keys",
+      "bodyBase64": "e3F1ZXJ5OiJSRVRVUk4gMSBBUyB4IixncmFwaHM6WyJhIl19",
+      "expected": {
+        "kind": "object",
+        "members": [
+          {
+            "nameUnits": [
+              113,
+              117,
+              101,
+              114,
+              121
+            ],
+            "value": {
+              "kind": "string",
+              "units": [
+                82,
+                69,
+                84,
+                85,
+                82,
+                78,
+                32,
+                49,
+                32,
+                65,
+                83,
+                32,
+                120
+              ]
+            }
+          },
+          {
+            "nameUnits": [
+              103,
+              114,
+              97,
+              112,
+              104,
+              115
+            ],
+            "value": {
+              "kind": "array",
+              "items": [
+                {
+                  "kind": "string",
+                  "units": [
+                    97
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "unquoted-string",
+      "bodyBase64": "e3F1ZXJ5OlJFVFVSTiAxIEFTIHgsZ3JhcGhzOlthXX0\u003d",
+      "error": "com.google.gson.stream.MalformedJsonException: Unterminated object at line 1 column 16 path $.query\nSee https://github.com/google/gson/blob/main/Troubleshooting.md#malformed-json",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "equals-separators",
+      "bodyBase64": "e3F1ZXJ5PSJSRVRVUk4gMSBBUyB4IjtncmFwaHM9WyJhIl19",
+      "expected": {
+        "kind": "object",
+        "members": [
+          {
+            "nameUnits": [
+              113,
+              117,
+              101,
+              114,
+              121
+            ],
+            "value": {
+              "kind": "string",
+              "units": [
+                82,
+                69,
+                84,
+                85,
+                82,
+                78,
+                32,
+                49,
+                32,
+                65,
+                83,
+                32,
+                120
+              ]
+            }
+          },
+          {
+            "nameUnits": [
+              103,
+              114,
+              97,
+              112,
+              104,
+              115
+            ],
+            "value": {
+              "kind": "array",
+              "items": [
+                {
+                  "kind": "string",
+                  "units": [
+                    97
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "arrow-separators",
+      "bodyBase64": "e3F1ZXJ5PT4iUkVUVVJOIDEgQVMgeCIsZ3JhcGhzPT5bImEiXX0\u003d",
+      "expected": {
+        "kind": "object",
+        "members": [
+          {
+            "nameUnits": [
+              113,
+              117,
+              101,
+              114,
+              121
+            ],
+            "value": {
+              "kind": "string",
+              "units": [
+                82,
+                69,
+                84,
+                85,
+                82,
+                78,
+                32,
+                49,
+                32,
+                65,
+                83,
+                32,
+                120
+              ]
+            }
+          },
+          {
+            "nameUnits": [
+              103,
+              114,
+              97,
+              112,
+              104,
+              115
+            ],
+            "value": {
+              "kind": "array",
+              "items": [
+                {
+                  "kind": "string",
+                  "units": [
+                    97
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "trailing-object-comma",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLH0\u003d",
+      "error": "com.google.gson.stream.MalformedJsonException: Expected name at line 1 column 42 path $.graphs\nSee https://github.com/google/gson/blob/main/Troubleshooting.md#malformed-json",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "trailing-array-comma",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSIsXX0\u003d",
+      "expected": {
+        "kind": "object",
+        "members": [
+          {
+            "nameUnits": [
+              113,
+              117,
+              101,
+              114,
+              121
+            ],
+            "value": {
+              "kind": "string",
+              "units": [
+                82,
+                69,
+                84,
+                85,
+                82,
+                78,
+                32,
+                49,
+                32,
+                65,
+                83,
+                32,
+                120
+              ]
+            }
+          },
+          {
+            "nameUnits": [
+              103,
+              114,
+              97,
+              112,
+              104,
+              115
+            ],
+            "value": {
+              "kind": "array",
+              "items": [
+                {
+                  "kind": "string",
+                  "units": [
+                    97
+                  ]
+                },
+                {
+                  "kind": "null"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "leading-array-comma",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlssImEiXX0\u003d",
+      "expected": {
+        "kind": "object",
+        "members": [
+          {
+            "nameUnits": [
+              113,
+              117,
+              101,
+              114,
+              121
+            ],
+            "value": {
+              "kind": "string",
+              "units": [
+                82,
+                69,
+                84,
+                85,
+                82,
+                78,
+                32,
+                49,
+                32,
+                65,
+                83,
+                32,
+                120
+              ]
+            }
+          },
+          {
+            "nameUnits": [
+              103,
+              114,
+              97,
+              112,
+              104,
+              115
+            ],
+            "value": {
+              "kind": "array",
+              "items": [
+                {
+                  "kind": "null"
+                },
+                {
+                  "kind": "string",
+                  "units": [
+                    97
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "array-semicolon",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSI7XX0\u003d",
+      "expected": {
+        "kind": "object",
+        "members": [
+          {
+            "nameUnits": [
+              113,
+              117,
+              101,
+              114,
+              121
+            ],
+            "value": {
+              "kind": "string",
+              "units": [
+                82,
+                69,
+                84,
+                85,
+                82,
+                78,
+                32,
+                49,
+                32,
+                65,
+                83,
+                32,
+                120
+              ]
+            }
+          },
+          {
+            "nameUnits": [
+              103,
+              114,
+              97,
+              112,
+              104,
+              115
+            ],
+            "value": {
+              "kind": "array",
+              "items": [
+                {
+                  "kind": "string",
+                  "units": [
+                    97
+                  ]
+                },
+                {
+                  "kind": "null"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "multiple-top-level",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfSB7fQ\u003d\u003d",
+      "error": "com.google.gson.stream.MalformedJsonException: Use JsonReader.setStrictness(Strictness.LENIENT) to accept malformed JSON at line 1 column 43 path $\nSee https://github.com/google/gson/blob/main/Troubleshooting.md#malformed-json",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "trailing-garbage",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfXh5eg\u003d\u003d",
+      "error": "com.google.gson.stream.MalformedJsonException: Use JsonReader.setStrictness(Strictness.LENIENT) to accept malformed JSON at line 1 column 42 path $\nSee https://github.com/google/gson/blob/main/Troubleshooting.md#malformed-json",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "nonexecute-prefix",
+      "bodyBase64": "KV19Jwp7InF1ZXJ5IjoiUkVUVVJOIDEgQVMgeCIsImdyYXBocyI6WyJhIl19",
+      "expected": {
+        "kind": "object",
+        "members": [
+          {
+            "nameUnits": [
+              113,
+              117,
+              101,
+              114,
+              121
+            ],
+            "value": {
+              "kind": "string",
+              "units": [
+                82,
+                69,
+                84,
+                85,
+                82,
+                78,
+                32,
+                49,
+                32,
+                65,
+                83,
+                32,
+                120
+              ]
+            }
+          },
+          {
+            "nameUnits": [
+              103,
+              114,
+              97,
+              112,
+              104,
+              115
+            ],
+            "value": {
+              "kind": "array",
+              "items": [
+                {
+                  "kind": "string",
+                  "units": [
+                    97
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "bom",
+      "bodyBase64": "77u/eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ\u003d\u003d",
+      "expected": {
+        "kind": "object",
+        "members": [
+          {
+            "nameUnits": [
+              113,
+              117,
+              101,
+              114,
+              121
+            ],
+            "value": {
+              "kind": "string",
+              "units": [
+                82,
+                69,
+                84,
+                85,
+                82,
+                78,
+                32,
+                49,
+                32,
+                65,
+                83,
+                32,
+                120
+              ]
+            }
+          },
+          {
+            "nameUnits": [
+              103,
+              114,
+              97,
+              112,
+              104,
+              115
+            ],
+            "value": {
+              "kind": "array",
+              "items": [
+                {
+                  "kind": "string",
+                  "units": [
+                    97
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "invalid-escape",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBccSIsImdyYXBocyI6WyJhIl19",
+      "error": "com.google.gson.stream.MalformedJsonException: Invalid escape sequence at line 1 column 20 path $.query\nSee https://github.com/google/gson/blob/main/Troubleshooting.md#malformed-json",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "invalid-unicode-escape",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBcdTEyRzQiLCJncmFwaHMiOlsiYSJdfQ\u003d\u003d",
+      "error": "com.google.gson.stream.MalformedJsonException: Malformed Unicode escape \\u12G4 at line 1 column 20 path $.query\nSee https://github.com/google/gson/blob/main/Troubleshooting.md#malformed-json",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "short-unicode-escape",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBcdTEy",
+      "error": "com.google.gson.stream.MalformedJsonException: Unterminated escape sequence at line 1 column 20 path $.query\nSee https://github.com/google/gson/blob/main/Troubleshooting.md#malformed-json",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "raw-newline-string",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTgoxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ\u003d\u003d",
+      "expected": {
+        "kind": "object",
+        "members": [
+          {
+            "nameUnits": [
+              113,
+              117,
+              101,
+              114,
+              121
+            ],
+            "value": {
+              "kind": "string",
+              "units": [
+                82,
+                69,
+                84,
+                85,
+                82,
+                78,
+                10,
+                49,
+                32,
+                65,
+                83,
+                32,
+                120
+              ]
+            }
+          },
+          {
+            "nameUnits": [
+              103,
+              114,
+              97,
+              112,
+              104,
+              115
+            ],
+            "value": {
+              "kind": "array",
+              "items": [
+                {
+                  "kind": "string",
+                  "units": [
+                    97
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "escaped-newline-string",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTlwKMSBBUyB4IiwiZ3JhcGhzIjpbImEiXX0\u003d",
+      "expected": {
+        "kind": "object",
+        "members": [
+          {
+            "nameUnits": [
+              113,
+              117,
+              101,
+              114,
+              121
+            ],
+            "value": {
+              "kind": "string",
+              "units": [
+                82,
+                69,
+                84,
+                85,
+                82,
+                78,
+                10,
+                49,
+                32,
+                65,
+                83,
+                32,
+                120
+              ]
+            }
+          },
+          {
+            "nameUnits": [
+              103,
+              114,
+              97,
+              112,
+              104,
+              115
+            ],
+            "value": {
+              "kind": "array",
+              "items": [
+                {
+                  "kind": "string",
+                  "units": [
+                    97
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "eof-object",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJd",
+      "error": "java.io.EOFException: End of input at line 1 column 40 path $.graphs",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "eof-key",
+      "bodyBase64": "eyJxdWVyeSI\u003d",
+      "error": "java.io.EOFException: End of input at line 1 column 9 path $.query",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "eof-colon",
+      "bodyBase64": "eyJxdWVyeSI6",
+      "error": "java.io.EOFException: End of input at line 1 column 10 path $.query",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "eof-string",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAx",
+      "error": "com.google.gson.stream.MalformedJsonException: Unterminated string at line 1 column 19 path $.query\nSee https://github.com/google/gson/blob/main/Troubleshooting.md#malformed-json",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "eof-array",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSI\u003d",
+      "error": "java.io.EOFException: End of input at line 1 column 39 path $.graphs[1]",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "missing-colon",
+      "bodyBase64": "eyJxdWVyeSIgIlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ\u003d\u003d",
+      "error": "com.google.gson.stream.MalformedJsonException: Expected \u0027:\u0027 at line 1 column 11 path $.query\nSee https://github.com/google/gson/blob/main/Troubleshooting.md#malformed-json",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "missing-comma",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiICJncmFwaHMiOlsiYSJdfQ\u003d\u003d",
+      "error": "com.google.gson.stream.MalformedJsonException: Unterminated object at line 1 column 27 path $.query\nSee https://github.com/google/gson/blob/main/Troubleshooting.md#malformed-json",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "duplicate-query",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAwIEFTIHgiLCJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ\u003d\u003d",
+      "expected": {
+        "kind": "object",
+        "members": [
+          {
+            "nameUnits": [
+              113,
+              117,
+              101,
+              114,
+              121
+            ],
+            "value": {
+              "kind": "string",
+              "units": [
+                82,
+                69,
+                84,
+                85,
+                82,
+                78,
+                32,
+                49,
+                32,
+                65,
+                83,
+                32,
+                120
+              ]
+            }
+          },
+          {
+            "nameUnits": [
+              103,
+              114,
+              97,
+              112,
+              104,
+              115
+            ],
+            "value": {
+              "kind": "array",
+              "items": [
+                {
+                  "kind": "string",
+                  "units": [
+                    97
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "uppercase-null",
+      "bodyBase64": "eyJxdWVyeSI6TlVMTCwiZ3JhcGhzIjpbImEiXX0\u003d",
+      "expected": {
+        "kind": "object",
+        "members": [
+          {
+            "nameUnits": [
+              113,
+              117,
+              101,
+              114,
+              121
+            ],
+            "value": {
+              "kind": "null"
+            }
+          },
+          {
+            "nameUnits": [
+              103,
+              114,
+              97,
+              112,
+              104,
+              115
+            ],
+            "value": {
+              "kind": "array",
+              "items": [
+                {
+                  "kind": "string",
+                  "units": [
+                    97
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "timeout-leading-zero",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOjAxMDAwfQ\u003d\u003d",
+      "expected": {
+        "kind": "object",
+        "members": [
+          {
+            "nameUnits": [
+              113,
+              117,
+              101,
+              114,
+              121
+            ],
+            "value": {
+              "kind": "string",
+              "units": [
+                82,
+                69,
+                84,
+                85,
+                82,
+                78,
+                32,
+                49,
+                32,
+                65,
+                83,
+                32,
+                120
+              ]
+            }
+          },
+          {
+            "nameUnits": [
+              103,
+              114,
+              97,
+              112,
+              104,
+              115
+            ],
+            "value": {
+              "kind": "array",
+              "items": [
+                {
+                  "kind": "string",
+                  "units": [
+                    97
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "nameUnits": [
+              116,
+              105,
+              109,
+              101,
+              111,
+              117,
+              116,
+              77,
+              115
+            ],
+            "value": {
+              "kind": "string",
+              "units": [
+                48,
+                49,
+                48,
+                48,
+                48
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "timeout-single-quotes",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCd0aW1lb3V0TXMnOicxMDAwJ30\u003d",
+      "expected": {
+        "kind": "object",
+        "members": [
+          {
+            "nameUnits": [
+              113,
+              117,
+              101,
+              114,
+              121
+            ],
+            "value": {
+              "kind": "string",
+              "units": [
+                82,
+                69,
+                84,
+                85,
+                82,
+                78,
+                32,
+                49,
+                32,
+                65,
+                83,
+                32,
+                120
+              ]
+            }
+          },
+          {
+            "nameUnits": [
+              103,
+              114,
+              97,
+              112,
+              104,
+              115
+            ],
+            "value": {
+              "kind": "array",
+              "items": [
+                {
+                  "kind": "string",
+                  "units": [
+                    97
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "nameUnits": [
+              116,
+              105,
+              109,
+              101,
+              111,
+              117,
+              116,
+              77,
+              115
+            ],
+            "value": {
+              "kind": "string",
+              "units": [
+                49,
+                48,
+                48,
+                48
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "timeout-invalid-escape",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOiJccSJ9",
+      "error": "com.google.gson.stream.MalformedJsonException: Invalid escape sequence at line 1 column 56 path $.timeoutMs\nSee https://github.com/google/gson/blob/main/Troubleshooting.md#malformed-json",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "timeout-nan",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOk5hTn0\u003d",
+      "expected": {
+        "kind": "object",
+        "members": [
+          {
+            "nameUnits": [
+              113,
+              117,
+              101,
+              114,
+              121
+            ],
+            "value": {
+              "kind": "string",
+              "units": [
+                82,
+                69,
+                84,
+                85,
+                82,
+                78,
+                32,
+                49,
+                32,
+                65,
+                83,
+                32,
+                120
+              ]
+            }
+          },
+          {
+            "nameUnits": [
+              103,
+              114,
+              97,
+              112,
+              104,
+              115
+            ],
+            "value": {
+              "kind": "array",
+              "items": [
+                {
+                  "kind": "string",
+                  "units": [
+                    97
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "nameUnits": [
+              116,
+              105,
+              109,
+              101,
+              111,
+              117,
+              116,
+              77,
+              115
+            ],
+            "value": {
+              "kind": "string",
+              "units": [
+                78,
+                97,
+                78
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "timeout-plus-number",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOisxMDAwfQ\u003d\u003d",
+      "expected": {
+        "kind": "object",
+        "members": [
+          {
+            "nameUnits": [
+              113,
+              117,
+              101,
+              114,
+              121
+            ],
+            "value": {
+              "kind": "string",
+              "units": [
+                82,
+                69,
+                84,
+                85,
+                82,
+                78,
+                32,
+                49,
+                32,
+                65,
+                83,
+                32,
+                120
+              ]
+            }
+          },
+          {
+            "nameUnits": [
+              103,
+              114,
+              97,
+              112,
+              104,
+              115
+            ],
+            "value": {
+              "kind": "array",
+              "items": [
+                {
+                  "kind": "string",
+                  "units": [
+                    97
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "nameUnits": [
+              116,
+              105,
+              109,
+              101,
+              111,
+              117,
+              116,
+              77,
+              115
+            ],
+            "value": {
+              "kind": "string",
+              "units": [
+                43,
+                49,
+                48,
+                48,
+                48
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "query-trailing-array",
+      "bodyBase64": "eyJxdWVyeSI6WyJSRVRVUk4gMSBBUyB4IixdLCJncmFwaHMiOlsiYSJdfQ\u003d\u003d",
+      "expected": {
+        "kind": "object",
+        "members": [
+          {
+            "nameUnits": [
+              113,
+              117,
+              101,
+              114,
+              121
+            ],
+            "value": {
+              "kind": "array",
+              "items": [
+                {
+                  "kind": "string",
+                  "units": [
+                    82,
+                    69,
+                    84,
+                    85,
+                    82,
+                    78,
+                    32,
+                    49,
+                    32,
+                    65,
+                    83,
+                    32,
+                    120
+                  ]
+                },
+                {
+                  "kind": "null"
+                }
+              ]
+            }
+          },
+          {
+            "nameUnits": [
+              103,
+              114,
+              97,
+              112,
+              104,
+              115
+            ],
+            "value": {
+              "kind": "array",
+              "items": [
+                {
+                  "kind": "string",
+                  "units": [
+                    97
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "unpaired-surrogate-query",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBcJ1x1ZDgwMFwnIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ\u003d\u003d",
+      "expected": {
+        "kind": "object",
+        "members": [
+          {
+            "nameUnits": [
+              113,
+              117,
+              101,
+              114,
+              121
+            ],
+            "value": {
+              "kind": "string",
+              "units": [
+                82,
+                69,
+                84,
+                85,
+                82,
+                78,
+                32,
+                39,
+                55296,
+                39,
+                32,
+                65,
+                83,
+                32,
+                120
+              ]
+            }
+          },
+          {
+            "nameUnits": [
+              103,
+              114,
+              97,
+              112,
+              104,
+              115
+            ],
+            "value": {
+              "kind": "array",
+              "items": [
+                {
+                  "kind": "string",
+                  "units": [
+                    97
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "invalid-utf8",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAn/ycgQVMgeCIsImdyYXBocyI6WyJhIl19",
+      "expected": {
+        "kind": "object",
+        "members": [
+          {
+            "nameUnits": [
+              113,
+              117,
+              101,
+              114,
+              121
+            ],
+            "value": {
+              "kind": "string",
+              "units": [
+                82,
+                69,
+                84,
+                85,
+                82,
+                78,
+                32,
+                39,
+                65533,
+                39,
+                32,
+                65,
+                83,
+                32,
+                120
+              ]
+            }
+          },
+          {
+            "nameUnits": [
+              103,
+              114,
+              97,
+              112,
+              104,
+              115
+            ],
+            "value": {
+              "kind": "array",
+              "items": [
+                {
+                  "kind": "string",
+                  "units": [
+                    97
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "extra-48",
+      "bodyBase64": "",
+      "expected": {
+        "kind": "null"
+      }
+    },
+    {
+      "name": "extra-49",
+      "bodyBase64": "IA\u003d\u003d",
+      "expected": {
+        "kind": "null"
+      }
+    },
+    {
+      "name": "extra-50",
+      "bodyBase64": "Cg0J",
+      "expected": {
+        "kind": "null"
+      }
+    },
+    {
+      "name": "extra-51",
+      "bodyBase64": "Ly8gaGk\u003d",
+      "expected": {
+        "kind": "null"
+      }
+    },
+    {
+      "name": "extra-52",
+      "bodyBase64": "I2hp",
+      "expected": {
+        "kind": "null"
+      }
+    },
+    {
+      "name": "extra-53",
+      "bodyBase64": "LyoqLw\u003d\u003d",
+      "expected": {
+        "kind": "null"
+      }
+    },
+    {
+      "name": "extra-54",
+      "bodyBase64": "KV19Jwo\u003d",
+      "expected": {
+        "kind": "null"
+      }
+    },
+    {
+      "name": "extra-55",
+      "bodyBase64": "bnVsbCB4",
+      "expected": {
+        "kind": "null"
+      }
+    },
+    {
+      "name": "extra-56",
+      "bodyBase64": "bnVsbHt9",
+      "expected": {
+        "kind": "null"
+      }
+    },
+    {
+      "name": "extra-57",
+      "bodyBase64": "dHJ1ZSBmYWxzZQ\u003d\u003d",
+      "error": "com.google.gson.stream.MalformedJsonException: Use JsonReader.setStrictness(Strictness.LENIENT) to accept malformed JSON at line 1 column 7 path $\nSee https://github.com/google/gson/blob/main/Troubleshooting.md#malformed-json",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "extra-58",
+      "bodyBase64": "MSAy",
+      "error": "com.google.gson.stream.MalformedJsonException: Use JsonReader.setStrictness(Strictness.LENIENT) to accept malformed JSON at line 1 column 4 path $\nSee https://github.com/google/gson/blob/main/Troubleshooting.md#malformed-json",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "extra-59",
+      "bodyBase64": "MS8qdGFpbCov",
+      "error": "com.google.gson.stream.MalformedJsonException: Use JsonReader.setStrictness(Strictness.LENIENT) to accept malformed JSON at line 1 column 3 path $\nSee https://github.com/google/gson/blob/main/Troubleshooting.md#malformed-json",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "extra-60",
+      "bodyBase64": "e30vL3RhaWw\u003d",
+      "error": "com.google.gson.stream.MalformedJsonException: Use JsonReader.setStrictness(Strictness.LENIENT) to accept malformed JSON at line 1 column 4 path $\nSee https://github.com/google/gson/blob/main/Troubleshooting.md#malformed-json",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "extra-61",
+      "bodyBase64": "e30jdGFpbA\u003d\u003d",
+      "error": "com.google.gson.stream.MalformedJsonException: Use JsonReader.setStrictness(Strictness.LENIENT) to accept malformed JSON at line 1 column 4 path $\nSee https://github.com/google/gson/blob/main/Troubleshooting.md#malformed-json",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "extra-62",
+      "bodyBase64": "e30gLyogdGFpbCAqLw\u003d\u003d",
+      "error": "com.google.gson.stream.MalformedJsonException: Use JsonReader.setStrictness(Strictness.LENIENT) to accept malformed JSON at line 1 column 5 path $\nSee https://github.com/google/gson/blob/main/Troubleshooting.md#malformed-json",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "extra-63",
+      "bodyBase64": "e30KLyogdGFpbCAqLw\u003d\u003d",
+      "error": "com.google.gson.stream.MalformedJsonException: Use JsonReader.setStrictness(Strictness.LENIENT) to accept malformed JSON at line 2 column 2 path $\nSee https://github.com/google/gson/blob/main/Troubleshooting.md#malformed-json",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "extra-64",
+      "bodyBase64": "77u/e30\u003d",
+      "expected": {
+        "kind": "object",
+        "members": []
+      }
+    },
+    {
+      "name": "extra-65",
+      "bodyBase64": "77u/77u/e30\u003d",
+      "error": "com.google.gson.stream.MalformedJsonException: Use JsonReader.setStrictness(Strictness.LENIENT) to accept malformed JSON at line 1 column 3 path $\nSee https://github.com/google/gson/blob/main/Troubleshooting.md#malformed-json",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "extra-66",
+      "bodyBase64": "WzEsLDIsXQ\u003d\u003d",
+      "expected": {
+        "kind": "array",
+        "items": [
+          {
+            "kind": "number",
+            "text": "1"
+          },
+          {
+            "kind": "null"
+          },
+          {
+            "kind": "number",
+            "text": "2"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    {
+      "name": "extra-67",
+      "bodyBase64": "Wztd",
+      "expected": {
+        "kind": "array",
+        "items": [
+          {
+            "kind": "null"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    {
+      "name": "extra-68",
+      "bodyBase64": "Wyxd",
+      "expected": {
+        "kind": "array",
+        "items": [
+          {
+            "kind": "null"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    {
+      "name": "extra-69",
+      "bodyBase64": "e2E6MTthOjIsYjozfQ\u003d\u003d",
+      "expected": {
+        "kind": "object",
+        "members": [
+          {
+            "nameUnits": [
+              97
+            ],
+            "value": {
+              "kind": "number",
+              "text": "2"
+            }
+          },
+          {
+            "nameUnits": [
+              98
+            ],
+            "value": {
+              "kind": "number",
+              "text": "3"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "extra-70",
+      "bodyBase64": "e2E6MSx9",
+      "error": "com.google.gson.stream.MalformedJsonException: Expected name at line 1 column 7 path $.a\nSee https://github.com/google/gson/blob/main/Troubleshooting.md#malformed-json",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "extra-71",
+      "bodyBase64": "e2E6fQ\u003d\u003d",
+      "error": "com.google.gson.stream.MalformedJsonException: Expected value at line 1 column 4 path $.a\nSee https://github.com/google/gson/blob/main/Troubleshooting.md#malformed-json",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "extra-72",
+      "bodyBase64": "e2E\u003d",
+      "error": "java.io.EOFException: End of input at line 1 column 3 path $.a",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "extra-73",
+      "bodyBase64": "e2E6",
+      "error": "java.io.EOFException: End of input at line 1 column 4 path $.a",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "extra-74",
+      "bodyBase64": "e2E6dHJ1ZSBiOjJ9",
+      "error": "com.google.gson.stream.MalformedJsonException: Unterminated object at line 1 column 10 path $.a\nSee https://github.com/google/gson/blob/main/Troubleshooting.md#malformed-json",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "extra-75",
+      "bodyBase64": "WzEgMl0\u003d",
+      "error": "com.google.gson.stream.MalformedJsonException: Unterminated array at line 1 column 5 path $[1]\nSee https://github.com/google/gson/blob/main/Troubleshooting.md#malformed-json",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "extra-76",
+      "bodyBase64": "WzE\u003d",
+      "error": "java.io.EOFException: End of input at line 1 column 3 path $[1]",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "extra-77",
+      "bodyBase64": "WzEs",
+      "error": "java.io.EOFException: End of input at line 1 column 4 path $[1]",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "extra-78",
+      "bodyBase64": "e2E6WzEs",
+      "error": "java.io.EOFException: End of input at line 1 column 7 path $.a[1]",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "extra-79",
+      "bodyBase64": "e2E6e2I6",
+      "error": "java.io.EOFException: End of input at line 1 column 7 path $.a.b",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "extra-80",
+      "bodyBase64": "e2E6e2I6MQ\u003d\u003d",
+      "error": "java.io.EOFException: End of input at line 1 column 8 path $.a.b",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "extra-81",
+      "bodyBase64": "e2E6e2I6MSw\u003d",
+      "error": "java.io.EOFException: End of input at line 1 column 9 path $.a.b",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "extra-82",
+      "bodyBase64": "ImFceCI\u003d",
+      "error": "com.google.gson.stream.MalformedJsonException: Invalid escape sequence at line 1 column 5 path $\nSee https://github.com/google/gson/blob/main/Troubleshooting.md#malformed-json",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "extra-83",
+      "bodyBase64": "ImFcdTEyM3gi",
+      "error": "com.google.gson.stream.MalformedJsonException: Malformed Unicode escape \\u123x at line 1 column 5 path $\nSee https://github.com/google/gson/blob/main/Troubleshooting.md#malformed-json",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "extra-84",
+      "bodyBase64": "ImFcdTEyIg\u003d\u003d",
+      "error": "com.google.gson.stream.MalformedJsonException: Unterminated escape sequence at line 1 column 5 path $\nSee https://github.com/google/gson/blob/main/Troubleshooting.md#malformed-json",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "extra-85",
+      "bodyBase64": "ImFcdSI\u003d",
+      "error": "com.google.gson.stream.MalformedJsonException: Unterminated escape sequence at line 1 column 5 path $\nSee https://github.com/google/gson/blob/main/Troubleshooting.md#malformed-json",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "extra-86",
+      "bodyBase64": "Ilwi",
+      "error": "com.google.gson.stream.MalformedJsonException: Unterminated string at line 1 column 4 path $\nSee https://github.com/google/gson/blob/main/Troubleshooting.md#malformed-json",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "extra-87",
+      "bodyBase64": "J2FcJ2In",
+      "expected": {
+        "kind": "string",
+        "units": [
+          97,
+          39,
+          98
+        ]
+      }
+    },
+    {
+      "name": "extra-88",
+      "bodyBase64": "ImEBYiI\u003d",
+      "expected": {
+        "kind": "string",
+        "units": [
+          97,
+          1,
+          98
+        ]
+      }
+    },
+    {
+      "name": "extra-89",
+      "bodyBase64": "ImEKQiI\u003d",
+      "expected": {
+        "kind": "string",
+        "units": [
+          97,
+          10,
+          66
+        ]
+      }
+    },
+    {
+      "name": "extra-90",
+      "bodyBase64": "ImFcDUIi",
+      "error": "com.google.gson.stream.MalformedJsonException: Invalid escape sequence at line 1 column 5 path $\nSee https://github.com/google/gson/blob/main/Troubleshooting.md#malformed-json",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "extra-91",
+      "bodyBase64": "LTA\u003d",
+      "expected": {
+        "kind": "number",
+        "text": "-0"
+      }
+    },
+    {
+      "name": "extra-92",
+      "bodyBase64": "MDE\u003d",
+      "expected": {
+        "kind": "string",
+        "units": [
+          48,
+          49
+        ]
+      }
+    },
+    {
+      "name": "extra-93",
+      "bodyBase64": "KzE\u003d",
+      "expected": {
+        "kind": "string",
+        "units": [
+          43,
+          49
+        ]
+      }
+    },
+    {
+      "name": "extra-94",
+      "bodyBase64": "MS4\u003d",
+      "expected": {
+        "kind": "string",
+        "units": [
+          49,
+          46
+        ]
+      }
+    },
+    {
+      "name": "extra-95",
+      "bodyBase64": "MWU\u003d",
+      "expected": {
+        "kind": "string",
+        "units": [
+          49,
+          101
+        ]
+      }
+    },
+    {
+      "name": "extra-96",
+      "bodyBase64": "LS4x",
+      "expected": {
+        "kind": "string",
+        "units": [
+          45,
+          46,
+          49
+        ]
+      }
+    },
+    {
+      "name": "extra-97",
+      "bodyBase64": "MWUrMDI\u003d",
+      "expected": {
+        "kind": "number",
+        "text": "1e+02"
+      }
+    },
+    {
+      "name": "extra-98",
+      "bodyBase64": "VFJVRQ\u003d\u003d",
+      "expected": {
+        "kind": "boolean",
+        "text": "true"
+      }
+    },
+    {
+      "name": "extra-99",
+      "bodyBase64": "TmFO",
+      "expected": {
+        "kind": "string",
+        "units": [
+          78,
+          97,
+          78
+        ]
+      }
+    },
+    {
+      "name": "extra-100",
+      "bodyBase64": "SW5maW5pdHk\u003d",
+      "expected": {
+        "kind": "string",
+        "units": [
+          73,
+          110,
+          102,
+          105,
+          110,
+          105,
+          116,
+          121
+        ]
+      }
+    },
+    {
+      "name": "extra-101",
+      "bodyBase64": "LUluZmluaXR5",
+      "expected": {
+        "kind": "string",
+        "units": [
+          45,
+          73,
+          110,
+          102,
+          105,
+          110,
+          105,
+          116,
+          121
+        ]
+      }
+    },
+    {
+      "name": "extra-102",
+      "bodyBase64": "W1RSVUUsRkFMU0UsTlVMTF0\u003d",
+      "expected": {
+        "kind": "array",
+        "items": [
+          {
+            "kind": "boolean",
+            "text": "true"
+          },
+          {
+            "kind": "boolean",
+            "text": "false"
+          },
+          {
+            "kind": "null"
+          }
+        ]
+      }
+    },
+    {
+      "name": "extra-103",
+      "bodyBase64": "e2EvYjoxfQ\u003d\u003d",
+      "error": "com.google.gson.stream.MalformedJsonException: Expected \u0027:\u0027 at line 1 column 4 path $.a\nSee https://github.com/google/gson/blob/main/Troubleshooting.md#malformed-json",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "extra-104",
+      "bodyBase64": "e2EjYjoxfQ\u003d\u003d",
+      "error": "java.io.EOFException: End of input at line 1 column 8 path $.a",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "extra-105",
+      "bodyBase64": "e1xhOjF9",
+      "error": "com.google.gson.stream.MalformedJsonException: Expected name at line 1 column 2 path $.\nSee https://github.com/google/gson/blob/main/Troubleshooting.md#malformed-json",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "extra-106",
+      "bodyBase64": "e2E9PjJ9",
+      "expected": {
+        "kind": "object",
+        "members": [
+          {
+            "nameUnits": [
+              97
+            ],
+            "value": {
+              "kind": "number",
+              "text": "2"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "extra-107",
+      "bodyBase64": "e2E9ID4yfQ\u003d\u003d",
+      "expected": {
+        "kind": "object",
+        "members": [
+          {
+            "nameUnits": [
+              97
+            ],
+            "value": {
+              "kind": "string",
+              "units": [
+                62,
+                50
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "extra-108",
+      "bodyBase64": "WzE7Ml0\u003d",
+      "expected": {
+        "kind": "array",
+        "items": [
+          {
+            "kind": "number",
+            "text": "1"
+          },
+          {
+            "kind": "number",
+            "text": "2"
+          }
+        ]
+      }
+    },
+    {
+      "name": "extra-109",
+      "bodyBase64": "DA\u003d\u003d",
+      "error": "com.google.gson.stream.MalformedJsonException: Expected value at line 1 column 1 path $\nSee https://github.com/google/gson/blob/main/Troubleshooting.md#malformed-json",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "extra-110",
+      "bodyBase64": "AA\u003d\u003d",
+      "expected": {
+        "kind": "string",
+        "units": [
+          0
+        ]
+      }
+    },
+    {
+      "name": "extra-111",
+      "bodyBase64": "Lyo\u003d",
+      "error": "com.google.gson.stream.MalformedJsonException: Unterminated comment at line 1 column 3 path $\nSee https://github.com/google/gson/blob/main/Troubleshooting.md#malformed-json",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "extra-112",
+      "bodyBase64": "Lyp4",
+      "error": "com.google.gson.stream.MalformedJsonException: Unterminated comment at line 1 column 3 path $\nSee https://github.com/google/gson/blob/main/Troubleshooting.md#malformed-json",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "extra-113",
+      "bodyBase64": "Lyp4eA\u003d\u003d",
+      "error": "com.google.gson.stream.MalformedJsonException: Unterminated comment at line 1 column 4 path $\nSee https://github.com/google/gson/blob/main/Troubleshooting.md#malformed-json",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "extra-114",
+      "bodyBase64": "LyoKeHg\u003d",
+      "error": "com.google.gson.stream.MalformedJsonException: Unterminated comment at line 2 column 2 path $\nSee https://github.com/google/gson/blob/main/Troubleshooting.md#malformed-json",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "extra-115",
+      "bodyBase64": "eyLwn5iAIjo\u003d",
+      "error": "java.io.EOFException: End of input at line 1 column 7 path $.😀",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "extra-116",
+      "bodyBase64": "eyLwn5iAIjoxIHh9",
+      "error": "com.google.gson.stream.MalformedJsonException: Unterminated object at line 1 column 10 path $.😀\nSee https://github.com/google/gson/blob/main/Troubleshooting.md#malformed-json",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "extra-117",
+      "bodyBase64": "eyJhIjoi8J+YgFxxIn0\u003d",
+      "error": "com.google.gson.stream.MalformedJsonException: Invalid escape sequence at line 1 column 11 path $.a\nSee https://github.com/google/gson/blob/main/Troubleshooting.md#malformed-json",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "extra-118",
+      "bodyBase64": "eyJhIjoieApccSJ9",
+      "error": "com.google.gson.stream.MalformedJsonException: Invalid escape sequence at line 2 column 3 path $.a\nSee https://github.com/google/gson/blob/main/Troubleshooting.md#malformed-json",
+      "errorClass": "com.google.gson.JsonSyntaxException"
+    },
+    {
+      "name": "invalid-utf8-119",
+      "bodyBase64": "Iu2ggCI\u003d",
+      "expected": {
+        "kind": "string",
+        "units": [
+          65533
+        ]
+      }
+    },
+    {
+      "name": "invalid-utf8-120",
+      "bodyBase64": "Iu2ggO2wgCI\u003d",
+      "expected": {
+        "kind": "string",
+        "units": [
+          65533,
+          65533
+        ]
+      }
+    },
+    {
+      "name": "invalid-utf8-121",
+      "bodyBase64": "IuKCIg\u003d\u003d",
+      "expected": {
+        "kind": "string",
+        "units": [
+          65533
+        ]
+      }
+    },
+    {
+      "name": "invalid-utf8-122",
+      "bodyBase64": "IuKCWCI\u003d",
+      "expected": {
+        "kind": "string",
+        "units": [
+          65533,
+          88
+        ]
+      }
+    },
+    {
+      "name": "invalid-utf8-123",
+      "bodyBase64": "IuJYIg\u003d\u003d",
+      "expected": {
+        "kind": "string",
+        "units": [
+          65533,
+          88
+        ]
+      }
+    },
+    {
+      "name": "invalid-utf8-124",
+      "bodyBase64": "IuCAgCI\u003d",
+      "expected": {
+        "kind": "string",
+        "units": [
+          65533,
+          65533,
+          65533
+        ]
+      }
+    },
+    {
+      "name": "invalid-utf8-125",
+      "bodyBase64": "IsCvIg\u003d\u003d",
+      "expected": {
+        "kind": "string",
+        "units": [
+          65533,
+          65533
+        ]
+      }
+    },
+    {
+      "name": "invalid-utf8-126",
+      "bodyBase64": "IvCQgCI\u003d",
+      "expected": {
+        "kind": "string",
+        "units": [
+          65533
+        ]
+      }
+    },
+    {
+      "name": "invalid-utf8-127",
+      "bodyBase64": "IvCAgIAi",
+      "expected": {
+        "kind": "string",
+        "units": [
+          65533,
+          65533,
+          65533,
+          65533
+        ]
+      }
+    },
+    {
+      "name": "invalid-utf8-128",
+      "bodyBase64": "IvSQgIAi",
+      "expected": {
+        "kind": "string",
+        "units": [
+          65533,
+          65533,
+          65533,
+          65533
+        ]
+      }
+    },
+    {
+      "name": "invalid-utf8-129",
+      "bodyBase64": "IoCBIg\u003d\u003d",
+      "expected": {
+        "kind": "string",
+        "units": [
+          65533,
+          65533
+        ]
+      }
+    },
+    {
+      "name": "invalid-utf8-130",
+      "bodyBase64": "Iv/+Ig\u003d\u003d",
+      "expected": {
+        "kind": "string",
+        "units": [
+          65533,
+          65533
+        ]
+      }
+    },
+    {
+      "name": "invalid-utf8-131",
+      "bodyBase64": "Iu2gWCI\u003d",
+      "expected": {
+        "kind": "string",
+        "units": [
+          65533,
+          88
+        ]
+      }
+    },
+    {
+      "name": "invalid-utf8-132",
+      "bodyBase64": "IvCQWCI\u003d",
+      "expected": {
+        "kind": "string",
+        "units": [
+          65533,
+          88
+        ]
+      }
+    },
+    {
+      "name": "invalid-utf8-133",
+      "bodyBase64": "IvCQgFgi",
+      "expected": {
+        "kind": "string",
+        "units": [
+          65533,
+          88
+        ]
+      }
+    }
+  ]
+}

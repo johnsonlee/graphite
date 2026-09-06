@@ -1,0 +1,2596 @@
+{
+  "cases": [
+    {
+      "name": "root-GET-valid",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "valid",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "root-GET-empty",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "empty",
+      "bodyBase64": "",
+      "bodyUTF8": ""
+    },
+    {
+      "name": "root-GET-whitespace",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "whitespace",
+      "bodyBase64": "IAkNCg==",
+      "bodyUTF8": " \t\r\n"
+    },
+    {
+      "name": "root-GET-nul",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "nul",
+      "bodyBase64": "AA==",
+      "bodyUTF8": "\u0000"
+    },
+    {
+      "name": "root-GET-empty-object",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "empty-object",
+      "bodyBase64": "e30=",
+      "bodyUTF8": "{}"
+    },
+    {
+      "name": "root-GET-null",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "null",
+      "bodyBase64": "bnVsbA==",
+      "bodyUTF8": "null"
+    },
+    {
+      "name": "root-GET-array",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "array",
+      "bodyBase64": "W10=",
+      "bodyUTF8": "[]"
+    },
+    {
+      "name": "root-GET-top-string",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "top-string",
+      "bodyBase64": "ImhpIg==",
+      "bodyUTF8": "\"hi\""
+    },
+    {
+      "name": "root-GET-line-comment",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "line-comment",
+      "bodyBase64": "Ly8gbGVhZGluZwp7InF1ZXJ5IjoiUkVUVVJOIDEgQVMgeCIsImdyYXBocyI6WyJhIl19",
+      "bodyUTF8": "// leading\n{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "root-GET-block-comment",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "block-comment",
+      "bodyBase64": "LyogbGVhZGluZyAqL3sicXVlcnkiOiJSRVRVUk4gMSBBUyB4IiwiZ3JhcGhzIjpbImEiXX0vKiB0cmFpbGluZyAqLw==",
+      "bodyUTF8": "/* leading */{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}/* trailing */"
+    },
+    {
+      "name": "root-GET-hash-comment",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "hash-comment",
+      "bodyBase64": "IyBsZWFkaW5nCnsicXVlcnkiOiJSRVRVUk4gMSBBUyB4IiwiZ3JhcGhzIjpbImEiXX0=",
+      "bodyUTF8": "# leading\n{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "root-GET-comment-inside",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "comment-inside",
+      "bodyBase64": "ey8qcXVlcnkqLyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{/*query*/\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "root-GET-comment-unclosed",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "comment-unclosed",
+      "bodyBase64": "LyogdW5jbG9zZWQ=",
+      "bodyUTF8": "/* unclosed"
+    },
+    {
+      "name": "root-GET-single-quotes",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "single-quotes",
+      "bodyBase64": "eydxdWVyeSc6J1JFVFVSTiAxIEFTIHgnLCdncmFwaHMnOlsnYSddfQ==",
+      "bodyUTF8": "{'query':'RETURN 1 AS x','graphs':['a']}"
+    },
+    {
+      "name": "root-GET-unquoted-keys",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "unquoted-keys",
+      "bodyBase64": "e3F1ZXJ5OiJSRVRVUk4gMSBBUyB4IixncmFwaHM6WyJhIl19",
+      "bodyUTF8": "{query:\"RETURN 1 AS x\",graphs:[\"a\"]}"
+    },
+    {
+      "name": "root-GET-unquoted-string",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "unquoted-string",
+      "bodyBase64": "e3F1ZXJ5OlJFVFVSTiAxIEFTIHgsZ3JhcGhzOlthXX0=",
+      "bodyUTF8": "{query:RETURN 1 AS x,graphs:[a]}"
+    },
+    {
+      "name": "root-GET-equals-separators",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "equals-separators",
+      "bodyBase64": "e3F1ZXJ5PSJSRVRVUk4gMSBBUyB4IjtncmFwaHM9WyJhIl19",
+      "bodyUTF8": "{query=\"RETURN 1 AS x\";graphs=[\"a\"]}"
+    },
+    {
+      "name": "root-GET-arrow-separators",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "arrow-separators",
+      "bodyBase64": "e3F1ZXJ5PT4iUkVUVVJOIDEgQVMgeCIsZ3JhcGhzPT5bImEiXX0=",
+      "bodyUTF8": "{query=>\"RETURN 1 AS x\",graphs=>[\"a\"]}"
+    },
+    {
+      "name": "root-GET-trailing-object-comma",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "trailing-object-comma",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLH0=",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"],}"
+    },
+    {
+      "name": "root-GET-trailing-array-comma",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "trailing-array-comma",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSIsXX0=",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\",]}"
+    },
+    {
+      "name": "root-GET-leading-array-comma",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "leading-array-comma",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlssImEiXX0=",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[,\"a\"]}"
+    },
+    {
+      "name": "root-GET-array-semicolon",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "array-semicolon",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSI7XX0=",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\";]}"
+    },
+    {
+      "name": "root-GET-multiple-top-level",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "multiple-top-level",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfSB7fQ==",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]} {}"
+    },
+    {
+      "name": "root-GET-trailing-garbage",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "trailing-garbage",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfXh5eg==",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}xyz"
+    },
+    {
+      "name": "root-GET-nonexecute-prefix",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "nonexecute-prefix",
+      "bodyBase64": "KV19Jwp7InF1ZXJ5IjoiUkVUVVJOIDEgQVMgeCIsImdyYXBocyI6WyJhIl19",
+      "bodyUTF8": ")]}'\n{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "root-GET-bom",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "bom",
+      "bodyBase64": "77u/eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "\ufeff{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "root-GET-invalid-escape",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "invalid-escape",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBccSIsImdyYXBocyI6WyJhIl19",
+      "bodyUTF8": "{\"query\":\"RETURN \\q\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "root-GET-invalid-unicode-escape",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "invalid-unicode-escape",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBcdTEyRzQiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN \\u12G4\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "root-GET-short-unicode-escape",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "short-unicode-escape",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBcdTEy",
+      "bodyUTF8": "{\"query\":\"RETURN \\u12"
+    },
+    {
+      "name": "root-GET-raw-newline-string",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "raw-newline-string",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTgoxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN\n1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "root-GET-escaped-newline-string",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "escaped-newline-string",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTlwKMSBBUyB4IiwiZ3JhcGhzIjpbImEiXX0=",
+      "bodyUTF8": "{\"query\":\"RETURN\\\n1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "root-GET-eof-object",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "eof-object",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJd",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]"
+    },
+    {
+      "name": "root-GET-eof-key",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "eof-key",
+      "bodyBase64": "eyJxdWVyeSI=",
+      "bodyUTF8": "{\"query\""
+    },
+    {
+      "name": "root-GET-eof-colon",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "eof-colon",
+      "bodyBase64": "eyJxdWVyeSI6",
+      "bodyUTF8": "{\"query\":"
+    },
+    {
+      "name": "root-GET-eof-string",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "eof-string",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAx",
+      "bodyUTF8": "{\"query\":\"RETURN 1"
+    },
+    {
+      "name": "root-GET-eof-array",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "eof-array",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSI=",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\""
+    },
+    {
+      "name": "root-GET-missing-colon",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "missing-colon",
+      "bodyBase64": "eyJxdWVyeSIgIlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\" \"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "root-GET-missing-comma",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "missing-comma",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiICJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\" \"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "root-GET-duplicate-query",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "duplicate-query",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAwIEFTIHgiLCJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN 0 AS x\",\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "root-GET-uppercase-null",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "uppercase-null",
+      "bodyBase64": "eyJxdWVyeSI6TlVMTCwiZ3JhcGhzIjpbImEiXX0=",
+      "bodyUTF8": "{\"query\":NULL,\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "root-GET-timeout-leading-zero",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "timeout-leading-zero",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOjAxMDAwfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"],\"timeoutMs\":01000}"
+    },
+    {
+      "name": "root-GET-timeout-single-quotes",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "timeout-single-quotes",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCd0aW1lb3V0TXMnOicxMDAwJ30=",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"],'timeoutMs':'1000'}"
+    },
+    {
+      "name": "root-GET-timeout-invalid-escape",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "timeout-invalid-escape",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOiJccSJ9",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"],\"timeoutMs\":\"\\q\"}"
+    },
+    {
+      "name": "root-GET-timeout-nan",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "timeout-nan",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOk5hTn0=",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"],\"timeoutMs\":NaN}"
+    },
+    {
+      "name": "root-GET-timeout-plus-number",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "timeout-plus-number",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOisxMDAwfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"],\"timeoutMs\":+1000}"
+    },
+    {
+      "name": "root-GET-query-trailing-array",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "query-trailing-array",
+      "bodyBase64": "eyJxdWVyeSI6WyJSRVRVUk4gMSBBUyB4IixdLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\":[\"RETURN 1 AS x\",],\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "root-GET-unpaired-surrogate-query",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "unpaired-surrogate-query",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBcJ1x1ZDgwMFwnIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN \\'\\ud800\\' AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "root-GET-invalid-utf8",
+      "surface": "root",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "invalid-utf8",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAn/ycgQVMgeCIsImdyYXBocyI6WyJhIl19",
+      "bodyUTF8": "{\"query\":\"RETURN '\ufffd' AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "root-POST-valid",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "valid",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "root-POST-empty",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "empty",
+      "bodyBase64": "",
+      "bodyUTF8": ""
+    },
+    {
+      "name": "root-POST-whitespace",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "whitespace",
+      "bodyBase64": "IAkNCg==",
+      "bodyUTF8": " \t\r\n"
+    },
+    {
+      "name": "root-POST-nul",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "nul",
+      "bodyBase64": "AA==",
+      "bodyUTF8": "\u0000"
+    },
+    {
+      "name": "root-POST-empty-object",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "empty-object",
+      "bodyBase64": "e30=",
+      "bodyUTF8": "{}"
+    },
+    {
+      "name": "root-POST-null",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "null",
+      "bodyBase64": "bnVsbA==",
+      "bodyUTF8": "null"
+    },
+    {
+      "name": "root-POST-array",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "array",
+      "bodyBase64": "W10=",
+      "bodyUTF8": "[]"
+    },
+    {
+      "name": "root-POST-top-string",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "top-string",
+      "bodyBase64": "ImhpIg==",
+      "bodyUTF8": "\"hi\""
+    },
+    {
+      "name": "root-POST-line-comment",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "line-comment",
+      "bodyBase64": "Ly8gbGVhZGluZwp7InF1ZXJ5IjoiUkVUVVJOIDEgQVMgeCIsImdyYXBocyI6WyJhIl19",
+      "bodyUTF8": "// leading\n{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "root-POST-block-comment",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "block-comment",
+      "bodyBase64": "LyogbGVhZGluZyAqL3sicXVlcnkiOiJSRVRVUk4gMSBBUyB4IiwiZ3JhcGhzIjpbImEiXX0vKiB0cmFpbGluZyAqLw==",
+      "bodyUTF8": "/* leading */{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}/* trailing */"
+    },
+    {
+      "name": "root-POST-hash-comment",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "hash-comment",
+      "bodyBase64": "IyBsZWFkaW5nCnsicXVlcnkiOiJSRVRVUk4gMSBBUyB4IiwiZ3JhcGhzIjpbImEiXX0=",
+      "bodyUTF8": "# leading\n{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "root-POST-comment-inside",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "comment-inside",
+      "bodyBase64": "ey8qcXVlcnkqLyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{/*query*/\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "root-POST-comment-unclosed",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "comment-unclosed",
+      "bodyBase64": "LyogdW5jbG9zZWQ=",
+      "bodyUTF8": "/* unclosed"
+    },
+    {
+      "name": "root-POST-single-quotes",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "single-quotes",
+      "bodyBase64": "eydxdWVyeSc6J1JFVFVSTiAxIEFTIHgnLCdncmFwaHMnOlsnYSddfQ==",
+      "bodyUTF8": "{'query':'RETURN 1 AS x','graphs':['a']}"
+    },
+    {
+      "name": "root-POST-unquoted-keys",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "unquoted-keys",
+      "bodyBase64": "e3F1ZXJ5OiJSRVRVUk4gMSBBUyB4IixncmFwaHM6WyJhIl19",
+      "bodyUTF8": "{query:\"RETURN 1 AS x\",graphs:[\"a\"]}"
+    },
+    {
+      "name": "root-POST-unquoted-string",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "unquoted-string",
+      "bodyBase64": "e3F1ZXJ5OlJFVFVSTiAxIEFTIHgsZ3JhcGhzOlthXX0=",
+      "bodyUTF8": "{query:RETURN 1 AS x,graphs:[a]}"
+    },
+    {
+      "name": "root-POST-equals-separators",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "equals-separators",
+      "bodyBase64": "e3F1ZXJ5PSJSRVRVUk4gMSBBUyB4IjtncmFwaHM9WyJhIl19",
+      "bodyUTF8": "{query=\"RETURN 1 AS x\";graphs=[\"a\"]}"
+    },
+    {
+      "name": "root-POST-arrow-separators",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "arrow-separators",
+      "bodyBase64": "e3F1ZXJ5PT4iUkVUVVJOIDEgQVMgeCIsZ3JhcGhzPT5bImEiXX0=",
+      "bodyUTF8": "{query=>\"RETURN 1 AS x\",graphs=>[\"a\"]}"
+    },
+    {
+      "name": "root-POST-trailing-object-comma",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "trailing-object-comma",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLH0=",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"],}"
+    },
+    {
+      "name": "root-POST-trailing-array-comma",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "trailing-array-comma",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSIsXX0=",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\",]}"
+    },
+    {
+      "name": "root-POST-leading-array-comma",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "leading-array-comma",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlssImEiXX0=",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[,\"a\"]}"
+    },
+    {
+      "name": "root-POST-array-semicolon",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "array-semicolon",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSI7XX0=",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\";]}"
+    },
+    {
+      "name": "root-POST-multiple-top-level",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "multiple-top-level",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfSB7fQ==",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]} {}"
+    },
+    {
+      "name": "root-POST-trailing-garbage",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "trailing-garbage",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfXh5eg==",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}xyz"
+    },
+    {
+      "name": "root-POST-nonexecute-prefix",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "nonexecute-prefix",
+      "bodyBase64": "KV19Jwp7InF1ZXJ5IjoiUkVUVVJOIDEgQVMgeCIsImdyYXBocyI6WyJhIl19",
+      "bodyUTF8": ")]}'\n{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "root-POST-bom",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "bom",
+      "bodyBase64": "77u/eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "\ufeff{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "root-POST-invalid-escape",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "invalid-escape",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBccSIsImdyYXBocyI6WyJhIl19",
+      "bodyUTF8": "{\"query\":\"RETURN \\q\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "root-POST-invalid-unicode-escape",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "invalid-unicode-escape",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBcdTEyRzQiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN \\u12G4\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "root-POST-short-unicode-escape",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "short-unicode-escape",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBcdTEy",
+      "bodyUTF8": "{\"query\":\"RETURN \\u12"
+    },
+    {
+      "name": "root-POST-raw-newline-string",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "raw-newline-string",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTgoxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN\n1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "root-POST-escaped-newline-string",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "escaped-newline-string",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTlwKMSBBUyB4IiwiZ3JhcGhzIjpbImEiXX0=",
+      "bodyUTF8": "{\"query\":\"RETURN\\\n1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "root-POST-eof-object",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "eof-object",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJd",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]"
+    },
+    {
+      "name": "root-POST-eof-key",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "eof-key",
+      "bodyBase64": "eyJxdWVyeSI=",
+      "bodyUTF8": "{\"query\""
+    },
+    {
+      "name": "root-POST-eof-colon",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "eof-colon",
+      "bodyBase64": "eyJxdWVyeSI6",
+      "bodyUTF8": "{\"query\":"
+    },
+    {
+      "name": "root-POST-eof-string",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "eof-string",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAx",
+      "bodyUTF8": "{\"query\":\"RETURN 1"
+    },
+    {
+      "name": "root-POST-eof-array",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "eof-array",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSI=",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\""
+    },
+    {
+      "name": "root-POST-missing-colon",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "missing-colon",
+      "bodyBase64": "eyJxdWVyeSIgIlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\" \"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "root-POST-missing-comma",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "missing-comma",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiICJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\" \"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "root-POST-duplicate-query",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "duplicate-query",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAwIEFTIHgiLCJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN 0 AS x\",\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "root-POST-uppercase-null",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "uppercase-null",
+      "bodyBase64": "eyJxdWVyeSI6TlVMTCwiZ3JhcGhzIjpbImEiXX0=",
+      "bodyUTF8": "{\"query\":NULL,\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "root-POST-timeout-leading-zero",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "timeout-leading-zero",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOjAxMDAwfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"],\"timeoutMs\":01000}"
+    },
+    {
+      "name": "root-POST-timeout-single-quotes",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "timeout-single-quotes",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCd0aW1lb3V0TXMnOicxMDAwJ30=",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"],'timeoutMs':'1000'}"
+    },
+    {
+      "name": "root-POST-timeout-invalid-escape",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "timeout-invalid-escape",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOiJccSJ9",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"],\"timeoutMs\":\"\\q\"}"
+    },
+    {
+      "name": "root-POST-timeout-nan",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "timeout-nan",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOk5hTn0=",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"],\"timeoutMs\":NaN}"
+    },
+    {
+      "name": "root-POST-timeout-plus-number",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "timeout-plus-number",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOisxMDAwfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"],\"timeoutMs\":+1000}"
+    },
+    {
+      "name": "root-POST-query-trailing-array",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "query-trailing-array",
+      "bodyBase64": "eyJxdWVyeSI6WyJSRVRVUk4gMSBBUyB4IixdLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\":[\"RETURN 1 AS x\",],\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "root-POST-unpaired-surrogate-query",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "unpaired-surrogate-query",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBcJ1x1ZDgwMFwnIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN \\'\\ud800\\' AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "root-POST-invalid-utf8",
+      "surface": "root",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "invalid-utf8",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAn/ycgQVMgeCIsImdyYXBocyI6WyJhIl19",
+      "bodyUTF8": "{\"query\":\"RETURN '\ufffd' AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "scoped-GET-valid",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "valid",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "scoped-GET-empty",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "empty",
+      "bodyBase64": "",
+      "bodyUTF8": ""
+    },
+    {
+      "name": "scoped-GET-whitespace",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "whitespace",
+      "bodyBase64": "IAkNCg==",
+      "bodyUTF8": " \t\r\n"
+    },
+    {
+      "name": "scoped-GET-nul",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "nul",
+      "bodyBase64": "AA==",
+      "bodyUTF8": "\u0000"
+    },
+    {
+      "name": "scoped-GET-empty-object",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "empty-object",
+      "bodyBase64": "e30=",
+      "bodyUTF8": "{}"
+    },
+    {
+      "name": "scoped-GET-null",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "null",
+      "bodyBase64": "bnVsbA==",
+      "bodyUTF8": "null"
+    },
+    {
+      "name": "scoped-GET-array",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "array",
+      "bodyBase64": "W10=",
+      "bodyUTF8": "[]"
+    },
+    {
+      "name": "scoped-GET-top-string",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "top-string",
+      "bodyBase64": "ImhpIg==",
+      "bodyUTF8": "\"hi\""
+    },
+    {
+      "name": "scoped-GET-line-comment",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "line-comment",
+      "bodyBase64": "Ly8gbGVhZGluZwp7InF1ZXJ5IjoiUkVUVVJOIDEgQVMgeCIsImdyYXBocyI6WyJhIl19",
+      "bodyUTF8": "// leading\n{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "scoped-GET-block-comment",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "block-comment",
+      "bodyBase64": "LyogbGVhZGluZyAqL3sicXVlcnkiOiJSRVRVUk4gMSBBUyB4IiwiZ3JhcGhzIjpbImEiXX0vKiB0cmFpbGluZyAqLw==",
+      "bodyUTF8": "/* leading */{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}/* trailing */"
+    },
+    {
+      "name": "scoped-GET-hash-comment",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "hash-comment",
+      "bodyBase64": "IyBsZWFkaW5nCnsicXVlcnkiOiJSRVRVUk4gMSBBUyB4IiwiZ3JhcGhzIjpbImEiXX0=",
+      "bodyUTF8": "# leading\n{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "scoped-GET-comment-inside",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "comment-inside",
+      "bodyBase64": "ey8qcXVlcnkqLyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{/*query*/\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "scoped-GET-comment-unclosed",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "comment-unclosed",
+      "bodyBase64": "LyogdW5jbG9zZWQ=",
+      "bodyUTF8": "/* unclosed"
+    },
+    {
+      "name": "scoped-GET-single-quotes",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "single-quotes",
+      "bodyBase64": "eydxdWVyeSc6J1JFVFVSTiAxIEFTIHgnLCdncmFwaHMnOlsnYSddfQ==",
+      "bodyUTF8": "{'query':'RETURN 1 AS x','graphs':['a']}"
+    },
+    {
+      "name": "scoped-GET-unquoted-keys",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "unquoted-keys",
+      "bodyBase64": "e3F1ZXJ5OiJSRVRVUk4gMSBBUyB4IixncmFwaHM6WyJhIl19",
+      "bodyUTF8": "{query:\"RETURN 1 AS x\",graphs:[\"a\"]}"
+    },
+    {
+      "name": "scoped-GET-unquoted-string",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "unquoted-string",
+      "bodyBase64": "e3F1ZXJ5OlJFVFVSTiAxIEFTIHgsZ3JhcGhzOlthXX0=",
+      "bodyUTF8": "{query:RETURN 1 AS x,graphs:[a]}"
+    },
+    {
+      "name": "scoped-GET-equals-separators",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "equals-separators",
+      "bodyBase64": "e3F1ZXJ5PSJSRVRVUk4gMSBBUyB4IjtncmFwaHM9WyJhIl19",
+      "bodyUTF8": "{query=\"RETURN 1 AS x\";graphs=[\"a\"]}"
+    },
+    {
+      "name": "scoped-GET-arrow-separators",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "arrow-separators",
+      "bodyBase64": "e3F1ZXJ5PT4iUkVUVVJOIDEgQVMgeCIsZ3JhcGhzPT5bImEiXX0=",
+      "bodyUTF8": "{query=>\"RETURN 1 AS x\",graphs=>[\"a\"]}"
+    },
+    {
+      "name": "scoped-GET-trailing-object-comma",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "trailing-object-comma",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLH0=",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"],}"
+    },
+    {
+      "name": "scoped-GET-trailing-array-comma",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "trailing-array-comma",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSIsXX0=",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\",]}"
+    },
+    {
+      "name": "scoped-GET-leading-array-comma",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "leading-array-comma",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlssImEiXX0=",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[,\"a\"]}"
+    },
+    {
+      "name": "scoped-GET-array-semicolon",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "array-semicolon",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSI7XX0=",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\";]}"
+    },
+    {
+      "name": "scoped-GET-multiple-top-level",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "multiple-top-level",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfSB7fQ==",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]} {}"
+    },
+    {
+      "name": "scoped-GET-trailing-garbage",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "trailing-garbage",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfXh5eg==",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}xyz"
+    },
+    {
+      "name": "scoped-GET-nonexecute-prefix",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "nonexecute-prefix",
+      "bodyBase64": "KV19Jwp7InF1ZXJ5IjoiUkVUVVJOIDEgQVMgeCIsImdyYXBocyI6WyJhIl19",
+      "bodyUTF8": ")]}'\n{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "scoped-GET-bom",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "bom",
+      "bodyBase64": "77u/eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "\ufeff{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "scoped-GET-invalid-escape",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "invalid-escape",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBccSIsImdyYXBocyI6WyJhIl19",
+      "bodyUTF8": "{\"query\":\"RETURN \\q\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "scoped-GET-invalid-unicode-escape",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "invalid-unicode-escape",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBcdTEyRzQiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN \\u12G4\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "scoped-GET-short-unicode-escape",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "short-unicode-escape",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBcdTEy",
+      "bodyUTF8": "{\"query\":\"RETURN \\u12"
+    },
+    {
+      "name": "scoped-GET-raw-newline-string",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "raw-newline-string",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTgoxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN\n1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "scoped-GET-escaped-newline-string",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "escaped-newline-string",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTlwKMSBBUyB4IiwiZ3JhcGhzIjpbImEiXX0=",
+      "bodyUTF8": "{\"query\":\"RETURN\\\n1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "scoped-GET-eof-object",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "eof-object",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJd",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]"
+    },
+    {
+      "name": "scoped-GET-eof-key",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "eof-key",
+      "bodyBase64": "eyJxdWVyeSI=",
+      "bodyUTF8": "{\"query\""
+    },
+    {
+      "name": "scoped-GET-eof-colon",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "eof-colon",
+      "bodyBase64": "eyJxdWVyeSI6",
+      "bodyUTF8": "{\"query\":"
+    },
+    {
+      "name": "scoped-GET-eof-string",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "eof-string",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAx",
+      "bodyUTF8": "{\"query\":\"RETURN 1"
+    },
+    {
+      "name": "scoped-GET-eof-array",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "eof-array",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSI=",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\""
+    },
+    {
+      "name": "scoped-GET-missing-colon",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "missing-colon",
+      "bodyBase64": "eyJxdWVyeSIgIlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\" \"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "scoped-GET-missing-comma",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "missing-comma",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiICJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\" \"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "scoped-GET-duplicate-query",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "duplicate-query",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAwIEFTIHgiLCJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN 0 AS x\",\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "scoped-GET-uppercase-null",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "uppercase-null",
+      "bodyBase64": "eyJxdWVyeSI6TlVMTCwiZ3JhcGhzIjpbImEiXX0=",
+      "bodyUTF8": "{\"query\":NULL,\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "scoped-GET-timeout-leading-zero",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "timeout-leading-zero",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOjAxMDAwfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"],\"timeoutMs\":01000}"
+    },
+    {
+      "name": "scoped-GET-timeout-single-quotes",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "timeout-single-quotes",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCd0aW1lb3V0TXMnOicxMDAwJ30=",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"],'timeoutMs':'1000'}"
+    },
+    {
+      "name": "scoped-GET-timeout-invalid-escape",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "timeout-invalid-escape",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOiJccSJ9",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"],\"timeoutMs\":\"\\q\"}"
+    },
+    {
+      "name": "scoped-GET-timeout-nan",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "timeout-nan",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOk5hTn0=",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"],\"timeoutMs\":NaN}"
+    },
+    {
+      "name": "scoped-GET-timeout-plus-number",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "timeout-plus-number",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOisxMDAwfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"],\"timeoutMs\":+1000}"
+    },
+    {
+      "name": "scoped-GET-query-trailing-array",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "query-trailing-array",
+      "bodyBase64": "eyJxdWVyeSI6WyJSRVRVUk4gMSBBUyB4IixdLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\":[\"RETURN 1 AS x\",],\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "scoped-GET-unpaired-surrogate-query",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "unpaired-surrogate-query",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBcJ1x1ZDgwMFwnIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN \\'\\ud800\\' AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "scoped-GET-invalid-utf8",
+      "surface": "scoped",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "invalid-utf8",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAn/ycgQVMgeCIsImdyYXBocyI6WyJhIl19",
+      "bodyUTF8": "{\"query\":\"RETURN '\ufffd' AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "scoped-POST-valid",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "valid",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "scoped-POST-empty",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "empty",
+      "bodyBase64": "",
+      "bodyUTF8": ""
+    },
+    {
+      "name": "scoped-POST-whitespace",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "whitespace",
+      "bodyBase64": "IAkNCg==",
+      "bodyUTF8": " \t\r\n"
+    },
+    {
+      "name": "scoped-POST-nul",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "nul",
+      "bodyBase64": "AA==",
+      "bodyUTF8": "\u0000"
+    },
+    {
+      "name": "scoped-POST-empty-object",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "empty-object",
+      "bodyBase64": "e30=",
+      "bodyUTF8": "{}"
+    },
+    {
+      "name": "scoped-POST-null",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "null",
+      "bodyBase64": "bnVsbA==",
+      "bodyUTF8": "null"
+    },
+    {
+      "name": "scoped-POST-array",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "array",
+      "bodyBase64": "W10=",
+      "bodyUTF8": "[]"
+    },
+    {
+      "name": "scoped-POST-top-string",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "top-string",
+      "bodyBase64": "ImhpIg==",
+      "bodyUTF8": "\"hi\""
+    },
+    {
+      "name": "scoped-POST-line-comment",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "line-comment",
+      "bodyBase64": "Ly8gbGVhZGluZwp7InF1ZXJ5IjoiUkVUVVJOIDEgQVMgeCIsImdyYXBocyI6WyJhIl19",
+      "bodyUTF8": "// leading\n{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "scoped-POST-block-comment",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "block-comment",
+      "bodyBase64": "LyogbGVhZGluZyAqL3sicXVlcnkiOiJSRVRVUk4gMSBBUyB4IiwiZ3JhcGhzIjpbImEiXX0vKiB0cmFpbGluZyAqLw==",
+      "bodyUTF8": "/* leading */{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}/* trailing */"
+    },
+    {
+      "name": "scoped-POST-hash-comment",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "hash-comment",
+      "bodyBase64": "IyBsZWFkaW5nCnsicXVlcnkiOiJSRVRVUk4gMSBBUyB4IiwiZ3JhcGhzIjpbImEiXX0=",
+      "bodyUTF8": "# leading\n{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "scoped-POST-comment-inside",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "comment-inside",
+      "bodyBase64": "ey8qcXVlcnkqLyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{/*query*/\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "scoped-POST-comment-unclosed",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "comment-unclosed",
+      "bodyBase64": "LyogdW5jbG9zZWQ=",
+      "bodyUTF8": "/* unclosed"
+    },
+    {
+      "name": "scoped-POST-single-quotes",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "single-quotes",
+      "bodyBase64": "eydxdWVyeSc6J1JFVFVSTiAxIEFTIHgnLCdncmFwaHMnOlsnYSddfQ==",
+      "bodyUTF8": "{'query':'RETURN 1 AS x','graphs':['a']}"
+    },
+    {
+      "name": "scoped-POST-unquoted-keys",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "unquoted-keys",
+      "bodyBase64": "e3F1ZXJ5OiJSRVRVUk4gMSBBUyB4IixncmFwaHM6WyJhIl19",
+      "bodyUTF8": "{query:\"RETURN 1 AS x\",graphs:[\"a\"]}"
+    },
+    {
+      "name": "scoped-POST-unquoted-string",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "unquoted-string",
+      "bodyBase64": "e3F1ZXJ5OlJFVFVSTiAxIEFTIHgsZ3JhcGhzOlthXX0=",
+      "bodyUTF8": "{query:RETURN 1 AS x,graphs:[a]}"
+    },
+    {
+      "name": "scoped-POST-equals-separators",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "equals-separators",
+      "bodyBase64": "e3F1ZXJ5PSJSRVRVUk4gMSBBUyB4IjtncmFwaHM9WyJhIl19",
+      "bodyUTF8": "{query=\"RETURN 1 AS x\";graphs=[\"a\"]}"
+    },
+    {
+      "name": "scoped-POST-arrow-separators",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "arrow-separators",
+      "bodyBase64": "e3F1ZXJ5PT4iUkVUVVJOIDEgQVMgeCIsZ3JhcGhzPT5bImEiXX0=",
+      "bodyUTF8": "{query=>\"RETURN 1 AS x\",graphs=>[\"a\"]}"
+    },
+    {
+      "name": "scoped-POST-trailing-object-comma",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "trailing-object-comma",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLH0=",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"],}"
+    },
+    {
+      "name": "scoped-POST-trailing-array-comma",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "trailing-array-comma",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSIsXX0=",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\",]}"
+    },
+    {
+      "name": "scoped-POST-leading-array-comma",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "leading-array-comma",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlssImEiXX0=",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[,\"a\"]}"
+    },
+    {
+      "name": "scoped-POST-array-semicolon",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "array-semicolon",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSI7XX0=",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\";]}"
+    },
+    {
+      "name": "scoped-POST-multiple-top-level",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "multiple-top-level",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfSB7fQ==",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]} {}"
+    },
+    {
+      "name": "scoped-POST-trailing-garbage",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "trailing-garbage",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfXh5eg==",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}xyz"
+    },
+    {
+      "name": "scoped-POST-nonexecute-prefix",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "nonexecute-prefix",
+      "bodyBase64": "KV19Jwp7InF1ZXJ5IjoiUkVUVVJOIDEgQVMgeCIsImdyYXBocyI6WyJhIl19",
+      "bodyUTF8": ")]}'\n{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "scoped-POST-bom",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "bom",
+      "bodyBase64": "77u/eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "\ufeff{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "scoped-POST-invalid-escape",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "invalid-escape",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBccSIsImdyYXBocyI6WyJhIl19",
+      "bodyUTF8": "{\"query\":\"RETURN \\q\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "scoped-POST-invalid-unicode-escape",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "invalid-unicode-escape",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBcdTEyRzQiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN \\u12G4\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "scoped-POST-short-unicode-escape",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "short-unicode-escape",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBcdTEy",
+      "bodyUTF8": "{\"query\":\"RETURN \\u12"
+    },
+    {
+      "name": "scoped-POST-raw-newline-string",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "raw-newline-string",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTgoxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN\n1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "scoped-POST-escaped-newline-string",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "escaped-newline-string",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTlwKMSBBUyB4IiwiZ3JhcGhzIjpbImEiXX0=",
+      "bodyUTF8": "{\"query\":\"RETURN\\\n1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "scoped-POST-eof-object",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "eof-object",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJd",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]"
+    },
+    {
+      "name": "scoped-POST-eof-key",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "eof-key",
+      "bodyBase64": "eyJxdWVyeSI=",
+      "bodyUTF8": "{\"query\""
+    },
+    {
+      "name": "scoped-POST-eof-colon",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "eof-colon",
+      "bodyBase64": "eyJxdWVyeSI6",
+      "bodyUTF8": "{\"query\":"
+    },
+    {
+      "name": "scoped-POST-eof-string",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "eof-string",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAx",
+      "bodyUTF8": "{\"query\":\"RETURN 1"
+    },
+    {
+      "name": "scoped-POST-eof-array",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "eof-array",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSI=",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\""
+    },
+    {
+      "name": "scoped-POST-missing-colon",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "missing-colon",
+      "bodyBase64": "eyJxdWVyeSIgIlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\" \"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "scoped-POST-missing-comma",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "missing-comma",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiICJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\" \"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "scoped-POST-duplicate-query",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "duplicate-query",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAwIEFTIHgiLCJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN 0 AS x\",\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "scoped-POST-uppercase-null",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "uppercase-null",
+      "bodyBase64": "eyJxdWVyeSI6TlVMTCwiZ3JhcGhzIjpbImEiXX0=",
+      "bodyUTF8": "{\"query\":NULL,\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "scoped-POST-timeout-leading-zero",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "timeout-leading-zero",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOjAxMDAwfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"],\"timeoutMs\":01000}"
+    },
+    {
+      "name": "scoped-POST-timeout-single-quotes",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "timeout-single-quotes",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCd0aW1lb3V0TXMnOicxMDAwJ30=",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"],'timeoutMs':'1000'}"
+    },
+    {
+      "name": "scoped-POST-timeout-invalid-escape",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "timeout-invalid-escape",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOiJccSJ9",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"],\"timeoutMs\":\"\\q\"}"
+    },
+    {
+      "name": "scoped-POST-timeout-nan",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "timeout-nan",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOk5hTn0=",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"],\"timeoutMs\":NaN}"
+    },
+    {
+      "name": "scoped-POST-timeout-plus-number",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "timeout-plus-number",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOisxMDAwfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"],\"timeoutMs\":+1000}"
+    },
+    {
+      "name": "scoped-POST-query-trailing-array",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "query-trailing-array",
+      "bodyBase64": "eyJxdWVyeSI6WyJSRVRVUk4gMSBBUyB4IixdLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\":[\"RETURN 1 AS x\",],\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "scoped-POST-unpaired-surrogate-query",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "unpaired-surrogate-query",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBcJ1x1ZDgwMFwnIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN \\'\\ud800\\' AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "scoped-POST-invalid-utf8",
+      "surface": "scoped",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "invalid-utf8",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAn/ycgQVMgeCIsImdyYXBocyI6WyJhIl19",
+      "bodyUTF8": "{\"query\":\"RETURN '\ufffd' AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "selected-GET-valid",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "valid",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "selected-GET-empty",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "empty",
+      "bodyBase64": "",
+      "bodyUTF8": ""
+    },
+    {
+      "name": "selected-GET-whitespace",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "whitespace",
+      "bodyBase64": "IAkNCg==",
+      "bodyUTF8": " \t\r\n"
+    },
+    {
+      "name": "selected-GET-nul",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "nul",
+      "bodyBase64": "AA==",
+      "bodyUTF8": "\u0000"
+    },
+    {
+      "name": "selected-GET-empty-object",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "empty-object",
+      "bodyBase64": "e30=",
+      "bodyUTF8": "{}"
+    },
+    {
+      "name": "selected-GET-null",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "null",
+      "bodyBase64": "bnVsbA==",
+      "bodyUTF8": "null"
+    },
+    {
+      "name": "selected-GET-array",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "array",
+      "bodyBase64": "W10=",
+      "bodyUTF8": "[]"
+    },
+    {
+      "name": "selected-GET-top-string",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "top-string",
+      "bodyBase64": "ImhpIg==",
+      "bodyUTF8": "\"hi\""
+    },
+    {
+      "name": "selected-GET-line-comment",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "line-comment",
+      "bodyBase64": "Ly8gbGVhZGluZwp7InF1ZXJ5IjoiUkVUVVJOIDEgQVMgeCIsImdyYXBocyI6WyJhIl19",
+      "bodyUTF8": "// leading\n{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "selected-GET-block-comment",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "block-comment",
+      "bodyBase64": "LyogbGVhZGluZyAqL3sicXVlcnkiOiJSRVRVUk4gMSBBUyB4IiwiZ3JhcGhzIjpbImEiXX0vKiB0cmFpbGluZyAqLw==",
+      "bodyUTF8": "/* leading */{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}/* trailing */"
+    },
+    {
+      "name": "selected-GET-hash-comment",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "hash-comment",
+      "bodyBase64": "IyBsZWFkaW5nCnsicXVlcnkiOiJSRVRVUk4gMSBBUyB4IiwiZ3JhcGhzIjpbImEiXX0=",
+      "bodyUTF8": "# leading\n{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "selected-GET-comment-inside",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "comment-inside",
+      "bodyBase64": "ey8qcXVlcnkqLyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{/*query*/\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "selected-GET-comment-unclosed",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "comment-unclosed",
+      "bodyBase64": "LyogdW5jbG9zZWQ=",
+      "bodyUTF8": "/* unclosed"
+    },
+    {
+      "name": "selected-GET-single-quotes",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "single-quotes",
+      "bodyBase64": "eydxdWVyeSc6J1JFVFVSTiAxIEFTIHgnLCdncmFwaHMnOlsnYSddfQ==",
+      "bodyUTF8": "{'query':'RETURN 1 AS x','graphs':['a']}"
+    },
+    {
+      "name": "selected-GET-unquoted-keys",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "unquoted-keys",
+      "bodyBase64": "e3F1ZXJ5OiJSRVRVUk4gMSBBUyB4IixncmFwaHM6WyJhIl19",
+      "bodyUTF8": "{query:\"RETURN 1 AS x\",graphs:[\"a\"]}"
+    },
+    {
+      "name": "selected-GET-unquoted-string",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "unquoted-string",
+      "bodyBase64": "e3F1ZXJ5OlJFVFVSTiAxIEFTIHgsZ3JhcGhzOlthXX0=",
+      "bodyUTF8": "{query:RETURN 1 AS x,graphs:[a]}"
+    },
+    {
+      "name": "selected-GET-equals-separators",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "equals-separators",
+      "bodyBase64": "e3F1ZXJ5PSJSRVRVUk4gMSBBUyB4IjtncmFwaHM9WyJhIl19",
+      "bodyUTF8": "{query=\"RETURN 1 AS x\";graphs=[\"a\"]}"
+    },
+    {
+      "name": "selected-GET-arrow-separators",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "arrow-separators",
+      "bodyBase64": "e3F1ZXJ5PT4iUkVUVVJOIDEgQVMgeCIsZ3JhcGhzPT5bImEiXX0=",
+      "bodyUTF8": "{query=>\"RETURN 1 AS x\",graphs=>[\"a\"]}"
+    },
+    {
+      "name": "selected-GET-trailing-object-comma",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "trailing-object-comma",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLH0=",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"],}"
+    },
+    {
+      "name": "selected-GET-trailing-array-comma",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "trailing-array-comma",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSIsXX0=",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\",]}"
+    },
+    {
+      "name": "selected-GET-leading-array-comma",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "leading-array-comma",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlssImEiXX0=",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[,\"a\"]}"
+    },
+    {
+      "name": "selected-GET-array-semicolon",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "array-semicolon",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSI7XX0=",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\";]}"
+    },
+    {
+      "name": "selected-GET-multiple-top-level",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "multiple-top-level",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfSB7fQ==",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]} {}"
+    },
+    {
+      "name": "selected-GET-trailing-garbage",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "trailing-garbage",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfXh5eg==",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}xyz"
+    },
+    {
+      "name": "selected-GET-nonexecute-prefix",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "nonexecute-prefix",
+      "bodyBase64": "KV19Jwp7InF1ZXJ5IjoiUkVUVVJOIDEgQVMgeCIsImdyYXBocyI6WyJhIl19",
+      "bodyUTF8": ")]}'\n{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "selected-GET-bom",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "bom",
+      "bodyBase64": "77u/eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "\ufeff{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "selected-GET-invalid-escape",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "invalid-escape",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBccSIsImdyYXBocyI6WyJhIl19",
+      "bodyUTF8": "{\"query\":\"RETURN \\q\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "selected-GET-invalid-unicode-escape",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "invalid-unicode-escape",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBcdTEyRzQiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN \\u12G4\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "selected-GET-short-unicode-escape",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "short-unicode-escape",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBcdTEy",
+      "bodyUTF8": "{\"query\":\"RETURN \\u12"
+    },
+    {
+      "name": "selected-GET-raw-newline-string",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "raw-newline-string",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTgoxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN\n1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "selected-GET-escaped-newline-string",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "escaped-newline-string",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTlwKMSBBUyB4IiwiZ3JhcGhzIjpbImEiXX0=",
+      "bodyUTF8": "{\"query\":\"RETURN\\\n1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "selected-GET-eof-object",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "eof-object",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJd",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]"
+    },
+    {
+      "name": "selected-GET-eof-key",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "eof-key",
+      "bodyBase64": "eyJxdWVyeSI=",
+      "bodyUTF8": "{\"query\""
+    },
+    {
+      "name": "selected-GET-eof-colon",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "eof-colon",
+      "bodyBase64": "eyJxdWVyeSI6",
+      "bodyUTF8": "{\"query\":"
+    },
+    {
+      "name": "selected-GET-eof-string",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "eof-string",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAx",
+      "bodyUTF8": "{\"query\":\"RETURN 1"
+    },
+    {
+      "name": "selected-GET-eof-array",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "eof-array",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSI=",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\""
+    },
+    {
+      "name": "selected-GET-missing-colon",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "missing-colon",
+      "bodyBase64": "eyJxdWVyeSIgIlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\" \"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "selected-GET-missing-comma",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "missing-comma",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiICJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\" \"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "selected-GET-duplicate-query",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "duplicate-query",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAwIEFTIHgiLCJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN 0 AS x\",\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "selected-GET-uppercase-null",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "uppercase-null",
+      "bodyBase64": "eyJxdWVyeSI6TlVMTCwiZ3JhcGhzIjpbImEiXX0=",
+      "bodyUTF8": "{\"query\":NULL,\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "selected-GET-timeout-leading-zero",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "timeout-leading-zero",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOjAxMDAwfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"],\"timeoutMs\":01000}"
+    },
+    {
+      "name": "selected-GET-timeout-single-quotes",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "timeout-single-quotes",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCd0aW1lb3V0TXMnOicxMDAwJ30=",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"],'timeoutMs':'1000'}"
+    },
+    {
+      "name": "selected-GET-timeout-invalid-escape",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "timeout-invalid-escape",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOiJccSJ9",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"],\"timeoutMs\":\"\\q\"}"
+    },
+    {
+      "name": "selected-GET-timeout-nan",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "timeout-nan",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOk5hTn0=",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"],\"timeoutMs\":NaN}"
+    },
+    {
+      "name": "selected-GET-timeout-plus-number",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "timeout-plus-number",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOisxMDAwfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"],\"timeoutMs\":+1000}"
+    },
+    {
+      "name": "selected-GET-query-trailing-array",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "query-trailing-array",
+      "bodyBase64": "eyJxdWVyeSI6WyJSRVRVUk4gMSBBUyB4IixdLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\":[\"RETURN 1 AS x\",],\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "selected-GET-unpaired-surrogate-query",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "unpaired-surrogate-query",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBcJ1x1ZDgwMFwnIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN \\'\\ud800\\' AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "selected-GET-invalid-utf8",
+      "surface": "selected",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "invalid-utf8",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAn/ycgQVMgeCIsImdyYXBocyI6WyJhIl19",
+      "bodyUTF8": "{\"query\":\"RETURN '\ufffd' AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "selected-POST-valid",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "valid",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "selected-POST-empty",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "empty",
+      "bodyBase64": "",
+      "bodyUTF8": ""
+    },
+    {
+      "name": "selected-POST-whitespace",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "whitespace",
+      "bodyBase64": "IAkNCg==",
+      "bodyUTF8": " \t\r\n"
+    },
+    {
+      "name": "selected-POST-nul",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "nul",
+      "bodyBase64": "AA==",
+      "bodyUTF8": "\u0000"
+    },
+    {
+      "name": "selected-POST-empty-object",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "empty-object",
+      "bodyBase64": "e30=",
+      "bodyUTF8": "{}"
+    },
+    {
+      "name": "selected-POST-null",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "null",
+      "bodyBase64": "bnVsbA==",
+      "bodyUTF8": "null"
+    },
+    {
+      "name": "selected-POST-array",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "array",
+      "bodyBase64": "W10=",
+      "bodyUTF8": "[]"
+    },
+    {
+      "name": "selected-POST-top-string",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "top-string",
+      "bodyBase64": "ImhpIg==",
+      "bodyUTF8": "\"hi\""
+    },
+    {
+      "name": "selected-POST-line-comment",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "line-comment",
+      "bodyBase64": "Ly8gbGVhZGluZwp7InF1ZXJ5IjoiUkVUVVJOIDEgQVMgeCIsImdyYXBocyI6WyJhIl19",
+      "bodyUTF8": "// leading\n{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "selected-POST-block-comment",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "block-comment",
+      "bodyBase64": "LyogbGVhZGluZyAqL3sicXVlcnkiOiJSRVRVUk4gMSBBUyB4IiwiZ3JhcGhzIjpbImEiXX0vKiB0cmFpbGluZyAqLw==",
+      "bodyUTF8": "/* leading */{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}/* trailing */"
+    },
+    {
+      "name": "selected-POST-hash-comment",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "hash-comment",
+      "bodyBase64": "IyBsZWFkaW5nCnsicXVlcnkiOiJSRVRVUk4gMSBBUyB4IiwiZ3JhcGhzIjpbImEiXX0=",
+      "bodyUTF8": "# leading\n{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "selected-POST-comment-inside",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "comment-inside",
+      "bodyBase64": "ey8qcXVlcnkqLyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{/*query*/\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "selected-POST-comment-unclosed",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "comment-unclosed",
+      "bodyBase64": "LyogdW5jbG9zZWQ=",
+      "bodyUTF8": "/* unclosed"
+    },
+    {
+      "name": "selected-POST-single-quotes",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "single-quotes",
+      "bodyBase64": "eydxdWVyeSc6J1JFVFVSTiAxIEFTIHgnLCdncmFwaHMnOlsnYSddfQ==",
+      "bodyUTF8": "{'query':'RETURN 1 AS x','graphs':['a']}"
+    },
+    {
+      "name": "selected-POST-unquoted-keys",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "unquoted-keys",
+      "bodyBase64": "e3F1ZXJ5OiJSRVRVUk4gMSBBUyB4IixncmFwaHM6WyJhIl19",
+      "bodyUTF8": "{query:\"RETURN 1 AS x\",graphs:[\"a\"]}"
+    },
+    {
+      "name": "selected-POST-unquoted-string",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "unquoted-string",
+      "bodyBase64": "e3F1ZXJ5OlJFVFVSTiAxIEFTIHgsZ3JhcGhzOlthXX0=",
+      "bodyUTF8": "{query:RETURN 1 AS x,graphs:[a]}"
+    },
+    {
+      "name": "selected-POST-equals-separators",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "equals-separators",
+      "bodyBase64": "e3F1ZXJ5PSJSRVRVUk4gMSBBUyB4IjtncmFwaHM9WyJhIl19",
+      "bodyUTF8": "{query=\"RETURN 1 AS x\";graphs=[\"a\"]}"
+    },
+    {
+      "name": "selected-POST-arrow-separators",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "arrow-separators",
+      "bodyBase64": "e3F1ZXJ5PT4iUkVUVVJOIDEgQVMgeCIsZ3JhcGhzPT5bImEiXX0=",
+      "bodyUTF8": "{query=>\"RETURN 1 AS x\",graphs=>[\"a\"]}"
+    },
+    {
+      "name": "selected-POST-trailing-object-comma",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "trailing-object-comma",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLH0=",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"],}"
+    },
+    {
+      "name": "selected-POST-trailing-array-comma",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "trailing-array-comma",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSIsXX0=",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\",]}"
+    },
+    {
+      "name": "selected-POST-leading-array-comma",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "leading-array-comma",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlssImEiXX0=",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[,\"a\"]}"
+    },
+    {
+      "name": "selected-POST-array-semicolon",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "array-semicolon",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSI7XX0=",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\";]}"
+    },
+    {
+      "name": "selected-POST-multiple-top-level",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "multiple-top-level",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfSB7fQ==",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]} {}"
+    },
+    {
+      "name": "selected-POST-trailing-garbage",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "trailing-garbage",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfXh5eg==",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}xyz"
+    },
+    {
+      "name": "selected-POST-nonexecute-prefix",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "nonexecute-prefix",
+      "bodyBase64": "KV19Jwp7InF1ZXJ5IjoiUkVUVVJOIDEgQVMgeCIsImdyYXBocyI6WyJhIl19",
+      "bodyUTF8": ")]}'\n{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "selected-POST-bom",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "bom",
+      "bodyBase64": "77u/eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "\ufeff{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "selected-POST-invalid-escape",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "invalid-escape",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBccSIsImdyYXBocyI6WyJhIl19",
+      "bodyUTF8": "{\"query\":\"RETURN \\q\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "selected-POST-invalid-unicode-escape",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "invalid-unicode-escape",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBcdTEyRzQiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN \\u12G4\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "selected-POST-short-unicode-escape",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "short-unicode-escape",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBcdTEy",
+      "bodyUTF8": "{\"query\":\"RETURN \\u12"
+    },
+    {
+      "name": "selected-POST-raw-newline-string",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "raw-newline-string",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTgoxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN\n1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "selected-POST-escaped-newline-string",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "escaped-newline-string",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTlwKMSBBUyB4IiwiZ3JhcGhzIjpbImEiXX0=",
+      "bodyUTF8": "{\"query\":\"RETURN\\\n1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "selected-POST-eof-object",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "eof-object",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJd",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]"
+    },
+    {
+      "name": "selected-POST-eof-key",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "eof-key",
+      "bodyBase64": "eyJxdWVyeSI=",
+      "bodyUTF8": "{\"query\""
+    },
+    {
+      "name": "selected-POST-eof-colon",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "eof-colon",
+      "bodyBase64": "eyJxdWVyeSI6",
+      "bodyUTF8": "{\"query\":"
+    },
+    {
+      "name": "selected-POST-eof-string",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "eof-string",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAx",
+      "bodyUTF8": "{\"query\":\"RETURN 1"
+    },
+    {
+      "name": "selected-POST-eof-array",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "eof-array",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSI=",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\""
+    },
+    {
+      "name": "selected-POST-missing-colon",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "missing-colon",
+      "bodyBase64": "eyJxdWVyeSIgIlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\" \"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "selected-POST-missing-comma",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "missing-comma",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiICJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\" \"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "selected-POST-duplicate-query",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "duplicate-query",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAwIEFTIHgiLCJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN 0 AS x\",\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "selected-POST-uppercase-null",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "uppercase-null",
+      "bodyBase64": "eyJxdWVyeSI6TlVMTCwiZ3JhcGhzIjpbImEiXX0=",
+      "bodyUTF8": "{\"query\":NULL,\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "selected-POST-timeout-leading-zero",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "timeout-leading-zero",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOjAxMDAwfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"],\"timeoutMs\":01000}"
+    },
+    {
+      "name": "selected-POST-timeout-single-quotes",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "timeout-single-quotes",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCd0aW1lb3V0TXMnOicxMDAwJ30=",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"],'timeoutMs':'1000'}"
+    },
+    {
+      "name": "selected-POST-timeout-invalid-escape",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "timeout-invalid-escape",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOiJccSJ9",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"],\"timeoutMs\":\"\\q\"}"
+    },
+    {
+      "name": "selected-POST-timeout-nan",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "timeout-nan",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOk5hTn0=",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"],\"timeoutMs\":NaN}"
+    },
+    {
+      "name": "selected-POST-timeout-plus-number",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "timeout-plus-number",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOisxMDAwfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN 1 AS x\",\"graphs\":[\"a\"],\"timeoutMs\":+1000}"
+    },
+    {
+      "name": "selected-POST-query-trailing-array",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "query-trailing-array",
+      "bodyBase64": "eyJxdWVyeSI6WyJSRVRVUk4gMSBBUyB4IixdLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\":[\"RETURN 1 AS x\",],\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "selected-POST-unpaired-surrogate-query",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "unpaired-surrogate-query",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBcJ1x1ZDgwMFwnIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "bodyUTF8": "{\"query\":\"RETURN \\'\\ud800\\' AS x\",\"graphs\":[\"a\"]}"
+    },
+    {
+      "name": "selected-POST-invalid-utf8",
+      "surface": "selected",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "payloadName": "invalid-utf8",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAn/ycgQVMgeCIsImdyYXBocyI6WyJhIl19",
+      "bodyUTF8": "{\"query\":\"RETURN '\ufffd' AS x\",\"graphs\":[\"a\"]}"
+    }
+  ]
+}

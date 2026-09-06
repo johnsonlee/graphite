@@ -1,0 +1,538 @@
+[
+  {
+    "name": "valid",
+    "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ=="
+  },
+  {
+    "name": "empty",
+    "bodyBase64": ""
+  },
+  {
+    "name": "whitespace",
+    "bodyBase64": "IAkNCg=="
+  },
+  {
+    "name": "nul",
+    "bodyBase64": "AA=="
+  },
+  {
+    "name": "empty-object",
+    "bodyBase64": "e30="
+  },
+  {
+    "name": "null",
+    "bodyBase64": "bnVsbA=="
+  },
+  {
+    "name": "array",
+    "bodyBase64": "W10="
+  },
+  {
+    "name": "top-string",
+    "bodyBase64": "ImhpIg=="
+  },
+  {
+    "name": "line-comment",
+    "bodyBase64": "Ly8gbGVhZGluZwp7InF1ZXJ5IjoiUkVUVVJOIDEgQVMgeCIsImdyYXBocyI6WyJhIl19"
+  },
+  {
+    "name": "block-comment",
+    "bodyBase64": "LyogbGVhZGluZyAqL3sicXVlcnkiOiJSRVRVUk4gMSBBUyB4IiwiZ3JhcGhzIjpbImEiXX0vKiB0cmFpbGluZyAqLw=="
+  },
+  {
+    "name": "hash-comment",
+    "bodyBase64": "IyBsZWFkaW5nCnsicXVlcnkiOiJSRVRVUk4gMSBBUyB4IiwiZ3JhcGhzIjpbImEiXX0="
+  },
+  {
+    "name": "comment-inside",
+    "bodyBase64": "ey8qcXVlcnkqLyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ=="
+  },
+  {
+    "name": "comment-unclosed",
+    "bodyBase64": "LyogdW5jbG9zZWQ="
+  },
+  {
+    "name": "single-quotes",
+    "bodyBase64": "eydxdWVyeSc6J1JFVFVSTiAxIEFTIHgnLCdncmFwaHMnOlsnYSddfQ=="
+  },
+  {
+    "name": "unquoted-keys",
+    "bodyBase64": "e3F1ZXJ5OiJSRVRVUk4gMSBBUyB4IixncmFwaHM6WyJhIl19"
+  },
+  {
+    "name": "unquoted-string",
+    "bodyBase64": "e3F1ZXJ5OlJFVFVSTiAxIEFTIHgsZ3JhcGhzOlthXX0="
+  },
+  {
+    "name": "equals-separators",
+    "bodyBase64": "e3F1ZXJ5PSJSRVRVUk4gMSBBUyB4IjtncmFwaHM9WyJhIl19"
+  },
+  {
+    "name": "arrow-separators",
+    "bodyBase64": "e3F1ZXJ5PT4iUkVUVVJOIDEgQVMgeCIsZ3JhcGhzPT5bImEiXX0="
+  },
+  {
+    "name": "trailing-object-comma",
+    "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLH0="
+  },
+  {
+    "name": "trailing-array-comma",
+    "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSIsXX0="
+  },
+  {
+    "name": "leading-array-comma",
+    "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlssImEiXX0="
+  },
+  {
+    "name": "array-semicolon",
+    "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSI7XX0="
+  },
+  {
+    "name": "multiple-top-level",
+    "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfSB7fQ=="
+  },
+  {
+    "name": "trailing-garbage",
+    "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfXh5eg=="
+  },
+  {
+    "name": "nonexecute-prefix",
+    "bodyBase64": "KV19Jwp7InF1ZXJ5IjoiUkVUVVJOIDEgQVMgeCIsImdyYXBocyI6WyJhIl19"
+  },
+  {
+    "name": "bom",
+    "bodyBase64": "77u/eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ=="
+  },
+  {
+    "name": "invalid-escape",
+    "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBccSIsImdyYXBocyI6WyJhIl19"
+  },
+  {
+    "name": "invalid-unicode-escape",
+    "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBcdTEyRzQiLCJncmFwaHMiOlsiYSJdfQ=="
+  },
+  {
+    "name": "short-unicode-escape",
+    "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBcdTEy"
+  },
+  {
+    "name": "raw-newline-string",
+    "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTgoxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ=="
+  },
+  {
+    "name": "escaped-newline-string",
+    "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTlwKMSBBUyB4IiwiZ3JhcGhzIjpbImEiXX0="
+  },
+  {
+    "name": "eof-object",
+    "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJd"
+  },
+  {
+    "name": "eof-key",
+    "bodyBase64": "eyJxdWVyeSI="
+  },
+  {
+    "name": "eof-colon",
+    "bodyBase64": "eyJxdWVyeSI6"
+  },
+  {
+    "name": "eof-string",
+    "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAx"
+  },
+  {
+    "name": "eof-array",
+    "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSI="
+  },
+  {
+    "name": "missing-colon",
+    "bodyBase64": "eyJxdWVyeSIgIlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ=="
+  },
+  {
+    "name": "missing-comma",
+    "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiICJncmFwaHMiOlsiYSJdfQ=="
+  },
+  {
+    "name": "duplicate-query",
+    "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAwIEFTIHgiLCJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ=="
+  },
+  {
+    "name": "uppercase-null",
+    "bodyBase64": "eyJxdWVyeSI6TlVMTCwiZ3JhcGhzIjpbImEiXX0="
+  },
+  {
+    "name": "timeout-leading-zero",
+    "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOjAxMDAwfQ=="
+  },
+  {
+    "name": "timeout-single-quotes",
+    "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCd0aW1lb3V0TXMnOicxMDAwJ30="
+  },
+  {
+    "name": "timeout-invalid-escape",
+    "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOiJccSJ9"
+  },
+  {
+    "name": "timeout-nan",
+    "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOk5hTn0="
+  },
+  {
+    "name": "timeout-plus-number",
+    "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOisxMDAwfQ=="
+  },
+  {
+    "name": "query-trailing-array",
+    "bodyBase64": "eyJxdWVyeSI6WyJSRVRVUk4gMSBBUyB4IixdLCJncmFwaHMiOlsiYSJdfQ=="
+  },
+  {
+    "name": "unpaired-surrogate-query",
+    "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBcJ1x1ZDgwMFwnIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ=="
+  },
+  {
+    "name": "invalid-utf8",
+    "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAn/ycgQVMgeCIsImdyYXBocyI6WyJhIl19"
+  },
+  {
+    "name": "extra-48",
+    "bodyBase64": ""
+  },
+  {
+    "name": "extra-49",
+    "bodyBase64": "IA=="
+  },
+  {
+    "name": "extra-50",
+    "bodyBase64": "Cg0J"
+  },
+  {
+    "name": "extra-51",
+    "bodyBase64": "Ly8gaGk="
+  },
+  {
+    "name": "extra-52",
+    "bodyBase64": "I2hp"
+  },
+  {
+    "name": "extra-53",
+    "bodyBase64": "LyoqLw=="
+  },
+  {
+    "name": "extra-54",
+    "bodyBase64": "KV19Jwo="
+  },
+  {
+    "name": "extra-55",
+    "bodyBase64": "bnVsbCB4"
+  },
+  {
+    "name": "extra-56",
+    "bodyBase64": "bnVsbHt9"
+  },
+  {
+    "name": "extra-57",
+    "bodyBase64": "dHJ1ZSBmYWxzZQ=="
+  },
+  {
+    "name": "extra-58",
+    "bodyBase64": "MSAy"
+  },
+  {
+    "name": "extra-59",
+    "bodyBase64": "MS8qdGFpbCov"
+  },
+  {
+    "name": "extra-60",
+    "bodyBase64": "e30vL3RhaWw="
+  },
+  {
+    "name": "extra-61",
+    "bodyBase64": "e30jdGFpbA=="
+  },
+  {
+    "name": "extra-62",
+    "bodyBase64": "e30gLyogdGFpbCAqLw=="
+  },
+  {
+    "name": "extra-63",
+    "bodyBase64": "e30KLyogdGFpbCAqLw=="
+  },
+  {
+    "name": "extra-64",
+    "bodyBase64": "77u/e30="
+  },
+  {
+    "name": "extra-65",
+    "bodyBase64": "77u/77u/e30="
+  },
+  {
+    "name": "extra-66",
+    "bodyBase64": "WzEsLDIsXQ=="
+  },
+  {
+    "name": "extra-67",
+    "bodyBase64": "Wztd"
+  },
+  {
+    "name": "extra-68",
+    "bodyBase64": "Wyxd"
+  },
+  {
+    "name": "extra-69",
+    "bodyBase64": "e2E6MTthOjIsYjozfQ=="
+  },
+  {
+    "name": "extra-70",
+    "bodyBase64": "e2E6MSx9"
+  },
+  {
+    "name": "extra-71",
+    "bodyBase64": "e2E6fQ=="
+  },
+  {
+    "name": "extra-72",
+    "bodyBase64": "e2E="
+  },
+  {
+    "name": "extra-73",
+    "bodyBase64": "e2E6"
+  },
+  {
+    "name": "extra-74",
+    "bodyBase64": "e2E6dHJ1ZSBiOjJ9"
+  },
+  {
+    "name": "extra-75",
+    "bodyBase64": "WzEgMl0="
+  },
+  {
+    "name": "extra-76",
+    "bodyBase64": "WzE="
+  },
+  {
+    "name": "extra-77",
+    "bodyBase64": "WzEs"
+  },
+  {
+    "name": "extra-78",
+    "bodyBase64": "e2E6WzEs"
+  },
+  {
+    "name": "extra-79",
+    "bodyBase64": "e2E6e2I6"
+  },
+  {
+    "name": "extra-80",
+    "bodyBase64": "e2E6e2I6MQ=="
+  },
+  {
+    "name": "extra-81",
+    "bodyBase64": "e2E6e2I6MSw="
+  },
+  {
+    "name": "extra-82",
+    "bodyBase64": "ImFceCI="
+  },
+  {
+    "name": "extra-83",
+    "bodyBase64": "ImFcdTEyM3gi"
+  },
+  {
+    "name": "extra-84",
+    "bodyBase64": "ImFcdTEyIg=="
+  },
+  {
+    "name": "extra-85",
+    "bodyBase64": "ImFcdSI="
+  },
+  {
+    "name": "extra-86",
+    "bodyBase64": "Ilwi"
+  },
+  {
+    "name": "extra-87",
+    "bodyBase64": "J2FcJ2In"
+  },
+  {
+    "name": "extra-88",
+    "bodyBase64": "ImEBYiI="
+  },
+  {
+    "name": "extra-89",
+    "bodyBase64": "ImEKQiI="
+  },
+  {
+    "name": "extra-90",
+    "bodyBase64": "ImFcDUIi"
+  },
+  {
+    "name": "extra-91",
+    "bodyBase64": "LTA="
+  },
+  {
+    "name": "extra-92",
+    "bodyBase64": "MDE="
+  },
+  {
+    "name": "extra-93",
+    "bodyBase64": "KzE="
+  },
+  {
+    "name": "extra-94",
+    "bodyBase64": "MS4="
+  },
+  {
+    "name": "extra-95",
+    "bodyBase64": "MWU="
+  },
+  {
+    "name": "extra-96",
+    "bodyBase64": "LS4x"
+  },
+  {
+    "name": "extra-97",
+    "bodyBase64": "MWUrMDI="
+  },
+  {
+    "name": "extra-98",
+    "bodyBase64": "VFJVRQ=="
+  },
+  {
+    "name": "extra-99",
+    "bodyBase64": "TmFO"
+  },
+  {
+    "name": "extra-100",
+    "bodyBase64": "SW5maW5pdHk="
+  },
+  {
+    "name": "extra-101",
+    "bodyBase64": "LUluZmluaXR5"
+  },
+  {
+    "name": "extra-102",
+    "bodyBase64": "W1RSVUUsRkFMU0UsTlVMTF0="
+  },
+  {
+    "name": "extra-103",
+    "bodyBase64": "e2EvYjoxfQ=="
+  },
+  {
+    "name": "extra-104",
+    "bodyBase64": "e2EjYjoxfQ=="
+  },
+  {
+    "name": "extra-105",
+    "bodyBase64": "e1xhOjF9"
+  },
+  {
+    "name": "extra-106",
+    "bodyBase64": "e2E9PjJ9"
+  },
+  {
+    "name": "extra-107",
+    "bodyBase64": "e2E9ID4yfQ=="
+  },
+  {
+    "name": "extra-108",
+    "bodyBase64": "WzE7Ml0="
+  },
+  {
+    "name": "extra-109",
+    "bodyBase64": "DA=="
+  },
+  {
+    "name": "extra-110",
+    "bodyBase64": "AA=="
+  },
+  {
+    "name": "extra-111",
+    "bodyBase64": "Lyo="
+  },
+  {
+    "name": "extra-112",
+    "bodyBase64": "Lyp4"
+  },
+  {
+    "name": "extra-113",
+    "bodyBase64": "Lyp4eA=="
+  },
+  {
+    "name": "extra-114",
+    "bodyBase64": "LyoKeHg="
+  },
+  {
+    "name": "extra-115",
+    "bodyBase64": "eyLwn5iAIjo="
+  },
+  {
+    "name": "extra-116",
+    "bodyBase64": "eyLwn5iAIjoxIHh9"
+  },
+  {
+    "name": "extra-117",
+    "bodyBase64": "eyJhIjoi8J+YgFxxIn0="
+  },
+  {
+    "name": "extra-118",
+    "bodyBase64": "eyJhIjoieApccSJ9"
+  },
+  {
+    "name": "invalid-utf8-119",
+    "bodyBase64": "Iu2ggCI="
+  },
+  {
+    "name": "invalid-utf8-120",
+    "bodyBase64": "Iu2ggO2wgCI="
+  },
+  {
+    "name": "invalid-utf8-121",
+    "bodyBase64": "IuKCIg=="
+  },
+  {
+    "name": "invalid-utf8-122",
+    "bodyBase64": "IuKCWCI="
+  },
+  {
+    "name": "invalid-utf8-123",
+    "bodyBase64": "IuJYIg=="
+  },
+  {
+    "name": "invalid-utf8-124",
+    "bodyBase64": "IuCAgCI="
+  },
+  {
+    "name": "invalid-utf8-125",
+    "bodyBase64": "IsCvIg=="
+  },
+  {
+    "name": "invalid-utf8-126",
+    "bodyBase64": "IvCQgCI="
+  },
+  {
+    "name": "invalid-utf8-127",
+    "bodyBase64": "IvCAgIAi"
+  },
+  {
+    "name": "invalid-utf8-128",
+    "bodyBase64": "IvSQgIAi"
+  },
+  {
+    "name": "invalid-utf8-129",
+    "bodyBase64": "IoCBIg=="
+  },
+  {
+    "name": "invalid-utf8-130",
+    "bodyBase64": "Iv/+Ig=="
+  },
+  {
+    "name": "invalid-utf8-131",
+    "bodyBase64": "Iu2gWCI="
+  },
+  {
+    "name": "invalid-utf8-132",
+    "bodyBase64": "IvCQWCI="
+  },
+  {
+    "name": "invalid-utf8-133",
+    "bodyBase64": "IvCQgFgi"
+  }
+]

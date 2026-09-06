@@ -1,0 +1,30 @@
+root-0 RETURN 1e999 AS x 500 {'title': 'Server Error', 'status': 500, 'type': 'https://javalin.io/documentation#internalservererrorresponse', 'details': {}}
+root-1 RETURN 0.0/0.0 AS x 400 {'error': 'Division by zero', 'code': 'cypher_query_failed'}
+root-2 RETURN sqrt(-1) AS x 500 {'title': 'Server Error', 'status': 500, 'type': 'https://javalin.io/documentation#internalservererrorresponse', 'details': {}}
+root-3 RETURN log(0) AS x 500 {'title': 'Server Error', 'status': 500, 'type': 'https://javalin.io/documentation#internalservererrorresponse', 'details': {}}
+root-4 RETURN toFloat('NaN') AS x 500 {'title': 'Server Error', 'status': 500, 'type': 'https://javalin.io/documentation#internalservererrorresponse', 'details': {}}
+root-5 RETURN toFloat('Infinity') AS x 500 {'title': 'Server Error', 'status': 500, 'type': 'https://javalin.io/documentation#internalservererrorresponse', 'details': {}}
+root-6 RETURN -1e999 AS x 500 {'title': 'Server Error', 'status': 500, 'type': 'https://javalin.io/documentation#internalservererrorresponse', 'details': {}}
+root-7 RETURN [1, sqrt(-1)] AS x 500 {'title': 'Server Error', 'status': 500, 'type': 'https://javalin.io/documentation#internalservererrorresponse', 'details': {}}
+root-8 RETURN {n:log(0)} AS x 500 {'title': 'Server Error', 'status': 500, 'type': 'https://javalin.io/documentation#internalservererrorresponse', 'details': {}}
+root-9 RETURN sqrt(4) AS x 200 {'columns': ['x'], 'rows': [{'x': 2.0, '$metadata': {'graphIds': []}}], 'rowCount': 1, 'graphCount': 1}
+scoped-0 RETURN 1e999 AS x 500 {'title': 'Server Error', 'status': 500, 'type': 'https://javalin.io/documentation#internalservererrorresponse', 'details': {}}
+scoped-1 RETURN 0.0/0.0 AS x 400 {'error': 'Division by zero', 'code': 'cypher_query_failed'}
+scoped-2 RETURN sqrt(-1) AS x 500 {'title': 'Server Error', 'status': 500, 'type': 'https://javalin.io/documentation#internalservererrorresponse', 'details': {}}
+scoped-3 RETURN log(0) AS x 500 {'title': 'Server Error', 'status': 500, 'type': 'https://javalin.io/documentation#internalservererrorresponse', 'details': {}}
+scoped-4 RETURN toFloat('NaN') AS x 500 {'title': 'Server Error', 'status': 500, 'type': 'https://javalin.io/documentation#internalservererrorresponse', 'details': {}}
+scoped-5 RETURN toFloat('Infinity') AS x 500 {'title': 'Server Error', 'status': 500, 'type': 'https://javalin.io/documentation#internalservererrorresponse', 'details': {}}
+scoped-6 RETURN -1e999 AS x 500 {'title': 'Server Error', 'status': 500, 'type': 'https://javalin.io/documentation#internalservererrorresponse', 'details': {}}
+scoped-7 RETURN [1, sqrt(-1)] AS x 500 {'title': 'Server Error', 'status': 500, 'type': 'https://javalin.io/documentation#internalservererrorresponse', 'details': {}}
+scoped-8 RETURN {n:log(0)} AS x 500 {'title': 'Server Error', 'status': 500, 'type': 'https://javalin.io/documentation#internalservererrorresponse', 'details': {}}
+scoped-9 RETURN sqrt(4) AS x 200 {'columns': ['x'], 'rows': [{'x': 2.0}], 'rowCount': 1}
+selected-0 RETURN 1e999 AS x 500 {'title': 'Server Error', 'status': 500, 'type': 'https://javalin.io/documentation#internalservererrorresponse', 'details': {}}
+selected-1 RETURN 0.0/0.0 AS x 400 {'error': 'Division by zero', 'code': 'cypher_query_failed'}
+selected-2 RETURN sqrt(-1) AS x 500 {'title': 'Server Error', 'status': 500, 'type': 'https://javalin.io/documentation#internalservererrorresponse', 'details': {}}
+selected-3 RETURN log(0) AS x 500 {'title': 'Server Error', 'status': 500, 'type': 'https://javalin.io/documentation#internalservererrorresponse', 'details': {}}
+selected-4 RETURN toFloat('NaN') AS x 500 {'title': 'Server Error', 'status': 500, 'type': 'https://javalin.io/documentation#internalservererrorresponse', 'details': {}}
+selected-5 RETURN toFloat('Infinity') AS x 500 {'title': 'Server Error', 'status': 500, 'type': 'https://javalin.io/documentation#internalservererrorresponse', 'details': {}}
+selected-6 RETURN -1e999 AS x 500 {'title': 'Server Error', 'status': 500, 'type': 'https://javalin.io/documentation#internalservererrorresponse', 'details': {}}
+selected-7 RETURN [1, sqrt(-1)] AS x 500 {'title': 'Server Error', 'status': 500, 'type': 'https://javalin.io/documentation#internalservererrorresponse', 'details': {}}
+selected-8 RETURN {n:log(0)} AS x 500 {'title': 'Server Error', 'status': 500, 'type': 'https://javalin.io/documentation#internalservererrorresponse', 'details': {}}
+selected-9 RETURN sqrt(4) AS x 200 {'mode': 'cross-graph', 'graphs': ['a'], 'graphCount': 1, 'columns': ['x'], 'rows': [{'x': 2.0, '$metadata': {'graphIds': []}}], 'rowCount': 1, 'limit': 1000}

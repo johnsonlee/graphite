@@ -1,0 +1,200 @@
+{
+  "recordedAtUTC": "2026-09-06T20:02:18.400910+00:00",
+  "purpose": "Native Gson request parser and response serialization correctness; not performance or complete equivalence proof",
+  "baselineMainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "baselineJavaVersion": "17.0.18",
+  "baselineGsonVersion": "2.11.0",
+  "nativeWorkingTreeHEAD": "c6145a00a739acedbdee0d9886fb65548056453d",
+  "nativeUncommittedChanges": true,
+  "goVersion": "go version go1.22.0 darwin/arm64",
+  "checks": [
+    {
+      "command": "go test -race ./internal/server -count=1",
+      "cwd": "graphite-server",
+      "exitCode": 0
+    },
+    {
+      "command": "go vet ./internal/server",
+      "cwd": "graphite-server",
+      "exitCode": 0
+    }
+  ],
+  "oracleResults": {
+    "existingHTTPValidJSON": {
+      "passed": 213,
+      "total": 213
+    },
+    "rawBodyHTTP": {
+      "passed": 288,
+      "total": 288
+    },
+    "nonfiniteHTTP": {
+      "passed": 30,
+      "total": 30
+    },
+    "directGsonParser": {
+      "passed": 134,
+      "total": 134
+    }
+  },
+  "comparison": "HTTP status, Content-Type, full parsed JSON including number spelling; direct Gson typed trees, UTF16 strings, member order and exact error messages/positions",
+  "knownValidationBoundaries": [
+    "Finite fixtures do not establish arbitrary Gson equivalence.",
+    "The 288 raw-body requests all include a usable URL fallback query; malformed-body phase ordering without it is not represented by that matrix.",
+    "Extreme nesting, arbitrary token/error combinations and long buffered-boundary inputs require further differential coverage.",
+    "Final wire mapping of distinct surrogate-containing map keys that collapse to the same UTF8 key is not covered."
+  ],
+  "sourceAndFixtureManifest": [
+    {
+      "path": "graphite-server/internal/server/cross.go",
+      "bytes": 7327,
+      "sha256": "4669fd0931109baf05f04cfa3151bfb8300090c328b4d929f9a0c5ef499e20f2"
+    },
+    {
+      "path": "graphite-server/internal/server/cypher.go",
+      "bytes": 2908,
+      "sha256": "c684bc143a186229977822b43087c277b2ae5215222b7c38b85a93541064caad"
+    },
+    {
+      "path": "graphite-server/internal/server/http.go",
+      "bytes": 10133,
+      "sha256": "a9aae766e1853ea0a49da1c0b69736fff3ece98c536eac8c2aa78aec4e8af4f9"
+    },
+    {
+      "path": "graphite-server/internal/server/json_input.go",
+      "bytes": 2183,
+      "sha256": "19f235da658ca19bf71d4c4fd304106face6feff056ebe3a1ee76d8dad268692"
+    },
+    {
+      "path": "graphite-server/internal/server/gson_json.go",
+      "bytes": 12846,
+      "sha256": "c5209928475228b87f7f4e5b97ebbd8bb3463a73eb608693d1758b3d195e2c19"
+    },
+    {
+      "path": "graphite-server/internal/server/gson_json_wire.go",
+      "bytes": 1600,
+      "sha256": "c9ae6d988ee53d031d9c1d637298ec6d686ee7fb5342550e05207765b9d5a06a"
+    },
+    {
+      "path": "graphite-server/internal/server/gson_json_test.go",
+      "bytes": 4659,
+      "sha256": "91cf55c3e903b04a5a67c43d876dcd2ff0402ecc5484d0628d0f9bf98157b01b"
+    },
+    {
+      "path": "graphite-server/internal/server/testdata/gson-json-oracle.json",
+      "bytes": 59599,
+      "sha256": "4a8c169c2f339139b347a1b9470d290507dc3e4c08c4fc1706930029e21f2299"
+    },
+    {
+      "path": "graphite-server/internal/server/testdata/gson-json-cases.json",
+      "bytes": 10743,
+      "sha256": "b4788025de58fed8b406864edc0575379365f8b6b5fc07e1841af5dc9ee933b2"
+    },
+    {
+      "path": "graphite-server/internal/server/testdata/GsonOracle.java",
+      "bytes": 1889,
+      "sha256": "d73532e13a1a8785d7aeb4543be568d769ae16f071510ce69fb24552a371fd45"
+    },
+    {
+      "path": "graphite-server/internal/server/testdata/http-malformed-json-main.json",
+      "bytes": 156664,
+      "sha256": "bad321a338c5fb3107014e5be19cfb4160490838a667561ec4f8ccf9a436e684"
+    },
+    {
+      "path": "graphite-server/internal/server/testdata/http-nonfinite-main.json",
+      "bytes": 14966,
+      "sha256": "1ed7bd0b6701e8a5521a4bfd29beffc36b0ffa1e51cea44d0081a189b3a59420"
+    },
+    {
+      "path": "graphite-server/internal/cypher/java_input.go",
+      "bytes": 2294,
+      "sha256": "bcbaa46890568b9c5c4903e6d288166a07cf9b701f98420cb2a0b8a7c12675b6"
+    },
+    {
+      "path": "graphite-server/internal/query/java_string.go",
+      "bytes": 6725,
+      "sha256": "e732df314194ec38e9d6ae7ff7a51602c076f2672e3f2d5ccc3c31c5d0464e66"
+    }
+  ],
+  "capturedEvidenceManifest": [
+    {
+      "path": "docs/go-server-baseline/http-malformed-json-main/capture.log",
+      "bytes": 8804,
+      "sha256": "39137f5837ccb5342471e50424f2b3aa6eed93c7dce0feb3b159a49e3c83b5ce"
+    },
+    {
+      "path": "docs/go-server-baseline/http-malformed-json-main/capture.py",
+      "bytes": 6257,
+      "sha256": "b35a501c66173fb6976d85a8c0eb211521baf2d2890670cd2ceb5b9ad39550cd"
+    },
+    {
+      "path": "docs/go-server-baseline/http-malformed-json-main/cases.json",
+      "bytes": 100658,
+      "sha256": "bca8f54af6b9e009371e6e4431afe0ef354b59a617577c59f8689117a148cd15"
+    },
+    {
+      "path": "docs/go-server-baseline/http-malformed-json-main/main-command.json",
+      "bytes": 434,
+      "sha256": "07197872cf688162ac6b9ca28e84b178589b45398abf7658c311fc24dcb37b50"
+    },
+    {
+      "path": "docs/go-server-baseline/http-malformed-json-main/main-server.log",
+      "bytes": 360,
+      "sha256": "a04a42a2eaf01fb825d900c497e91ad7e02ffb62c057785a3ae88d3e04b3faac"
+    },
+    {
+      "path": "docs/go-server-baseline/http-malformed-json-main/metadata.json",
+      "bytes": 2343,
+      "sha256": "d740327a4228f2018a3756634eec2a67a4d9ffb1556cfcf036ee8b85bd64d3f2"
+    },
+    {
+      "path": "docs/go-server-baseline/http-malformed-json-main/observations.json",
+      "bytes": 375203,
+      "sha256": "4f9480958e8a0fe1dc1351a6d267cfed28d43e762449874a56dd0c937a99880f"
+    },
+    {
+      "path": "docs/go-server-baseline/http-malformed-json-main/summary.json",
+      "bytes": 9725,
+      "sha256": "855443e79979b96348c13665149e95e2a7e776834b6647a5cc0bf3229c1f0c18"
+    },
+    {
+      "path": "docs/go-server-baseline/http-nonfinite-main/capture.log",
+      "bytes": 4639,
+      "sha256": "dfcdd4b2c8bef87693a0453036aebcd148fdfbb09458facb13a1ea9aa33db175"
+    },
+    {
+      "path": "docs/go-server-baseline/http-nonfinite-main/capture.py",
+      "bytes": 2885,
+      "sha256": "7cb53c6ed16374643d7fc27368e0f1ea668faefcbaa191c4aebaed9cd42f7698"
+    },
+    {
+      "path": "docs/go-server-baseline/http-nonfinite-main/cases.json",
+      "bytes": 6255,
+      "sha256": "b37d32bbe92b6fa162addb4e7a8fa4285bff6022634e1b395dfbf61fafd58798"
+    },
+    {
+      "path": "docs/go-server-baseline/http-nonfinite-main/main-command.json",
+      "bytes": 436,
+      "sha256": "d5aba8000273fc015ff29e0cc2fb9c04585edf6938b3d5267694c04583de5a62"
+    },
+    {
+      "path": "docs/go-server-baseline/http-nonfinite-main/main-server.log",
+      "bytes": 362,
+      "sha256": "4ec0a85c6aa91920368833311941b834cd6e3024064c03a4c4608e49c2a411e1"
+    },
+    {
+      "path": "docs/go-server-baseline/http-nonfinite-main/metadata.json",
+      "bytes": 281,
+      "sha256": "3754678c8b6f19a215543dbc13883e05b26080cb73758bf7ea5385b4ea7b326b"
+    },
+    {
+      "path": "docs/go-server-baseline/http-nonfinite-main/observations.json",
+      "bytes": 32722,
+      "sha256": "ca49ce1e16ae8fc270d3c38476d005af6e79333830ef67a32067f0291eff90c1"
+    }
+  ],
+  "dedicatedCorrectnessServersStopped": true,
+  "performanceRuns": 0,
+  "previousNative64EvidenceModified": false,
+  "originalRegexVerificationModified": false
+}

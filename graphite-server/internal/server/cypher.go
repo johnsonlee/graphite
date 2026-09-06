@@ -33,11 +33,7 @@ func (s *Server) cypher(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if bodyErr != nil {
-		if json.Valid(body) {
-			writeServerError(w)
-		} else {
-			writeQueryError(w, bodyErr)
-		}
+		writeServerError(w)
 		return
 	}
 	timeout, err := clientTimeout(r, object)
@@ -76,7 +72,7 @@ func (s *Server) cypher(w http.ResponseWriter, r *http.Request) {
 		if err := ctx.Err(); err != nil {
 			return nil, err
 		}
-		return json.Marshal(omitNullFields(response))
+		return encodeCypherResponse(response)
 	})
 	if err != nil {
 		writeQueryError(w, err)
@@ -111,6 +107,11 @@ func clientTimeout(r *http.Request, object map[string]json.RawMessage) (*time.Du
 }
 
 func writeQueryError(w http.ResponseWriter, err error) {
+	var serialization *gsonSerializationError
+	if errors.As(err, &serialization) {
+		writeServerError(w)
+		return
+	}
 	var qe *QueryError
 	if !errors.As(err, &qe) {
 		qe = &QueryError{Message: err.Error(), Code: "cypher_query_failed", Status: 400}

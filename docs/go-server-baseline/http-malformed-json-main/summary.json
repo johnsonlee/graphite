@@ -1,0 +1,433 @@
+{
+  "purpose": "Main raw HTTP JSON correctness oracle; native replay via TestHTTPMalformedJSONAgainstMain",
+  "cases": 288,
+  "perSurfaceStatusCounts": {
+    "root-GET": {
+      "200": 26,
+      "500": 21,
+      "400": 1
+    },
+    "root-POST": {
+      "200": 26,
+      "500": 21,
+      "400": 1
+    },
+    "scoped-GET": {
+      "200": 26,
+      "500": 21,
+      "400": 1
+    },
+    "scoped-POST": {
+      "200": 26,
+      "500": 21,
+      "400": 1
+    },
+    "selected-GET": {
+      "200": 20,
+      "400": 28
+    },
+    "selected-POST": {
+      "200": 20,
+      "400": 28
+    }
+  },
+  "matrix": {
+    "valid": {
+      "root-GET": 200,
+      "root-POST": 200,
+      "scoped-GET": 200,
+      "scoped-POST": 200,
+      "selected-GET": 200,
+      "selected-POST": 200
+    },
+    "empty": {
+      "root-GET": 200,
+      "root-POST": 200,
+      "scoped-GET": 200,
+      "scoped-POST": 200,
+      "selected-GET": 200,
+      "selected-POST": 200
+    },
+    "whitespace": {
+      "root-GET": 200,
+      "root-POST": 200,
+      "scoped-GET": 200,
+      "scoped-POST": 200,
+      "selected-GET": 200,
+      "selected-POST": 200
+    },
+    "nul": {
+      "root-GET": 500,
+      "root-POST": 500,
+      "scoped-GET": 500,
+      "scoped-POST": 500,
+      "selected-GET": 400,
+      "selected-POST": 400
+    },
+    "empty-object": {
+      "root-GET": 200,
+      "root-POST": 200,
+      "scoped-GET": 200,
+      "scoped-POST": 200,
+      "selected-GET": 400,
+      "selected-POST": 400
+    },
+    "null": {
+      "root-GET": 500,
+      "root-POST": 500,
+      "scoped-GET": 500,
+      "scoped-POST": 500,
+      "selected-GET": 400,
+      "selected-POST": 400
+    },
+    "array": {
+      "root-GET": 500,
+      "root-POST": 500,
+      "scoped-GET": 500,
+      "scoped-POST": 500,
+      "selected-GET": 400,
+      "selected-POST": 400
+    },
+    "top-string": {
+      "root-GET": 500,
+      "root-POST": 500,
+      "scoped-GET": 500,
+      "scoped-POST": 500,
+      "selected-GET": 400,
+      "selected-POST": 400
+    },
+    "line-comment": {
+      "root-GET": 200,
+      "root-POST": 200,
+      "scoped-GET": 200,
+      "scoped-POST": 200,
+      "selected-GET": 200,
+      "selected-POST": 200
+    },
+    "block-comment": {
+      "root-GET": 500,
+      "root-POST": 500,
+      "scoped-GET": 500,
+      "scoped-POST": 500,
+      "selected-GET": 400,
+      "selected-POST": 400
+    },
+    "hash-comment": {
+      "root-GET": 200,
+      "root-POST": 200,
+      "scoped-GET": 200,
+      "scoped-POST": 200,
+      "selected-GET": 200,
+      "selected-POST": 200
+    },
+    "comment-inside": {
+      "root-GET": 200,
+      "root-POST": 200,
+      "scoped-GET": 200,
+      "scoped-POST": 200,
+      "selected-GET": 200,
+      "selected-POST": 200
+    },
+    "comment-unclosed": {
+      "root-GET": 500,
+      "root-POST": 500,
+      "scoped-GET": 500,
+      "scoped-POST": 500,
+      "selected-GET": 400,
+      "selected-POST": 400
+    },
+    "single-quotes": {
+      "root-GET": 200,
+      "root-POST": 200,
+      "scoped-GET": 200,
+      "scoped-POST": 200,
+      "selected-GET": 200,
+      "selected-POST": 200
+    },
+    "unquoted-keys": {
+      "root-GET": 200,
+      "root-POST": 200,
+      "scoped-GET": 200,
+      "scoped-POST": 200,
+      "selected-GET": 200,
+      "selected-POST": 200
+    },
+    "unquoted-string": {
+      "root-GET": 500,
+      "root-POST": 500,
+      "scoped-GET": 500,
+      "scoped-POST": 500,
+      "selected-GET": 400,
+      "selected-POST": 400
+    },
+    "equals-separators": {
+      "root-GET": 200,
+      "root-POST": 200,
+      "scoped-GET": 200,
+      "scoped-POST": 200,
+      "selected-GET": 200,
+      "selected-POST": 200
+    },
+    "arrow-separators": {
+      "root-GET": 200,
+      "root-POST": 200,
+      "scoped-GET": 200,
+      "scoped-POST": 200,
+      "selected-GET": 200,
+      "selected-POST": 200
+    },
+    "trailing-object-comma": {
+      "root-GET": 500,
+      "root-POST": 500,
+      "scoped-GET": 500,
+      "scoped-POST": 500,
+      "selected-GET": 400,
+      "selected-POST": 400
+    },
+    "trailing-array-comma": {
+      "root-GET": 200,
+      "root-POST": 200,
+      "scoped-GET": 200,
+      "scoped-POST": 200,
+      "selected-GET": 400,
+      "selected-POST": 400
+    },
+    "leading-array-comma": {
+      "root-GET": 200,
+      "root-POST": 200,
+      "scoped-GET": 200,
+      "scoped-POST": 200,
+      "selected-GET": 400,
+      "selected-POST": 400
+    },
+    "array-semicolon": {
+      "root-GET": 200,
+      "root-POST": 200,
+      "scoped-GET": 200,
+      "scoped-POST": 200,
+      "selected-GET": 400,
+      "selected-POST": 400
+    },
+    "multiple-top-level": {
+      "root-GET": 500,
+      "root-POST": 500,
+      "scoped-GET": 500,
+      "scoped-POST": 500,
+      "selected-GET": 400,
+      "selected-POST": 400
+    },
+    "trailing-garbage": {
+      "root-GET": 500,
+      "root-POST": 500,
+      "scoped-GET": 500,
+      "scoped-POST": 500,
+      "selected-GET": 400,
+      "selected-POST": 400
+    },
+    "nonexecute-prefix": {
+      "root-GET": 200,
+      "root-POST": 200,
+      "scoped-GET": 200,
+      "scoped-POST": 200,
+      "selected-GET": 200,
+      "selected-POST": 200
+    },
+    "bom": {
+      "root-GET": 200,
+      "root-POST": 200,
+      "scoped-GET": 200,
+      "scoped-POST": 200,
+      "selected-GET": 200,
+      "selected-POST": 200
+    },
+    "invalid-escape": {
+      "root-GET": 500,
+      "root-POST": 500,
+      "scoped-GET": 500,
+      "scoped-POST": 500,
+      "selected-GET": 400,
+      "selected-POST": 400
+    },
+    "invalid-unicode-escape": {
+      "root-GET": 500,
+      "root-POST": 500,
+      "scoped-GET": 500,
+      "scoped-POST": 500,
+      "selected-GET": 400,
+      "selected-POST": 400
+    },
+    "short-unicode-escape": {
+      "root-GET": 500,
+      "root-POST": 500,
+      "scoped-GET": 500,
+      "scoped-POST": 500,
+      "selected-GET": 400,
+      "selected-POST": 400
+    },
+    "raw-newline-string": {
+      "root-GET": 200,
+      "root-POST": 200,
+      "scoped-GET": 200,
+      "scoped-POST": 200,
+      "selected-GET": 200,
+      "selected-POST": 200
+    },
+    "escaped-newline-string": {
+      "root-GET": 200,
+      "root-POST": 200,
+      "scoped-GET": 200,
+      "scoped-POST": 200,
+      "selected-GET": 200,
+      "selected-POST": 200
+    },
+    "eof-object": {
+      "root-GET": 500,
+      "root-POST": 500,
+      "scoped-GET": 500,
+      "scoped-POST": 500,
+      "selected-GET": 400,
+      "selected-POST": 400
+    },
+    "eof-key": {
+      "root-GET": 500,
+      "root-POST": 500,
+      "scoped-GET": 500,
+      "scoped-POST": 500,
+      "selected-GET": 400,
+      "selected-POST": 400
+    },
+    "eof-colon": {
+      "root-GET": 500,
+      "root-POST": 500,
+      "scoped-GET": 500,
+      "scoped-POST": 500,
+      "selected-GET": 400,
+      "selected-POST": 400
+    },
+    "eof-string": {
+      "root-GET": 500,
+      "root-POST": 500,
+      "scoped-GET": 500,
+      "scoped-POST": 500,
+      "selected-GET": 400,
+      "selected-POST": 400
+    },
+    "eof-array": {
+      "root-GET": 500,
+      "root-POST": 500,
+      "scoped-GET": 500,
+      "scoped-POST": 500,
+      "selected-GET": 400,
+      "selected-POST": 400
+    },
+    "missing-colon": {
+      "root-GET": 500,
+      "root-POST": 500,
+      "scoped-GET": 500,
+      "scoped-POST": 500,
+      "selected-GET": 400,
+      "selected-POST": 400
+    },
+    "missing-comma": {
+      "root-GET": 500,
+      "root-POST": 500,
+      "scoped-GET": 500,
+      "scoped-POST": 500,
+      "selected-GET": 400,
+      "selected-POST": 400
+    },
+    "duplicate-query": {
+      "root-GET": 200,
+      "root-POST": 200,
+      "scoped-GET": 200,
+      "scoped-POST": 200,
+      "selected-GET": 200,
+      "selected-POST": 200
+    },
+    "uppercase-null": {
+      "root-GET": 200,
+      "root-POST": 200,
+      "scoped-GET": 200,
+      "scoped-POST": 200,
+      "selected-GET": 400,
+      "selected-POST": 400
+    },
+    "timeout-leading-zero": {
+      "root-GET": 200,
+      "root-POST": 200,
+      "scoped-GET": 200,
+      "scoped-POST": 200,
+      "selected-GET": 200,
+      "selected-POST": 200
+    },
+    "timeout-single-quotes": {
+      "root-GET": 200,
+      "root-POST": 200,
+      "scoped-GET": 200,
+      "scoped-POST": 200,
+      "selected-GET": 200,
+      "selected-POST": 200
+    },
+    "timeout-invalid-escape": {
+      "root-GET": 500,
+      "root-POST": 500,
+      "scoped-GET": 500,
+      "scoped-POST": 500,
+      "selected-GET": 400,
+      "selected-POST": 400
+    },
+    "timeout-nan": {
+      "root-GET": 400,
+      "root-POST": 400,
+      "scoped-GET": 400,
+      "scoped-POST": 400,
+      "selected-GET": 400,
+      "selected-POST": 400
+    },
+    "timeout-plus-number": {
+      "root-GET": 200,
+      "root-POST": 200,
+      "scoped-GET": 200,
+      "scoped-POST": 200,
+      "selected-GET": 200,
+      "selected-POST": 200
+    },
+    "query-trailing-array": {
+      "root-GET": 200,
+      "root-POST": 200,
+      "scoped-GET": 200,
+      "scoped-POST": 200,
+      "selected-GET": 400,
+      "selected-POST": 400
+    },
+    "unpaired-surrogate-query": {
+      "root-GET": 200,
+      "root-POST": 200,
+      "scoped-GET": 200,
+      "scoped-POST": 200,
+      "selected-GET": 200,
+      "selected-POST": 200
+    },
+    "invalid-utf8": {
+      "root-GET": 200,
+      "root-POST": 200,
+      "scoped-GET": 200,
+      "scoped-POST": 200,
+      "selected-GET": 200,
+      "selected-POST": 200
+    }
+  },
+  "nativeReplay": {
+    "passed": 288,
+    "failed": 0,
+    "compared": "status,Content-Type,complete JSON body using exact numeric lexemes"
+  },
+  "legacyValidJSONReplay": {
+    "passed": 213,
+    "failed": 0
+  },
+  "directGsonOracleCases": 134,
+  "directGsonOraclePassed": true,
+  "nonfiniteHTTPCases": 30,
+  "nonfiniteHTTPPassed": true
+}

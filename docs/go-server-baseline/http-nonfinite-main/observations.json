@@ -1,0 +1,1164 @@
+[
+  {
+    "case": {
+      "name": "root-0",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "RETURN 1e999 AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 500,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 19:53:39 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "145"
+        ]
+      ],
+      "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ==",
+      "bodyUTF8": "{\n    \"title\": \"Server Error\",\n    \"status\": 500,\n    \"type\": \"https://javalin.io/documentation#internalservererrorresponse\",\n    \"details\": {}\n}",
+      "json": {
+        "title": "Server Error",
+        "status": 500,
+        "type": "https://javalin.io/documentation#internalservererrorresponse",
+        "details": {}
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "root-1",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "RETURN 0.0/0.0 AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 400,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 19:53:39 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "66"
+        ]
+      ],
+      "bodyBase64": "ewogICJlcnJvciI6ICJEaXZpc2lvbiBieSB6ZXJvIiwKICAiY29kZSI6ICJjeXBoZXJfcXVlcnlfZmFpbGVkIgp9",
+      "bodyUTF8": "{\n  \"error\": \"Division by zero\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Division by zero",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "root-2",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "RETURN sqrt(-1) AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 500,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 19:53:39 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "145"
+        ]
+      ],
+      "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ==",
+      "bodyUTF8": "{\n    \"title\": \"Server Error\",\n    \"status\": 500,\n    \"type\": \"https://javalin.io/documentation#internalservererrorresponse\",\n    \"details\": {}\n}",
+      "json": {
+        "title": "Server Error",
+        "status": 500,
+        "type": "https://javalin.io/documentation#internalservererrorresponse",
+        "details": {}
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "root-3",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "RETURN log(0) AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 500,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 19:53:39 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "145"
+        ]
+      ],
+      "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ==",
+      "bodyUTF8": "{\n    \"title\": \"Server Error\",\n    \"status\": 500,\n    \"type\": \"https://javalin.io/documentation#internalservererrorresponse\",\n    \"details\": {}\n}",
+      "json": {
+        "title": "Server Error",
+        "status": 500,
+        "type": "https://javalin.io/documentation#internalservererrorresponse",
+        "details": {}
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "root-4",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "RETURN toFloat('NaN') AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 500,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 19:53:39 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "145"
+        ]
+      ],
+      "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ==",
+      "bodyUTF8": "{\n    \"title\": \"Server Error\",\n    \"status\": 500,\n    \"type\": \"https://javalin.io/documentation#internalservererrorresponse\",\n    \"details\": {}\n}",
+      "json": {
+        "title": "Server Error",
+        "status": 500,
+        "type": "https://javalin.io/documentation#internalservererrorresponse",
+        "details": {}
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "root-5",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "RETURN toFloat('Infinity') AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 500,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 19:53:39 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "145"
+        ]
+      ],
+      "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ==",
+      "bodyUTF8": "{\n    \"title\": \"Server Error\",\n    \"status\": 500,\n    \"type\": \"https://javalin.io/documentation#internalservererrorresponse\",\n    \"details\": {}\n}",
+      "json": {
+        "title": "Server Error",
+        "status": 500,
+        "type": "https://javalin.io/documentation#internalservererrorresponse",
+        "details": {}
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "root-6",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "RETURN -1e999 AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 500,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 19:53:39 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "145"
+        ]
+      ],
+      "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ==",
+      "bodyUTF8": "{\n    \"title\": \"Server Error\",\n    \"status\": 500,\n    \"type\": \"https://javalin.io/documentation#internalservererrorresponse\",\n    \"details\": {}\n}",
+      "json": {
+        "title": "Server Error",
+        "status": 500,
+        "type": "https://javalin.io/documentation#internalservererrorresponse",
+        "details": {}
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "root-7",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "RETURN [1, sqrt(-1)] AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 500,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 19:53:39 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "145"
+        ]
+      ],
+      "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ==",
+      "bodyUTF8": "{\n    \"title\": \"Server Error\",\n    \"status\": 500,\n    \"type\": \"https://javalin.io/documentation#internalservererrorresponse\",\n    \"details\": {}\n}",
+      "json": {
+        "title": "Server Error",
+        "status": 500,
+        "type": "https://javalin.io/documentation#internalservererrorresponse",
+        "details": {}
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "root-8",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "RETURN {n:log(0)} AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 500,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 19:53:39 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "145"
+        ]
+      ],
+      "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ==",
+      "bodyUTF8": "{\n    \"title\": \"Server Error\",\n    \"status\": 500,\n    \"type\": \"https://javalin.io/documentation#internalservererrorresponse\",\n    \"details\": {}\n}",
+      "json": {
+        "title": "Server Error",
+        "status": 500,
+        "type": "https://javalin.io/documentation#internalservererrorresponse",
+        "details": {}
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "root-9",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "RETURN sqrt(4) AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 19:53:39 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "163"
+        ]
+      ],
+      "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAyLjAsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogW10KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAiZ3JhcGhDb3VudCI6IDEKfQ==",
+      "bodyUTF8": "{\n  \"columns\": [\n    \"x\"\n  ],\n  \"rows\": [\n    {\n      \"x\": 2.0,\n      \"$metadata\": {\n        \"graphIds\": []\n      }\n    }\n  ],\n  \"rowCount\": 1,\n  \"graphCount\": 1\n}",
+      "json": {
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": 2.0,
+            "$metadata": {
+              "graphIds": []
+            }
+          }
+        ],
+        "rowCount": 1,
+        "graphCount": 1
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "scoped-0",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher",
+      "body": {
+        "query": "RETURN 1e999 AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 500,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 19:53:39 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "145"
+        ]
+      ],
+      "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ==",
+      "bodyUTF8": "{\n    \"title\": \"Server Error\",\n    \"status\": 500,\n    \"type\": \"https://javalin.io/documentation#internalservererrorresponse\",\n    \"details\": {}\n}",
+      "json": {
+        "title": "Server Error",
+        "status": 500,
+        "type": "https://javalin.io/documentation#internalservererrorresponse",
+        "details": {}
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "scoped-1",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher",
+      "body": {
+        "query": "RETURN 0.0/0.0 AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 400,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 19:53:39 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "66"
+        ]
+      ],
+      "bodyBase64": "ewogICJlcnJvciI6ICJEaXZpc2lvbiBieSB6ZXJvIiwKICAiY29kZSI6ICJjeXBoZXJfcXVlcnlfZmFpbGVkIgp9",
+      "bodyUTF8": "{\n  \"error\": \"Division by zero\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Division by zero",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "scoped-2",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher",
+      "body": {
+        "query": "RETURN sqrt(-1) AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 500,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 19:53:39 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "145"
+        ]
+      ],
+      "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ==",
+      "bodyUTF8": "{\n    \"title\": \"Server Error\",\n    \"status\": 500,\n    \"type\": \"https://javalin.io/documentation#internalservererrorresponse\",\n    \"details\": {}\n}",
+      "json": {
+        "title": "Server Error",
+        "status": 500,
+        "type": "https://javalin.io/documentation#internalservererrorresponse",
+        "details": {}
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "scoped-3",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher",
+      "body": {
+        "query": "RETURN log(0) AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 500,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 19:53:39 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "145"
+        ]
+      ],
+      "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ==",
+      "bodyUTF8": "{\n    \"title\": \"Server Error\",\n    \"status\": 500,\n    \"type\": \"https://javalin.io/documentation#internalservererrorresponse\",\n    \"details\": {}\n}",
+      "json": {
+        "title": "Server Error",
+        "status": 500,
+        "type": "https://javalin.io/documentation#internalservererrorresponse",
+        "details": {}
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "scoped-4",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher",
+      "body": {
+        "query": "RETURN toFloat('NaN') AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 500,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 19:53:39 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "145"
+        ]
+      ],
+      "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ==",
+      "bodyUTF8": "{\n    \"title\": \"Server Error\",\n    \"status\": 500,\n    \"type\": \"https://javalin.io/documentation#internalservererrorresponse\",\n    \"details\": {}\n}",
+      "json": {
+        "title": "Server Error",
+        "status": 500,
+        "type": "https://javalin.io/documentation#internalservererrorresponse",
+        "details": {}
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "scoped-5",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher",
+      "body": {
+        "query": "RETURN toFloat('Infinity') AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 500,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 19:53:39 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "145"
+        ]
+      ],
+      "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ==",
+      "bodyUTF8": "{\n    \"title\": \"Server Error\",\n    \"status\": 500,\n    \"type\": \"https://javalin.io/documentation#internalservererrorresponse\",\n    \"details\": {}\n}",
+      "json": {
+        "title": "Server Error",
+        "status": 500,
+        "type": "https://javalin.io/documentation#internalservererrorresponse",
+        "details": {}
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "scoped-6",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher",
+      "body": {
+        "query": "RETURN -1e999 AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 500,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 19:53:39 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "145"
+        ]
+      ],
+      "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ==",
+      "bodyUTF8": "{\n    \"title\": \"Server Error\",\n    \"status\": 500,\n    \"type\": \"https://javalin.io/documentation#internalservererrorresponse\",\n    \"details\": {}\n}",
+      "json": {
+        "title": "Server Error",
+        "status": 500,
+        "type": "https://javalin.io/documentation#internalservererrorresponse",
+        "details": {}
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "scoped-7",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher",
+      "body": {
+        "query": "RETURN [1, sqrt(-1)] AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 500,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 19:53:39 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "145"
+        ]
+      ],
+      "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ==",
+      "bodyUTF8": "{\n    \"title\": \"Server Error\",\n    \"status\": 500,\n    \"type\": \"https://javalin.io/documentation#internalservererrorresponse\",\n    \"details\": {}\n}",
+      "json": {
+        "title": "Server Error",
+        "status": 500,
+        "type": "https://javalin.io/documentation#internalservererrorresponse",
+        "details": {}
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "scoped-8",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher",
+      "body": {
+        "query": "RETURN {n:log(0)} AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 500,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 19:53:39 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "145"
+        ]
+      ],
+      "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ==",
+      "bodyUTF8": "{\n    \"title\": \"Server Error\",\n    \"status\": 500,\n    \"type\": \"https://javalin.io/documentation#internalservererrorresponse\",\n    \"details\": {}\n}",
+      "json": {
+        "title": "Server Error",
+        "status": 500,
+        "type": "https://javalin.io/documentation#internalservererrorresponse",
+        "details": {}
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "scoped-9",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher",
+      "body": {
+        "query": "RETURN sqrt(4) AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 19:53:39 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "91"
+        ]
+      ],
+      "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAyLjAKICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEKfQ==",
+      "bodyUTF8": "{\n  \"columns\": [\n    \"x\"\n  ],\n  \"rows\": [\n    {\n      \"x\": 2.0\n    }\n  ],\n  \"rowCount\": 1\n}",
+      "json": {
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": 2.0
+          }
+        ],
+        "rowCount": 1
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "selected-0",
+      "method": "POST",
+      "path": "/api/cypher/graphs",
+      "body": {
+        "query": "RETURN 1e999 AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 500,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 19:53:39 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "145"
+        ]
+      ],
+      "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ==",
+      "bodyUTF8": "{\n    \"title\": \"Server Error\",\n    \"status\": 500,\n    \"type\": \"https://javalin.io/documentation#internalservererrorresponse\",\n    \"details\": {}\n}",
+      "json": {
+        "title": "Server Error",
+        "status": 500,
+        "type": "https://javalin.io/documentation#internalservererrorresponse",
+        "details": {}
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "selected-1",
+      "method": "POST",
+      "path": "/api/cypher/graphs",
+      "body": {
+        "query": "RETURN 0.0/0.0 AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 400,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 19:53:39 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "66"
+        ]
+      ],
+      "bodyBase64": "ewogICJlcnJvciI6ICJEaXZpc2lvbiBieSB6ZXJvIiwKICAiY29kZSI6ICJjeXBoZXJfcXVlcnlfZmFpbGVkIgp9",
+      "bodyUTF8": "{\n  \"error\": \"Division by zero\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Division by zero",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "selected-2",
+      "method": "POST",
+      "path": "/api/cypher/graphs",
+      "body": {
+        "query": "RETURN sqrt(-1) AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 500,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 19:53:39 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "145"
+        ]
+      ],
+      "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ==",
+      "bodyUTF8": "{\n    \"title\": \"Server Error\",\n    \"status\": 500,\n    \"type\": \"https://javalin.io/documentation#internalservererrorresponse\",\n    \"details\": {}\n}",
+      "json": {
+        "title": "Server Error",
+        "status": 500,
+        "type": "https://javalin.io/documentation#internalservererrorresponse",
+        "details": {}
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "selected-3",
+      "method": "POST",
+      "path": "/api/cypher/graphs",
+      "body": {
+        "query": "RETURN log(0) AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 500,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 19:53:39 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "145"
+        ]
+      ],
+      "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ==",
+      "bodyUTF8": "{\n    \"title\": \"Server Error\",\n    \"status\": 500,\n    \"type\": \"https://javalin.io/documentation#internalservererrorresponse\",\n    \"details\": {}\n}",
+      "json": {
+        "title": "Server Error",
+        "status": 500,
+        "type": "https://javalin.io/documentation#internalservererrorresponse",
+        "details": {}
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "selected-4",
+      "method": "POST",
+      "path": "/api/cypher/graphs",
+      "body": {
+        "query": "RETURN toFloat('NaN') AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 500,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 19:53:39 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "145"
+        ]
+      ],
+      "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ==",
+      "bodyUTF8": "{\n    \"title\": \"Server Error\",\n    \"status\": 500,\n    \"type\": \"https://javalin.io/documentation#internalservererrorresponse\",\n    \"details\": {}\n}",
+      "json": {
+        "title": "Server Error",
+        "status": 500,
+        "type": "https://javalin.io/documentation#internalservererrorresponse",
+        "details": {}
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "selected-5",
+      "method": "POST",
+      "path": "/api/cypher/graphs",
+      "body": {
+        "query": "RETURN toFloat('Infinity') AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 500,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 19:53:39 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "145"
+        ]
+      ],
+      "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ==",
+      "bodyUTF8": "{\n    \"title\": \"Server Error\",\n    \"status\": 500,\n    \"type\": \"https://javalin.io/documentation#internalservererrorresponse\",\n    \"details\": {}\n}",
+      "json": {
+        "title": "Server Error",
+        "status": 500,
+        "type": "https://javalin.io/documentation#internalservererrorresponse",
+        "details": {}
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "selected-6",
+      "method": "POST",
+      "path": "/api/cypher/graphs",
+      "body": {
+        "query": "RETURN -1e999 AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 500,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 19:53:39 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "145"
+        ]
+      ],
+      "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ==",
+      "bodyUTF8": "{\n    \"title\": \"Server Error\",\n    \"status\": 500,\n    \"type\": \"https://javalin.io/documentation#internalservererrorresponse\",\n    \"details\": {}\n}",
+      "json": {
+        "title": "Server Error",
+        "status": 500,
+        "type": "https://javalin.io/documentation#internalservererrorresponse",
+        "details": {}
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "selected-7",
+      "method": "POST",
+      "path": "/api/cypher/graphs",
+      "body": {
+        "query": "RETURN [1, sqrt(-1)] AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 500,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 19:53:39 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "145"
+        ]
+      ],
+      "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ==",
+      "bodyUTF8": "{\n    \"title\": \"Server Error\",\n    \"status\": 500,\n    \"type\": \"https://javalin.io/documentation#internalservererrorresponse\",\n    \"details\": {}\n}",
+      "json": {
+        "title": "Server Error",
+        "status": 500,
+        "type": "https://javalin.io/documentation#internalservererrorresponse",
+        "details": {}
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "selected-8",
+      "method": "POST",
+      "path": "/api/cypher/graphs",
+      "body": {
+        "query": "RETURN {n:log(0)} AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 500,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 19:53:39 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "145"
+        ]
+      ],
+      "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ==",
+      "bodyUTF8": "{\n    \"title\": \"Server Error\",\n    \"status\": 500,\n    \"type\": \"https://javalin.io/documentation#internalservererrorresponse\",\n    \"details\": {}\n}",
+      "json": {
+        "title": "Server Error",
+        "status": 500,
+        "type": "https://javalin.io/documentation#internalservererrorresponse",
+        "details": {}
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "selected-9",
+      "method": "POST",
+      "path": "/api/cypher/graphs",
+      "body": {
+        "query": "RETURN sqrt(4) AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 19:53:39 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "232"
+        ]
+      ],
+      "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAieCIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAieCI6IDIuMCwKICAgICAgIiRtZXRhZGF0YSI6IHsKICAgICAgICAiZ3JhcGhJZHMiOiBbXQogICAgICB9CiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxLAogICJsaW1pdCI6IDEwMDAKfQ==",
+      "bodyUTF8": "{\n  \"mode\": \"cross-graph\",\n  \"graphs\": [\n    \"a\"\n  ],\n  \"graphCount\": 1,\n  \"columns\": [\n    \"x\"\n  ],\n  \"rows\": [\n    {\n      \"x\": 2.0,\n      \"$metadata\": {\n        \"graphIds\": []\n      }\n    }\n  ],\n  \"rowCount\": 1,\n  \"limit\": 1000\n}",
+      "json": {
+        "mode": "cross-graph",
+        "graphs": [
+          "a"
+        ],
+        "graphCount": 1,
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": 2.0,
+            "$metadata": {
+              "graphIds": []
+            }
+          }
+        ],
+        "rowCount": 1,
+        "limit": 1000
+      }
+    }
+  }
+]

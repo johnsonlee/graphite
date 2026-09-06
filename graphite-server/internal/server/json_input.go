@@ -17,9 +17,11 @@ func gsonString(value json.RawMessage) (string, error) {
 	}
 	switch value[0] {
 	case '"':
-		var text string
-		err := json.Unmarshal(value, &text)
-		return text, err
+		parsed, err := parseGsonJSON(value)
+		if err != nil {
+			return "", err
+		}
+		return parsed.text, nil
 	case '{':
 		return "", errors.New("JsonObject")
 	case '[':
@@ -41,19 +43,18 @@ func jsonObject(body []byte) (map[string]json.RawMessage, error) {
 	if len(body) == 0 {
 		return nil, nil
 	}
-	if !json.Valid(body) {
-		var value any
-		err := json.Unmarshal(body, &value)
+	value, err := parseGsonJSON(body)
+	if err != nil {
 		return nil, err
 	}
-	if body[0] != '{' {
-		var compact bytes.Buffer
-		_ = json.Compact(&compact, body)
-		return nil, fmt.Errorf("Not a JSON Object: %s", compact.String())
+	if value.kind != 'o' {
+		return nil, fmt.Errorf("Not a JSON Object: %s", value.canonical())
 	}
-	var object map[string]json.RawMessage
-	err := json.Unmarshal(body, &object)
-	return object, err
+	object := make(map[string]json.RawMessage, len(value.members))
+	for _, member := range value.members {
+		object[member.name] = member.value.canonical()
+	}
+	return object, nil
 }
 
 type jsonAccessorFailure struct{ error }

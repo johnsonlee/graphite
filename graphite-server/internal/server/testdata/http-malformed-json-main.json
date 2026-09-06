@@ -1,0 +1,3173 @@
+{
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "cases": [
+    {
+      "name": "root-GET-valid",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-GET-empty",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAyLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-GET-whitespace",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "IAkNCg==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAyLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-GET-nul",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "AA==",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "root-GET-empty-object",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "e30=",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAyLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-GET-null",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "bnVsbA==",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "root-GET-array",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "W10=",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "root-GET-top-string",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "ImhpIg==",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "root-GET-line-comment",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "Ly8gbGVhZGluZwp7InF1ZXJ5IjoiUkVUVVJOIDEgQVMgeCIsImdyYXBocyI6WyJhIl19",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-GET-block-comment",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "LyogbGVhZGluZyAqL3sicXVlcnkiOiJSRVRVUk4gMSBBUyB4IiwiZ3JhcGhzIjpbImEiXX0vKiB0cmFpbGluZyAqLw==",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "root-GET-hash-comment",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "IyBsZWFkaW5nCnsicXVlcnkiOiJSRVRVUk4gMSBBUyB4IiwiZ3JhcGhzIjpbImEiXX0=",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-GET-comment-inside",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "ey8qcXVlcnkqLyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-GET-comment-unclosed",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "LyogdW5jbG9zZWQ=",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "root-GET-single-quotes",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eydxdWVyeSc6J1JFVFVSTiAxIEFTIHgnLCdncmFwaHMnOlsnYSddfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-GET-unquoted-keys",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "e3F1ZXJ5OiJSRVRVUk4gMSBBUyB4IixncmFwaHM6WyJhIl19",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-GET-unquoted-string",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "e3F1ZXJ5OlJFVFVSTiAxIEFTIHgsZ3JhcGhzOlthXX0=",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "root-GET-equals-separators",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "e3F1ZXJ5PSJSRVRVUk4gMSBBUyB4IjtncmFwaHM9WyJhIl19",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-GET-arrow-separators",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "e3F1ZXJ5PT4iUkVUVVJOIDEgQVMgeCIsZ3JhcGhzPT5bImEiXX0=",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-GET-trailing-object-comma",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLH0=",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "root-GET-trailing-array-comma",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSIsXX0=",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-GET-leading-array-comma",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlssImEiXX0=",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-GET-array-semicolon",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSI7XX0=",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-GET-multiple-top-level",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfSB7fQ==",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "root-GET-trailing-garbage",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfXh5eg==",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "root-GET-nonexecute-prefix",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "KV19Jwp7InF1ZXJ5IjoiUkVUVVJOIDEgQVMgeCIsImdyYXBocyI6WyJhIl19",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-GET-bom",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "77u/eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-GET-invalid-escape",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBccSIsImdyYXBocyI6WyJhIl19",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "root-GET-invalid-unicode-escape",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBcdTEyRzQiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "root-GET-short-unicode-escape",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBcdTEy",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "root-GET-raw-newline-string",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTgoxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-GET-escaped-newline-string",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTlwKMSBBUyB4IiwiZ3JhcGhzIjpbImEiXX0=",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-GET-eof-object",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJd",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "root-GET-eof-key",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI=",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "root-GET-eof-colon",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "root-GET-eof-string",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAx",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "root-GET-eof-array",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSI=",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "root-GET-missing-colon",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSIgIlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "root-GET-missing-comma",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiICJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "root-GET-duplicate-query",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAwIEFTIHgiLCJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-GET-uppercase-null",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6TlVMTCwiZ3JhcGhzIjpbImEiXX0=",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAyLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-GET-timeout-leading-zero",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOjAxMDAwfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-GET-timeout-single-quotes",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCd0aW1lb3V0TXMnOicxMDAwJ30=",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-GET-timeout-invalid-escape",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOiJccSJ9",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "root-GET-timeout-nan",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOk5hTn0=",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJcdTAwMjd0aW1lb3V0TXNcdTAwMjcgbXVzdCBiZSBhIHBvc2l0aXZlIGludGVnZXIiLAogICJjb2RlIjogImN5cGhlcl9xdWVyeV9mYWlsZWQiCn0="
+      }
+    },
+    {
+      "name": "root-GET-timeout-plus-number",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOisxMDAwfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-GET-query-trailing-array",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6WyJSRVRVUk4gMSBBUyB4IixdLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAyLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-GET-unpaired-surrogate-query",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBcJ1x1ZDgwMFwnIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAiPyIsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogW10KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAiZ3JhcGhDb3VudCI6IDEKfQ=="
+      }
+    },
+    {
+      "name": "root-GET-invalid-utf8",
+      "method": "GET",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAn/ycgQVMgeCIsImdyYXBocyI6WyJhIl19",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAi77+9IiwKICAgICAgIiRtZXRhZGF0YSI6IHsKICAgICAgICAiZ3JhcGhJZHMiOiBbXQogICAgICB9CiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxLAogICJncmFwaENvdW50IjogMQp9"
+      }
+    },
+    {
+      "name": "root-POST-valid",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-POST-empty",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAyLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-POST-whitespace",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "IAkNCg==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAyLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-POST-nul",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "AA==",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "root-POST-empty-object",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "e30=",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAyLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-POST-null",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "bnVsbA==",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "root-POST-array",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "W10=",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "root-POST-top-string",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "ImhpIg==",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "root-POST-line-comment",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "Ly8gbGVhZGluZwp7InF1ZXJ5IjoiUkVUVVJOIDEgQVMgeCIsImdyYXBocyI6WyJhIl19",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-POST-block-comment",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "LyogbGVhZGluZyAqL3sicXVlcnkiOiJSRVRVUk4gMSBBUyB4IiwiZ3JhcGhzIjpbImEiXX0vKiB0cmFpbGluZyAqLw==",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "root-POST-hash-comment",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "IyBsZWFkaW5nCnsicXVlcnkiOiJSRVRVUk4gMSBBUyB4IiwiZ3JhcGhzIjpbImEiXX0=",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-POST-comment-inside",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "ey8qcXVlcnkqLyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-POST-comment-unclosed",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "LyogdW5jbG9zZWQ=",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "root-POST-single-quotes",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eydxdWVyeSc6J1JFVFVSTiAxIEFTIHgnLCdncmFwaHMnOlsnYSddfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-POST-unquoted-keys",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "e3F1ZXJ5OiJSRVRVUk4gMSBBUyB4IixncmFwaHM6WyJhIl19",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-POST-unquoted-string",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "e3F1ZXJ5OlJFVFVSTiAxIEFTIHgsZ3JhcGhzOlthXX0=",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "root-POST-equals-separators",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "e3F1ZXJ5PSJSRVRVUk4gMSBBUyB4IjtncmFwaHM9WyJhIl19",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-POST-arrow-separators",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "e3F1ZXJ5PT4iUkVUVVJOIDEgQVMgeCIsZ3JhcGhzPT5bImEiXX0=",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-POST-trailing-object-comma",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLH0=",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "root-POST-trailing-array-comma",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSIsXX0=",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-POST-leading-array-comma",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlssImEiXX0=",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-POST-array-semicolon",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSI7XX0=",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-POST-multiple-top-level",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfSB7fQ==",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "root-POST-trailing-garbage",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfXh5eg==",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "root-POST-nonexecute-prefix",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "KV19Jwp7InF1ZXJ5IjoiUkVUVVJOIDEgQVMgeCIsImdyYXBocyI6WyJhIl19",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-POST-bom",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "77u/eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-POST-invalid-escape",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBccSIsImdyYXBocyI6WyJhIl19",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "root-POST-invalid-unicode-escape",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBcdTEyRzQiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "root-POST-short-unicode-escape",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBcdTEy",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "root-POST-raw-newline-string",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTgoxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-POST-escaped-newline-string",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTlwKMSBBUyB4IiwiZ3JhcGhzIjpbImEiXX0=",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-POST-eof-object",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJd",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "root-POST-eof-key",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI=",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "root-POST-eof-colon",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "root-POST-eof-string",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAx",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "root-POST-eof-array",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSI=",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "root-POST-missing-colon",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSIgIlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "root-POST-missing-comma",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiICJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "root-POST-duplicate-query",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAwIEFTIHgiLCJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-POST-uppercase-null",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6TlVMTCwiZ3JhcGhzIjpbImEiXX0=",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAyLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-POST-timeout-leading-zero",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOjAxMDAwfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-POST-timeout-single-quotes",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCd0aW1lb3V0TXMnOicxMDAwJ30=",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-POST-timeout-invalid-escape",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOiJccSJ9",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "root-POST-timeout-nan",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOk5hTn0=",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJcdTAwMjd0aW1lb3V0TXNcdTAwMjcgbXVzdCBiZSBhIHBvc2l0aXZlIGludGVnZXIiLAogICJjb2RlIjogImN5cGhlcl9xdWVyeV9mYWlsZWQiCn0="
+      }
+    },
+    {
+      "name": "root-POST-timeout-plus-number",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOisxMDAwfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-POST-query-trailing-array",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6WyJSRVRVUk4gMSBBUyB4IixdLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAyLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "root-POST-unpaired-surrogate-query",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBcJ1x1ZDgwMFwnIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAiPyIsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogW10KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAiZ3JhcGhDb3VudCI6IDEKfQ=="
+      }
+    },
+    {
+      "name": "root-POST-invalid-utf8",
+      "method": "POST",
+      "path": "/api/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAn/ycgQVMgeCIsImdyYXBocyI6WyJhIl19",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAi77+9IiwKICAgICAgIiRtZXRhZGF0YSI6IHsKICAgICAgICAiZ3JhcGhJZHMiOiBbXQogICAgICB9CiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxLAogICJncmFwaENvdW50IjogMQp9"
+      }
+    },
+    {
+      "name": "scoped-GET-valid",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAyCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-GET-empty",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAyCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-GET-whitespace",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "IAkNCg==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAyCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-GET-nul",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "AA==",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "scoped-GET-empty-object",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "e30=",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAyCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-GET-null",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "bnVsbA==",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "scoped-GET-array",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "W10=",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "scoped-GET-top-string",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "ImhpIg==",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "scoped-GET-line-comment",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "Ly8gbGVhZGluZwp7InF1ZXJ5IjoiUkVUVVJOIDEgQVMgeCIsImdyYXBocyI6WyJhIl19",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAyCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-GET-block-comment",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "LyogbGVhZGluZyAqL3sicXVlcnkiOiJSRVRVUk4gMSBBUyB4IiwiZ3JhcGhzIjpbImEiXX0vKiB0cmFpbGluZyAqLw==",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "scoped-GET-hash-comment",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "IyBsZWFkaW5nCnsicXVlcnkiOiJSRVRVUk4gMSBBUyB4IiwiZ3JhcGhzIjpbImEiXX0=",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAyCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-GET-comment-inside",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "ey8qcXVlcnkqLyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAyCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-GET-comment-unclosed",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "LyogdW5jbG9zZWQ=",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "scoped-GET-single-quotes",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eydxdWVyeSc6J1JFVFVSTiAxIEFTIHgnLCdncmFwaHMnOlsnYSddfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAyCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-GET-unquoted-keys",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "e3F1ZXJ5OiJSRVRVUk4gMSBBUyB4IixncmFwaHM6WyJhIl19",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAyCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-GET-unquoted-string",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "e3F1ZXJ5OlJFVFVSTiAxIEFTIHgsZ3JhcGhzOlthXX0=",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "scoped-GET-equals-separators",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "e3F1ZXJ5PSJSRVRVUk4gMSBBUyB4IjtncmFwaHM9WyJhIl19",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAyCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-GET-arrow-separators",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "e3F1ZXJ5PT4iUkVUVVJOIDEgQVMgeCIsZ3JhcGhzPT5bImEiXX0=",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAyCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-GET-trailing-object-comma",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLH0=",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "scoped-GET-trailing-array-comma",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSIsXX0=",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAyCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-GET-leading-array-comma",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlssImEiXX0=",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAyCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-GET-array-semicolon",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSI7XX0=",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAyCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-GET-multiple-top-level",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfSB7fQ==",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "scoped-GET-trailing-garbage",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfXh5eg==",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "scoped-GET-nonexecute-prefix",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "KV19Jwp7InF1ZXJ5IjoiUkVUVVJOIDEgQVMgeCIsImdyYXBocyI6WyJhIl19",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAyCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-GET-bom",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "77u/eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAyCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-GET-invalid-escape",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBccSIsImdyYXBocyI6WyJhIl19",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "scoped-GET-invalid-unicode-escape",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBcdTEyRzQiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "scoped-GET-short-unicode-escape",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBcdTEy",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "scoped-GET-raw-newline-string",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTgoxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAyCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-GET-escaped-newline-string",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTlwKMSBBUyB4IiwiZ3JhcGhzIjpbImEiXX0=",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAyCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-GET-eof-object",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJd",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "scoped-GET-eof-key",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI=",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "scoped-GET-eof-colon",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "scoped-GET-eof-string",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAx",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "scoped-GET-eof-array",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSI=",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "scoped-GET-missing-colon",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSIgIlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "scoped-GET-missing-comma",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiICJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "scoped-GET-duplicate-query",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAwIEFTIHgiLCJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAyCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-GET-uppercase-null",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6TlVMTCwiZ3JhcGhzIjpbImEiXX0=",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAyCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-GET-timeout-leading-zero",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOjAxMDAwfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAyCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-GET-timeout-single-quotes",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCd0aW1lb3V0TXMnOicxMDAwJ30=",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAyCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-GET-timeout-invalid-escape",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOiJccSJ9",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "scoped-GET-timeout-nan",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOk5hTn0=",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJcdTAwMjd0aW1lb3V0TXNcdTAwMjcgbXVzdCBiZSBhIHBvc2l0aXZlIGludGVnZXIiLAogICJjb2RlIjogImN5cGhlcl9xdWVyeV9mYWlsZWQiCn0="
+      }
+    },
+    {
+      "name": "scoped-GET-timeout-plus-number",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOisxMDAwfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAyCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-GET-query-trailing-array",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6WyJSRVRVUk4gMSBBUyB4IixdLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAyCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-GET-unpaired-surrogate-query",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBcJ1x1ZDgwMFwnIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAyCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-GET-invalid-utf8",
+      "method": "GET",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAn/ycgQVMgeCIsImdyYXBocyI6WyJhIl19",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAyCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-POST-valid",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-POST-empty",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAyCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-POST-whitespace",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "IAkNCg==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAyCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-POST-nul",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "AA==",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "scoped-POST-empty-object",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "e30=",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAyCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-POST-null",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "bnVsbA==",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "scoped-POST-array",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "W10=",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "scoped-POST-top-string",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "ImhpIg==",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "scoped-POST-line-comment",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "Ly8gbGVhZGluZwp7InF1ZXJ5IjoiUkVUVVJOIDEgQVMgeCIsImdyYXBocyI6WyJhIl19",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-POST-block-comment",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "LyogbGVhZGluZyAqL3sicXVlcnkiOiJSRVRVUk4gMSBBUyB4IiwiZ3JhcGhzIjpbImEiXX0vKiB0cmFpbGluZyAqLw==",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "scoped-POST-hash-comment",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "IyBsZWFkaW5nCnsicXVlcnkiOiJSRVRVUk4gMSBBUyB4IiwiZ3JhcGhzIjpbImEiXX0=",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-POST-comment-inside",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "ey8qcXVlcnkqLyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-POST-comment-unclosed",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "LyogdW5jbG9zZWQ=",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "scoped-POST-single-quotes",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eydxdWVyeSc6J1JFVFVSTiAxIEFTIHgnLCdncmFwaHMnOlsnYSddfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-POST-unquoted-keys",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "e3F1ZXJ5OiJSRVRVUk4gMSBBUyB4IixncmFwaHM6WyJhIl19",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-POST-unquoted-string",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "e3F1ZXJ5OlJFVFVSTiAxIEFTIHgsZ3JhcGhzOlthXX0=",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "scoped-POST-equals-separators",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "e3F1ZXJ5PSJSRVRVUk4gMSBBUyB4IjtncmFwaHM9WyJhIl19",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-POST-arrow-separators",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "e3F1ZXJ5PT4iUkVUVVJOIDEgQVMgeCIsZ3JhcGhzPT5bImEiXX0=",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-POST-trailing-object-comma",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLH0=",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "scoped-POST-trailing-array-comma",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSIsXX0=",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-POST-leading-array-comma",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlssImEiXX0=",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-POST-array-semicolon",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSI7XX0=",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-POST-multiple-top-level",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfSB7fQ==",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "scoped-POST-trailing-garbage",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfXh5eg==",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "scoped-POST-nonexecute-prefix",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "KV19Jwp7InF1ZXJ5IjoiUkVUVVJOIDEgQVMgeCIsImdyYXBocyI6WyJhIl19",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-POST-bom",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "77u/eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-POST-invalid-escape",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBccSIsImdyYXBocyI6WyJhIl19",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "scoped-POST-invalid-unicode-escape",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBcdTEyRzQiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "scoped-POST-short-unicode-escape",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBcdTEy",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "scoped-POST-raw-newline-string",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTgoxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-POST-escaped-newline-string",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTlwKMSBBUyB4IiwiZ3JhcGhzIjpbImEiXX0=",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-POST-eof-object",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJd",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "scoped-POST-eof-key",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI=",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "scoped-POST-eof-colon",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "scoped-POST-eof-string",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAx",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "scoped-POST-eof-array",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSI=",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "scoped-POST-missing-colon",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSIgIlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "scoped-POST-missing-comma",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiICJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "scoped-POST-duplicate-query",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAwIEFTIHgiLCJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-POST-uppercase-null",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6TlVMTCwiZ3JhcGhzIjpbImEiXX0=",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAyCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-POST-timeout-leading-zero",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOjAxMDAwfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-POST-timeout-single-quotes",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCd0aW1lb3V0TXMnOicxMDAwJ30=",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-POST-timeout-invalid-escape",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOiJccSJ9",
+      "expected": {
+        "status": 500,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ=="
+      }
+    },
+    {
+      "name": "scoped-POST-timeout-nan",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOk5hTn0=",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJcdTAwMjd0aW1lb3V0TXNcdTAwMjcgbXVzdCBiZSBhIHBvc2l0aXZlIGludGVnZXIiLAogICJjb2RlIjogImN5cGhlcl9xdWVyeV9mYWlsZWQiCn0="
+      }
+    },
+    {
+      "name": "scoped-POST-timeout-plus-number",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOisxMDAwfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAxCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-POST-query-trailing-array",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6WyJSRVRVUk4gMSBBUyB4IixdLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAyCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0="
+      }
+    },
+    {
+      "name": "scoped-POST-unpaired-surrogate-query",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBcJ1x1ZDgwMFwnIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAiPyIKICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEKfQ=="
+      }
+    },
+    {
+      "name": "scoped-POST-invalid-utf8",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAn/ycgQVMgeCIsImdyYXBocyI6WyJhIl19",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiAi77+9IgogICAgfQogIF0sCiAgInJvd0NvdW50IjogMQp9"
+      }
+    },
+    {
+      "name": "selected-GET-valid",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAieCIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAieCI6IDEsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogW10KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAibGltaXQiOiAxMDAwCn0="
+      }
+    },
+    {
+      "name": "selected-GET-empty",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAieCIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAieCI6IDIsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogW10KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAibGltaXQiOiAxMDAwCn0="
+      }
+    },
+    {
+      "name": "selected-GET-whitespace",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "IAkNCg==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAieCIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAieCI6IDIsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogW10KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAibGltaXQiOiAxMDAwCn0="
+      }
+    },
+    {
+      "name": "selected-GET-nul",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "AA==",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJOb3QgYSBKU09OIE9iamVjdDogXCJcXHUwMDAwXCIiLAogICJjb2RlIjogImN5cGhlcl9xdWVyeV9mYWlsZWQiCn0="
+      }
+    },
+    {
+      "name": "selected-GET-empty-object",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "e30=",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJNaXNzaW5nIFx1MDAyN3F1ZXJ5XHUwMDI3IHBhcmFtZXRlciIsCiAgImNvZGUiOiAiY3lwaGVyX3F1ZXJ5X2ZhaWxlZCIKfQ=="
+      }
+    },
+    {
+      "name": "selected-GET-null",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "bnVsbA==",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJOb3QgYSBKU09OIE9iamVjdDogbnVsbCIsCiAgImNvZGUiOiAiY3lwaGVyX3F1ZXJ5X2ZhaWxlZCIKfQ=="
+      }
+    },
+    {
+      "name": "selected-GET-array",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "W10=",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJOb3QgYSBKU09OIE9iamVjdDogW10iLAogICJjb2RlIjogImN5cGhlcl9xdWVyeV9mYWlsZWQiCn0="
+      }
+    },
+    {
+      "name": "selected-GET-top-string",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "ImhpIg==",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJOb3QgYSBKU09OIE9iamVjdDogXCJoaVwiIiwKICAiY29kZSI6ICJjeXBoZXJfcXVlcnlfZmFpbGVkIgp9"
+      }
+    },
+    {
+      "name": "selected-GET-line-comment",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "Ly8gbGVhZGluZwp7InF1ZXJ5IjoiUkVUVVJOIDEgQVMgeCIsImdyYXBocyI6WyJhIl19",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAieCIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAieCI6IDEsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogW10KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAibGltaXQiOiAxMDAwCn0="
+      }
+    },
+    {
+      "name": "selected-GET-block-comment",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "LyogbGVhZGluZyAqL3sicXVlcnkiOiJSRVRVUk4gMSBBUyB4IiwiZ3JhcGhzIjpbImEiXX0vKiB0cmFpbGluZyAqLw==",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJjb20uZ29vZ2xlLmdzb24uc3RyZWFtLk1hbGZvcm1lZEpzb25FeGNlcHRpb246IFVzZSBKc29uUmVhZGVyLnNldFN0cmljdG5lc3MoU3RyaWN0bmVzcy5MRU5JRU5UKSB0byBhY2NlcHQgbWFsZm9ybWVkIEpTT04gYXQgbGluZSAxIGNvbHVtbiA1NSBwYXRoICRcblNlZSBodHRwczovL2dpdGh1Yi5jb20vZ29vZ2xlL2dzb24vYmxvYi9tYWluL1Ryb3VibGVzaG9vdGluZy5tZCNtYWxmb3JtZWQtanNvbiIsCiAgImNvZGUiOiAiY3lwaGVyX3F1ZXJ5X2ZhaWxlZCIKfQ=="
+      }
+    },
+    {
+      "name": "selected-GET-hash-comment",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "IyBsZWFkaW5nCnsicXVlcnkiOiJSRVRVUk4gMSBBUyB4IiwiZ3JhcGhzIjpbImEiXX0=",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAieCIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAieCI6IDEsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogW10KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAibGltaXQiOiAxMDAwCn0="
+      }
+    },
+    {
+      "name": "selected-GET-comment-inside",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "ey8qcXVlcnkqLyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAieCIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAieCI6IDEsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogW10KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAibGltaXQiOiAxMDAwCn0="
+      }
+    },
+    {
+      "name": "selected-GET-comment-unclosed",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "LyogdW5jbG9zZWQ=",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJjb20uZ29vZ2xlLmdzb24uc3RyZWFtLk1hbGZvcm1lZEpzb25FeGNlcHRpb246IFVudGVybWluYXRlZCBjb21tZW50IGF0IGxpbmUgMSBjb2x1bW4gMTEgcGF0aCAkXG5TZWUgaHR0cHM6Ly9naXRodWIuY29tL2dvb2dsZS9nc29uL2Jsb2IvbWFpbi9Ucm91Ymxlc2hvb3RpbmcubWQjbWFsZm9ybWVkLWpzb24iLAogICJjb2RlIjogImN5cGhlcl9xdWVyeV9mYWlsZWQiCn0="
+      }
+    },
+    {
+      "name": "selected-GET-single-quotes",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eydxdWVyeSc6J1JFVFVSTiAxIEFTIHgnLCdncmFwaHMnOlsnYSddfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAieCIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAieCI6IDEsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogW10KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAibGltaXQiOiAxMDAwCn0="
+      }
+    },
+    {
+      "name": "selected-GET-unquoted-keys",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "e3F1ZXJ5OiJSRVRVUk4gMSBBUyB4IixncmFwaHM6WyJhIl19",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAieCIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAieCI6IDEsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogW10KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAibGltaXQiOiAxMDAwCn0="
+      }
+    },
+    {
+      "name": "selected-GET-unquoted-string",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "e3F1ZXJ5OlJFVFVSTiAxIEFTIHgsZ3JhcGhzOlthXX0=",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJjb20uZ29vZ2xlLmdzb24uc3RyZWFtLk1hbGZvcm1lZEpzb25FeGNlcHRpb246IFVudGVybWluYXRlZCBvYmplY3QgYXQgbGluZSAxIGNvbHVtbiAxNiBwYXRoICQucXVlcnlcblNlZSBodHRwczovL2dpdGh1Yi5jb20vZ29vZ2xlL2dzb24vYmxvYi9tYWluL1Ryb3VibGVzaG9vdGluZy5tZCNtYWxmb3JtZWQtanNvbiIsCiAgImNvZGUiOiAiY3lwaGVyX3F1ZXJ5X2ZhaWxlZCIKfQ=="
+      }
+    },
+    {
+      "name": "selected-GET-equals-separators",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "e3F1ZXJ5PSJSRVRVUk4gMSBBUyB4IjtncmFwaHM9WyJhIl19",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAieCIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAieCI6IDEsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogW10KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAibGltaXQiOiAxMDAwCn0="
+      }
+    },
+    {
+      "name": "selected-GET-arrow-separators",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "e3F1ZXJ5PT4iUkVUVVJOIDEgQVMgeCIsZ3JhcGhzPT5bImEiXX0=",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAieCIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAieCI6IDEsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogW10KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAibGltaXQiOiAxMDAwCn0="
+      }
+    },
+    {
+      "name": "selected-GET-trailing-object-comma",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLH0=",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJjb20uZ29vZ2xlLmdzb24uc3RyZWFtLk1hbGZvcm1lZEpzb25FeGNlcHRpb246IEV4cGVjdGVkIG5hbWUgYXQgbGluZSAxIGNvbHVtbiA0MiBwYXRoICQuZ3JhcGhzXG5TZWUgaHR0cHM6Ly9naXRodWIuY29tL2dvb2dsZS9nc29uL2Jsb2IvbWFpbi9Ucm91Ymxlc2hvb3RpbmcubWQjbWFsZm9ybWVkLWpzb24iLAogICJjb2RlIjogImN5cGhlcl9xdWVyeV9mYWlsZWQiCn0="
+      }
+    },
+    {
+      "name": "selected-GET-trailing-array-comma",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSIsXX0=",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJKc29uTnVsbCIsCiAgImNvZGUiOiAiY3lwaGVyX3F1ZXJ5X2ZhaWxlZCIKfQ=="
+      }
+    },
+    {
+      "name": "selected-GET-leading-array-comma",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlssImEiXX0=",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJKc29uTnVsbCIsCiAgImNvZGUiOiAiY3lwaGVyX3F1ZXJ5X2ZhaWxlZCIKfQ=="
+      }
+    },
+    {
+      "name": "selected-GET-array-semicolon",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSI7XX0=",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJKc29uTnVsbCIsCiAgImNvZGUiOiAiY3lwaGVyX3F1ZXJ5X2ZhaWxlZCIKfQ=="
+      }
+    },
+    {
+      "name": "selected-GET-multiple-top-level",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfSB7fQ==",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJjb20uZ29vZ2xlLmdzb24uc3RyZWFtLk1hbGZvcm1lZEpzb25FeGNlcHRpb246IFVzZSBKc29uUmVhZGVyLnNldFN0cmljdG5lc3MoU3RyaWN0bmVzcy5MRU5JRU5UKSB0byBhY2NlcHQgbWFsZm9ybWVkIEpTT04gYXQgbGluZSAxIGNvbHVtbiA0MyBwYXRoICRcblNlZSBodHRwczovL2dpdGh1Yi5jb20vZ29vZ2xlL2dzb24vYmxvYi9tYWluL1Ryb3VibGVzaG9vdGluZy5tZCNtYWxmb3JtZWQtanNvbiIsCiAgImNvZGUiOiAiY3lwaGVyX3F1ZXJ5X2ZhaWxlZCIKfQ=="
+      }
+    },
+    {
+      "name": "selected-GET-trailing-garbage",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfXh5eg==",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJjb20uZ29vZ2xlLmdzb24uc3RyZWFtLk1hbGZvcm1lZEpzb25FeGNlcHRpb246IFVzZSBKc29uUmVhZGVyLnNldFN0cmljdG5lc3MoU3RyaWN0bmVzcy5MRU5JRU5UKSB0byBhY2NlcHQgbWFsZm9ybWVkIEpTT04gYXQgbGluZSAxIGNvbHVtbiA0MiBwYXRoICRcblNlZSBodHRwczovL2dpdGh1Yi5jb20vZ29vZ2xlL2dzb24vYmxvYi9tYWluL1Ryb3VibGVzaG9vdGluZy5tZCNtYWxmb3JtZWQtanNvbiIsCiAgImNvZGUiOiAiY3lwaGVyX3F1ZXJ5X2ZhaWxlZCIKfQ=="
+      }
+    },
+    {
+      "name": "selected-GET-nonexecute-prefix",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "KV19Jwp7InF1ZXJ5IjoiUkVUVVJOIDEgQVMgeCIsImdyYXBocyI6WyJhIl19",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAieCIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAieCI6IDEsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogW10KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAibGltaXQiOiAxMDAwCn0="
+      }
+    },
+    {
+      "name": "selected-GET-bom",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "77u/eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAieCIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAieCI6IDEsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogW10KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAibGltaXQiOiAxMDAwCn0="
+      }
+    },
+    {
+      "name": "selected-GET-invalid-escape",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBccSIsImdyYXBocyI6WyJhIl19",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJjb20uZ29vZ2xlLmdzb24uc3RyZWFtLk1hbGZvcm1lZEpzb25FeGNlcHRpb246IEludmFsaWQgZXNjYXBlIHNlcXVlbmNlIGF0IGxpbmUgMSBjb2x1bW4gMjAgcGF0aCAkLnF1ZXJ5XG5TZWUgaHR0cHM6Ly9naXRodWIuY29tL2dvb2dsZS9nc29uL2Jsb2IvbWFpbi9Ucm91Ymxlc2hvb3RpbmcubWQjbWFsZm9ybWVkLWpzb24iLAogICJjb2RlIjogImN5cGhlcl9xdWVyeV9mYWlsZWQiCn0="
+      }
+    },
+    {
+      "name": "selected-GET-invalid-unicode-escape",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBcdTEyRzQiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJjb20uZ29vZ2xlLmdzb24uc3RyZWFtLk1hbGZvcm1lZEpzb25FeGNlcHRpb246IE1hbGZvcm1lZCBVbmljb2RlIGVzY2FwZSBcXHUxMkc0IGF0IGxpbmUgMSBjb2x1bW4gMjAgcGF0aCAkLnF1ZXJ5XG5TZWUgaHR0cHM6Ly9naXRodWIuY29tL2dvb2dsZS9nc29uL2Jsb2IvbWFpbi9Ucm91Ymxlc2hvb3RpbmcubWQjbWFsZm9ybWVkLWpzb24iLAogICJjb2RlIjogImN5cGhlcl9xdWVyeV9mYWlsZWQiCn0="
+      }
+    },
+    {
+      "name": "selected-GET-short-unicode-escape",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBcdTEy",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJjb20uZ29vZ2xlLmdzb24uc3RyZWFtLk1hbGZvcm1lZEpzb25FeGNlcHRpb246IFVudGVybWluYXRlZCBlc2NhcGUgc2VxdWVuY2UgYXQgbGluZSAxIGNvbHVtbiAyMCBwYXRoICQucXVlcnlcblNlZSBodHRwczovL2dpdGh1Yi5jb20vZ29vZ2xlL2dzb24vYmxvYi9tYWluL1Ryb3VibGVzaG9vdGluZy5tZCNtYWxmb3JtZWQtanNvbiIsCiAgImNvZGUiOiAiY3lwaGVyX3F1ZXJ5X2ZhaWxlZCIKfQ=="
+      }
+    },
+    {
+      "name": "selected-GET-raw-newline-string",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTgoxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAieCIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAieCI6IDEsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogW10KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAibGltaXQiOiAxMDAwCn0="
+      }
+    },
+    {
+      "name": "selected-GET-escaped-newline-string",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTlwKMSBBUyB4IiwiZ3JhcGhzIjpbImEiXX0=",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAieCIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAieCI6IDEsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogW10KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAibGltaXQiOiAxMDAwCn0="
+      }
+    },
+    {
+      "name": "selected-GET-eof-object",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJd",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJqYXZhLmlvLkVPRkV4Y2VwdGlvbjogRW5kIG9mIGlucHV0IGF0IGxpbmUgMSBjb2x1bW4gNDAgcGF0aCAkLmdyYXBocyIsCiAgImNvZGUiOiAiY3lwaGVyX3F1ZXJ5X2ZhaWxlZCIKfQ=="
+      }
+    },
+    {
+      "name": "selected-GET-eof-key",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI=",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJqYXZhLmlvLkVPRkV4Y2VwdGlvbjogRW5kIG9mIGlucHV0IGF0IGxpbmUgMSBjb2x1bW4gOSBwYXRoICQucXVlcnkiLAogICJjb2RlIjogImN5cGhlcl9xdWVyeV9mYWlsZWQiCn0="
+      }
+    },
+    {
+      "name": "selected-GET-eof-colon",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJqYXZhLmlvLkVPRkV4Y2VwdGlvbjogRW5kIG9mIGlucHV0IGF0IGxpbmUgMSBjb2x1bW4gMTAgcGF0aCAkLnF1ZXJ5IiwKICAiY29kZSI6ICJjeXBoZXJfcXVlcnlfZmFpbGVkIgp9"
+      }
+    },
+    {
+      "name": "selected-GET-eof-string",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAx",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJjb20uZ29vZ2xlLmdzb24uc3RyZWFtLk1hbGZvcm1lZEpzb25FeGNlcHRpb246IFVudGVybWluYXRlZCBzdHJpbmcgYXQgbGluZSAxIGNvbHVtbiAxOSBwYXRoICQucXVlcnlcblNlZSBodHRwczovL2dpdGh1Yi5jb20vZ29vZ2xlL2dzb24vYmxvYi9tYWluL1Ryb3VibGVzaG9vdGluZy5tZCNtYWxmb3JtZWQtanNvbiIsCiAgImNvZGUiOiAiY3lwaGVyX3F1ZXJ5X2ZhaWxlZCIKfQ=="
+      }
+    },
+    {
+      "name": "selected-GET-eof-array",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSI=",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJqYXZhLmlvLkVPRkV4Y2VwdGlvbjogRW5kIG9mIGlucHV0IGF0IGxpbmUgMSBjb2x1bW4gMzkgcGF0aCAkLmdyYXBoc1sxXSIsCiAgImNvZGUiOiAiY3lwaGVyX3F1ZXJ5X2ZhaWxlZCIKfQ=="
+      }
+    },
+    {
+      "name": "selected-GET-missing-colon",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSIgIlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJjb20uZ29vZ2xlLmdzb24uc3RyZWFtLk1hbGZvcm1lZEpzb25FeGNlcHRpb246IEV4cGVjdGVkIFx1MDAyNzpcdTAwMjcgYXQgbGluZSAxIGNvbHVtbiAxMSBwYXRoICQucXVlcnlcblNlZSBodHRwczovL2dpdGh1Yi5jb20vZ29vZ2xlL2dzb24vYmxvYi9tYWluL1Ryb3VibGVzaG9vdGluZy5tZCNtYWxmb3JtZWQtanNvbiIsCiAgImNvZGUiOiAiY3lwaGVyX3F1ZXJ5X2ZhaWxlZCIKfQ=="
+      }
+    },
+    {
+      "name": "selected-GET-missing-comma",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiICJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJjb20uZ29vZ2xlLmdzb24uc3RyZWFtLk1hbGZvcm1lZEpzb25FeGNlcHRpb246IFVudGVybWluYXRlZCBvYmplY3QgYXQgbGluZSAxIGNvbHVtbiAyNyBwYXRoICQucXVlcnlcblNlZSBodHRwczovL2dpdGh1Yi5jb20vZ29vZ2xlL2dzb24vYmxvYi9tYWluL1Ryb3VibGVzaG9vdGluZy5tZCNtYWxmb3JtZWQtanNvbiIsCiAgImNvZGUiOiAiY3lwaGVyX3F1ZXJ5X2ZhaWxlZCIKfQ=="
+      }
+    },
+    {
+      "name": "selected-GET-duplicate-query",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAwIEFTIHgiLCJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAieCIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAieCI6IDEsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogW10KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAibGltaXQiOiAxMDAwCn0="
+      }
+    },
+    {
+      "name": "selected-GET-uppercase-null",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6TlVMTCwiZ3JhcGhzIjpbImEiXX0=",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJKc29uTnVsbCIsCiAgImNvZGUiOiAiY3lwaGVyX3F1ZXJ5X2ZhaWxlZCIKfQ=="
+      }
+    },
+    {
+      "name": "selected-GET-timeout-leading-zero",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOjAxMDAwfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAieCIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAieCI6IDEsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogW10KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAibGltaXQiOiAxMDAwCn0="
+      }
+    },
+    {
+      "name": "selected-GET-timeout-single-quotes",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCd0aW1lb3V0TXMnOicxMDAwJ30=",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAieCIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAieCI6IDEsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogW10KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAibGltaXQiOiAxMDAwCn0="
+      }
+    },
+    {
+      "name": "selected-GET-timeout-invalid-escape",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOiJccSJ9",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJjb20uZ29vZ2xlLmdzb24uc3RyZWFtLk1hbGZvcm1lZEpzb25FeGNlcHRpb246IEludmFsaWQgZXNjYXBlIHNlcXVlbmNlIGF0IGxpbmUgMSBjb2x1bW4gNTYgcGF0aCAkLnRpbWVvdXRNc1xuU2VlIGh0dHBzOi8vZ2l0aHViLmNvbS9nb29nbGUvZ3Nvbi9ibG9iL21haW4vVHJvdWJsZXNob290aW5nLm1kI21hbGZvcm1lZC1qc29uIiwKICAiY29kZSI6ICJjeXBoZXJfcXVlcnlfZmFpbGVkIgp9"
+      }
+    },
+    {
+      "name": "selected-GET-timeout-nan",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOk5hTn0=",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJcdTAwMjd0aW1lb3V0TXNcdTAwMjcgbXVzdCBiZSBhIHBvc2l0aXZlIGludGVnZXIiLAogICJjb2RlIjogImN5cGhlcl9xdWVyeV9mYWlsZWQiCn0="
+      }
+    },
+    {
+      "name": "selected-GET-timeout-plus-number",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOisxMDAwfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAieCIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAieCI6IDEsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogW10KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAibGltaXQiOiAxMDAwCn0="
+      }
+    },
+    {
+      "name": "selected-GET-query-trailing-array",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6WyJSRVRVUk4gMSBBUyB4IixdLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJBcnJheSBtdXN0IGhhdmUgc2l6ZSAxLCBidXQgaGFzIHNpemUgMiIsCiAgImNvZGUiOiAiY3lwaGVyX3F1ZXJ5X2ZhaWxlZCIKfQ=="
+      }
+    },
+    {
+      "name": "selected-GET-unpaired-surrogate-query",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBcJ1x1ZDgwMFwnIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAieCIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAieCI6ICI/IiwKICAgICAgIiRtZXRhZGF0YSI6IHsKICAgICAgICAiZ3JhcGhJZHMiOiBbXQogICAgICB9CiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxLAogICJsaW1pdCI6IDEwMDAKfQ=="
+      }
+    },
+    {
+      "name": "selected-GET-invalid-utf8",
+      "method": "GET",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAn/ycgQVMgeCIsImdyYXBocyI6WyJhIl19",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAieCIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAieCI6ICLvv70iLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImxpbWl0IjogMTAwMAp9"
+      }
+    },
+    {
+      "name": "selected-POST-valid",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAieCIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAieCI6IDEsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogW10KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAibGltaXQiOiAxMDAwCn0="
+      }
+    },
+    {
+      "name": "selected-POST-empty",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAieCIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAieCI6IDIsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogW10KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAibGltaXQiOiAxMDAwCn0="
+      }
+    },
+    {
+      "name": "selected-POST-whitespace",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "IAkNCg==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAieCIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAieCI6IDIsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogW10KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAibGltaXQiOiAxMDAwCn0="
+      }
+    },
+    {
+      "name": "selected-POST-nul",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "AA==",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJOb3QgYSBKU09OIE9iamVjdDogXCJcXHUwMDAwXCIiLAogICJjb2RlIjogImN5cGhlcl9xdWVyeV9mYWlsZWQiCn0="
+      }
+    },
+    {
+      "name": "selected-POST-empty-object",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "e30=",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJNaXNzaW5nIFx1MDAyN3F1ZXJ5XHUwMDI3IHBhcmFtZXRlciIsCiAgImNvZGUiOiAiY3lwaGVyX3F1ZXJ5X2ZhaWxlZCIKfQ=="
+      }
+    },
+    {
+      "name": "selected-POST-null",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "bnVsbA==",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJOb3QgYSBKU09OIE9iamVjdDogbnVsbCIsCiAgImNvZGUiOiAiY3lwaGVyX3F1ZXJ5X2ZhaWxlZCIKfQ=="
+      }
+    },
+    {
+      "name": "selected-POST-array",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "W10=",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJOb3QgYSBKU09OIE9iamVjdDogW10iLAogICJjb2RlIjogImN5cGhlcl9xdWVyeV9mYWlsZWQiCn0="
+      }
+    },
+    {
+      "name": "selected-POST-top-string",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "ImhpIg==",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJOb3QgYSBKU09OIE9iamVjdDogXCJoaVwiIiwKICAiY29kZSI6ICJjeXBoZXJfcXVlcnlfZmFpbGVkIgp9"
+      }
+    },
+    {
+      "name": "selected-POST-line-comment",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "Ly8gbGVhZGluZwp7InF1ZXJ5IjoiUkVUVVJOIDEgQVMgeCIsImdyYXBocyI6WyJhIl19",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAieCIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAieCI6IDEsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogW10KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAibGltaXQiOiAxMDAwCn0="
+      }
+    },
+    {
+      "name": "selected-POST-block-comment",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "LyogbGVhZGluZyAqL3sicXVlcnkiOiJSRVRVUk4gMSBBUyB4IiwiZ3JhcGhzIjpbImEiXX0vKiB0cmFpbGluZyAqLw==",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJjb20uZ29vZ2xlLmdzb24uc3RyZWFtLk1hbGZvcm1lZEpzb25FeGNlcHRpb246IFVzZSBKc29uUmVhZGVyLnNldFN0cmljdG5lc3MoU3RyaWN0bmVzcy5MRU5JRU5UKSB0byBhY2NlcHQgbWFsZm9ybWVkIEpTT04gYXQgbGluZSAxIGNvbHVtbiA1NSBwYXRoICRcblNlZSBodHRwczovL2dpdGh1Yi5jb20vZ29vZ2xlL2dzb24vYmxvYi9tYWluL1Ryb3VibGVzaG9vdGluZy5tZCNtYWxmb3JtZWQtanNvbiIsCiAgImNvZGUiOiAiY3lwaGVyX3F1ZXJ5X2ZhaWxlZCIKfQ=="
+      }
+    },
+    {
+      "name": "selected-POST-hash-comment",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "IyBsZWFkaW5nCnsicXVlcnkiOiJSRVRVUk4gMSBBUyB4IiwiZ3JhcGhzIjpbImEiXX0=",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAieCIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAieCI6IDEsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogW10KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAibGltaXQiOiAxMDAwCn0="
+      }
+    },
+    {
+      "name": "selected-POST-comment-inside",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "ey8qcXVlcnkqLyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAieCIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAieCI6IDEsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogW10KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAibGltaXQiOiAxMDAwCn0="
+      }
+    },
+    {
+      "name": "selected-POST-comment-unclosed",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "LyogdW5jbG9zZWQ=",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJjb20uZ29vZ2xlLmdzb24uc3RyZWFtLk1hbGZvcm1lZEpzb25FeGNlcHRpb246IFVudGVybWluYXRlZCBjb21tZW50IGF0IGxpbmUgMSBjb2x1bW4gMTEgcGF0aCAkXG5TZWUgaHR0cHM6Ly9naXRodWIuY29tL2dvb2dsZS9nc29uL2Jsb2IvbWFpbi9Ucm91Ymxlc2hvb3RpbmcubWQjbWFsZm9ybWVkLWpzb24iLAogICJjb2RlIjogImN5cGhlcl9xdWVyeV9mYWlsZWQiCn0="
+      }
+    },
+    {
+      "name": "selected-POST-single-quotes",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eydxdWVyeSc6J1JFVFVSTiAxIEFTIHgnLCdncmFwaHMnOlsnYSddfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAieCIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAieCI6IDEsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogW10KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAibGltaXQiOiAxMDAwCn0="
+      }
+    },
+    {
+      "name": "selected-POST-unquoted-keys",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "e3F1ZXJ5OiJSRVRVUk4gMSBBUyB4IixncmFwaHM6WyJhIl19",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAieCIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAieCI6IDEsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogW10KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAibGltaXQiOiAxMDAwCn0="
+      }
+    },
+    {
+      "name": "selected-POST-unquoted-string",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "e3F1ZXJ5OlJFVFVSTiAxIEFTIHgsZ3JhcGhzOlthXX0=",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJjb20uZ29vZ2xlLmdzb24uc3RyZWFtLk1hbGZvcm1lZEpzb25FeGNlcHRpb246IFVudGVybWluYXRlZCBvYmplY3QgYXQgbGluZSAxIGNvbHVtbiAxNiBwYXRoICQucXVlcnlcblNlZSBodHRwczovL2dpdGh1Yi5jb20vZ29vZ2xlL2dzb24vYmxvYi9tYWluL1Ryb3VibGVzaG9vdGluZy5tZCNtYWxmb3JtZWQtanNvbiIsCiAgImNvZGUiOiAiY3lwaGVyX3F1ZXJ5X2ZhaWxlZCIKfQ=="
+      }
+    },
+    {
+      "name": "selected-POST-equals-separators",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "e3F1ZXJ5PSJSRVRVUk4gMSBBUyB4IjtncmFwaHM9WyJhIl19",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAieCIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAieCI6IDEsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogW10KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAibGltaXQiOiAxMDAwCn0="
+      }
+    },
+    {
+      "name": "selected-POST-arrow-separators",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "e3F1ZXJ5PT4iUkVUVVJOIDEgQVMgeCIsZ3JhcGhzPT5bImEiXX0=",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAieCIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAieCI6IDEsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogW10KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAibGltaXQiOiAxMDAwCn0="
+      }
+    },
+    {
+      "name": "selected-POST-trailing-object-comma",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLH0=",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJjb20uZ29vZ2xlLmdzb24uc3RyZWFtLk1hbGZvcm1lZEpzb25FeGNlcHRpb246IEV4cGVjdGVkIG5hbWUgYXQgbGluZSAxIGNvbHVtbiA0MiBwYXRoICQuZ3JhcGhzXG5TZWUgaHR0cHM6Ly9naXRodWIuY29tL2dvb2dsZS9nc29uL2Jsb2IvbWFpbi9Ucm91Ymxlc2hvb3RpbmcubWQjbWFsZm9ybWVkLWpzb24iLAogICJjb2RlIjogImN5cGhlcl9xdWVyeV9mYWlsZWQiCn0="
+      }
+    },
+    {
+      "name": "selected-POST-trailing-array-comma",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSIsXX0=",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJKc29uTnVsbCIsCiAgImNvZGUiOiAiY3lwaGVyX3F1ZXJ5X2ZhaWxlZCIKfQ=="
+      }
+    },
+    {
+      "name": "selected-POST-leading-array-comma",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlssImEiXX0=",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJKc29uTnVsbCIsCiAgImNvZGUiOiAiY3lwaGVyX3F1ZXJ5X2ZhaWxlZCIKfQ=="
+      }
+    },
+    {
+      "name": "selected-POST-array-semicolon",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSI7XX0=",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJKc29uTnVsbCIsCiAgImNvZGUiOiAiY3lwaGVyX3F1ZXJ5X2ZhaWxlZCIKfQ=="
+      }
+    },
+    {
+      "name": "selected-POST-multiple-top-level",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfSB7fQ==",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJjb20uZ29vZ2xlLmdzb24uc3RyZWFtLk1hbGZvcm1lZEpzb25FeGNlcHRpb246IFVzZSBKc29uUmVhZGVyLnNldFN0cmljdG5lc3MoU3RyaWN0bmVzcy5MRU5JRU5UKSB0byBhY2NlcHQgbWFsZm9ybWVkIEpTT04gYXQgbGluZSAxIGNvbHVtbiA0MyBwYXRoICRcblNlZSBodHRwczovL2dpdGh1Yi5jb20vZ29vZ2xlL2dzb24vYmxvYi9tYWluL1Ryb3VibGVzaG9vdGluZy5tZCNtYWxmb3JtZWQtanNvbiIsCiAgImNvZGUiOiAiY3lwaGVyX3F1ZXJ5X2ZhaWxlZCIKfQ=="
+      }
+    },
+    {
+      "name": "selected-POST-trailing-garbage",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfXh5eg==",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJjb20uZ29vZ2xlLmdzb24uc3RyZWFtLk1hbGZvcm1lZEpzb25FeGNlcHRpb246IFVzZSBKc29uUmVhZGVyLnNldFN0cmljdG5lc3MoU3RyaWN0bmVzcy5MRU5JRU5UKSB0byBhY2NlcHQgbWFsZm9ybWVkIEpTT04gYXQgbGluZSAxIGNvbHVtbiA0MiBwYXRoICRcblNlZSBodHRwczovL2dpdGh1Yi5jb20vZ29vZ2xlL2dzb24vYmxvYi9tYWluL1Ryb3VibGVzaG9vdGluZy5tZCNtYWxmb3JtZWQtanNvbiIsCiAgImNvZGUiOiAiY3lwaGVyX3F1ZXJ5X2ZhaWxlZCIKfQ=="
+      }
+    },
+    {
+      "name": "selected-POST-nonexecute-prefix",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "KV19Jwp7InF1ZXJ5IjoiUkVUVVJOIDEgQVMgeCIsImdyYXBocyI6WyJhIl19",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAieCIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAieCI6IDEsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogW10KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAibGltaXQiOiAxMDAwCn0="
+      }
+    },
+    {
+      "name": "selected-POST-bom",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "77u/eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAieCIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAieCI6IDEsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogW10KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAibGltaXQiOiAxMDAwCn0="
+      }
+    },
+    {
+      "name": "selected-POST-invalid-escape",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBccSIsImdyYXBocyI6WyJhIl19",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJjb20uZ29vZ2xlLmdzb24uc3RyZWFtLk1hbGZvcm1lZEpzb25FeGNlcHRpb246IEludmFsaWQgZXNjYXBlIHNlcXVlbmNlIGF0IGxpbmUgMSBjb2x1bW4gMjAgcGF0aCAkLnF1ZXJ5XG5TZWUgaHR0cHM6Ly9naXRodWIuY29tL2dvb2dsZS9nc29uL2Jsb2IvbWFpbi9Ucm91Ymxlc2hvb3RpbmcubWQjbWFsZm9ybWVkLWpzb24iLAogICJjb2RlIjogImN5cGhlcl9xdWVyeV9mYWlsZWQiCn0="
+      }
+    },
+    {
+      "name": "selected-POST-invalid-unicode-escape",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBcdTEyRzQiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJjb20uZ29vZ2xlLmdzb24uc3RyZWFtLk1hbGZvcm1lZEpzb25FeGNlcHRpb246IE1hbGZvcm1lZCBVbmljb2RlIGVzY2FwZSBcXHUxMkc0IGF0IGxpbmUgMSBjb2x1bW4gMjAgcGF0aCAkLnF1ZXJ5XG5TZWUgaHR0cHM6Ly9naXRodWIuY29tL2dvb2dsZS9nc29uL2Jsb2IvbWFpbi9Ucm91Ymxlc2hvb3RpbmcubWQjbWFsZm9ybWVkLWpzb24iLAogICJjb2RlIjogImN5cGhlcl9xdWVyeV9mYWlsZWQiCn0="
+      }
+    },
+    {
+      "name": "selected-POST-short-unicode-escape",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBcdTEy",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJjb20uZ29vZ2xlLmdzb24uc3RyZWFtLk1hbGZvcm1lZEpzb25FeGNlcHRpb246IFVudGVybWluYXRlZCBlc2NhcGUgc2VxdWVuY2UgYXQgbGluZSAxIGNvbHVtbiAyMCBwYXRoICQucXVlcnlcblNlZSBodHRwczovL2dpdGh1Yi5jb20vZ29vZ2xlL2dzb24vYmxvYi9tYWluL1Ryb3VibGVzaG9vdGluZy5tZCNtYWxmb3JtZWQtanNvbiIsCiAgImNvZGUiOiAiY3lwaGVyX3F1ZXJ5X2ZhaWxlZCIKfQ=="
+      }
+    },
+    {
+      "name": "selected-POST-raw-newline-string",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTgoxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAieCIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAieCI6IDEsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogW10KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAibGltaXQiOiAxMDAwCn0="
+      }
+    },
+    {
+      "name": "selected-POST-escaped-newline-string",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTlwKMSBBUyB4IiwiZ3JhcGhzIjpbImEiXX0=",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAieCIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAieCI6IDEsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogW10KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAibGltaXQiOiAxMDAwCn0="
+      }
+    },
+    {
+      "name": "selected-POST-eof-object",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJd",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJqYXZhLmlvLkVPRkV4Y2VwdGlvbjogRW5kIG9mIGlucHV0IGF0IGxpbmUgMSBjb2x1bW4gNDAgcGF0aCAkLmdyYXBocyIsCiAgImNvZGUiOiAiY3lwaGVyX3F1ZXJ5X2ZhaWxlZCIKfQ=="
+      }
+    },
+    {
+      "name": "selected-POST-eof-key",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI=",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJqYXZhLmlvLkVPRkV4Y2VwdGlvbjogRW5kIG9mIGlucHV0IGF0IGxpbmUgMSBjb2x1bW4gOSBwYXRoICQucXVlcnkiLAogICJjb2RlIjogImN5cGhlcl9xdWVyeV9mYWlsZWQiCn0="
+      }
+    },
+    {
+      "name": "selected-POST-eof-colon",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJqYXZhLmlvLkVPRkV4Y2VwdGlvbjogRW5kIG9mIGlucHV0IGF0IGxpbmUgMSBjb2x1bW4gMTAgcGF0aCAkLnF1ZXJ5IiwKICAiY29kZSI6ICJjeXBoZXJfcXVlcnlfZmFpbGVkIgp9"
+      }
+    },
+    {
+      "name": "selected-POST-eof-string",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAx",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJjb20uZ29vZ2xlLmdzb24uc3RyZWFtLk1hbGZvcm1lZEpzb25FeGNlcHRpb246IFVudGVybWluYXRlZCBzdHJpbmcgYXQgbGluZSAxIGNvbHVtbiAxOSBwYXRoICQucXVlcnlcblNlZSBodHRwczovL2dpdGh1Yi5jb20vZ29vZ2xlL2dzb24vYmxvYi9tYWluL1Ryb3VibGVzaG9vdGluZy5tZCNtYWxmb3JtZWQtanNvbiIsCiAgImNvZGUiOiAiY3lwaGVyX3F1ZXJ5X2ZhaWxlZCIKfQ=="
+      }
+    },
+    {
+      "name": "selected-POST-eof-array",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSI=",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJqYXZhLmlvLkVPRkV4Y2VwdGlvbjogRW5kIG9mIGlucHV0IGF0IGxpbmUgMSBjb2x1bW4gMzkgcGF0aCAkLmdyYXBoc1sxXSIsCiAgImNvZGUiOiAiY3lwaGVyX3F1ZXJ5X2ZhaWxlZCIKfQ=="
+      }
+    },
+    {
+      "name": "selected-POST-missing-colon",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSIgIlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJjb20uZ29vZ2xlLmdzb24uc3RyZWFtLk1hbGZvcm1lZEpzb25FeGNlcHRpb246IEV4cGVjdGVkIFx1MDAyNzpcdTAwMjcgYXQgbGluZSAxIGNvbHVtbiAxMSBwYXRoICQucXVlcnlcblNlZSBodHRwczovL2dpdGh1Yi5jb20vZ29vZ2xlL2dzb24vYmxvYi9tYWluL1Ryb3VibGVzaG9vdGluZy5tZCNtYWxmb3JtZWQtanNvbiIsCiAgImNvZGUiOiAiY3lwaGVyX3F1ZXJ5X2ZhaWxlZCIKfQ=="
+      }
+    },
+    {
+      "name": "selected-POST-missing-comma",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiICJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJjb20uZ29vZ2xlLmdzb24uc3RyZWFtLk1hbGZvcm1lZEpzb25FeGNlcHRpb246IFVudGVybWluYXRlZCBvYmplY3QgYXQgbGluZSAxIGNvbHVtbiAyNyBwYXRoICQucXVlcnlcblNlZSBodHRwczovL2dpdGh1Yi5jb20vZ29vZ2xlL2dzb24vYmxvYi9tYWluL1Ryb3VibGVzaG9vdGluZy5tZCNtYWxmb3JtZWQtanNvbiIsCiAgImNvZGUiOiAiY3lwaGVyX3F1ZXJ5X2ZhaWxlZCIKfQ=="
+      }
+    },
+    {
+      "name": "selected-POST-duplicate-query",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAwIEFTIHgiLCJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAieCIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAieCI6IDEsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogW10KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAibGltaXQiOiAxMDAwCn0="
+      }
+    },
+    {
+      "name": "selected-POST-uppercase-null",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6TlVMTCwiZ3JhcGhzIjpbImEiXX0=",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJKc29uTnVsbCIsCiAgImNvZGUiOiAiY3lwaGVyX3F1ZXJ5X2ZhaWxlZCIKfQ=="
+      }
+    },
+    {
+      "name": "selected-POST-timeout-leading-zero",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOjAxMDAwfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAieCIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAieCI6IDEsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogW10KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAibGltaXQiOiAxMDAwCn0="
+      }
+    },
+    {
+      "name": "selected-POST-timeout-single-quotes",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCd0aW1lb3V0TXMnOicxMDAwJ30=",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAieCIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAieCI6IDEsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogW10KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAibGltaXQiOiAxMDAwCn0="
+      }
+    },
+    {
+      "name": "selected-POST-timeout-invalid-escape",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOiJccSJ9",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJjb20uZ29vZ2xlLmdzb24uc3RyZWFtLk1hbGZvcm1lZEpzb25FeGNlcHRpb246IEludmFsaWQgZXNjYXBlIHNlcXVlbmNlIGF0IGxpbmUgMSBjb2x1bW4gNTYgcGF0aCAkLnRpbWVvdXRNc1xuU2VlIGh0dHBzOi8vZ2l0aHViLmNvbS9nb29nbGUvZ3Nvbi9ibG9iL21haW4vVHJvdWJsZXNob290aW5nLm1kI21hbGZvcm1lZC1qc29uIiwKICAiY29kZSI6ICJjeXBoZXJfcXVlcnlfZmFpbGVkIgp9"
+      }
+    },
+    {
+      "name": "selected-POST-timeout-nan",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOk5hTn0=",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJcdTAwMjd0aW1lb3V0TXNcdTAwMjcgbXVzdCBiZSBhIHBvc2l0aXZlIGludGVnZXIiLAogICJjb2RlIjogImN5cGhlcl9xdWVyeV9mYWlsZWQiCn0="
+      }
+    },
+    {
+      "name": "selected-POST-timeout-plus-number",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAxIEFTIHgiLCJncmFwaHMiOlsiYSJdLCJ0aW1lb3V0TXMiOisxMDAwfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAieCIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAieCI6IDEsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogW10KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAibGltaXQiOiAxMDAwCn0="
+      }
+    },
+    {
+      "name": "selected-POST-query-trailing-array",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6WyJSRVRVUk4gMSBBUyB4IixdLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 400,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJlcnJvciI6ICJBcnJheSBtdXN0IGhhdmUgc2l6ZSAxLCBidXQgaGFzIHNpemUgMiIsCiAgImNvZGUiOiAiY3lwaGVyX3F1ZXJ5X2ZhaWxlZCIKfQ=="
+      }
+    },
+    {
+      "name": "selected-POST-unpaired-surrogate-query",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiBcJ1x1ZDgwMFwnIEFTIHgiLCJncmFwaHMiOlsiYSJdfQ==",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAieCIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAieCI6ICI/IiwKICAgICAgIiRtZXRhZGF0YSI6IHsKICAgICAgICAiZ3JhcGhJZHMiOiBbXQogICAgICB9CiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxLAogICJsaW1pdCI6IDEwMDAKfQ=="
+      }
+    },
+    {
+      "name": "selected-POST-invalid-utf8",
+      "method": "POST",
+      "path": "/api/cypher/graphs?query=RETURN%202%20AS%20x&graph=a",
+      "bodyBase64": "eyJxdWVyeSI6IlJFVFVSTiAn/ycgQVMgeCIsImdyYXBocyI6WyJhIl19",
+      "expected": {
+        "status": 200,
+        "contentType": "application/json",
+        "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAieCIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAieCI6ICLvv70iLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImxpbWl0IjogMTAwMAp9"
+      }
+    }
+  ]
+}

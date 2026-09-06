@@ -1,0 +1,334 @@
+{
+  "cases": [
+    {
+      "name": "root-0",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "RETURN 1e999 AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    {
+      "name": "root-1",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "RETURN 0.0/0.0 AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    {
+      "name": "root-2",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "RETURN sqrt(-1) AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    {
+      "name": "root-3",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "RETURN log(0) AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    {
+      "name": "root-4",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "RETURN toFloat('NaN') AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    {
+      "name": "root-5",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "RETURN toFloat('Infinity') AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    {
+      "name": "root-6",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "RETURN -1e999 AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    {
+      "name": "root-7",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "RETURN [1, sqrt(-1)] AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    {
+      "name": "root-8",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "RETURN {n:log(0)} AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    {
+      "name": "root-9",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "RETURN sqrt(4) AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    {
+      "name": "scoped-0",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher",
+      "body": {
+        "query": "RETURN 1e999 AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    {
+      "name": "scoped-1",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher",
+      "body": {
+        "query": "RETURN 0.0/0.0 AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    {
+      "name": "scoped-2",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher",
+      "body": {
+        "query": "RETURN sqrt(-1) AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    {
+      "name": "scoped-3",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher",
+      "body": {
+        "query": "RETURN log(0) AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    {
+      "name": "scoped-4",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher",
+      "body": {
+        "query": "RETURN toFloat('NaN') AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    {
+      "name": "scoped-5",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher",
+      "body": {
+        "query": "RETURN toFloat('Infinity') AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    {
+      "name": "scoped-6",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher",
+      "body": {
+        "query": "RETURN -1e999 AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    {
+      "name": "scoped-7",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher",
+      "body": {
+        "query": "RETURN [1, sqrt(-1)] AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    {
+      "name": "scoped-8",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher",
+      "body": {
+        "query": "RETURN {n:log(0)} AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    {
+      "name": "scoped-9",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher",
+      "body": {
+        "query": "RETURN sqrt(4) AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    {
+      "name": "selected-0",
+      "method": "POST",
+      "path": "/api/cypher/graphs",
+      "body": {
+        "query": "RETURN 1e999 AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    {
+      "name": "selected-1",
+      "method": "POST",
+      "path": "/api/cypher/graphs",
+      "body": {
+        "query": "RETURN 0.0/0.0 AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    {
+      "name": "selected-2",
+      "method": "POST",
+      "path": "/api/cypher/graphs",
+      "body": {
+        "query": "RETURN sqrt(-1) AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    {
+      "name": "selected-3",
+      "method": "POST",
+      "path": "/api/cypher/graphs",
+      "body": {
+        "query": "RETURN log(0) AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    {
+      "name": "selected-4",
+      "method": "POST",
+      "path": "/api/cypher/graphs",
+      "body": {
+        "query": "RETURN toFloat('NaN') AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    {
+      "name": "selected-5",
+      "method": "POST",
+      "path": "/api/cypher/graphs",
+      "body": {
+        "query": "RETURN toFloat('Infinity') AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    {
+      "name": "selected-6",
+      "method": "POST",
+      "path": "/api/cypher/graphs",
+      "body": {
+        "query": "RETURN -1e999 AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    {
+      "name": "selected-7",
+      "method": "POST",
+      "path": "/api/cypher/graphs",
+      "body": {
+        "query": "RETURN [1, sqrt(-1)] AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    {
+      "name": "selected-8",
+      "method": "POST",
+      "path": "/api/cypher/graphs",
+      "body": {
+        "query": "RETURN {n:log(0)} AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    {
+      "name": "selected-9",
+      "method": "POST",
+      "path": "/api/cypher/graphs",
+      "body": {
+        "query": "RETURN sqrt(4) AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    }
+  ]
+}
