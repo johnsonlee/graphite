@@ -22,6 +22,8 @@ type nodeLocation struct {
 // callers until Close. Public tables are read-only by convention. Resource and
 // class-overview records are loaded lazily when their accessors are called.
 type Store struct {
+	dir                string
+	callSiteIndex      callSiteIndexState
 	overview           lazyClassOverview
 	Mode               string
 	mappedData         []byte
@@ -59,7 +61,7 @@ func OpenMode(dir, mode string) (*Store, error) {
 	if err != nil {
 		return nil, err
 	}
-	s := &Store{overview: lazyClassOverview{dir: dir}, resources: lazyResources{dir: dir}, Strings: table, file: file, locations: map[int32]nodeLocation{}, byKind: map[string][]int32{}}
+	s := &Store{dir: dir, overview: lazyClassOverview{dir: dir}, resources: lazyResources{dir: dir}, Strings: table, file: file, locations: map[int32]nodeLocation{}, byKind: map[string][]int32{}}
 	fail := func(err error) (*Store, error) { s.Close(); return nil, err }
 	stat, err := file.Stat()
 	if err != nil {
@@ -159,6 +161,7 @@ func OpenMode(dir, mode string) (*Store, error) {
 		stream := newDecoder(bufio.NewReader(io.NewSectionReader(file, 8, s.size-8)), s.size-8, table)
 		stream.version = s.FormatVersion
 		for i := 0; i < s.NodeCount && stream.err == nil; i++ {
+			offset := s.size - stream.remaining
 			n := stream.node()
 			if _, exists := s.eagerNodes[n.ID]; exists {
 				stream.fail("duplicate node id %d", n.ID)
@@ -169,6 +172,14 @@ func OpenMode(dir, mode string) (*Store, error) {
 			s.ids = append(s.ids, n.ID)
 			s.byKind[n.Kind] = append(s.byKind[n.Kind], n.ID)
 			s.eagerNodes[n.ID] = n
+			var tag byte
+			for i, k := range nodeKinds {
+				if k == n.Kind {
+					tag = byte(i)
+					break
+				}
+			}
+			s.locations[n.ID] = nodeLocation{offset, tag}
 		}
 		if stream.err != nil {
 			return fail(stream.err)
@@ -218,13 +229,37 @@ func resolveLoadMode(mode string, nodeCount int) string {
 	return mode
 }
 func (s *Store) Close() error {
+	st := &s.callSiteIndex
+	st.mu.Lock()
+	if st.closed {
+		pending := st.loading
+		st.mu.Unlock()
+		if pending != nil {
+			<-pending
+		}
+		return nil
+	}
+	st.closed = true
+	if st.closing != nil {
+		close(st.closing)
+	}
 	var err error
+	if st.view != nil {
+		err = unmapNodeData(st.view.data)
+		st.view.data = nil
+	}
 	if s.mappedData != nil {
-		err = unmapNodeData(s.mappedData)
+		err = errors.Join(err, unmapNodeData(s.mappedData))
 		s.mappedData = nil
 	}
 	if s.file != nil {
 		err = errors.Join(err, s.file.Close())
+		s.file = nil
+	}
+	pending := st.loading
+	st.mu.Unlock()
+	if pending != nil {
+		<-pending
 	}
 	return err
 }

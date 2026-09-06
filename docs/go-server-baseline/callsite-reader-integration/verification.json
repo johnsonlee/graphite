@@ -1,0 +1,28 @@
+{
+  "base": "78f6deb42ed1fd3382339fb4c5d613d1c1648632",
+  "archive": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-reader-integration-m0iflb2k",
+  "patchSHA256": "4a346947cfe45ee67e3e90e07bcaab129130159203bf89121be756315322ab74",
+  "allFrozenFilesMatch": true,
+  "runs": [
+    {
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./..."
+      ],
+      "exitCode": 0,
+      "log": "race.log"
+    },
+    {
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "exitCode": 0,
+      "log": "vet.log"
+    }
+  ],
+  "finishedAtUTC": "2026-09-06T21:27:39.420831+00:00"
+}

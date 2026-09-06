@@ -1,0 +1,163 @@
+{
+  "baseRevision": "90787051c4f92da8e4fa9077b613ae36507d67b2",
+  "worktree": "/tmp/graphite-go-callsite-index-reader-90787051",
+  "patch": "/tmp/graphite-go-callsite-index-reader-90787051-delivery/reader.patch",
+  "patchSHA256": "4a346947cfe45ee67e3e90e07bcaab129130159203bf89121be756315322ab74",
+  "files": {
+    "graphite-server/internal/store/README.md": {
+      "bytes": 14451,
+      "SHA256": "f09d5c6beb6f4cd1be1156e4ef88d85563fa94bd21c95c71a5d7ea7cfb48e396"
+    },
+    "graphite-server/internal/store/callsite_index.go": {
+      "bytes": 13214,
+      "SHA256": "261c68b290c72ebb4a5548588e934fcb7bee4cac8d1357021c90552116fd54dc"
+    },
+    "graphite-server/internal/store/callsite_index_real_test.go": {
+      "bytes": 2609,
+      "SHA256": "eb895ef5dca03f5c201403c3919294b9acfdeea5d00be0866b5c03f02c61a576"
+    },
+    "graphite-server/internal/store/callsite_index_test.go": {
+      "bytes": 16152,
+      "SHA256": "646cb5a6644848a06c3f1323d40f3795956dcd4f87febcb8aa7645b463c62e61"
+    },
+    "graphite-server/internal/store/callsite_strings.go": {
+      "bytes": 4737,
+      "SHA256": "61cbd81fe564612e32e4bd25b23238b2f9e0ec475114ca69c885954d3f795406"
+    },
+    "graphite-server/internal/store/store.go": {
+      "bytes": 8047,
+      "SHA256": "ff3512cb7f625ed9abe5b75d19b9a18db73f1f0c57717565c81e5eac77896d75"
+    },
+    "graphite-server/internal/store/testdata/callsite-index/GenerateIndex.java": {
+      "bytes": 3965,
+      "SHA256": "d9a3c167d1f23d0cb8ed6d3911c96117fed7e62921b10731ac223a42bbe2bbff"
+    },
+    "graphite-server/internal/store/testdata/callsite-index/README.md": {
+      "bytes": 2455,
+      "SHA256": "ce78ffea04c22944072f783429509a592117091fee75301a3b4a0504c3eae083"
+    },
+    "graphite-server/internal/store/testdata/callsite-index/expected.json": {
+      "bytes": 2211,
+      "SHA256": "d87a45827171007a08c1a400be77598bcfa4769819250942bb0ab4fe84fa72e3"
+    },
+    "graphite-server/internal/store/testdata/callsite-index/provenance.json": {
+      "bytes": 3841,
+      "SHA256": "fa6b922f925b9340e35f7a5621529d254ae61322ba9034a4f9777d6b7c3f10c2"
+    },
+    "graphite-server/internal/store/testdata/callsite-index/real64-correctness/README.md": {
+      "bytes": 2312,
+      "SHA256": "31560f7db81e9eb7d0cdf8b3bd536523e4d9e78a837edb1758f2dab84f2a6ca9"
+    },
+    "graphite-server/internal/store/testdata/callsite-index/real64-correctness/exit-code.txt": {
+      "bytes": 2,
+      "SHA256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "graphite-server/internal/store/testdata/callsite-index/real64-correctness/module-validation.json": {
+      "bytes": 199,
+      "SHA256": "a901ccdfa293d5b0c52e1e459dbba4f6c83d23bb66636e818c643de6dce71e6f"
+    },
+    "graphite-server/internal/store/testdata/callsite-index/real64-correctness/module-validation.log": {
+      "bytes": 1094,
+      "SHA256": "079555bc49bfd8dc32006a1e82dcec4d8ba85c146e9a5eee397822b9ffe0e157"
+    },
+    "graphite-server/internal/store/testdata/callsite-index/real64-correctness/run-identity.json": {
+      "bytes": 18347,
+      "SHA256": "78030bab90a2ccc1dd3388861ae6a9df6df7b6fa10f97bfd1b1316d91e4df96a"
+    },
+    "graphite-server/internal/store/testdata/callsite-index/real64-correctness/run.log": {
+      "bytes": 43922,
+      "SHA256": "3c69c387b257761fd6eae99167125a1abeafe5365dcbd81f238c9912530da2a7"
+    },
+    "graphite-server/internal/store/testdata/callsite-index/real64-correctness/run.py": {
+      "bytes": 2500,
+      "SHA256": "c3cb4aab24a5e95246d478cd68955b7179415b195b04a3ce5f8bc2fcd2e61007"
+    },
+    "graphite-server/internal/store/testdata/callsite-index/real64-correctness/summary.json": {
+      "bytes": 337,
+      "SHA256": "ac98279e9424864d40ec41a9706cecf7e972079e7008a9520d0d0ecd2ce37b44"
+    },
+    "graphite-server/internal/store/testdata/callsite-index/real64-correctness/validated-indexes.json": {
+      "bytes": 65438,
+      "SHA256": "6391f02a7d413fb8f0d23b55562bce69b5eab8a4cefdb7be156efb36bb6d9b69"
+    },
+    "graphite-server/internal/store/testdata/callsite-index/store/forward.graph": {
+      "bytes": 12,
+      "SHA256": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4"
+    },
+    "graphite-server/internal/store/testdata/callsite-index/store/forward.offsets": {
+      "bytes": 35,
+      "SHA256": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458"
+    },
+    "graphite-server/internal/store/testdata/callsite-index/store/forward.properties": {
+      "bytes": 620,
+      "SHA256": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc"
+    },
+    "graphite-server/internal/store/testdata/callsite-index/store/graph.callsite-string-content.identity": {
+      "bytes": 32,
+      "SHA256": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0"
+    },
+    "graphite-server/internal/store/testdata/callsite-index/store/graph.callsite-string-index": {
+      "bytes": 676,
+      "SHA256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+    },
+    "graphite-server/internal/store/testdata/callsite-index/store/graph.classoverview": {
+      "bytes": 64,
+      "SHA256": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea"
+    },
+    "graphite-server/internal/store/testdata/callsite-index/store/graph.comparisons": {
+      "bytes": 8,
+      "SHA256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8"
+    },
+    "graphite-server/internal/store/testdata/callsite-index/store/graph.labelprefix": {
+      "bytes": 368,
+      "SHA256": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23"
+    },
+    "graphite-server/internal/store/testdata/callsite-index/store/graph.labels": {
+      "bytes": 0,
+      "SHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "graphite-server/internal/store/testdata/callsite-index/store/graph.metadata": {
+      "bytes": 36,
+      "SHA256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb"
+    },
+    "graphite-server/internal/store/testdata/callsite-index/store/graph.nodedata": {
+      "bytes": 220,
+      "SHA256": "f0a4462a820a7daa557704796992c79b9ddafcb80475aaafa020592cb4e19e1a"
+    },
+    "graphite-server/internal/store/testdata/callsite-index/store/graph.nodeindex": {
+      "bytes": 60,
+      "SHA256": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c"
+    },
+    "graphite-server/internal/store/testdata/callsite-index/store/graph.nodeoffsets": {
+      "bytes": 736,
+      "SHA256": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf"
+    },
+    "graphite-server/internal/store/testdata/callsite-index/store/graph.resources": {
+      "bytes": 8,
+      "SHA256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17"
+    },
+    "graphite-server/internal/store/testdata/callsite-index/store/graph.strings": {
+      "bytes": 535,
+      "SHA256": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b"
+    },
+    "graphite-server/internal/store/testdata/callsite-index/store/graph.strings.identity": {
+      "bytes": 32,
+      "SHA256": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb"
+    },
+    "graphite-server/internal/store/testdata/callsite-index/store/graph.typeindex": {
+      "bytes": 232,
+      "SHA256": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849"
+    }
+  },
+  "checks": {
+    "tinyJvmOracle": "passed; main persistence acceptance plus full raw IDs/directory/signatures/trigrams",
+    "real64": "64/64 full CRC/CSR passed; per-graph Close; all AnnotationNode counts zero",
+    "fullModuleRace": "exit 0",
+    "fullModuleVet": "exit 0",
+    "linuxStoreTestCompile": [
+      "amd64 exit 0",
+      "386 exit 0"
+    ]
+  },
+  "scope": "reader only; no query/writer/eager prepare/cache integration; no performance claim; no commit"
+}

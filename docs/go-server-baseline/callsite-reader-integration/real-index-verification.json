@@ -1,0 +1,458 @@
+{
+  "finishedAtUTC": "2026-09-06T21:29:48.933256+00:00",
+  "sourceSHA256": "6391f02a7d413fb8f0d23b55562bce69b5eab8a4cefdb7be156efb36bb6d9b69",
+  "scriptSHA256": "611d9b2fed21143fa5c1365ff851afc008cf13c7eebf1bd3bbb19fef0b891b23",
+  "graphs": 64,
+  "bytes": 368089488,
+  "purpose": "Independent raw-file hash and typed-CRC audit, not a repeated Go CSR validation or benchmark.",
+  "records": [
+    {
+      "graph": "fixture-android-00",
+      "sha256": "eb123708408e4a5062a15ea649512be3c7dc09c7acfa88af8c07329fb272f608",
+      "bytes": 7054100,
+      "typedCRC32": 2720212970,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-android-01",
+      "sha256": "9a519e0d5365c90a5d0ca487c8f108f902926698dbe6c0c54e98931cb74484dd",
+      "bytes": 7318228,
+      "typedCRC32": 2243166908,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-android-02",
+      "sha256": "8f2bf39a8aa8561dfff8e3229fdf1d2de9e815f1a112026c44933fc51d6d3979",
+      "bytes": 7373324,
+      "typedCRC32": 113041664,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-android-03",
+      "sha256": "97c7e95567243461f267c141e47da73b34a82fa7be5d87f1fb9a99758e4d32cb",
+      "bytes": 7632604,
+      "typedCRC32": 1256002038,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-android-04",
+      "sha256": "0142e0fe7f55f47e1b85199a23a7e2d849710c6eeca23184110748c2d0016bef",
+      "bytes": 6984596,
+      "typedCRC32": 2897359466,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-android-05",
+      "sha256": "e015bb1ca6fccea7ba63dcb1095a265566ab0423d250ac350fa9f768f4bf0d83",
+      "bytes": 6988300,
+      "typedCRC32": 383295098,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-android-06",
+      "sha256": "2bca94ab70ffbf853b25fdd24e779d7eeb7873d97ef5005d294805082557821f",
+      "bytes": 7894004,
+      "typedCRC32": 772681514,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-android-07",
+      "sha256": "e88074dd59d78130e8dddd8ca2010f48d3237025df2091f7775acf8083ba24d8",
+      "bytes": 7498956,
+      "typedCRC32": 1242094367,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-android-08",
+      "sha256": "e1a7cfeaaa20bf85c448e64fc13dfa0263f7d83f206b7d63166b34512edb245e",
+      "bytes": 7757220,
+      "typedCRC32": 1138565276,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-android-09",
+      "sha256": "efbbb744220125b8a789a72ff57d72b9b8095ff5802f218dd090e9c4a07a9734",
+      "bytes": 7570260,
+      "typedCRC32": 949507792,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-android-10",
+      "sha256": "ac689f9b467bb09139736af05a6c8bf3aa9d9c60f9652737a1c23a60aee7218c",
+      "bytes": 7281292,
+      "typedCRC32": 3313070445,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-android-11",
+      "sha256": "4c3a8ea16cffa3e162bbf5022ddf5a260fa914d6e630fcdeb732d3f956d94f16",
+      "bytes": 6981628,
+      "typedCRC32": 2057137894,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-android-12",
+      "sha256": "47dfb850628c2392c03ca3d7f81571fb8a8640b61cc87e806b642f6741bc8a3d",
+      "bytes": 7888532,
+      "typedCRC32": 944883059,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-android-13",
+      "sha256": "0022839851e6e11b537c46306ea8c46d6e62a3d1392dc069b8e82f3e7d5d2ea8",
+      "bytes": 7632396,
+      "typedCRC32": 2424564474,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-android-14",
+      "sha256": "756037737b8c90b3668e4988c61f400205f532b70f3ab537246f0fbd9b969405",
+      "bytes": 7243460,
+      "typedCRC32": 918515956,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-android-15",
+      "sha256": "4f127ece849d3a652f20e4ff2cc039305e57cd50f00c68f2e8d9d62fbc9e882d",
+      "bytes": 6812300,
+      "typedCRC32": 753213328,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-tika-00",
+      "sha256": "77eb8dee739cb2f32932a3a7ff424ca4035fa15e770e547ca260c5feb68395d6",
+      "bytes": 4187980,
+      "typedCRC32": 3394389384,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-tika-01",
+      "sha256": "11d4a8c106d2f3b5382b92af87062283c24d76d75a275ed432aee39d02d563eb",
+      "bytes": 4572404,
+      "typedCRC32": 2723637277,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-tika-02",
+      "sha256": "88834deb714c52034c76e9f59c95dc642b9b6b46eb0af7495e4ae1f6b3dfe302",
+      "bytes": 4357156,
+      "typedCRC32": 3493607267,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-tika-03",
+      "sha256": "3d21a09c99192cc78b1a0a84695d23e14ce317bc4cc4fe699da800dc98bb0ff3",
+      "bytes": 4160404,
+      "typedCRC32": 1475925029,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-tika-04",
+      "sha256": "8229d44c8824b14de96829fa9eabb8cf8be872b97a5a4bd21ae8dd7820681c5a",
+      "bytes": 4599764,
+      "typedCRC32": 183895431,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-tika-05",
+      "sha256": "b77425b92e96ed3f52d905747ff696cd17cafb4677ae2a1f023362afa3eb9a46",
+      "bytes": 4375556,
+      "typedCRC32": 2778693177,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-tika-06",
+      "sha256": "02c1b38af37945307a544359abbd7be683d6bd265e9040ad38c2ed996f836c4a",
+      "bytes": 4367028,
+      "typedCRC32": 2158078183,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-tika-07",
+      "sha256": "c801631725fd40ff2628ef0d0c2519e2fb34cbd08ed4cc31c44f4523418726ba",
+      "bytes": 4228900,
+      "typedCRC32": 3996666807,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-tika-08",
+      "sha256": "4bbe7a5cc8fdfa702227897b10677c778b6e89f5f254568a3ba501e24dd27381",
+      "bytes": 4704356,
+      "typedCRC32": 2303987760,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-tika-09",
+      "sha256": "1a48346e824fc9939e86465fe4721eb88d7b82b93eee6820bc2fc44838260adc",
+      "bytes": 4644372,
+      "typedCRC32": 2966306523,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-tika-10",
+      "sha256": "753b09d6e8f429f40ce8526d294930df5e67c6c039bf2cf3f5d575eaaaf155ca",
+      "bytes": 4942876,
+      "typedCRC32": 1330111886,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-tika-11",
+      "sha256": "7187235211336082d95807d54fd2a2491919750245ab81c1bcfb42b285c0b626",
+      "bytes": 4535860,
+      "typedCRC32": 2386479919,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-tika-12",
+      "sha256": "a13f3e50c49426892968d84075c3fd1886f2b4dc6f41f6e41023227409c69b8c",
+      "bytes": 4613932,
+      "typedCRC32": 995847607,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-tika-13",
+      "sha256": "f8e31e96c26215acecfa7ad9ddea842b70e71eacf12f7fdda5fee265a45925d2",
+      "bytes": 4290212,
+      "typedCRC32": 3366197449,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-tika-14",
+      "sha256": "ce8ac36510f86e04361e8eb76c26c95ef63d605f7fd214b523496fd36c9cebc7",
+      "bytes": 4495332,
+      "typedCRC32": 3447346903,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-tika-15",
+      "sha256": "6b25a864f50d312bf007c69deca107db6751dcbefc7d9f2da4fd1f26db030344",
+      "bytes": 5240924,
+      "typedCRC32": 1931490772,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-hive-00",
+      "sha256": "87b6593761e80abc468154c94b5f93ed6e43827f99f813023acf07e60fcbacd5",
+      "bytes": 6926132,
+      "typedCRC32": 3442881091,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-hive-01",
+      "sha256": "04e04689fc6a01d5e61e5c052c9965555787f5c070fcfaeb93b46ebbd2da13b8",
+      "bytes": 5622516,
+      "typedCRC32": 441333015,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-hive-02",
+      "sha256": "b22b59840efcbac234324ade8d1781e7343f83b10c9dfd47f314d2d3b10ea84c",
+      "bytes": 6585516,
+      "typedCRC32": 895151574,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-hive-03",
+      "sha256": "e7707a5c13b9606276eec3ab245e05b390d615e83a138df85409f71de6ea03dd",
+      "bytes": 6527676,
+      "typedCRC32": 1822674637,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-hive-04",
+      "sha256": "0d4a7f16410879b40a0e0f381cd0aa3edb153941e3582b8a9e270c7a76c0e1ef",
+      "bytes": 6017772,
+      "typedCRC32": 2329368303,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-hive-05",
+      "sha256": "9a648c7f3c9597a18ce7f3d630420333f115b0b10326dad23bcb22eacd9eadd6",
+      "bytes": 6038564,
+      "typedCRC32": 3833894921,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-hive-06",
+      "sha256": "36b6f4ffe44310182b20fe49e36426fec7005039010721acc85cc3d0cb95cb95",
+      "bytes": 6277108,
+      "typedCRC32": 1700407901,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-hive-07",
+      "sha256": "0d36707f7460205b0c293067c6b3ea2d4d3b19288a8364764962d9b8bb60c64a",
+      "bytes": 6530436,
+      "typedCRC32": 3125465521,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-hive-08",
+      "sha256": "8e98884ab1c63c0592506775a39fe8ecef1e8c5374e466f28b9fd4b1173e9384",
+      "bytes": 6862052,
+      "typedCRC32": 3600491570,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-hive-09",
+      "sha256": "9d15b5b0d7e6bd16341dece341870456e554cc517b8bb5792af7a99b6df5c912",
+      "bytes": 6406092,
+      "typedCRC32": 1482980321,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-hive-10",
+      "sha256": "dfc8aef57e524cdf6fe8fff202cfec5a3ae906f7085f44e49a81c0a2d210867c",
+      "bytes": 5798364,
+      "typedCRC32": 1271136930,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-hive-11",
+      "sha256": "883061ce2d908b012373c495f665b9833b46e843a9f4f251209246b4026298ee",
+      "bytes": 6262292,
+      "typedCRC32": 2191210799,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-hive-12",
+      "sha256": "06367e53c00b5c6dd88f4c7bcfa1685c5b4ebe891df97c68f5e59aae6fd3ae29",
+      "bytes": 6300116,
+      "typedCRC32": 4047172895,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-hive-13",
+      "sha256": "8d1d9b634d7167e097066b4f120e0d40c487f929cc0d9adc685ef4a7472d5983",
+      "bytes": 6289828,
+      "typedCRC32": 3142065900,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-hive-14",
+      "sha256": "dfb8236dcc47aa64014951f90281e19ccb603c952e64163bb3619260abb7dad9",
+      "bytes": 6113340,
+      "typedCRC32": 2948084788,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-hive-15",
+      "sha256": "66f3c906a990e4088041560ed71c41b3aabb419be7923cdb72b659e1f30566c0",
+      "bytes": 6046236,
+      "typedCRC32": 2820356469,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-kotlin-compiler-00",
+      "sha256": "54296e37d51050204d9919ae618d5c472ae3470ad2f5883af582dfc73981253c",
+      "bytes": 4949988,
+      "typedCRC32": 1190417153,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-kotlin-compiler-01",
+      "sha256": "fee722f973850de99389a5e0781192a25d9dbfdeed50a0de57159e776866b202",
+      "bytes": 4728652,
+      "typedCRC32": 375547097,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-kotlin-compiler-02",
+      "sha256": "0608ee3d3e686c353f3b82d6758e1fefde029f3c6d284670e6c369c10aca1b00",
+      "bytes": 4649572,
+      "typedCRC32": 569458575,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-kotlin-compiler-03",
+      "sha256": "1923ecd03ee8c0f9a1a4fb110c9a918cf0371839696327d9a3f71a9034c6a3c2",
+      "bytes": 4612020,
+      "typedCRC32": 2057389455,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-kotlin-compiler-04",
+      "sha256": "3922d7345680aa9b7f924eb12ab141ea8fb1c0cfb75a4a946af84beedcd4a1f8",
+      "bytes": 5144116,
+      "typedCRC32": 2253230833,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-kotlin-compiler-05",
+      "sha256": "66ec0d3fb7ae63c2bd954de9cdb4e0c4275bb091f06470a838fd2c56b5fbad95",
+      "bytes": 5101956,
+      "typedCRC32": 3265905346,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-kotlin-compiler-06",
+      "sha256": "7a38748a66f420c206bf6337f15f474eb0e144955363ba825c0d7da58ae651df",
+      "bytes": 4666396,
+      "typedCRC32": 783543524,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-kotlin-compiler-07",
+      "sha256": "9c1d012864f0788eb8b799f6dc2b017a5e0c40f9d44f6a25ac02926fb214f92f",
+      "bytes": 4653092,
+      "typedCRC32": 532983521,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-kotlin-compiler-08",
+      "sha256": "239dc8e5f767b4db627087c3595adfa1ab3169689e14b5e34b68a69985d94efa",
+      "bytes": 4970244,
+      "typedCRC32": 146204555,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-kotlin-compiler-09",
+      "sha256": "cbe91cc8ad8f0f52c613485286bc108d43a1da23f032fb4d56d136f6a184d080",
+      "bytes": 4823436,
+      "typedCRC32": 2877859715,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-kotlin-compiler-10",
+      "sha256": "c7206c323b3b7fd3d85d14a72ee3eb6d386a8eef6985f48802f213b1b96b2173",
+      "bytes": 5412020,
+      "typedCRC32": 708497452,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-kotlin-compiler-11",
+      "sha256": "bf42c356c93c7fdce143880ec029246092f0b9b30e372375be672e1b20887d8c",
+      "bytes": 4412204,
+      "typedCRC32": 2788780884,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-kotlin-compiler-12",
+      "sha256": "f5279c0225acdb715425b8a1d1cab7232f69947669b64c728b17b48be1aabffc",
+      "bytes": 4638388,
+      "typedCRC32": 2656694438,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-kotlin-compiler-13",
+      "sha256": "082f86073094fb85047fc143a68ec8458bb967617bc7186da90b2c7b251c1fd5",
+      "bytes": 5018028,
+      "typedCRC32": 4008837506,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-kotlin-compiler-14",
+      "sha256": "6024302b971a21c6ed41c8264dae7b985e0f63fdac37fa963c68d98b138913ad",
+      "bytes": 4859356,
+      "typedCRC32": 1690579451,
+      "footerMatches": true
+    },
+    {
+      "graph": "fixture-kotlin-compiler-15",
+      "sha256": "dc5175ce1e8eb50efa976a3a725ab6aae07bd0771b2679aea158997bb60f9ce2",
+      "bytes": 4617724,
+      "typedCRC32": 4101767664,
+      "footerMatches": true
+    }
+  ]
+}

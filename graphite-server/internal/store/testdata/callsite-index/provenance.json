@@ -1,0 +1,39 @@
+{
+  "purpose": "correctness only; no synthetic performance claims",
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "nativeBaseRevision": "90787051c4f92da8e4fa9077b613ae36507d67b2",
+  "java": "openjdk version \"17.0.18\" 2026-01-20\nOpenJDK Runtime Environment Homebrew (build 17.0.18+0)\nOpenJDK 64-Bit Server VM Homebrew (build 17.0.18+0, mixed mode, sharing)",
+  "platform": "macOS-14.3-arm64-arm-64bit-Mach-O",
+  "jar": "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+  "jarSHA256": "91c3a1d154ca96004c55df195d9f752e077cab3e33ca1570b2c88b872d9bc34d",
+  "generatorCommand": "java -Dfile.encoding=UTF-8 -Xmx256m -XX:ActiveProcessorCount=2 -cp /tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar graphite-server/internal/store/testdata/callsite-index/GenerateIndex.java graphite-server/internal/store/testdata/callsite-index",
+  "generatorSHA256": "d9a3c167d1f23d0cb8ed6d3911c96117fed7e62921b10731ac223a42bbe2bbff",
+  "mainSources": {
+    "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/GraphStore.kt": "2fe499f043740e7b70970a242613f760bf23577aef45d6fa612161e1d4d546ad",
+    "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndex.kt": "c1c4f07d818a4a25f712ad25094b30723fa25fa7531f424b2391bba792938a77",
+    "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt": "9133289c4382b59f4bc880f9de3d8aee0930d449a32f9a487893dabb56255cb7",
+    "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/NodeSerializer.kt": "56b438a5ec4495e547903bb906c19ff31085574b250ef4f70a611ffdddd41699",
+    "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/StringTable.kt": "d7dd6b85cce88f9202ce1e2b4087a0e6ac07211d1e52758f4964be48f2df18a8",
+    "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexView.kt": "6abdd90ff1f4676dbfeae568e13e3f4419c45fc62d63ab1b9ec981ea1282a7a5"
+  },
+  "fixtureSHA256": {
+    "expected.json": "d87a45827171007a08c1a400be77598bcfa4769819250942bb0ab4fe84fa72e3",
+    "store/forward.graph": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4",
+    "store/forward.offsets": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458",
+    "store/forward.properties": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc",
+    "store/graph.callsite-string-content.identity": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0",
+    "store/graph.callsite-string-index": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+    "store/graph.classoverview": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea",
+    "store/graph.comparisons": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8",
+    "store/graph.labelprefix": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23",
+    "store/graph.labels": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "store/graph.metadata": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb",
+    "store/graph.nodedata": "f0a4462a820a7daa557704796992c79b9ddafcb80475aaafa020592cb4e19e1a",
+    "store/graph.nodeindex": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c",
+    "store/graph.nodeoffsets": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf",
+    "store/graph.resources": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17",
+    "store/graph.strings": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b",
+    "store/graph.strings.identity": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb",
+    "store/graph.typeindex": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849"
+  }
+}

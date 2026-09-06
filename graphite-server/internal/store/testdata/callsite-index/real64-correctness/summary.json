@@ -1,0 +1,19 @@
+{
+  "graphs": 64,
+  "nodes": 19431891,
+  "methods": 1374983,
+  "edges": 20448885,
+  "annotations": 0,
+  "graphsWithZeroAnnotations": 64,
+  "indexBytes": 368089488,
+  "callSites": 5046935,
+  "strings": 2793940,
+  "trigramPostings": 31587846,
+  "uniqueStringCounts": [
+    126308,
+    423532,
+    372571,
+    612447
+  ],
+  "exitCode": 0
+}
