@@ -2519,7 +2519,8 @@ class QueryPipeline private constructor(
         val taskIndexes = java.util.ArrayDeque<Int>()
         val outcomes = LinkedBlockingQueue<Outcome<T>>()
         val pumpLock = Any()
-        val group = GraphTaskScheduler.shared.newRootGroup<Unit>()
+        // Retired pumps still own their task slot until wrapper teardown and child drain finish.
+        val group = GraphTaskScheduler.shared.newRootGroup<Unit>(maxConcurrentTasks = workerCount)
         var activePumps = 0
         var stopped = false
         fun admit(index: Int) = synchronized(pumpLock) {

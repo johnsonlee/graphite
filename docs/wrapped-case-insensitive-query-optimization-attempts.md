@@ -5624,3 +5624,35 @@ window is source-reachable, not recorded proof of the observed interleaving. Fix
 independent scheduling defect before attributing latency. The full comparator was not run.
 Parent81e7c5f9; frozen-main4e328b01; exact corpus/JAR/source/check commands in
 [attempt143 report](profiling/attempt143/README.md).
+
+
+### 2026-09-06 - Attempt 144: Keep graph admission until actual task exit
+
+**Same shared scheduling direction:**142/143 preserved graph peak3 despite configured2.
+A prepared ready-pump can logically retire before wrapper and descendant cleanup finish.
+Add per-group actual-running admission shared by background and REQUEST helper claims;
+release only after children drain and context restore. The prepared coordinator supplies
+its original G. No new pool, filter algorithm, grain or gate changes; retain143 parent.
+G remains per group, while P bounds the resource-owned live workers including idle.
+
+**Validation:**2105 module tests, four lint tasks, two JMH packages and test exclusion pass;
+P4 additional98 tests pass; real fixture64 supplemental36 correctness passes. Deterministic
+new tests cover real descendant exit and token-only cancellation, helper admission, inline
+failure without registration and default STORAGE compatibility. Retain initial lint failure
+and the existing saturation test's incorrect P16/G8 single-query premise; repaired test
+uses enough independent requests with all cancellation/result/provenance assertions intact.
+
+| Pair/order | main → candidate P95 ms | main → candidate CPU s | candidate graph/segment peak |
+|---|---:|---:|---:|
+|1 C/B|56.366500 → 50.270833|1.616511 → 1.677603|2/2|
+|2 B/C|45.109875 → 41.362917|1.562337 → 1.613527|2/2|
+|3 C/B|51.830000 → 79.423625|1.491585 → 1.883004|2/2|
+
+**Not accepted:** all three original peak conditions pass, but pair3 strict P95 and CPU fail.
+The unchanged complete comparator was run on the existing three pairs (exit1); it also
+reports repeated class-pair/targeted latency regression. No extra recording or retry-to-green.
+The lifecycle defect has focused correctness support; net performance remains unestablished.
+This third same-direction failed candidate is retained in isolated history, not promoted
+into PR or used to abandon shared scheduling. CandidateCI not started;10x unmet.
+Parentf8e25ff6; frozen-main4e328b01; same real64 fixture and original34 query order.
+[Report and full evidence](profiling/attempt144/README.md).

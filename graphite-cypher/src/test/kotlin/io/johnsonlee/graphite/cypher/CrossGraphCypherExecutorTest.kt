@@ -1048,6 +1048,8 @@ class CrossGraphCypherExecutorTest {
         val poolWorkers = (GraphTaskScheduler.shared.parallelism - 1).coerceAtLeast(1)
         if (resolveDirectStringGraphParallelism(64) < 2) return
         val blockingGraphCount = if (poolWorkers > 8) maxOf(40, poolWorkers) else poolWorkers
+        val blockingQueryWorkers = resolveDirectStringGraphParallelism(blockingGraphCount)
+        val blockingQueryCount = (poolWorkers + blockingQueryWorkers - 1) / blockingQueryWorkers
         val blockersStarted = CountDownLatch(poolWorkers)
         val releaseBlockers = CountDownLatch(1)
         val planningStarted = CountDownLatch(1)
@@ -1110,12 +1112,14 @@ class CrossGraphCypherExecutorTest {
                 }
             })
         }
-        val requests = Executors.newFixedThreadPool(2)
+        val requests = Executors.newFixedThreadPool(blockingQueryCount + 1)
         try {
-            val blockingQuery = requests.submit<CypherResult> {
-                CrossGraphCypherExecutor(blockingGraphs).execute(
-                    "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'busy' RETURN count(*) AS total"
-                )
+            val blockingQueries = List(blockingQueryCount) {
+                requests.submit<CypherResult> {
+                    CrossGraphCypherExecutor(blockingGraphs).execute(
+                        "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'busy' RETURN count(*) AS total"
+                    )
+                }
             }
             assertTrue(blockersStarted.await(5, TimeUnit.SECONDS), "The shared graph pool was not saturated")
             val interruptedQuery = requests.submit<CypherResult> {
@@ -1126,7 +1130,7 @@ class CrossGraphCypherExecutorTest {
                 )
             }
             assertTrue(planningStarted.await(5, TimeUnit.SECONDS), "The prepared query did not reach planning")
-            // Preserve request interruption through planning while the other query owns every worker.
+            // Preserve request interruption through planning while blocking queries own every worker.
             // The prepared workers must be cancelled without running when they are subsequently queued.
             requestThread.get().interrupt()
             val failure = assertFailsWith<java.util.concurrent.ExecutionException> {
@@ -1139,9 +1143,11 @@ class CrossGraphCypherExecutorTest {
             assertEquals(1, releaseBlockers.count, "Cancellation must finish while the other query still owns the pool")
 
             releaseBlockers.countDown()
-            val result = blockingQuery.get(5, TimeUnit.SECONDS)
-            assertEquals(blockingGraphs.size.toLong(), result.rows.single()["total"])
-            assertEquals(blockingGraphs.map(CypherGraph::id).sorted(), graphIds(result.rows.single()))
+            blockingQueries.forEach { query ->
+                val result = query.get(5, TimeUnit.SECONDS)
+                assertEquals(blockingGraphs.size.toLong(), result.rows.single()["total"])
+                assertEquals(blockingGraphs.map(CypherGraph::id).sorted(), graphIds(result.rows.single()))
+            }
             assertEquals(0, suffixLookups.get(), "Cancelled queued workers must not scan when the pool becomes available")
         } finally {
             releasePlanning.countDown()

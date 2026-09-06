@@ -25,14 +25,17 @@ class GraphTaskScheduler internal constructor(val parallelism: Int) : AutoClosea
         require(parallelism > 0)
     }
 
+    @Suppress("LongParameterList")
     fun <T> newGroup(
         backgroundParallelism: Int = parallelism,
         sharedLane: String? = null,
         helpWhileWaiting: Boolean = true,
         parentContext: GraphTaskContext? = GraphTaskContext.current,
-        role: GraphTaskRole = GraphTaskRole.STORAGE
+        role: GraphTaskRole = GraphTaskRole.STORAGE,
+        maxConcurrentTasks: Int = Int.MAX_VALUE
     ): GraphTaskGroup<T> {
         require(backgroundParallelism in 0..parallelism)
+        require(maxConcurrentTasks > 0)
         return synchronized(monitor) {
             check(!closed) { "Graph scheduler is closed" }
             if (sharedLane != null) {
@@ -41,18 +44,24 @@ class GraphTaskScheduler internal constructor(val parallelism: Int) : AutoClosea
                 lanes.putIfAbsent(sharedLane, backgroundParallelism to 0)
             }
             require(parentContext == null || parentContext.scheduler === this)
-            GraphTaskGroup<T>(this, backgroundParallelism, sharedLane, helpWhileWaiting, parentContext, role).also {
+            GraphTaskGroup<T>(
+                this, backgroundParallelism, sharedLane, helpWhileWaiting, parentContext, role, maxConcurrentTasks
+            ).also {
                 parentContext?.register(it)
             }
         }
     }
 
-    /** Shared root admission leaves one background slot available to nested storage work. */
-    fun <T> newRootGroup(): GraphTaskGroup<T> = newGroup(
+    /**
+     * Root admission leaves one background slot for storage. The group limit includes helpers
+     * and is released only after the callable and its descendants have actually finished.
+     */
+    fun <T> newRootGroup(maxConcurrentTasks: Int = parallelism): GraphTaskGroup<T> = newGroup(
         backgroundParallelism = (parallelism - 1).coerceAtLeast(1),
         sharedLane = "graph-root",
         helpWhileWaiting = true,
-        role = GraphTaskRole.GRAPH_SOURCE
+        role = GraphTaskRole.GRAPH_SOURCE,
+        maxConcurrentTasks = maxConcurrentTasks
     )
 
     fun <T> newRequestGroup(): GraphTaskGroup<T> = newGroup(
@@ -108,7 +117,7 @@ class GraphTaskScheduler internal constructor(val parallelism: Int) : AutoClosea
                         val next = iterator.next()
                         if (next.finished || next.running) {
                             iterator.remove()
-                        } else if (next.group.backgroundRunning < next.group.backgroundParallelism && laneAvailable(next.group)) {
+                        } else if (next.group.canRunInBackground()) {
                             iterator.remove()
                             next.claim(background = true)
                             selected = next
@@ -192,15 +201,21 @@ class GraphTaskContext internal constructor(private val task: GraphTask<*>) {
     }
 }
 
-class GraphTaskGroup<T> internal constructor(
+class GraphTaskGroup<T> @Suppress("LongParameterList") internal constructor(
     internal val scheduler: GraphTaskScheduler,
     internal val backgroundParallelism: Int,
     internal val sharedLane: String?,
     private val helpWhileWaiting: Boolean,
     internal val parentContext: GraphTaskContext?,
-    internal val role: GraphTaskRole
+    internal val role: GraphTaskRole,
+    private val maxConcurrentTasks: Int
 ) : AutoCloseable {
     internal var backgroundRunning = 0
+    // Includes inline/helper execution and descendant cleanup; guarded by scheduler.monitor.
+    internal var runningTasks = 0
+    internal fun hasTaskSlot(): Boolean = runningTasks < maxConcurrentTasks
+    internal fun canRunInBackground(): Boolean =
+        hasTaskSlot() && backgroundRunning < backgroundParallelism && scheduler.laneAvailable(this)
     internal val tasks = mutableListOf<GraphTask<T>>()
     private val completed = ArrayDeque<GraphTask<T>>()
     private var closed = false
@@ -261,7 +276,8 @@ class GraphTaskGroup<T> internal constructor(
     internal fun claimHelper(): GraphTask<T>? {
         val roleAllowsHelp = role != GraphTaskRole.REQUEST &&
             (role != GraphTaskRole.GRAPH_SOURCE || GraphTaskContext.current?.role == GraphTaskRole.REQUEST)
-        if (!helpWhileWaiting || !scheduler.canHelp() || !roleAllowsHelp) return null
+        val helpAllowed = helpWhileWaiting && scheduler.canHelp() && roleAllowsHelp
+        if (!helpAllowed || !hasTaskSlot()) return null
         return tasks.firstOrNull { !it.running && !it.finished }?.also { it.claim(background = false) }
     }
 
@@ -272,9 +288,11 @@ class GraphTaskGroup<T> internal constructor(
         return true
     }
 
+    /** Runs synchronously; a full explicitly bounded group fails instead of blocking its caller. */
     fun runInline(callable: Callable<T>): T {
         val task = synchronized(scheduler.monitor) {
             checkOpen()
+            check(hasTaskSlot()) { "Graph task group concurrency limit reached" }
             GraphTask(this, callable, publishCompletion = false).also {
                 tasks.add(it)
                 it.claim(background = false)
@@ -360,6 +378,8 @@ class GraphTask<T> internal constructor(
 
     internal fun claim(background: Boolean) {
         check(!running && !finished)
+        check(group.hasTaskSlot()) { "Graph task group concurrency limit reached" }
+        group.runningTasks++
         running = true
         this.isBackground = background
         if (!background) group.scheduler.discardQueued(this)
@@ -389,6 +409,7 @@ class GraphTask<T> internal constructor(
                     group.backgroundRunning--
                     group.scheduler.changeLane(group, -1)
                 }
+                group.runningTasks--
                 running = false
                 finished = true
                 if (publishCompletion) group.completed(this)
