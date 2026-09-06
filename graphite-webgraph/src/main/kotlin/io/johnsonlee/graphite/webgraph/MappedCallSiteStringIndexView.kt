@@ -154,18 +154,25 @@ internal class MappedCallSiteStringIndexView private constructor(
                     }
                 }
             }
-            for (trigram in trigrams) {
+            // The trigram that anchored the previous graph is usually rare here too, so the range
+            // walk starts there and stops as soon as a span small enough to verify is found.
+            val start = term.rarestHint
+            var anchorIndex = start
+            for (offset in trigrams.indices) {
+                val index = (start + offset) % trigrams.size
                 accounting.consume()
-                val span = trigramPostingRange(trigram) ?: return PredicateProbe.Absent
+                val span = trigramPostingRange(trigrams[index]) ?: return PredicateProbe.Absent
                 val size = span.last - span.first + 1
                 if (size < anchorSize) {
                     anchor = span
                     anchorSize = size
+                    anchorIndex = index
                 }
                 // A rare trigram already bounds verification; probing the remaining positions only
                 // costs mapped binary searches without shrinking the decoded candidate set further.
                 if (anchorSize <= SMALL_TRIGRAM_SPAN) break
             }
+            term.rarestHint = anchorIndex
         } finally {
             accounting.flush()
         }
@@ -1223,11 +1230,16 @@ internal fun interface StringIdFilter {
 /**
  * The distinct lowercase trigram hashes of one predicate term in probe order, computed once per
  * term and shared by every graph view of a request. [absentHint] remembers the trigram that last
- * proved a graph absent so the next graph's presence pass usually stops at its first check.
+ * proved a graph absent so the next graph's presence pass usually stops at its first check, and
+ * [rarestHint] the trigram that last anchored a present graph so the next graph's range walk
+ * usually finds a small enough span at its first lookup instead of ranging every trigram.
  */
 internal class TrigramTerm private constructor(val trigrams: IntArray) {
     @Volatile
     var absentHint: Int = 0
+
+    @Volatile
+    var rarestHint: Int = 0
 
     companion object {
         private val terms = java.util.concurrent.ConcurrentHashMap<MappedPredicateKey, TrigramTerm>()

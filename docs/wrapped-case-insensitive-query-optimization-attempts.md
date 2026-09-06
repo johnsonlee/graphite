@@ -4458,3 +4458,25 @@ are unchanged within noise. Timers inside the row: provenance `8.1..8.6 -> 7.2..
 DISTINCT total `12.3..12.8 -> 10.8..11.0 ms`. The core and mapped-view tests and detekt pass.
 
 **Conclusion:** keep for exact-head hosted validation after Attempt 136's run is read.
+
+### 2026-09-06 - Attempt 138: Start each graph's trigram range walk at the trigram that anchored the previous graph
+
+**Hypothesis:** fresh-JVM timers on the four-properties-targeted row (`10..13 ms`) put `2.2..2.7 ms`
+in the trigram probe: the term is a 100-character class name with about 70 distinct trigrams, the
+presence pass rejects it in 53 graphs, and in the 11 graphs that contain it the range walk looks
+up the posting range of every trigram in string order (`788` range lookups for `11` graphs)
+because the rare trigrams of a class name come at its end while the walk starts at `app`, `ndr`,
+`dro` and only stops early once a span of at most 32 postings has been seen.
+
+**Change:** `TrigramTerm` remembers the index of the trigram that anchored the previous graph's
+plan (`rarestHint`) the way it remembers the trigram that proved the previous graph absent, and the
+range walk starts there; graphs of the same family share their rare trigrams, so the walk usually
+stops at its first lookup.
+
+**Evidence (local, 64 fixtures, fresh JVM in benchmark order, three alternating runs each):**
+four-properties-targeted first execution CPU `9.1..11.3 ms -> 7.7..9.6 ms`, class-pair-targeted
+`3.2..3.8 -> 2.5..3.0 ms`; the DISTINCT and dense rows are unchanged within noise. A new view test
+checks that a present term's hint moves off the shared leading trigrams and that a second graph's
+lookup consumes less work; the view tests and detekt pass.
+
+**Conclusion:** keep for exact-head hosted validation after Attempt 137's run is read.

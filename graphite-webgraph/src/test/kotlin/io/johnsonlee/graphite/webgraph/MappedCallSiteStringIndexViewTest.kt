@@ -477,4 +477,40 @@ class MappedCallSiteStringIndexViewTest {
         assertEquals(listOf(hash("run", 0)), trigrams.hashes[2].toList())
         assertEquals(listOf(0, 0, 0), trigrams.absentHints.toList())
     }
+
+    @Test
+    fun `a present term's anchoring trigram becomes the rarest hint that shortens the next graph's range walk`() =
+        withPersistedGraph(prepareIndex = true) { dir, _, first ->
+            val predicate = predicate("caller_class", StringMatchMode.CONTAINS, "app.target.TargetedCaller")
+            val term = checkNotNull(TrigramTerm.of(predicate))
+            term.absentHint = 0
+            term.rarestHint = 0
+            var work = 0L
+            val counting = object : GraphWorkBatchConsumer {
+                override fun consume(workUnits: Long) {
+                    work += workUnits
+                }
+            }
+            fun projectOn(graph: MappedWebGraphBackedGraph): Long {
+                work = 0L
+                val rows = graph.projectStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    listOf(predicate),
+                    listOf("caller_class"),
+                    limit = 5,
+                    workConsumer = counting
+                )
+                assertEquals(listOf(listOf("app.target.TargetedCaller")), rows?.map { row -> row.values }?.distinct())
+                return work
+            }
+
+            val firstWork = projectOn(first)
+            // "app" and "pp." are shared by every caller class; the first trigram unique to the
+            // target class anchors the plan and is remembered ahead of them.
+            assertTrue(term.rarestHint > 0, "rarest hint ${term.rarestHint}")
+            (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { second ->
+                val secondWork = projectOn(second)
+                assertTrue(secondWork < firstWork, "second graph work $secondWork vs first $firstWork")
+            }
+        }
 }
