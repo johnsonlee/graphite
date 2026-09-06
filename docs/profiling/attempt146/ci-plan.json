@@ -1,0 +1,27 @@
+{
+  "scope": "planned one independent CI for same 146 candidate after local evidence; not driver acceptance",
+  "status": "planned_not_dispatched",
+  "candidateParent": "cf300347247174a74bbbd188e89c36c094ae2bdd",
+  "candidateCommitted": false,
+  "pushed": false,
+  "ciRun": false,
+  "pr": 116,
+  "localStrictProgress": [
+    true,
+    true,
+    false
+  ],
+  "strictProgressEveryPair": false,
+  "originalDriverStopPreserved": true,
+  "postHocComparator": {
+    "existingSixRecordingsOnly": true,
+    "newMeasurement": false,
+    "exitCode": 0,
+    "regressionPassed": true,
+    "targetAchieved": false,
+    "targetErrors": 9
+  },
+  "newLocalForksPlanned": false,
+  "accepted": false,
+  "decisionBoundary": "Root separately requested one CI; this does not rewrite the driver no-CI stop text or convert local strict failure to pass."
+}

@@ -1,0 +1,18 @@
+[
+  "env",
+  "JAVA_HOME=/opt/homebrew/opt/openjdk@17",
+  "./gradlew",
+  "--no-daemon",
+  "--console=plain",
+  ":core:test",
+  ":core:detekt",
+  ":cypher:test",
+  ":cypher:detekt",
+  ":webgraph:test",
+  ":webgraph:detekt",
+  ":webgraph:jmhJar",
+  ":webgraph:verifyJmhJarExcludesTests",
+  ":explore:test",
+  ":explore:detekt",
+  ":explore:jmhJar"
+]

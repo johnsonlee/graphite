@@ -1,0 +1,211 @@
+{
+  "verdict": "source-feasible minimal fast path; no performance proof",
+  "sourceRevision": "cf300347247174a74bbbd188e89c36c094ae2bdd",
+  "sourceRoot": "/private/tmp/graphite-attempt145.lwdc61sb/candidate",
+  "scope": "read-only; no Java/build/test/measurement/production modification",
+  "sha256": {
+    "graphite-core/src/main/kotlin/io/johnsonlee/graphite/graph/GraphTaskScheduler.kt": "f366be628414c857831b0d39c9df8cea6a259bf95015972869ff1103e77aae6c",
+    "graphite-core/src/test/kotlin/io/johnsonlee/graphite/graph/GraphTaskSchedulerTest.kt": "c67bfe3001b389ac11d6004242e63d4183f60f9dda148329530afc2f983a470c"
+  },
+  "anchors": [
+    {
+      "path": "graphite-core/src/main/kotlin/io/johnsonlee/graphite/graph/GraphTaskScheduler.kt",
+      "line": 39,
+      "claim": "newGroup monitor and sole register call"
+    },
+    {
+      "path": "graphite-core/src/main/kotlin/io/johnsonlee/graphite/graph/GraphTaskScheduler.kt",
+      "line": 175,
+      "claim": "register checks running/accepting; child mutation"
+    },
+    {
+      "path": "graphite-core/src/main/kotlin/io/johnsonlee/graphite/graph/GraphTaskScheduler.kt",
+      "line": 179,
+      "claim": "unregister monitor"
+    },
+    {
+      "path": "graphite-core/src/main/kotlin/io/johnsonlee/graphite/graph/GraphTaskScheduler.kt",
+      "line": 187,
+      "claim": "acceptingChildren getter monitor"
+    },
+    {
+      "path": "graphite-core/src/main/kotlin/io/johnsonlee/graphite/graph/GraphTaskScheduler.kt",
+      "line": 305,
+      "claim": "completed notification"
+    },
+    {
+      "path": "graphite-core/src/main/kotlin/io/johnsonlee/graphite/graph/GraphTaskScheduler.kt",
+      "line": 313,
+      "claim": "cancelAndJoin joins before unregister"
+    },
+    {
+      "path": "graphite-core/src/main/kotlin/io/johnsonlee/graphite/graph/GraphTaskScheduler.kt",
+      "line": 328,
+      "claim": "closeFromOwner joins before unregister"
+    },
+    {
+      "path": "graphite-core/src/main/kotlin/io/johnsonlee/graphite/graph/GraphTaskScheduler.kt",
+      "line": 394,
+      "claim": "execute cleanup and actual exit"
+    },
+    {
+      "path": "graphite-core/src/main/kotlin/io/johnsonlee/graphite/graph/GraphTaskScheduler.kt",
+      "line": 422,
+      "claim": "finishChildren proposed minimal fast path"
+    },
+    {
+      "path": "graphite-core/src/main/kotlin/io/johnsonlee/graphite/graph/GraphTaskScheduler.kt",
+      "line": 444,
+      "claim": "cancel serialized with child registry"
+    },
+    {
+      "path": "graphite-core/src/test/kotlin/io/johnsonlee/graphite/graph/GraphTaskSchedulerTest.kt",
+      "line": 310,
+      "claim": "nonempty drain and expired context"
+    },
+    {
+      "path": "graphite-core/src/test/kotlin/io/johnsonlee/graphite/graph/GraphTaskSchedulerTest.kt",
+      "line": 351,
+      "claim": "original failure retained"
+    },
+    {
+      "path": "graphite-core/src/test/kotlin/io/johnsonlee/graphite/graph/GraphTaskSchedulerTest.kt",
+      "line": 389,
+      "claim": "closed phases release references"
+    },
+    {
+      "path": "graphite-core/src/test/kotlin/io/johnsonlee/graphite/graph/GraphTaskSchedulerTest.kt",
+      "line": 523,
+      "claim": "explicit finishChildren twice"
+    }
+  ],
+  "proofObligations": {
+    "ownerCheckPreserved": true,
+    "closeRegistrationBeforeEmptyCheckUnderSameMonitor": true,
+    "registeredChildPathUnchanged": true,
+    "cancelAndRegisterSameMonitor": true,
+    "finalCapLeaseAndCompletionUnchanged": true,
+    "noInterruptConsumption": true,
+    "samePrimaryFailureReference": true,
+    "noWakeupProtocolChange": true
+  },
+  "diagnosticSource": "/private/tmp/graphite-attempt144-turnover-overlay.4zcb91wc/turnover-analysis.json",
+  "diagnosticSha256": "6bb7def03cb9c7e78938c849b5ca4fc32fd7ad68669c8aa2a804a169e54b9ecb",
+  "childDrainObservations": [
+    {
+      "pair": 1,
+      "ordinal": 5,
+      "roles": {
+        "source": {
+          "count": 56,
+          "sumMs": 0.455169,
+          "medianMs": 0.001417,
+          "maxMs": 0.156125,
+          "p95Ms": 0.039167
+        }
+      }
+    },
+    {
+      "pair": 1,
+      "ordinal": 30,
+      "roles": {
+        "source": {
+          "count": 63,
+          "sumMs": 0.040996,
+          "medianMs": 0.0005,
+          "maxMs": 0.002708,
+          "p95Ms": 0.001167
+        },
+        "storage": {
+          "count": 177,
+          "sumMs": 0.172547,
+          "medianMs": 0.000625,
+          "maxMs": 0.012875,
+          "p95Ms": 0.001917
+        }
+      }
+    },
+    {
+      "pair": 2,
+      "ordinal": 5,
+      "roles": {
+        "source": {
+          "count": 60,
+          "sumMs": 0.135375,
+          "medianMs": 0.001292,
+          "maxMs": 0.027958,
+          "p95Ms": 0.002583
+        }
+      }
+    },
+    {
+      "pair": 2,
+      "ordinal": 30,
+      "roles": {
+        "source": {
+          "count": 63,
+          "sumMs": 0.051415,
+          "medianMs": 0.000584,
+          "maxMs": 0.007833,
+          "p95Ms": 0.001333
+        },
+        "storage": {
+          "count": 177,
+          "sumMs": 0.20333,
+          "medianMs": 0.000625,
+          "maxMs": 0.027583,
+          "p95Ms": 0.00275
+        }
+      }
+    },
+    {
+      "pair": 3,
+      "ordinal": 5,
+      "roles": {
+        "source": {
+          "count": 56,
+          "sumMs": 0.363706,
+          "medianMs": 0.0016455,
+          "maxMs": 0.064125,
+          "p95Ms": 0.043792
+        }
+      }
+    },
+    {
+      "pair": 3,
+      "ordinal": 30,
+      "roles": {
+        "source": {
+          "count": 63,
+          "sumMs": 0.046041,
+          "medianMs": 0.0005,
+          "maxMs": 0.005417,
+          "p95Ms": 0.001291
+        },
+        "storage": {
+          "count": 177,
+          "sumMs": 0.195789,
+          "medianMs": 0.000625,
+          "maxMs": 0.027916,
+          "p95Ms": 0.003334
+        }
+      }
+    }
+  ],
+  "measurementLimits": [
+    "wall interval not CPU or monitor-only cost",
+    "entry empty state not recorded",
+    "inclusive sums overlap",
+    "probe-on and same diagnostic binary off are not uninstrumented gate",
+    "empty toList allocation not proven"
+  ],
+  "incrementalTest": "never-child explicit close retains failure; rejects registration before owner return; repeated close; actual unfinished owner",
+  "secondMoreEvidencedCandidate": null,
+  "excludedRelatedIdeas": [
+    "notifyAll simplification changes wakeup protocol and lacks attribution",
+    "final children.clear removal not better evidenced",
+    "cancel snapshots not recorded active"
+  ],
+  "acceptance": false,
+  "reportSha256": "e8081b4e5e1c4d4db91d3288695f898f5fa39e9924a6bf7e3016b001cacbe641"
+}

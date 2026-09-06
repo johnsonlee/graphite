@@ -1,0 +1,134 @@
+{
+  "passed": true,
+  "errors": [],
+  "regressionPassed": true,
+  "targetAchieved": false,
+  "targetErrors": [
+    "pair-1: P95 speedup 1.34x; required 10.00x in every independent fork",
+    "pair-1: global-wide-wrapped-case-insensitive P95 speedup 1.06x; required 10.00x",
+    "pair-1: global-wide-wrapped-case-insensitive-distinct P95 speedup 1.34x; required 10.00x",
+    "pair-2: P95 speedup 1.32x; required 10.00x in every independent fork",
+    "pair-2: global-wide-wrapped-case-insensitive P95 speedup 0.83x; required 10.00x",
+    "pair-2: global-wide-wrapped-case-insensitive-distinct P95 speedup 1.32x; required 10.00x",
+    "pair-3: P95 speedup 0.99x; required 10.00x in every independent fork",
+    "pair-3: global-wide-wrapped-case-insensitive P95 speedup 0.98x; required 10.00x",
+    "pair-3: global-wide-wrapped-case-insensitive-distinct P95 speedup 0.99x; required 10.00x"
+  ],
+  "regressionOnly": true,
+  "minimumSpeedup": 10,
+  "runs": [
+    {
+      "order": "candidate-base",
+      "baseP50LatencyNanos": 2059166,
+      "baseP95LatencyNanos": 57550125,
+      "p50LatencyNanos": 2481417,
+      "p95LatencyNanos": 42817666,
+      "p50Speedup": 0.8298347274964264,
+      "p95Speedup": 1.3440743126914017,
+      "baseWrappedP95LatencyNanos": 2626708,
+      "wrappedP95LatencyNanos": 2481417,
+      "wrappedP95Speedup": 1.0585516259459817,
+      "wrappedShapeRuns": [
+        {
+          "shape": "global-wide-wrapped-case-insensitive",
+          "baseLatencyNanos": 2626708,
+          "latencyNanos": 2481417,
+          "speedup": 1.0585516259459817
+        },
+        {
+          "shape": "global-wide-wrapped-case-insensitive-distinct",
+          "baseLatencyNanos": 57550125,
+          "latencyNanos": 42817666,
+          "speedup": 1.3440743126914017
+        }
+      ],
+      "baseProcessCpuNanos": 1623256000,
+      "processCpuNanos": 1559704000,
+      "cpuCoreUtilizationPermille": 3190,
+      "basePeakUsedHeapBytes": 4707910168,
+      "peakUsedHeapBytes": 4265173392,
+      "basePeakResidentSetBytes": 5256511488,
+      "peakResidentSetBytes": 4799119360
+    },
+    {
+      "order": "base-candidate",
+      "baseP50LatencyNanos": 1793208,
+      "baseP95LatencyNanos": 62780833,
+      "p50LatencyNanos": 2366792,
+      "p95LatencyNanos": 47492458,
+      "p50Speedup": 0.7576533975102163,
+      "p95Speedup": 1.3219116391069925,
+      "baseWrappedP95LatencyNanos": 2267917,
+      "wrappedP95LatencyNanos": 2721000,
+      "wrappedP95Speedup": 0.833486585814039,
+      "wrappedShapeRuns": [
+        {
+          "shape": "global-wide-wrapped-case-insensitive",
+          "baseLatencyNanos": 2267917,
+          "latencyNanos": 2721000,
+          "speedup": 0.833486585814039
+        },
+        {
+          "shape": "global-wide-wrapped-case-insensitive-distinct",
+          "baseLatencyNanos": 62780833,
+          "latencyNanos": 47492458,
+          "speedup": 1.3219116391069925
+        }
+      ],
+      "baseProcessCpuNanos": 1714644000,
+      "processCpuNanos": 1684759000,
+      "cpuCoreUtilizationPermille": 3180,
+      "basePeakUsedHeapBytes": 4220219376,
+      "peakUsedHeapBytes": 4506109976,
+      "basePeakResidentSetBytes": 4767989760,
+      "peakResidentSetBytes": 5063163904
+    },
+    {
+      "order": "candidate-base",
+      "baseP50LatencyNanos": 2177250,
+      "baseP95LatencyNanos": 51742417,
+      "p50LatencyNanos": 2228416,
+      "p95LatencyNanos": 52154333,
+      "p50Speedup": 0.9770392960739825,
+      "p95Speedup": 0.9921019793312283,
+      "baseWrappedP95LatencyNanos": 2456250,
+      "wrappedP95LatencyNanos": 2511333,
+      "wrappedP95Speedup": 0.9780662301654142,
+      "wrappedShapeRuns": [
+        {
+          "shape": "global-wide-wrapped-case-insensitive",
+          "baseLatencyNanos": 2456250,
+          "latencyNanos": 2511333,
+          "speedup": 0.9780662301654142
+        },
+        {
+          "shape": "global-wide-wrapped-case-insensitive-distinct",
+          "baseLatencyNanos": 51742417,
+          "latencyNanos": 52154333,
+          "speedup": 0.9921019793312283
+        }
+      ],
+      "baseProcessCpuNanos": 1726941000,
+      "processCpuNanos": 1842224000,
+      "cpuCoreUtilizationPermille": 3319,
+      "basePeakUsedHeapBytes": 4704970088,
+      "peakUsedHeapBytes": 4711927568,
+      "basePeakResidentSetBytes": 5269798912,
+      "peakResidentSetBytes": 5271371776
+    }
+  ],
+  "orderSummaries": [
+    {
+      "order": "candidate-base",
+      "runCount": 2,
+      "medianP50Speedup": 0.9034370117852044,
+      "medianP95Speedup": 1.168088146011315
+    },
+    {
+      "order": "base-candidate",
+      "runCount": 1,
+      "medianP50Speedup": 0.7576533975102163,
+      "medianP95Speedup": 1.3219116391069925
+    }
+  ]
+}

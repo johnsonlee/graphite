@@ -5665,3 +5665,39 @@ Parentf8e25ff6; frozen-main4e328b01; same real64 fixture and original34 query or
 保存的四模块测试共 2106 项全通过：core454、cypher1236、webgraph195、explore221；core test 与 core/webgraph/explore detekt 复用 Gradle 缓存，其余相关测试、cypher detekt、两 JMH 打包和 Webgraph 排除 test-output 检查本次执行。真实 Method 控制通过 4/17/36 服务图 ×11 场景共33组合，四个真实 corpus 循环复用，实际64个输入文件前后哈希一致；v3单次控制的36条完整值、顺序和来源通过独立核对。Method root order 归一化及未知 graph ID 过滤的现有校验限制原样记录。Webgraph/Explore JAR分别为 `ac573ed7…29200c`、`7d19b57f…621617`。
 
 本次完成正确性修复验证，没有基线性能配对、候选 CI 或接受结论，不把144的性能数据算作145结果；合成fixture未用于性能证明。完整证据由根工作区的 `docs/profiling/attempt145/README.md` 保存。
+
+
+
+### 2026-09-06 - Attempt 146: Skip empty child cleanup without changing task lifetime
+
+**Same shared scheduling direction:** one line returns the original failure after
+closing child registration under the existing monitor when no child remains.
+Nonempty cleanup, actual task exit, caps/lanes and notifications are unchanged.
+Parent is145 `cf300347247174a74bbbd188e89c36c094ae2bdd`; at this local snapshot the
+candidate is uncommitted/unpushed. A later experiment commit must record its own SHA.
+
+315 build inputs,55 saved XML suites/2107 tests pass; all four test tasks execute,
+core lint executes and three other lints use cache. Both JMH packages bind683/958
+compiled main classes. Complete v3 control validates36 queries/6171 ordered rows;
+real Method control completes33 combinations over four repeated corpora, retaining
+root-order normalization and extra-ID limitations. These are correctness controls,
+not unpaired performance claims or synthetic-fixture performance evidence.
+
+| Original34 pair | Base P95 ms | Candidate P95 ms | Strict improvement | CPU delta |
+|---|---:|---:|---|---:|
+|1 C/B|57.550125|42.817666|yes|-3.915%|
+|2 B/C|62.780833|47.492458|yes|-1.743%|
+|3 C/B|51.742417|52.154333|no|+6.676%|
+
+All204 complete oracle signatures and102 paired non-time rows agree. Each pair
+retains graph/segment peaks2/2 and resource ceilings; three queries breach the
+latency double threshold only once, with none repeated. The unchanged driver stops
+on pair3 strict failure, leaving strictProgressEveryPair=false. Its normal exit0
+is not acceptance. Root then runs the original full comparator on the same six
+recordings, with no new measurement: regression-only passes, but targetAchieved
+is false with9 target errors and10x remains unmet.
+
+**Separate next decision:** one independent exact-head CI is planned for this same
+candidate; not an automatic continuation of the driver's no-CI stop branch, not a
+local strict pass, and not acceptance. No new local fork or retry-to-green. No CI
+has run at this snapshot. [Local evidence and boundaries](profiling/attempt146/README.md).

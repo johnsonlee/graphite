@@ -423,6 +423,7 @@ class GraphTask<T> internal constructor(
         check(GraphTaskContext.current === context) { "Only the executing owner may finish its children" }
         val registeredChildren = synchronized(group.scheduler.monitor) {
             acceptingChildren = false
+            if (children.isEmpty()) return primaryFailure
             children.toList()
         }
         var outcome = primaryFailure

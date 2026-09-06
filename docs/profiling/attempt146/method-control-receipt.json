@@ -1,0 +1,8 @@
+{
+  "inputsAndJarUnchanged": true,
+  "fixtureFiles": 64,
+  "fixtureBytes": 1641948871,
+  "jarSha256": "5ed837ba61df069664fd132bad9d94db1bfa69aa1b8fb221e7b48737d075338f",
+  "scope": "unpaired built-in correctness control; Method root order is normalized and unknown graph IDs filtered, so raw root ordering and extra IDs are not independently proven; no performance comparison",
+  "performanceAccepted": false
+}

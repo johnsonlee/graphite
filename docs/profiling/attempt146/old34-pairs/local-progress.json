@@ -1,0 +1,115 @@
+{
+  "pairs": [
+    {
+      "pair": 1,
+      "order": [
+        "candidate",
+        "base"
+      ],
+      "measurements": {
+        "candidate": {
+          "p95LatencyNanos": 42817666.0,
+          "processCpuNanos": 1559704000.0,
+          "peakUsedHeapBytes": 4265173392.0,
+          "peakResidentSetBytes": 4799119360.0,
+          "availableProcessors": 4.0,
+          "graphWorkerCount": 2.0,
+          "segmentWorkerCount": 2.0,
+          "graphScanPeakActiveWorkers": 2.0,
+          "segmentScanPeakActiveWorkers": 2.0
+        },
+        "base": {
+          "p95LatencyNanos": 57550125.0,
+          "processCpuNanos": 1623256000.0,
+          "peakUsedHeapBytes": 4707910168.0,
+          "peakResidentSetBytes": 5256511488.0,
+          "availableProcessors": 4.0,
+          "graphWorkerCount": 2.0,
+          "segmentWorkerCount": 2.0,
+          "graphScanPeakActiveWorkers": 2.0,
+          "segmentScanPeakActiveWorkers": 2.0
+        }
+      },
+      "strictProgress": true,
+      "originalWorkerPeakCondition": true,
+      "originalResourceConditions": true
+    },
+    {
+      "pair": 2,
+      "order": [
+        "base",
+        "candidate"
+      ],
+      "measurements": {
+        "base": {
+          "p95LatencyNanos": 62780833.0,
+          "processCpuNanos": 1714644000.0,
+          "peakUsedHeapBytes": 4220219376.0,
+          "peakResidentSetBytes": 4767989760.0,
+          "availableProcessors": 4.0,
+          "graphWorkerCount": 2.0,
+          "segmentWorkerCount": 2.0,
+          "graphScanPeakActiveWorkers": 2.0,
+          "segmentScanPeakActiveWorkers": 2.0
+        },
+        "candidate": {
+          "p95LatencyNanos": 47492458.0,
+          "processCpuNanos": 1684759000.0,
+          "peakUsedHeapBytes": 4506109976.0,
+          "peakResidentSetBytes": 5063163904.0,
+          "availableProcessors": 4.0,
+          "graphWorkerCount": 2.0,
+          "segmentWorkerCount": 2.0,
+          "graphScanPeakActiveWorkers": 2.0,
+          "segmentScanPeakActiveWorkers": 2.0
+        }
+      },
+      "strictProgress": true,
+      "originalWorkerPeakCondition": true,
+      "originalResourceConditions": true
+    },
+    {
+      "pair": 3,
+      "order": [
+        "candidate",
+        "base"
+      ],
+      "measurements": {
+        "candidate": {
+          "p95LatencyNanos": 52154333.0,
+          "processCpuNanos": 1842224000.0,
+          "peakUsedHeapBytes": 4711927568.0,
+          "peakResidentSetBytes": 5271371776.0,
+          "availableProcessors": 4.0,
+          "graphWorkerCount": 2.0,
+          "segmentWorkerCount": 2.0,
+          "graphScanPeakActiveWorkers": 2.0,
+          "segmentScanPeakActiveWorkers": 2.0
+        },
+        "base": {
+          "p95LatencyNanos": 51742417.0,
+          "processCpuNanos": 1726941000.0,
+          "peakUsedHeapBytes": 4704970088.0,
+          "peakResidentSetBytes": 5269798912.0,
+          "availableProcessors": 4.0,
+          "graphWorkerCount": 2.0,
+          "segmentWorkerCount": 2.0,
+          "graphScanPeakActiveWorkers": 2.0,
+          "segmentScanPeakActiveWorkers": 2.0
+        }
+      },
+      "strictProgress": false,
+      "originalWorkerPeakCondition": true,
+      "originalResourceConditions": true
+    }
+  ],
+  "jarHashes": {
+    "base": "a5c2db2b0020798488916ec86902459d1044a7dcef606a73e00055883cdf5abe",
+    "candidate": "120808180cebddac06522ece2eef37089db99fc08e2864090e91cfa85a66cee9"
+  },
+  "inputsUnchanged": true,
+  "strictProgressEveryPair": false,
+  "accepted": false,
+  "ciRun": false,
+  "note": "Only exact-head green CI can accept a candidate."
+}

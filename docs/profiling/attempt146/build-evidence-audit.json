@@ -1,0 +1,1560 @@
+{
+  "scope": "read-only Python source/XML/JAR audit; no Java/build/query/graph read",
+  "inputCount": 315,
+  "allInputsMatch": true,
+  "checksExit": 0,
+  "tasks": [
+    "> Task :core:detekt",
+    "> Task :cypher:detekt FROM-CACHE",
+    "> Task :webgraph:detekt FROM-CACHE",
+    "> Task :explore:detekt FROM-CACHE",
+    "> Task :core:test",
+    "> Task :webgraph:jmhJar",
+    "> Task :cypher:test",
+    "> Task :webgraph:test",
+    "> Task :webgraph:verifyJmhJarExcludesTests",
+    "> Task :explore:jmhJar",
+    "> Task :explore:test"
+  ],
+  "modules": {
+    "core": {
+      "xmlSuites": 20,
+      "tests": 455,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "cypher": {
+      "xmlSuites": 19,
+      "tests": 1236,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "webgraph": {
+      "xmlSuites": 7,
+      "tests": 195,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "explore": {
+      "xmlSuites": 9,
+      "tests": 221,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  },
+  "jars": {
+    "webgraph": {
+      "sha256": "120808180cebddac06522ece2eef37089db99fc08e2864090e91cfa85a66cee9",
+      "parentSha256": "ac573ed7fbfe4e66a8e1e4660e2870c3680a1ee81027e2a9466ef17a8729200c",
+      "shaChecksMatch": true,
+      "uniqueCompiledClassesMatched": 683,
+      "recordedCompiledCountMatches": true,
+      "currentIoJohnsonleeClasses": 1077,
+      "parentIoJohnsonleeClasses": 1077,
+      "allIoJohnsonleeClassDifferences": [
+        "io/johnsonlee/graphite/graph/GraphTask.class",
+        "io/johnsonlee/graphite/graph/GraphTaskContext.class",
+        "io/johnsonlee/graphite/graph/GraphTaskGroup.class",
+        "io/johnsonlee/graphite/graph/GraphTaskScheduler.class"
+      ],
+      "compiledProductionClassDifferences": [
+        "io/johnsonlee/graphite/graph/GraphTask.class",
+        "io/johnsonlee/graphite/graph/GraphTaskContext.class",
+        "io/johnsonlee/graphite/graph/GraphTaskGroup.class",
+        "io/johnsonlee/graphite/graph/GraphTaskScheduler.class"
+      ],
+      "newTestExcluded": true,
+      "selectedGraphTask": {
+        "currentSha256": "4c8a7bf4caadae04d62fb7a30af676d1e83e1ab0a743442a25a5644774cd25c1",
+        "parentSha256": "53340703caaf5559fdfa3d12b3ae4c7732238ccd2d065d30835892466d052d15",
+        "matchesCompiled": true
+      },
+      "additionalClassesDebugAudit": [
+        {
+          "class": "io/johnsonlee/graphite/graph/GraphTaskContext.class",
+          "currentBytes": 5910,
+          "parentBytes": 5910,
+          "currentSha256": "a4f0584699d60c17dfb874f791b7ad60c13aca1379ed8b29eb11b0c162b8efca",
+          "parentSha256": "014cc33c489a7277f6b33dfe5eaf533d05d65e7f3fb54dce3ab3ecb3643137df",
+          "allOtherBytesEqual": true,
+          "maskedKinds": [
+            "constant-pool SMAP string",
+            "SourceDebugExtension",
+            "LineNumberTable"
+          ],
+          "currentMaskedSpans": [
+            {
+              "offset": 3590,
+              "bytes": 182,
+              "kind": "constant-pool SMAP string"
+            },
+            {
+              "offset": 4130,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 4228,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 4387,
+              "bytes": 30,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 4614,
+              "bytes": 18,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 4792,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 4875,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 4942,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 5125,
+              "bytes": 18,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 5212,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 5326,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 5401,
+              "bytes": 10,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 5465,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 5525,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 5563,
+              "bytes": 182,
+              "kind": "SourceDebugExtension"
+            }
+          ],
+          "parentMaskedSpans": [
+            {
+              "offset": 3590,
+              "bytes": 182,
+              "kind": "constant-pool SMAP string"
+            },
+            {
+              "offset": 4130,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 4228,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 4387,
+              "bytes": 30,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 4614,
+              "bytes": 18,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 4792,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 4875,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 4942,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 5125,
+              "bytes": 18,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 5212,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 5326,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 5401,
+              "bytes": 10,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 5465,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 5525,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 5563,
+              "bytes": 182,
+              "kind": "SourceDebugExtension"
+            }
+          ]
+        },
+        {
+          "class": "io/johnsonlee/graphite/graph/GraphTaskGroup.class",
+          "currentBytes": 14940,
+          "parentBytes": 14940,
+          "currentSha256": "dc6b99064286a8602fa79c08cb9e4a07c734a5e01ba0cda388c1afa0c5574473",
+          "parentSha256": "13a9fee90a03c051f4e30ee51a1be8900a8a4406bd77e194948cdf15e6c610b5",
+          "allOtherBytesEqual": true,
+          "maskedKinds": [
+            "constant-pool SMAP string",
+            "SourceDebugExtension",
+            "LineNumberTable"
+          ],
+          "currentMaskedSpans": [
+            {
+              "offset": 7413,
+              "bytes": 439,
+              "kind": "constant-pool SMAP string"
+            },
+            {
+              "offset": 8407,
+              "bytes": 50,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 8619,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 8692,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 8753,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 8826,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 8899,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 8972,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 9034,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 9105,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 9167,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 9261,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 9363,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 9424,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 9563,
+              "bytes": 26,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 9744,
+              "bytes": 34,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 10077,
+              "bytes": 50,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 10345,
+              "bytes": 22,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 10946,
+              "bytes": 98,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 11606,
+              "bytes": 74,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 12117,
+              "bytes": 62,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 12447,
+              "bytes": 30,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 12748,
+              "bytes": 66,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 12971,
+              "bytes": 14,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 13240,
+              "bytes": 62,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 13415,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 13774,
+              "bytes": 78,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 14089,
+              "bytes": 46,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 14213,
+              "bytes": 439,
+              "kind": "SourceDebugExtension"
+            }
+          ],
+          "parentMaskedSpans": [
+            {
+              "offset": 7413,
+              "bytes": 439,
+              "kind": "constant-pool SMAP string"
+            },
+            {
+              "offset": 8407,
+              "bytes": 50,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 8619,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 8692,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 8753,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 8826,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 8899,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 8972,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 9034,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 9105,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 9167,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 9261,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 9363,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 9424,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 9563,
+              "bytes": 26,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 9744,
+              "bytes": 34,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 10077,
+              "bytes": 50,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 10345,
+              "bytes": 22,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 10946,
+              "bytes": 98,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 11606,
+              "bytes": 74,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 12117,
+              "bytes": 62,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 12447,
+              "bytes": 30,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 12748,
+              "bytes": 66,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 12971,
+              "bytes": 14,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 13240,
+              "bytes": 62,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 13415,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 13774,
+              "bytes": 78,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 14089,
+              "bytes": 46,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 14213,
+              "bytes": 439,
+              "kind": "SourceDebugExtension"
+            }
+          ]
+        },
+        {
+          "class": "io/johnsonlee/graphite/graph/GraphTaskScheduler.class",
+          "currentBytes": 15920,
+          "parentBytes": 15920,
+          "currentSha256": "c8650fd74aeaf9d3c08ec4b2f00d31e9fa594b16a9a0ab3e83e9473ef0476463",
+          "parentSha256": "e48c6d739ee53f7b5e5ac52c185378e1b1c312209f1e91842f77cc7f921df1d9",
+          "allOtherBytesEqual": true,
+          "maskedKinds": [
+            "constant-pool SMAP string",
+            "SourceDebugExtension",
+            "LineNumberTable"
+          ],
+          "currentMaskedSpans": [
+            {
+              "offset": 9574,
+              "bytes": 398,
+              "kind": "constant-pool SMAP string"
+            },
+            {
+              "offset": 10607,
+              "bytes": 50,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 10722,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 10783,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 10861,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 11410,
+              "bytes": 90,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 11810,
+              "bytes": 54,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 11922,
+              "bytes": 38,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 12066,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 12130,
+              "bytes": 34,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 12261,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 12463,
+              "bytes": 30,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 12748,
+              "bytes": 34,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 13157,
+              "bytes": 82,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 13479,
+              "bytes": 18,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 13967,
+              "bytes": 110,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 14659,
+              "bytes": 114,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 14978,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 15048,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 15090,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 15171,
+              "bytes": 14,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 15233,
+              "bytes": 398,
+              "kind": "SourceDebugExtension"
+            }
+          ],
+          "parentMaskedSpans": [
+            {
+              "offset": 9574,
+              "bytes": 398,
+              "kind": "constant-pool SMAP string"
+            },
+            {
+              "offset": 10607,
+              "bytes": 50,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 10722,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 10783,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 10861,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 11410,
+              "bytes": 90,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 11810,
+              "bytes": 54,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 11922,
+              "bytes": 38,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 12066,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 12130,
+              "bytes": 34,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 12261,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 12463,
+              "bytes": 30,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 12748,
+              "bytes": 34,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 13157,
+              "bytes": 82,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 13479,
+              "bytes": 18,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 13967,
+              "bytes": 110,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 14659,
+              "bytes": 114,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 14978,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 15048,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 15090,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 15171,
+              "bytes": 14,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 15233,
+              "bytes": 398,
+              "kind": "SourceDebugExtension"
+            }
+          ]
+        }
+      ]
+    },
+    "explore": {
+      "sha256": "5ed837ba61df069664fd132bad9d94db1bfa69aa1b8fb221e7b48737d075338f",
+      "parentSha256": "7d19b57f59b5dd92cca700ac2b9ee8357e66bab11650006a9cdcdf662e621617",
+      "shaChecksMatch": true,
+      "uniqueCompiledClassesMatched": 958,
+      "recordedCompiledCountMatches": true,
+      "currentIoJohnsonleeClasses": 1104,
+      "parentIoJohnsonleeClasses": 1104,
+      "allIoJohnsonleeClassDifferences": [
+        "io/johnsonlee/graphite/graph/GraphTask.class",
+        "io/johnsonlee/graphite/graph/GraphTaskContext.class",
+        "io/johnsonlee/graphite/graph/GraphTaskGroup.class",
+        "io/johnsonlee/graphite/graph/GraphTaskScheduler.class"
+      ],
+      "compiledProductionClassDifferences": [
+        "io/johnsonlee/graphite/graph/GraphTask.class",
+        "io/johnsonlee/graphite/graph/GraphTaskContext.class",
+        "io/johnsonlee/graphite/graph/GraphTaskGroup.class",
+        "io/johnsonlee/graphite/graph/GraphTaskScheduler.class"
+      ],
+      "newTestExcluded": true,
+      "selectedGraphTask": {
+        "currentSha256": "4c8a7bf4caadae04d62fb7a30af676d1e83e1ab0a743442a25a5644774cd25c1",
+        "parentSha256": "53340703caaf5559fdfa3d12b3ae4c7732238ccd2d065d30835892466d052d15",
+        "matchesCompiled": true
+      },
+      "additionalClassesDebugAudit": [
+        {
+          "class": "io/johnsonlee/graphite/graph/GraphTaskContext.class",
+          "currentBytes": 5910,
+          "parentBytes": 5910,
+          "currentSha256": "a4f0584699d60c17dfb874f791b7ad60c13aca1379ed8b29eb11b0c162b8efca",
+          "parentSha256": "014cc33c489a7277f6b33dfe5eaf533d05d65e7f3fb54dce3ab3ecb3643137df",
+          "allOtherBytesEqual": true,
+          "maskedKinds": [
+            "constant-pool SMAP string",
+            "SourceDebugExtension",
+            "LineNumberTable"
+          ],
+          "currentMaskedSpans": [
+            {
+              "offset": 3590,
+              "bytes": 182,
+              "kind": "constant-pool SMAP string"
+            },
+            {
+              "offset": 4130,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 4228,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 4387,
+              "bytes": 30,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 4614,
+              "bytes": 18,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 4792,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 4875,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 4942,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 5125,
+              "bytes": 18,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 5212,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 5326,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 5401,
+              "bytes": 10,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 5465,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 5525,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 5563,
+              "bytes": 182,
+              "kind": "SourceDebugExtension"
+            }
+          ],
+          "parentMaskedSpans": [
+            {
+              "offset": 3590,
+              "bytes": 182,
+              "kind": "constant-pool SMAP string"
+            },
+            {
+              "offset": 4130,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 4228,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 4387,
+              "bytes": 30,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 4614,
+              "bytes": 18,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 4792,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 4875,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 4942,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 5125,
+              "bytes": 18,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 5212,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 5326,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 5401,
+              "bytes": 10,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 5465,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 5525,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 5563,
+              "bytes": 182,
+              "kind": "SourceDebugExtension"
+            }
+          ]
+        },
+        {
+          "class": "io/johnsonlee/graphite/graph/GraphTaskGroup.class",
+          "currentBytes": 14940,
+          "parentBytes": 14940,
+          "currentSha256": "dc6b99064286a8602fa79c08cb9e4a07c734a5e01ba0cda388c1afa0c5574473",
+          "parentSha256": "13a9fee90a03c051f4e30ee51a1be8900a8a4406bd77e194948cdf15e6c610b5",
+          "allOtherBytesEqual": true,
+          "maskedKinds": [
+            "constant-pool SMAP string",
+            "SourceDebugExtension",
+            "LineNumberTable"
+          ],
+          "currentMaskedSpans": [
+            {
+              "offset": 7413,
+              "bytes": 439,
+              "kind": "constant-pool SMAP string"
+            },
+            {
+              "offset": 8407,
+              "bytes": 50,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 8619,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 8692,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 8753,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 8826,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 8899,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 8972,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 9034,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 9105,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 9167,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 9261,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 9363,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 9424,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 9563,
+              "bytes": 26,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 9744,
+              "bytes": 34,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 10077,
+              "bytes": 50,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 10345,
+              "bytes": 22,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 10946,
+              "bytes": 98,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 11606,
+              "bytes": 74,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 12117,
+              "bytes": 62,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 12447,
+              "bytes": 30,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 12748,
+              "bytes": 66,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 12971,
+              "bytes": 14,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 13240,
+              "bytes": 62,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 13415,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 13774,
+              "bytes": 78,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 14089,
+              "bytes": 46,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 14213,
+              "bytes": 439,
+              "kind": "SourceDebugExtension"
+            }
+          ],
+          "parentMaskedSpans": [
+            {
+              "offset": 7413,
+              "bytes": 439,
+              "kind": "constant-pool SMAP string"
+            },
+            {
+              "offset": 8407,
+              "bytes": 50,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 8619,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 8692,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 8753,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 8826,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 8899,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 8972,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 9034,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 9105,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 9167,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 9261,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 9363,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 9424,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 9563,
+              "bytes": 26,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 9744,
+              "bytes": 34,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 10077,
+              "bytes": 50,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 10345,
+              "bytes": 22,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 10946,
+              "bytes": 98,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 11606,
+              "bytes": 74,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 12117,
+              "bytes": 62,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 12447,
+              "bytes": 30,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 12748,
+              "bytes": 66,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 12971,
+              "bytes": 14,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 13240,
+              "bytes": 62,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 13415,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 13774,
+              "bytes": 78,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 14089,
+              "bytes": 46,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 14213,
+              "bytes": 439,
+              "kind": "SourceDebugExtension"
+            }
+          ]
+        },
+        {
+          "class": "io/johnsonlee/graphite/graph/GraphTaskScheduler.class",
+          "currentBytes": 15920,
+          "parentBytes": 15920,
+          "currentSha256": "c8650fd74aeaf9d3c08ec4b2f00d31e9fa594b16a9a0ab3e83e9473ef0476463",
+          "parentSha256": "e48c6d739ee53f7b5e5ac52c185378e1b1c312209f1e91842f77cc7f921df1d9",
+          "allOtherBytesEqual": true,
+          "maskedKinds": [
+            "constant-pool SMAP string",
+            "SourceDebugExtension",
+            "LineNumberTable"
+          ],
+          "currentMaskedSpans": [
+            {
+              "offset": 9574,
+              "bytes": 398,
+              "kind": "constant-pool SMAP string"
+            },
+            {
+              "offset": 10607,
+              "bytes": 50,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 10722,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 10783,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 10861,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 11410,
+              "bytes": 90,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 11810,
+              "bytes": 54,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 11922,
+              "bytes": 38,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 12066,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 12130,
+              "bytes": 34,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 12261,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 12463,
+              "bytes": 30,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 12748,
+              "bytes": 34,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 13157,
+              "bytes": 82,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 13479,
+              "bytes": 18,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 13967,
+              "bytes": 110,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 14659,
+              "bytes": 114,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 14978,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 15048,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 15090,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 15171,
+              "bytes": 14,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 15233,
+              "bytes": 398,
+              "kind": "SourceDebugExtension"
+            }
+          ],
+          "parentMaskedSpans": [
+            {
+              "offset": 9574,
+              "bytes": 398,
+              "kind": "constant-pool SMAP string"
+            },
+            {
+              "offset": 10607,
+              "bytes": 50,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 10722,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 10783,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 10861,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 11410,
+              "bytes": 90,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 11810,
+              "bytes": 54,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 11922,
+              "bytes": 38,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 12066,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 12130,
+              "bytes": 34,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 12261,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 12463,
+              "bytes": 30,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 12748,
+              "bytes": 34,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 13157,
+              "bytes": 82,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 13479,
+              "bytes": 18,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 13967,
+              "bytes": 110,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 14659,
+              "bytes": 114,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 14978,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 15048,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 15090,
+              "bytes": 6,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 15171,
+              "bytes": 14,
+              "kind": "LineNumberTable"
+            },
+            {
+              "offset": 15233,
+              "bytes": 398,
+              "kind": "SourceDebugExtension"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "newTest": {
+    "path": "checks-test-results/core/test/TEST-io.johnsonlee.graphite.graph.GraphTaskEmptyChildrenTest.xml",
+    "sha256": "c5bef80685e7835a0aae03138f4056bf89ecc76d91791beede44db2467314b13",
+    "counts": {
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "cases": [
+      {
+        "name": "finishing an owner without children closes registration but retains its execution slot",
+        "classname": "io.johnsonlee.graphite.graph.GraphTaskEmptyChildrenTest",
+        "time": "0.003"
+      }
+    ]
+  },
+  "acceptance": false,
+  "totalTests": 2107,
+  "xmlSuiteCount": 55,
+  "evidenceHashes": {
+    "checks-inputs.json": "bfbc2cd530e14cf4487143f2489f5267ec705d72992ddb87effd3116cf0fdb3d",
+    "checks-exit.json": "982b9e9bfb10ffe83cad665807abcfd3fa97b37822db5ab7831157a499548a9e",
+    "checks.log": "73a6ca1b63aa6b18ba6a7ad59482537198dd43ea6f3918400847fce281329c47",
+    "final-build-receipt.json": "30fc6d949c07692347bb862b0c8583b0df2eb139757b489975f13c7b7ad6251a",
+    "actual-source-review.json": "f1195f06e78b3f2adb7c7a19d205698fb54a24156308bbafc4cbced068a8edde"
+  },
+  "initialExpectedOneClassWasIncorrect": true,
+  "auditExecutionNote": "Initial complete audit produced raw JSON then stopped on an overly narrow expected-one-class assertion before MD; raw four-class results retained. Corrected report uses actual list and independently inspects debug spans; no Java or measurement rerun."
+}
