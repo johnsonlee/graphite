@@ -1,0 +1,17 @@
+=== RUN   TestIndexedCandidateConsumedNodeTagClassification
+=== RUN   TestIndexedCandidateConsumedNodeTagClassification/16
+    candidate_node_error_test.go:38: consumed tag 16: &query.Error{Message:"node 17: unknown node tag 16", Class:"CypherException"}
+=== RUN   TestIndexedCandidateConsumedNodeTagClassification/127
+    candidate_node_error_test.go:38: consumed tag 127: &query.Error{Message:"node 17: unknown node tag 127", Class:"CypherException"}
+=== RUN   TestIndexedCandidateConsumedNodeTagClassification/128
+    candidate_node_error_test.go:38: consumed tag 128: &query.Error{Message:"node 17: unknown node tag 128", Class:"CypherException"}
+=== RUN   TestIndexedCandidateConsumedNodeTagClassification/255
+    candidate_node_error_test.go:38: consumed tag 255: &query.Error{Message:"node 17: unknown node tag 255", Class:"CypherException"}
+--- FAIL: TestIndexedCandidateConsumedNodeTagClassification (0.02s)
+    --- FAIL: TestIndexedCandidateConsumedNodeTagClassification/16 (0.01s)
+    --- FAIL: TestIndexedCandidateConsumedNodeTagClassification/127 (0.00s)
+    --- FAIL: TestIndexedCandidateConsumedNodeTagClassification/128 (0.00s)
+    --- FAIL: TestIndexedCandidateConsumedNodeTagClassification/255 (0.00s)
+FAIL
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/query	0.457s
+FAIL

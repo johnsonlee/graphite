@@ -254,7 +254,7 @@ func (e evaluator) indexedNodeWalker(graph *store.Store, clause cypher.MatchClau
 				node, err := group.source.Store.CandidateNode(e.ctx, position.id)
 				if err != nil {
 					candidatePreparationError(err)
-					fail(err.Error())
+					failNodeRead(err)
 				}
 				slot.graph, slot.graphID, slot.qualified = group.source.Store, group.source.ID, e.cross
 				slot.isMethod, slot.node = false, node

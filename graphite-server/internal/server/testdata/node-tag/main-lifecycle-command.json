@@ -1,0 +1,13 @@
+{
+  "command": [
+    "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+    "-Xmx128m",
+    "-cp",
+    "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-classes-r20dm5ws:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+    "NodeTagOracle",
+    "/private/tmp/graphite-go-node-tag-a1b53f86/graphite-server/internal/query/testdata/traversal",
+    "/private/tmp/graphite-go-node-tag-a1b53f86/graphite-server/internal/server/testdata/node-tag/prepared.nodeindex",
+    "/private/tmp/graphite-go-node-tag-a1b53f86/graphite-server/internal/server/testdata/node-tag/main-lifecycle.json"
+  ],
+  "exitCode": 0
+}

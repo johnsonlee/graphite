@@ -1,0 +1,25 @@
+{
+  "archive": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-final-rlopa_31",
+  "runs": [
+    {
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./..."
+      ],
+      "exitCode": 0,
+      "log": "final-race.log"
+    },
+    {
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "exitCode": 0,
+      "log": "final-vet.log"
+    }
+  ],
+  "finishedAtUTC": "2026-09-06T22:21:45.399697+00:00"
+}

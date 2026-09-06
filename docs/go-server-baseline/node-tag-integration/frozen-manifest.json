@@ -1,0 +1,88 @@
+{
+  "frozenAt": "2026-09-06T22:13:57.874281+00:00",
+  "commit": "1cb2cef2e32fc2043bc7681e5cf2858cef20250a",
+  "effectiveBase": "f0e5881c35aa5deb9f797f4a51ad301a30a89f32",
+  "rootBase": "a1b53f86a981f6e70162c5bca89ea97dd1ad691f",
+  "explicitBaseCherryPick": "6fd5516c18ae9de84664e12444a71eae74036aa5",
+  "patchSHA256": "f640741a90acea132d6e859440eff4988c1998940219ddaf1e0e409fa59d91aa",
+  "filesSHA256": {
+    "graphite-server/internal/query/candidate_slot_test.go": "d7d0301909d986dd132bbd8d6a62d8758a91489337c10229dc18531fc3cebd21",
+    "graphite-server/internal/query/early_match_corrupt_test.go": "5d402e18504adfe952eff7aa5e071b6e69988bf438f838883e13d428378e08ba",
+    "graphite-server/internal/query/node_error.go": "b50470c46bf9c7a68f7fdb67c6dc892880c81a87504ab702d223f7e01a496b19",
+    "graphite-server/internal/query/node_error_test.go": "c0fe4d150650dd63a1d39e2562350beb4ca1d98c5b9459b8bf15958d78cbfb93",
+    "graphite-server/internal/query/traversal.go": "c83f3122a4ab61a9433323c3466c64612e2df7e1db703b989df8f5c98f9f0a33",
+    "graphite-server/internal/server/http.go": "5a84f9413a31ee04be4d96604127459657224ccb173e8400a99f4c8b2b8f2647",
+    "graphite-server/internal/server/node_error.go": "edc403e5f97e020acd7470179a841b35dc0ccd80afab9ebbc1841519d0951783",
+    "graphite-server/internal/server/node_error_test.go": "53f2f2fe8199f1b47cc2c797929a76f1ec465e3ee6e664c73d46fe44ddfe4a12",
+    "graphite-server/internal/server/testdata/node-tag/NodeTagOracle.java": "56bc07a0239d0c76faaf9f9e8cafc468b3c51107fc38ddbb038c9662e0376edc",
+    "graphite-server/internal/server/testdata/node-tag/README.md": "3c03895383740ba4b8252013f1c718202b7659fc760d396eba9ae6e651ad01cb",
+    "graphite-server/internal/server/testdata/node-tag/after-differences.json": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+    "graphite-server/internal/server/testdata/node-tag/before-differences.json": "a2f620e85e53b6b754b37859105bfccd70a1d4b31e07e41c0812a1c53ca352b0",
+    "graphite-server/internal/server/testdata/node-tag/capture-lifecycle.py": "ef5a98291d5fd462dcd647e3b00201bcf9644a6e3cd97fc02e0b8bb295abdae9",
+    "graphite-server/internal/server/testdata/node-tag/capture.py": "92e60df766e81abd236906ee934ab83df1818c0197e357e74d421cc663ead037",
+    "graphite-server/internal/server/testdata/node-tag/compare.py": "18d687f133f356d52568ef2b1e494c19f29b7949ec640667067fb7c9f05ad7af",
+    "graphite-server/internal/server/testdata/node-tag/final-differences.json": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+    "graphite-server/internal/server/testdata/node-tag/main-lifecycle-command.json": "e25b5d9e61b3fa6779b14f3637e87cace9e385b1e8759a3351195188ba8ed0e3",
+    "graphite-server/internal/server/testdata/node-tag/main-lifecycle.json": "7e6f931de6e20f6e52d908cd3cc804a7919ef64e5620c51beb5169fa61970900",
+    "graphite-server/internal/server/testdata/node-tag/main-lifecycle.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "graphite-server/internal/server/testdata/node-tag/main-unindexed/EAGER.log": "d8ab81ee3d8555cdf150b2a7f7241f237eb82fdb29dd5867b64d6894cce1013e",
+    "graphite-server/internal/server/testdata/node-tag/main-unindexed/MAPPED.log": "3d69ab93a9e5f28897ce529f829fe11b4d84a5d970c23947ba1c186e719f6946",
+    "graphite-server/internal/server/testdata/node-tag/main-unindexed/commands.json": "4370aeaa0ec29d97c83ae2b1975f7978364f35bac2c0154eac34e1e44ed66710",
+    "graphite-server/internal/server/testdata/node-tag/main-unindexed/observations.json": "8412eb81a763b5340779c86eb67fb9327215a5a808b326b4ba47b4ab612d5822",
+    "graphite-server/internal/server/testdata/node-tag/main/EAGER.log": "fbe7fa43ac4f2b344c1186d86089dbb3dd23676e10c1ae8bc82e105641b622ca",
+    "graphite-server/internal/server/testdata/node-tag/main/MAPPED.log": "30f8cb7ab5ab7e32885befa2622cf4f6e838e915fa3002f31d9222060adac68d",
+    "graphite-server/internal/server/testdata/node-tag/main/commands.json": "ee98ee6d13509268b1527c36f47d8d0281095d8f227469db10e4a08bd485d547",
+    "graphite-server/internal/server/testdata/node-tag/main/observations.json": "b24f408de54c2afeef47e79c67a07ea67dccfc882941f17e29b16dd03ea38a64",
+    "graphite-server/internal/server/testdata/node-tag/native-after/EAGER.log": "0ffc378bfbbdeba2153c817477788e97769829ae7cce01d795c4863d93b48462",
+    "graphite-server/internal/server/testdata/node-tag/native-after/MAPPED.log": "ca13df2616a9ed249a669ab0063ee69f6ec9ceacd1e57167905afe59c7d7f588",
+    "graphite-server/internal/server/testdata/node-tag/native-after/commands.json": "6dfc19baec7cf1c55e2d75d7b2b02683f212059a43bff210a1ca6a4e03e2b02d",
+    "graphite-server/internal/server/testdata/node-tag/native-after/observations.json": "0ebe459088d5e9d201b018277d1764f237aea195dc226b716fc1a5c575f7ee05",
+    "graphite-server/internal/server/testdata/node-tag/native-before/EAGER.log": "d71a11f7afe5218958dd20df76c80d4f37483d4ede343750e21045d96b43fe87",
+    "graphite-server/internal/server/testdata/node-tag/native-before/MAPPED.log": "f80f6140e80f9ba31659a4a696f5f3e9dcf613a1e71affdf578f59880f0f2ace",
+    "graphite-server/internal/server/testdata/node-tag/native-before/commands.json": "95ae83cd94b1d6bf87cdb900f4d28e396a3726ba0e9041106c3bfe48db506c3f",
+    "graphite-server/internal/server/testdata/node-tag/native-before/observations.json": "370f4c06ddca8aec26b8ae6c1593100415b9db585a694be6c529de7dee9e98ba",
+    "graphite-server/internal/server/testdata/node-tag/native-early-corrupt.json": "057a4b77541bf83f45b7d48490056235c20da574a198150021f5bf484ea4e790",
+    "graphite-server/internal/server/testdata/node-tag/native-final/EAGER.log": "0307c65815768518e203a12763b980f368feab746263603bff460329db651918",
+    "graphite-server/internal/server/testdata/node-tag/native-final/MAPPED.log": "173e810a8538a071d2dc4eb2cde52f0123dd08df553f818a35310a393da47f06",
+    "graphite-server/internal/server/testdata/node-tag/native-final/commands.json": "7d09e0b8fe894dbbcd898bb035b91e8dc1edc8ff3ce53f2ea291ba225618f04b",
+    "graphite-server/internal/server/testdata/node-tag/native-final/observations.json": "4fd971f3e6b9f175d5f8d9064f72a29883933ced9e29adae53e86df3278c1060",
+    "graphite-server/internal/server/testdata/node-tag/prepared.nodeindex": "e30e728fe2a8c32e3a900286a0fb3854d77d8e40f5ff5d0ff58cd0e34d5181b8",
+    "graphite-server/internal/server/testdata/node-tag/verification.json": "1b02e393d6ba01a4f51a6c33d86091f13883097633a145ef7f1dce2715451254",
+    "graphite-server/internal/store/decode.go": "be92b2080650352c3fa6e1929901fffc4326876f5b0d06db2518514eedff0887",
+    "graphite-server/internal/store/node_error.go": "6d696d33b1138cb3e265274869b45bc0687782d0e3a20b77867f7f7a47e80091",
+    "graphite-server/internal/store/node_error_test.go": "d0544784524e2e35c26c4290d3722db911f6fbb6d3d92c5bfe46cad78a0d3cbf"
+  },
+  "productionFiles": [
+    "graphite-server/internal/query/node_error.go",
+    "graphite-server/internal/query/traversal.go",
+    "graphite-server/internal/server/http.go",
+    "graphite-server/internal/server/node_error.go",
+    "graphite-server/internal/store/decode.go",
+    "graphite-server/internal/store/node_error.go"
+  ],
+  "validation": {
+    "race": {
+      "command": "go test -race ./...",
+      "exitCode": 0,
+      "logSHA256": "35784b19a44ca5f1e37b70652c4261f7b78b4aa29bcde4b5e502cd9d8135fb74"
+    },
+    "vet": {
+      "command": "go vet ./...",
+      "exitCode": 0,
+      "logSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "evidence": "graphite-server/internal/server/testdata/node-tag/README.md",
+  "results": {
+    "HTTP": {
+      "equal": 104,
+      "total": 104,
+      "excluded": 0
+    },
+    "lifecycleAssertions": 72,
+    "oldEarlyCorruptEqual": 12
+  },
+  "integrationNote": "Root Attempt6 scan.go actual CandidateNode read failure must call failNodeRead(err); candidate certification failures remain unavailable/fallback. Not present in this base; do not rewrite Attempt6 frozen evidence.",
+  "separateGap": "Missing-index main load can persist partial invalid index; retained main-unindexed oracle, not implemented.",
+  "performance": "No64/no benchmark; no performance claims"
+}

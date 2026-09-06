@@ -1,0 +1,1314 @@
+[
+  {
+    "tag": 16,
+    "mode": "MAPPED",
+    "phase": "before",
+    "operation": "load",
+    "loaded": true
+  },
+  {
+    "tag": 16,
+    "mode": "MAPPED",
+    "phase": "before",
+    "operation": "node",
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: 16"
+  },
+  {
+    "tag": 16,
+    "mode": "MAPPED",
+    "phase": "before",
+    "operation": "query",
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: 16"
+  },
+  {
+    "tag": 16,
+    "mode": "MAPPED",
+    "phase": "before",
+    "operation": "cross",
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: 16"
+  },
+  {
+    "tag": 16,
+    "mode": "MAPPED",
+    "phase": "after",
+    "operation": "load",
+    "loaded": true
+  },
+  {
+    "tag": 16,
+    "mode": "MAPPED",
+    "phase": "after",
+    "operation": "node",
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: 16"
+  },
+  {
+    "tag": 16,
+    "mode": "MAPPED",
+    "phase": "after",
+    "operation": "query",
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: 16"
+  },
+  {
+    "tag": 16,
+    "mode": "MAPPED",
+    "phase": "after",
+    "operation": "cross",
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: 16"
+  },
+  {
+    "tag": 16,
+    "mode": "EAGER",
+    "phase": "before",
+    "operation": "load",
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: 16"
+  },
+  {
+    "tag": 16,
+    "mode": "EAGER",
+    "phase": "after",
+    "operation": "load",
+    "loaded": true
+  },
+  {
+    "tag": 16,
+    "mode": "EAGER",
+    "phase": "after",
+    "operation": "node",
+    "id": 7,
+    "value": 107
+  },
+  {
+    "tag": 16,
+    "mode": "EAGER",
+    "phase": "after",
+    "operation": "query",
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 0
+      },
+      {
+        "id": 1
+      },
+      {
+        "id": 2
+      },
+      {
+        "id": 3
+      },
+      {
+        "id": 4
+      },
+      {
+        "id": 5
+      },
+      {
+        "id": 6
+      },
+      {
+        "id": 7
+      }
+    ]
+  },
+  {
+    "tag": 16,
+    "mode": "EAGER",
+    "phase": "after",
+    "operation": "cross",
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 0,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 1,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 2,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 3,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 4,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 5,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 6,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 7,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "tag": 16,
+    "mode": "AUTO",
+    "phase": "before",
+    "operation": "load",
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: 16"
+  },
+  {
+    "tag": 16,
+    "mode": "AUTO",
+    "phase": "after",
+    "operation": "load",
+    "loaded": true
+  },
+  {
+    "tag": 16,
+    "mode": "AUTO",
+    "phase": "after",
+    "operation": "node",
+    "id": 7,
+    "value": 107
+  },
+  {
+    "tag": 16,
+    "mode": "AUTO",
+    "phase": "after",
+    "operation": "query",
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 0
+      },
+      {
+        "id": 1
+      },
+      {
+        "id": 2
+      },
+      {
+        "id": 3
+      },
+      {
+        "id": 4
+      },
+      {
+        "id": 5
+      },
+      {
+        "id": 6
+      },
+      {
+        "id": 7
+      }
+    ]
+  },
+  {
+    "tag": 16,
+    "mode": "AUTO",
+    "phase": "after",
+    "operation": "cross",
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 0,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 1,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 2,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 3,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 4,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 5,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 6,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 7,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "tag": 127,
+    "mode": "MAPPED",
+    "phase": "before",
+    "operation": "load",
+    "loaded": true
+  },
+  {
+    "tag": 127,
+    "mode": "MAPPED",
+    "phase": "before",
+    "operation": "node",
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: 127"
+  },
+  {
+    "tag": 127,
+    "mode": "MAPPED",
+    "phase": "before",
+    "operation": "query",
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: 127"
+  },
+  {
+    "tag": 127,
+    "mode": "MAPPED",
+    "phase": "before",
+    "operation": "cross",
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: 127"
+  },
+  {
+    "tag": 127,
+    "mode": "MAPPED",
+    "phase": "after",
+    "operation": "load",
+    "loaded": true
+  },
+  {
+    "tag": 127,
+    "mode": "MAPPED",
+    "phase": "after",
+    "operation": "node",
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: 127"
+  },
+  {
+    "tag": 127,
+    "mode": "MAPPED",
+    "phase": "after",
+    "operation": "query",
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: 127"
+  },
+  {
+    "tag": 127,
+    "mode": "MAPPED",
+    "phase": "after",
+    "operation": "cross",
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: 127"
+  },
+  {
+    "tag": 127,
+    "mode": "EAGER",
+    "phase": "before",
+    "operation": "load",
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: 127"
+  },
+  {
+    "tag": 127,
+    "mode": "EAGER",
+    "phase": "after",
+    "operation": "load",
+    "loaded": true
+  },
+  {
+    "tag": 127,
+    "mode": "EAGER",
+    "phase": "after",
+    "operation": "node",
+    "id": 7,
+    "value": 107
+  },
+  {
+    "tag": 127,
+    "mode": "EAGER",
+    "phase": "after",
+    "operation": "query",
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 0
+      },
+      {
+        "id": 1
+      },
+      {
+        "id": 2
+      },
+      {
+        "id": 3
+      },
+      {
+        "id": 4
+      },
+      {
+        "id": 5
+      },
+      {
+        "id": 6
+      },
+      {
+        "id": 7
+      }
+    ]
+  },
+  {
+    "tag": 127,
+    "mode": "EAGER",
+    "phase": "after",
+    "operation": "cross",
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 0,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 1,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 2,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 3,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 4,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 5,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 6,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 7,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "tag": 127,
+    "mode": "AUTO",
+    "phase": "before",
+    "operation": "load",
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: 127"
+  },
+  {
+    "tag": 127,
+    "mode": "AUTO",
+    "phase": "after",
+    "operation": "load",
+    "loaded": true
+  },
+  {
+    "tag": 127,
+    "mode": "AUTO",
+    "phase": "after",
+    "operation": "node",
+    "id": 7,
+    "value": 107
+  },
+  {
+    "tag": 127,
+    "mode": "AUTO",
+    "phase": "after",
+    "operation": "query",
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 0
+      },
+      {
+        "id": 1
+      },
+      {
+        "id": 2
+      },
+      {
+        "id": 3
+      },
+      {
+        "id": 4
+      },
+      {
+        "id": 5
+      },
+      {
+        "id": 6
+      },
+      {
+        "id": 7
+      }
+    ]
+  },
+  {
+    "tag": 127,
+    "mode": "AUTO",
+    "phase": "after",
+    "operation": "cross",
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 0,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 1,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 2,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 3,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 4,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 5,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 6,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 7,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "tag": 128,
+    "mode": "MAPPED",
+    "phase": "before",
+    "operation": "load",
+    "loaded": true
+  },
+  {
+    "tag": 128,
+    "mode": "MAPPED",
+    "phase": "before",
+    "operation": "node",
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: -128"
+  },
+  {
+    "tag": 128,
+    "mode": "MAPPED",
+    "phase": "before",
+    "operation": "query",
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: -128"
+  },
+  {
+    "tag": 128,
+    "mode": "MAPPED",
+    "phase": "before",
+    "operation": "cross",
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: -128"
+  },
+  {
+    "tag": 128,
+    "mode": "MAPPED",
+    "phase": "after",
+    "operation": "load",
+    "loaded": true
+  },
+  {
+    "tag": 128,
+    "mode": "MAPPED",
+    "phase": "after",
+    "operation": "node",
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: -128"
+  },
+  {
+    "tag": 128,
+    "mode": "MAPPED",
+    "phase": "after",
+    "operation": "query",
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: -128"
+  },
+  {
+    "tag": 128,
+    "mode": "MAPPED",
+    "phase": "after",
+    "operation": "cross",
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: -128"
+  },
+  {
+    "tag": 128,
+    "mode": "EAGER",
+    "phase": "before",
+    "operation": "load",
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: -128"
+  },
+  {
+    "tag": 128,
+    "mode": "EAGER",
+    "phase": "after",
+    "operation": "load",
+    "loaded": true
+  },
+  {
+    "tag": 128,
+    "mode": "EAGER",
+    "phase": "after",
+    "operation": "node",
+    "id": 7,
+    "value": 107
+  },
+  {
+    "tag": 128,
+    "mode": "EAGER",
+    "phase": "after",
+    "operation": "query",
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 0
+      },
+      {
+        "id": 1
+      },
+      {
+        "id": 2
+      },
+      {
+        "id": 3
+      },
+      {
+        "id": 4
+      },
+      {
+        "id": 5
+      },
+      {
+        "id": 6
+      },
+      {
+        "id": 7
+      }
+    ]
+  },
+  {
+    "tag": 128,
+    "mode": "EAGER",
+    "phase": "after",
+    "operation": "cross",
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 0,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 1,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 2,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 3,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 4,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 5,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 6,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 7,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "tag": 128,
+    "mode": "AUTO",
+    "phase": "before",
+    "operation": "load",
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: -128"
+  },
+  {
+    "tag": 128,
+    "mode": "AUTO",
+    "phase": "after",
+    "operation": "load",
+    "loaded": true
+  },
+  {
+    "tag": 128,
+    "mode": "AUTO",
+    "phase": "after",
+    "operation": "node",
+    "id": 7,
+    "value": 107
+  },
+  {
+    "tag": 128,
+    "mode": "AUTO",
+    "phase": "after",
+    "operation": "query",
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 0
+      },
+      {
+        "id": 1
+      },
+      {
+        "id": 2
+      },
+      {
+        "id": 3
+      },
+      {
+        "id": 4
+      },
+      {
+        "id": 5
+      },
+      {
+        "id": 6
+      },
+      {
+        "id": 7
+      }
+    ]
+  },
+  {
+    "tag": 128,
+    "mode": "AUTO",
+    "phase": "after",
+    "operation": "cross",
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 0,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 1,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 2,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 3,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 4,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 5,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 6,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 7,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "tag": 255,
+    "mode": "MAPPED",
+    "phase": "before",
+    "operation": "load",
+    "loaded": true
+  },
+  {
+    "tag": 255,
+    "mode": "MAPPED",
+    "phase": "before",
+    "operation": "node",
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: -1"
+  },
+  {
+    "tag": 255,
+    "mode": "MAPPED",
+    "phase": "before",
+    "operation": "query",
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: -1"
+  },
+  {
+    "tag": 255,
+    "mode": "MAPPED",
+    "phase": "before",
+    "operation": "cross",
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: -1"
+  },
+  {
+    "tag": 255,
+    "mode": "MAPPED",
+    "phase": "after",
+    "operation": "load",
+    "loaded": true
+  },
+  {
+    "tag": 255,
+    "mode": "MAPPED",
+    "phase": "after",
+    "operation": "node",
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: -1"
+  },
+  {
+    "tag": 255,
+    "mode": "MAPPED",
+    "phase": "after",
+    "operation": "query",
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: -1"
+  },
+  {
+    "tag": 255,
+    "mode": "MAPPED",
+    "phase": "after",
+    "operation": "cross",
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: -1"
+  },
+  {
+    "tag": 255,
+    "mode": "EAGER",
+    "phase": "before",
+    "operation": "load",
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: -1"
+  },
+  {
+    "tag": 255,
+    "mode": "EAGER",
+    "phase": "after",
+    "operation": "load",
+    "loaded": true
+  },
+  {
+    "tag": 255,
+    "mode": "EAGER",
+    "phase": "after",
+    "operation": "node",
+    "id": 7,
+    "value": 107
+  },
+  {
+    "tag": 255,
+    "mode": "EAGER",
+    "phase": "after",
+    "operation": "query",
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 0
+      },
+      {
+        "id": 1
+      },
+      {
+        "id": 2
+      },
+      {
+        "id": 3
+      },
+      {
+        "id": 4
+      },
+      {
+        "id": 5
+      },
+      {
+        "id": 6
+      },
+      {
+        "id": 7
+      }
+    ]
+  },
+  {
+    "tag": 255,
+    "mode": "EAGER",
+    "phase": "after",
+    "operation": "cross",
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 0,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 1,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 2,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 3,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 4,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 5,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 6,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 7,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "tag": 255,
+    "mode": "AUTO",
+    "phase": "before",
+    "operation": "load",
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: -1"
+  },
+  {
+    "tag": 255,
+    "mode": "AUTO",
+    "phase": "after",
+    "operation": "load",
+    "loaded": true
+  },
+  {
+    "tag": 255,
+    "mode": "AUTO",
+    "phase": "after",
+    "operation": "node",
+    "id": 7,
+    "value": 107
+  },
+  {
+    "tag": 255,
+    "mode": "AUTO",
+    "phase": "after",
+    "operation": "query",
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 0
+      },
+      {
+        "id": 1
+      },
+      {
+        "id": 2
+      },
+      {
+        "id": 3
+      },
+      {
+        "id": 4
+      },
+      {
+        "id": 5
+      },
+      {
+        "id": 6
+      },
+      {
+        "id": 7
+      }
+    ]
+  },
+  {
+    "tag": 255,
+    "mode": "AUTO",
+    "phase": "after",
+    "operation": "cross",
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 0,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 1,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 2,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 3,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 4,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 5,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 6,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 7,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ]
+  }
+]

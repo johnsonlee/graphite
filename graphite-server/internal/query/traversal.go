@@ -166,7 +166,7 @@ func (e evaluator) walkNodeCandidatesUntil(graph *store.Store, pattern cypher.No
 			e.check()
 			node, err := source.Store.Node(id)
 			if err != nil {
-				fail(err.Error())
+				failNodeRead(err)
 			}
 			if slot != nil {
 				slot.graph, slot.graphID, slot.qualified = source.Store, source.ID, e.cross
@@ -362,7 +362,7 @@ func (e evaluator) matchRelationshipUntil(graph *store.Store, state matchState, 
 			return nil, false
 		}
 		if err != nil {
-			fail(err.Error())
+			failNodeRead(err)
 		}
 		return e.nodeValue(source, graphID, node), true
 	}

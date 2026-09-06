@@ -148,6 +148,9 @@ func omitNullFields(value any) any {
 	return value
 }
 func writeError(w http.ResponseWriter, status int, err error) {
+	if writeNodeTagError(w, status, err) {
+		return
+	}
 	writeJSON(w, status, map[string]any{"error": err.Error()})
 }
 func writeText(w http.ResponseWriter, status int, text string) {

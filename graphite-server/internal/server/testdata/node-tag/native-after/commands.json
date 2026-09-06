@@ -1,0 +1,32 @@
+[
+  {
+    "mode": "MAPPED",
+    "command": [
+      "/tmp/graphite-node-tag-after",
+      "--data",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-h3lpd3rn",
+      "--port",
+      "63843",
+      "--load-mode",
+      "MAPPED",
+      "--graph",
+      "a:/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-h3lpd3rn/fixture"
+    ],
+    "exitCodeAfterTermination": 0
+  },
+  {
+    "mode": "EAGER",
+    "command": [
+      "/tmp/graphite-node-tag-after",
+      "--data",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-wguqaj88",
+      "--port",
+      "63905",
+      "--load-mode",
+      "EAGER",
+      "--graph",
+      "a:/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-wguqaj88/fixture"
+    ],
+    "exitCodeAfterTermination": 0
+  }
+]

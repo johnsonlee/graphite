@@ -1,0 +1,898 @@
+[
+  {
+    "case": {
+      "mode": "MAPPED",
+      "tag": 16,
+      "name": "node"
+    },
+    "main": {
+      "status": 500,
+      "contentType": "application/json",
+      "body": {
+        "title": "Server Error",
+        "status": 500,
+        "type": "https://javalin.io/documentation#internalservererrorresponse",
+        "details": {}
+      }
+    },
+    "native": {
+      "status": 500,
+      "contentType": "application/json",
+      "body": {
+        "error": "node 7: unknown node tag 16"
+      }
+    }
+  },
+  {
+    "case": {
+      "mode": "MAPPED",
+      "tag": 16,
+      "name": "subgraph"
+    },
+    "main": {
+      "status": 500,
+      "contentType": "application/json",
+      "body": {
+        "title": "Server Error",
+        "status": 500,
+        "type": "https://javalin.io/documentation#internalservererrorresponse",
+        "details": {}
+      }
+    },
+    "native": {
+      "status": 500,
+      "contentType": "application/json",
+      "body": {
+        "error": "node 7: unknown node tag 16"
+      }
+    }
+  },
+  {
+    "case": {
+      "mode": "MAPPED",
+      "tag": 16,
+      "name": "scoped"
+    },
+    "main": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Unknown node tag: 16",
+        "code": "cypher_query_failed"
+      }
+    },
+    "native": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "node 7: unknown node tag 16",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "case": {
+      "mode": "MAPPED",
+      "tag": 16,
+      "name": "root"
+    },
+    "main": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Unknown node tag: 16",
+        "code": "cypher_query_failed"
+      }
+    },
+    "native": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "node 7: unknown node tag 16",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "case": {
+      "mode": "MAPPED",
+      "tag": 16,
+      "name": "selected"
+    },
+    "main": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Unknown node tag: 16",
+        "code": "cypher_query_failed"
+      }
+    },
+    "native": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "node 7: unknown node tag 16",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "case": {
+      "mode": "MAPPED",
+      "tag": 16,
+      "name": "fanout"
+    },
+    "main": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Unknown node tag: 16",
+        "code": "cypher_query_failed"
+      }
+    },
+    "native": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "node 7: unknown node tag 16",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "case": {
+      "mode": "MAPPED",
+      "tag": 16,
+      "name": "load-EAGER"
+    },
+    "main": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Unknown node tag: 16"
+      }
+    },
+    "native": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "unknown node tag 16"
+      }
+    }
+  },
+  {
+    "case": {
+      "mode": "MAPPED",
+      "tag": 16,
+      "name": "load-AUTO"
+    },
+    "main": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Unknown node tag: 16"
+      }
+    },
+    "native": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "unknown node tag 16"
+      }
+    }
+  },
+  {
+    "case": {
+      "mode": "MAPPED",
+      "tag": 127,
+      "name": "node"
+    },
+    "main": {
+      "status": 500,
+      "contentType": "application/json",
+      "body": {
+        "title": "Server Error",
+        "status": 500,
+        "type": "https://javalin.io/documentation#internalservererrorresponse",
+        "details": {}
+      }
+    },
+    "native": {
+      "status": 500,
+      "contentType": "application/json",
+      "body": {
+        "error": "node 7: unknown node tag 127"
+      }
+    }
+  },
+  {
+    "case": {
+      "mode": "MAPPED",
+      "tag": 127,
+      "name": "subgraph"
+    },
+    "main": {
+      "status": 500,
+      "contentType": "application/json",
+      "body": {
+        "title": "Server Error",
+        "status": 500,
+        "type": "https://javalin.io/documentation#internalservererrorresponse",
+        "details": {}
+      }
+    },
+    "native": {
+      "status": 500,
+      "contentType": "application/json",
+      "body": {
+        "error": "node 7: unknown node tag 127"
+      }
+    }
+  },
+  {
+    "case": {
+      "mode": "MAPPED",
+      "tag": 127,
+      "name": "scoped"
+    },
+    "main": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Unknown node tag: 127",
+        "code": "cypher_query_failed"
+      }
+    },
+    "native": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "node 7: unknown node tag 127",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "case": {
+      "mode": "MAPPED",
+      "tag": 127,
+      "name": "root"
+    },
+    "main": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Unknown node tag: 127",
+        "code": "cypher_query_failed"
+      }
+    },
+    "native": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "node 7: unknown node tag 127",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "case": {
+      "mode": "MAPPED",
+      "tag": 127,
+      "name": "selected"
+    },
+    "main": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Unknown node tag: 127",
+        "code": "cypher_query_failed"
+      }
+    },
+    "native": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "node 7: unknown node tag 127",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "case": {
+      "mode": "MAPPED",
+      "tag": 127,
+      "name": "fanout"
+    },
+    "main": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Unknown node tag: 127",
+        "code": "cypher_query_failed"
+      }
+    },
+    "native": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "node 7: unknown node tag 127",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "case": {
+      "mode": "MAPPED",
+      "tag": 127,
+      "name": "load-EAGER"
+    },
+    "main": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Unknown node tag: 127"
+      }
+    },
+    "native": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "unknown node tag 127"
+      }
+    }
+  },
+  {
+    "case": {
+      "mode": "MAPPED",
+      "tag": 127,
+      "name": "load-AUTO"
+    },
+    "main": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Unknown node tag: 127"
+      }
+    },
+    "native": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "unknown node tag 127"
+      }
+    }
+  },
+  {
+    "case": {
+      "mode": "MAPPED",
+      "tag": 128,
+      "name": "node"
+    },
+    "main": {
+      "status": 500,
+      "contentType": "application/json",
+      "body": {
+        "title": "Server Error",
+        "status": 500,
+        "type": "https://javalin.io/documentation#internalservererrorresponse",
+        "details": {}
+      }
+    },
+    "native": {
+      "status": 500,
+      "contentType": "application/json",
+      "body": {
+        "error": "node 7: unknown node tag 128"
+      }
+    }
+  },
+  {
+    "case": {
+      "mode": "MAPPED",
+      "tag": 128,
+      "name": "subgraph"
+    },
+    "main": {
+      "status": 500,
+      "contentType": "application/json",
+      "body": {
+        "title": "Server Error",
+        "status": 500,
+        "type": "https://javalin.io/documentation#internalservererrorresponse",
+        "details": {}
+      }
+    },
+    "native": {
+      "status": 500,
+      "contentType": "application/json",
+      "body": {
+        "error": "node 7: unknown node tag 128"
+      }
+    }
+  },
+  {
+    "case": {
+      "mode": "MAPPED",
+      "tag": 128,
+      "name": "scoped"
+    },
+    "main": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Unknown node tag: -128",
+        "code": "cypher_query_failed"
+      }
+    },
+    "native": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "node 7: unknown node tag 128",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "case": {
+      "mode": "MAPPED",
+      "tag": 128,
+      "name": "root"
+    },
+    "main": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Unknown node tag: -128",
+        "code": "cypher_query_failed"
+      }
+    },
+    "native": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "node 7: unknown node tag 128",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "case": {
+      "mode": "MAPPED",
+      "tag": 128,
+      "name": "selected"
+    },
+    "main": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Unknown node tag: -128",
+        "code": "cypher_query_failed"
+      }
+    },
+    "native": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "node 7: unknown node tag 128",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "case": {
+      "mode": "MAPPED",
+      "tag": 128,
+      "name": "fanout"
+    },
+    "main": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Unknown node tag: -128",
+        "code": "cypher_query_failed"
+      }
+    },
+    "native": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "node 7: unknown node tag 128",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "case": {
+      "mode": "MAPPED",
+      "tag": 128,
+      "name": "load-EAGER"
+    },
+    "main": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Unknown node tag: -128"
+      }
+    },
+    "native": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "unknown node tag 128"
+      }
+    }
+  },
+  {
+    "case": {
+      "mode": "MAPPED",
+      "tag": 128,
+      "name": "load-AUTO"
+    },
+    "main": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Unknown node tag: -128"
+      }
+    },
+    "native": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "unknown node tag 128"
+      }
+    }
+  },
+  {
+    "case": {
+      "mode": "MAPPED",
+      "tag": 255,
+      "name": "node"
+    },
+    "main": {
+      "status": 500,
+      "contentType": "application/json",
+      "body": {
+        "title": "Server Error",
+        "status": 500,
+        "type": "https://javalin.io/documentation#internalservererrorresponse",
+        "details": {}
+      }
+    },
+    "native": {
+      "status": 500,
+      "contentType": "application/json",
+      "body": {
+        "error": "node 7: unknown node tag 255"
+      }
+    }
+  },
+  {
+    "case": {
+      "mode": "MAPPED",
+      "tag": 255,
+      "name": "subgraph"
+    },
+    "main": {
+      "status": 500,
+      "contentType": "application/json",
+      "body": {
+        "title": "Server Error",
+        "status": 500,
+        "type": "https://javalin.io/documentation#internalservererrorresponse",
+        "details": {}
+      }
+    },
+    "native": {
+      "status": 500,
+      "contentType": "application/json",
+      "body": {
+        "error": "node 7: unknown node tag 255"
+      }
+    }
+  },
+  {
+    "case": {
+      "mode": "MAPPED",
+      "tag": 255,
+      "name": "scoped"
+    },
+    "main": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Unknown node tag: -1",
+        "code": "cypher_query_failed"
+      }
+    },
+    "native": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "node 7: unknown node tag 255",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "case": {
+      "mode": "MAPPED",
+      "tag": 255,
+      "name": "root"
+    },
+    "main": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Unknown node tag: -1",
+        "code": "cypher_query_failed"
+      }
+    },
+    "native": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "node 7: unknown node tag 255",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "case": {
+      "mode": "MAPPED",
+      "tag": 255,
+      "name": "selected"
+    },
+    "main": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Unknown node tag: -1",
+        "code": "cypher_query_failed"
+      }
+    },
+    "native": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "node 7: unknown node tag 255",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "case": {
+      "mode": "MAPPED",
+      "tag": 255,
+      "name": "fanout"
+    },
+    "main": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Unknown node tag: -1",
+        "code": "cypher_query_failed"
+      }
+    },
+    "native": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "node 7: unknown node tag 255",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "case": {
+      "mode": "MAPPED",
+      "tag": 255,
+      "name": "load-EAGER"
+    },
+    "main": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Unknown node tag: -1"
+      }
+    },
+    "native": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "unknown node tag 255"
+      }
+    }
+  },
+  {
+    "case": {
+      "mode": "MAPPED",
+      "tag": 255,
+      "name": "load-AUTO"
+    },
+    "main": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Unknown node tag: -1"
+      }
+    },
+    "native": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "unknown node tag 255"
+      }
+    }
+  },
+  {
+    "case": {
+      "mode": "EAGER",
+      "tag": 16,
+      "name": "load-EAGER"
+    },
+    "main": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Unknown node tag: 16"
+      }
+    },
+    "native": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "unknown node tag 16"
+      }
+    }
+  },
+  {
+    "case": {
+      "mode": "EAGER",
+      "tag": 16,
+      "name": "load-AUTO"
+    },
+    "main": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Unknown node tag: 16"
+      }
+    },
+    "native": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "unknown node tag 16"
+      }
+    }
+  },
+  {
+    "case": {
+      "mode": "EAGER",
+      "tag": 127,
+      "name": "load-EAGER"
+    },
+    "main": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Unknown node tag: 127"
+      }
+    },
+    "native": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "unknown node tag 127"
+      }
+    }
+  },
+  {
+    "case": {
+      "mode": "EAGER",
+      "tag": 127,
+      "name": "load-AUTO"
+    },
+    "main": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Unknown node tag: 127"
+      }
+    },
+    "native": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "unknown node tag 127"
+      }
+    }
+  },
+  {
+    "case": {
+      "mode": "EAGER",
+      "tag": 128,
+      "name": "load-EAGER"
+    },
+    "main": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Unknown node tag: -128"
+      }
+    },
+    "native": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "unknown node tag 128"
+      }
+    }
+  },
+  {
+    "case": {
+      "mode": "EAGER",
+      "tag": 128,
+      "name": "load-AUTO"
+    },
+    "main": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Unknown node tag: -128"
+      }
+    },
+    "native": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "unknown node tag 128"
+      }
+    }
+  },
+  {
+    "case": {
+      "mode": "EAGER",
+      "tag": 255,
+      "name": "load-EAGER"
+    },
+    "main": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Unknown node tag: -1"
+      }
+    },
+    "native": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "unknown node tag 255"
+      }
+    }
+  },
+  {
+    "case": {
+      "mode": "EAGER",
+      "tag": 255,
+      "name": "load-AUTO"
+    },
+    "main": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "Unknown node tag: -1"
+      }
+    },
+    "native": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": {
+        "error": "unknown node tag 255"
+      }
+    }
+  }
+]

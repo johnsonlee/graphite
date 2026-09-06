@@ -1,0 +1,38 @@
+[
+  {
+    "mode": "MAPPED",
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx256m",
+      "-jar",
+      "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "--data",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-lrycstzy",
+      "--port",
+      "63353",
+      "--load-mode",
+      "MAPPED",
+      "--graph",
+      "a:/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-lrycstzy/fixture"
+    ],
+    "exitCodeAfterTermination": 143
+  },
+  {
+    "mode": "EAGER",
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx256m",
+      "-jar",
+      "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "--data",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-idrory41",
+      "--port",
+      "63409",
+      "--load-mode",
+      "EAGER",
+      "--graph",
+      "a:/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-idrory41/fixture"
+    ],
+    "exitCodeAfterTermination": 143
+  }
+]

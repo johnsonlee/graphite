@@ -1,0 +1,1890 @@
+[
+  {
+    "mode": "MAPPED",
+    "tag": 16,
+    "name": "node",
+    "request": {
+      "path": "/api/graphs/a/node/7",
+      "method": "GET",
+      "body": null
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 500,
+      "contentType": "application/json",
+      "rawBody": "{\n    \"title\": \"Server Error\",\n    \"status\": 500,\n    \"type\": \"https://javalin.io/documentation#internalservererrorresponse\",\n    \"details\": {}\n}"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 16,
+    "name": "subgraph",
+    "request": {
+      "path": "/api/graphs/a/subgraph?center=7&depth=0",
+      "method": "GET",
+      "body": null
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 500,
+      "contentType": "application/json",
+      "rawBody": "{\n    \"title\": \"Server Error\",\n    \"status\": 500,\n    \"type\": \"https://javalin.io/documentation#internalservererrorresponse\",\n    \"details\": {}\n}"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 16,
+    "name": "missing-node",
+    "request": {
+      "path": "/api/graphs/a/node/999",
+      "method": "GET",
+      "body": null
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 404,
+      "contentType": "text/plain",
+      "rawBody": "Node not found"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 16,
+    "name": "outgoing",
+    "request": {
+      "path": "/api/graphs/a/node/7/outgoing",
+      "method": "GET",
+      "body": null
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "[\n  {\n    \"from\": 7,\n    \"to\": 7,\n    \"type\": \"Call\",\n    \"virtual\": false,\n    \"dynamic\": false\n  }\n]"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 16,
+    "name": "scoped",
+    "request": {
+      "path": "/api/graphs/a/cypher",
+      "method": "POST",
+      "body": {
+        "query": "MATCH (n:IntConstant) RETURN n LIMIT 8"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 400,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"error\": \"Unknown node tag: 16\",\n  \"code\": \"cypher_query_failed\"\n}"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 16,
+    "name": "root",
+    "request": {
+      "path": "/api/cypher",
+      "method": "POST",
+      "body": {
+        "query": "MATCH (n:IntConstant) RETURN n LIMIT 8"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 400,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"error\": \"Unknown node tag: 16\",\n  \"code\": \"cypher_query_failed\"\n}"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 16,
+    "name": "selected",
+    "request": {
+      "path": "/api/cypher/graphs",
+      "method": "POST",
+      "body": {
+        "graphs": [
+          "a"
+        ],
+        "query": "MATCH (n:IntConstant) RETURN n LIMIT 8"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 400,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"error\": \"Unknown node tag: 16\",\n  \"code\": \"cypher_query_failed\"\n}"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 16,
+    "name": "fanout",
+    "request": {
+      "path": "/api/cypher/graphs",
+      "method": "POST",
+      "body": {
+        "graphs": [
+          "a"
+        ],
+        "mode": "fanout",
+        "query": "MATCH (n:IntConstant) RETURN n LIMIT 8"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 400,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"error\": \"Unknown node tag: 16\",\n  \"code\": \"cypher_query_failed\"\n}"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 16,
+    "name": "bounded-before-tail",
+    "request": {
+      "path": "/api/graphs/a/cypher",
+      "method": "POST",
+      "body": {
+        "query": "MATCH (n:IntConstant) RETURN n.id AS id LIMIT 1"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"columns\": [\n    \"id\"\n  ],\n  \"rows\": [\n    {\n      \"id\": 0\n    }\n  ],\n  \"rowCount\": 1\n}"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 16,
+    "name": "projection-before-tail",
+    "request": {
+      "path": "/api/graphs/a/cypher",
+      "method": "POST",
+      "body": {
+        "query": "MATCH (n:IntConstant) RETURN substring('x','bad') AS x LIMIT 1"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 400,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"error\": \"class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \\u0027bootstrap\\u0027)\",\n  \"code\": \"cypher_query_failed\"\n}"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 16,
+    "name": "load-MAPPED",
+    "request": {
+      "path": "/api/graphs/new16MAPPED",
+      "method": "PUT",
+      "body": {
+        "path": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+        "loadMode": "MAPPED"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"graph\": {\n    \"id\": \"new16MAPPED\",\n    \"path\": \"/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture\",\n    \"loadMode\": \"MAPPED\",\n    \"loadedAt\": \"2026-09-06T22:00:15.810964Z\",\n    \"nodes\": 8,\n    \"edges\": 15,\n    \"methods\": 0,\n    \"callSites\": 0\n  }\n}"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 16,
+    "name": "load-EAGER",
+    "request": {
+      "path": "/api/graphs/new16EAGER",
+      "method": "PUT",
+      "body": {
+        "path": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+        "loadMode": "EAGER"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 400,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"error\": \"Unknown node tag: 16\"\n}"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 16,
+    "name": "load-AUTO",
+    "request": {
+      "path": "/api/graphs/new16AUTO",
+      "method": "PUT",
+      "body": {
+        "path": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+        "loadMode": "AUTO"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 400,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"error\": \"Unknown node tag: 16\"\n}"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 127,
+    "name": "node",
+    "request": {
+      "path": "/api/graphs/a/node/7",
+      "method": "GET",
+      "body": null
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 500,
+      "contentType": "application/json",
+      "rawBody": "{\n    \"title\": \"Server Error\",\n    \"status\": 500,\n    \"type\": \"https://javalin.io/documentation#internalservererrorresponse\",\n    \"details\": {}\n}"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 127,
+    "name": "subgraph",
+    "request": {
+      "path": "/api/graphs/a/subgraph?center=7&depth=0",
+      "method": "GET",
+      "body": null
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 500,
+      "contentType": "application/json",
+      "rawBody": "{\n    \"title\": \"Server Error\",\n    \"status\": 500,\n    \"type\": \"https://javalin.io/documentation#internalservererrorresponse\",\n    \"details\": {}\n}"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 127,
+    "name": "missing-node",
+    "request": {
+      "path": "/api/graphs/a/node/999",
+      "method": "GET",
+      "body": null
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 404,
+      "contentType": "text/plain",
+      "rawBody": "Node not found"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 127,
+    "name": "outgoing",
+    "request": {
+      "path": "/api/graphs/a/node/7/outgoing",
+      "method": "GET",
+      "body": null
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "[\n  {\n    \"from\": 7,\n    \"to\": 7,\n    \"type\": \"Call\",\n    \"virtual\": false,\n    \"dynamic\": false\n  }\n]"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 127,
+    "name": "scoped",
+    "request": {
+      "path": "/api/graphs/a/cypher",
+      "method": "POST",
+      "body": {
+        "query": "MATCH (n:IntConstant) RETURN n LIMIT 8"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 400,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"error\": \"Unknown node tag: 127\",\n  \"code\": \"cypher_query_failed\"\n}"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 127,
+    "name": "root",
+    "request": {
+      "path": "/api/cypher",
+      "method": "POST",
+      "body": {
+        "query": "MATCH (n:IntConstant) RETURN n LIMIT 8"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 400,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"error\": \"Unknown node tag: 127\",\n  \"code\": \"cypher_query_failed\"\n}"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 127,
+    "name": "selected",
+    "request": {
+      "path": "/api/cypher/graphs",
+      "method": "POST",
+      "body": {
+        "graphs": [
+          "a"
+        ],
+        "query": "MATCH (n:IntConstant) RETURN n LIMIT 8"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 400,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"error\": \"Unknown node tag: 127\",\n  \"code\": \"cypher_query_failed\"\n}"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 127,
+    "name": "fanout",
+    "request": {
+      "path": "/api/cypher/graphs",
+      "method": "POST",
+      "body": {
+        "graphs": [
+          "a"
+        ],
+        "mode": "fanout",
+        "query": "MATCH (n:IntConstant) RETURN n LIMIT 8"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 400,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"error\": \"Unknown node tag: 127\",\n  \"code\": \"cypher_query_failed\"\n}"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 127,
+    "name": "bounded-before-tail",
+    "request": {
+      "path": "/api/graphs/a/cypher",
+      "method": "POST",
+      "body": {
+        "query": "MATCH (n:IntConstant) RETURN n.id AS id LIMIT 1"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"columns\": [\n    \"id\"\n  ],\n  \"rows\": [\n    {\n      \"id\": 0\n    }\n  ],\n  \"rowCount\": 1\n}"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 127,
+    "name": "projection-before-tail",
+    "request": {
+      "path": "/api/graphs/a/cypher",
+      "method": "POST",
+      "body": {
+        "query": "MATCH (n:IntConstant) RETURN substring('x','bad') AS x LIMIT 1"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 400,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"error\": \"class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \\u0027bootstrap\\u0027)\",\n  \"code\": \"cypher_query_failed\"\n}"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 127,
+    "name": "load-MAPPED",
+    "request": {
+      "path": "/api/graphs/new127MAPPED",
+      "method": "PUT",
+      "body": {
+        "path": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+        "loadMode": "MAPPED"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"graph\": {\n    \"id\": \"new127MAPPED\",\n    \"path\": \"/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture\",\n    \"loadMode\": \"MAPPED\",\n    \"loadedAt\": \"2026-09-06T22:00:15.829889Z\",\n    \"nodes\": 8,\n    \"edges\": 15,\n    \"methods\": 0,\n    \"callSites\": 0\n  }\n}"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 127,
+    "name": "load-EAGER",
+    "request": {
+      "path": "/api/graphs/new127EAGER",
+      "method": "PUT",
+      "body": {
+        "path": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+        "loadMode": "EAGER"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 400,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"error\": \"Unknown node tag: 127\"\n}"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 127,
+    "name": "load-AUTO",
+    "request": {
+      "path": "/api/graphs/new127AUTO",
+      "method": "PUT",
+      "body": {
+        "path": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+        "loadMode": "AUTO"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 400,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"error\": \"Unknown node tag: 127\"\n}"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 128,
+    "name": "node",
+    "request": {
+      "path": "/api/graphs/a/node/7",
+      "method": "GET",
+      "body": null
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 500,
+      "contentType": "application/json",
+      "rawBody": "{\n    \"title\": \"Server Error\",\n    \"status\": 500,\n    \"type\": \"https://javalin.io/documentation#internalservererrorresponse\",\n    \"details\": {}\n}"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 128,
+    "name": "subgraph",
+    "request": {
+      "path": "/api/graphs/a/subgraph?center=7&depth=0",
+      "method": "GET",
+      "body": null
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 500,
+      "contentType": "application/json",
+      "rawBody": "{\n    \"title\": \"Server Error\",\n    \"status\": 500,\n    \"type\": \"https://javalin.io/documentation#internalservererrorresponse\",\n    \"details\": {}\n}"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 128,
+    "name": "missing-node",
+    "request": {
+      "path": "/api/graphs/a/node/999",
+      "method": "GET",
+      "body": null
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 404,
+      "contentType": "text/plain",
+      "rawBody": "Node not found"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 128,
+    "name": "outgoing",
+    "request": {
+      "path": "/api/graphs/a/node/7/outgoing",
+      "method": "GET",
+      "body": null
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "[\n  {\n    \"from\": 7,\n    \"to\": 7,\n    \"type\": \"Call\",\n    \"virtual\": false,\n    \"dynamic\": false\n  }\n]"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 128,
+    "name": "scoped",
+    "request": {
+      "path": "/api/graphs/a/cypher",
+      "method": "POST",
+      "body": {
+        "query": "MATCH (n:IntConstant) RETURN n LIMIT 8"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 400,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"error\": \"Unknown node tag: -128\",\n  \"code\": \"cypher_query_failed\"\n}"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 128,
+    "name": "root",
+    "request": {
+      "path": "/api/cypher",
+      "method": "POST",
+      "body": {
+        "query": "MATCH (n:IntConstant) RETURN n LIMIT 8"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 400,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"error\": \"Unknown node tag: -128\",\n  \"code\": \"cypher_query_failed\"\n}"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 128,
+    "name": "selected",
+    "request": {
+      "path": "/api/cypher/graphs",
+      "method": "POST",
+      "body": {
+        "graphs": [
+          "a"
+        ],
+        "query": "MATCH (n:IntConstant) RETURN n LIMIT 8"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 400,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"error\": \"Unknown node tag: -128\",\n  \"code\": \"cypher_query_failed\"\n}"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 128,
+    "name": "fanout",
+    "request": {
+      "path": "/api/cypher/graphs",
+      "method": "POST",
+      "body": {
+        "graphs": [
+          "a"
+        ],
+        "mode": "fanout",
+        "query": "MATCH (n:IntConstant) RETURN n LIMIT 8"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 400,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"error\": \"Unknown node tag: -128\",\n  \"code\": \"cypher_query_failed\"\n}"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 128,
+    "name": "bounded-before-tail",
+    "request": {
+      "path": "/api/graphs/a/cypher",
+      "method": "POST",
+      "body": {
+        "query": "MATCH (n:IntConstant) RETURN n.id AS id LIMIT 1"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"columns\": [\n    \"id\"\n  ],\n  \"rows\": [\n    {\n      \"id\": 0\n    }\n  ],\n  \"rowCount\": 1\n}"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 128,
+    "name": "projection-before-tail",
+    "request": {
+      "path": "/api/graphs/a/cypher",
+      "method": "POST",
+      "body": {
+        "query": "MATCH (n:IntConstant) RETURN substring('x','bad') AS x LIMIT 1"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 400,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"error\": \"class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \\u0027bootstrap\\u0027)\",\n  \"code\": \"cypher_query_failed\"\n}"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 128,
+    "name": "load-MAPPED",
+    "request": {
+      "path": "/api/graphs/new128MAPPED",
+      "method": "PUT",
+      "body": {
+        "path": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+        "loadMode": "MAPPED"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"graph\": {\n    \"id\": \"new128MAPPED\",\n    \"path\": \"/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture\",\n    \"loadMode\": \"MAPPED\",\n    \"loadedAt\": \"2026-09-06T22:00:15.843587Z\",\n    \"nodes\": 8,\n    \"edges\": 15,\n    \"methods\": 0,\n    \"callSites\": 0\n  }\n}"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 128,
+    "name": "load-EAGER",
+    "request": {
+      "path": "/api/graphs/new128EAGER",
+      "method": "PUT",
+      "body": {
+        "path": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+        "loadMode": "EAGER"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 400,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"error\": \"Unknown node tag: -128\"\n}"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 128,
+    "name": "load-AUTO",
+    "request": {
+      "path": "/api/graphs/new128AUTO",
+      "method": "PUT",
+      "body": {
+        "path": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+        "loadMode": "AUTO"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 400,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"error\": \"Unknown node tag: -128\"\n}"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 255,
+    "name": "node",
+    "request": {
+      "path": "/api/graphs/a/node/7",
+      "method": "GET",
+      "body": null
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 500,
+      "contentType": "application/json",
+      "rawBody": "{\n    \"title\": \"Server Error\",\n    \"status\": 500,\n    \"type\": \"https://javalin.io/documentation#internalservererrorresponse\",\n    \"details\": {}\n}"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 255,
+    "name": "subgraph",
+    "request": {
+      "path": "/api/graphs/a/subgraph?center=7&depth=0",
+      "method": "GET",
+      "body": null
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 500,
+      "contentType": "application/json",
+      "rawBody": "{\n    \"title\": \"Server Error\",\n    \"status\": 500,\n    \"type\": \"https://javalin.io/documentation#internalservererrorresponse\",\n    \"details\": {}\n}"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 255,
+    "name": "missing-node",
+    "request": {
+      "path": "/api/graphs/a/node/999",
+      "method": "GET",
+      "body": null
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 404,
+      "contentType": "text/plain",
+      "rawBody": "Node not found"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 255,
+    "name": "outgoing",
+    "request": {
+      "path": "/api/graphs/a/node/7/outgoing",
+      "method": "GET",
+      "body": null
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "[\n  {\n    \"from\": 7,\n    \"to\": 7,\n    \"type\": \"Call\",\n    \"virtual\": false,\n    \"dynamic\": false\n  }\n]"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 255,
+    "name": "scoped",
+    "request": {
+      "path": "/api/graphs/a/cypher",
+      "method": "POST",
+      "body": {
+        "query": "MATCH (n:IntConstant) RETURN n LIMIT 8"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 400,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"error\": \"Unknown node tag: -1\",\n  \"code\": \"cypher_query_failed\"\n}"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 255,
+    "name": "root",
+    "request": {
+      "path": "/api/cypher",
+      "method": "POST",
+      "body": {
+        "query": "MATCH (n:IntConstant) RETURN n LIMIT 8"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 400,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"error\": \"Unknown node tag: -1\",\n  \"code\": \"cypher_query_failed\"\n}"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 255,
+    "name": "selected",
+    "request": {
+      "path": "/api/cypher/graphs",
+      "method": "POST",
+      "body": {
+        "graphs": [
+          "a"
+        ],
+        "query": "MATCH (n:IntConstant) RETURN n LIMIT 8"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 400,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"error\": \"Unknown node tag: -1\",\n  \"code\": \"cypher_query_failed\"\n}"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 255,
+    "name": "fanout",
+    "request": {
+      "path": "/api/cypher/graphs",
+      "method": "POST",
+      "body": {
+        "graphs": [
+          "a"
+        ],
+        "mode": "fanout",
+        "query": "MATCH (n:IntConstant) RETURN n LIMIT 8"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 400,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"error\": \"Unknown node tag: -1\",\n  \"code\": \"cypher_query_failed\"\n}"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 255,
+    "name": "bounded-before-tail",
+    "request": {
+      "path": "/api/graphs/a/cypher",
+      "method": "POST",
+      "body": {
+        "query": "MATCH (n:IntConstant) RETURN n.id AS id LIMIT 1"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"columns\": [\n    \"id\"\n  ],\n  \"rows\": [\n    {\n      \"id\": 0\n    }\n  ],\n  \"rowCount\": 1\n}"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 255,
+    "name": "projection-before-tail",
+    "request": {
+      "path": "/api/graphs/a/cypher",
+      "method": "POST",
+      "body": {
+        "query": "MATCH (n:IntConstant) RETURN substring('x','bad') AS x LIMIT 1"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 400,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"error\": \"class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \\u0027bootstrap\\u0027)\",\n  \"code\": \"cypher_query_failed\"\n}"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 255,
+    "name": "load-MAPPED",
+    "request": {
+      "path": "/api/graphs/new255MAPPED",
+      "method": "PUT",
+      "body": {
+        "path": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+        "loadMode": "MAPPED"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"graph\": {\n    \"id\": \"new255MAPPED\",\n    \"path\": \"/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture\",\n    \"loadMode\": \"MAPPED\",\n    \"loadedAt\": \"2026-09-06T22:00:15.857151Z\",\n    \"nodes\": 8,\n    \"edges\": 15,\n    \"methods\": 0,\n    \"callSites\": 0\n  }\n}"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 255,
+    "name": "load-EAGER",
+    "request": {
+      "path": "/api/graphs/new255EAGER",
+      "method": "PUT",
+      "body": {
+        "path": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+        "loadMode": "EAGER"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 400,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"error\": \"Unknown node tag: -1\"\n}"
+    }
+  },
+  {
+    "mode": "MAPPED",
+    "tag": 255,
+    "name": "load-AUTO",
+    "request": {
+      "path": "/api/graphs/new255AUTO",
+      "method": "PUT",
+      "body": {
+        "path": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+        "loadMode": "AUTO"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-ly19xr5_/fixture",
+    "response": {
+      "status": 400,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"error\": \"Unknown node tag: -1\"\n}"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 16,
+    "name": "node",
+    "request": {
+      "path": "/api/graphs/a/node/7",
+      "method": "GET",
+      "body": null
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"type\": \"IntConstant\",\n  \"id\": 7,\n  \"value\": 107,\n  \"label\": \"107\"\n}"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 16,
+    "name": "subgraph",
+    "request": {
+      "path": "/api/graphs/a/subgraph?center=7&depth=0",
+      "method": "GET",
+      "body": null
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"nodes\": [\n    {\n      \"type\": \"IntConstant\",\n      \"id\": 7,\n      \"value\": 107,\n      \"label\": \"107\"\n    }\n  ],\n  \"edges\": []\n}"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 16,
+    "name": "missing-node",
+    "request": {
+      "path": "/api/graphs/a/node/999",
+      "method": "GET",
+      "body": null
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 404,
+      "contentType": "text/plain",
+      "rawBody": "Node not found"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 16,
+    "name": "outgoing",
+    "request": {
+      "path": "/api/graphs/a/node/7/outgoing",
+      "method": "GET",
+      "body": null
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "[\n  {\n    \"from\": 7,\n    \"to\": 7,\n    \"type\": \"Call\",\n    \"virtual\": false,\n    \"dynamic\": false\n  }\n]"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 16,
+    "name": "scoped",
+    "request": {
+      "path": "/api/graphs/a/cypher",
+      "method": "POST",
+      "body": {
+        "query": "MATCH (n:IntConstant) RETURN n LIMIT 8"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"columns\": [\n    \"n\"\n  ],\n  \"rows\": [\n    {\n      \"n\": {\n        \"id\": 0,\n        \"type\": \"IntConstant\",\n        \"value\": 100\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 1,\n        \"type\": \"IntConstant\",\n        \"value\": 101\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 2,\n        \"type\": \"IntConstant\",\n        \"value\": 102\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 3,\n        \"type\": \"IntConstant\",\n        \"value\": 103\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 4,\n        \"type\": \"IntConstant\",\n        \"value\": 104\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 5,\n        \"type\": \"IntConstant\",\n        \"value\": 105\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 6,\n        \"type\": \"IntConstant\",\n        \"value\": 106\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 7,\n        \"type\": \"IntConstant\",\n        \"value\": 107\n      }\n    }\n  ],\n  \"rowCount\": 8\n}"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 16,
+    "name": "root",
+    "request": {
+      "path": "/api/cypher",
+      "method": "POST",
+      "body": {
+        "query": "MATCH (n:IntConstant) RETURN n LIMIT 8"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"columns\": [\n    \"n\"\n  ],\n  \"rows\": [\n    {\n      \"n\": {\n        \"id\": 0,\n        \"type\": \"IntConstant\",\n        \"value\": 100,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:0\",\n        \"qualifiedId\": \"a:0\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 1,\n        \"type\": \"IntConstant\",\n        \"value\": 101,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:1\",\n        \"qualifiedId\": \"a:1\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 2,\n        \"type\": \"IntConstant\",\n        \"value\": 102,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:2\",\n        \"qualifiedId\": \"a:2\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 3,\n        \"type\": \"IntConstant\",\n        \"value\": 103,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:3\",\n        \"qualifiedId\": \"a:3\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 4,\n        \"type\": \"IntConstant\",\n        \"value\": 104,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:4\",\n        \"qualifiedId\": \"a:4\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 5,\n        \"type\": \"IntConstant\",\n        \"value\": 105,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:5\",\n        \"qualifiedId\": \"a:5\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 6,\n        \"type\": \"IntConstant\",\n        \"value\": 106,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:6\",\n        \"qualifiedId\": \"a:6\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 7,\n        \"type\": \"IntConstant\",\n        \"value\": 107,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:7\",\n        \"qualifiedId\": \"a:7\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    }\n  ],\n  \"rowCount\": 8,\n  \"graphCount\": 1\n}"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 16,
+    "name": "selected",
+    "request": {
+      "path": "/api/cypher/graphs",
+      "method": "POST",
+      "body": {
+        "graphs": [
+          "a"
+        ],
+        "query": "MATCH (n:IntConstant) RETURN n LIMIT 8"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"mode\": \"cross-graph\",\n  \"graphs\": [\n    \"a\"\n  ],\n  \"graphCount\": 1,\n  \"columns\": [\n    \"n\"\n  ],\n  \"rows\": [\n    {\n      \"n\": {\n        \"id\": 0,\n        \"type\": \"IntConstant\",\n        \"value\": 100,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:0\",\n        \"qualifiedId\": \"a:0\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 1,\n        \"type\": \"IntConstant\",\n        \"value\": 101,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:1\",\n        \"qualifiedId\": \"a:1\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 2,\n        \"type\": \"IntConstant\",\n        \"value\": 102,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:2\",\n        \"qualifiedId\": \"a:2\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 3,\n        \"type\": \"IntConstant\",\n        \"value\": 103,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:3\",\n        \"qualifiedId\": \"a:3\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 4,\n        \"type\": \"IntConstant\",\n        \"value\": 104,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:4\",\n        \"qualifiedId\": \"a:4\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 5,\n        \"type\": \"IntConstant\",\n        \"value\": 105,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:5\",\n        \"qualifiedId\": \"a:5\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 6,\n        \"type\": \"IntConstant\",\n        \"value\": 106,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:6\",\n        \"qualifiedId\": \"a:6\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 7,\n        \"type\": \"IntConstant\",\n        \"value\": 107,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:7\",\n        \"qualifiedId\": \"a:7\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    }\n  ],\n  \"rowCount\": 8,\n  \"limit\": 1000\n}"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 16,
+    "name": "fanout",
+    "request": {
+      "path": "/api/cypher/graphs",
+      "method": "POST",
+      "body": {
+        "graphs": [
+          "a"
+        ],
+        "mode": "fanout",
+        "query": "MATCH (n:IntConstant) RETURN n LIMIT 8"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"columns\": [\n    \"graphId\",\n    \"n\"\n  ],\n  \"rows\": [\n    {\n      \"graphId\": \"a\",\n      \"n\": {\n        \"id\": 0,\n        \"type\": \"IntConstant\",\n        \"value\": 100\n      }\n    },\n    {\n      \"graphId\": \"a\",\n      \"n\": {\n        \"id\": 1,\n        \"type\": \"IntConstant\",\n        \"value\": 101\n      }\n    },\n    {\n      \"graphId\": \"a\",\n      \"n\": {\n        \"id\": 2,\n        \"type\": \"IntConstant\",\n        \"value\": 102\n      }\n    },\n    {\n      \"graphId\": \"a\",\n      \"n\": {\n        \"id\": 3,\n        \"type\": \"IntConstant\",\n        \"value\": 103\n      }\n    },\n    {\n      \"graphId\": \"a\",\n      \"n\": {\n        \"id\": 4,\n        \"type\": \"IntConstant\",\n        \"value\": 104\n      }\n    },\n    {\n      \"graphId\": \"a\",\n      \"n\": {\n        \"id\": 5,\n        \"type\": \"IntConstant\",\n        \"value\": 105\n      }\n    },\n    {\n      \"graphId\": \"a\",\n      \"n\": {\n        \"id\": 6,\n        \"type\": \"IntConstant\",\n        \"value\": 106\n      }\n    },\n    {\n      \"graphId\": \"a\",\n      \"n\": {\n        \"id\": 7,\n        \"type\": \"IntConstant\",\n        \"value\": 107\n      }\n    }\n  ],\n  \"rowCount\": 8,\n  \"graphCount\": 1,\n  \"queriedGraphCount\": 1,\n  \"perGraphLimit\": 1000,\n  \"limit\": 1000,\n  \"truncated\": false,\n  \"graphs\": [\n    {\n      \"graphId\": \"a\",\n      \"columns\": [\n        \"n\"\n      ],\n      \"rowCount\": 8\n    }\n  ],\n  \"mode\": \"fanout\"\n}"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 16,
+    "name": "bounded-before-tail",
+    "request": {
+      "path": "/api/graphs/a/cypher",
+      "method": "POST",
+      "body": {
+        "query": "MATCH (n:IntConstant) RETURN n.id AS id LIMIT 1"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"columns\": [\n    \"id\"\n  ],\n  \"rows\": [\n    {\n      \"id\": 0\n    }\n  ],\n  \"rowCount\": 1\n}"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 16,
+    "name": "projection-before-tail",
+    "request": {
+      "path": "/api/graphs/a/cypher",
+      "method": "POST",
+      "body": {
+        "query": "MATCH (n:IntConstant) RETURN substring('x','bad') AS x LIMIT 1"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 400,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"error\": \"class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \\u0027bootstrap\\u0027)\",\n  \"code\": \"cypher_query_failed\"\n}"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 16,
+    "name": "load-MAPPED",
+    "request": {
+      "path": "/api/graphs/new16MAPPED",
+      "method": "PUT",
+      "body": {
+        "path": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+        "loadMode": "MAPPED"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"graph\": {\n    \"id\": \"new16MAPPED\",\n    \"path\": \"/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture\",\n    \"loadMode\": \"MAPPED\",\n    \"loadedAt\": \"2026-09-06T22:00:16.763286Z\",\n    \"nodes\": 8,\n    \"edges\": 15,\n    \"methods\": 0,\n    \"callSites\": 0\n  }\n}"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 16,
+    "name": "load-EAGER",
+    "request": {
+      "path": "/api/graphs/new16EAGER",
+      "method": "PUT",
+      "body": {
+        "path": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+        "loadMode": "EAGER"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 400,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"error\": \"Unknown node tag: 16\"\n}"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 16,
+    "name": "load-AUTO",
+    "request": {
+      "path": "/api/graphs/new16AUTO",
+      "method": "PUT",
+      "body": {
+        "path": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+        "loadMode": "AUTO"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 400,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"error\": \"Unknown node tag: 16\"\n}"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 127,
+    "name": "node",
+    "request": {
+      "path": "/api/graphs/a/node/7",
+      "method": "GET",
+      "body": null
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"type\": \"IntConstant\",\n  \"id\": 7,\n  \"value\": 107,\n  \"label\": \"107\"\n}"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 127,
+    "name": "subgraph",
+    "request": {
+      "path": "/api/graphs/a/subgraph?center=7&depth=0",
+      "method": "GET",
+      "body": null
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"nodes\": [\n    {\n      \"type\": \"IntConstant\",\n      \"id\": 7,\n      \"value\": 107,\n      \"label\": \"107\"\n    }\n  ],\n  \"edges\": []\n}"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 127,
+    "name": "missing-node",
+    "request": {
+      "path": "/api/graphs/a/node/999",
+      "method": "GET",
+      "body": null
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 404,
+      "contentType": "text/plain",
+      "rawBody": "Node not found"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 127,
+    "name": "outgoing",
+    "request": {
+      "path": "/api/graphs/a/node/7/outgoing",
+      "method": "GET",
+      "body": null
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "[\n  {\n    \"from\": 7,\n    \"to\": 7,\n    \"type\": \"Call\",\n    \"virtual\": false,\n    \"dynamic\": false\n  }\n]"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 127,
+    "name": "scoped",
+    "request": {
+      "path": "/api/graphs/a/cypher",
+      "method": "POST",
+      "body": {
+        "query": "MATCH (n:IntConstant) RETURN n LIMIT 8"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"columns\": [\n    \"n\"\n  ],\n  \"rows\": [\n    {\n      \"n\": {\n        \"id\": 0,\n        \"type\": \"IntConstant\",\n        \"value\": 100\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 1,\n        \"type\": \"IntConstant\",\n        \"value\": 101\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 2,\n        \"type\": \"IntConstant\",\n        \"value\": 102\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 3,\n        \"type\": \"IntConstant\",\n        \"value\": 103\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 4,\n        \"type\": \"IntConstant\",\n        \"value\": 104\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 5,\n        \"type\": \"IntConstant\",\n        \"value\": 105\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 6,\n        \"type\": \"IntConstant\",\n        \"value\": 106\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 7,\n        \"type\": \"IntConstant\",\n        \"value\": 107\n      }\n    }\n  ],\n  \"rowCount\": 8\n}"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 127,
+    "name": "root",
+    "request": {
+      "path": "/api/cypher",
+      "method": "POST",
+      "body": {
+        "query": "MATCH (n:IntConstant) RETURN n LIMIT 8"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"columns\": [\n    \"n\"\n  ],\n  \"rows\": [\n    {\n      \"n\": {\n        \"id\": 0,\n        \"type\": \"IntConstant\",\n        \"value\": 100,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:0\",\n        \"qualifiedId\": \"a:0\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 1,\n        \"type\": \"IntConstant\",\n        \"value\": 101,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:1\",\n        \"qualifiedId\": \"a:1\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 2,\n        \"type\": \"IntConstant\",\n        \"value\": 102,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:2\",\n        \"qualifiedId\": \"a:2\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 3,\n        \"type\": \"IntConstant\",\n        \"value\": 103,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:3\",\n        \"qualifiedId\": \"a:3\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 4,\n        \"type\": \"IntConstant\",\n        \"value\": 104,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:4\",\n        \"qualifiedId\": \"a:4\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 5,\n        \"type\": \"IntConstant\",\n        \"value\": 105,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:5\",\n        \"qualifiedId\": \"a:5\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 6,\n        \"type\": \"IntConstant\",\n        \"value\": 106,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:6\",\n        \"qualifiedId\": \"a:6\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 7,\n        \"type\": \"IntConstant\",\n        \"value\": 107,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:7\",\n        \"qualifiedId\": \"a:7\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    }\n  ],\n  \"rowCount\": 8,\n  \"graphCount\": 2\n}"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 127,
+    "name": "selected",
+    "request": {
+      "path": "/api/cypher/graphs",
+      "method": "POST",
+      "body": {
+        "graphs": [
+          "a"
+        ],
+        "query": "MATCH (n:IntConstant) RETURN n LIMIT 8"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"mode\": \"cross-graph\",\n  \"graphs\": [\n    \"a\"\n  ],\n  \"graphCount\": 1,\n  \"columns\": [\n    \"n\"\n  ],\n  \"rows\": [\n    {\n      \"n\": {\n        \"id\": 0,\n        \"type\": \"IntConstant\",\n        \"value\": 100,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:0\",\n        \"qualifiedId\": \"a:0\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 1,\n        \"type\": \"IntConstant\",\n        \"value\": 101,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:1\",\n        \"qualifiedId\": \"a:1\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 2,\n        \"type\": \"IntConstant\",\n        \"value\": 102,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:2\",\n        \"qualifiedId\": \"a:2\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 3,\n        \"type\": \"IntConstant\",\n        \"value\": 103,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:3\",\n        \"qualifiedId\": \"a:3\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 4,\n        \"type\": \"IntConstant\",\n        \"value\": 104,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:4\",\n        \"qualifiedId\": \"a:4\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 5,\n        \"type\": \"IntConstant\",\n        \"value\": 105,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:5\",\n        \"qualifiedId\": \"a:5\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 6,\n        \"type\": \"IntConstant\",\n        \"value\": 106,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:6\",\n        \"qualifiedId\": \"a:6\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 7,\n        \"type\": \"IntConstant\",\n        \"value\": 107,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:7\",\n        \"qualifiedId\": \"a:7\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    }\n  ],\n  \"rowCount\": 8,\n  \"limit\": 1000\n}"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 127,
+    "name": "fanout",
+    "request": {
+      "path": "/api/cypher/graphs",
+      "method": "POST",
+      "body": {
+        "graphs": [
+          "a"
+        ],
+        "mode": "fanout",
+        "query": "MATCH (n:IntConstant) RETURN n LIMIT 8"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"columns\": [\n    \"graphId\",\n    \"n\"\n  ],\n  \"rows\": [\n    {\n      \"graphId\": \"a\",\n      \"n\": {\n        \"id\": 0,\n        \"type\": \"IntConstant\",\n        \"value\": 100\n      }\n    },\n    {\n      \"graphId\": \"a\",\n      \"n\": {\n        \"id\": 1,\n        \"type\": \"IntConstant\",\n        \"value\": 101\n      }\n    },\n    {\n      \"graphId\": \"a\",\n      \"n\": {\n        \"id\": 2,\n        \"type\": \"IntConstant\",\n        \"value\": 102\n      }\n    },\n    {\n      \"graphId\": \"a\",\n      \"n\": {\n        \"id\": 3,\n        \"type\": \"IntConstant\",\n        \"value\": 103\n      }\n    },\n    {\n      \"graphId\": \"a\",\n      \"n\": {\n        \"id\": 4,\n        \"type\": \"IntConstant\",\n        \"value\": 104\n      }\n    },\n    {\n      \"graphId\": \"a\",\n      \"n\": {\n        \"id\": 5,\n        \"type\": \"IntConstant\",\n        \"value\": 105\n      }\n    },\n    {\n      \"graphId\": \"a\",\n      \"n\": {\n        \"id\": 6,\n        \"type\": \"IntConstant\",\n        \"value\": 106\n      }\n    },\n    {\n      \"graphId\": \"a\",\n      \"n\": {\n        \"id\": 7,\n        \"type\": \"IntConstant\",\n        \"value\": 107\n      }\n    }\n  ],\n  \"rowCount\": 8,\n  \"graphCount\": 1,\n  \"queriedGraphCount\": 1,\n  \"perGraphLimit\": 1000,\n  \"limit\": 1000,\n  \"truncated\": false,\n  \"graphs\": [\n    {\n      \"graphId\": \"a\",\n      \"columns\": [\n        \"n\"\n      ],\n      \"rowCount\": 8\n    }\n  ],\n  \"mode\": \"fanout\"\n}"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 127,
+    "name": "bounded-before-tail",
+    "request": {
+      "path": "/api/graphs/a/cypher",
+      "method": "POST",
+      "body": {
+        "query": "MATCH (n:IntConstant) RETURN n.id AS id LIMIT 1"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"columns\": [\n    \"id\"\n  ],\n  \"rows\": [\n    {\n      \"id\": 0\n    }\n  ],\n  \"rowCount\": 1\n}"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 127,
+    "name": "projection-before-tail",
+    "request": {
+      "path": "/api/graphs/a/cypher",
+      "method": "POST",
+      "body": {
+        "query": "MATCH (n:IntConstant) RETURN substring('x','bad') AS x LIMIT 1"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 400,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"error\": \"class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \\u0027bootstrap\\u0027)\",\n  \"code\": \"cypher_query_failed\"\n}"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 127,
+    "name": "load-MAPPED",
+    "request": {
+      "path": "/api/graphs/new127MAPPED",
+      "method": "PUT",
+      "body": {
+        "path": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+        "loadMode": "MAPPED"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"graph\": {\n    \"id\": \"new127MAPPED\",\n    \"path\": \"/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture\",\n    \"loadMode\": \"MAPPED\",\n    \"loadedAt\": \"2026-09-06T22:00:16.781936Z\",\n    \"nodes\": 8,\n    \"edges\": 15,\n    \"methods\": 0,\n    \"callSites\": 0\n  }\n}"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 127,
+    "name": "load-EAGER",
+    "request": {
+      "path": "/api/graphs/new127EAGER",
+      "method": "PUT",
+      "body": {
+        "path": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+        "loadMode": "EAGER"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 400,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"error\": \"Unknown node tag: 127\"\n}"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 127,
+    "name": "load-AUTO",
+    "request": {
+      "path": "/api/graphs/new127AUTO",
+      "method": "PUT",
+      "body": {
+        "path": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+        "loadMode": "AUTO"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 400,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"error\": \"Unknown node tag: 127\"\n}"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 128,
+    "name": "node",
+    "request": {
+      "path": "/api/graphs/a/node/7",
+      "method": "GET",
+      "body": null
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"type\": \"IntConstant\",\n  \"id\": 7,\n  \"value\": 107,\n  \"label\": \"107\"\n}"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 128,
+    "name": "subgraph",
+    "request": {
+      "path": "/api/graphs/a/subgraph?center=7&depth=0",
+      "method": "GET",
+      "body": null
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"nodes\": [\n    {\n      \"type\": \"IntConstant\",\n      \"id\": 7,\n      \"value\": 107,\n      \"label\": \"107\"\n    }\n  ],\n  \"edges\": []\n}"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 128,
+    "name": "missing-node",
+    "request": {
+      "path": "/api/graphs/a/node/999",
+      "method": "GET",
+      "body": null
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 404,
+      "contentType": "text/plain",
+      "rawBody": "Node not found"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 128,
+    "name": "outgoing",
+    "request": {
+      "path": "/api/graphs/a/node/7/outgoing",
+      "method": "GET",
+      "body": null
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "[\n  {\n    \"from\": 7,\n    \"to\": 7,\n    \"type\": \"Call\",\n    \"virtual\": false,\n    \"dynamic\": false\n  }\n]"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 128,
+    "name": "scoped",
+    "request": {
+      "path": "/api/graphs/a/cypher",
+      "method": "POST",
+      "body": {
+        "query": "MATCH (n:IntConstant) RETURN n LIMIT 8"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"columns\": [\n    \"n\"\n  ],\n  \"rows\": [\n    {\n      \"n\": {\n        \"id\": 0,\n        \"type\": \"IntConstant\",\n        \"value\": 100\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 1,\n        \"type\": \"IntConstant\",\n        \"value\": 101\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 2,\n        \"type\": \"IntConstant\",\n        \"value\": 102\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 3,\n        \"type\": \"IntConstant\",\n        \"value\": 103\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 4,\n        \"type\": \"IntConstant\",\n        \"value\": 104\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 5,\n        \"type\": \"IntConstant\",\n        \"value\": 105\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 6,\n        \"type\": \"IntConstant\",\n        \"value\": 106\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 7,\n        \"type\": \"IntConstant\",\n        \"value\": 107\n      }\n    }\n  ],\n  \"rowCount\": 8\n}"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 128,
+    "name": "root",
+    "request": {
+      "path": "/api/cypher",
+      "method": "POST",
+      "body": {
+        "query": "MATCH (n:IntConstant) RETURN n LIMIT 8"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"columns\": [\n    \"n\"\n  ],\n  \"rows\": [\n    {\n      \"n\": {\n        \"id\": 0,\n        \"type\": \"IntConstant\",\n        \"value\": 100,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:0\",\n        \"qualifiedId\": \"a:0\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 1,\n        \"type\": \"IntConstant\",\n        \"value\": 101,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:1\",\n        \"qualifiedId\": \"a:1\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 2,\n        \"type\": \"IntConstant\",\n        \"value\": 102,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:2\",\n        \"qualifiedId\": \"a:2\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 3,\n        \"type\": \"IntConstant\",\n        \"value\": 103,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:3\",\n        \"qualifiedId\": \"a:3\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 4,\n        \"type\": \"IntConstant\",\n        \"value\": 104,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:4\",\n        \"qualifiedId\": \"a:4\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 5,\n        \"type\": \"IntConstant\",\n        \"value\": 105,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:5\",\n        \"qualifiedId\": \"a:5\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 6,\n        \"type\": \"IntConstant\",\n        \"value\": 106,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:6\",\n        \"qualifiedId\": \"a:6\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 7,\n        \"type\": \"IntConstant\",\n        \"value\": 107,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:7\",\n        \"qualifiedId\": \"a:7\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    }\n  ],\n  \"rowCount\": 8,\n  \"graphCount\": 3\n}"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 128,
+    "name": "selected",
+    "request": {
+      "path": "/api/cypher/graphs",
+      "method": "POST",
+      "body": {
+        "graphs": [
+          "a"
+        ],
+        "query": "MATCH (n:IntConstant) RETURN n LIMIT 8"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"mode\": \"cross-graph\",\n  \"graphs\": [\n    \"a\"\n  ],\n  \"graphCount\": 1,\n  \"columns\": [\n    \"n\"\n  ],\n  \"rows\": [\n    {\n      \"n\": {\n        \"id\": 0,\n        \"type\": \"IntConstant\",\n        \"value\": 100,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:0\",\n        \"qualifiedId\": \"a:0\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 1,\n        \"type\": \"IntConstant\",\n        \"value\": 101,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:1\",\n        \"qualifiedId\": \"a:1\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 2,\n        \"type\": \"IntConstant\",\n        \"value\": 102,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:2\",\n        \"qualifiedId\": \"a:2\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 3,\n        \"type\": \"IntConstant\",\n        \"value\": 103,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:3\",\n        \"qualifiedId\": \"a:3\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 4,\n        \"type\": \"IntConstant\",\n        \"value\": 104,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:4\",\n        \"qualifiedId\": \"a:4\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 5,\n        \"type\": \"IntConstant\",\n        \"value\": 105,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:5\",\n        \"qualifiedId\": \"a:5\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 6,\n        \"type\": \"IntConstant\",\n        \"value\": 106,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:6\",\n        \"qualifiedId\": \"a:6\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 7,\n        \"type\": \"IntConstant\",\n        \"value\": 107,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:7\",\n        \"qualifiedId\": \"a:7\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    }\n  ],\n  \"rowCount\": 8,\n  \"limit\": 1000\n}"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 128,
+    "name": "fanout",
+    "request": {
+      "path": "/api/cypher/graphs",
+      "method": "POST",
+      "body": {
+        "graphs": [
+          "a"
+        ],
+        "mode": "fanout",
+        "query": "MATCH (n:IntConstant) RETURN n LIMIT 8"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"columns\": [\n    \"graphId\",\n    \"n\"\n  ],\n  \"rows\": [\n    {\n      \"graphId\": \"a\",\n      \"n\": {\n        \"id\": 0,\n        \"type\": \"IntConstant\",\n        \"value\": 100\n      }\n    },\n    {\n      \"graphId\": \"a\",\n      \"n\": {\n        \"id\": 1,\n        \"type\": \"IntConstant\",\n        \"value\": 101\n      }\n    },\n    {\n      \"graphId\": \"a\",\n      \"n\": {\n        \"id\": 2,\n        \"type\": \"IntConstant\",\n        \"value\": 102\n      }\n    },\n    {\n      \"graphId\": \"a\",\n      \"n\": {\n        \"id\": 3,\n        \"type\": \"IntConstant\",\n        \"value\": 103\n      }\n    },\n    {\n      \"graphId\": \"a\",\n      \"n\": {\n        \"id\": 4,\n        \"type\": \"IntConstant\",\n        \"value\": 104\n      }\n    },\n    {\n      \"graphId\": \"a\",\n      \"n\": {\n        \"id\": 5,\n        \"type\": \"IntConstant\",\n        \"value\": 105\n      }\n    },\n    {\n      \"graphId\": \"a\",\n      \"n\": {\n        \"id\": 6,\n        \"type\": \"IntConstant\",\n        \"value\": 106\n      }\n    },\n    {\n      \"graphId\": \"a\",\n      \"n\": {\n        \"id\": 7,\n        \"type\": \"IntConstant\",\n        \"value\": 107\n      }\n    }\n  ],\n  \"rowCount\": 8,\n  \"graphCount\": 1,\n  \"queriedGraphCount\": 1,\n  \"perGraphLimit\": 1000,\n  \"limit\": 1000,\n  \"truncated\": false,\n  \"graphs\": [\n    {\n      \"graphId\": \"a\",\n      \"columns\": [\n        \"n\"\n      ],\n      \"rowCount\": 8\n    }\n  ],\n  \"mode\": \"fanout\"\n}"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 128,
+    "name": "bounded-before-tail",
+    "request": {
+      "path": "/api/graphs/a/cypher",
+      "method": "POST",
+      "body": {
+        "query": "MATCH (n:IntConstant) RETURN n.id AS id LIMIT 1"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"columns\": [\n    \"id\"\n  ],\n  \"rows\": [\n    {\n      \"id\": 0\n    }\n  ],\n  \"rowCount\": 1\n}"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 128,
+    "name": "projection-before-tail",
+    "request": {
+      "path": "/api/graphs/a/cypher",
+      "method": "POST",
+      "body": {
+        "query": "MATCH (n:IntConstant) RETURN substring('x','bad') AS x LIMIT 1"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 400,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"error\": \"class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \\u0027bootstrap\\u0027)\",\n  \"code\": \"cypher_query_failed\"\n}"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 128,
+    "name": "load-MAPPED",
+    "request": {
+      "path": "/api/graphs/new128MAPPED",
+      "method": "PUT",
+      "body": {
+        "path": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+        "loadMode": "MAPPED"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"graph\": {\n    \"id\": \"new128MAPPED\",\n    \"path\": \"/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture\",\n    \"loadMode\": \"MAPPED\",\n    \"loadedAt\": \"2026-09-06T22:00:16.799013Z\",\n    \"nodes\": 8,\n    \"edges\": 15,\n    \"methods\": 0,\n    \"callSites\": 0\n  }\n}"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 128,
+    "name": "load-EAGER",
+    "request": {
+      "path": "/api/graphs/new128EAGER",
+      "method": "PUT",
+      "body": {
+        "path": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+        "loadMode": "EAGER"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 400,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"error\": \"Unknown node tag: -128\"\n}"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 128,
+    "name": "load-AUTO",
+    "request": {
+      "path": "/api/graphs/new128AUTO",
+      "method": "PUT",
+      "body": {
+        "path": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+        "loadMode": "AUTO"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 400,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"error\": \"Unknown node tag: -128\"\n}"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 255,
+    "name": "node",
+    "request": {
+      "path": "/api/graphs/a/node/7",
+      "method": "GET",
+      "body": null
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"type\": \"IntConstant\",\n  \"id\": 7,\n  \"value\": 107,\n  \"label\": \"107\"\n}"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 255,
+    "name": "subgraph",
+    "request": {
+      "path": "/api/graphs/a/subgraph?center=7&depth=0",
+      "method": "GET",
+      "body": null
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"nodes\": [\n    {\n      \"type\": \"IntConstant\",\n      \"id\": 7,\n      \"value\": 107,\n      \"label\": \"107\"\n    }\n  ],\n  \"edges\": []\n}"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 255,
+    "name": "missing-node",
+    "request": {
+      "path": "/api/graphs/a/node/999",
+      "method": "GET",
+      "body": null
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 404,
+      "contentType": "text/plain",
+      "rawBody": "Node not found"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 255,
+    "name": "outgoing",
+    "request": {
+      "path": "/api/graphs/a/node/7/outgoing",
+      "method": "GET",
+      "body": null
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "[\n  {\n    \"from\": 7,\n    \"to\": 7,\n    \"type\": \"Call\",\n    \"virtual\": false,\n    \"dynamic\": false\n  }\n]"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 255,
+    "name": "scoped",
+    "request": {
+      "path": "/api/graphs/a/cypher",
+      "method": "POST",
+      "body": {
+        "query": "MATCH (n:IntConstant) RETURN n LIMIT 8"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"columns\": [\n    \"n\"\n  ],\n  \"rows\": [\n    {\n      \"n\": {\n        \"id\": 0,\n        \"type\": \"IntConstant\",\n        \"value\": 100\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 1,\n        \"type\": \"IntConstant\",\n        \"value\": 101\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 2,\n        \"type\": \"IntConstant\",\n        \"value\": 102\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 3,\n        \"type\": \"IntConstant\",\n        \"value\": 103\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 4,\n        \"type\": \"IntConstant\",\n        \"value\": 104\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 5,\n        \"type\": \"IntConstant\",\n        \"value\": 105\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 6,\n        \"type\": \"IntConstant\",\n        \"value\": 106\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 7,\n        \"type\": \"IntConstant\",\n        \"value\": 107\n      }\n    }\n  ],\n  \"rowCount\": 8\n}"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 255,
+    "name": "root",
+    "request": {
+      "path": "/api/cypher",
+      "method": "POST",
+      "body": {
+        "query": "MATCH (n:IntConstant) RETURN n LIMIT 8"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"columns\": [\n    \"n\"\n  ],\n  \"rows\": [\n    {\n      \"n\": {\n        \"id\": 0,\n        \"type\": \"IntConstant\",\n        \"value\": 100,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:0\",\n        \"qualifiedId\": \"a:0\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 1,\n        \"type\": \"IntConstant\",\n        \"value\": 101,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:1\",\n        \"qualifiedId\": \"a:1\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 2,\n        \"type\": \"IntConstant\",\n        \"value\": 102,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:2\",\n        \"qualifiedId\": \"a:2\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 3,\n        \"type\": \"IntConstant\",\n        \"value\": 103,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:3\",\n        \"qualifiedId\": \"a:3\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 4,\n        \"type\": \"IntConstant\",\n        \"value\": 104,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:4\",\n        \"qualifiedId\": \"a:4\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 5,\n        \"type\": \"IntConstant\",\n        \"value\": 105,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:5\",\n        \"qualifiedId\": \"a:5\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 6,\n        \"type\": \"IntConstant\",\n        \"value\": 106,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:6\",\n        \"qualifiedId\": \"a:6\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 7,\n        \"type\": \"IntConstant\",\n        \"value\": 107,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:7\",\n        \"qualifiedId\": \"a:7\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    }\n  ],\n  \"rowCount\": 8,\n  \"graphCount\": 4\n}"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 255,
+    "name": "selected",
+    "request": {
+      "path": "/api/cypher/graphs",
+      "method": "POST",
+      "body": {
+        "graphs": [
+          "a"
+        ],
+        "query": "MATCH (n:IntConstant) RETURN n LIMIT 8"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"mode\": \"cross-graph\",\n  \"graphs\": [\n    \"a\"\n  ],\n  \"graphCount\": 1,\n  \"columns\": [\n    \"n\"\n  ],\n  \"rows\": [\n    {\n      \"n\": {\n        \"id\": 0,\n        \"type\": \"IntConstant\",\n        \"value\": 100,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:0\",\n        \"qualifiedId\": \"a:0\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 1,\n        \"type\": \"IntConstant\",\n        \"value\": 101,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:1\",\n        \"qualifiedId\": \"a:1\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 2,\n        \"type\": \"IntConstant\",\n        \"value\": 102,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:2\",\n        \"qualifiedId\": \"a:2\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 3,\n        \"type\": \"IntConstant\",\n        \"value\": 103,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:3\",\n        \"qualifiedId\": \"a:3\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 4,\n        \"type\": \"IntConstant\",\n        \"value\": 104,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:4\",\n        \"qualifiedId\": \"a:4\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 5,\n        \"type\": \"IntConstant\",\n        \"value\": 105,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:5\",\n        \"qualifiedId\": \"a:5\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 6,\n        \"type\": \"IntConstant\",\n        \"value\": 106,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:6\",\n        \"qualifiedId\": \"a:6\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    },\n    {\n      \"n\": {\n        \"id\": 7,\n        \"type\": \"IntConstant\",\n        \"value\": 107,\n        \"graphId\": \"a\",\n        \"elementId\": \"a:7\",\n        \"qualifiedId\": \"a:7\"\n      },\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    }\n  ],\n  \"rowCount\": 8,\n  \"limit\": 1000\n}"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 255,
+    "name": "fanout",
+    "request": {
+      "path": "/api/cypher/graphs",
+      "method": "POST",
+      "body": {
+        "graphs": [
+          "a"
+        ],
+        "mode": "fanout",
+        "query": "MATCH (n:IntConstant) RETURN n LIMIT 8"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"columns\": [\n    \"graphId\",\n    \"n\"\n  ],\n  \"rows\": [\n    {\n      \"graphId\": \"a\",\n      \"n\": {\n        \"id\": 0,\n        \"type\": \"IntConstant\",\n        \"value\": 100\n      }\n    },\n    {\n      \"graphId\": \"a\",\n      \"n\": {\n        \"id\": 1,\n        \"type\": \"IntConstant\",\n        \"value\": 101\n      }\n    },\n    {\n      \"graphId\": \"a\",\n      \"n\": {\n        \"id\": 2,\n        \"type\": \"IntConstant\",\n        \"value\": 102\n      }\n    },\n    {\n      \"graphId\": \"a\",\n      \"n\": {\n        \"id\": 3,\n        \"type\": \"IntConstant\",\n        \"value\": 103\n      }\n    },\n    {\n      \"graphId\": \"a\",\n      \"n\": {\n        \"id\": 4,\n        \"type\": \"IntConstant\",\n        \"value\": 104\n      }\n    },\n    {\n      \"graphId\": \"a\",\n      \"n\": {\n        \"id\": 5,\n        \"type\": \"IntConstant\",\n        \"value\": 105\n      }\n    },\n    {\n      \"graphId\": \"a\",\n      \"n\": {\n        \"id\": 6,\n        \"type\": \"IntConstant\",\n        \"value\": 106\n      }\n    },\n    {\n      \"graphId\": \"a\",\n      \"n\": {\n        \"id\": 7,\n        \"type\": \"IntConstant\",\n        \"value\": 107\n      }\n    }\n  ],\n  \"rowCount\": 8,\n  \"graphCount\": 1,\n  \"queriedGraphCount\": 1,\n  \"perGraphLimit\": 1000,\n  \"limit\": 1000,\n  \"truncated\": false,\n  \"graphs\": [\n    {\n      \"graphId\": \"a\",\n      \"columns\": [\n        \"n\"\n      ],\n      \"rowCount\": 8\n    }\n  ],\n  \"mode\": \"fanout\"\n}"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 255,
+    "name": "bounded-before-tail",
+    "request": {
+      "path": "/api/graphs/a/cypher",
+      "method": "POST",
+      "body": {
+        "query": "MATCH (n:IntConstant) RETURN n.id AS id LIMIT 1"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"columns\": [\n    \"id\"\n  ],\n  \"rows\": [\n    {\n      \"id\": 0\n    }\n  ],\n  \"rowCount\": 1\n}"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 255,
+    "name": "projection-before-tail",
+    "request": {
+      "path": "/api/graphs/a/cypher",
+      "method": "POST",
+      "body": {
+        "query": "MATCH (n:IntConstant) RETURN substring('x','bad') AS x LIMIT 1"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 400,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"error\": \"class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \\u0027bootstrap\\u0027)\",\n  \"code\": \"cypher_query_failed\"\n}"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 255,
+    "name": "load-MAPPED",
+    "request": {
+      "path": "/api/graphs/new255MAPPED",
+      "method": "PUT",
+      "body": {
+        "path": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+        "loadMode": "MAPPED"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 200,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"graph\": {\n    \"id\": \"new255MAPPED\",\n    \"path\": \"/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture\",\n    \"loadMode\": \"MAPPED\",\n    \"loadedAt\": \"2026-09-06T22:00:16.812738Z\",\n    \"nodes\": 8,\n    \"edges\": 15,\n    \"methods\": 0,\n    \"callSites\": 0\n  }\n}"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 255,
+    "name": "load-EAGER",
+    "request": {
+      "path": "/api/graphs/new255EAGER",
+      "method": "PUT",
+      "body": {
+        "path": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+        "loadMode": "EAGER"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 400,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"error\": \"Unknown node tag: -1\"\n}"
+    }
+  },
+  {
+    "mode": "EAGER",
+    "tag": 255,
+    "name": "load-AUTO",
+    "request": {
+      "path": "/api/graphs/new255AUTO",
+      "method": "PUT",
+      "body": {
+        "path": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+        "loadMode": "AUTO"
+      }
+    },
+    "fixture": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-http-9vih22s2/fixture",
+    "response": {
+      "status": 400,
+      "contentType": "application/json",
+      "rawBody": "{\n  \"error\": \"Unknown node tag: -1\"\n}"
+    }
+  }
+]

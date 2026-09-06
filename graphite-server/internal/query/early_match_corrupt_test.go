@@ -91,15 +91,6 @@ func TestEarlyMatchStopsBeforeCorruptTail(t *testing.T) {
 					t.Fatal(encodeErr)
 				}
 				outputs = append(outputs, normalized)
-				if index >= 4 {
-					// Consuming the damaged record must still fail. Its existing core
-					// decoder error class/text differ from main and remain documented;
-					// this test does not pretend to fix that independent classification.
-					if err == nil {
-						t.Fatal("consumed corrupt tail did not fail")
-					}
-					return
-				}
 				if !reflect.DeepEqual(normalized, oracle[2*index+mode]) {
 					t.Fatalf("main=%#v\nnative=%s", oracle[2*index+mode], data)
 				}

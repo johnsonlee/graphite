@@ -3,11 +3,11 @@ package query
 import (
 	"context"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"reflect"
-	"strings"
 	"testing"
 
 	"github.com/johnsonlee/graphite/graphite-server/internal/cypher"
@@ -189,7 +189,8 @@ func TestCandidateReadErrorsPrecedePredicateAndLabelFiltering(t *testing.T) {
 	defer graph.Close()
 	for _, source := range []string{"MATCH (n) WHERE false RETURN n", "MATCH (n:NoSuchLabel) WHERE true RETURN n", "MATCH (n) WHERE 1/0=0 RETURN n"} {
 		_, err := Execute(context.Background(), graph, source, nil, -1)
-		if err == nil || !strings.Contains(err.Error(), "node 0: unknown node tag 255") {
+		var qe *Error
+		if !errors.As(err, &qe) || qe.Class != "IllegalArgumentException" || qe.Message != "Unknown node tag: -1" {
 			t.Errorf("%s: got %v", source, err)
 		}
 	}

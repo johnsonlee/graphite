@@ -1,0 +1,196 @@
+{
+  "base": "274cd678ff2b91ac603836467b1026e33ab50b4c",
+  "archive": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-final-rlopa_31",
+  "files": {
+    "graphite-server/internal/query/candidate_slot_test.go": {
+      "sha256": "d7d0301909d986dd132bbd8d6a62d8758a91489337c10229dc18531fc3cebd21",
+      "bytes": 6788
+    },
+    "graphite-server/internal/query/early_match_corrupt_test.go": {
+      "sha256": "5d402e18504adfe952eff7aa5e071b6e69988bf438f838883e13d428378e08ba",
+      "bytes": 2910
+    },
+    "graphite-server/internal/query/node_error.go": {
+      "sha256": "b50470c46bf9c7a68f7fdb67c6dc892880c81a87504ab702d223f7e01a496b19",
+      "bytes": 474
+    },
+    "graphite-server/internal/query/node_error_test.go": {
+      "sha256": "c0fe4d150650dd63a1d39e2562350beb4ca1d98c5b9459b8bf15958d78cbfb93",
+      "bytes": 5026
+    },
+    "graphite-server/internal/query/traversal.go": {
+      "sha256": "c83f3122a4ab61a9433323c3466c64612e2df7e1db703b989df8f5c98f9f0a33",
+      "bytes": 12888
+    },
+    "graphite-server/internal/server/http.go": {
+      "sha256": "5a84f9413a31ee04be4d96604127459657224ccb173e8400a99f4c8b2b8f2647",
+      "bytes": 10448
+    },
+    "graphite-server/internal/server/node_error.go": {
+      "sha256": "edc403e5f97e020acd7470179a841b35dc0ccd80afab9ebbc1841519d0951783",
+      "bytes": 699
+    },
+    "graphite-server/internal/server/node_error_test.go": {
+      "sha256": "53f2f2fe8199f1b47cc2c797929a76f1ec465e3ee6e664c73d46fe44ddfe4a12",
+      "bytes": 4368
+    },
+    "graphite-server/internal/server/testdata/node-tag/NodeTagOracle.java": {
+      "sha256": "56bc07a0239d0c76faaf9f9e8cafc468b3c51107fc38ddbb038c9662e0376edc",
+      "bytes": 2877
+    },
+    "graphite-server/internal/server/testdata/node-tag/README.md": {
+      "sha256": "3c03895383740ba4b8252013f1c718202b7659fc760d396eba9ae6e651ad01cb",
+      "bytes": 8541
+    },
+    "graphite-server/internal/server/testdata/node-tag/after-differences.json": {
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "bytes": 3
+    },
+    "graphite-server/internal/server/testdata/node-tag/before-differences.json": {
+      "sha256": "a2f620e85e53b6b754b37859105bfccd70a1d4b31e07e41c0812a1c53ca352b0",
+      "bytes": 18039
+    },
+    "graphite-server/internal/server/testdata/node-tag/capture-lifecycle.py": {
+      "sha256": "ef5a98291d5fd462dcd647e3b00201bcf9644a6e3cd97fc02e0b8bb295abdae9",
+      "bytes": 1208
+    },
+    "graphite-server/internal/server/testdata/node-tag/capture.py": {
+      "sha256": "92e60df766e81abd236906ee934ab83df1818c0197e357e74d421cc663ead037",
+      "bytes": 3567
+    },
+    "graphite-server/internal/server/testdata/node-tag/compare.py": {
+      "sha256": "18d687f133f356d52568ef2b1e494c19f29b7949ec640667067fb7c9f05ad7af",
+      "bytes": 1270
+    },
+    "graphite-server/internal/server/testdata/node-tag/final-differences.json": {
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "bytes": 3
+    },
+    "graphite-server/internal/server/testdata/node-tag/main-lifecycle-command.json": {
+      "sha256": "e25b5d9e61b3fa6779b14f3637e87cace9e385b1e8759a3351195188ba8ed0e3",
+      "bytes": 701
+    },
+    "graphite-server/internal/server/testdata/node-tag/main-lifecycle.json": {
+      "sha256": "7e6f931de6e20f6e52d908cd3cc804a7919ef64e5620c51beb5169fa61970900",
+      "bytes": 20437
+    },
+    "graphite-server/internal/server/testdata/node-tag/main-lifecycle.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "graphite-server/internal/server/testdata/node-tag/main-unindexed/EAGER.log": {
+      "sha256": "d8ab81ee3d8555cdf150b2a7f7241f237eb82fdb29dd5867b64d6894cce1013e",
+      "bytes": 369
+    },
+    "graphite-server/internal/server/testdata/node-tag/main-unindexed/MAPPED.log": {
+      "sha256": "3d69ab93a9e5f28897ce529f829fe11b4d84a5d970c23947ba1c186e719f6946",
+      "bytes": 370
+    },
+    "graphite-server/internal/server/testdata/node-tag/main-unindexed/commands.json": {
+      "sha256": "4370aeaa0ec29d97c83ae2b1975f7978364f35bac2c0154eac34e1e44ed66710",
+      "bytes": 1217
+    },
+    "graphite-server/internal/server/testdata/node-tag/main-unindexed/observations.json": {
+      "sha256": "8412eb81a763b5340779c86eb67fb9327215a5a808b326b4ba47b4ab612d5822",
+      "bytes": 88828
+    },
+    "graphite-server/internal/server/testdata/node-tag/main/EAGER.log": {
+      "sha256": "fbe7fa43ac4f2b344c1186d86089dbb3dd23676e10c1ae8bc82e105641b622ca",
+      "bytes": 369
+    },
+    "graphite-server/internal/server/testdata/node-tag/main/MAPPED.log": {
+      "sha256": "30f8cb7ab5ab7e32885befa2622cf4f6e838e915fa3002f31d9222060adac68d",
+      "bytes": 370
+    },
+    "graphite-server/internal/server/testdata/node-tag/main/commands.json": {
+      "sha256": "ee98ee6d13509268b1527c36f47d8d0281095d8f227469db10e4a08bd485d547",
+      "bytes": 1217
+    },
+    "graphite-server/internal/server/testdata/node-tag/main/observations.json": {
+      "sha256": "b24f408de54c2afeef47e79c67a07ea67dccfc882941f17e29b16dd03ea38a64",
+      "bytes": 89909
+    },
+    "graphite-server/internal/server/testdata/node-tag/native-after/EAGER.log": {
+      "sha256": "0ffc378bfbbdeba2153c817477788e97769829ae7cce01d795c4863d93b48462",
+      "bytes": 60
+    },
+    "graphite-server/internal/server/testdata/node-tag/native-after/MAPPED.log": {
+      "sha256": "ca13df2616a9ed249a669ab0063ee69f6ec9ceacd1e57167905afe59c7d7f588",
+      "bytes": 60
+    },
+    "graphite-server/internal/server/testdata/node-tag/native-after/commands.json": {
+      "sha256": "6dfc19baec7cf1c55e2d75d7b2b02683f212059a43bff210a1ca6a4e03e2b02d",
+      "bytes": 835
+    },
+    "graphite-server/internal/server/testdata/node-tag/native-after/observations.json": {
+      "sha256": "0ebe459088d5e9d201b018277d1764f237aea195dc226b716fc1a5c575f7ee05",
+      "bytes": 72937
+    },
+    "graphite-server/internal/server/testdata/node-tag/native-before/EAGER.log": {
+      "sha256": "d71a11f7afe5218958dd20df76c80d4f37483d4ede343750e21045d96b43fe87",
+      "bytes": 60
+    },
+    "graphite-server/internal/server/testdata/node-tag/native-before/MAPPED.log": {
+      "sha256": "f80f6140e80f9ba31659a4a696f5f3e9dcf613a1e71affdf578f59880f0f2ace",
+      "bytes": 60
+    },
+    "graphite-server/internal/server/testdata/node-tag/native-before/commands.json": {
+      "sha256": "95ae83cd94b1d6bf87cdb900f4d28e396a3726ba0e9041106c3bfe48db506c3f",
+      "bytes": 837
+    },
+    "graphite-server/internal/server/testdata/node-tag/native-before/observations.json": {
+      "sha256": "370f4c06ddca8aec26b8ae6c1593100415b9db585a694be6c529de7dee9e98ba",
+      "bytes": 72326
+    },
+    "graphite-server/internal/server/testdata/node-tag/native-early-corrupt.json": {
+      "sha256": "057a4b77541bf83f45b7d48490056235c20da574a198150021f5bf484ea4e790",
+      "bytes": 3159
+    },
+    "graphite-server/internal/server/testdata/node-tag/native-final/EAGER.log": {
+      "sha256": "0307c65815768518e203a12763b980f368feab746263603bff460329db651918",
+      "bytes": 60
+    },
+    "graphite-server/internal/server/testdata/node-tag/native-final/MAPPED.log": {
+      "sha256": "173e810a8538a071d2dc4eb2cde52f0123dd08df553f818a35310a393da47f06",
+      "bytes": 60
+    },
+    "graphite-server/internal/server/testdata/node-tag/native-final/commands.json": {
+      "sha256": "7d09e0b8fe894dbbcd898bb035b91e8dc1edc8ff3ce53f2ea291ba225618f04b",
+      "bytes": 835
+    },
+    "graphite-server/internal/server/testdata/node-tag/native-final/observations.json": {
+      "sha256": "4fd971f3e6b9f175d5f8d9064f72a29883933ced9e29adae53e86df3278c1060",
+      "bytes": 72935
+    },
+    "graphite-server/internal/server/testdata/node-tag/prepared.nodeindex": {
+      "sha256": "e30e728fe2a8c32e3a900286a0fb3854d77d8e40f5ff5d0ff58cd0e34d5181b8",
+      "bytes": 112
+    },
+    "graphite-server/internal/server/testdata/node-tag/verification.json": {
+      "sha256": "1b02e393d6ba01a4f51a6c33d86091f13883097633a145ef7f1dce2715451254",
+      "bytes": 22240
+    },
+    "graphite-server/internal/store/decode.go": {
+      "sha256": "be92b2080650352c3fa6e1929901fffc4326876f5b0d06db2518514eedff0887",
+      "bytes": 10371
+    },
+    "graphite-server/internal/store/node_error.go": {
+      "sha256": "6d696d33b1138cb3e265274869b45bc0687782d0e3a20b77867f7f7a47e80091",
+      "bytes": 413
+    },
+    "graphite-server/internal/store/node_error_test.go": {
+      "sha256": "d0544784524e2e35c26c4290d3722db911f6fbb6d3d92c5bfe46cad78a0d3cbf",
+      "bytes": 805
+    },
+    "graphite-server/internal/query/string_candidates.go": {
+      "sha256": "55449e44ccf93f7782fd129672cb7fae9e2a51ab5d6bb95b0afa21084fa35201",
+      "bytes": 7715
+    },
+    "graphite-server/internal/query/candidate_node_error_test.go": {
+      "sha256": "0439437fd18967e2dd56c9514f4ef947d735279600b72ca5d15204cda2de3cce",
+      "bytes": 2297
+    }
+  },
+  "frozenFilesVerified": 45,
+  "extraIntegration": "CandidateNode actual consumption uses failNodeRead and four-tag regression; certificate fallback unchanged."
+}

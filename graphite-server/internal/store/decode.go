@@ -255,7 +255,9 @@ func (d *decoder) node() Node {
 	n := Node{ID: d.i32()}
 	tag := d.u8()
 	if int(tag) >= len(nodeKinds) {
-		d.fail("unknown node tag %d", tag)
+		if d.err == nil {
+			d.err = &UnknownNodeTagError{Tag: tag}
+		}
 		return n
 	}
 	n.Kind = nodeKinds[tag]

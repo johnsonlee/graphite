@@ -1,0 +1,38 @@
+{
+  "archive": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-node-tag-integration-cuvycslg",
+  "runs": [
+    {
+      "command": [
+        "go",
+        "test",
+        "./internal/query",
+        "-run",
+        "^TestIndexedCandidateConsumedNodeTagClassification$",
+        "-count=1",
+        "-v"
+      ],
+      "exitCode": 0,
+      "log": "candidate-consumption-after.log"
+    },
+    {
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./..."
+      ],
+      "exitCode": 0,
+      "log": "race.log"
+    },
+    {
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "exitCode": 0,
+      "log": "vet.log"
+    }
+  ],
+  "extraIntegration": "CandidateNode actual consumption uses failNodeRead; certificate fallback unchanged."
+}

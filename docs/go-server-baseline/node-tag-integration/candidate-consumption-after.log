@@ -1,0 +1,12 @@
+=== RUN   TestIndexedCandidateConsumedNodeTagClassification
+=== RUN   TestIndexedCandidateConsumedNodeTagClassification/16
+=== RUN   TestIndexedCandidateConsumedNodeTagClassification/127
+=== RUN   TestIndexedCandidateConsumedNodeTagClassification/128
+=== RUN   TestIndexedCandidateConsumedNodeTagClassification/255
+--- PASS: TestIndexedCandidateConsumedNodeTagClassification (0.02s)
+    --- PASS: TestIndexedCandidateConsumedNodeTagClassification/16 (0.01s)
+    --- PASS: TestIndexedCandidateConsumedNodeTagClassification/127 (0.00s)
+    --- PASS: TestIndexedCandidateConsumedNodeTagClassification/128 (0.00s)
+    --- PASS: TestIndexedCandidateConsumedNodeTagClassification/255 (0.00s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/query	0.260s
