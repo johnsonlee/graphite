@@ -1,0 +1,69 @@
+{
+  "purpose": "Real64 post-load allocation/CPU attribution; not HTTP/P95/speedup evidence",
+  "sourceRevision": "a7de0bec67ae4dbd8b1dde621b6d9ce7cecef8d0",
+  "queries": [
+    {
+      "name": "supplemental-method-count",
+      "source": "supplemental real64 catalog aggregate; not part of original 42",
+      "query": "MATCH (m:Method) RETURN count(m) AS count",
+      "fullOutputMatchesExpected": true,
+      "outputBytes": 1480,
+      "outputSha256": "21daca2ccd004eb51e41c0e51c8d4bad939861279acfa168c4f65b2c269e8a2b",
+      "requestDeltas": {
+        "frees": 50,
+        "mallocs": 13752883,
+        "numGC": 0,
+        "pauseTotalNs": 0,
+        "systemCPUSeconds": 0.07368799999999709,
+        "totalAllocBytes": 2441487384,
+        "userCPUSeconds": 0.6910880000000077
+      },
+      "heapAllocBefore": 6273149168,
+      "heapAllocAfterRequest": 8714636552,
+      "heapAllocAfterForcedGC": 6272117416,
+      "diagnosticQuerySeconds": 0.683387292
+    },
+    {
+      "name": "global-wide-four-properties-zero",
+      "source": "original 42-case manifest",
+      "query": "MATCH (n)\nWHERE n.caller_class CONTAINS '__graphite_fixture64_absent_fixture-android-00__' OR n.caller_name CONTAINS '__graphite_fixture64_absent_fixture-android-00__' OR n.callee_class CONTAINS '__graphite_fixture64_absent_fixture-android-00__' OR n.callee_name CONTAINS '__graphite_fixture64_absent_fixture-android-00__'\nRETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "fullOutputMatchesExpected": true,
+      "outputBytes": 118,
+      "outputSha256": "f585f8c837c05a598d43e16848760d2ef6a76ea7dc015ca1ffb187dece3a5e03",
+      "requestDeltas": {
+        "frees": 235976825,
+        "mallocs": 404267568,
+        "numGC": 3,
+        "pauseTotalNs": 355749,
+        "systemCPUSeconds": 4.804939999999998,
+        "totalAllocBytes": 32796831280,
+        "userCPUSeconds": 53.16731800000001
+      },
+      "heapAllocBefore": 6273122608,
+      "heapAllocAfterRequest": 31317685736,
+      "heapAllocAfterForcedGC": 6271970736,
+      "diagnosticQuerySeconds": 21.157708875
+    },
+    {
+      "name": "wrapped-zeroHitBroadContains",
+      "source": "original 42-case manifest",
+      "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'graphite_latency_no_such_symbol_9f36'\n   OR toLower(coalesce(n.caller_name, '')) CONTAINS 'graphite_latency_no_such_symbol_9f36'\n   OR toLower(coalesce(n.callee_class, '')) CONTAINS 'graphite_latency_no_such_symbol_9f36'\n   OR toLower(coalesce(n.callee_name, '')) CONTAINS 'graphite_latency_no_such_symbol_9f36'\nRETURN DISTINCT n.graph_id, n.caller_class AS caller, n.caller_name AS callerMethod,\n    n.callee_class AS callee, n.callee_name AS calleeMethod\nLIMIT 250",
+      "fullOutputMatchesExpected": true,
+      "outputBytes": 113,
+      "outputSha256": "b776d360f1d6eb34c3a0594d0d8239821bbe4f96958a90907764d5a48a6aa1dd",
+      "requestDeltas": {
+        "frees": 281720835,
+        "mallocs": 674142874,
+        "numGC": 3,
+        "pauseTotalNs": 295250,
+        "systemCPUSeconds": 15.826986000000002,
+        "totalAllocBytes": 38142226112,
+        "userCPUSeconds": 66.309297
+      },
+      "heapAllocBefore": 6272082344,
+      "heapAllocAfterRequest": 36500810000,
+      "heapAllocAfterForcedGC": 6271913632,
+      "diagnosticQuerySeconds": 34.494899833
+    }
+  ]
+}

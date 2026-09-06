@@ -1,0 +1,43 @@
+File: profile-query
+Type: cpu
+Time: Sep 7, 2026 at 4:16am (KST)
+Duration: 34.60s, Total samples = 96.80s (279.75%)
+Showing nodes accounting for 67.51s, 69.74% of 96.80s total
+Dropped 139 nodes (cum <= 0.48s)
+Showing top 35 nodes out of 94
+      flat  flat%   sum%        cum   cum%
+         0     0%     0%     75.20s 77.69%  runtime.systemstack
+         0     0%     0%     64.10s 66.22%  runtime.gcBgMarkWorker.func2
+     0.93s  0.96%  0.96%     64.10s 66.22%  runtime.gcDrain
+         0     0%  0.96%     60.07s 62.06%  runtime.gcBgMarkWorker
+     8.99s  9.29% 10.25%     57.39s 59.29%  runtime.scanobject
+         0     0% 10.25%     46.62s 48.16%  runtime.gcDrainMarkWorkerIdle (inline)
+    11.54s 11.92% 22.17%     40.53s 41.87%  runtime.(*mspan).typePointersOfUnchecked
+    28.99s 29.95% 52.12%     28.99s 29.95%  runtime.(*mspan).heapBitsSmallForAddr
+         0     0% 52.12%     20.71s 21.39%  github.com/johnsonlee/graphite/graphite-server/internal/query.ExecuteCross
+         0     0% 52.12%     20.71s 21.39%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.branch
+         0     0% 52.12%     20.71s 21.39%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.match
+         0     0% 52.12%     20.71s 21.39%  github.com/johnsonlee/graphite/graphite-server/internal/query.executeSources
+         0     0% 52.12%     20.71s 21.39%  main.main
+         0     0% 52.12%     20.71s 21.39%  main.profile
+         0     0% 52.12%     20.71s 21.39%  main.profile.func1
+         0     0% 52.12%     20.71s 21.39%  runtime.main
+         0     0% 52.12%     20.71s 21.39%  runtime/pprof.Do
+         0     0% 52.12%     17.48s 18.06%  runtime.gcDrainMarkWorkerDedicated (inline)
+     0.02s 0.021% 52.14%     12.73s 13.15%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.binary
+         0     0% 52.14%     12.73s 13.15%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.eval
+         0     0% 52.14%     10.50s 10.85%  runtime.(*mheap).allocSpan
+         0     0% 52.14%     10.42s 10.76%  runtime.(*mheap).alloc.func1
+    10.07s 10.40% 62.54%     10.07s 10.40%  runtime.madvise
+         0     0% 62.54%     10.06s 10.39%  runtime.sysUsed (inline)
+         0     0% 62.54%     10.06s 10.39%  runtime.sysUsedOS (inline)
+         0     0% 62.54%      7.23s  7.47%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.matchPattern
+         0     0% 62.54%      7.23s  7.47%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.nodeCandidates
+     6.42s  6.63% 69.17%      6.42s  6.63%  runtime.duffcopy
+         0     0% 69.17%      5.58s  5.76%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.matchPattern.func1
+     0.55s  0.57% 69.74%      5.28s  5.45%  runtime.mallocgc
+         0     0% 69.74%      4.97s  5.13%  github.com/johnsonlee/graphite/graphite-server/internal/query.qualifiedProperty
+         0     0% 69.74%      4.40s  4.55%  runtime.(*mcache).nextFree
+         0     0% 69.74%      4.39s  4.54%  runtime.(*mcache).refill
+         0     0% 69.74%      4.32s  4.46%  runtime.(*mcentral).cacheSpan
+         0     0% 69.74%      4.22s  4.36%  runtime.(*mcentral).grow

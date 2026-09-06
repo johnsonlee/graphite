@@ -1,0 +1,254 @@
+Total: 35.32GB
+ROUTINE ======================== github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.eval in /private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/source/graphite-server/internal/query/eval.go
+    3.32GB    12.68GB (flat, cum) 35.91% of Total
+         .          .     44:func (e evaluator) eval(expression cypher.Expr, row map[string]any) any {
+         .          .     45:	e.check()
+         .          .     46:	switch x := expression.(type) {
+         .          .     47:	case nil:
+         .          .     48:		return nil
+         .          .     49:	case cypher.Literal:
+         .          .     50:		return x.Value
+         .          .     51:	case cypher.Variable:
+         .          .     52:		return row[x.Name]
+         .          .     53:	case cypher.Parameter:
+         .          .     54:		v, ok := e.parameters[x.Name]
+         .          .     55:		if !ok {
+         .          .     56:			fail("Missing parameter: " + x.Name)
+         .          .     57:		}
+         .          .     58:		return v
+         .          .     59:	case cypher.Property:
+         .          .     60:		obj := e.eval(x.Object, row)
+         .          .     61:		switch o := obj.(type) {
+         .          .     62:		case qualifiedNode, qualifiedMethod:
+         .   264.50MB     63:			return qualifiedProperty(o, x.Key)
+         .          .     64:		case qualifiedEdge:
+         .          .     65:			if x.Key == "graphId" {
+         .          .     66:				return o.GraphID
+         .          .     67:			}
+         .          .     68:			return edgeProperty(o.Edge, x.Key)
+         .          .     69:		case store.Edge:
+         .          .     70:			return edgeProperty(o, x.Key)
+         .          .     71:		case pathValue:
+         .          .     72:			if x.Key == "length" {
+         .          .     73:				return int32(len(o.Edges))
+         .          .     74:			}
+         .          .     75:			if x.Key == "graphId" && o.Qualified {
+         .          .     76:				return o.GraphID
+         .          .     77:			}
+         .          .     78:			return nil
+         .          .     79:		case store.Node:
+         .          .     80:			return NodeProperty(o, x.Key)
+         .          .     81:		case store.MethodDescriptor:
+         .          .     82:			return methodProperty(o, x.Key)
+         .          .     83:		case map[string]any:
+         .          .     84:			return o[x.Key]
+         .          .     85:		}
+         .          .     86:		return nil
+         .          .     87:	case cypher.Unary:
+         .          .     88:		v := e.eval(x.Operand, row)
+         .          .     89:		switch x.Op {
+         .          .     90:		case "IS NULL":
+         .          .     91:			return v == nil
+         .          .     92:		case "IS NOT NULL":
+         .          .     93:			return v != nil
+         .          .     94:		case "NOT":
+         .          .     95:			if v == nil {
+         .          .     96:				return nil
+         .          .     97:			}
+         .          .     98:			b, ok := v.(bool)
+         .          .     99:			if !ok {
+         .          .    100:				fail("NOT requires a boolean")
+         .          .    101:			}
+         .          .    102:			return !b
+         .          .    103:		case "+", "DISTINCT":
+         .          .    104:			return v
+         .          .    105:		case "-":
+         .          .    106:			if v == nil {
+         .          .    107:				return nil
+         .          .    108:			}
+         .          .    109:			switch n := v.(type) {
+         .          .    110:			case int32:
+         .          .    111:				return -n
+         .          .    112:			case int64:
+         .          .    113:				return -n
+         .          .    114:			case int:
+         .          .    115:				return -n
+         .          .    116:			case float32:
+         .          .    117:				return -n
+         .          .    118:			case float64:
+         .          .    119:				return -n
+         .          .    120:			}
+         .          .    121:			return -toDouble(v)
+         .          .    122:		}
+         .          .    123:	case cypher.Binary:
+         .     5.09GB    124:		return e.binary(x, row)
+         .          .    125:	case cypher.List:
+         .          .    126:		r := make([]any, len(x.Elements))
+         .          .    127:		for i, v := range x.Elements {
+         .          .    128:			r[i] = e.eval(v, row)
+         .          .    129:		}
+         .          .    130:		return r
+         .          .    131:	case cypher.Map:
+         .          .    132:		r := make(map[string]any, len(x.Entries))
+         .          .    133:		for k, v := range x.Entries {
+         .          .    134:			r[k] = e.eval(v, row)
+         .          .    135:		}
+         .          .    136:		return r
+         .          .    137:	case cypher.Case:
+         .          .    138:		v := e.eval(x.Test, row)
+         .          .    139:		for _, w := range x.Whens {
+         .          .    140:			condition := e.eval(w.Condition, row)
+         .          .    141:			if x.Test != nil {
+         .          .    142:				condition = equal(v, condition)
+         .          .    143:			}
+         .          .    144:			if condition == true {
+         .          .    145:				return e.eval(w.Result, row)
+         .          .    146:			}
+         .          .    147:		}
+         .          .    148:		return e.eval(x.Else, row)
+         .          .    149:	case cypher.ListComprehension:
+         .          .    150:		values, ok := e.eval(x.List, row).([]any)
+         .          .    151:		if !ok {
+         .          .    152:			return nil
+         .          .    153:		}
+         .          .    154:		out := []any{}
+         .          .    155:		for _, v := range values {
+         .          .    156:			r := clone(row)
+         .          .    157:			r[x.Variable] = v
+         .          .    158:			if x.Where != nil && e.eval(x.Where, r) != true {
+         .          .    159:				continue
+         .          .    160:			}
+         .          .    161:			if x.Projection != nil {
+         .          .    162:				v = e.eval(x.Projection, r)
+         .          .    163:			}
+         .          .    164:			out = append(out, v)
+         .          .    165:		}
+         .          .    166:		return out
+         .          .    167:	case cypher.Predicate:
+         .          .    168:		values, ok := e.eval(x.List, row).([]any)
+         .          .    169:		if !ok {
+         .          .    170:			return nil
+         .          .    171:		}
+         .          .    172:		yes, no, unknown := 0, 0, 0
+         .          .    173:		for _, v := range values {
+         .          .    174:			r := clone(row)
+         .          .    175:			r[x.Variable] = v
+         .          .    176:			if x.Where != nil {
+         .          .    177:				v = e.eval(x.Where, r)
+         .          .    178:			}
+         .          .    179:			switch asBool(v) {
+         .          .    180:			case true:
+         .          .    181:				yes++
+         .          .    182:			case false:
+         .          .    183:				no++
+         .          .    184:			default:
+         .          .    185:				unknown++
+         .          .    186:			}
+         .          .    187:		}
+         .          .    188:		switch x.Name {
+         .          .    189:		case "any":
+         .          .    190:			if yes > 0 {
+         .          .    191:				return true
+         .          .    192:			}
+         .          .    193:			if unknown > 0 {
+         .          .    194:				return nil
+         .          .    195:			}
+         .          .    196:			return false
+         .          .    197:		case "all":
+         .          .    198:			if no > 0 {
+         .          .    199:				return false
+         .          .    200:			}
+         .          .    201:			if unknown > 0 {
+         .          .    202:				return nil
+         .          .    203:			}
+         .          .    204:			return true
+         .          .    205:		case "none":
+         .          .    206:			if yes > 0 {
+         .          .    207:				return false
+         .          .    208:			}
+         .          .    209:			if unknown > 0 {
+         .          .    210:				return nil
+         .          .    211:			}
+         .          .    212:			return true
+         .          .    213:		case "single":
+         .          .    214:			if yes > 1 {
+         .          .    215:				return false
+         .          .    216:			}
+         .          .    217:			if unknown > 0 {
+         .          .    218:				return nil
+         .          .    219:			}
+         .          .    220:			return yes == 1
+         .          .    221:		}
+         .          .    222:	case cypher.Index:
+         .          .    223:		v := e.eval(x.Object, row)
+         .          .    224:		n, ok := number(e.eval(x.Index, row))
+         .          .    225:		if !ok {
+         .          .    226:			return nil
+         .          .    227:		}
+         .          .    228:		idx := int(n)
+         .          .    229:		switch v := v.(type) {
+         .          .    230:		case []any:
+         .          .    231:			if idx < 0 {
+         .          .    232:				idx += len(v)
+         .          .    233:			}
+         .          .    234:			if idx >= 0 && idx < len(v) {
+         .          .    235:				return v[idx]
+         .          .    236:			}
+         .          .    237:		case string:
+         .          .    238:			u := utf16.Encode([]rune(v))
+         .          .    239:			if idx < 0 {
+         .          .    240:				idx += len(u)
+         .          .    241:			}
+         .          .    242:			if idx >= 0 && idx < len(u) {
+         .          .    243:				if utf16.IsSurrogate(rune(u[idx])) {
+         .          .    244:					fail("isolated UTF-16 surrogate indexing is not supported yet")
+         .          .    245:				}
+         .          .    246:				return string(rune(u[idx]))
+         .          .    247:			}
+         .          .    248:		}
+         .          .    249:		return nil
+         .          .    250:	case cypher.Slice:
+         .          .    251:		v := e.eval(x.Object, row)
+         .          .    252:		from := 0
+         .          .    253:		var size int
+         .          .    254:		switch v := v.(type) {
+         .          .    255:		case []any:
+         .          .    256:			size = len(v)
+         .          .    257:		case string:
+         .          .    258:			size = len(utf16.Encode([]rune(v)))
+         .          .    259:		default:
+         .          .    260:			return nil
+         .          .    261:		}
+         .          .    262:		to := size
+         .          .    263:		if n, ok := number(e.eval(x.From, row)); ok {
+         .          .    264:			from = int(n)
+         .          .    265:		}
+         .          .    266:		if n, ok := number(e.eval(x.To, row)); ok {
+         .          .    267:			to = int(n)
+         .          .    268:		}
+         .          .    269:		from = max(0, from)
+         .          .    270:		to = min(size, to)
+         .          .    271:		if from > to || from > size || to < 0 {
+         .          .    272:			fail("slice bounds out of range")
+         .          .    273:		}
+         .          .    274:		switch v := v.(type) {
+         .          .    275:		case []any:
+         .          .    276:			return append([]any{}, v[from:to]...)
+         .          .    277:		case string:
+         .          .    278:			u := utf16.Encode([]rune(v))[from:to]
+         .          .    279:			if len(u) > 0 && (u[0] >= 0xdc00 && u[0] <= 0xdfff || u[len(u)-1] >= 0xd800 && u[len(u)-1] <= 0xdbff) {
+         .          .    280:				fail("isolated UTF-16 surrogate slicing is not supported yet")
+         .          .    281:			}
+         .          .    282:			return string(utf16.Decode(u))
+         .          .    283:		}
+         .          .    284:	case cypher.Call:
+    3.32GB     3.32GB    285:		args := make([]any, len(x.Arguments))
+         .          .    286:		for i, a := range x.Arguments {
+         .     2.50GB    287:			args[i] = e.eval(a, row)
+         .          .    288:		}
+         .     1.51GB    289:		return e.call(strings.ToLower(x.Name), args)
+         .          .    290:	}
+         .          .    291:	fail(fmt.Sprintf("unsupported expression %T", expression))
+         .          .    292:	return nil
+         .          .    293:}
+         .          .    294:func toDouble(v any) float64 {

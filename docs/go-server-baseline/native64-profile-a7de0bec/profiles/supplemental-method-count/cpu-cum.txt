@@ -1,0 +1,42 @@
+File: profile-query
+Type: cpu
+Time: Sep 7, 2026 at 4:17am (KST)
+Duration: 814.39ms, Total samples = 690ms (84.73%)
+Showing nodes accounting for 640ms, 92.75% of 690ms total
+Showing top 35 nodes out of 69
+      flat  flat%   sum%        cum   cum%
+         0     0%     0%      370ms 53.62%  github.com/johnsonlee/graphite/graphite-server/internal/query.ExecuteCross
+         0     0%     0%      370ms 53.62%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.branch
+         0     0%     0%      370ms 53.62%  github.com/johnsonlee/graphite/graphite-server/internal/query.executeSources
+         0     0%     0%      370ms 53.62%  main.main
+         0     0%     0%      370ms 53.62%  main.profile
+         0     0%     0%      370ms 53.62%  main.profile.func1
+         0     0%     0%      370ms 53.62%  runtime.main
+         0     0%     0%      370ms 53.62%  runtime/pprof.Do
+      20ms  2.90%  2.90%      350ms 50.72%  runtime.mallocgc
+     310ms 44.93% 47.83%      310ms 44.93%  runtime.memclrNoHeapPointers
+         0     0% 47.83%      280ms 40.58%  runtime.systemstack
+         0     0% 47.83%      230ms 33.33%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.project
+         0     0% 47.83%      220ms 31.88%  runtime.(*mcache).nextFree
+         0     0% 47.83%      220ms 31.88%  runtime.(*mcache).refill
+      10ms  1.45% 49.28%      220ms 31.88%  runtime.(*mcentral).cacheSpan
+         0     0% 49.28%      210ms 30.43%  runtime.(*mcentral).grow
+         0     0% 49.28%      210ms 30.43%  runtime.(*mspan).initHeapBits
+         0     0% 49.28%      210ms 30.43%  runtime.growslice
+     210ms 30.43% 79.71%      210ms 30.43%  runtime.pthread_cond_signal
+         0     0% 79.71%      210ms 30.43%  runtime.semawakeup
+         0     0% 79.71%      190ms 27.54%  runtime.(*mheap).alloc.func1
+         0     0% 79.71%      190ms 27.54%  runtime.(*mheap).allocSpan
+         0     0% 79.71%      190ms 27.54%  runtime.unlock (inline)
+         0     0% 79.71%      190ms 27.54%  runtime.unlock2
+         0     0% 79.71%      190ms 27.54%  runtime.unlockWithRank (inline)
+         0     0% 79.71%      180ms 26.09%  github.com/johnsonlee/graphite/graphite-server/internal/query.addProvenance
+         0     0% 79.71%      170ms 24.64%  github.com/johnsonlee/graphite/graphite-server/internal/query.mergeProvenance (inline)
+         0     0% 79.71%      160ms 23.19%  github.com/johnsonlee/graphite/graphite-server/internal/query.provenance (inline)
+         0     0% 79.71%      140ms 20.29%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.match
+         0     0% 79.71%      140ms 20.29%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.matchPattern
+         0     0% 79.71%      140ms 20.29%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.nodeCandidates
+         0     0% 79.71%      110ms 15.94%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.matchPattern.func1
+         0     0% 79.71%       90ms 13.04%  runtime.(*pageAlloc).scavenge.func1
+         0     0% 79.71%       90ms 13.04%  runtime.(*pageAlloc).scavengeOne
+      90ms 13.04% 92.75%       90ms 13.04%  runtime.madvise

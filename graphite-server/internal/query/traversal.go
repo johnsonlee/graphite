@@ -15,6 +15,12 @@ type matchState struct {
 }
 
 func (e evaluator) match(graph *store.Store, rows []map[string]any, clause cypher.MatchClause) []map[string]any {
+	if clause.Where != nil && len(clause.Patterns) == 1 && len(clause.Patterns[0].Nodes) == 1 && len(clause.Patterns[0].Relationships) == 0 && clause.Patterns[0].PathVariable == "" {
+		return e.matchSingleNode(graph, rows, clause)
+	}
+	return e.matchMaterialized(graph, rows, clause)
+}
+func (e evaluator) matchMaterialized(graph *store.Store, rows []map[string]any, clause cypher.MatchClause) []map[string]any {
 	result := []map[string]any{}
 	for _, row := range rows {
 		e.check()

@@ -1,0 +1,326 @@
+[
+  {
+    "output": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/global-wide-four-properties-zero/cpu-top.txt",
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-nodecount=35",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profile-query",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/global-wide-four-properties-zero/cpu.pprof"
+    ]
+  },
+  {
+    "output": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/global-wide-four-properties-zero/cpu-cum.txt",
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-cum",
+      "-nodecount=35",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profile-query",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/global-wide-four-properties-zero/cpu.pprof"
+    ]
+  },
+  {
+    "output": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/global-wide-four-properties-zero/alloc-space-top.txt",
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-sample_index=alloc_space",
+      "-nodecount=30",
+      "-base",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/global-wide-four-properties-zero/heap-before.pprof",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profile-query",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/global-wide-four-properties-zero/heap-after.pprof"
+    ]
+  },
+  {
+    "output": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/global-wide-four-properties-zero/alloc-objects-top.txt",
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-sample_index=alloc_objects",
+      "-nodecount=30",
+      "-base",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/global-wide-four-properties-zero/heap-before.pprof",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profile-query",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/global-wide-four-properties-zero/heap-after.pprof"
+    ]
+  },
+  {
+    "output": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/global-wide-four-properties-zero/retained-heap-top.txt",
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-sample_index=inuse_space",
+      "-nodecount=25",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profile-query",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/global-wide-four-properties-zero/heap-after.pprof"
+    ]
+  },
+  {
+    "output": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/supplemental-method-count/cpu-top.txt",
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-nodecount=35",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profile-query",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/supplemental-method-count/cpu.pprof"
+    ]
+  },
+  {
+    "output": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/supplemental-method-count/cpu-cum.txt",
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-cum",
+      "-nodecount=35",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profile-query",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/supplemental-method-count/cpu.pprof"
+    ]
+  },
+  {
+    "output": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/supplemental-method-count/alloc-space-top.txt",
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-sample_index=alloc_space",
+      "-nodecount=30",
+      "-base",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/supplemental-method-count/heap-before.pprof",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profile-query",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/supplemental-method-count/heap-after.pprof"
+    ]
+  },
+  {
+    "output": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/supplemental-method-count/alloc-objects-top.txt",
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-sample_index=alloc_objects",
+      "-nodecount=30",
+      "-base",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/supplemental-method-count/heap-before.pprof",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profile-query",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/supplemental-method-count/heap-after.pprof"
+    ]
+  },
+  {
+    "output": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/supplemental-method-count/retained-heap-top.txt",
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-sample_index=inuse_space",
+      "-nodecount=25",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profile-query",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/supplemental-method-count/heap-after.pprof"
+    ]
+  },
+  {
+    "output": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/wrapped-zeroHitBroadContains/cpu-top.txt",
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-nodecount=35",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profile-query",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/wrapped-zeroHitBroadContains/cpu.pprof"
+    ]
+  },
+  {
+    "output": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/wrapped-zeroHitBroadContains/cpu-cum.txt",
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-cum",
+      "-nodecount=35",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profile-query",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/wrapped-zeroHitBroadContains/cpu.pprof"
+    ]
+  },
+  {
+    "output": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/wrapped-zeroHitBroadContains/alloc-space-top.txt",
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-sample_index=alloc_space",
+      "-nodecount=30",
+      "-base",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/wrapped-zeroHitBroadContains/heap-before.pprof",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profile-query",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/wrapped-zeroHitBroadContains/heap-after.pprof"
+    ]
+  },
+  {
+    "output": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/wrapped-zeroHitBroadContains/alloc-objects-top.txt",
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-sample_index=alloc_objects",
+      "-nodecount=30",
+      "-base",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/wrapped-zeroHitBroadContains/heap-before.pprof",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profile-query",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/wrapped-zeroHitBroadContains/heap-after.pprof"
+    ]
+  },
+  {
+    "output": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/wrapped-zeroHitBroadContains/retained-heap-top.txt",
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-sample_index=inuse_space",
+      "-nodecount=25",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profile-query",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/wrapped-zeroHitBroadContains/heap-after.pprof"
+    ]
+  },
+  {
+    "output": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/wrapped-zeroHitBroadContains/alloc-list-matchPattern.func1.txt",
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-sample_index=alloc_space",
+      "-base",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/wrapped-zeroHitBroadContains/heap-before.pprof",
+      "-list",
+      "matchPattern.func1",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profile-query",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/wrapped-zeroHitBroadContains/heap-after.pprof"
+    ]
+  },
+  {
+    "output": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/wrapped-zeroHitBroadContains/alloc-list-nodeCandidates.txt",
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-sample_index=alloc_space",
+      "-base",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/wrapped-zeroHitBroadContains/heap-before.pprof",
+      "-list",
+      "nodeCandidates",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profile-query",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/wrapped-zeroHitBroadContains/heap-after.pprof"
+    ]
+  },
+  {
+    "output": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/wrapped-zeroHitBroadContains/alloc-list-evaluator.eval.txt",
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-sample_index=alloc_space",
+      "-base",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/wrapped-zeroHitBroadContains/heap-before.pprof",
+      "-list",
+      "evaluator.eval",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profile-query",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/wrapped-zeroHitBroadContains/heap-after.pprof"
+    ]
+  },
+  {
+    "output": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/global-wide-four-properties-zero/alloc-list-matchPattern.func1.txt",
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-sample_index=alloc_space",
+      "-base",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/global-wide-four-properties-zero/heap-before.pprof",
+      "-list",
+      "matchPattern.func1",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profile-query",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/global-wide-four-properties-zero/heap-after.pprof"
+    ]
+  },
+  {
+    "output": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/global-wide-four-properties-zero/alloc-list-nodeCandidates.txt",
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-sample_index=alloc_space",
+      "-base",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/global-wide-four-properties-zero/heap-before.pprof",
+      "-list",
+      "nodeCandidates",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profile-query",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/global-wide-four-properties-zero/heap-after.pprof"
+    ]
+  },
+  {
+    "output": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/supplemental-method-count/alloc-list-provenance.txt",
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-sample_index=alloc_space",
+      "-base",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/supplemental-method-count/heap-before.pprof",
+      "-list",
+      "provenance",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profile-query",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/supplemental-method-count/heap-after.pprof"
+    ]
+  },
+  {
+    "output": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/supplemental-method-count/alloc-list-evaluator.project.txt",
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-sample_index=alloc_space",
+      "-base",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/supplemental-method-count/heap-before.pprof",
+      "-list",
+      "evaluator.project",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profile-query",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/supplemental-method-count/heap-after.pprof"
+    ]
+  },
+  {
+    "output": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/supplemental-method-count/alloc-list-evaluator.aggregate.txt",
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-sample_index=alloc_space",
+      "-base",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/supplemental-method-count/heap-before.pprof",
+      "-list",
+      "evaluator.aggregate",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profile-query",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles/supplemental-method-count/heap-after.pprof"
+    ]
+  }
+]

@@ -1,0 +1,24 @@
+File: profile-query
+Type: alloc_space
+Time: Sep 7, 2026 at 4:17am (KST)
+Showing nodes accounting for 2365MB, 99.83% of 2369.04MB total
+Dropped 13 nodes (cum <= 11.85MB)
+      flat  flat%   sum%        cum   cum%
+ 1035.53MB 43.71% 43.71%  1139.03MB 48.08%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.matchPattern.func1
+  704.97MB 29.76% 73.47%   704.97MB 29.76%  github.com/johnsonlee/graphite/graphite-server/internal/query.provenance (inline)
+  158.26MB  6.68% 80.15%  1436.30MB 60.63%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.match
+  139.01MB  5.87% 86.02%  1278.04MB 53.95%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.nodeCandidates
+  106.17MB  4.48% 90.50%   106.17MB  4.48%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.aggregate
+   92.55MB  3.91% 94.41%   928.70MB 39.20%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.project
+      68MB  2.87% 97.28%   753.97MB 31.83%  github.com/johnsonlee/graphite/graphite-server/internal/query.addProvenance
+   60.50MB  2.55% 99.83%    60.50MB  2.55%  github.com/johnsonlee/graphite/graphite-server/internal/query.clone (inline)
+         0     0% 99.83%     2365MB 99.83%  github.com/johnsonlee/graphite/graphite-server/internal/query.ExecuteCross
+         0     0% 99.83%     2365MB 99.83%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.branch
+         0     0% 99.83%  1278.04MB 53.95%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.matchPattern
+         0     0% 99.83%     2365MB 99.83%  github.com/johnsonlee/graphite/graphite-server/internal/query.executeSources
+         0     0% 99.83%   729.97MB 30.81%  github.com/johnsonlee/graphite/graphite-server/internal/query.mergeProvenance (inline)
+         0     0% 99.83%  2369.04MB   100%  main.main
+         0     0% 99.83%  2369.04MB   100%  main.profile
+         0     0% 99.83%     2365MB 99.83%  main.profile.func1
+         0     0% 99.83%  2369.04MB   100%  runtime.main
+         0     0% 99.83%     2365MB 99.83%  runtime/pprof.Do

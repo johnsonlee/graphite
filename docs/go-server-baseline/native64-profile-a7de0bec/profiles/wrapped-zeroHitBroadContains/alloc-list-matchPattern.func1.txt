@@ -1,0 +1,21 @@
+Total: 35.32GB
+ROUTINE ======================== github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.matchPattern.func1 in /private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/source/graphite-server/internal/query/traversal.go
+   14.43GB    15.98GB (flat, cum) 45.24% of Total
+         .          .     79:	e.nodeCandidates(graph, pattern.Nodes[0], initial.row, func(value any) {
+         .          .     80:		e.check()
+         .          .     81:		if !e.matches(value, pattern.Nodes[0], initial.row) {
+         .          .     82:			return
+         .          .     83:		}
+         .   862.54MB     84:		bound := clone(initial.row)
+         .          .     85:		if name := pattern.Nodes[0].Variable; name != "" {
+    5.23GB     5.23GB     86:			bound[name] = value
+         .          .     87:			if id := valueGraphID(value); id != "" {
+         .   724.01MB     88:				addProvenance(bound, id)
+         .          .     89:			}
+         .          .     90:		}
+    9.20GB     9.20GB     91:		states = append(states, matchState{row: bound, used: initial.used, current: value, nodes: []any{value}})
+         .          .     92:	})
+         .          .     93:	for index, rel := range pattern.Relationships {
+         .          .     94:		next := []matchState{}
+         .          .     95:		for _, state := range states {
+         .          .     96:			next = append(next, e.matchRelationship(graph, state, rel, pattern.Nodes[index+1], reserved)...)

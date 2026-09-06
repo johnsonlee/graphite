@@ -1,0 +1,37 @@
+File: profile-query
+Type: alloc_objects
+Time: Sep 7, 2026 at 4:16am (KST)
+Showing nodes accounting for 454886058, 100% of 454886672 total
+Dropped 52 nodes (cum <= 2274433)
+Showing top 30 nodes out of 32
+      flat  flat%   sum%        cum   cum%
+ 147459396 32.42% 32.42%  240686559 52.91%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.eval
+  56165197 12.35% 44.76%   56165197 12.35%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).bytes
+  55838306 12.28% 57.04%   55838306 12.28%  strings.(*Builder).grow
+  40039098  8.80% 65.84%   96740246 21.27%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.matchPattern.func1
+  37858686  8.32% 74.16%   37858686  8.32%  github.com/johnsonlee/graphite/graphite-server/internal/query.addProvenance
+  20054321  4.41% 78.57%   35554604  7.82%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.call
+  20000318  4.40% 82.97%   20000318  4.40%  bytes.NewReader (inline)
+  19261776  4.23% 87.20%  214199557 47.09%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.nodeCandidates
+  18842462  4.14% 91.35%   18842462  4.14%  github.com/johnsonlee/graphite/graphite-server/internal/query.clone (inline)
+  17608214  3.87% 95.22%   52047902 11.44%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).method
+  17334536  3.81% 99.03%   17334536  3.81%  github.com/johnsonlee/graphite/graphite-server/internal/query.NodeProperty
+   3309617  0.73% 99.75%   78197158 17.19%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).node
+   1114130  0.24%   100%    3506230  0.77%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).ids
+         1 2.2e-07%   100%  454886117   100%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.match
+         0     0%   100%  454886117   100%  github.com/johnsonlee/graphite/graphite-server/internal/query.ExecuteCross
+         0     0%   100%  240686559 52.91%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.binary
+         0     0%   100%  454886117   100%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.branch
+         0     0%   100%  214199557 47.09%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.matchPattern
+         0     0%   100%  454886117   100%  github.com/johnsonlee/graphite/graphite-server/internal/query.executeSources
+         0     0%   100%   17334536  3.81%  github.com/johnsonlee/graphite/graphite-server/internal/query.qualifiedProperty
+         0     0%   100%   98197476 21.59%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).Node
+         0     0%   100%    6750311  1.48%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).count
+         0     0%   100%   50856701 11.18%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).i32 (inline)
+         0     0%   100%   35095055  7.72%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).str
+         0     0%   100%    5308496  1.17%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).u8 (inline)
+         0     0%   100%  454886135   100%  main.main
+         0     0%   100%  454886135   100%  main.profile
+         0     0%   100%  454886117   100%  main.profile.func1
+         0     0%   100%  454886135   100%  runtime.main
+         0     0%   100%  454886117   100%  runtime/pprof.Do

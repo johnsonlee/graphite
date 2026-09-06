@@ -1,0 +1,33 @@
+File: graphite-go-stream-match-profile-final
+Type: cpu
+Time: Sep 7, 2026 at 4:34am (KST)
+Duration: 25.39s, Total samples = 34.89s (137.40%)
+Showing nodes accounting for 32.98s, 94.53% of 34.89s total
+Dropped 111 nodes (cum <= 0.17s)
+Showing top 25 nodes out of 102
+      flat  flat%   sum%        cum   cum%
+    12.45s 35.68% 35.68%     12.45s 35.68%  runtime.memmove
+     5.14s 14.73% 50.42%      5.14s 14.73%  runtime.madvise
+     3.28s  9.40% 59.82%      3.28s  9.40%  runtime.memclrNoHeapPointers
+     2.34s  6.71% 66.52%      7.90s 22.64%  runtime.scanobject
+     1.36s  3.90% 70.42%      1.36s  3.90%  runtime.(*gcBits).bytep (inline)
+     1.25s  3.58% 74.00%      2.94s  8.43%  runtime.greyobject
+     0.88s  2.52% 76.53%      0.88s  2.52%  runtime.pthread_kill
+     0.81s  2.32% 78.85%      0.81s  2.32%  runtime.typePointers.nextFast (inline)
+     0.80s  2.29% 81.14%      1.09s  3.12%  runtime.findObject
+     0.72s  2.06% 83.20%      0.72s  2.06%  runtime.(*mspan).base (inline)
+     0.65s  1.86% 85.07%      9.82s 28.15%  runtime.gcDrain
+     0.44s  1.26% 86.33%      5.09s 14.59%  runtime.mallocgc
+     0.41s  1.18% 87.50%      0.41s  1.18%  runtime.mmap
+     0.38s  1.09% 88.59%      0.38s  1.09%  runtime.usleep
+     0.25s  0.72% 89.31%      0.26s  0.75%  runtime.(*mspan).init
+     0.24s  0.69% 90.00%      0.24s  0.69%  runtime.(*mspan).heapBitsSmallForAddr
+     0.24s  0.69% 90.69%      0.30s  0.86%  runtime.typePointers.next
+     0.23s  0.66% 91.34%      0.23s  0.66%  runtime.(*gcWork).tryGetFast (inline)
+     0.23s  0.66% 92.00%      0.23s  0.66%  runtime.pthread_cond_wait
+     0.23s  0.66% 92.66%      0.23s  0.66%  runtime.spanOf (inline)
+     0.21s   0.6% 93.26%      0.45s  1.29%  runtime.(*mspan).typePointersOfUnchecked
+     0.18s  0.52% 93.78%      0.18s  0.52%  runtime.mapaccess2_fast32
+     0.13s  0.37% 94.15%      0.48s  1.38%  strings.ToLower
+     0.08s  0.23% 94.38%      2.21s  6.33%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.eval
+     0.05s  0.14% 94.53%     12.61s 36.14%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).bytes

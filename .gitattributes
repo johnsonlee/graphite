@@ -2,4 +2,6 @@
 docs/go-server-baseline/**/*.log -whitespace
 # Unified diffs retain context prefixes before tabs and blank lines.
 docs/go-server-baseline/**/*.patch -whitespace
+# Go build metadata includes a literal trailing tab on the module line.
+docs/go-server-baseline/**/binary-build-info.txt -whitespace
 docs/go-server-baseline/** linguist-generated=true

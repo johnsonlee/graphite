@@ -1,0 +1,94 @@
+Total: 2.31GB
+ROUTINE ======================== github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.project in /private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/source/graphite-server/internal/query/engine.go
+   92.55MB   928.70MB (flat, cum) 39.20% of Total
+         .          .    183:func (e evaluator) project(rows []map[string]any, c cypher.ProjectionClause) ([]map[string]any, []string) {
+         .          .    184:	columns := []string{}
+         .          .    185:	if c.All {
+         .          .    186:		seen := map[string]bool{}
+         .          .    187:		for _, r := range rows {
+         .          .    188:			for k := range r {
+         .          .    189:				if k == provenanceKey {
+         .          .    190:					continue
+         .          .    191:				}
+         .          .    192:				if !seen[k] {
+         .          .    193:					columns = append(columns, k)
+         .          .    194:					seen[k] = true
+         .          .    195:				}
+         .          .    196:			}
+         .          .    197:		}
+         .          .    198:		sort.Strings(columns)
+         .          .    199:	} else {
+         .          .    200:		for _, item := range c.Items {
+         .          .    201:			name := item.Alias
+         .          .    202:			if name == "" {
+         .          .    203:				name = columnName(item.Expression)
+         .          .    204:			}
+         .          .    205:			columns = append(columns, name)
+         .          .    206:		}
+         .          .    207:	}
+         .          .    208:	hasAggregate := false
+         .          .    209:	for _, item := range c.Items {
+         .          .    210:		hasAggregate = hasAggregate || isAggregate(item.Expression)
+         .          .    211:	}
+         .          .    212:	type projected struct {
+         .          .    213:		row, source map[string]any
+         .          .    214:		sort        []any
+         .          .    215:	}
+         .          .    216:	out := []projected{}
+         .          .    217:	add := func(row, source map[string]any) {
+         .          .    218:		mergeProvenance(row, source)
+         .          .    219:		scope := clone(source)
+         .          .    220:		for k, v := range row {
+         .          .    221:			scope[k] = v
+         .          .    222:		}
+         .          .    223:		if c.Where != nil && e.eval(c.Where, scope) != true {
+         .          .    224:			return
+         .          .    225:		}
+         .          .    226:		sortKeys := make([]any, len(c.OrderBy))
+         .          .    227:		for i, s := range c.OrderBy {
+         .          .    228:			sortKeys[i] = e.eval(s.Expression, scope)
+         .          .    229:		}
+         .          .    230:		out = append(out, projected{row, source, sortKeys})
+         .          .    231:	}
+         .          .    232:	if hasAggregate {
+         .          .    233:		groups := map[string][]map[string]any{}
+         .          .    234:		order := []string{}
+         .          .    235:		groupItems := []int{}
+         .          .    236:		for i, item := range c.Items {
+         .          .    237:			if !isAggregate(item.Expression) {
+         .          .    238:				groupItems = append(groupItems, i)
+         .          .    239:			}
+         .          .    240:		}
+         .          .    241:		for _, row := range rows {
+         .          .    242:			values := make([]any, len(groupItems))
+         .          .    243:			for j, i := range groupItems {
+         .          .    244:				values[j] = e.eval(c.Items[i].Expression, row)
+         .          .    245:			}
+   37.50MB    37.50MB    246:			k := key(values)
+         .          .    247:			if _, ok := groups[k]; !ok {
+         .          .    248:				order = append(order, k)
+         .          .    249:			}
+   55.05MB    55.05MB    250:			groups[k] = append(groups[k], row)
+         .          .    251:		}
+         .          .    252:		if len(rows) == 0 && len(groupItems) == 0 {
+         .          .    253:			order = append(order, "")
+         .          .    254:			groups[""] = nil
+         .          .    255:		}
+         .          .    256:		for _, k := range order {
+         .          .    257:			group := groups[k]
+         .          .    258:			source := map[string]any{}
+         .          .    259:			if len(group) > 0 {
+         .          .    260:				source = clone(group[0])
+         .          .    261:				for _, r := range group {
+         .   729.97MB    262:					mergeProvenance(source, r)
+         .          .    263:				}
+         .          .    264:			}
+         .          .    265:			row := map[string]any{}
+         .          .    266:			for i, item := range c.Items {
+         .          .    267:				if isAggregate(item.Expression) {
+         .   106.17MB    268:					row[columns[i]] = e.aggregate(item.Expression.(cypher.Call), group)
+         .          .    269:				} else {
+         .          .    270:					row[columns[i]] = e.eval(item.Expression, source)
+         .          .    271:				}
+         .          .    272:			}
+         .          .    273:			add(row, source)

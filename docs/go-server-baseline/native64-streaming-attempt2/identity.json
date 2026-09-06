@@ -1,0 +1,21 @@
+{
+  "baseRevision": "a7de0bec67ae4dbd8b1dde621b6d9ce7cecef8d0",
+  "worktree": "/tmp/graphite-go-stream-match-a7de0bec",
+  "binarySHA256": "d8ef2bc12d5fb6f6b0d784b61a81dcf71bad10e5e336b8e234a15005b930b2a6",
+  "patchSHA256": "dfa22fe6657d0cea3ac8cd78f8a5ae6c7fed6217046fdecf76fec266c8b7aff6",
+  "scanSHA256": "4f5755fe940014fee4b582045ccda6d7b22da7acd74e696f051eef39ee13cc86",
+  "command": [
+    "/tmp/graphite-go-stream-match-profile",
+    "--config",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-profile-a7de0bec/config.json",
+    "--out",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-streaming-attempt2/profiles"
+  ],
+  "environment": {
+    "GOGC": null,
+    "GOMEMLIMIT": null,
+    "GOMAXPROCS": null,
+    "GODEBUG": null
+  },
+  "purpose": "Isolated single-node MATCH streaming hypothesis; real64 diagnostic profile, no P95 claim"
+}

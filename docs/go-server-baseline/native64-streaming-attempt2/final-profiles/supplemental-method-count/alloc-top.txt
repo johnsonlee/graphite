@@ -1,0 +1,25 @@
+File: graphite-go-stream-match-profile-final
+Type: alloc_space
+Time: Sep 7, 2026 at 4:35am (KST)
+Showing nodes accounting for 2306.83MB, 99.77% of 2312.23MB total
+Dropped 16 nodes (cum <= 11.56MB)
+      flat  flat%   sum%        cum   cum%
+ 1021.77MB 44.19% 44.19%  1148.78MB 49.68%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.matchPattern.func1
+  653.43MB 28.26% 72.45%   653.43MB 28.26%  github.com/johnsonlee/graphite/graphite-server/internal/query.provenance (inline)
+  157.70MB  6.82% 79.27%  1442.49MB 62.39%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.matchMaterialized
+  136.01MB  5.88% 85.15%  1284.79MB 55.56%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.nodeCandidates
+     103MB  4.45% 89.61%      103MB  4.45%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.aggregate
+   90.50MB  3.91% 93.52%   721.93MB 31.22%  github.com/johnsonlee/graphite/graphite-server/internal/query.addProvenance
+   74.91MB  3.24% 96.76%   864.34MB 37.38%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.project
+   69.50MB  3.01% 99.77%    69.50MB  3.01%  github.com/johnsonlee/graphite/graphite-server/internal/query.clone (inline)
+         0     0% 99.77%  2306.83MB 99.77%  github.com/johnsonlee/graphite/graphite-server/internal/query.ExecuteCross
+         0     0% 99.77%  2306.83MB 99.77%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.branch
+         0     0% 99.77%  1442.49MB 62.39%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.match
+         0     0% 99.77%  1284.79MB 55.56%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.matchPattern
+         0     0% 99.77%  2306.83MB 99.77%  github.com/johnsonlee/graphite/graphite-server/internal/query.executeSources
+         0     0% 99.77%   686.43MB 29.69%  github.com/johnsonlee/graphite/graphite-server/internal/query.mergeProvenance (inline)
+         0     0% 99.77%  2310.19MB 99.91%  main.main
+         0     0% 99.77%  2310.19MB 99.91%  main.profile
+         0     0% 99.77%  2306.83MB 99.77%  main.profile.func1
+         0     0% 99.77%  2310.19MB 99.91%  runtime.main
+         0     0% 99.77%  2306.83MB 99.77%  runtime/pprof.Do

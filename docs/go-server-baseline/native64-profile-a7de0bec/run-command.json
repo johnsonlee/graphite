@@ -1,0 +1,20 @@
+{
+  "command": [
+    "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profile-query",
+    "--config",
+    "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/config.json",
+    "--out",
+    "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/profiles"
+  ],
+  "cwd": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/source/graphite-server",
+  "startedAt": "2026-09-06T19:15:59.734148+00:00",
+  "environment": {
+    "GOGC": null,
+    "GOMEMLIMIT": null,
+    "GOMAXPROCS": null,
+    "GODEBUG": null
+  },
+  "pid": 45775,
+  "exitCode": 0,
+  "finishedAt": "2026-09-06T19:17:17.345099+00:00"
+}

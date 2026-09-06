@@ -56,3 +56,31 @@ the frozen binary. Native relationship/path query execution, full
 function/regex/value semantics, topology/C4 integration, OpenAPI/metrics and
 the validated 10× P95 result remained outstanding at the first implementation
 commit. Subsequent feature work must keep these receipts immutable.
+
+## 2026-09-07 — Attempt 2: filter single-node MATCH before retaining rows
+
+Hypothesis: the generic matcher retains millions of intermediate maps and path
+states before WHERE rejects them; filtering single-node candidates as they arrive
+can remove that allocation while preserving the existing pipeline's results.
+
+| Item | Evidence / status |
+|---|---|
+| Implementation base | `a7de0bec67ae4dbd8b1dde621b6d9ce7cecef8d0`; this compares two native implementations, not native against main |
+| Main correctness oracle | Pinned `4e328b0109e13c896b74004823fb049fcb19251a`, complete frozen HTTP responses |
+| Candidate identity | `native64-streaming-attempt2/final-identity.json`; binary SHA-256 `29f4f824268cfd8db2d3c989e6e2627d848a3d97c3f6b81066fbcb9204062374`; exact source patch and new scan file retained alongside it |
+| Real fixture | All 64 `/tmp/pr113-exp037-fixture.nXn4fg` persisted shards; 19,431,891 nodes / 20,448,885 edges; all per-graph catalog counts checked before execution; 1,152-file frozen manifest in `native64-profile-a7de0bec/fixture-files.json` |
+| Scope | One-node MATCH with WHERE, no relationship or named path; retain only accepted binding rows, preserve optional misses and provenance; no LIMIT, ORDER BY, aggregation or projection pushdown |
+| Correctness | Three profiled full responses match; final isolated HTTP binary passes all 42/42 fixed query responses and checked headers on all 64 graphs; independent query/server race tests and query vet pass |
+| Allocation | Wrapped zero-hit: 38,142,226,112 → 20,227,526,272 bytes (about −47%); raw four-property zero-hit: 32,796,831,280 → 14,854,469,648 bytes (about −55%) |
+| CPU / heap | Wrapped request user+system CPU 82.136 → 38.447 s; raw 57.972 → 23.587 s. Request-end heap 36.50/31.32 → 9.16/9.58 GB; approximately 6.27 GB after forced GC. Request-end heap is not peak RSS |
+| Diagnostic latency | Wrapped execution+marshal 34.495 → 25.212 s; raw 21.158 → 14.818 s. Single profiled observations with host co-tenancy, not P95 or controlled paired speedups |
+| Control | Supplemental no-WHERE Method count stays on the original path: allocation 2,441,487,384 → 2,441,487,512 bytes; 0.683 → 0.752 s is one noisy observation, not a regression conclusion |
+| Variant history | First variant also streamed no-WHERE patterns; its complete source/results remain separately named. Final variant narrows the guard to WHERE and reruns all three real shapes; old records are not overwritten |
+| Decision | Keep the narrower streaming change for its verified allocation reduction and fixed-workload correctness. Overall functional parity and 10× P95 remain unproven |
+
+Full raw profiles, runtime deltas, exact commands, source identities and complete
+42-query responses are in `docs/go-server-baseline/native64-streaming-attempt2/`;
+base profiles and source identities are in `native64-profile-a7de0bec/`. Later
+function/Unicode feature changes are outside this isolated profile and require
+subsequent full-corpus verification. Integration preserves their row-order
+helpers; do not attribute these isolated timings to the complete later server.

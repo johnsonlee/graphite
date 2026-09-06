@@ -1,0 +1,43 @@
+Total: 30.41GB
+ROUTINE ======================== github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.nodeCandidates in /private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/source/graphite-server/internal/query/traversal.go
+   10.35GB    28.68GB (flat, cum) 94.30% of Total
+         .          .    111:func (e evaluator) nodeCandidates(graph *store.Store, pattern cypher.NodePattern, bindings map[string]any, accept func(any)) {
+         .          .    112:	if pattern.Variable != "" {
+         .          .    113:		if value, bound := bindings[pattern.Variable]; bound {
+         .          .    114:			accept(value)
+         .          .    115:			return
+         .          .    116:		}
+         .          .    117:	}
+         .          .    118:	methods := false
+         .          .    119:	for _, label := range pattern.Labels {
+         .          .    120:		methods = methods || strings.EqualFold(label, "Method")
+         .          .    121:	}
+         .          .    122:	sources := e.graphs
+         .          .    123:	if !e.cross && graph != nil {
+         .          .    124:		sources = []Graph{{Store: graph}}
+         .          .    125:	}
+         .          .    126:	for _, source := range sources {
+         .          .    127:		e.check()
+         .          .    128:		if methods {
+         .          .    129:			for _, method := range source.Store.Metadata.MethodList {
+         .          .    130:				if e.cross {
+         .          .    131:					accept(qualifiedMethod{source.ID, method})
+         .          .    132:				} else {
+         .          .    133:					accept(method)
+         .          .    134:				}
+         .          .    135:			}
+         .          .    136:			continue
+         .          .    137:		}
+         .    75.18MB    138:		for _, id := range source.Store.NodeIDs() {
+         .          .    139:			e.check()
+         .     2.31GB    140:			node, err := source.Store.Node(id)
+         .          .    141:			if err != nil {
+         .          .    142:				fail(err.Error())
+         .          .    143:			}
+         .          .    144:			if e.cross {
+   10.35GB    26.29GB    145:				accept(qualifiedNode{source.ID, source.Store, node})
+         .          .    146:			} else {
+         .          .    147:				accept(node)
+         .          .    148:			}
+         .          .    149:		}
+         .          .    150:	}

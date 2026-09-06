@@ -1,0 +1,21 @@
+diff --git a/graphite-server/internal/query/traversal.go b/graphite-server/internal/query/traversal.go
+index 437faf2f..9eb6770b 100644
+--- a/graphite-server/internal/query/traversal.go
++++ b/graphite-server/internal/query/traversal.go
+@@ -15,6 +15,16 @@ type matchState struct {
+ }
+ 
+ func (e evaluator) match(graph *store.Store, rows []map[string]any, clause cypher.MatchClause) []map[string]any {
++	if clause.Where != nil && len(clause.Patterns) == 1 {
++		pattern := clause.Patterns[0]
++		if len(pattern.Nodes) == 1 && len(pattern.Relationships) == 0 && pattern.PathVariable == "" {
++			return e.matchSingleNode(graph, rows, clause)
++		}
++	}
++	return e.matchMaterialized(graph, rows, clause)
++}
++
++func (e evaluator) matchMaterialized(graph *store.Store, rows []map[string]any, clause cypher.MatchClause) []map[string]any {
+ 	result := []map[string]any{}
+ 	for _, row := range rows {
+ 		e.check()

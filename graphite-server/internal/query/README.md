@@ -28,9 +28,11 @@ objects and call flags deliberately differ from qualified edge output, as in mai
 
 The matcher uses an explicit traversal stack and checks the query context during
 node enumeration, edge expansion, binding inspection and output materialization.
-It currently materializes intermediate match rows eagerly and does not implement
-main's lazy LIMIT pushdown or other planner optimizations. No traversal performance
-claim has been made.
+Single-node WHERE clauses filter candidates before retaining rows; relationship
+and path matches still materialize intermediate rows eagerly. Main's lazy LIMIT
+pushdown and other planner optimizations are not implemented. The isolated
+64-graph allocation experiment is recorded in `docs/go-server-optimization-attempts.md`;
+it is not a P95 or traversal performance acceptance result.
 
 ## Independent correctness evidence
 

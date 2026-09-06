@@ -1,0 +1,20 @@
+{
+  "baseRevision": "a7de0bec67ae4dbd8b1dde621b6d9ce7cecef8d0",
+  "binarySHA256": "29f4f824268cfd8db2d3c989e6e2627d848a3d97c3f6b81066fbcb9204062374",
+  "patchSHA256": "fb53e5b58656126414c706490a60767a5210d01ddfc000dba1cc993faa5faa86",
+  "scanSHA256": "4f5755fe940014fee4b582045ccda6d7b22da7acd74e696f051eef39ee13cc86",
+  "command": [
+    "/tmp/graphite-go-stream-match-profile-final",
+    "--config",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-profile-a7de0bec/config.json",
+    "--out",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-streaming-attempt2/final-profiles"
+  ],
+  "environment": {
+    "GOGC": null,
+    "GOMEMLIMIT": null,
+    "GOMAXPROCS": null,
+    "GODEBUG": null
+  },
+  "purpose": "Final WHERE-only single-node streaming diagnostic; no P95 claim"
+}

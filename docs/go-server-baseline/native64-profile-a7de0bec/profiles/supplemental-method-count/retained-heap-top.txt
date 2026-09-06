@@ -1,0 +1,19 @@
+File: profile-query
+Type: inuse_space
+Time: Sep 7, 2026 at 4:17am (KST)
+Showing nodes accounting for 5939.43MB, 99.28% of 5982.35MB total
+Dropped 37 nodes (cum <= 29.91MB)
+      flat  flat%   sum%        cum   cum%
+ 4035.60MB 67.46% 67.46%  4035.60MB 67.46%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).loadEdges
+  955.84MB 15.98% 83.44%   955.84MB 15.98%  github.com/johnsonlee/graphite/graphite-server/internal/store.OpenMode.func2
+  483.48MB  8.08% 91.52%   784.45MB 13.11%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).metadata
+  147.46MB  2.46% 93.98%   147.46MB  2.46%  github.com/johnsonlee/graphite/graphite-server/internal/store.LoadStrings
+  147.02MB  2.46% 96.44%   147.02MB  2.46%  github.com/johnsonlee/graphite/graphite-server/internal/store.MethodDescriptor.Signature (inline)
+   62.53MB  1.05% 97.49%    75.03MB  1.25%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).ids
+      58MB  0.97% 98.46%       58MB  0.97%  github.com/johnsonlee/graphite/graphite-server/internal/store.OpenMode.func4
+      49MB  0.82% 99.27%       49MB  0.82%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).method
+    0.50MB 0.0084% 99.28%  5981.85MB   100%  github.com/johnsonlee/graphite/graphite-server/internal/store.OpenMode
+         0     0% 99.28%   784.45MB 13.11%  github.com/johnsonlee/graphite/graphite-server/internal/store.OpenMode.func3
+         0     0% 99.28%  1798.29MB 30.06%  github.com/johnsonlee/graphite/graphite-server/internal/store.decodeFile
+         0     0% 99.28%  5981.85MB   100%  main.main
+         0     0% 99.28%  5981.85MB   100%  runtime.main

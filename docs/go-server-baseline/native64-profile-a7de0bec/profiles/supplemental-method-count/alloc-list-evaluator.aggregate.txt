@@ -1,0 +1,28 @@
+Total: 2.31GB
+ROUTINE ======================== github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.aggregate in /private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/source/graphite-server/internal/query/engine.go
+  106.17MB   106.17MB (flat, cum)  4.48% of Total
+         .          .    372:func (e evaluator) aggregate(c cypher.Call, rows []map[string]any) any {
+         .          .    373:	name := strings.ToLower(c.Name)
+         .          .    374:	if c.Star {
+         .          .    375:		return int64(len(rows))
+         .          .    376:	}
+         .          .    377:	values := []any{}
+         .          .    378:	seen := map[string]bool{}
+         .          .    379:	for _, r := range rows {
+         .          .    380:		v := e.eval(c.Arguments[0], r)
+         .          .    381:		if v == nil {
+         .          .    382:			continue
+         .          .    383:		}
+         .          .    384:		if c.Distinct {
+         .          .    385:			k := key(v)
+         .          .    386:			if seen[k] {
+         .          .    387:				continue
+         .          .    388:			}
+         .          .    389:			seen[k] = true
+         .          .    390:		}
+  106.17MB   106.17MB    391:		values = append(values, v)
+         .          .    392:	}
+         .          .    393:	switch name {
+         .          .    394:	case "count":
+         .          .    395:		return int64(len(values))
+         .          .    396:	case "collect":

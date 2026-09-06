@@ -1,0 +1,23 @@
+File: profile-query
+Type: alloc_objects
+Time: Sep 7, 2026 at 4:17am (KST)
+Showing nodes accounting for 13426452, 99.71% of 13465746 total
+Dropped 14 nodes (cum <= 67328)
+      flat  flat%   sum%        cum   cum%
+   3309634 24.58% 24.58%    4742071 35.22%  github.com/johnsonlee/graphite/graphite-server/internal/query.addProvenance
+   2960479 21.99% 46.56%    6499525 48.27%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.matchPattern.func1
+   2677640 19.88% 66.45%    2677640 19.88%  github.com/johnsonlee/graphite/graphite-server/internal/query.provenance (inline)
+   1638480 12.17% 78.62%    5408433 40.16%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.project
+   1518389 11.28% 89.89%    8017914 59.54%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.nodeCandidates
+   1321703  9.82% 99.71%    1321703  9.82%  github.com/johnsonlee/graphite/graphite-server/internal/query.clone (inline)
+       127 0.00094% 99.71%    8018041 59.54%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.match
+         0     0% 99.71%   13426474 99.71%  github.com/johnsonlee/graphite/graphite-server/internal/query.ExecuteCross
+         0     0% 99.71%   13426474 99.71%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.branch
+         0     0% 99.71%    8017914 59.54%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.matchPattern
+         0     0% 99.71%   13426474 99.71%  github.com/johnsonlee/graphite/graphite-server/internal/query.executeSources
+         0     0% 99.71%    3769931 28.00%  github.com/johnsonlee/graphite/graphite-server/internal/query.mergeProvenance (inline)
+         0     0% 99.71%   13465746   100%  main.main
+         0     0% 99.71%   13465746   100%  main.profile
+         0     0% 99.71%   13426474 99.71%  main.profile.func1
+         0     0% 99.71%   13465746   100%  runtime.main
+         0     0% 99.71%   13426474 99.71%  runtime/pprof.Do

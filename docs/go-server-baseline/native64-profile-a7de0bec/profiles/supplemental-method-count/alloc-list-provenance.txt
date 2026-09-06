@@ -1,0 +1,11 @@
+Total: 2.31GB
+ROUTINE ======================== github.com/johnsonlee/graphite/graphite-server/internal/query.provenance in /private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native64-profile-a7de0bec-2xsevevg/source/graphite-server/internal/query/cross.go
+  704.97MB   704.97MB (flat, cum) 29.76% of Total
+         .          .     59:func provenance(row map[string]any) []string {
+         .          .     60:	ids, _ := row[provenanceKey].([]string)
+  704.97MB   704.97MB     61:	return append([]string{}, ids...)
+         .          .     62:}
+         .          .     63:func addProvenance(row map[string]any, ids ...string) {
+         .          .     64:	all := provenance(row)
+         .          .     65:	for _, id := range ids {
+         .          .     66:		found := false

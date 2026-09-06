@@ -1,0 +1,33 @@
+File: graphite-go-stream-match-profile-final
+Type: cpu
+Time: Sep 7, 2026 at 4:35am (KST)
+Duration: 14.99s, Total samples = 20.88s (139.33%)
+Showing nodes accounting for 19.86s, 95.11% of 20.88s total
+Dropped 98 nodes (cum <= 0.10s)
+Showing top 25 nodes out of 89
+      flat  flat%   sum%        cum   cum%
+     7.07s 33.86% 33.86%      7.07s 33.86%  runtime.memmove
+     5.21s 24.95% 58.81%      5.21s 24.95%  runtime.madvise
+     1.55s  7.42% 66.24%      5.04s 24.14%  runtime.scanobject
+     0.77s  3.69% 69.92%      1.63s  7.81%  runtime.greyobject
+     0.65s  3.11% 73.04%      0.65s  3.11%  runtime.pthread_kill
+     0.56s  2.68% 75.72%      0.56s  2.68%  runtime.(*mspan).base (inline)
+     0.55s  2.63% 78.35%      0.86s  4.12%  runtime.findObject
+     0.52s  2.49% 80.84%      0.52s  2.49%  runtime.typePointers.nextFast (inline)
+     0.41s  1.96% 82.81%      6.35s 30.41%  runtime.gcDrain
+     0.33s  1.58% 84.39%      0.33s  1.58%  runtime.usleep
+     0.25s  1.20% 85.58%      0.25s  1.20%  runtime.pthread_cond_wait
+     0.23s  1.10% 86.69%      0.23s  1.10%  runtime.pthread_cond_signal
+     0.22s  1.05% 87.74%      0.22s  1.05%  runtime.(*gcWork).tryGetFast (inline)
+     0.22s  1.05% 88.79%      0.50s  2.39%  runtime.mallocgc
+     0.21s  1.01% 89.80%      0.21s  1.01%  runtime.duffcopy
+     0.21s  1.01% 90.80%      0.21s  1.01%  runtime.spanOf (inline)
+     0.19s  0.91% 91.71%      0.24s  1.15%  runtime.typePointers.next
+     0.17s  0.81% 92.53%      0.17s  0.81%  runtime.(*mspan).heapBitsSmallForAddr
+     0.12s  0.57% 93.10%      0.12s  0.57%  runtime.(*gcBits).bytep (inline)
+     0.09s  0.43% 93.53%      0.45s  2.16%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.eval
+     0.09s  0.43% 93.97%      0.26s  1.25%  runtime.(*mspan).typePointersOfUnchecked
+     0.08s  0.38% 94.35%      0.11s  0.53%  runtime.mapaccess2_fast32
+     0.06s  0.29% 94.64%      7.11s 34.05%  io.ReadAtLeast
+     0.05s  0.24% 94.88%      0.12s  0.57%  github.com/johnsonlee/graphite/graphite-server/internal/query.NodeProperty
+     0.05s  0.24% 95.11%      0.44s  2.11%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.binary

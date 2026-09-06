@@ -1,0 +1,16 @@
+{
+  "name": "global-wide-four-properties-zero",
+  "query": "MATCH (n)\nWHERE n.caller_class CONTAINS '__graphite_fixture64_absent_fixture-android-00__' OR n.caller_name CONTAINS '__graphite_fixture64_absent_fixture-android-00__' OR n.callee_class CONTAINS '__graphite_fixture64_absent_fixture-android-00__' OR n.callee_name CONTAINS '__graphite_fixture64_absent_fixture-android-00__'\nRETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+  "source": "original 42-case manifest",
+  "expected": {
+    "columns": [
+      "n.caller_class",
+      "n.caller_name",
+      "n.callee_class",
+      "n.callee_name"
+    ],
+    "graphCount": 64,
+    "rowCount": 0,
+    "rows": []
+  }
+}

@@ -1,0 +1,43 @@
+File: profile-query
+Type: cpu
+Time: Sep 7, 2026 at 4:16am (KST)
+Duration: 21.28s, Total samples = 54.04s (253.94%)
+Showing nodes accounting for 51.47s, 95.24% of 54.04s total
+Dropped 133 nodes (cum <= 0.27s)
+Showing top 35 nodes out of 98
+      flat  flat%   sum%        cum   cum%
+     9.93s 18.38% 18.38%      9.95s 18.41%  runtime.(*mspan).heapBitsSmallForAddr
+     7.79s 14.42% 32.79%      7.79s 14.42%  runtime.memclrNoHeapPointers
+     5.36s  9.92% 42.71%     15.31s 28.33%  runtime.(*mspan).typePointersOfUnchecked
+     4.93s  9.12% 51.83%     29.42s 54.44%  runtime.scanobject
+     4.10s  7.59% 59.42%      4.10s  7.59%  runtime.madvise
+     2.76s  5.11% 64.53%      2.76s  5.11%  runtime.memmove
+     1.91s  3.53% 68.06%      4.95s  9.16%  runtime.greyobject
+     1.73s  3.20% 71.26%      1.73s  3.20%  runtime/internal/atomic.(*Int64).Add (inline)
+     1.49s  2.76% 74.02%      2.54s  4.70%  runtime.findObject
+     1.45s  2.68% 76.70%      1.45s  2.68%  runtime.duffcopy
+     1.26s  2.33% 79.03%      1.26s  2.33%  runtime.(*gcBits).bytep (inline)
+     1.16s  2.15% 81.18%      1.16s  2.15%  runtime.(*mspan).base (inline)
+     1.10s  2.04% 83.22%     33.41s 61.82%  runtime.gcDrain
+     1.05s  1.94% 85.16%      1.05s  1.94%  runtime.typePointers.nextFast (inline)
+     0.91s  1.68% 86.84%      0.91s  1.68%  runtime.mapaccess1_faststr
+     0.71s  1.31% 88.16%      0.71s  1.31%  runtime.pthread_kill
+     0.67s  1.24% 89.40%      0.67s  1.24%  runtime/internal/atomic.(*Uint8).Load (inline)
+     0.64s  1.18% 90.58%      0.64s  1.18%  runtime.usleep
+     0.59s  1.09% 91.67%      0.59s  1.09%  runtime.markBits.setMarked (inline)
+     0.56s  1.04% 92.71%      0.62s  1.15%  runtime.typePointers.next
+     0.48s  0.89% 93.60%      0.48s  0.89%  runtime.mapaccess2_fast32
+     0.37s  0.68% 94.28%      0.37s  0.68%  runtime.(*fixalloc).alloc
+     0.36s  0.67% 94.95%      8.96s 16.58%  runtime.mallocgc
+     0.05s 0.093% 95.04%      3.91s  7.24%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).Node
+     0.03s 0.056% 95.10%      4.98s  9.22%  runtime.(*mcentral).cacheSpan
+     0.01s 0.019% 95.11%      4.67s  8.64%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.eval
+     0.01s 0.019% 95.13%      2.60s  4.81%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).i32 (inline)
+     0.01s 0.019% 95.15%      1.74s  3.22%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).str
+     0.01s 0.019% 95.17%      2.37s  4.39%  io.ReadAtLeast
+     0.01s 0.019% 95.19%      0.81s  1.50%  runtime.findRunnable
+     0.01s 0.019% 95.21%      0.52s  0.96%  runtime.lock2
+     0.01s 0.019% 95.23%      1.63s  3.02%  runtime.mapassign_faststr
+     0.01s 0.019% 95.24%      0.72s  1.33%  runtime.preemptM
+         0     0% 95.24%      2.36s  4.37%  bytes.(*Reader).Read
+         0     0% 95.24%      0.29s  0.54%  bytes.NewReader (inline)

@@ -1,0 +1,43 @@
+File: profile-query
+Type: cpu
+Time: Sep 7, 2026 at 4:16am (KST)
+Duration: 34.60s, Total samples = 96.80s (279.75%)
+Showing nodes accounting for 92.97s, 96.04% of 96.80s total
+Dropped 139 nodes (cum <= 0.48s)
+Showing top 35 nodes out of 94
+      flat  flat%   sum%        cum   cum%
+    28.99s 29.95% 29.95%     28.99s 29.95%  runtime.(*mspan).heapBitsSmallForAddr
+    11.54s 11.92% 41.87%     40.53s 41.87%  runtime.(*mspan).typePointersOfUnchecked
+    10.07s 10.40% 52.27%     10.07s 10.40%  runtime.madvise
+     8.99s  9.29% 61.56%     57.39s 59.29%  runtime.scanobject
+     6.42s  6.63% 68.19%      6.42s  6.63%  runtime.duffcopy
+     3.92s  4.05% 72.24%      3.92s  4.05%  runtime.memclrNoHeapPointers
+     3.25s  3.36% 75.60%      3.25s  3.36%  runtime.usleep
+     3.07s  3.17% 78.77%      3.07s  3.17%  runtime.mapaccess1_faststr
+     2.79s  2.88% 81.65%      2.79s  2.88%  runtime.memmove
+     1.74s  1.80% 83.45%      4.05s  4.18%  runtime.greyobject
+     1.72s  1.78% 85.23%      2.57s  2.65%  runtime.findObject
+     1.58s  1.63% 86.86%      2.23s  2.30%  runtime.bulkBarrierPreWriteSrcOnly
+     0.97s  1.00% 87.86%      0.97s  1.00%  runtime.pthread_cond_wait
+     0.93s  0.96% 88.82%     64.10s 66.22%  runtime.gcDrain
+     0.91s  0.94% 89.76%      0.91s  0.94%  runtime.pthread_kill
+     0.90s  0.93% 90.69%      0.90s  0.93%  runtime/internal/atomic.(*Int64).Add (inline)
+     0.89s  0.92% 91.61%      0.89s  0.92%  runtime.typePointers.nextFast (inline)
+     0.83s  0.86% 92.47%      0.83s  0.86%  runtime.(*mspan).base (inline)
+     0.83s  0.86% 93.33%      0.83s  0.86%  runtime.markBits.setMarked (inline)
+     0.60s  0.62% 93.95%      0.60s  0.62%  runtime.(*gcBits).bytep (inline)
+     0.59s  0.61% 94.56%      0.68s   0.7%  runtime.bulkBarrierPreWrite
+     0.59s  0.61% 95.17%      0.63s  0.65%  runtime.typePointers.next
+     0.55s  0.57% 95.73%      5.28s  5.45%  runtime.mallocgc
+     0.16s  0.17% 95.90%      1.23s  1.27%  strings.ToLower
+     0.07s 0.072% 95.97%      0.67s  0.69%  runtime.wbBufFlush1
+     0.03s 0.031% 96.00%      0.51s  0.53%  runtime.(*mspan).markBitsForIndex (inline)
+     0.02s 0.021% 96.02%     12.73s 13.15%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.binary
+     0.02s 0.021% 96.04%      0.54s  0.56%  runtime.(*wbBuf).get1 (inline)
+         0     0% 96.04%      0.97s  1.00%  bytes.(*Reader).Read
+         0     0% 96.04%     20.71s 21.39%  github.com/johnsonlee/graphite/graphite-server/internal/query.ExecuteCross
+         0     0% 96.04%     20.71s 21.39%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.branch
+         0     0% 96.04%      1.14s  1.18%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.call
+         0     0% 96.04%     12.73s 13.15%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.eval
+         0     0% 96.04%     20.71s 21.39%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.match
+         0     0% 96.04%      7.23s  7.47%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.matchPattern
