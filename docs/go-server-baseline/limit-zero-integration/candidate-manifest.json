@@ -1,0 +1,96 @@
+{
+  "frozenAtUtc": "2026-09-06T21:23:55.702371+00:00",
+  "base": "dfe6c4203fe39d997950c260d94a1df5445c94cd",
+  "commit": "795e970b470f3359dfe09cec8b4363373c69079e",
+  "worktree": "/tmp/graphite-go-limit-zero-dfe6c420",
+  "main": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "patchSha256": "e0ca6f93afc351b26cdf40d91d0742c4fb04c341e5f911fc5be144d3832bb65e",
+  "files": [
+    {
+      "path": "graphite-server/internal/query/engine.go",
+      "sha256": "d5aefaad4073d5d181d8f4d0f63df6355e13e19da9e82e79baec93ed0de0f5d3"
+    },
+    {
+      "path": "graphite-server/internal/query/limit_zero.go",
+      "sha256": "b034b00dc542172fb89c8be7f1cfb99d07f038bb34fb4bab5726db226951d6c9"
+    },
+    {
+      "path": "graphite-server/internal/query/limit_zero_test.go",
+      "sha256": "536f6f64bf75abd1576a8510f97d1e9796a915a4c9de61e780b8cee8e9ca9abc"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/limit-zero/PlannerOracle.java",
+      "sha256": "8ec40966ac5c770ef3026fc56cb08b35d7ef4ef22e022621fb5b05dd56ae5093"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/limit-zero/README.md",
+      "sha256": "b6045878acb89c160cbf7dc43d23c7a153e5f60011a65fab2ccad199d57088ab"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/limit-zero/after-differences.json",
+      "sha256": "1a8096c47232437e6cda92650dffa26b37963760f5198d484eb3838eb1289661"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/limit-zero/before-command.json",
+      "sha256": "c59f59b2e08afade26ddde52bf2a9ff806c1ded8ebee4aff7fc2380a837b479c"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/limit-zero/before-differences.json",
+      "sha256": "fbbf267a313a9d04f65ce3940c473600e313cec42f7d64ba266d27bb925ae66e"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/limit-zero/cases.json",
+      "sha256": "a61dbfb5780cf08744e188cdba6d3e2e43165df6b5407fd3ddaa1d4dab1910ae"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/limit-zero/main-command.json",
+      "sha256": "7a2148b287795c824f7162266d8e2b6807184fde3b814fd852c033a16b04cfe2"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/limit-zero/main-oracle.json",
+      "sha256": "c09df5c1f065dd07e7c600ad516bd733bb2a6fabc204bf29a96059d2f2ea0990"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/limit-zero/main.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/limit-zero/native-after.json",
+      "sha256": "b81d2a499525a96128e6f028df76381d73bc9acb0fcecfa16ae17bbc6a679a0e"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/limit-zero/native-before.json",
+      "sha256": "0ced3de16481033d7407b0c9b9c4cd92f30eabaac7dbb725c62e3793538ad73c"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/limit-zero/native_capture_test.go",
+      "sha256": "111fb0f8d803c2faa055b1a34808f05015884b1bfe5691b5afe9f9621487878a"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/limit-zero/verification.json",
+      "sha256": "fa1ec585b61e6a1b98e0c5a8ebeb4f4b5e1fae6914fe9bd4514cf554fb01d6b6"
+    }
+  ],
+  "checks": [
+    {
+      "command": "go test -race ./...",
+      "exitCode": 0,
+      "log": "race.log",
+      "sha256": "d94b233d06617b5c4dbffe5313f0f2823656341651c4b0b3e110a3a31dbe33aa"
+    },
+    {
+      "command": "go vet ./...",
+      "exitCode": 0,
+      "log": "vet.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "observations": 180,
+  "beforeEqual": 110,
+  "afterEqual": 168,
+  "fixed": 58,
+  "remainingKnownCountConversionDifferences": 12,
+  "regressions": 0,
+  "rootProductionEdited": false,
+  "performanceRun": false
+}

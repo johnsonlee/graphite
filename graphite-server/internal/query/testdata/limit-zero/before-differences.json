@@ -1,0 +1,1392 @@
+[
+  {
+    "main": {
+      "name": "filtered-zero",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT 0",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "filtered-zero",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT 0"
+    }
+  },
+  {
+    "main": {
+      "name": "filtered-zero",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT 0",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "filtered-zero",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT 0"
+    }
+  },
+  {
+    "main": {
+      "name": "filtered-order",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x ORDER BY x LIMIT 0",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "filtered-order",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x ORDER BY x LIMIT 0"
+    }
+  },
+  {
+    "main": {
+      "name": "filtered-order",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x ORDER BY x LIMIT 0",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "filtered-order",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x ORDER BY x LIMIT 0"
+    }
+  },
+  {
+    "main": {
+      "name": "filtered-skip0",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x SKIP 0 LIMIT 0",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "filtered-skip0",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x SKIP 0 LIMIT 0"
+    }
+  },
+  {
+    "main": {
+      "name": "filtered-skip0",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x SKIP 0 LIMIT 0",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "filtered-skip0",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x SKIP 0 LIMIT 0"
+    }
+  },
+  {
+    "main": {
+      "name": "filtered-skip1",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x SKIP 1 LIMIT 0",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "filtered-skip1",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x SKIP 1 LIMIT 0"
+    }
+  },
+  {
+    "main": {
+      "name": "filtered-skip1",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x SKIP 1 LIMIT 0",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "filtered-skip1",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x SKIP 1 LIMIT 0"
+    }
+  },
+  {
+    "main": {
+      "name": "filtered-skipneg",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x SKIP -1 LIMIT 0",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "filtered-skipneg",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x SKIP -1 LIMIT 0"
+    }
+  },
+  {
+    "main": {
+      "name": "filtered-skipneg",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x SKIP -1 LIMIT 0",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "filtered-skipneg",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x SKIP -1 LIMIT 0"
+    }
+  },
+  {
+    "main": {
+      "name": "filtered-skiperror",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x SKIP 1/0 LIMIT 0",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "filtered-skiperror",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x SKIP 1/0 LIMIT 0"
+    }
+  },
+  {
+    "main": {
+      "name": "filtered-skiperror",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x SKIP 1/0 LIMIT 0",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "filtered-skiperror",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x SKIP 1/0 LIMIT 0"
+    }
+  },
+  {
+    "main": {
+      "name": "filtered-skipparam",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x SKIP $s LIMIT 0",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "filtered-skipparam",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x SKIP $s LIMIT 0"
+    }
+  },
+  {
+    "main": {
+      "name": "filtered-skipparam",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x SKIP $s LIMIT 0",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "filtered-skipparam",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x SKIP $s LIMIT 0"
+    }
+  },
+  {
+    "main": {
+      "name": "filtered-fraction",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT 0.9",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "filtered-fraction",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT 0.9"
+    }
+  },
+  {
+    "main": {
+      "name": "filtered-fraction",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT 0.9",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "filtered-fraction",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT 0.9"
+    }
+  },
+  {
+    "main": {
+      "name": "filtered-string",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT '0'",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "filtered-string",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT '0'"
+    }
+  },
+  {
+    "main": {
+      "name": "filtered-string",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT '0'",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "filtered-string",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT '0'"
+    }
+  },
+  {
+    "main": {
+      "name": "filtered-null",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT null",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "filtered-null",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT null"
+    }
+  },
+  {
+    "main": {
+      "name": "filtered-null",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT null",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "filtered-null",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT null"
+    }
+  },
+  {
+    "main": {
+      "name": "filtered-false",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT false",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "filtered-false",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT false"
+    }
+  },
+  {
+    "main": {
+      "name": "filtered-false",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT false",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "filtered-false",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT false"
+    }
+  },
+  {
+    "main": {
+      "name": "with-prefix-skipneg",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x SKIP -1 LIMIT 0",
+      "cross": false,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -1 is less than zero."
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "with-prefix-skipneg",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x SKIP -1 LIMIT 0"
+    }
+  },
+  {
+    "main": {
+      "name": "with-prefix-skipneg",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x SKIP -1 LIMIT 0",
+      "cross": true,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -1 is less than zero."
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "with-prefix-skipneg",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x SKIP -1 LIMIT 0"
+    }
+  },
+  {
+    "main": {
+      "name": "with-prefix-fraction",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT 0.9",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "with-prefix-fraction",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT 0.9"
+    }
+  },
+  {
+    "main": {
+      "name": "with-prefix-fraction",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT 0.9",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "with-prefix-fraction",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT 0.9"
+    }
+  },
+  {
+    "main": {
+      "name": "with-prefix-string",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT '0'",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "with-prefix-string",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT '0'"
+    }
+  },
+  {
+    "main": {
+      "name": "with-prefix-string",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT '0'",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "with-prefix-string",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT '0'"
+    }
+  },
+  {
+    "main": {
+      "name": "with-prefix-null",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT null",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "with-prefix-null",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT null"
+    }
+  },
+  {
+    "main": {
+      "name": "with-prefix-null",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT null",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "with-prefix-null",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT null"
+    }
+  },
+  {
+    "main": {
+      "name": "with-prefix-false",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT false",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "with-prefix-false",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT false"
+    }
+  },
+  {
+    "main": {
+      "name": "with-prefix-false",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT false",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "with-prefix-false",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT false"
+    }
+  },
+  {
+    "main": {
+      "name": "with-prefix-negative",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT -1",
+      "cross": false,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -1 is less than zero."
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "with-prefix-negative",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT -1"
+    }
+  },
+  {
+    "main": {
+      "name": "with-prefix-negative",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT -1",
+      "cross": true,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -1 is less than zero."
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "with-prefix-negative",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT -1"
+    }
+  },
+  {
+    "main": {
+      "name": "distinct-error",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN DISTINCT substring(v.callee_name,'bad') AS x LIMIT 0",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "distinct-error",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN DISTINCT substring(v.callee_name,'bad') AS x LIMIT 0"
+    }
+  },
+  {
+    "main": {
+      "name": "distinct-error",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN DISTINCT substring(v.callee_name,'bad') AS x LIMIT 0",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "distinct-error",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN DISTINCT substring(v.callee_name,'bad') AS x LIMIT 0"
+    }
+  },
+  {
+    "main": {
+      "name": "multiple",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN v, substring(v.callee_name,'bad') AS x LIMIT 0",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "v",
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "multiple",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN v, substring(v.callee_name,'bad') AS x LIMIT 0"
+    }
+  },
+  {
+    "main": {
+      "name": "multiple",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN v, substring(v.callee_name,'bad') AS x LIMIT 0",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "v",
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "multiple",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN v, substring(v.callee_name,'bad') AS x LIMIT 0"
+    }
+  },
+  {
+    "main": {
+      "name": "where-error",
+      "query": "MATCH (v:CallSiteNode) WHERE 1/0=1 RETURN 1 AS x LIMIT 0",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "Division by zero",
+      "name": "where-error",
+      "query": "MATCH (v:CallSiteNode) WHERE 1/0=1 RETURN 1 AS x LIMIT 0"
+    }
+  },
+  {
+    "main": {
+      "name": "where-error",
+      "query": "MATCH (v:CallSiteNode) WHERE 1/0=1 RETURN 1 AS x LIMIT 0",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "Division by zero",
+      "name": "where-error",
+      "query": "MATCH (v:CallSiteNode) WHERE 1/0=1 RETURN 1 AS x LIMIT 0"
+    }
+  },
+  {
+    "main": {
+      "name": "where-cast",
+      "query": "MATCH (v:CallSiteNode) WHERE substring('a','bad')='a' RETURN 1 AS x LIMIT 0",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "where-cast",
+      "query": "MATCH (v:CallSiteNode) WHERE substring('a','bad')='a' RETURN 1 AS x LIMIT 0"
+    }
+  },
+  {
+    "main": {
+      "name": "where-cast",
+      "query": "MATCH (v:CallSiteNode) WHERE substring('a','bad')='a' RETURN 1 AS x LIMIT 0",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "where-cast",
+      "query": "MATCH (v:CallSiteNode) WHERE substring('a','bad')='a' RETURN 1 AS x LIMIT 0"
+    }
+  },
+  {
+    "main": {
+      "name": "where-unknown",
+      "query": "MATCH (v:CallSiteNode) WHERE unknownFunction(v) RETURN 1 AS x LIMIT 0",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "Unknown function: unknownFunction",
+      "name": "where-unknown",
+      "query": "MATCH (v:CallSiteNode) WHERE unknownFunction(v) RETURN 1 AS x LIMIT 0"
+    }
+  },
+  {
+    "main": {
+      "name": "where-unknown",
+      "query": "MATCH (v:CallSiteNode) WHERE unknownFunction(v) RETURN 1 AS x LIMIT 0",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "Unknown function: unknownFunction",
+      "name": "where-unknown",
+      "query": "MATCH (v:CallSiteNode) WHERE unknownFunction(v) RETURN 1 AS x LIMIT 0"
+    }
+  },
+  {
+    "main": {
+      "name": "inline-error",
+      "query": "MATCH (v:CallSiteNode {callee_name:1/0}) WHERE true RETURN substring(v.callee_name,'bad') AS x LIMIT 0",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "Division by zero",
+      "name": "inline-error",
+      "query": "MATCH (v:CallSiteNode {callee_name:1/0}) WHERE true RETURN substring(v.callee_name,'bad') AS x LIMIT 0"
+    }
+  },
+  {
+    "main": {
+      "name": "inline-error",
+      "query": "MATCH (v:CallSiteNode {callee_name:1/0}) WHERE true RETURN substring(v.callee_name,'bad') AS x LIMIT 0",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "Division by zero",
+      "name": "inline-error",
+      "query": "MATCH (v:CallSiteNode {callee_name:1/0}) WHERE true RETURN substring(v.callee_name,'bad') AS x LIMIT 0"
+    }
+  },
+  {
+    "main": {
+      "name": "relationship",
+      "query": "MATCH (v)-[]->(w) WHERE true RETURN substring(v.callee_name,'bad') AS x LIMIT 0",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "relationship",
+      "query": "MATCH (v)-[]->(w) WHERE true RETURN substring(v.callee_name,'bad') AS x LIMIT 0"
+    }
+  },
+  {
+    "main": {
+      "name": "relationship",
+      "query": "MATCH (v)-[]->(w) WHERE true RETURN substring(v.callee_name,'bad') AS x LIMIT 0",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "relationship",
+      "query": "MATCH (v)-[]->(w) WHERE true RETURN substring(v.callee_name,'bad') AS x LIMIT 0"
+    }
+  },
+  {
+    "main": {
+      "name": "order-error",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN v AS x ORDER BY substring(v.callee_name,'bad') LIMIT 0",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "order-error",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN v AS x ORDER BY substring(v.callee_name,'bad') LIMIT 0"
+    }
+  },
+  {
+    "main": {
+      "name": "order-error",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN v AS x ORDER BY substring(v.callee_name,'bad') LIMIT 0",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "order-error",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN v AS x ORDER BY substring(v.callee_name,'bad') LIMIT 0"
+    }
+  },
+  {
+    "main": {
+      "name": "union-later-error",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT 0 UNION RETURN 1/0 AS x",
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "Division by zero"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "union-later-error",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT 0 UNION RETURN 1/0 AS x"
+    }
+  },
+  {
+    "main": {
+      "name": "union-later-error",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT 0 UNION RETURN 1/0 AS x",
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "Division by zero"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "union-later-error",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT 0 UNION RETURN 1/0 AS x"
+    }
+  },
+  {
+    "main": {
+      "name": "union-zero-branches",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT 0 UNION MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT 0",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "union-zero-branches",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT 0 UNION MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT 0"
+    }
+  },
+  {
+    "main": {
+      "name": "union-zero-branches",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT 0 UNION MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT 0",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "union-zero-branches",
+      "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT 0 UNION MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT 0"
+    }
+  },
+  {
+    "main": {
+      "name": "skip-negative-fraction",
+      "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x SKIP -0.5 LIMIT 0",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "skip-negative-fraction",
+      "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x SKIP -0.5 LIMIT 0"
+    }
+  },
+  {
+    "main": {
+      "name": "skip-negative-fraction",
+      "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x SKIP -0.5 LIMIT 0",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "skip-negative-fraction",
+      "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x SKIP -0.5 LIMIT 0"
+    }
+  },
+  {
+    "main": {
+      "name": "skip-invalid-string",
+      "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x SKIP 'bad' LIMIT 0",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "skip-invalid-string",
+      "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x SKIP 'bad' LIMIT 0"
+    }
+  },
+  {
+    "main": {
+      "name": "skip-invalid-string",
+      "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x SKIP 'bad' LIMIT 0",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "skip-invalid-string",
+      "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x SKIP 'bad' LIMIT 0"
+    }
+  },
+  {
+    "main": {
+      "name": "skip-parameter-error",
+      "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x SKIP $s LIMIT 0",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "skip-parameter-error",
+      "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x SKIP $s LIMIT 0"
+    }
+  },
+  {
+    "main": {
+      "name": "skip-parameter-error",
+      "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x SKIP $s LIMIT 0",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "skip-parameter-error",
+      "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x SKIP $s LIMIT 0"
+    }
+  },
+  {
+    "main": {
+      "name": "literal-unicode-zero",
+      "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x LIMIT '\u0660'",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "literal-unicode-zero",
+      "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x LIMIT '\u0660'"
+    }
+  },
+  {
+    "main": {
+      "name": "literal-unicode-zero",
+      "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x LIMIT '\u0660'",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "literal-unicode-zero",
+      "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x LIMIT '\u0660'"
+    }
+  },
+  {
+    "main": {
+      "name": "literal-overflow-string",
+      "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x LIMIT '9223372036854775808'",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "literal-overflow-string",
+      "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x LIMIT '9223372036854775808'"
+    }
+  },
+  {
+    "main": {
+      "name": "literal-overflow-string",
+      "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x LIMIT '9223372036854775808'",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "literal-overflow-string",
+      "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x LIMIT '9223372036854775808'"
+    }
+  },
+  {
+    "main": {
+      "name": "literal-whitespace",
+      "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x LIMIT ' 1'",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "literal-whitespace",
+      "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x LIMIT ' 1'"
+    }
+  },
+  {
+    "main": {
+      "name": "literal-whitespace",
+      "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x LIMIT ' 1'",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "literal-whitespace",
+      "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x LIMIT ' 1'"
+    }
+  },
+  {
+    "main": {
+      "name": "projection-unknown",
+      "query": "MATCH (v) WHERE true RETURN unknownFunction(v) AS x LIMIT 0",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "Unknown function: unknownFunction",
+      "name": "projection-unknown",
+      "query": "MATCH (v) WHERE true RETURN unknownFunction(v) AS x LIMIT 0"
+    }
+  },
+  {
+    "main": {
+      "name": "projection-unknown",
+      "query": "MATCH (v) WHERE true RETURN unknownFunction(v) AS x LIMIT 0",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "Unknown function: unknownFunction",
+      "name": "projection-unknown",
+      "query": "MATCH (v) WHERE true RETURN unknownFunction(v) AS x LIMIT 0"
+    }
+  },
+  {
+    "main": {
+      "name": "order-skip-error",
+      "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x ORDER BY 1/0 SKIP 1/0 LIMIT 0",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "order-skip-error",
+      "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x ORDER BY 1/0 SKIP 1/0 LIMIT 0"
+    }
+  },
+  {
+    "main": {
+      "name": "order-skip-error",
+      "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x ORDER BY 1/0 SKIP 1/0 LIMIT 0",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "order-skip-error",
+      "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x ORDER BY 1/0 SKIP 1/0 LIMIT 0"
+    }
+  }
+]

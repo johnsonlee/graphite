@@ -144,6 +144,10 @@ func executeSources(ctx context.Context, graph *store.Store, graphs []Graph, cro
 	return result, nil
 }
 func (e evaluator) branch(graph *store.Store, branch cypher.SingleQuery) Result {
+	e.check()
+	if empty, ok := filteredLiteralEmpty(branch); ok {
+		return empty
+	}
 	rows := []map[string]any{{}}
 	columns := []string{}
 	for _, clause := range branch.Clauses {

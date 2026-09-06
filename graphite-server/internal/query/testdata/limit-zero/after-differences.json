@@ -1,0 +1,234 @@
+[
+  {
+    "main": {
+      "name": "with-prefix-skipneg",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x SKIP -1 LIMIT 0",
+      "cross": false,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -1 is less than zero."
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "with-prefix-skipneg",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x SKIP -1 LIMIT 0"
+    }
+  },
+  {
+    "main": {
+      "name": "with-prefix-skipneg",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x SKIP -1 LIMIT 0",
+      "cross": true,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -1 is less than zero."
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "with-prefix-skipneg",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x SKIP -1 LIMIT 0"
+    }
+  },
+  {
+    "main": {
+      "name": "with-prefix-fraction",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT 0.9",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "with-prefix-fraction",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT 0.9"
+    }
+  },
+  {
+    "main": {
+      "name": "with-prefix-fraction",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT 0.9",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "with-prefix-fraction",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT 0.9"
+    }
+  },
+  {
+    "main": {
+      "name": "with-prefix-string",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT '0'",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "with-prefix-string",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT '0'"
+    }
+  },
+  {
+    "main": {
+      "name": "with-prefix-string",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT '0'",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "with-prefix-string",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT '0'"
+    }
+  },
+  {
+    "main": {
+      "name": "with-prefix-null",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT null",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "with-prefix-null",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT null"
+    }
+  },
+  {
+    "main": {
+      "name": "with-prefix-null",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT null",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "with-prefix-null",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT null"
+    }
+  },
+  {
+    "main": {
+      "name": "with-prefix-false",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT false",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "with-prefix-false",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT false"
+    }
+  },
+  {
+    "main": {
+      "name": "with-prefix-false",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT false",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "with-prefix-false",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT false"
+    }
+  },
+  {
+    "main": {
+      "name": "with-prefix-negative",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT -1",
+      "cross": false,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -1 is less than zero."
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "with-prefix-negative",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT -1"
+    }
+  },
+  {
+    "main": {
+      "name": "with-prefix-negative",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT -1",
+      "cross": true,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -1 is less than zero."
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "with-prefix-negative",
+      "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT -1"
+    }
+  }
+]

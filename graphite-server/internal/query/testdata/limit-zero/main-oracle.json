@@ -1,0 +1,1624 @@
+[
+  {
+    "name": "filtered-zero",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "filtered-zero",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "filtered-order",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN substring(v.callee_name,\u0027bad\u0027) AS x ORDER BY x LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "filtered-order",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN substring(v.callee_name,\u0027bad\u0027) AS x ORDER BY x LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "filtered-skip0",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN substring(v.callee_name,\u0027bad\u0027) AS x SKIP 0 LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "filtered-skip0",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN substring(v.callee_name,\u0027bad\u0027) AS x SKIP 0 LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "filtered-skip1",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN substring(v.callee_name,\u0027bad\u0027) AS x SKIP 1 LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "filtered-skip1",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN substring(v.callee_name,\u0027bad\u0027) AS x SKIP 1 LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "filtered-skipneg",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN substring(v.callee_name,\u0027bad\u0027) AS x SKIP -1 LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "filtered-skipneg",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN substring(v.callee_name,\u0027bad\u0027) AS x SKIP -1 LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "filtered-skiperror",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN substring(v.callee_name,\u0027bad\u0027) AS x SKIP 1/0 LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "filtered-skiperror",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN substring(v.callee_name,\u0027bad\u0027) AS x SKIP 1/0 LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "filtered-skipparam",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN substring(v.callee_name,\u0027bad\u0027) AS x SKIP $s LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "filtered-skipparam",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN substring(v.callee_name,\u0027bad\u0027) AS x SKIP $s LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "filtered-limitparam",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT $l",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "filtered-limitparam",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT $l",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "filtered-fraction",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 0.9",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "filtered-fraction",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 0.9",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "filtered-string",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT \u00270\u0027",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "filtered-string",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT \u00270\u0027",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "filtered-null",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT null",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "filtered-null",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT null",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "filtered-false",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT false",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "filtered-false",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT false",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "filtered-negative",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT -1",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "filtered-negative",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT -1",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "filtered-expression",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 1-1",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "filtered-expression",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 1-1",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "no-where-zero",
+    "query": "MATCH (v:CallSiteNode) RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "no-where-zero",
+    "query": "MATCH (v:CallSiteNode) RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "no-where-order",
+    "query": "MATCH (v:CallSiteNode) RETURN substring(v.callee_name,\u0027bad\u0027) AS x ORDER BY x LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "no-where-order",
+    "query": "MATCH (v:CallSiteNode) RETURN substring(v.callee_name,\u0027bad\u0027) AS x ORDER BY x LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "no-where-skip0",
+    "query": "MATCH (v:CallSiteNode) RETURN substring(v.callee_name,\u0027bad\u0027) AS x SKIP 0 LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "no-where-skip0",
+    "query": "MATCH (v:CallSiteNode) RETURN substring(v.callee_name,\u0027bad\u0027) AS x SKIP 0 LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "no-where-skip1",
+    "query": "MATCH (v:CallSiteNode) RETURN substring(v.callee_name,\u0027bad\u0027) AS x SKIP 1 LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "no-where-skip1",
+    "query": "MATCH (v:CallSiteNode) RETURN substring(v.callee_name,\u0027bad\u0027) AS x SKIP 1 LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "no-where-skipneg",
+    "query": "MATCH (v:CallSiteNode) RETURN substring(v.callee_name,\u0027bad\u0027) AS x SKIP -1 LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "no-where-skipneg",
+    "query": "MATCH (v:CallSiteNode) RETURN substring(v.callee_name,\u0027bad\u0027) AS x SKIP -1 LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "no-where-skiperror",
+    "query": "MATCH (v:CallSiteNode) RETURN substring(v.callee_name,\u0027bad\u0027) AS x SKIP 1/0 LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "no-where-skiperror",
+    "query": "MATCH (v:CallSiteNode) RETURN substring(v.callee_name,\u0027bad\u0027) AS x SKIP 1/0 LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "no-where-skipparam",
+    "query": "MATCH (v:CallSiteNode) RETURN substring(v.callee_name,\u0027bad\u0027) AS x SKIP $s LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "no-where-skipparam",
+    "query": "MATCH (v:CallSiteNode) RETURN substring(v.callee_name,\u0027bad\u0027) AS x SKIP $s LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "no-where-limitparam",
+    "query": "MATCH (v:CallSiteNode) RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT $l",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "no-where-limitparam",
+    "query": "MATCH (v:CallSiteNode) RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT $l",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "no-where-fraction",
+    "query": "MATCH (v:CallSiteNode) RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 0.9",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "no-where-fraction",
+    "query": "MATCH (v:CallSiteNode) RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 0.9",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "no-where-string",
+    "query": "MATCH (v:CallSiteNode) RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT \u00270\u0027",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "no-where-string",
+    "query": "MATCH (v:CallSiteNode) RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT \u00270\u0027",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "no-where-null",
+    "query": "MATCH (v:CallSiteNode) RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT null",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "no-where-null",
+    "query": "MATCH (v:CallSiteNode) RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT null",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "no-where-false",
+    "query": "MATCH (v:CallSiteNode) RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT false",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "no-where-false",
+    "query": "MATCH (v:CallSiteNode) RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT false",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "no-where-negative",
+    "query": "MATCH (v:CallSiteNode) RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT -1",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "no-where-negative",
+    "query": "MATCH (v:CallSiteNode) RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT -1",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "no-where-expression",
+    "query": "MATCH (v:CallSiteNode) RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 1-1",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "no-where-expression",
+    "query": "MATCH (v:CallSiteNode) RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 1-1",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "with-prefix-zero",
+    "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "with-prefix-zero",
+    "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "with-prefix-order",
+    "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,\u0027bad\u0027) AS x ORDER BY x LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "with-prefix-order",
+    "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,\u0027bad\u0027) AS x ORDER BY x LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "with-prefix-skip0",
+    "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,\u0027bad\u0027) AS x SKIP 0 LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "with-prefix-skip0",
+    "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,\u0027bad\u0027) AS x SKIP 0 LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "with-prefix-skip1",
+    "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,\u0027bad\u0027) AS x SKIP 1 LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "with-prefix-skip1",
+    "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,\u0027bad\u0027) AS x SKIP 1 LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "with-prefix-skipneg",
+    "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,\u0027bad\u0027) AS x SKIP -1 LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -1 is less than zero."
+  },
+  {
+    "name": "with-prefix-skipneg",
+    "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,\u0027bad\u0027) AS x SKIP -1 LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -1 is less than zero."
+  },
+  {
+    "name": "with-prefix-skiperror",
+    "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,\u0027bad\u0027) AS x SKIP 1/0 LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "with-prefix-skiperror",
+    "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,\u0027bad\u0027) AS x SKIP 1/0 LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "with-prefix-skipparam",
+    "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,\u0027bad\u0027) AS x SKIP $s LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "with-prefix-skipparam",
+    "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,\u0027bad\u0027) AS x SKIP $s LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "with-prefix-limitparam",
+    "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT $l",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "with-prefix-limitparam",
+    "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT $l",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "with-prefix-fraction",
+    "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 0.9",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "with-prefix-fraction",
+    "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 0.9",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "with-prefix-string",
+    "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT \u00270\u0027",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "with-prefix-string",
+    "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT \u00270\u0027",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "with-prefix-null",
+    "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT null",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "with-prefix-null",
+    "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT null",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "with-prefix-false",
+    "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT false",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "with-prefix-false",
+    "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT false",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "with-prefix-negative",
+    "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT -1",
+    "cross": false,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -1 is less than zero."
+  },
+  {
+    "name": "with-prefix-negative",
+    "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT -1",
+    "cross": true,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -1 is less than zero."
+  },
+  {
+    "name": "with-prefix-expression",
+    "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 1-1",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "with-prefix-expression",
+    "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 1-1",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "distinct-error",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN DISTINCT substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "distinct-error",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN DISTINCT substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "aggregate-error",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN count(substring(v.callee_name,\u0027bad\u0027)) AS x LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "aggregate-error",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN count(substring(v.callee_name,\u0027bad\u0027)) AS x LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "aggregate",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN count(v) AS x LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "aggregate",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN count(v) AS x LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "star",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN * LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "v"
+    ],
+    "rows": []
+  },
+  {
+    "name": "star",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN * LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "v"
+    ],
+    "rows": []
+  },
+  {
+    "name": "multiple",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN v, substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "v",
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "multiple",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN v, substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "v",
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "where-error",
+    "query": "MATCH (v:CallSiteNode) WHERE 1/0\u003d1 RETURN 1 AS x LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "where-error",
+    "query": "MATCH (v:CallSiteNode) WHERE 1/0\u003d1 RETURN 1 AS x LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "where-cast",
+    "query": "MATCH (v:CallSiteNode) WHERE substring(\u0027a\u0027,\u0027bad\u0027)\u003d\u0027a\u0027 RETURN 1 AS x LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "where-cast",
+    "query": "MATCH (v:CallSiteNode) WHERE substring(\u0027a\u0027,\u0027bad\u0027)\u003d\u0027a\u0027 RETURN 1 AS x LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "where-unknown",
+    "query": "MATCH (v:CallSiteNode) WHERE unknownFunction(v) RETURN 1 AS x LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "where-unknown",
+    "query": "MATCH (v:CallSiteNode) WHERE unknownFunction(v) RETURN 1 AS x LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "inline-error",
+    "query": "MATCH (v:CallSiteNode {callee_name:1/0}) WHERE true RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "inline-error",
+    "query": "MATCH (v:CallSiteNode {callee_name:1/0}) WHERE true RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "optional",
+    "query": "OPTIONAL MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "optional",
+    "query": "OPTIONAL MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "path",
+    "query": "MATCH p\u003d(v:CallSiteNode) WHERE true RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "path",
+    "query": "MATCH p\u003d(v:CallSiteNode) WHERE true RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "multiple-pattern",
+    "query": "MATCH (v:CallSiteNode),(w) WHERE true RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "multiple-pattern",
+    "query": "MATCH (v:CallSiteNode),(w) WHERE true RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "relationship",
+    "query": "MATCH (v)-[]-\u003e(w) WHERE true RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "relationship",
+    "query": "MATCH (v)-[]-\u003e(w) WHERE true RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "method",
+    "query": "MATCH (v:Method) WHERE true RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "method",
+    "query": "MATCH (v:Method) WHERE true RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "anonymous",
+    "query": "MATCH (:CallSiteNode) WHERE true RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "anonymous",
+    "query": "MATCH (:CallSiteNode) WHERE true RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "with-error",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 WITH substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 0 RETURN x",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "with-error",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 WITH substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 0 RETURN x",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "with-before-filtered",
+    "query": "WITH 1 AS a MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "with-before-filtered",
+    "query": "WITH 1 AS a MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "order-error",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN v AS x ORDER BY substring(v.callee_name,\u0027bad\u0027) LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "order-error",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN v AS x ORDER BY substring(v.callee_name,\u0027bad\u0027) LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "union-later-error",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 0 UNION RETURN 1/0 AS x",
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "union-later-error",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 0 UNION RETURN 1/0 AS x",
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "union-zero-branches",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 0 UNION MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "union-zero-branches",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 0 UNION MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "unwind-error",
+    "query": "UNWIND [1/0] AS a MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "unwind-error",
+    "query": "UNWIND [1/0] AS a MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "empty-projection-error",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 0",
+    "cross": false,
+    "empty": true,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "empty-projection-error",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 0",
+    "cross": true,
+    "empty": true,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "return-only-error",
+    "query": "RETURN 1/0 AS x LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "return-only-error",
+    "query": "RETURN 1/0 AS x LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "limit-error",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 1/0",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "limit-error",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 1/0",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "skip-negative-string",
+    "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,\u0027bad\u0027) AS x SKIP \u0027-1\u0027 LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "skip-negative-string",
+    "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,\u0027bad\u0027) AS x SKIP \u0027-1\u0027 LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "skip-negative-fraction",
+    "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,\u0027bad\u0027) AS x SKIP -0.5 LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "skip-negative-fraction",
+    "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,\u0027bad\u0027) AS x SKIP -0.5 LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "skip-invalid-string",
+    "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,\u0027bad\u0027) AS x SKIP \u0027bad\u0027 LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "skip-invalid-string",
+    "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,\u0027bad\u0027) AS x SKIP \u0027bad\u0027 LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "skip-parameter-error",
+    "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,\u0027bad\u0027) AS x SKIP $s LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "skip-parameter-error",
+    "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,\u0027bad\u0027) AS x SKIP $s LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "literal-unicode-one",
+    "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT \u0027١\u0027",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "literal-unicode-one",
+    "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT \u0027١\u0027",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "literal-unicode-zero",
+    "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT \u0027٠\u0027",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "literal-unicode-zero",
+    "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT \u0027٠\u0027",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "literal-overflow-string",
+    "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT \u00279223372036854775808\u0027",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "literal-overflow-string",
+    "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT \u00279223372036854775808\u0027",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "literal-whitespace",
+    "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT \u0027 1\u0027",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "literal-whitespace",
+    "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT \u0027 1\u0027",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "literal-positive-string",
+    "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT \u00271\u0027",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "literal-positive-string",
+    "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT \u00271\u0027",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "literal-positive-fraction",
+    "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 1.9",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "literal-positive-fraction",
+    "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 1.9",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "literal-infinity",
+    "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 1e999",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "literal-infinity",
+    "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 1e999",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "literal-signed-zero",
+    "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT -0.0",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "literal-signed-zero",
+    "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT -0.0",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "limit-parameter-string",
+    "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT $l",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "limit-parameter-string",
+    "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT $l",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "limit-parameter-null",
+    "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT $l",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "limit-parameter-null",
+    "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT $l",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "projection-unknown",
+    "query": "MATCH (v) WHERE true RETURN unknownFunction(v) AS x LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "projection-unknown",
+    "query": "MATCH (v) WHERE true RETURN unknownFunction(v) AS x LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "unknown-label-where-error",
+    "query": "MATCH (v:Unknown) WHERE 1/0\u003d0 RETURN v LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "v"
+    ],
+    "rows": []
+  },
+  {
+    "name": "unknown-label-where-error",
+    "query": "MATCH (v:Unknown) WHERE 1/0\u003d0 RETURN v LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "v"
+    ],
+    "rows": []
+  },
+  {
+    "name": "star-where-error",
+    "query": "MATCH (v) WHERE 1/0\u003d0 RETURN * LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "star-where-error",
+    "query": "MATCH (v) WHERE 1/0\u003d0 RETURN * LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "aggregate-where-error",
+    "query": "MATCH (v) WHERE 1/0\u003d0 RETURN count(v) AS x LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "aggregate-where-error",
+    "query": "MATCH (v) WHERE 1/0\u003d0 RETURN count(v) AS x LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "nested-aggregate",
+    "query": "MATCH (v) WHERE true RETURN toString(count(v)) AS x LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "error": "CypherAggregationException",
+    "message": "Aggregation function \u0027count\u0027 must be used in RETURN or WITH clause"
+  },
+  {
+    "name": "nested-aggregate",
+    "query": "MATCH (v) WHERE true RETURN toString(count(v)) AS x LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "error": "CypherAggregationException",
+    "message": "Aggregation function \u0027count\u0027 must be used in RETURN or WITH clause"
+  },
+  {
+    "name": "order-skip-error",
+    "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,\u0027bad\u0027) AS x ORDER BY 1/0 SKIP 1/0 LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "order-skip-error",
+    "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,\u0027bad\u0027) AS x ORDER BY 1/0 SKIP 1/0 LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "no-where-inline-error",
+    "query": "MATCH (v:CallSiteNode {callee_name:1/0}) RETURN v LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "no-where-inline-error",
+    "query": "MATCH (v:CallSiteNode {callee_name:1/0}) RETURN v LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "optional-where-error",
+    "query": "OPTIONAL MATCH (v) WHERE 1/0\u003d0 RETURN v LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "optional-where-error",
+    "query": "OPTIONAL MATCH (v) WHERE 1/0\u003d0 RETURN v LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "with-where-error",
+    "query": "WITH 1 AS a MATCH (v) WHERE 1/0\u003d0 RETURN v LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "with-where-error",
+    "query": "WITH 1 AS a MATCH (v) WHERE 1/0\u003d0 RETURN v LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "union-first-error",
+    "query": "RETURN 1/0 AS x UNION MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "union-first-error",
+    "query": "RETURN 1/0 AS x UNION MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,\u0027bad\u0027) AS x LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  }
+]

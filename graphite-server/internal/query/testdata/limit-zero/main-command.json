@@ -1,0 +1,13 @@
+{
+  "command": [
+    "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+    "-Xmx256m",
+    "-cp",
+    "/tmp/graphite-planner-contract-classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+    "PlannerOracle",
+    "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-limit-zero-main-1fv7x9zk/fixture",
+    "/tmp/graphite-go-limit-zero-dfe6c420/graphite-server/internal/query/testdata/limit-zero/cases.json",
+    "/tmp/graphite-go-limit-zero-dfe6c420/graphite-server/internal/query/testdata/limit-zero/main-oracle.json"
+  ],
+  "exitCode": 0
+}

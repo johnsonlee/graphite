@@ -1,0 +1,561 @@
+[
+  {
+    "name": "filtered-zero",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT 0",
+    "params": {
+      "s": 0,
+      "l": 0
+    }
+  },
+  {
+    "name": "filtered-order",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x ORDER BY x LIMIT 0",
+    "params": {
+      "s": 0,
+      "l": 0
+    }
+  },
+  {
+    "name": "filtered-skip0",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x SKIP 0 LIMIT 0",
+    "params": {
+      "s": 0,
+      "l": 0
+    }
+  },
+  {
+    "name": "filtered-skip1",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x SKIP 1 LIMIT 0",
+    "params": {
+      "s": 0,
+      "l": 0
+    }
+  },
+  {
+    "name": "filtered-skipneg",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x SKIP -1 LIMIT 0",
+    "params": {
+      "s": 0,
+      "l": 0
+    }
+  },
+  {
+    "name": "filtered-skiperror",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x SKIP 1/0 LIMIT 0",
+    "params": {
+      "s": 0,
+      "l": 0
+    }
+  },
+  {
+    "name": "filtered-skipparam",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x SKIP $s LIMIT 0",
+    "params": {
+      "s": 0,
+      "l": 0
+    }
+  },
+  {
+    "name": "filtered-limitparam",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT $l",
+    "params": {
+      "s": 0,
+      "l": 0
+    }
+  },
+  {
+    "name": "filtered-fraction",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT 0.9",
+    "params": {
+      "s": 0,
+      "l": 0
+    }
+  },
+  {
+    "name": "filtered-string",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT '0'",
+    "params": {
+      "s": 0,
+      "l": 0
+    }
+  },
+  {
+    "name": "filtered-null",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT null",
+    "params": {
+      "s": 0,
+      "l": 0
+    }
+  },
+  {
+    "name": "filtered-false",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT false",
+    "params": {
+      "s": 0,
+      "l": 0
+    }
+  },
+  {
+    "name": "filtered-negative",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT -1",
+    "params": {
+      "s": 0,
+      "l": 0
+    }
+  },
+  {
+    "name": "filtered-expression",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT 1-1",
+    "params": {
+      "s": 0,
+      "l": 0
+    }
+  },
+  {
+    "name": "no-where-zero",
+    "query": "MATCH (v:CallSiteNode) RETURN substring(v.callee_name,'bad') AS x LIMIT 0",
+    "params": {
+      "s": 0,
+      "l": 0
+    }
+  },
+  {
+    "name": "no-where-order",
+    "query": "MATCH (v:CallSiteNode) RETURN substring(v.callee_name,'bad') AS x ORDER BY x LIMIT 0",
+    "params": {
+      "s": 0,
+      "l": 0
+    }
+  },
+  {
+    "name": "no-where-skip0",
+    "query": "MATCH (v:CallSiteNode) RETURN substring(v.callee_name,'bad') AS x SKIP 0 LIMIT 0",
+    "params": {
+      "s": 0,
+      "l": 0
+    }
+  },
+  {
+    "name": "no-where-skip1",
+    "query": "MATCH (v:CallSiteNode) RETURN substring(v.callee_name,'bad') AS x SKIP 1 LIMIT 0",
+    "params": {
+      "s": 0,
+      "l": 0
+    }
+  },
+  {
+    "name": "no-where-skipneg",
+    "query": "MATCH (v:CallSiteNode) RETURN substring(v.callee_name,'bad') AS x SKIP -1 LIMIT 0",
+    "params": {
+      "s": 0,
+      "l": 0
+    }
+  },
+  {
+    "name": "no-where-skiperror",
+    "query": "MATCH (v:CallSiteNode) RETURN substring(v.callee_name,'bad') AS x SKIP 1/0 LIMIT 0",
+    "params": {
+      "s": 0,
+      "l": 0
+    }
+  },
+  {
+    "name": "no-where-skipparam",
+    "query": "MATCH (v:CallSiteNode) RETURN substring(v.callee_name,'bad') AS x SKIP $s LIMIT 0",
+    "params": {
+      "s": 0,
+      "l": 0
+    }
+  },
+  {
+    "name": "no-where-limitparam",
+    "query": "MATCH (v:CallSiteNode) RETURN substring(v.callee_name,'bad') AS x LIMIT $l",
+    "params": {
+      "s": 0,
+      "l": 0
+    }
+  },
+  {
+    "name": "no-where-fraction",
+    "query": "MATCH (v:CallSiteNode) RETURN substring(v.callee_name,'bad') AS x LIMIT 0.9",
+    "params": {
+      "s": 0,
+      "l": 0
+    }
+  },
+  {
+    "name": "no-where-string",
+    "query": "MATCH (v:CallSiteNode) RETURN substring(v.callee_name,'bad') AS x LIMIT '0'",
+    "params": {
+      "s": 0,
+      "l": 0
+    }
+  },
+  {
+    "name": "no-where-null",
+    "query": "MATCH (v:CallSiteNode) RETURN substring(v.callee_name,'bad') AS x LIMIT null",
+    "params": {
+      "s": 0,
+      "l": 0
+    }
+  },
+  {
+    "name": "no-where-false",
+    "query": "MATCH (v:CallSiteNode) RETURN substring(v.callee_name,'bad') AS x LIMIT false",
+    "params": {
+      "s": 0,
+      "l": 0
+    }
+  },
+  {
+    "name": "no-where-negative",
+    "query": "MATCH (v:CallSiteNode) RETURN substring(v.callee_name,'bad') AS x LIMIT -1",
+    "params": {
+      "s": 0,
+      "l": 0
+    }
+  },
+  {
+    "name": "no-where-expression",
+    "query": "MATCH (v:CallSiteNode) RETURN substring(v.callee_name,'bad') AS x LIMIT 1-1",
+    "params": {
+      "s": 0,
+      "l": 0
+    }
+  },
+  {
+    "name": "with-prefix-zero",
+    "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT 0",
+    "params": {
+      "s": 0,
+      "l": 0
+    }
+  },
+  {
+    "name": "with-prefix-order",
+    "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x ORDER BY x LIMIT 0",
+    "params": {
+      "s": 0,
+      "l": 0
+    }
+  },
+  {
+    "name": "with-prefix-skip0",
+    "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x SKIP 0 LIMIT 0",
+    "params": {
+      "s": 0,
+      "l": 0
+    }
+  },
+  {
+    "name": "with-prefix-skip1",
+    "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x SKIP 1 LIMIT 0",
+    "params": {
+      "s": 0,
+      "l": 0
+    }
+  },
+  {
+    "name": "with-prefix-skipneg",
+    "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x SKIP -1 LIMIT 0",
+    "params": {
+      "s": 0,
+      "l": 0
+    }
+  },
+  {
+    "name": "with-prefix-skiperror",
+    "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x SKIP 1/0 LIMIT 0",
+    "params": {
+      "s": 0,
+      "l": 0
+    }
+  },
+  {
+    "name": "with-prefix-skipparam",
+    "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x SKIP $s LIMIT 0",
+    "params": {
+      "s": 0,
+      "l": 0
+    }
+  },
+  {
+    "name": "with-prefix-limitparam",
+    "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT $l",
+    "params": {
+      "s": 0,
+      "l": 0
+    }
+  },
+  {
+    "name": "with-prefix-fraction",
+    "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT 0.9",
+    "params": {
+      "s": 0,
+      "l": 0
+    }
+  },
+  {
+    "name": "with-prefix-string",
+    "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT '0'",
+    "params": {
+      "s": 0,
+      "l": 0
+    }
+  },
+  {
+    "name": "with-prefix-null",
+    "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT null",
+    "params": {
+      "s": 0,
+      "l": 0
+    }
+  },
+  {
+    "name": "with-prefix-false",
+    "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT false",
+    "params": {
+      "s": 0,
+      "l": 0
+    }
+  },
+  {
+    "name": "with-prefix-negative",
+    "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT -1",
+    "params": {
+      "s": 0,
+      "l": 0
+    }
+  },
+  {
+    "name": "with-prefix-expression",
+    "query": "RETURN 1 AS unused WITH unused RETURN substring(v.callee_name,'bad') AS x LIMIT 1-1",
+    "params": {
+      "s": 0,
+      "l": 0
+    }
+  },
+  {
+    "name": "distinct-error",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN DISTINCT substring(v.callee_name,'bad') AS x LIMIT 0"
+  },
+  {
+    "name": "aggregate-error",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN count(substring(v.callee_name,'bad')) AS x LIMIT 0"
+  },
+  {
+    "name": "aggregate",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN count(v) AS x LIMIT 0"
+  },
+  {
+    "name": "star",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN * LIMIT 0"
+  },
+  {
+    "name": "multiple",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN v, substring(v.callee_name,'bad') AS x LIMIT 0"
+  },
+  {
+    "name": "where-error",
+    "query": "MATCH (v:CallSiteNode) WHERE 1/0=1 RETURN 1 AS x LIMIT 0"
+  },
+  {
+    "name": "where-cast",
+    "query": "MATCH (v:CallSiteNode) WHERE substring('a','bad')='a' RETURN 1 AS x LIMIT 0"
+  },
+  {
+    "name": "where-unknown",
+    "query": "MATCH (v:CallSiteNode) WHERE unknownFunction(v) RETURN 1 AS x LIMIT 0"
+  },
+  {
+    "name": "inline-error",
+    "query": "MATCH (v:CallSiteNode {callee_name:1/0}) WHERE true RETURN substring(v.callee_name,'bad') AS x LIMIT 0"
+  },
+  {
+    "name": "optional",
+    "query": "OPTIONAL MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x LIMIT 0"
+  },
+  {
+    "name": "path",
+    "query": "MATCH p=(v:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x LIMIT 0"
+  },
+  {
+    "name": "multiple-pattern",
+    "query": "MATCH (v:CallSiteNode),(w) WHERE true RETURN substring(v.callee_name,'bad') AS x LIMIT 0"
+  },
+  {
+    "name": "relationship",
+    "query": "MATCH (v)-[]->(w) WHERE true RETURN substring(v.callee_name,'bad') AS x LIMIT 0"
+  },
+  {
+    "name": "method",
+    "query": "MATCH (v:Method) WHERE true RETURN substring(v.callee_name,'bad') AS x LIMIT 0"
+  },
+  {
+    "name": "anonymous",
+    "query": "MATCH (:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x LIMIT 0"
+  },
+  {
+    "name": "with-error",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' WITH substring(v.callee_name,'bad') AS x LIMIT 0 RETURN x"
+  },
+  {
+    "name": "with-before-filtered",
+    "query": "WITH 1 AS a MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT 0"
+  },
+  {
+    "name": "order-error",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN v AS x ORDER BY substring(v.callee_name,'bad') LIMIT 0"
+  },
+  {
+    "name": "union-later-error",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT 0 UNION RETURN 1/0 AS x"
+  },
+  {
+    "name": "union-zero-branches",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT 0 UNION MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT 0"
+  },
+  {
+    "name": "unwind-error",
+    "query": "UNWIND [1/0] AS a MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT 0"
+  },
+  {
+    "name": "empty-projection-error",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT 0",
+    "empty": true
+  },
+  {
+    "name": "return-only-error",
+    "query": "RETURN 1/0 AS x LIMIT 0"
+  },
+  {
+    "name": "limit-error",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS x LIMIT 1/0"
+  },
+  {
+    "name": "skip-negative-string",
+    "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x SKIP '-1' LIMIT 0",
+    "params": {}
+  },
+  {
+    "name": "skip-negative-fraction",
+    "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x SKIP -0.5 LIMIT 0",
+    "params": {}
+  },
+  {
+    "name": "skip-invalid-string",
+    "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x SKIP 'bad' LIMIT 0",
+    "params": {}
+  },
+  {
+    "name": "skip-parameter-error",
+    "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x SKIP $s LIMIT 0",
+    "params": {
+      "s": -1
+    }
+  },
+  {
+    "name": "literal-unicode-one",
+    "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x LIMIT '\u0661'",
+    "params": {}
+  },
+  {
+    "name": "literal-unicode-zero",
+    "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x LIMIT '\u0660'",
+    "params": {}
+  },
+  {
+    "name": "literal-overflow-string",
+    "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x LIMIT '9223372036854775808'",
+    "params": {}
+  },
+  {
+    "name": "literal-whitespace",
+    "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x LIMIT ' 1'",
+    "params": {}
+  },
+  {
+    "name": "literal-positive-string",
+    "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x LIMIT '1'",
+    "params": {}
+  },
+  {
+    "name": "literal-positive-fraction",
+    "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x LIMIT 1.9",
+    "params": {}
+  },
+  {
+    "name": "literal-infinity",
+    "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x LIMIT 1e999",
+    "params": {}
+  },
+  {
+    "name": "literal-signed-zero",
+    "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x LIMIT -0.0",
+    "params": {}
+  },
+  {
+    "name": "limit-parameter-string",
+    "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x LIMIT $l",
+    "params": {
+      "l": "0"
+    }
+  },
+  {
+    "name": "limit-parameter-null",
+    "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x LIMIT $l",
+    "params": {
+      "l": null
+    }
+  },
+  {
+    "name": "projection-unknown",
+    "query": "MATCH (v) WHERE true RETURN unknownFunction(v) AS x LIMIT 0",
+    "params": {}
+  },
+  {
+    "name": "unknown-label-where-error",
+    "query": "MATCH (v:Unknown) WHERE 1/0=0 RETURN v LIMIT 0",
+    "params": {}
+  },
+  {
+    "name": "star-where-error",
+    "query": "MATCH (v) WHERE 1/0=0 RETURN * LIMIT 0",
+    "params": {}
+  },
+  {
+    "name": "aggregate-where-error",
+    "query": "MATCH (v) WHERE 1/0=0 RETURN count(v) AS x LIMIT 0",
+    "params": {}
+  },
+  {
+    "name": "nested-aggregate",
+    "query": "MATCH (v) WHERE true RETURN toString(count(v)) AS x LIMIT 0",
+    "params": {}
+  },
+  {
+    "name": "order-skip-error",
+    "query": "MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x ORDER BY 1/0 SKIP 1/0 LIMIT 0",
+    "params": {}
+  },
+  {
+    "name": "no-where-inline-error",
+    "query": "MATCH (v:CallSiteNode {callee_name:1/0}) RETURN v LIMIT 0",
+    "params": {}
+  },
+  {
+    "name": "optional-where-error",
+    "query": "OPTIONAL MATCH (v) WHERE 1/0=0 RETURN v LIMIT 0",
+    "params": {}
+  },
+  {
+    "name": "with-where-error",
+    "query": "WITH 1 AS a MATCH (v) WHERE 1/0=0 RETURN v LIMIT 0",
+    "params": {}
+  },
+  {
+    "name": "union-first-error",
+    "query": "RETURN 1/0 AS x UNION MATCH (v:CallSiteNode) WHERE true RETURN substring(v.callee_name,'bad') AS x LIMIT 0",
+    "params": {}
+  }
+]
