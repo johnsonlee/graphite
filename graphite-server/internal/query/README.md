@@ -75,3 +75,31 @@ have additional independent JVM corpora.
 Procedure/planner shapes and the full server compatibility matrix remain separate
 work. Intermediate matching is still eager. These correctness fixtures establish
 neither complete server parity nor the required performance improvement.
+
+
+## Recent semantic boundaries
+
+EAGER query enumeration groups concrete node kinds in first persisted encounter
+order, matching main; existing raw and typed Store accessors remain unchanged.
+The [node-order audit](testdata/node-encounter/README.md) includes sparse mixed
+fixtures and demonstrates that MAPPED supertype order depends on JVM Class
+identity hashes. No single captured MAPPED sequence is hardcoded in Go.
+`ResourceValueNode` now participates in `Constant`/`ConstantNode` label matches,
+with a separate [26-query main oracle](testdata/constant-membership.md).
+
+The [literal zero-limit guard](testdata/limit-zero/README.md) reproduces main's
+specific initial filtered-MATCH branch. It can skip even throwing WHERE, inline
+property and projection expressions, as verified against main. It is not general
+lazy LIMIT execution. Parameter/expression counts and general SKIP/LIMIT
+conversion still have documented differences; relationship materialization and
+positive-limit early stopping remain separate work.
+
+Valid UTF-8 string predicates avoid temporary UTF-16 arrays while malformed or
+isolated-surrogate strings use the original Java-compatible path. The frozen
+Attempt 5 binary passes complete ordered responses for all 42 HTTP workload
+queries on all 64 real graphs. See the chronological optimization record for
+source identities and allocation diagnostics; this does not establish a P95 gain.
+
+The optional persistent CallSite string-index reader is implemented separately
+in Store. It is not yet used to select query candidates. Its availability does
+not certify all core node payloads or permit skipping Annotation matches.

@@ -44,8 +44,10 @@ behavior, broader malformed input and persisted-storage variants, and additional
 JVM string/value/error combinations. See the
 [query](internal/query/README.md) and [C4](internal/analysis/c4/README.md) scope
 records for precise limitations. Graph strings/metadata/adjacency are currently
-heap-backed even in MAPPED mode; only node data is memory mapped. There is no
-validated 10× speedup.
+heap-backed even in MAPPED mode. Node data and lazily opened optional CallSite
+string indexes are memory mapped. The index reader passes complete CRC/CSR
+validation on all 64 real graphs, but query candidate integration is still
+pending. There is no validated 10× speedup.
 
 `--topology` accepts a query file or a directory of `.cypher` files. Derived
 relations rebuild transactionally on graph replacement/unload; invalid rules or
