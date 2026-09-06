@@ -5566,3 +5566,27 @@ all 130 main/JMH files to frozen main and all 168 tests to parent b94b8caa,
 removing the factory-dependent candidate test while retaining its archived source.
 [Revert verification](profiling/attempt141/revert-source-receipt.json); revert CI
 is separate and is not presumed passing.
+
+
+### 2026-09-06 - Attempt 142: Replace independent query pools with a bounded shared scheduler
+
+**Direction:** one NCPU worker resource for graph sources, Method, CallSite scan/segments
+and Guard requests, with structured cancellation and actual-exit cleanup. Preserve original
+plans, storage algorithms and work reducers. Parent599a3ece, frozen-main4e328b01 comparison.
+
+**Correctness:** 2,096 module tests and four detekt pass, both JMH packages built, webgraph
+JMH test exclusion passes;16 scheduler tests pass at32 configured CPUs. Real fixture64
+supplemental36 full values/order/provenance control passes.
+
+| Pair/order | main → candidate P95 ms | main → candidate CPU s |
+|---|---:|---:|
+| 1 C/B | 62.739458 → 51.100291 | 1.744503 → 1.602539 |
+| 2 B/C | 41.604709 → 42.968791 | 1.495837 → 1.559311 |
+
+**Not accepted:** pair2 lacks strict progress. Preserve this isolated experimental commit
+and immutable JAR/evidence; no candidate CI or further acceptance pairs after the known
+failure. Per the updated user objective, continue causal diagnosis and refinement in the
+same direction; this first failure does not abandon it or automatically revert the experiment.
+The PR receives no failed/no-progress production change. Final10x is unmet and no merge is
+authorized. Managed-worker NCPU cap is not a cap on all JVM or existing query callers.
+[Current report](profiling/attempt142/README.md).

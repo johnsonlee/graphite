@@ -25,6 +25,10 @@ import io.johnsonlee.graphite.core.ResourceEdge
 import io.johnsonlee.graphite.core.ResourceRelation
 import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.graph.Graph
+import io.johnsonlee.graphite.graph.GraphTaskContext
+import io.johnsonlee.graphite.graph.GraphTaskGroup
+import io.johnsonlee.graphite.graph.GraphTaskRole
+import io.johnsonlee.graphite.graph.GraphTaskScheduler
 import io.johnsonlee.graphite.graph.GraphScanParallelismPlan
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.MethodMetadataScanConsumer
@@ -53,13 +57,10 @@ import io.johnsonlee.graphite.graph.nodesByTransformedStringProperty
 import io.johnsonlee.graphite.graph.methods
 import java.util.PriorityQueue
 import java.util.concurrent.Callable
-import java.util.concurrent.CountDownLatch
+import java.util.concurrent.CancellationException
 import java.util.concurrent.ExecutionException
-import java.util.concurrent.ExecutorCompletionService
-import java.util.concurrent.Executors
-import java.util.concurrent.Future
 import java.util.concurrent.LinkedBlockingQueue
-import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
 private const val COUNT_QUERY_CLAUSES = 2
@@ -93,13 +94,33 @@ private const val LEGACY_DIRECT_STRING_GRAPH_PARALLELISM = 8
 private const val RAW_LEADING_MAX_TERM_LENGTH = 4
 private const val RAW_LEADING_MAX_LIMIT = 200
 private const val DIRECT_ORDER_SOURCE_SHIFT = 56
+private const val DIRECT_STRING_OUTCOME_POLL_MILLIS = 10L
 private typealias DirectNodePredicateFactory = (CypherGraph) -> (Node) -> Boolean
 
 private fun resolveNodeClass(labels: List<String>): Class<out Node>? =
     labels.firstOrNull()?.let(NodePropertyAccessor::resolveNodeLabelOrNull)
         ?: Node::class.java.takeIf { labels.isEmpty() }
 
-private val directStringWorkerNumber = AtomicInteger()
+private fun isGraphTaskInterrupted(): Boolean =
+    Thread.currentThread().isInterrupted || GraphTaskContext.current?.isCancelled == true
+
+/** Keeps source outcomes eager while also observing cancellation of pumps that never ran. */
+internal fun <T> awaitDirectStringOutcome(
+    outcomes: LinkedBlockingQueue<T>,
+    group: GraphTaskGroup<*>
+): T {
+    while (true) {
+        outcomes.poll()?.let { return it }
+        if (GraphTaskContext.current?.isCancelled == true) {
+            throw CancellationException("Parallel graph scan cancelled")
+        }
+        if (Thread.interrupted()) throw InterruptedException()
+        // A REQUEST may own the last root slot and need to execute its admitted source pump.
+        group.helpOne()
+        outcomes.poll(DIRECT_STRING_OUTCOME_POLL_MILLIS, TimeUnit.MILLISECONDS)?.let { return it }
+    }
+}
+
 private val directStringWorkerActive = ThreadLocal.withInitial { false }
 private val directStringActiveWorkers = AtomicInteger()
 private val directStringPeakActiveWorkers = AtomicInteger()
@@ -138,29 +159,7 @@ internal fun resolveDirectStringGraphParallelism(
     return minOf(candidates, plan.graphWorkerCount)
 }
 
-internal fun resolveDirectStringExecutorParallelism(
-    processors: Int = Runtime.getRuntime().availableProcessors(),
-    configuredGraphWorkers: String? = System.getProperty(DIRECT_STRING_PARALLELISM_PROPERTY)
-): Int {
-    val available = processors.coerceAtLeast(1)
-    return maxOf(
-        minOf(available, LEGACY_DIRECT_STRING_GRAPH_PARALLELISM),
-        resolveDirectStringParallelismPlan(available, configuredGraphWorkers).graphWorkerCount
-    )
-}
-
 private val configuredDirectStringParallelism by lazy { System.getProperty(DIRECT_STRING_PARALLELISM_PROPERTY) }
-private val directStringExecutorParallelism: Int by lazy {
-    resolveDirectStringExecutorParallelism(configuredGraphWorkers = configuredDirectStringParallelism)
-}
-private val directStringExecutor by lazy {
-    Executors.newFixedThreadPool(directStringExecutorParallelism) { runnable ->
-        Thread(runnable, "graphite-cypher-scan-${directStringWorkerNumber.incrementAndGet()}").apply {
-            isDaemon = true
-        }
-    }
-}
-
 private fun directStringGraphParallelism(sourceCount: Int, graphScoped: Boolean = false): Int =
     resolveDirectStringGraphParallelism(
         sourceCount,
@@ -1171,7 +1170,7 @@ class QueryPipeline private constructor(
             ExpressionEvaluator(
                 parameterResolver = parameters::get,
                 checkCancelled = {
-                    if (Thread.currentThread().isInterrupted) throw CypherQueryCancelledException()
+                    if (isGraphTaskInterrupted()) throw CypherQueryCancelledException()
                 }
             )
         } else {
@@ -1193,7 +1192,7 @@ class QueryPipeline private constructor(
                 val value = localEvaluator.evaluate(countedExpression, bindings) ?: continue
                 if (distinctValues == null || distinctValues.add(cypherValueKey(value))) count++
             }
-            if ((inspected++ and CANCELLATION_POLL_MASK) == 0 && Thread.currentThread().isInterrupted) {
+            if ((inspected++ and CANCELLATION_POLL_MASK) == 0 && isGraphTaskInterrupted()) {
                 throw CypherQueryCancelledException()
             }
         }
@@ -1433,7 +1432,7 @@ class QueryPipeline private constructor(
                         parameterResolver = stringParameters::get,
                         checkCancelled = {
                             tracker?.checkCancelled()
-                            if (Thread.currentThread().isInterrupted) throw CypherQueryCancelledException()
+                            if (isGraphTaskInterrupted()) throw CypherQueryCancelledException()
                         }
                     )
                     val predicate: (Node) -> Boolean = { node ->
@@ -2405,76 +2404,48 @@ class QueryPipeline private constructor(
         rows.forEach { row -> addDistinctRow(target, row, limit) }
     }
 
+    private fun <T> directStringTask(task: () -> T): T {
+        val previouslyActive = directStringWorkerActive.get()
+        directStringWorkerActive.set(true)
+        val activeWorkers = directStringActiveWorkers.incrementAndGet()
+        directStringPeakActiveWorkers.accumulateAndGet(activeWorkers, ::maxOf)
+        try {
+            return task()
+        } finally {
+            directStringActiveWorkers.decrementAndGet()
+            if (previouslyActive) directStringWorkerActive.set(true) else directStringWorkerActive.remove()
+        }
+    }
+
     @Suppress("TooGenericExceptionCaught", "ThrowsCount")
-    private fun <T> runDirectStringTasks(
-        tasks: List<() -> T>,
-        parallelism: Int
-    ): List<T> {
-        if (tasks.size == 1) return listOf(tasks.single().invoke())
-        val completionService = ExecutorCompletionService<IndexedValue<T>>(directStringExecutor)
-        val futures = arrayOfNulls<Future<IndexedValue<T>>>(tasks.size)
-        val completions = arrayOfNulls<CountDownLatch>(tasks.size)
-        val started = arrayOfNulls<AtomicBoolean>(tasks.size)
+    private fun <T> runDirectStringTasks(tasks: List<() -> T>, parallelism: Int): List<T> {
+        if (tasks.size == 1 || GraphTaskContext.current?.role?.let { it != GraphTaskRole.REQUEST } == true) {
+            return tasks.map { it() }
+        }
+        val group = GraphTaskScheduler.shared.newRootGroup<IndexedValue<T>>()
         fun submit(index: Int) {
-            val completion = CountDownLatch(1)
-            val taskStarted = AtomicBoolean()
-            completions[index] = completion
-            started[index] = taskStarted
-            futures[index] = completionService.submit(Callable {
-                if (!taskStarted.compareAndSet(false, true)) {
-                    throw java.util.concurrent.CancellationException()
-                }
-                val previouslyActive = directStringWorkerActive.get()
-                directStringWorkerActive.set(true)
-                val activeWorkers = directStringActiveWorkers.incrementAndGet()
-                directStringPeakActiveWorkers.accumulateAndGet(activeWorkers, ::maxOf)
-                try {
-                    IndexedValue(index, tasks[index]())
-                } finally {
-                    directStringActiveWorkers.decrementAndGet()
-                    if (previouslyActive) {
-                        directStringWorkerActive.set(true)
-                    } else {
-                        directStringWorkerActive.remove()
-                    }
-                    completion.countDown()
-                }
-            })
+            group.submit(Callable { directStringTask { IndexedValue(index, tasks[index]()) } })
         }
         return try {
             var nextTask = 0
             repeat(minOf(tasks.size, parallelism.coerceAtLeast(1))) { submit(nextTask++) }
             val results = arrayOfNulls<Any?>(tasks.size)
             repeat(tasks.size) {
-                val result = completionService.take().get()
+                val result = group.awaitNext().get()
                 results[result.index] = result.value
                 if (nextTask < tasks.size) submit(nextTask++)
             }
             @Suppress("UNCHECKED_CAST")
             results.map { it as T }
         } catch (error: Throwable) {
-            futures.forEachIndexed { index, future ->
-                val taskStarted = started[index]
-                val completion = completions[index]
-                if (future != null && taskStarted != null && completion != null) {
-                    if (future.cancel(true) && taskStarted.compareAndSet(false, true)) completion.countDown()
-                }
-            }
-            awaitDirectStringTasks(completions.filterNotNull())
-            val cause = (error as? ExecutionException)?.cause ?: error
-            when (cause) {
-                is RuntimeException -> throw cause
-                is Error -> throw cause
-                else -> throw IllegalStateException("Parallel graph scan failed", cause)
-            }
+            group.cancelAndJoin()
+            throwDirectStringTaskFailure(error)
+        } finally {
+            group.close()
         }
     }
 
-    /**
-     * Runs a source-ordered rolling window without waiting for every task in the current window.
-     * At most [parallelism] tasks are submitted ahead of the next result to merge. Returning true
-     * from [stopAfter] cancels and joins that bounded speculative suffix.
-     */
+    /** Preserves the source-ordered window and cancels and joins its speculative suffix. */
     @Suppress("TooGenericExceptionCaught", "ThrowsCount")
     private fun <T> runDirectStringTasksInOrderUntil(
         tasks: List<() -> T>,
@@ -2482,160 +2453,119 @@ class QueryPipeline private constructor(
         stopAfter: (T) -> Boolean
     ) {
         if (tasks.isEmpty()) return
+        if (GraphTaskContext.current?.role?.let { it != GraphTaskRole.REQUEST } == true) {
+            for (task in tasks) if (stopAfter(task())) return
+            return
+        }
         data class Outcome<T>(val index: Int, val value: T? = null, val error: Throwable? = null)
-
-        val completionService = ExecutorCompletionService<Outcome<T>>(directStringExecutor)
-        val futures = arrayOfNulls<Future<Outcome<T>>>(tasks.size)
-        val completions = arrayOfNulls<CountDownLatch>(tasks.size)
-        val started = arrayOfNulls<AtomicBoolean>(tasks.size)
+        val group = GraphTaskScheduler.shared.newRootGroup<Outcome<T>>()
         fun submit(index: Int) {
-            val completion = CountDownLatch(1)
-            val taskStarted = AtomicBoolean()
-            completions[index] = completion
-            started[index] = taskStarted
-            futures[index] = completionService.submit(Callable {
-                if (!taskStarted.compareAndSet(false, true)) {
-                    throw java.util.concurrent.CancellationException()
-                }
-                val previouslyActive = directStringWorkerActive.get()
-                directStringWorkerActive.set(true)
-                val activeWorkers = directStringActiveWorkers.incrementAndGet()
-                directStringPeakActiveWorkers.accumulateAndGet(activeWorkers, ::maxOf)
-                try {
+            group.submit(Callable {
+                directStringTask {
                     try {
                         Outcome(index, value = tasks[index]())
                     } catch (error: Throwable) {
                         Outcome(index, error = error)
                     }
-                } finally {
-                    directStringActiveWorkers.decrementAndGet()
-                    if (previouslyActive) {
-                        directStringWorkerActive.set(true)
-                    } else {
-                        directStringWorkerActive.remove()
-                    }
-                    completion.countDown()
                 }
             })
         }
-        fun cancelAndJoin() {
-            futures.forEachIndexed { index, future ->
-                val taskStarted = started[index]
-                val completion = completions[index]
-                if (future != null && taskStarted != null && completion != null) {
-                    if (future.cancel(true) && taskStarted.compareAndSet(false, true)) completion.countDown()
-                }
-            }
-            awaitDirectStringTasks(completions.filterNotNull())
-        }
-
-        var nextTask = 0
-        repeat(minOf(tasks.size, parallelism.coerceAtLeast(1))) { submit(nextTask++) }
         try {
+            var nextTask = 0
+            repeat(minOf(tasks.size, parallelism.coerceAtLeast(1))) { submit(nextTask++) }
             val completed = arrayOfNulls<Outcome<T>>(tasks.size)
             var nextResult = 0
             while (nextResult < tasks.size) {
-                val outcome = completionService.take().get()
+                val outcome = group.awaitNext().get()
                 completed[outcome.index] = outcome
                 while (nextResult < tasks.size) {
                     val ordered = completed[nextResult] ?: break
                     ordered.error?.let { throw it }
                     @Suppress("UNCHECKED_CAST")
                     if (stopAfter(ordered.value as T)) {
-                        cancelAndJoin()
+                        group.cancelAndJoin()
                         return
                     }
                     nextResult++
-                    // Replenish only as the contiguous source prefix advances. This keeps the
-                    // speculative suffix bounded, so a distant source cannot fail a query whose
-                    // earlier source already satisfies LIMIT.
+                    // Only advancing the contiguous source prefix admits another source.
                     if (nextTask < tasks.size) submit(nextTask++)
                 }
             }
         } catch (error: Throwable) {
-            cancelAndJoin()
-            val cause = (error as? ExecutionException)?.cause ?: error
-            when (cause) {
-                is RuntimeException -> throw cause
-                is Error -> throw cause
-                else -> throw IllegalStateException("Parallel graph scan failed", cause)
-            }
+            group.cancelAndJoin()
+            throwDirectStringTaskFailure(error)
+        } finally {
+            group.close()
         }
     }
 
     /**
-     * Reuses a fixed set of graph workers for a source-ordered rolling window. Prepared index
-     * lookups are too small to justify one Future per graph, but still benefit from independent
-     * graph progress. Only the fixed worker count may be ahead of the merged source prefix.
+     * A ready pump retains the original bounded source window. It drains only admitted work,
+     * then exits, so an empty logical worker never occupies a shared physical worker.
      */
-    @Suppress("TooGenericExceptionCaught", "ThrowsCount")
+    @Suppress("TooGenericExceptionCaught", "ThrowsCount", "LoopWithTooManyJumpStatements")
     private fun <T> runDirectStringTasksWithFixedWorkersInOrderUntil(
         tasks: List<() -> T>,
         parallelism: Int,
         stopAfter: (T) -> Boolean
     ) {
         if (tasks.isEmpty()) return
+        if (GraphTaskContext.current?.role?.let { it != GraphTaskRole.REQUEST } == true) {
+            for (task in tasks) if (stopAfter(task())) return
+            return
+        }
         data class Outcome<T>(val index: Int, val value: T? = null, val error: Throwable? = null)
-
         val workerCount = minOf(tasks.size, parallelism.coerceAtLeast(1))
-        val taskIndexes = LinkedBlockingQueue<Int>()
+        val taskIndexes = java.util.ArrayDeque<Int>()
         val outcomes = LinkedBlockingQueue<Outcome<T>>()
-        val completions = List(workerCount) { CountDownLatch(1) }
-        val started = List(workerCount) { AtomicBoolean() }
-        val futures = completions.mapIndexed { index, completion ->
-            val taskStarted = started[index]
-            directStringExecutor.submit {
-                if (!taskStarted.compareAndSet(false, true)) return@submit
-                val previouslyActive = directStringWorkerActive.get()
-                directStringWorkerActive.set(true)
-                val activeWorkers = directStringActiveWorkers.incrementAndGet()
-                directStringPeakActiveWorkers.accumulateAndGet(activeWorkers, ::maxOf)
-                try {
-                    while (true) {
-                        val taskIndex = taskIndexes.take()
-                        if (taskIndex < 0) break
-                        val outcome = try {
-                            Outcome(taskIndex, value = tasks[taskIndex]())
-                        } catch (error: Throwable) {
-                            Outcome(taskIndex, error = error)
+        val pumpLock = Any()
+        val group = GraphTaskScheduler.shared.newRootGroup<Unit>()
+        var activePumps = 0
+        var stopped = false
+        fun admit(index: Int) = synchronized(pumpLock) {
+            taskIndexes.addLast(index)
+            if (activePumps < workerCount) {
+                activePumps++
+                group.submit(Callable {
+                    directStringTask {
+                        var retired = false
+                        try {
+                            while (true) {
+                                val taskIndex = synchronized(pumpLock) {
+                                    (if (stopped) null else taskIndexes.pollFirst()).also {
+                                        if (it == null) {
+                                            activePumps--
+                                            retired = true
+                                        }
+                                    }
+                                } ?: break
+                                val outcome = try {
+                                    Outcome(taskIndex, value = tasks[taskIndex]())
+                                } catch (error: Throwable) {
+                                    Outcome(taskIndex, error = error)
+                                }
+                                // Publishing remains non-interruptible after storage cancellation.
+                                outcomes.add(outcome)
+                                if (outcome.error != null) break
+                            }
+                        } finally {
+                            synchronized(pumpLock) { if (!retired) activePumps-- }
                         }
-                        // The storage call may preserve the worker's interrupted status while
-                        // throwing cancellation. Publishing to this unbounded queue must therefore
-                        // be non-interruptible, or the coordinator can wait forever for this index.
-                        outcomes.add(outcome)
-                        if (outcome.error != null) return@submit
                     }
-                } finally {
-                    directStringActiveWorkers.decrementAndGet()
-                    if (previouslyActive) {
-                        directStringWorkerActive.set(true)
-                    } else {
-                        directStringWorkerActive.remove()
-                    }
-                    completion.countDown()
-                }
+                })
             }
         }
         fun stopWorkers(cancel: Boolean) {
-            if (cancel) {
-                futures.forEachIndexed { index, future ->
-                    if (future.cancel(true) && started[index].compareAndSet(false, true)) {
-                        completions[index].countDown()
-                    }
-                }
-            } else {
-                repeat(workerCount) { taskIndexes.add(-1) }
-            }
-            awaitDirectStringTasks(completions)
+            synchronized(pumpLock) { stopped = true }
+            if (cancel) group.cancelAndJoin() else group.awaitAll()
         }
-
-        var nextTask = 0
-        repeat(workerCount) { taskIndexes.add(nextTask++) }
         try {
+            var nextTask = 0
+            repeat(workerCount) { admit(nextTask++) }
             val completed = arrayOfNulls<Outcome<T>>(tasks.size)
             var nextResult = 0
             while (nextResult < tasks.size) {
-                val outcome = outcomes.take()
+                val outcome = awaitDirectStringOutcome(outcomes, group)
                 completed[outcome.index] = outcome
                 while (nextResult < tasks.size) {
                     val ordered = completed[nextResult] ?: break
@@ -2646,34 +2576,26 @@ class QueryPipeline private constructor(
                         return
                     }
                     nextResult++
-                    if (nextTask < tasks.size) taskIndexes.add(nextTask++)
+                    if (nextTask < tasks.size) admit(nextTask++)
                 }
             }
             stopWorkers(cancel = false)
         } catch (error: Throwable) {
             stopWorkers(cancel = true)
-            val cause = (error as? ExecutionException)?.cause ?: error
-            when (cause) {
-                is RuntimeException -> throw cause
-                is Error -> throw cause
-                else -> throw IllegalStateException("Parallel graph scan failed", cause)
-            }
+            throwDirectStringTaskFailure(error)
+        } finally {
+            group.close()
         }
     }
 
-    private fun awaitDirectStringTasks(completions: List<CountDownLatch>) {
-        var interrupted = false
-        completions.forEach { completion ->
-            while (true) {
-                try {
-                    completion.await()
-                    break
-                } catch (_: InterruptedException) {
-                    interrupted = true
-                }
-            }
+    @Suppress("ThrowsCount")
+    private fun throwDirectStringTaskFailure(error: Throwable): Nothing {
+        val cause = (error as? ExecutionException)?.cause ?: error
+        when (cause) {
+            is RuntimeException -> throw cause
+            is Error -> throw cause
+            else -> throw IllegalStateException("Parallel graph scan failed", cause)
         }
-        if (interrupted) Thread.currentThread().interrupt()
     }
 
     @Suppress("LongParameterList")
@@ -2784,7 +2706,7 @@ class QueryPipeline private constructor(
 
         private fun pollInterrupted() {
             inspected++
-            if ((inspected and CANCELLATION_POLL_MASK) == 0 && Thread.currentThread().isInterrupted) {
+            if ((inspected and CANCELLATION_POLL_MASK) == 0 && isGraphTaskInterrupted()) {
                 throw CypherQueryCancelledException()
             }
         }
@@ -2903,7 +2825,7 @@ class QueryPipeline private constructor(
     private fun <T> interruptible(values: Sequence<T>): Sequence<T> = sequence {
         var inspected = 0
         for (value in values) {
-            if ((inspected++ and CANCELLATION_POLL_MASK) == 0 && Thread.currentThread().isInterrupted) {
+            if ((inspected++ and CANCELLATION_POLL_MASK) == 0 && isGraphTaskInterrupted()) {
                 throw CypherQueryCancelledException()
             }
             yield(value)
@@ -3473,7 +3395,7 @@ class QueryPipeline private constructor(
                     val localEvaluator = ExpressionEvaluator(
                         parameterResolver = parameters::get,
                         checkCancelled = {
-                            if (Thread.currentThread().isInterrupted) throw CypherQueryCancelledException()
+                            if (isGraphTaskInterrupted()) throw CypherQueryCancelledException()
                         }
                     )
                     val bindings = mutableMapOf<String, Any?>(variable to null)

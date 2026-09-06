@@ -19,6 +19,8 @@ import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.core.TypeRelation
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
+import io.johnsonlee.graphite.graph.GraphTaskRole
+import io.johnsonlee.graphite.graph.GraphTaskScheduler
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.ParallelGraphWorkBatchConsumer
@@ -46,11 +48,16 @@ import io.johnsonlee.graphite.graph.TransformedStringPropertyLookup
 import io.johnsonlee.graphite.graph.WorkAwareStringPropertyDisjunctionAggregation
 import io.johnsonlee.graphite.graph.WorkAwareStringPropertyDisjunctionLookup
 import org.junit.Test
+import java.util.concurrent.Callable
+import java.util.concurrent.CancellationException
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.CyclicBarrier
 import java.util.concurrent.Executors
+import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotEquals
@@ -87,10 +94,6 @@ class CrossGraphCypherExecutorTest {
         assertEquals(2, resolveDirectStringGraphParallelism(64, 16, "2", graphScoped = true))
         assertEquals(1, resolveDirectStringGraphParallelism(0, 0, null, graphScoped = true))
 
-        assertEquals(4, resolveDirectStringExecutorParallelism(4, null))
-        assertEquals(8, resolveDirectStringExecutorParallelism(16, null))
-        assertEquals(16, resolveDirectStringExecutorParallelism(16, "16"))
-        assertEquals(4, resolveDirectStringExecutorParallelism(processors = 4))
 
         val overriddenStorage = directStringStorageWorkConsumer(
             sourceCount = 64,
@@ -126,9 +129,10 @@ class CrossGraphCypherExecutorTest {
     }
 
     @Test
-    fun `legacy wide query executor runs the full selected graph worker wave`() {
+    fun `wide query executor preserves its source window within shared root admission`() {
         val graphCount = 36
-        val plannedWorkers = resolveDirectStringGraphParallelism(graphCount)
+        val plannedWorkers = minOf(resolveDirectStringGraphParallelism(graphCount),
+            (GraphTaskScheduler.shared.parallelism - 1).coerceAtLeast(1))
         if (plannedWorkers < 2) return
         val firstWaveEntered = CountDownLatch(plannedWorkers)
         val workerThreads = java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
@@ -170,7 +174,7 @@ class CrossGraphCypherExecutorTest {
 
         assertTrue(result.rows.isEmpty())
         assertEquals(plannedWorkers, workerThreads.size)
-        assertTrue(workerThreads.all { thread -> thread.startsWith("graphite-cypher-scan-") })
+        assertTrue(workerThreads.all { thread -> thread.startsWith(GraphTaskScheduler.shared.threadNamePrefix) })
     }
 
     @Test
@@ -237,7 +241,8 @@ class CrossGraphCypherExecutorTest {
 
     @Test
     fun `full graph id set parallelizes cold scans within the cpu budget`() {
-        val plannedWorkers = resolveDirectStringGraphParallelism(64)
+        val plannedWorkers = minOf(resolveDirectStringGraphParallelism(64),
+            (GraphTaskScheduler.shared.parallelism - 1).coerceAtLeast(1))
         if (plannedWorkers < 2) return
         val firstParallelWave = CountDownLatch(plannedWorkers)
         val activeGraphWorkers = AtomicInteger()
@@ -306,7 +311,8 @@ class CrossGraphCypherExecutorTest {
 
     @Test
     fun `externally selected full graph set parallelizes without a graph id predicate`() {
-        val plannedWorkers = resolveDirectStringGraphParallelism(64)
+        val plannedWorkers = minOf(resolveDirectStringGraphParallelism(64),
+            (GraphTaskScheduler.shared.parallelism - 1).coerceAtLeast(1))
         if (plannedWorkers < 2) return
         val firstParallelWave = CountDownLatch(plannedWorkers)
         val activeGraphWorkers = AtomicInteger()
@@ -458,7 +464,8 @@ class CrossGraphCypherExecutorTest {
 
     @Test
     fun `mixed retained selected graph set keeps its cold suffix parallel`() {
-        val plannedWorkers = resolveDirectStringGraphParallelism(64)
+        val plannedWorkers = minOf(resolveDirectStringGraphParallelism(64),
+            (GraphTaskScheduler.shared.parallelism - 1).coerceAtLeast(1))
         if (plannedWorkers < 2) return
         val firstParallelWave = CountDownLatch(plannedWorkers)
         val startedGraphs = java.util.concurrent.ConcurrentHashMap.newKeySet<Int>()
@@ -522,7 +529,8 @@ class CrossGraphCypherExecutorTest {
 
     @Test
     fun `unlabeled selected graph set requires every applicable type to be retained`() {
-        val plannedWorkers = resolveDirectStringGraphParallelism(64)
+        val plannedWorkers = minOf(resolveDirectStringGraphParallelism(64),
+            (GraphTaskScheduler.shared.parallelism - 1).coerceAtLeast(1))
         if (plannedWorkers < 2) return
         val firstParallelWave = CountDownLatch(plannedWorkers)
         val startedGraphs = java.util.concurrent.ConcurrentHashMap.newKeySet<Int>()
@@ -588,7 +596,8 @@ class CrossGraphCypherExecutorTest {
 
     @Test
     fun `startup prepared global wide set reuses the balanced graph workers`() {
-        val plannedWorkers = resolveDirectStringGraphParallelism(64)
+        val plannedWorkers = minOf(resolveDirectStringGraphParallelism(64),
+            (GraphTaskScheduler.shared.parallelism - 1).coerceAtLeast(1))
         if (plannedWorkers < 2) return
         val batchWorkers = minOf(plannedWorkers, 63)
         val firstParallelBatch = CountDownLatch(batchWorkers)
@@ -662,6 +671,129 @@ class CrossGraphCypherExecutorTest {
                 resolveDirectStringParallelismPlan().segmentWorkerCount &&
                 consumer is PreferredMappedStringIndexViewGraphWorkBatchConsumer
         })
+    }
+
+    @Test
+    @Suppress("NestedBlockDepth")
+    fun `ready pump outcome wait observes parent cancellation without interruption`() {
+        val scheduler = GraphTaskScheduler.shared
+        val waiting = CountDownLatch(1)
+        val exited = CountDownLatch(1)
+        val pumpRan = AtomicBoolean()
+        val interrupted = AtomicBoolean()
+        val observedFailure = AtomicReference<CancellationException>()
+        val outcomes = object : LinkedBlockingQueue<Int>() {
+            override fun poll(timeout: Long, unit: TimeUnit): Int? {
+                waiting.countDown()
+                return super.poll(timeout, unit)
+            }
+        }
+        val requests = scheduler.newRequestGroup<Unit>()
+        try {
+            val request = requests.submit(Callable {
+                // Keep the pump NEW deterministically: cancellation publishes only its task
+                // completion, never an entry in the coordinator's separate outcome queue.
+                val sources = scheduler.newGroup<Unit>(
+                    backgroundParallelism = 0,
+                    helpWhileWaiting = false,
+                    role = GraphTaskRole.GRAPH_SOURCE
+                )
+                try {
+                    sources.submit(Callable {
+                        pumpRan.set(true)
+                        outcomes.add(7)
+                        Unit
+                    })
+                    try {
+                        awaitDirectStringOutcome(outcomes, sources)
+                    } catch (error: CancellationException) {
+                        observedFailure.set(error)
+                    }
+                } finally {
+                    interrupted.set(Thread.currentThread().isInterrupted)
+                    sources.cancelAndJoin(mayInterruptIfRunning = false)
+                    sources.close()
+                    exited.countDown()
+                }
+                Unit
+            })
+            assertTrue(waiting.await(5, TimeUnit.SECONDS))
+            assertTrue(request.cancel(false))
+            assertTrue(exited.await(5, TimeUnit.SECONDS))
+            // Observe the actual coordinator exit, not only Future's cancellation state.
+            assertNotNull(observedFailure.get())
+            assertEquals(false, interrupted.get())
+            assertEquals(false, pumpRan.get())
+            assertTrue(outcomes.isEmpty())
+            assertFailsWith<CancellationException> { request.get(5, TimeUnit.SECONDS) }
+        } finally {
+            requests.cancelAndJoin()
+            requests.close()
+        }
+    }
+
+    @Test
+    fun `prepared global queries complete when requests occupy every root slot`() {
+        val scheduler = GraphTaskScheduler.shared
+        val requests = (scheduler.parallelism - 1).coerceAtLeast(1)
+        val entered = CountDownLatch(requests)
+        val visits = AtomicInteger()
+        val empty = graph()
+        val graphs = List(64) { index ->
+            CypherGraph("prepared-$index", object :
+                Graph by empty,
+                WorkAwareStringPropertyDisjunctionLookup,
+                PreparedStringPropertyDisjunctionLookup {
+                override fun nodeCount(type: Class<out Node>): Long? =
+                    if (type == CallSiteNode::class.java) 10_000L else empty.nodeCount(type)
+
+                override fun hasPreparedStringPropertyDisjunction(
+                    type: Class<out Node>,
+                    predicates: List<StringPropertyPredicate>
+                ): Boolean = type == CallSiteNode::class.java && predicates.isNotEmpty()
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int
+                ): Sequence<T> = emptySequence()
+
+                override fun <T : Node> nodesByStringPropertyDisjunction(
+                    type: Class<T>,
+                    predicates: List<StringPropertyPredicate>,
+                    limit: Int,
+                    workConsumer: GraphWorkConsumer
+                ): Sequence<T> {
+                    visits.incrementAndGet()
+                    workConsumer.consume()
+                    return emptySequence()
+                }
+            })
+        }
+        val group = scheduler.newRequestGroup<Boolean>()
+        try {
+            val futures = List(requests) {
+                group.submit(java.util.concurrent.Callable {
+                    entered.countDown()
+                    check(entered.await(5, TimeUnit.SECONDS))
+                    CrossGraphCypherExecutor(
+                        graphs,
+                        CypherExecutionContext(CypherExecutionBudget(maxWorkUnits = 100_000)),
+                        graphSourceScopeApplied = false
+                    ).execute(
+                        "MATCH (n:CallSiteNode) WHERE " +
+                            "toLower(coalesce(n.caller_class, '')) CONTAINS 'absent' OR " +
+                            "toLower(coalesce(n.callee_class, '')) CONTAINS 'absent' " +
+                            "RETURN n.caller_class LIMIT 1"
+                    ).rows.isEmpty()
+                })
+            }
+            futures.forEach { assertTrue(it.get(10, TimeUnit.SECONDS)) }
+            assertEquals(64 * requests, visits.get())
+        } finally {
+            group.cancelAndJoin()
+            group.close()
+        }
     }
 
     @Test
@@ -835,7 +967,8 @@ class CrossGraphCypherExecutorTest {
 
     @Test
     fun `prepared global wide interrupted worker publishes cancellation and joins peers`() {
-        val workerCount = resolveDirectStringGraphParallelism(64)
+        val workerCount = minOf(resolveDirectStringGraphParallelism(64),
+            (GraphTaskScheduler.shared.parallelism - 1).coerceAtLeast(1))
         val peerStarted = CountDownLatch(1)
         val peerInterrupted = CountDownLatch(1)
         val empty = graph()
@@ -912,7 +1045,7 @@ class CrossGraphCypherExecutorTest {
 
     @Test
     fun `prepared global wide interrupted request cancels workers queued behind another query`() {
-        val poolWorkers = resolveDirectStringExecutorParallelism()
+        val poolWorkers = (GraphTaskScheduler.shared.parallelism - 1).coerceAtLeast(1)
         if (resolveDirectStringGraphParallelism(64) < 2) return
         val blockingGraphCount = if (poolWorkers > 8) maxOf(40, poolWorkers) else poolWorkers
         val blockersStarted = CountDownLatch(poolWorkers)
@@ -2766,7 +2899,7 @@ class CrossGraphCypherExecutorTest {
 
     @Test
     fun `non distinct broad discovery scans graphs concurrently and preserves source rows`() {
-        if (Runtime.getRuntime().availableProcessors() < 2) return
+        if (GraphTaskScheduler.shared.parallelism < 3) return
         val active = AtomicInteger()
         val maximumActive = AtomicInteger()
         val workersReady = CyclicBarrier(2)
@@ -2840,7 +2973,7 @@ class CrossGraphCypherExecutorTest {
 
     @Test
     fun `parallel residual string predicates keep graph local bindings`() {
-        if (Runtime.getRuntime().availableProcessors() < 2) return
+        if (GraphTaskScheduler.shared.parallelism < 3) return
         val returnType = TypeDescriptor("void")
         val sources = (0 until 8).map { graphIndex ->
             val backing = DefaultGraph.Builder().apply {
@@ -2949,7 +3082,7 @@ class CrossGraphCypherExecutorTest {
 
     @Test
     fun concurrentBroadQueriesDoNotSerializeOnTheSameGraph() {
-        if (Runtime.getRuntime().availableProcessors() < 2) return
+        if (GraphTaskScheduler.shared.parallelism < 3) return
         val entered = CountDownLatch(2)
         val release = CountDownLatch(1)
         val active = AtomicInteger()
@@ -3158,7 +3291,7 @@ class CrossGraphCypherExecutorTest {
 
     @Test
     fun `parallel string scans preserve source order limit and complete provenance`() {
-        if (Runtime.getRuntime().availableProcessors() < 2) return
+        if (GraphTaskScheduler.shared.parallelism < 3) return
         val barrier = CyclicBarrier(2)
         val active = AtomicInteger()
         val maximumActive = AtomicInteger()
@@ -3219,7 +3352,7 @@ class CrossGraphCypherExecutorTest {
 
     @Test
     fun `parallel row scanners forward bounded limits while residual filters keep complete candidates`() {
-        if (Runtime.getRuntime().availableProcessors() < 2 ||
+        if (GraphTaskScheduler.shared.parallelism < 3 ||
             System.getProperty("graphite.cypher.directStringParallelism") != null
         ) return
         val lookupLimits = List(2) { java.util.concurrent.ConcurrentLinkedQueue<Int>() }
@@ -3294,7 +3427,7 @@ class CrossGraphCypherExecutorTest {
 
     @Test
     fun `filtered string counts aggregate graph-local scans in parallel`() {
-        if (Runtime.getRuntime().availableProcessors() < 2) return
+        if (GraphTaskScheduler.shared.parallelism < 3) return
         val barrier = CyclicBarrier(2)
         val active = AtomicInteger()
         val maximumActive = AtomicInteger()
@@ -3357,7 +3490,7 @@ class CrossGraphCypherExecutorTest {
 
     @Test
     fun `untracked filtered counts use storage aggregation and expose worker metrics`() {
-        if (Runtime.getRuntime().availableProcessors() < 2) return
+        if (GraphTaskScheduler.shared.parallelism < 3) return
         val barrier = CyclicBarrier(2)
         val aggregateCalls = AtomicInteger()
 
@@ -3404,7 +3537,7 @@ class CrossGraphCypherExecutorTest {
 
     @Test
     fun `work tracked filtered counts use budget aware storage aggregation in parallel`() {
-        if (Runtime.getRuntime().availableProcessors() < 2) return
+        if (GraphTaskScheduler.shared.parallelism < 3) return
         val barrier = CyclicBarrier(2)
         val active = AtomicInteger()
         val maximumActive = AtomicInteger()
@@ -3525,7 +3658,7 @@ class CrossGraphCypherExecutorTest {
 
     @Test
     fun `ordered filtered rows scan graphs in parallel and preserve global order and skip`() {
-        if (Runtime.getRuntime().availableProcessors() < 2) return
+        if (GraphTaskScheduler.shared.parallelism < 3) return
         val barrier = CyclicBarrier(2)
         val active = AtomicInteger()
         val maximumActive = AtomicInteger()
@@ -3578,7 +3711,7 @@ class CrossGraphCypherExecutorTest {
 
     @Test
     fun `provenance scans keep workers busy across more graphs than workers`() {
-        if (Runtime.getRuntime().availableProcessors() < 2) return
+        if (GraphTaskScheduler.shared.parallelism < 3) return
         val releaseSlowGraph = CountDownLatch(1)
         val slowGraphStarted = CountDownLatch(1)
         val thirdGraphStarted = CountDownLatch(1)
@@ -3639,7 +3772,7 @@ class CrossGraphCypherExecutorTest {
 
     @Test
     fun `parallel scan callbacks can execute nested cross graph queries without deadlock`() {
-        if (Runtime.getRuntime().availableProcessors() < 2) return
+        if (GraphTaskScheduler.shared.parallelism < 3) return
         val returnType = TypeDescriptor("void")
         val nested = executor(
             "nested-a" to graph(
@@ -3720,7 +3853,7 @@ class CrossGraphCypherExecutorTest {
 
     @Test
     fun `parallel scan failure interrupts peer tasks`() {
-        if (Runtime.getRuntime().availableProcessors() < 2) return
+        if (GraphTaskScheduler.shared.parallelism < 3) return
         val returnType = TypeDescriptor("void")
         val sharedGraph = graph(
             CallSiteNode(
