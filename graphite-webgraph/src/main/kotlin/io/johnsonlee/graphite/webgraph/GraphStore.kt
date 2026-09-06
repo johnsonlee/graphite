@@ -906,13 +906,44 @@ object GraphStore {
         val stringTableFuture = CompletableFuture.supplyAsync { StringTable.load(dir) }
         // The exact directory tables of the sidecar are load-time state of the graph: they are
         // decoded here, next to the other mapped parts, and never inside a request.
-        val directoryHashesFuture = if (persistentCallSiteStringIndex) {
+        val directoryHashesFuture: CompletableFuture<CallSiteDirectoryHashes?> = if (persistentCallSiteStringIndex) {
             stringTableFuture.thenApplyAsync { stringTable ->
                 CallSiteDirectoryHashes.load(dir.resolve(CALL_SITE_STRING_INDEX_FILE), stringTable)
             }
         } else {
             CompletableFuture.completedFuture(null)
         }
+        var tablesOwned = false
+        try {
+            return loadMappedParts(
+                dir,
+                nodeDataVersion,
+                metadataFile,
+                forwardFuture,
+                stringTableFuture,
+                directoryHashesFuture,
+                prepareCallSiteStringIndex,
+                persistentCallSiteStringIndex
+            ) { tablesOwned = true }
+        } finally {
+            // Any failure before the graph owns the tables releases their reservation once the
+            // build has finished; a graph that failed to prepare released them when it closed.
+            if (!tablesOwned) directoryHashesFuture.thenAccept { hashes -> hashes?.close() }
+        }
+    }
+
+    @Suppress("LongParameterList", "TooGenericExceptionCaught")
+    private fun loadMappedParts(
+        dir: Path,
+        nodeDataVersion: Int,
+        metadataFile: Path,
+        forwardFuture: CompletableFuture<out ImmutableGraph>,
+        stringTableFuture: CompletableFuture<StringTable>,
+        directoryHashesFuture: CompletableFuture<CallSiteDirectoryHashes?>,
+        prepareCallSiteStringIndex: Boolean,
+        persistentCallSiteStringIndex: Boolean,
+        onTablesOwned: () -> Unit
+    ): Graph {
         val nodeIndexFuture = CompletableFuture.supplyAsync { readMappedNodeIndex(dir) }
         val labelsFuture = CompletableFuture.supplyAsync { BinIO.loadBytes(dir.resolve(LABELS_FILE).toString()) }
         val methodCountFuture = CompletableFuture.supplyAsync { readMetadataMethodCount(metadataFile) }
@@ -925,26 +956,13 @@ object GraphStore {
         val mappedBuffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size())
         channel.close()
 
-        val forward: ImmutableGraph
-        val labelBytes: ByteArray
-        val stringTable: StringTable
-        val nodeIndex: NodeIndexData
-        val methodCount: Long
-        val comparisonLookup: BranchComparisonLookup
-        val directoryHashes: CallSiteDirectoryHashes?
-        try {
-            forward = joinLoad(forwardFuture)
-            labelBytes = joinLoad(labelsFuture)
-            stringTable = joinLoad(stringTableFuture)
-            nodeIndex = joinLoad(nodeIndexFuture)
-            methodCount = joinLoad(methodCountFuture)
-            comparisonLookup = joinLoad(comparisonFuture)
-            directoryHashes = joinLoad(directoryHashesFuture)
-        } catch (error: Exception) {
-            // A failed load releases the tables' budget reservation once their build has finished.
-            directoryHashesFuture.thenAccept { hashes -> hashes?.close() }
-            throw error
-        }
+        val forward = joinLoad(forwardFuture)
+        val labelBytes = joinLoad(labelsFuture)
+        val stringTable = joinLoad(stringTableFuture)
+        val nodeIndex = joinLoad(nodeIndexFuture)
+        val methodCount = joinLoad(methodCountFuture)
+        val comparisonLookup = joinLoad(comparisonFuture)
+        val directoryHashes = joinLoad(directoryHashesFuture)
         val backward = lazy { loadBackward(dir, forward) }
         val cumulativeOutdeg = loadCumulativeOutdeg(dir, forward)
         val metadata = lazy {
@@ -975,6 +993,8 @@ object GraphStore {
             classOverviewProvider = classOverview,
             resourceAccessor = lazy { PersistedResourceStore.load(dir) }
         )
+        // From here the graph releases the tables when it closes.
+        onTablesOwned()
         if (prepareCallSiteStringIndex) {
             try {
                 // Startup preparation opens the validated mapped sidecar view (persisting it first
