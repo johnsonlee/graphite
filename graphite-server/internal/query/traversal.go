@@ -37,19 +37,19 @@ func (e evaluator) match(graph *store.Store, rows []map[string]any, clause cyphe
 			}
 		}
 		if clause.Optional && accepted == 0 {
-			bound := clone(row)
+			bound := e.cloneRow(row)
 			for _, pattern := range clause.Patterns {
 				variables := []string{pattern.PathVariable}
-				for _, node := range pattern.Nodes {
+				for i, node := range pattern.Nodes {
 					variables = append(variables, node.Variable)
-				}
-				for _, rel := range pattern.Relationships {
-					variables = append(variables, rel.Variable)
+					if i < len(pattern.Relationships) {
+						variables = append(variables, pattern.Relationships[i].Variable)
+					}
 				}
 				for _, name := range variables {
 					if name != "" {
 						if _, exists := bound[name]; !exists {
-							bound[name] = nil
+							e.bind(bound, name, nil)
 						}
 					}
 				}
@@ -81,9 +81,9 @@ func (e evaluator) matchPattern(graph *store.Store, pattern cypher.Pattern, init
 		if !e.matches(value, pattern.Nodes[0], initial.row) {
 			return
 		}
-		bound := clone(initial.row)
+		bound := e.cloneRow(initial.row)
 		if name := pattern.Nodes[0].Variable; name != "" {
-			bound[name] = value
+			e.bind(bound, name, value)
 			if id := valueGraphID(value); id != "" {
 				addProvenance(bound, id)
 			}
@@ -100,7 +100,7 @@ func (e evaluator) matchPattern(graph *store.Store, pattern cypher.Pattern, init
 	for i := range states {
 		if pattern.PathVariable != "" {
 			path := e.makePath(states[i].nodes, states[i].edges)
-			states[i].row[pattern.PathVariable] = path
+			e.bind(states[i].row, pattern.PathVariable, path)
 			if id := valueGraphID(path); id != "" {
 				addProvenance(states[i].row, id)
 			}
@@ -197,9 +197,9 @@ func (e evaluator) targetNode(pattern cypher.NodePattern, value any, row map[str
 	if !e.matches(value, pattern, row) {
 		return nil, false
 	}
-	bound := clone(row)
+	bound := e.cloneRow(row)
 	if name := pattern.Variable; name != "" {
-		bound[name] = value
+		e.bind(bound, name, value)
 		if id := valueGraphID(value); id != "" {
 			addProvenance(bound, id)
 		}
@@ -289,7 +289,7 @@ func (e evaluator) matchRelationship(graph *store.Store, state matchState, rel c
 			if value, exists := state.row[rel.Variable]; exists && equal(value, relationship) != true {
 				return
 			}
-			bound[rel.Variable] = relationship
+			e.bind(bound, rel.Variable, relationship)
 			for edge := range e.relationshipBindings(relationship) {
 				if edge.GraphID != "" {
 					addProvenance(bound, edge.GraphID)

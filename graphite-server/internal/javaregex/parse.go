@@ -153,7 +153,7 @@ func (p *parser) group() (*node, error) {
 				for p.peek() != -1 && p.peek() != '>' {
 					p.pos++
 				}
-				name := string(p.input[start:p.pos])
+				name := javaRunesString(p.input[start:p.pos])
 				if len(name) == 0 || !asciiLetter(rune(name[0])) {
 					return nil, p.fail("capturing group name does not start with a Latin letter", start)
 				}
@@ -281,7 +281,7 @@ func (p *parser) quantify(n *node) (*node, error) {
 		if p.pos == start {
 			return nil, p.fail("Illegal repetition", p.pos)
 		}
-		v, err := strconv.ParseInt(string(p.input[start:p.pos]), 10, 32)
+		v, err := strconv.ParseInt(javaRunesString(p.input[start:p.pos]), 10, 32)
 		if err != nil {
 			return nil, p.fail("Illegal repetition range", overflowIndex(p.input, start, p.pos))
 		}
@@ -295,7 +295,7 @@ func (p *parser) quantify(n *node) (*node, error) {
 			}
 			max = -1
 			if p.pos > start {
-				v, err = strconv.ParseInt(string(p.input[start:p.pos]), 10, 32)
+				v, err = strconv.ParseInt(javaRunesString(p.input[start:p.pos]), 10, 32)
 				if err != nil {
 					return nil, p.fail("Illegal repetition range", overflowIndex(p.input, start, p.pos))
 				}
@@ -363,13 +363,13 @@ func (p *parser) escape(inClass bool) (*node, error) {
 			if p.pos == len(p.input) {
 				return nil, p.fail("Unclosed character family", start)
 			}
-			name = string(p.input[start:p.pos])
+			name = javaRunesString(p.input[start:p.pos])
 			p.pos++
 		} else {
 			if p.pos == len(p.input) {
 				return nil, p.fail("Unknown character property name {"+name+"}", p.pos)
 			}
-			name = string(p.input[p.pos])
+			name = javaRunesString([]rune{p.input[p.pos]})
 			p.pos++
 		}
 		if name == "" {
@@ -392,7 +392,7 @@ func (p *parser) escape(inClass bool) (*node, error) {
 			return nil, p.fail("Illegal/unsupported escape sequence", p.pos-1)
 		}
 		if r == 'b' && p.pos < len(p.input) && p.input[p.pos] == '{' {
-			if p.pos+3 <= len(p.input) && string(p.input[p.pos:p.pos+3]) == "{g}" {
+			if p.pos+3 <= len(p.input) && javaRunesString(p.input[p.pos:p.pos+3]) == "{g}" {
 				p.pos += 3
 				return &node{kind: 'a', mode: 'g'}, nil
 			}
@@ -422,7 +422,7 @@ func (p *parser) escape(inClass bool) (*node, error) {
 		if p.pos == len(p.input) {
 			return nil, p.fail("Unclosed character name escape sequence", start)
 		}
-		name := string(p.input[start:p.pos])
+		name := javaRunesString(p.input[start:p.pos])
 		p.pos++
 		ch, ok, err := namedCharacter(p.ctx, name)
 		if err != nil {
@@ -492,8 +492,8 @@ func (p *parser) escape(inClass bool) (*node, error) {
 		}
 		_ = start
 		// Java merges adjacent escaped surrogate pairs into a code point.
-		if v >= 0xD800 && v <= 0xDBFF && p.pos+6 <= len(p.input) && string(p.input[p.pos:p.pos+2]) == "\\u" {
-			low, e := strconv.ParseInt(string(p.input[p.pos+2:p.pos+6]), 16, 32)
+		if v >= 0xD800 && v <= 0xDBFF && p.pos+6 <= len(p.input) && javaRunesString(p.input[p.pos:p.pos+2]) == "\\u" {
+			low, e := strconv.ParseInt(javaRunesString(p.input[p.pos+2:p.pos+6]), 16, 32)
 			if e == nil && low >= 0xDC00 && low <= 0xDFFF {
 				v = 0x10000 + (v-0xD800)*1024 + low - 0xDC00
 				p.pos += 6
@@ -525,7 +525,7 @@ func (p *parser) escape(inClass bool) (*node, error) {
 		for p.pos < len(p.input) && p.input[p.pos] != '>' {
 			p.pos++
 		}
-		name := string(p.input[start:p.pos])
+		name := javaRunesString(p.input[start:p.pos])
 		if p.pos == len(p.input) {
 			return nil, p.fail("named capturing group is missing trailing '>'", p.pos)
 		}

@@ -5,6 +5,16 @@ import "github.com/johnsonlee/graphite/graphite-server/internal/store"
 func (e evaluator) materialize(value any) any {
 	e.check()
 	switch v := value.(type) {
+	case string:
+		return javaWireString(v)
+	case store.EnumReference:
+		return map[string]any{"enumClass": v.EnumClass, "enumName": v.EnumName}
+	case orderedMap:
+		out := map[string]any{}
+		for _, key := range v.Keys {
+			out[javaWireString(key)] = e.materialize(v.Values[key])
+		}
+		return out
 	case store.Edge, qualifiedEdge:
 		return e.materializeEdge(v)
 	case pathValue:
@@ -58,7 +68,7 @@ func (e evaluator) materialize(value any) any {
 		}
 		if v.Kind == "AnnotationNode" {
 			for k, value := range v.Values {
-				r[k] = e.materialize(value)
+				r[javaWireString(k)] = e.materialize(value)
 			}
 		}
 		return r
@@ -71,7 +81,7 @@ func (e evaluator) materialize(value any) any {
 	case map[string]any:
 		r := make(map[string]any, len(v))
 		for k, value := range v {
-			r[k] = e.materialize(value)
+			r[javaWireString(k)] = e.materialize(value)
 		}
 		return r
 	default:

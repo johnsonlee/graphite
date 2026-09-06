@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strings"
 	"unicode/utf16"
+	"unicode/utf8"
 )
 
 // SyntaxError carries Java PatternSyntaxException fields and message format.
@@ -20,7 +21,8 @@ func (e *SyntaxError) Error() string {
 		return e.Description + "\n" + e.Pattern
 	}
 	message := fmt.Sprintf("%s near index %d\n%s", e.Description, e.Index, e.Pattern)
-	if e.Index < javaIndex([]rune(e.Pattern), len([]rune(e.Pattern))) {
+	runes, _ := decodeJavaString(context.Background(), e.Pattern)
+	if e.Index < javaIndex(runes, len(runes)) {
 		message += "\n" + strings.Repeat(" ", e.Index) + "^"
 	}
 	return message
@@ -72,7 +74,11 @@ func CompileContext(ctx context.Context, pattern string) (*Pattern, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
-	p := parser{ctx: ctx, source: pattern, input: []rune(pattern), names: map[string]int{}}
+	runes, err := decodeJavaString(ctx, pattern)
+	if err != nil {
+		return nil, err
+	}
+	p := parser{ctx: ctx, source: pattern, input: runes, names: map[string]int{}}
 	root, err := p.expression(false)
 	if err != nil {
 		return nil, err
@@ -93,14 +99,9 @@ func (p *Pattern) MatchesContext(ctx context.Context, text string) (bool, error)
 	if err := ctx.Err(); err != nil {
 		return false, err
 	}
-	runes := make([]rune, 0, len(text))
-	for _, r := range text {
-		if len(runes)&1023 == 0 {
-			if err := ctx.Err(); err != nil {
-				return false, err
-			}
-		}
-		runes = append(runes, r)
+	runes, err := decodeJavaString(ctx, text)
+	if err != nil {
+		return false, err
 	}
 	m := matcher{ctx: ctx, text: runes}
 	captures := make([]capture, p.groups+1)
@@ -129,4 +130,47 @@ func javaIndex(runes []rune, end int) int {
 		}
 	}
 	return n
+}
+
+// decodeJavaString accepts UTF-8 and WTF-8, preserving isolated Java UTF-16
+// surrogates. Adjacent encoded high/low surrogate units form one code point,
+// exactly as Character.codePointAt does after Java string concatenation.
+func decodeJavaString(ctx context.Context, text string) ([]rune, error) {
+	out := make([]rune, 0, len(text))
+	for i := 0; i < len(text); {
+		if len(out)&1023 == 0 {
+			if err := ctx.Err(); err != nil {
+				return nil, err
+			}
+		}
+		r, size := decodeJavaRune(text[i:])
+		i += size
+		if r >= 0xD800 && r <= 0xDBFF && i < len(text) {
+			low, n := decodeJavaRune(text[i:])
+			if low >= 0xDC00 && low <= 0xDFFF {
+				r = utf16.DecodeRune(r, low)
+				i += n
+			}
+		}
+		out = append(out, r)
+	}
+	return out, ctx.Err()
+}
+func decodeJavaRune(text string) (rune, int) {
+	if len(text) >= 3 && text[0] == 0xED && text[1] >= 0xA0 && text[1] <= 0xBF && text[2]&0xC0 == 0x80 {
+		return rune(text[0]&15)<<12 | rune(text[1]&63)<<6 | rune(text[2]&63), 3
+	}
+	return utf8.DecodeRuneInString(text)
+}
+
+func javaRunesString(runes []rune) string {
+	var bytes []byte
+	for _, r := range runes {
+		if utf16.IsSurrogate(r) {
+			bytes = append(bytes, byte(0xE0|r>>12), byte(0x80|r>>6&63), byte(0x80|r&63))
+		} else {
+			bytes = utf8.AppendRune(bytes, r)
+		}
+	}
+	return string(bytes)
 }

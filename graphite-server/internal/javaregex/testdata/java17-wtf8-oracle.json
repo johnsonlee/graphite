@@ -1,0 +1,2035 @@
+{
+  "javaVersion": "17.0.18",
+  "cases": [
+    {
+      "name": "wtf8-0",
+      "patternUTF16": [
+        46
+      ],
+      "textUTF16": [
+        55296
+      ],
+      "matches": true
+    },
+    {
+      "name": "wtf8-1",
+      "patternUTF16": [
+        46
+      ],
+      "textUTF16": [
+        56320
+      ],
+      "matches": true
+    },
+    {
+      "name": "wtf8-2",
+      "patternUTF16": [
+        46
+      ],
+      "textUTF16": [
+        55296,
+        55296
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-3",
+      "patternUTF16": [
+        46
+      ],
+      "textUTF16": [
+        55296,
+        56320
+      ],
+      "matches": true
+    },
+    {
+      "name": "wtf8-4",
+      "patternUTF16": [
+        46
+      ],
+      "textUTF16": [
+        55357,
+        56832
+      ],
+      "matches": true
+    },
+    {
+      "name": "wtf8-5",
+      "patternUTF16": [
+        46
+      ],
+      "textUTF16": [
+        65533
+      ],
+      "matches": true
+    },
+    {
+      "name": "wtf8-6",
+      "patternUTF16": [
+        46
+      ],
+      "textUTF16": [
+        63
+      ],
+      "matches": true
+    },
+    {
+      "name": "wtf8-7",
+      "patternUTF16": [
+        46
+      ],
+      "textUTF16": [
+        55296,
+        97
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-8",
+      "patternUTF16": [
+        46
+      ],
+      "textUTF16": [
+        97,
+        56320
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-9",
+      "patternUTF16": [
+        46,
+        46
+      ],
+      "textUTF16": [
+        55296
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-10",
+      "patternUTF16": [
+        46,
+        46
+      ],
+      "textUTF16": [
+        56320
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-11",
+      "patternUTF16": [
+        46,
+        46
+      ],
+      "textUTF16": [
+        55296,
+        55296
+      ],
+      "matches": true
+    },
+    {
+      "name": "wtf8-12",
+      "patternUTF16": [
+        46,
+        46
+      ],
+      "textUTF16": [
+        55296,
+        56320
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-13",
+      "patternUTF16": [
+        46,
+        46
+      ],
+      "textUTF16": [
+        55357,
+        56832
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-14",
+      "patternUTF16": [
+        46,
+        46
+      ],
+      "textUTF16": [
+        65533
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-15",
+      "patternUTF16": [
+        46,
+        46
+      ],
+      "textUTF16": [
+        63
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-16",
+      "patternUTF16": [
+        46,
+        46
+      ],
+      "textUTF16": [
+        55296,
+        97
+      ],
+      "matches": true
+    },
+    {
+      "name": "wtf8-17",
+      "patternUTF16": [
+        46,
+        46
+      ],
+      "textUTF16": [
+        97,
+        56320
+      ],
+      "matches": true
+    },
+    {
+      "name": "wtf8-18",
+      "patternUTF16": [
+        92,
+        112,
+        123,
+        67,
+        115,
+        125
+      ],
+      "textUTF16": [
+        55296
+      ],
+      "matches": true
+    },
+    {
+      "name": "wtf8-19",
+      "patternUTF16": [
+        92,
+        112,
+        123,
+        67,
+        115,
+        125
+      ],
+      "textUTF16": [
+        56320
+      ],
+      "matches": true
+    },
+    {
+      "name": "wtf8-20",
+      "patternUTF16": [
+        92,
+        112,
+        123,
+        67,
+        115,
+        125
+      ],
+      "textUTF16": [
+        55296,
+        55296
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-21",
+      "patternUTF16": [
+        92,
+        112,
+        123,
+        67,
+        115,
+        125
+      ],
+      "textUTF16": [
+        55296,
+        56320
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-22",
+      "patternUTF16": [
+        92,
+        112,
+        123,
+        67,
+        115,
+        125
+      ],
+      "textUTF16": [
+        55357,
+        56832
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-23",
+      "patternUTF16": [
+        92,
+        112,
+        123,
+        67,
+        115,
+        125
+      ],
+      "textUTF16": [
+        65533
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-24",
+      "patternUTF16": [
+        92,
+        112,
+        123,
+        67,
+        115,
+        125
+      ],
+      "textUTF16": [
+        63
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-25",
+      "patternUTF16": [
+        92,
+        112,
+        123,
+        67,
+        115,
+        125
+      ],
+      "textUTF16": [
+        55296,
+        97
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-26",
+      "patternUTF16": [
+        92,
+        112,
+        123,
+        67,
+        115,
+        125
+      ],
+      "textUTF16": [
+        97,
+        56320
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-27",
+      "patternUTF16": [
+        91,
+        94,
+        92,
+        112,
+        123,
+        67,
+        115,
+        125,
+        93
+      ],
+      "textUTF16": [
+        55296
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-28",
+      "patternUTF16": [
+        91,
+        94,
+        92,
+        112,
+        123,
+        67,
+        115,
+        125,
+        93
+      ],
+      "textUTF16": [
+        56320
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-29",
+      "patternUTF16": [
+        91,
+        94,
+        92,
+        112,
+        123,
+        67,
+        115,
+        125,
+        93
+      ],
+      "textUTF16": [
+        55296,
+        55296
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-30",
+      "patternUTF16": [
+        91,
+        94,
+        92,
+        112,
+        123,
+        67,
+        115,
+        125,
+        93
+      ],
+      "textUTF16": [
+        55296,
+        56320
+      ],
+      "matches": true
+    },
+    {
+      "name": "wtf8-31",
+      "patternUTF16": [
+        91,
+        94,
+        92,
+        112,
+        123,
+        67,
+        115,
+        125,
+        93
+      ],
+      "textUTF16": [
+        55357,
+        56832
+      ],
+      "matches": true
+    },
+    {
+      "name": "wtf8-32",
+      "patternUTF16": [
+        91,
+        94,
+        92,
+        112,
+        123,
+        67,
+        115,
+        125,
+        93
+      ],
+      "textUTF16": [
+        65533
+      ],
+      "matches": true
+    },
+    {
+      "name": "wtf8-33",
+      "patternUTF16": [
+        91,
+        94,
+        92,
+        112,
+        123,
+        67,
+        115,
+        125,
+        93
+      ],
+      "textUTF16": [
+        63
+      ],
+      "matches": true
+    },
+    {
+      "name": "wtf8-34",
+      "patternUTF16": [
+        91,
+        94,
+        92,
+        112,
+        123,
+        67,
+        115,
+        125,
+        93
+      ],
+      "textUTF16": [
+        55296,
+        97
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-35",
+      "patternUTF16": [
+        91,
+        94,
+        92,
+        112,
+        123,
+        67,
+        115,
+        125,
+        93
+      ],
+      "textUTF16": [
+        97,
+        56320
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-36",
+      "patternUTF16": [
+        92,
+        88
+      ],
+      "textUTF16": [
+        55296
+      ],
+      "matches": true
+    },
+    {
+      "name": "wtf8-37",
+      "patternUTF16": [
+        92,
+        88
+      ],
+      "textUTF16": [
+        56320
+      ],
+      "matches": true
+    },
+    {
+      "name": "wtf8-38",
+      "patternUTF16": [
+        92,
+        88
+      ],
+      "textUTF16": [
+        55296,
+        55296
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-39",
+      "patternUTF16": [
+        92,
+        88
+      ],
+      "textUTF16": [
+        55296,
+        56320
+      ],
+      "matches": true
+    },
+    {
+      "name": "wtf8-40",
+      "patternUTF16": [
+        92,
+        88
+      ],
+      "textUTF16": [
+        55357,
+        56832
+      ],
+      "matches": true
+    },
+    {
+      "name": "wtf8-41",
+      "patternUTF16": [
+        92,
+        88
+      ],
+      "textUTF16": [
+        65533
+      ],
+      "matches": true
+    },
+    {
+      "name": "wtf8-42",
+      "patternUTF16": [
+        92,
+        88
+      ],
+      "textUTF16": [
+        63
+      ],
+      "matches": true
+    },
+    {
+      "name": "wtf8-43",
+      "patternUTF16": [
+        92,
+        88
+      ],
+      "textUTF16": [
+        55296,
+        97
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-44",
+      "patternUTF16": [
+        92,
+        88
+      ],
+      "textUTF16": [
+        97,
+        56320
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-45",
+      "patternUTF16": [
+        40,
+        63,
+        99,
+        41,
+        91,
+        92,
+        112,
+        123,
+        67,
+        115,
+        125,
+        93
+      ],
+      "textUTF16": [
+        55296
+      ],
+      "matches": true
+    },
+    {
+      "name": "wtf8-46",
+      "patternUTF16": [
+        40,
+        63,
+        99,
+        41,
+        91,
+        92,
+        112,
+        123,
+        67,
+        115,
+        125,
+        93
+      ],
+      "textUTF16": [
+        56320
+      ],
+      "matches": true
+    },
+    {
+      "name": "wtf8-47",
+      "patternUTF16": [
+        40,
+        63,
+        99,
+        41,
+        91,
+        92,
+        112,
+        123,
+        67,
+        115,
+        125,
+        93
+      ],
+      "textUTF16": [
+        55296,
+        55296
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-48",
+      "patternUTF16": [
+        40,
+        63,
+        99,
+        41,
+        91,
+        92,
+        112,
+        123,
+        67,
+        115,
+        125,
+        93
+      ],
+      "textUTF16": [
+        55296,
+        56320
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-49",
+      "patternUTF16": [
+        40,
+        63,
+        99,
+        41,
+        91,
+        92,
+        112,
+        123,
+        67,
+        115,
+        125,
+        93
+      ],
+      "textUTF16": [
+        55357,
+        56832
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-50",
+      "patternUTF16": [
+        40,
+        63,
+        99,
+        41,
+        91,
+        92,
+        112,
+        123,
+        67,
+        115,
+        125,
+        93
+      ],
+      "textUTF16": [
+        65533
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-51",
+      "patternUTF16": [
+        40,
+        63,
+        99,
+        41,
+        91,
+        92,
+        112,
+        123,
+        67,
+        115,
+        125,
+        93
+      ],
+      "textUTF16": [
+        63
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-52",
+      "patternUTF16": [
+        40,
+        63,
+        99,
+        41,
+        91,
+        92,
+        112,
+        123,
+        67,
+        115,
+        125,
+        93
+      ],
+      "textUTF16": [
+        55296,
+        97
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-53",
+      "patternUTF16": [
+        40,
+        63,
+        99,
+        41,
+        91,
+        92,
+        112,
+        123,
+        67,
+        115,
+        125,
+        93
+      ],
+      "textUTF16": [
+        97,
+        56320
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-54",
+      "patternUTF16": [
+        40,
+        46,
+        41,
+        92,
+        49
+      ],
+      "textUTF16": [
+        55296
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-55",
+      "patternUTF16": [
+        40,
+        46,
+        41,
+        92,
+        49
+      ],
+      "textUTF16": [
+        56320
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-56",
+      "patternUTF16": [
+        40,
+        46,
+        41,
+        92,
+        49
+      ],
+      "textUTF16": [
+        55296,
+        55296
+      ],
+      "matches": true
+    },
+    {
+      "name": "wtf8-57",
+      "patternUTF16": [
+        40,
+        46,
+        41,
+        92,
+        49
+      ],
+      "textUTF16": [
+        55296,
+        56320
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-58",
+      "patternUTF16": [
+        40,
+        46,
+        41,
+        92,
+        49
+      ],
+      "textUTF16": [
+        55357,
+        56832
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-59",
+      "patternUTF16": [
+        40,
+        46,
+        41,
+        92,
+        49
+      ],
+      "textUTF16": [
+        65533
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-60",
+      "patternUTF16": [
+        40,
+        46,
+        41,
+        92,
+        49
+      ],
+      "textUTF16": [
+        63
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-61",
+      "patternUTF16": [
+        40,
+        46,
+        41,
+        92,
+        49
+      ],
+      "textUTF16": [
+        55296,
+        97
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-62",
+      "patternUTF16": [
+        40,
+        46,
+        41,
+        92,
+        49
+      ],
+      "textUTF16": [
+        97,
+        56320
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-63",
+      "patternUTF16": [
+        92,
+        98,
+        123,
+        103,
+        125,
+        46,
+        92,
+        98,
+        123,
+        103,
+        125
+      ],
+      "textUTF16": [
+        55296
+      ],
+      "matches": true
+    },
+    {
+      "name": "wtf8-64",
+      "patternUTF16": [
+        92,
+        98,
+        123,
+        103,
+        125,
+        46,
+        92,
+        98,
+        123,
+        103,
+        125
+      ],
+      "textUTF16": [
+        56320
+      ],
+      "matches": true
+    },
+    {
+      "name": "wtf8-65",
+      "patternUTF16": [
+        92,
+        98,
+        123,
+        103,
+        125,
+        46,
+        92,
+        98,
+        123,
+        103,
+        125
+      ],
+      "textUTF16": [
+        55296,
+        55296
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-66",
+      "patternUTF16": [
+        92,
+        98,
+        123,
+        103,
+        125,
+        46,
+        92,
+        98,
+        123,
+        103,
+        125
+      ],
+      "textUTF16": [
+        55296,
+        56320
+      ],
+      "matches": true
+    },
+    {
+      "name": "wtf8-67",
+      "patternUTF16": [
+        92,
+        98,
+        123,
+        103,
+        125,
+        46,
+        92,
+        98,
+        123,
+        103,
+        125
+      ],
+      "textUTF16": [
+        55357,
+        56832
+      ],
+      "matches": true
+    },
+    {
+      "name": "wtf8-68",
+      "patternUTF16": [
+        92,
+        98,
+        123,
+        103,
+        125,
+        46,
+        92,
+        98,
+        123,
+        103,
+        125
+      ],
+      "textUTF16": [
+        65533
+      ],
+      "matches": true
+    },
+    {
+      "name": "wtf8-69",
+      "patternUTF16": [
+        92,
+        98,
+        123,
+        103,
+        125,
+        46,
+        92,
+        98,
+        123,
+        103,
+        125
+      ],
+      "textUTF16": [
+        63
+      ],
+      "matches": true
+    },
+    {
+      "name": "wtf8-70",
+      "patternUTF16": [
+        92,
+        98,
+        123,
+        103,
+        125,
+        46,
+        92,
+        98,
+        123,
+        103,
+        125
+      ],
+      "textUTF16": [
+        55296,
+        97
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-71",
+      "patternUTF16": [
+        92,
+        98,
+        123,
+        103,
+        125,
+        46,
+        92,
+        98,
+        123,
+        103,
+        125
+      ],
+      "textUTF16": [
+        97,
+        56320
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-72",
+      "patternUTF16": [
+        55296
+      ],
+      "textUTF16": [
+        55296
+      ],
+      "matches": true
+    },
+    {
+      "name": "wtf8-73",
+      "patternUTF16": [
+        55296
+      ],
+      "textUTF16": [
+        56320
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-74",
+      "patternUTF16": [
+        55296
+      ],
+      "textUTF16": [
+        55296,
+        55296
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-75",
+      "patternUTF16": [
+        55296
+      ],
+      "textUTF16": [
+        55296,
+        56320
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-76",
+      "patternUTF16": [
+        55296
+      ],
+      "textUTF16": [
+        55357,
+        56832
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-77",
+      "patternUTF16": [
+        55296
+      ],
+      "textUTF16": [
+        65533
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-78",
+      "patternUTF16": [
+        55296
+      ],
+      "textUTF16": [
+        63
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-79",
+      "patternUTF16": [
+        55296
+      ],
+      "textUTF16": [
+        55296,
+        97
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-80",
+      "patternUTF16": [
+        55296
+      ],
+      "textUTF16": [
+        97,
+        56320
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-81",
+      "patternUTF16": [
+        92,
+        117,
+        68,
+        56,
+        48,
+        48
+      ],
+      "textUTF16": [
+        55296
+      ],
+      "matches": true
+    },
+    {
+      "name": "wtf8-82",
+      "patternUTF16": [
+        92,
+        117,
+        68,
+        56,
+        48,
+        48
+      ],
+      "textUTF16": [
+        56320
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-83",
+      "patternUTF16": [
+        92,
+        117,
+        68,
+        56,
+        48,
+        48
+      ],
+      "textUTF16": [
+        55296,
+        55296
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-84",
+      "patternUTF16": [
+        92,
+        117,
+        68,
+        56,
+        48,
+        48
+      ],
+      "textUTF16": [
+        55296,
+        56320
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-85",
+      "patternUTF16": [
+        92,
+        117,
+        68,
+        56,
+        48,
+        48
+      ],
+      "textUTF16": [
+        55357,
+        56832
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-86",
+      "patternUTF16": [
+        92,
+        117,
+        68,
+        56,
+        48,
+        48
+      ],
+      "textUTF16": [
+        65533
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-87",
+      "patternUTF16": [
+        92,
+        117,
+        68,
+        56,
+        48,
+        48
+      ],
+      "textUTF16": [
+        63
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-88",
+      "patternUTF16": [
+        92,
+        117,
+        68,
+        56,
+        48,
+        48
+      ],
+      "textUTF16": [
+        55296,
+        97
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-89",
+      "patternUTF16": [
+        92,
+        117,
+        68,
+        56,
+        48,
+        48
+      ],
+      "textUTF16": [
+        97,
+        56320
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-90",
+      "patternUTF16": [
+        56320
+      ],
+      "textUTF16": [
+        55296
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-91",
+      "patternUTF16": [
+        56320
+      ],
+      "textUTF16": [
+        56320
+      ],
+      "matches": true
+    },
+    {
+      "name": "wtf8-92",
+      "patternUTF16": [
+        56320
+      ],
+      "textUTF16": [
+        55296,
+        55296
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-93",
+      "patternUTF16": [
+        56320
+      ],
+      "textUTF16": [
+        55296,
+        56320
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-94",
+      "patternUTF16": [
+        56320
+      ],
+      "textUTF16": [
+        55357,
+        56832
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-95",
+      "patternUTF16": [
+        56320
+      ],
+      "textUTF16": [
+        65533
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-96",
+      "patternUTF16": [
+        56320
+      ],
+      "textUTF16": [
+        63
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-97",
+      "patternUTF16": [
+        56320
+      ],
+      "textUTF16": [
+        55296,
+        97
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-98",
+      "patternUTF16": [
+        56320
+      ],
+      "textUTF16": [
+        97,
+        56320
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-99",
+      "patternUTF16": [
+        92,
+        117,
+        68,
+        56,
+        51,
+        68,
+        92,
+        117,
+        68,
+        69,
+        48,
+        48
+      ],
+      "textUTF16": [
+        55296
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-100",
+      "patternUTF16": [
+        92,
+        117,
+        68,
+        56,
+        51,
+        68,
+        92,
+        117,
+        68,
+        69,
+        48,
+        48
+      ],
+      "textUTF16": [
+        56320
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-101",
+      "patternUTF16": [
+        92,
+        117,
+        68,
+        56,
+        51,
+        68,
+        92,
+        117,
+        68,
+        69,
+        48,
+        48
+      ],
+      "textUTF16": [
+        55296,
+        55296
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-102",
+      "patternUTF16": [
+        92,
+        117,
+        68,
+        56,
+        51,
+        68,
+        92,
+        117,
+        68,
+        69,
+        48,
+        48
+      ],
+      "textUTF16": [
+        55296,
+        56320
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-103",
+      "patternUTF16": [
+        92,
+        117,
+        68,
+        56,
+        51,
+        68,
+        92,
+        117,
+        68,
+        69,
+        48,
+        48
+      ],
+      "textUTF16": [
+        55357,
+        56832
+      ],
+      "matches": true
+    },
+    {
+      "name": "wtf8-104",
+      "patternUTF16": [
+        92,
+        117,
+        68,
+        56,
+        51,
+        68,
+        92,
+        117,
+        68,
+        69,
+        48,
+        48
+      ],
+      "textUTF16": [
+        65533
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-105",
+      "patternUTF16": [
+        92,
+        117,
+        68,
+        56,
+        51,
+        68,
+        92,
+        117,
+        68,
+        69,
+        48,
+        48
+      ],
+      "textUTF16": [
+        63
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-106",
+      "patternUTF16": [
+        92,
+        117,
+        68,
+        56,
+        51,
+        68,
+        92,
+        117,
+        68,
+        69,
+        48,
+        48
+      ],
+      "textUTF16": [
+        55296,
+        97
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-107",
+      "patternUTF16": [
+        92,
+        117,
+        68,
+        56,
+        51,
+        68,
+        92,
+        117,
+        68,
+        69,
+        48,
+        48
+      ],
+      "textUTF16": [
+        97,
+        56320
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-108",
+      "patternUTF16": [
+        55357,
+        56832
+      ],
+      "textUTF16": [
+        55296
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-109",
+      "patternUTF16": [
+        55357,
+        56832
+      ],
+      "textUTF16": [
+        56320
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-110",
+      "patternUTF16": [
+        55357,
+        56832
+      ],
+      "textUTF16": [
+        55296,
+        55296
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-111",
+      "patternUTF16": [
+        55357,
+        56832
+      ],
+      "textUTF16": [
+        55296,
+        56320
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-112",
+      "patternUTF16": [
+        55357,
+        56832
+      ],
+      "textUTF16": [
+        55357,
+        56832
+      ],
+      "matches": true
+    },
+    {
+      "name": "wtf8-113",
+      "patternUTF16": [
+        55357,
+        56832
+      ],
+      "textUTF16": [
+        65533
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-114",
+      "patternUTF16": [
+        55357,
+        56832
+      ],
+      "textUTF16": [
+        63
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-115",
+      "patternUTF16": [
+        55357,
+        56832
+      ],
+      "textUTF16": [
+        55296,
+        97
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-116",
+      "patternUTF16": [
+        55357,
+        56832
+      ],
+      "textUTF16": [
+        97,
+        56320
+      ],
+      "matches": false
+    },
+    {
+      "name": "wtf8-117",
+      "patternUTF16": [
+        55296,
+        91
+      ],
+      "textUTF16": [],
+      "errorUTF16": [
+        85,
+        110,
+        99,
+        108,
+        111,
+        115,
+        101,
+        100,
+        32,
+        99,
+        104,
+        97,
+        114,
+        97,
+        99,
+        116,
+        101,
+        114,
+        32,
+        99,
+        108,
+        97,
+        115,
+        115,
+        32,
+        110,
+        101,
+        97,
+        114,
+        32,
+        105,
+        110,
+        100,
+        101,
+        120,
+        32,
+        49,
+        10,
+        55296,
+        91,
+        10,
+        32,
+        94
+      ],
+      "description": "Unclosed character class",
+      "index": 1
+    },
+    {
+      "name": "wtf8-118",
+      "patternUTF16": [
+        55296,
+        40
+      ],
+      "textUTF16": [],
+      "errorUTF16": [
+        85,
+        110,
+        99,
+        108,
+        111,
+        115,
+        101,
+        100,
+        32,
+        103,
+        114,
+        111,
+        117,
+        112,
+        32,
+        110,
+        101,
+        97,
+        114,
+        32,
+        105,
+        110,
+        100,
+        101,
+        120,
+        32,
+        50,
+        10,
+        55296,
+        40
+      ],
+      "description": "Unclosed group",
+      "index": 2
+    },
+    {
+      "name": "wtf8-119",
+      "patternUTF16": [
+        92,
+        117,
+        68,
+        56,
+        48,
+        48,
+        91
+      ],
+      "textUTF16": [],
+      "errorUTF16": [
+        85,
+        110,
+        99,
+        108,
+        111,
+        115,
+        101,
+        100,
+        32,
+        99,
+        104,
+        97,
+        114,
+        97,
+        99,
+        116,
+        101,
+        114,
+        32,
+        99,
+        108,
+        97,
+        115,
+        115,
+        32,
+        110,
+        101,
+        97,
+        114,
+        32,
+        105,
+        110,
+        100,
+        101,
+        120,
+        32,
+        54,
+        10,
+        92,
+        117,
+        68,
+        56,
+        48,
+        48,
+        91,
+        10,
+        32,
+        32,
+        32,
+        32,
+        32,
+        32,
+        94
+      ],
+      "description": "Unclosed character class",
+      "index": 6
+    },
+    {
+      "name": "wtf8-120",
+      "patternUTF16": [
+        55357,
+        56832,
+        91
+      ],
+      "textUTF16": [],
+      "errorUTF16": [
+        85,
+        110,
+        99,
+        108,
+        111,
+        115,
+        101,
+        100,
+        32,
+        99,
+        104,
+        97,
+        114,
+        97,
+        99,
+        116,
+        101,
+        114,
+        32,
+        99,
+        108,
+        97,
+        115,
+        115,
+        32,
+        110,
+        101,
+        97,
+        114,
+        32,
+        105,
+        110,
+        100,
+        101,
+        120,
+        32,
+        49,
+        10,
+        55357,
+        56832,
+        91,
+        10,
+        32,
+        94
+      ],
+      "description": "Unclosed character class",
+      "index": 1
+    },
+    {
+      "name": "wtf8-121",
+      "patternUTF16": [
+        55296,
+        55296,
+        91
+      ],
+      "textUTF16": [],
+      "errorUTF16": [
+        85,
+        110,
+        99,
+        108,
+        111,
+        115,
+        101,
+        100,
+        32,
+        99,
+        104,
+        97,
+        114,
+        97,
+        99,
+        116,
+        101,
+        114,
+        32,
+        99,
+        108,
+        97,
+        115,
+        115,
+        32,
+        110,
+        101,
+        97,
+        114,
+        32,
+        105,
+        110,
+        100,
+        101,
+        120,
+        32,
+        50,
+        10,
+        55296,
+        55296,
+        91,
+        10,
+        32,
+        32,
+        94
+      ],
+      "description": "Unclosed character class",
+      "index": 2
+    }
+  ]
+}

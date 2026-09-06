@@ -54,10 +54,23 @@ func executeSources(ctx context.Context, graph *store.Store, graphs []Graph, cro
 	}()
 	ast, err := cypher.ParseContext(ctx, source)
 	if err != nil {
+		var literalError *cypher.ParseError
+		if errors.As(err, &literalError) {
+			if strings.HasPrefix(literalError.Message, "For input string:") {
+				return Result{}, &Error{Class: "NumberFormatException", Message: literalError.Message}
+			}
+			if strings.HasPrefix(literalError.Message, "Syntax error at position ") {
+				return Result{}, &Error{Class: "CypherParseException", Message: javaWireString(literalError.Message)}
+			}
+		}
+
 		return Result{}, err
 	}
 	validate(ast)
-	e := evaluator{ctx: ctx, parameters: parameters, graphs: graphs, cross: cross}
+	e := evaluator{ctx: ctx, parameters: parameters, graphs: graphs, cross: cross, regexes: &regexLRU{entries: map[string]compiledRegex{}}}
+	if needsRowOrder(ast) {
+		e.rowOrders = map[string]rowOrder{}
+	}
 	result = Result{Columns: []string{}, Rows: []map[string]any{}}
 	for i, branch := range ast.Branches {
 		e.check()
@@ -77,13 +90,20 @@ func executeSources(ctx context.Context, graph *store.Store, graphs []Graph, cro
 		ids := provenance(row)
 		delete(row, provenanceKey)
 		for k, v := range row {
-			row[k] = e.materialize(v)
+			wireKey := javaWireString(k)
+			if wireKey != k {
+				delete(row, k)
+			}
+			row[wireKey] = e.materialize(v)
 		}
 		if cross {
 			if _, present := row["$metadata"]; len(ids) > 0 || !present {
 				row["$metadata"] = map[string]any{"graphIds": ids}
 			}
 		}
+	}
+	for i, column := range result.Columns {
+		result.Columns[i] = javaWireString(column)
 	}
 	return result, nil
 }
@@ -108,8 +128,8 @@ func (e evaluator) branch(graph *store.Store, branch cypher.SingleQuery) Result 
 				}
 				for _, v := range list {
 					e.check()
-					n := clone(r)
-					n[c.Variable] = v
+					n := e.cloneRow(r)
+					e.bind(n, c.Variable, v)
 					next = append(next, n)
 				}
 			}
@@ -183,19 +203,13 @@ func methodProperty(m store.MethodDescriptor, key string) any {
 func (e evaluator) project(rows []map[string]any, c cypher.ProjectionClause) ([]map[string]any, []string) {
 	columns := []string{}
 	if c.All {
-		seen := map[string]bool{}
-		for _, r := range rows {
-			for k := range r {
-				if k == provenanceKey {
-					continue
-				}
-				if !seen[k] {
-					columns = append(columns, k)
-					seen[k] = true
+		if len(rows) > 0 {
+			for _, key := range e.rowKeys(rows[0]) {
+				if key != provenanceKey {
+					columns = append(columns, key)
 				}
 			}
 		}
-		sort.Strings(columns)
 	} else {
 		for _, item := range c.Items {
 			name := item.Alias
@@ -207,7 +221,7 @@ func (e evaluator) project(rows []map[string]any, c cypher.ProjectionClause) ([]
 	}
 	hasAggregate := false
 	for _, item := range c.Items {
-		hasAggregate = hasAggregate || isAggregate(item.Expression)
+		hasAggregate = hasAggregate || containsAggregate(item.Expression)
 	}
 	type projected struct {
 		row, source map[string]any
@@ -216,17 +230,31 @@ func (e evaluator) project(rows []map[string]any, c cypher.ProjectionClause) ([]
 	out := []projected{}
 	add := func(row, source map[string]any) {
 		mergeProvenance(row, source)
-		scope := clone(source)
+		scope := e.cloneRow(source)
 		for k, v := range row {
-			scope[k] = v
+			e.bind(scope, k, v)
 		}
 		if c.Where != nil && e.eval(c.Where, scope) != true {
 			return
 		}
-		sortKeys := make([]any, len(c.OrderBy))
-		for i, s := range c.OrderBy {
-			sortKeys[i] = e.eval(s.Expression, scope)
+		var sortKeys []any
+		precompute := false
+		if !hasAggregate && !c.Distinct {
+			for _, item := range c.OrderBy {
+				variable, ok := item.Expression.(cypher.Variable)
+				if _, present := row[variable.Name]; !ok || !present {
+					precompute = true
+					break
+				}
+			}
 		}
+		if precompute {
+			sortKeys = make([]any, len(c.OrderBy))
+			for i, item := range c.OrderBy {
+				sortKeys[i] = e.eval(item.Expression, scope)
+			}
+		}
+
 		out = append(out, projected{row, source, sortKeys})
 	}
 	if hasAggregate {
@@ -234,7 +262,7 @@ func (e evaluator) project(rows []map[string]any, c cypher.ProjectionClause) ([]
 		order := []string{}
 		groupItems := []int{}
 		for i, item := range c.Items {
-			if !isAggregate(item.Expression) {
+			if !containsAggregate(item.Expression) {
 				groupItems = append(groupItems, i)
 			}
 		}
@@ -257,17 +285,17 @@ func (e evaluator) project(rows []map[string]any, c cypher.ProjectionClause) ([]
 			group := groups[k]
 			source := map[string]any{}
 			if len(group) > 0 {
-				source = clone(group[0])
+				source = e.cloneRow(group[0])
 				for _, r := range group {
 					mergeProvenance(source, r)
 				}
 			}
 			row := map[string]any{}
 			for i, item := range c.Items {
-				if isAggregate(item.Expression) {
-					row[columns[i]] = e.aggregate(item.Expression.(cypher.Call), group)
+				if containsAggregate(item.Expression) {
+					e.bind(row, columns[i], e.evaluateAggregate(item.Expression, group))
 				} else {
-					row[columns[i]] = e.eval(item.Expression, source)
+					e.bind(row, columns[i], e.eval(item.Expression, source))
 				}
 			}
 			add(row, source)
@@ -276,10 +304,10 @@ func (e evaluator) project(rows []map[string]any, c cypher.ProjectionClause) ([]
 		for _, source := range rows {
 			row := map[string]any{}
 			if c.All {
-				row = clone(source)
+				row = e.cloneRow(source)
 			} else {
 				for i, item := range c.Items {
-					row[columns[i]] = e.eval(item.Expression, source)
+					e.bind(row, columns[i], e.eval(item.Expression, source))
 				}
 			}
 			add(row, source)
@@ -303,7 +331,18 @@ func (e evaluator) project(rows []map[string]any, c cypher.ProjectionClause) ([]
 		sort.SliceStable(out, func(i, j int) bool {
 			e.check()
 			for k, item := range c.OrderBy {
-				cmp := compare(out[i].sort[k], out[j].sort[k])
+				left, right := any(nil), any(nil)
+				if out[i].sort != nil {
+					left = out[i].sort[k]
+				} else {
+					left = e.eval(item.Expression, out[i].row)
+				}
+				if out[j].sort != nil {
+					right = out[j].sort[k]
+				} else {
+					right = e.eval(item.Expression, out[j].row)
+				}
+				cmp := compare(left, right)
 				if cmp != 0 {
 					if item.Descending {
 						return cmp > 0
@@ -358,59 +397,6 @@ func distinctRows(rows []map[string]any, columns []string) []map[string]any {
 	}
 	return out
 }
-func isAggregate(expr cypher.Expr) bool {
-	c, ok := expr.(cypher.Call)
-	if !ok {
-		return false
-	}
-	switch strings.ToLower(c.Name) {
-	case "count", "sum", "avg", "collect":
-		return true
-	}
-	return false
-}
-func (e evaluator) aggregate(c cypher.Call, rows []map[string]any) any {
-	name := strings.ToLower(c.Name)
-	if c.Star {
-		return int64(len(rows))
-	}
-	values := []any{}
-	seen := map[string]bool{}
-	for _, r := range rows {
-		v := e.eval(c.Arguments[0], r)
-		if v == nil {
-			continue
-		}
-		if c.Distinct {
-			k := key(v)
-			if seen[k] {
-				continue
-			}
-			seen[k] = true
-		}
-		values = append(values, v)
-	}
-	switch name {
-	case "count":
-		return int64(len(values))
-	case "collect":
-		return values
-	case "sum", "avg":
-		sum := 0.0
-		for _, v := range values {
-			sum += toDouble(v)
-		}
-		if name == "sum" {
-			return sum
-		}
-		if len(values) == 0 {
-			return nil
-		}
-		return sum / float64(len(values))
-	}
-	fail("unsupported aggregate " + name)
-	return nil
-}
 func validate(q *cypher.Query) {
 	var expression func(cypher.Expr, bool)
 	expression = func(expr cypher.Expr, allowAggregate bool) {
@@ -421,28 +407,9 @@ func validate(q *cypher.Query) {
 		case cypher.Unary:
 			expression(x.Operand, false)
 		case cypher.Binary:
-			if x.Op == "=~" {
-				fail("Java regular expression matching is not supported yet")
-			}
 			expression(x.Left, false)
 			expression(x.Right, false)
 		case cypher.Call:
-			if isAggregate(x) {
-				if !allowAggregate {
-					fail("nested or non-projection aggregation is not supported yet")
-				}
-				if !x.Star && len(x.Arguments) != 1 {
-					fail("aggregate requires one argument")
-				}
-			} else {
-				supported := map[string]bool{"coalesce": true, "exists": true, "id": true, "elementid": true, "graphid": true, "labels": true, "size": true, "length": true, "head": true, "last": true, "tail": true, "tostring": true, "tointeger": true, "toint": true, "tolower": true, "tolowercase": true, "type": true, "nodes": true, "relationships": true}
-				if !supported[strings.ToLower(x.Name)] {
-					fail("unsupported function " + x.Name)
-				}
-				if strings.ToLower(x.Name) != "coalesce" && len(x.Arguments) != 1 {
-					fail(x.Name + " requires one argument")
-				}
-			}
 			for _, a := range x.Arguments {
 				expression(a, false)
 			}

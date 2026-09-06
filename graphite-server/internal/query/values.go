@@ -9,7 +9,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"unicode/utf16"
 )
 
 func number(v any) (float64, bool) {
@@ -87,6 +86,7 @@ func compareNumbers(a, b any) int {
 
 // equal is three-valued Cypher equality, including nested lists/maps.
 func equal(a, b any) any {
+	a, b = mapValues(a), mapValues(b)
 	if a == nil || b == nil {
 		return nil
 	}
@@ -165,6 +165,7 @@ func equal(a, b any) any {
 // compare orders projected values; Cypher relational predicates deliberately
 // use a different comparison for qualified node identity strings.
 func compare(a, b any) int {
+	a, b = mapValues(a), mapValues(b)
 	if a == nil {
 		if b == nil {
 			return 0
@@ -328,7 +329,7 @@ func compareUTF16(a, b string) int {
 	if a == b {
 		return 0
 	}
-	left, right := utf16.Encode([]rune(a)), utf16.Encode([]rune(b))
+	left, right := javaUTF16(a), javaUTF16(b)
 	for i := 0; i < min(len(left), len(right)); i++ {
 		if left[i] < right[i] {
 			return -1
@@ -396,6 +397,7 @@ func comparePredicate(a, b any) int {
 // key normalizes numeric types for DISTINCT/GROUP/UNION and distinguishes null
 // from missing map entries. Length prefixes prevent concatenation collisions.
 func key(v any) string {
+	v = mapValues(v)
 	if v == nil {
 		return "null"
 	}

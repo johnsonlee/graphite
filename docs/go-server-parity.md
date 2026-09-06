@@ -231,3 +231,13 @@ functional milestone, not a new performance optimization or acceptance result.
 The frozen native64 receipt remains 42/42 fixed queries plus 3/5 extra provenance
 cases; its two known differences are fixed in later source but have not been
 rerun on a new 64-graph binary. These feature additions have no new P95 evidence.
+
+
+The next functional milestone completes the 59 scalar dispatch names, 10
+aggregations and native regex integration. `internal/query/FUNCTIONS.md` records
+369 complete main JVM query cases (including exception class/message), plus
+4,172 regex and 30,320 Java17 ARM64 Math package cases. Literal overflow, isolated
+UTF-16 units, map/binding insertion order and runtime error ordering are checked.
+These finite suites do not establish full server parity. The 213 valid-JSON HTTP
+accessor/error-order differential is recorded in `http-boundaries/`; broader
+lenient/malformed Gson syntax and further storage variants remain separate work.

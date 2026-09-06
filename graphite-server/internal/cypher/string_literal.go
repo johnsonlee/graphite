@@ -63,7 +63,15 @@ func stringValue(t token) (string, error) {
 					i += 6
 				}
 			}
-			b.WriteRune(r)
+			if utf16.IsSurrogate(r) {
+				// Java retains isolated UTF-16 units. Preserve them as WTF-8;
+				// the query boundary performs the final UTF-8 wire encoding.
+				b.WriteByte(0xe0 | byte(r>>12))
+				b.WriteByte(0x80 | byte(r>>6&63))
+				b.WriteByte(0x80 | byte(r&63))
+			} else {
+				b.WriteRune(r)
+			}
 		default:
 			b.WriteByte('\\')
 			b.WriteByte(s[i])

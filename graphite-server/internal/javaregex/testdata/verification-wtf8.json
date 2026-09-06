@@ -1,0 +1,51 @@
+{
+  "purpose": "WTF8 correctness follow-up; original verification.json remains unchanged",
+  "baseCommit": "8fccf511",
+  "observedAtUnixSeconds": 1788723762.587824,
+  "priorOracleCases": 4050,
+  "wtf8OracleCases": 122,
+  "totalPassed": 4172,
+  "javaVersion": "17.0.18",
+  "tests": [
+    "go test -race ./internal/javaregex -count=1",
+    "go vet ./internal/javaregex"
+  ],
+  "exitCode": 0,
+  "changedAndAddedFiles": [
+    {
+      "path": "regex.go",
+      "sha256": "3e87294e867c0bafafbcffa5977af69c4ec611de790887c5f174ec16db724ff3",
+      "bytes": 4365
+    },
+    {
+      "path": "parse.go",
+      "sha256": "aaaa16381b837a364f7d33a6a0f5516fbf10351d5e9df34f60a70dd9567ea3f5",
+      "bytes": 16254
+    },
+    {
+      "path": "wtf8_test.go",
+      "sha256": "edc52b478e39b368d0424c63d22197573ddbf05fad0bf9121eb9bc025d41e0ca",
+      "bytes": 1277
+    },
+    {
+      "path": "README.md",
+      "sha256": "e8a3cac8ed4eedca6eca365b0452cb6459a2887fff86bca553de857b0512a502",
+      "bytes": 5490
+    },
+    {
+      "path": "testdata/WTF8Oracle.java",
+      "sha256": "30698ef05274b5d86d7848d071fa12cefbca3afbcd19a12ced11cd97e5bfe3e8",
+      "bytes": 1190
+    },
+    {
+      "path": "testdata/wtf8-cases.json",
+      "sha256": "d3335257b160564e29f7ec5d0d7f612f929d06be9568431c4b5bcbcdf6981fc6",
+      "bytes": 9912
+    },
+    {
+      "path": "testdata/java17-wtf8-oracle.json",
+      "sha256": "f70098dc722789bf3a13c3102041c2a41217de2e3c58748a5eff7a7e8d0f17cf",
+      "bytes": 28633
+    }
+  ]
+}

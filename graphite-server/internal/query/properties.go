@@ -116,7 +116,7 @@ func NodeProperty(n store.Node, key string) any {
 		case "member":
 			value = n.MemberName
 		case "values":
-			fail("annotation values string rendering is not supported yet")
+			value = scalarString(nodeValueMap(n))
 		default:
 			value = n.Values[key]
 		}

@@ -1,0 +1,5126 @@
+{
+  "revision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "cases": [
+    {
+      "query": "RETURN id(1) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "scalar-id"
+    },
+    {
+      "query": "RETURN elementId(1) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "scalar-elementId"
+    },
+    {
+      "query": "RETURN qualifiedId(1) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "scalar-qualifiedId"
+    },
+    {
+      "query": "RETURN graphId(1) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "scalar-graphId"
+    },
+    {
+      "query": "RETURN coalesce(null,1,2) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 1
+        }
+      ],
+      "name": "scalar-coalesce"
+    },
+    {
+      "query": "RETURN toInteger('42') AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 42
+        }
+      ],
+      "name": "scalar-toInteger"
+    },
+    {
+      "query": "RETURN toInt(true) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 1
+        }
+      ],
+      "name": "scalar-toInt"
+    },
+    {
+      "query": "RETURN toFloat('3.5') AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 3.5
+        }
+      ],
+      "name": "scalar-toFloat"
+    },
+    {
+      "query": "RETURN toBoolean('TRUE') AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": true
+        }
+      ],
+      "name": "scalar-toBoolean"
+    },
+    {
+      "query": "RETURN toString([1,null,true]) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": "[1, null, true]"
+        }
+      ],
+      "name": "scalar-toString"
+    },
+    {
+      "query": "RETURN properties({a:1}) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "scalar-properties"
+    },
+    {
+      "query": "RETURN keys({a:1}) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "scalar-keys"
+    },
+    {
+      "query": "RETURN labels(1) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": []
+        }
+      ],
+      "name": "scalar-labels"
+    },
+    {
+      "query": "RETURN type(1) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "scalar-type"
+    },
+    {
+      "query": "RETURN toLower('ABC') AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": "abc"
+        }
+      ],
+      "name": "scalar-toLower"
+    },
+    {
+      "query": "RETURN toLowerCase('ABC') AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": "abc"
+        }
+      ],
+      "name": "scalar-toLowerCase"
+    },
+    {
+      "query": "RETURN toUpper('abc') AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": "ABC"
+        }
+      ],
+      "name": "scalar-toUpper"
+    },
+    {
+      "query": "RETURN toUpperCase('abc') AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": "ABC"
+        }
+      ],
+      "name": "scalar-toUpperCase"
+    },
+    {
+      "query": "RETURN trim(' x ') AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": "x"
+        }
+      ],
+      "name": "scalar-trim"
+    },
+    {
+      "query": "RETURN ltrim(' x ') AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": "x "
+        }
+      ],
+      "name": "scalar-ltrim"
+    },
+    {
+      "query": "RETURN rtrim(' x ') AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": " x"
+        }
+      ],
+      "name": "scalar-rtrim"
+    },
+    {
+      "query": "RETURN replace('aba','a','x') AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": "xbx"
+        }
+      ],
+      "name": "scalar-replace"
+    },
+    {
+      "query": "RETURN substring('abcd',1,2) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": "bc"
+        }
+      ],
+      "name": "scalar-substring"
+    },
+    {
+      "query": "RETURN split('a,b,',',') AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": [
+            "a",
+            "b",
+            ""
+          ]
+        }
+      ],
+      "name": "scalar-split"
+    },
+    {
+      "query": "RETURN size([1,null]) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 2
+        }
+      ],
+      "name": "scalar-size"
+    },
+    {
+      "query": "RETURN length('\ud834\udd1e') AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 2
+        }
+      ],
+      "name": "scalar-length"
+    },
+    {
+      "query": "RETURN left('abc',2) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": "ab"
+        }
+      ],
+      "name": "scalar-left"
+    },
+    {
+      "query": "RETURN right('abc',2) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": "bc"
+        }
+      ],
+      "name": "scalar-right"
+    },
+    {
+      "query": "RETURN reverse('ab\ud834\udd1e') AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": "\ud834\udd1eba"
+        }
+      ],
+      "name": "scalar-reverse"
+    },
+    {
+      "query": "RETURN head([1,2]) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 1
+        }
+      ],
+      "name": "scalar-head"
+    },
+    {
+      "query": "RETURN tail([1,2]) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": [
+            2
+          ]
+        }
+      ],
+      "name": "scalar-tail"
+    },
+    {
+      "query": "RETURN last([1,2]) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 2
+        }
+      ],
+      "name": "scalar-last"
+    },
+    {
+      "query": "RETURN range(3,-1,-2) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": [
+            3,
+            1,
+            -1
+          ]
+        }
+      ],
+      "name": "scalar-range"
+    },
+    {
+      "query": "RETURN nodes([1]) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": []
+        }
+      ],
+      "name": "scalar-nodes"
+    },
+    {
+      "query": "RETURN relationships([1]) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": []
+        }
+      ],
+      "name": "scalar-relationships"
+    },
+    {
+      "query": "RETURN abs(-2) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 2
+        }
+      ],
+      "name": "scalar-abs"
+    },
+    {
+      "query": "RETURN ceil(2.2) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 3.0
+        }
+      ],
+      "name": "scalar-ceil"
+    },
+    {
+      "query": "RETURN floor(-2.2) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": -3.0
+        }
+      ],
+      "name": "scalar-floor"
+    },
+    {
+      "query": "RETURN round(-2.5) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": -2.0
+        }
+      ],
+      "name": "scalar-round"
+    },
+    {
+      "query": "RETURN sign(-5) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": -1
+        }
+      ],
+      "name": "scalar-sign"
+    },
+    {
+      "query": "RETURN sqrt(4) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 2.0
+        }
+      ],
+      "name": "scalar-sqrt"
+    },
+    {
+      "query": "RETURN exp(1) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 2.7182818284590455
+        }
+      ],
+      "name": "scalar-exp"
+    },
+    {
+      "query": "RETURN log(2) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 0.6931471805599453
+        }
+      ],
+      "name": "scalar-log"
+    },
+    {
+      "query": "RETURN log10(100) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 2.0
+        }
+      ],
+      "name": "scalar-log10"
+    },
+    {
+      "query": "RETURN e() AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 2.718281828459045
+        }
+      ],
+      "name": "scalar-e"
+    },
+    {
+      "query": "RETURN sin(0) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 0.0
+        }
+      ],
+      "name": "scalar-sin"
+    },
+    {
+      "query": "RETURN cos(0) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 1.0
+        }
+      ],
+      "name": "scalar-cos"
+    },
+    {
+      "query": "RETURN tan(0) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 0.0
+        }
+      ],
+      "name": "scalar-tan"
+    },
+    {
+      "query": "RETURN asin(0) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 0.0
+        }
+      ],
+      "name": "scalar-asin"
+    },
+    {
+      "query": "RETURN acos(1) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 0.0
+        }
+      ],
+      "name": "scalar-acos"
+    },
+    {
+      "query": "RETURN atan(0) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 0.0
+        }
+      ],
+      "name": "scalar-atan"
+    },
+    {
+      "query": "RETURN atan2(0,1) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 0.0
+        }
+      ],
+      "name": "scalar-atan2"
+    },
+    {
+      "query": "RETURN cot(1) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 0.6420926159343306
+        }
+      ],
+      "name": "scalar-cot"
+    },
+    {
+      "query": "RETURN pi() AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 3.141592653589793
+        }
+      ],
+      "name": "scalar-pi"
+    },
+    {
+      "query": "RETURN degrees(pi()) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 180.0
+        }
+      ],
+      "name": "scalar-degrees"
+    },
+    {
+      "query": "RETURN radians(180) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 3.141592653589793
+        }
+      ],
+      "name": "scalar-radians"
+    },
+    {
+      "query": "RETURN exists(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": false
+        }
+      ],
+      "name": "scalar-exists"
+    },
+    {
+      "query": "RETURN id(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "null-id"
+    },
+    {
+      "query": "RETURN elementId(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "null-elementId"
+    },
+    {
+      "query": "RETURN qualifiedId(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "null-qualifiedId"
+    },
+    {
+      "query": "RETURN graphId(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "null-graphId"
+    },
+    {
+      "query": "RETURN coalesce(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "null-coalesce"
+    },
+    {
+      "query": "RETURN toInteger(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "null-toInteger"
+    },
+    {
+      "query": "RETURN toInt(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "null-toInt"
+    },
+    {
+      "query": "RETURN toFloat(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "null-toFloat"
+    },
+    {
+      "query": "RETURN toBoolean(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "null-toBoolean"
+    },
+    {
+      "query": "RETURN toString(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "null-toString"
+    },
+    {
+      "query": "RETURN properties(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "null-properties"
+    },
+    {
+      "query": "RETURN keys(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "null-keys"
+    },
+    {
+      "query": "RETURN labels(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": []
+        }
+      ],
+      "name": "null-labels"
+    },
+    {
+      "query": "RETURN type(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "null-type"
+    },
+    {
+      "query": "RETURN toLower(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "null-toLower"
+    },
+    {
+      "query": "RETURN toLowerCase(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "null-toLowerCase"
+    },
+    {
+      "query": "RETURN toUpper(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "null-toUpper"
+    },
+    {
+      "query": "RETURN toUpperCase(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "null-toUpperCase"
+    },
+    {
+      "query": "RETURN trim(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "null-trim"
+    },
+    {
+      "query": "RETURN ltrim(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "null-ltrim"
+    },
+    {
+      "query": "RETURN rtrim(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "null-rtrim"
+    },
+    {
+      "query": "RETURN replace(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "null-replace"
+    },
+    {
+      "query": "RETURN substring(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "null-substring"
+    },
+    {
+      "query": "RETURN split(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "null-split"
+    },
+    {
+      "query": "RETURN size(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "null-size"
+    },
+    {
+      "query": "RETURN length(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "null-length"
+    },
+    {
+      "query": "RETURN left(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "null-left"
+    },
+    {
+      "query": "RETURN right(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "null-right"
+    },
+    {
+      "query": "RETURN reverse(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "null-reverse"
+    },
+    {
+      "query": "RETURN head(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "null-head"
+    },
+    {
+      "query": "RETURN tail(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "null-tail"
+    },
+    {
+      "query": "RETURN last(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "null-last"
+    },
+    {
+      "query": "RETURN range(null) AS value",
+      "cross": false,
+      "error": "NullPointerException",
+      "message": "null cannot be cast to non-null type kotlin.Number",
+      "name": "null-range"
+    },
+    {
+      "query": "RETURN nodes(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "null-nodes"
+    },
+    {
+      "query": "RETURN relationships(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "null-relationships"
+    },
+    {
+      "query": "RETURN abs(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "null-abs"
+    },
+    {
+      "query": "RETURN ceil(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 0.0
+        }
+      ],
+      "name": "null-ceil"
+    },
+    {
+      "query": "RETURN floor(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 0.0
+        }
+      ],
+      "name": "null-floor"
+    },
+    {
+      "query": "RETURN round(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 0.0
+        }
+      ],
+      "name": "null-round"
+    },
+    {
+      "query": "RETURN sign(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 0
+        }
+      ],
+      "name": "null-sign"
+    },
+    {
+      "query": "RETURN sqrt(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 0.0
+        }
+      ],
+      "name": "null-sqrt"
+    },
+    {
+      "query": "RETURN exp(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 1.0
+        }
+      ],
+      "name": "null-exp"
+    },
+    {
+      "query": "RETURN log(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": {
+            "$number": "-Infinity"
+          }
+        }
+      ],
+      "name": "null-log"
+    },
+    {
+      "query": "RETURN log10(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": {
+            "$number": "-Infinity"
+          }
+        }
+      ],
+      "name": "null-log10"
+    },
+    {
+      "query": "RETURN sin(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 0.0
+        }
+      ],
+      "name": "null-sin"
+    },
+    {
+      "query": "RETURN cos(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 1.0
+        }
+      ],
+      "name": "null-cos"
+    },
+    {
+      "query": "RETURN tan(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 0.0
+        }
+      ],
+      "name": "null-tan"
+    },
+    {
+      "query": "RETURN asin(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 0.0
+        }
+      ],
+      "name": "null-asin"
+    },
+    {
+      "query": "RETURN acos(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 1.5707963267948966
+        }
+      ],
+      "name": "null-acos"
+    },
+    {
+      "query": "RETURN atan(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 0.0
+        }
+      ],
+      "name": "null-atan"
+    },
+    {
+      "query": "RETURN atan2(null) AS value",
+      "cross": false,
+      "error": "IndexOutOfBoundsException",
+      "message": "Index 1 out of bounds for length 1",
+      "name": "null-atan2"
+    },
+    {
+      "query": "RETURN cot(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": {
+            "$number": "Infinity"
+          }
+        }
+      ],
+      "name": "null-cot"
+    },
+    {
+      "query": "RETURN degrees(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 0.0
+        }
+      ],
+      "name": "null-degrees"
+    },
+    {
+      "query": "RETURN radians(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 0.0
+        }
+      ],
+      "name": "null-radians"
+    },
+    {
+      "query": "RETURN exists(null) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": false
+        }
+      ],
+      "name": "null-exists"
+    },
+    {
+      "query": "UNWIND [1,2,3,4,null] AS x RETURN count(x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 4
+        }
+      ],
+      "name": "aggregate-count-numbers"
+    },
+    {
+      "query": "UNWIND [null,'x','10',true,2] AS x RETURN count(x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 4
+        }
+      ],
+      "name": "aggregate-count-mixed"
+    },
+    {
+      "query": "UNWIND [] AS x RETURN count(x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 0
+        }
+      ],
+      "name": "aggregate-count-empty"
+    },
+    {
+      "query": "UNWIND [3] AS x RETURN count(x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 1
+        }
+      ],
+      "name": "aggregate-count-one"
+    },
+    {
+      "query": "UNWIND [1,1,2,null] AS x RETURN count(DISTINCT x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 2
+        }
+      ],
+      "name": "aggregate-count-distinct"
+    },
+    {
+      "query": "UNWIND [1,2] AS x RETURN count() AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 2
+        }
+      ],
+      "name": "aggregate-count-noargs"
+    },
+    {
+      "query": "UNWIND [1,2,3,4] AS x RETURN count(x,$missing) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 4
+        }
+      ],
+      "name": "aggregate-count-extra"
+    },
+    {
+      "query": "UNWIND [1,2,3,4,null] AS x RETURN sum(x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 10.0
+        }
+      ],
+      "name": "aggregate-sum-numbers"
+    },
+    {
+      "query": "UNWIND [null,'x','10',true,2] AS x RETURN sum(x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 12.0
+        }
+      ],
+      "name": "aggregate-sum-mixed"
+    },
+    {
+      "query": "UNWIND [] AS x RETURN sum(x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 0.0
+        }
+      ],
+      "name": "aggregate-sum-empty"
+    },
+    {
+      "query": "UNWIND [3] AS x RETURN sum(x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 3.0
+        }
+      ],
+      "name": "aggregate-sum-one"
+    },
+    {
+      "query": "UNWIND [1,1,2,null] AS x RETURN sum(DISTINCT x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 3.0
+        }
+      ],
+      "name": "aggregate-sum-distinct"
+    },
+    {
+      "query": "UNWIND [1,2] AS x RETURN sum() AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 0.0
+        }
+      ],
+      "name": "aggregate-sum-noargs"
+    },
+    {
+      "query": "UNWIND [1,2,3,4] AS x RETURN sum(x,$missing) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 10.0
+        }
+      ],
+      "name": "aggregate-sum-extra"
+    },
+    {
+      "query": "UNWIND [1,2,3,4,null] AS x RETURN avg(x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 2.5
+        }
+      ],
+      "name": "aggregate-avg-numbers"
+    },
+    {
+      "query": "UNWIND [null,'x','10',true,2] AS x RETURN avg(x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 3.0
+        }
+      ],
+      "name": "aggregate-avg-mixed"
+    },
+    {
+      "query": "UNWIND [] AS x RETURN avg(x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "aggregate-avg-empty"
+    },
+    {
+      "query": "UNWIND [3] AS x RETURN avg(x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 3.0
+        }
+      ],
+      "name": "aggregate-avg-one"
+    },
+    {
+      "query": "UNWIND [1,1,2,null] AS x RETURN avg(DISTINCT x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 1.5
+        }
+      ],
+      "name": "aggregate-avg-distinct"
+    },
+    {
+      "query": "UNWIND [1,2] AS x RETURN avg() AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 0.0
+        }
+      ],
+      "name": "aggregate-avg-noargs"
+    },
+    {
+      "query": "UNWIND [1,2,3,4] AS x RETURN avg(x,$missing) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 2.5
+        }
+      ],
+      "name": "aggregate-avg-extra"
+    },
+    {
+      "query": "UNWIND [1,2,3,4,null] AS x RETURN min(x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 1
+        }
+      ],
+      "name": "aggregate-min-numbers"
+    },
+    {
+      "query": "UNWIND [null,'x','10',true,2] AS x RETURN min(x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": "x"
+        }
+      ],
+      "name": "aggregate-min-mixed"
+    },
+    {
+      "query": "UNWIND [] AS x RETURN min(x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "aggregate-min-empty"
+    },
+    {
+      "query": "UNWIND [3] AS x RETURN min(x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 3
+        }
+      ],
+      "name": "aggregate-min-one"
+    },
+    {
+      "query": "UNWIND [1,1,2,null] AS x RETURN min(DISTINCT x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 1
+        }
+      ],
+      "name": "aggregate-min-distinct"
+    },
+    {
+      "query": "UNWIND [1,2] AS x RETURN min() AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": {
+            "x": 1
+          }
+        }
+      ],
+      "name": "aggregate-min-noargs"
+    },
+    {
+      "query": "UNWIND [1,2,3,4] AS x RETURN min(x,$missing) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 1
+        }
+      ],
+      "name": "aggregate-min-extra"
+    },
+    {
+      "query": "UNWIND [1,2,3,4,null] AS x RETURN max(x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 4
+        }
+      ],
+      "name": "aggregate-max-numbers"
+    },
+    {
+      "query": "UNWIND [null,'x','10',true,2] AS x RETURN max(x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": "10"
+        }
+      ],
+      "name": "aggregate-max-mixed"
+    },
+    {
+      "query": "UNWIND [] AS x RETURN max(x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "aggregate-max-empty"
+    },
+    {
+      "query": "UNWIND [3] AS x RETURN max(x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 3
+        }
+      ],
+      "name": "aggregate-max-one"
+    },
+    {
+      "query": "UNWIND [1,1,2,null] AS x RETURN max(DISTINCT x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 2
+        }
+      ],
+      "name": "aggregate-max-distinct"
+    },
+    {
+      "query": "UNWIND [1,2] AS x RETURN max() AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": {
+            "x": 1
+          }
+        }
+      ],
+      "name": "aggregate-max-noargs"
+    },
+    {
+      "query": "UNWIND [1,2,3,4] AS x RETURN max(x,$missing) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 4
+        }
+      ],
+      "name": "aggregate-max-extra"
+    },
+    {
+      "query": "UNWIND [1,2,3,4,null] AS x RETURN collect(x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": [
+            1,
+            2,
+            3,
+            4
+          ]
+        }
+      ],
+      "name": "aggregate-collect-numbers"
+    },
+    {
+      "query": "UNWIND [null,'x','10',true,2] AS x RETURN collect(x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": [
+            "x",
+            "10",
+            true,
+            2
+          ]
+        }
+      ],
+      "name": "aggregate-collect-mixed"
+    },
+    {
+      "query": "UNWIND [] AS x RETURN collect(x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": []
+        }
+      ],
+      "name": "aggregate-collect-empty"
+    },
+    {
+      "query": "UNWIND [3] AS x RETURN collect(x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": [
+            3
+          ]
+        }
+      ],
+      "name": "aggregate-collect-one"
+    },
+    {
+      "query": "UNWIND [1,1,2,null] AS x RETURN collect(DISTINCT x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": [
+            1,
+            2
+          ]
+        }
+      ],
+      "name": "aggregate-collect-distinct"
+    },
+    {
+      "query": "UNWIND [1,2] AS x RETURN collect() AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": [
+            {
+              "x": 1
+            },
+            {
+              "x": 2
+            }
+          ]
+        }
+      ],
+      "name": "aggregate-collect-noargs"
+    },
+    {
+      "query": "UNWIND [1,2,3,4] AS x RETURN collect(x,$missing) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": [
+            1,
+            2,
+            3,
+            4
+          ]
+        }
+      ],
+      "name": "aggregate-collect-extra"
+    },
+    {
+      "query": "UNWIND [1,2,3,4,null] AS x RETURN percentileCont(x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 2.5
+        }
+      ],
+      "name": "aggregate-percentileCont-numbers"
+    },
+    {
+      "query": "UNWIND [null,'x','10',true,2] AS x RETURN percentileCont(x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 1.0
+        }
+      ],
+      "name": "aggregate-percentileCont-mixed"
+    },
+    {
+      "query": "UNWIND [] AS x RETURN percentileCont(x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "aggregate-percentileCont-empty"
+    },
+    {
+      "query": "UNWIND [3] AS x RETURN percentileCont(x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 3.0
+        }
+      ],
+      "name": "aggregate-percentileCont-one"
+    },
+    {
+      "query": "UNWIND [1,1,2,null] AS x RETURN percentileCont(DISTINCT x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 1.5
+        }
+      ],
+      "name": "aggregate-percentileCont-distinct"
+    },
+    {
+      "query": "UNWIND [1,2] AS x RETURN percentileCont() AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 0.0
+        }
+      ],
+      "name": "aggregate-percentileCont-noargs"
+    },
+    {
+      "query": "UNWIND [1,2,3,4] AS x RETURN percentileCont(x,$missing) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 2.5
+        }
+      ],
+      "name": "aggregate-percentileCont-extra"
+    },
+    {
+      "query": "UNWIND [1,2,3,4,null] AS x RETURN percentileDisc(x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 2.0
+        }
+      ],
+      "name": "aggregate-percentileDisc-numbers"
+    },
+    {
+      "query": "UNWIND [null,'x','10',true,2] AS x RETURN percentileDisc(x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 0.0
+        }
+      ],
+      "name": "aggregate-percentileDisc-mixed"
+    },
+    {
+      "query": "UNWIND [] AS x RETURN percentileDisc(x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "aggregate-percentileDisc-empty"
+    },
+    {
+      "query": "UNWIND [3] AS x RETURN percentileDisc(x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 3.0
+        }
+      ],
+      "name": "aggregate-percentileDisc-one"
+    },
+    {
+      "query": "UNWIND [1,1,2,null] AS x RETURN percentileDisc(DISTINCT x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 1.0
+        }
+      ],
+      "name": "aggregate-percentileDisc-distinct"
+    },
+    {
+      "query": "UNWIND [1,2] AS x RETURN percentileDisc() AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 0.0
+        }
+      ],
+      "name": "aggregate-percentileDisc-noargs"
+    },
+    {
+      "query": "UNWIND [1,2,3,4] AS x RETURN percentileDisc(x,$missing) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 2.0
+        }
+      ],
+      "name": "aggregate-percentileDisc-extra"
+    },
+    {
+      "query": "UNWIND [1,2,3,4,null] AS x RETURN stdev(x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 1.2909944487358056
+        }
+      ],
+      "name": "aggregate-stdev-numbers"
+    },
+    {
+      "query": "UNWIND [null,'x','10',true,2] AS x RETURN stdev(x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 4.760952285695233
+        }
+      ],
+      "name": "aggregate-stdev-mixed"
+    },
+    {
+      "query": "UNWIND [] AS x RETURN stdev(x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "aggregate-stdev-empty"
+    },
+    {
+      "query": "UNWIND [3] AS x RETURN stdev(x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "aggregate-stdev-one"
+    },
+    {
+      "query": "UNWIND [1,1,2,null] AS x RETURN stdev(DISTINCT x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 0.7071067811865476
+        }
+      ],
+      "name": "aggregate-stdev-distinct"
+    },
+    {
+      "query": "UNWIND [1,2] AS x RETURN stdev() AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 0.0
+        }
+      ],
+      "name": "aggregate-stdev-noargs"
+    },
+    {
+      "query": "UNWIND [1,2,3,4] AS x RETURN stdev(x,$missing) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 1.2909944487358056
+        }
+      ],
+      "name": "aggregate-stdev-extra"
+    },
+    {
+      "query": "UNWIND [1,2,3,4,null] AS x RETURN stdevp(x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 1.118033988749895
+        }
+      ],
+      "name": "aggregate-stdevp-numbers"
+    },
+    {
+      "query": "UNWIND [null,'x','10',true,2] AS x RETURN stdevp(x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 4.123105625617661
+        }
+      ],
+      "name": "aggregate-stdevp-mixed"
+    },
+    {
+      "query": "UNWIND [] AS x RETURN stdevp(x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "aggregate-stdevp-empty"
+    },
+    {
+      "query": "UNWIND [3] AS x RETURN stdevp(x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "aggregate-stdevp-one"
+    },
+    {
+      "query": "UNWIND [1,1,2,null] AS x RETURN stdevp(DISTINCT x) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 0.5
+        }
+      ],
+      "name": "aggregate-stdevp-distinct"
+    },
+    {
+      "query": "UNWIND [1,2] AS x RETURN stdevp() AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 0.0
+        }
+      ],
+      "name": "aggregate-stdevp-noargs"
+    },
+    {
+      "query": "UNWIND [1,2,3,4] AS x RETURN stdevp(x,$missing) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 1.118033988749895
+        }
+      ],
+      "name": "aggregate-stdevp-extra"
+    },
+    {
+      "query": "RETURN count(*)+1 AS n",
+      "cross": false,
+      "error": "CypherAggregationException",
+      "message": "Aggregation function 'count' must be used in RETURN or WITH clause",
+      "name": "edge-182"
+    },
+    {
+      "query": "UNWIND [1,2] AS x RETURN size(collect(x)) AS n",
+      "cross": false,
+      "error": "CypherAggregationException",
+      "message": "Aggregation function 'collect' must be used in RETURN or WITH clause",
+      "name": "edge-183"
+    },
+    {
+      "query": "UNWIND [] AS x RETURN size(collect(x)) AS n",
+      "cross": false,
+      "error": "CypherAggregationException",
+      "message": "Aggregation function 'collect' must be used in RETURN or WITH clause",
+      "name": "edge-184"
+    },
+    {
+      "query": "UNWIND [] AS x RETURN [count(*)] AS n",
+      "cross": false,
+      "columns": [
+        "n"
+      ],
+      "rows": [],
+      "name": "edge-185"
+    },
+    {
+      "query": "UNWIND [1] AS x RETURN [count(*)] AS n",
+      "cross": false,
+      "error": "CypherAggregationException",
+      "message": "Aggregation function 'count' must be used in RETURN or WITH clause",
+      "name": "edge-186"
+    },
+    {
+      "query": "UNWIND [] AS x RETURN -count(*) AS n",
+      "cross": false,
+      "columns": [
+        "n"
+      ],
+      "rows": [],
+      "name": "edge-187"
+    },
+    {
+      "query": "UNWIND [] AS x RETURN count(*)=0 AS n",
+      "cross": false,
+      "error": "CypherAggregationException",
+      "message": "Aggregation function 'count' must be used in RETURN or WITH clause",
+      "name": "edge-188"
+    },
+    {
+      "query": "UNWIND [1,2] AS x RETURN sum(count(x)) AS n",
+      "cross": false,
+      "error": "CypherAggregationException",
+      "message": "Aggregation function 'count' must be used in RETURN or WITH clause",
+      "name": "edge-189"
+    },
+    {
+      "query": "UNWIND [] AS x RETURN sum(count(x)) AS n",
+      "cross": false,
+      "columns": [
+        "n"
+      ],
+      "rows": [
+        {
+          "n": 0.0
+        }
+      ],
+      "name": "edge-190"
+    },
+    {
+      "query": "UNWIND [1,2,1] AS x WITH x,count(*) AS n RETURN x,n ORDER BY x",
+      "cross": false,
+      "columns": [
+        "x",
+        "n"
+      ],
+      "rows": [
+        {
+          "x": 1,
+          "n": 2
+        },
+        {
+          "x": 2,
+          "n": 1
+        }
+      ],
+      "name": "edge-191"
+    },
+    {
+      "query": "UNWIND [1,2] AS x WITH collect(x) AS xs RETURN size(xs) AS n",
+      "cross": false,
+      "columns": [
+        "n"
+      ],
+      "rows": [
+        {
+          "n": 2
+        }
+      ],
+      "name": "edge-192"
+    },
+    {
+      "query": "RETURN coalesce() AS x",
+      "cross": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": null
+        }
+      ],
+      "name": "edge-193"
+    },
+    {
+      "query": "RETURN unknown(1)",
+      "cross": false,
+      "error": "CypherException",
+      "message": "Unknown function: unknown",
+      "name": "edge-194"
+    },
+    {
+      "query": "UNWIND [] AS x RETURN unknown(x)",
+      "cross": false,
+      "columns": [
+        "unknown(x)"
+      ],
+      "rows": [],
+      "name": "edge-195"
+    },
+    {
+      "query": "RETURN abs()",
+      "cross": false,
+      "error": "IndexOutOfBoundsException",
+      "message": "Index 0 out of bounds for length 0",
+      "name": "edge-196"
+    },
+    {
+      "query": "RETURN abs(1,2)",
+      "cross": false,
+      "columns": [
+        "abs(1, 2)"
+      ],
+      "rows": [
+        {
+          "abs(1, 2)": 1
+        }
+      ],
+      "name": "edge-197"
+    },
+    {
+      "query": "RETURN substring(null)",
+      "cross": false,
+      "columns": [
+        "substring(null)"
+      ],
+      "rows": [
+        {
+          "substring(null)": null
+        }
+      ],
+      "name": "edge-198"
+    },
+    {
+      "query": "RETURN substring(1)",
+      "cross": false,
+      "columns": [
+        "substring(1)"
+      ],
+      "rows": [
+        {
+          "substring(1)": null
+        }
+      ],
+      "name": "edge-199"
+    },
+    {
+      "query": "RETURN substring(\"abc\",-1)",
+      "cross": false,
+      "error": "StringIndexOutOfBoundsException",
+      "message": "begin -1, end 3, length 3",
+      "name": "edge-200"
+    },
+    {
+      "query": "RETURN substring(\"abc\",1,-1)",
+      "cross": false,
+      "error": "StringIndexOutOfBoundsException",
+      "message": "begin 1, end 0, length 3",
+      "name": "edge-201"
+    },
+    {
+      "query": "RETURN substring(\"abc\",9)",
+      "cross": false,
+      "error": "StringIndexOutOfBoundsException",
+      "message": "begin 9, end 3, length 3",
+      "name": "edge-202"
+    },
+    {
+      "query": "RETURN left(\"a\",-1)",
+      "cross": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested character count -1 is less than zero.",
+      "name": "edge-203"
+    },
+    {
+      "query": "RETURN left(\"a\",\"x\")",
+      "cross": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "edge-204"
+    },
+    {
+      "query": "RETURN replace(\"a\",null,\"b\")",
+      "cross": false,
+      "error": "NullPointerException",
+      "message": "null cannot be cast to non-null type kotlin.String",
+      "name": "edge-205"
+    },
+    {
+      "query": "RETURN split(\"a\",null)",
+      "cross": false,
+      "error": "NullPointerException",
+      "message": "null cannot be cast to non-null type kotlin.String",
+      "name": "edge-206"
+    },
+    {
+      "query": "RETURN range(1,2,0)",
+      "cross": false,
+      "error": "CypherException",
+      "message": "Step cannot be zero in range()",
+      "name": "edge-207"
+    },
+    {
+      "query": "RETURN range(null,2)",
+      "cross": false,
+      "error": "NullPointerException",
+      "message": "null cannot be cast to non-null type kotlin.Number",
+      "name": "edge-208"
+    },
+    {
+      "query": "RETURN range(3,1)",
+      "cross": false,
+      "columns": [
+        "range(3, 1)"
+      ],
+      "rows": [
+        {
+          "range(3, 1)": []
+        }
+      ],
+      "name": "edge-209"
+    },
+    {
+      "query": "RETURN range(1,3,-1)",
+      "cross": false,
+      "columns": [
+        "range(1, 3, -1)"
+      ],
+      "rows": [
+        {
+          "range(1, 3, -1)": []
+        }
+      ],
+      "name": "edge-210"
+    },
+    {
+      "query": "RETURN range(9223372036854775806,9223372036854775807)",
+      "cross": false,
+      "columns": [
+        "range(9223372036854775806, 9223372036854775807)"
+      ],
+      "rows": [
+        {
+          "range(9223372036854775806, 9223372036854775807)": [
+            9223372036854775806,
+            9223372036854775807
+          ]
+        }
+      ],
+      "name": "edge-211"
+    },
+    {
+      "query": "RETURN toFloat(\" 1.25 \"),toFloat(\"1f\"),toFloat(\"0x1.8p2\"),toFloat(\"1e999\"),toFloat(\"nan\"),toFloat(\"Inf\")",
+      "cross": false,
+      "columns": [
+        "toFloat(' 1.25 ')",
+        "toFloat('1f')",
+        "toFloat('0x1.8p2')",
+        "toFloat('1e999')",
+        "toFloat('nan')",
+        "toFloat('Inf')"
+      ],
+      "rows": [
+        {
+          "toFloat(' 1.25 ')": 1.25,
+          "toFloat('1f')": 1.0,
+          "toFloat('0x1.8p2')": 6.0,
+          "toFloat('1e999')": {
+            "$number": "Infinity"
+          },
+          "toFloat('nan')": null,
+          "toFloat('Inf')": null
+        }
+      ],
+      "name": "edge-212"
+    },
+    {
+      "query": "RETURN toBoolean(\" true \"),toInteger(\" 1 \")",
+      "cross": false,
+      "columns": [
+        "toBoolean(' true ')",
+        "toInteger(' 1 ')"
+      ],
+      "rows": [
+        {
+          "toBoolean(' true ')": null,
+          "toInteger(' 1 ')": null
+        }
+      ],
+      "name": "edge-213"
+    },
+    {
+      "query": "RETURN sqrt(-1),log(0),cot(0),sign(toFloat(\"NaN\")),min(1)",
+      "cross": false,
+      "columns": [
+        "sqrt(-1)",
+        "log(0)",
+        "cot(0)",
+        "sign(toFloat('NaN'))",
+        "min(1)"
+      ],
+      "rows": [
+        {
+          "sqrt(-1)": {
+            "$number": "NaN"
+          },
+          "log(0)": {
+            "$number": "-Infinity"
+          },
+          "cot(0)": {
+            "$number": "Infinity"
+          },
+          "sign(toFloat('NaN'))": 0,
+          "min(1)": 1
+        }
+      ],
+      "name": "edge-214"
+    },
+    {
+      "query": "RETURN substring(\"\ud834\udd1ea\",0,1),substring(\"\ud834\udd1ea\",1,1),left(\"\ud834\udd1e\",1),right(\"\ud834\udd1e\",1),split(\"\ud834\udd1e\",\"\")",
+      "cross": false,
+      "columns": [
+        "substring('\ud834\udd1ea', 0, 1)",
+        "substring('\ud834\udd1ea', 1, 1)",
+        "left('\ud834\udd1e', 1)",
+        "right('\ud834\udd1e', 1)",
+        "split('\ud834\udd1e', '')"
+      ],
+      "rows": [
+        {
+          "substring('\ud834\udd1ea', 0, 1)": "?",
+          "substring('\ud834\udd1ea', 1, 1)": "?",
+          "left('\ud834\udd1e', 1)": "?",
+          "right('\ud834\udd1e', 1)": "?",
+          "split('\ud834\udd1e', '')": [
+            "",
+            "?",
+            "?",
+            ""
+          ]
+        }
+      ],
+      "name": "edge-215"
+    },
+    {
+      "query": "RETURN \"\ud834\udd1e\"[0],\"\ud834\udd1e\"[1],\"\ud834\udd1e\"[0..1]",
+      "cross": false,
+      "columns": [
+        "'\ud834\udd1e'[0]",
+        "'\ud834\udd1e'[1]",
+        "'\ud834\udd1e'[0..1]"
+      ],
+      "rows": [
+        {
+          "'\ud834\udd1e'[0]": "?",
+          "'\ud834\udd1e'[1]": "?",
+          "'\ud834\udd1e'[0..1]": "?"
+        }
+      ],
+      "name": "edge-216"
+    },
+    {
+      "query": "RETURN toUpper(\"stra\u00dfe \ufb03 \u0131\"),toLower(\"\u039f\u03a3 \u0130 \u03a3\u039f\u03a3\"),trim(\"\\u0085 x \\u0085\")",
+      "cross": false,
+      "columns": [
+        "toUpper('stra\u00dfe \ufb03 \u0131')",
+        "toLower('\u039f\u03a3 \u0130 \u03a3\u039f\u03a3')",
+        "trim('\u0085 x \u0085')"
+      ],
+      "rows": [
+        {
+          "toUpper('stra\u00dfe \ufb03 \u0131')": "STRASSE FFI I",
+          "toLower('\u039f\u03a3 \u0130 \u03a3\u039f\u03a3')": "\u03bf\u03c2 i\u0307 \u03c3\u03bf\u03c2",
+          "trim('\u0085 x \u0085')": "\u0085 x \u0085"
+        }
+      ],
+      "name": "edge-217"
+    },
+    {
+      "query": "RETURN toString({z:1,a:[2,null]}),toString([{b:true}])",
+      "cross": false,
+      "columns": [
+        "toString({z: 1, a: [2, null]})",
+        "toString([{b: true}])"
+      ],
+      "rows": [
+        {
+          "toString({z: 1, a: [2, null]})": "{z=1, a=[2, null]}",
+          "toString([{b: true}])": "[{b=true}]"
+        }
+      ],
+      "name": "edge-218"
+    },
+    {
+      "query": "MATCH (n) RETURN n.id AS id,properties(n) AS properties,keys(n) AS keys,labels(n) AS labels ORDER BY id",
+      "cross": false,
+      "columns": [
+        "id",
+        "properties",
+        "keys",
+        "labels"
+      ],
+      "rows": [
+        {
+          "id": 0,
+          "properties": {
+            "id": 0,
+            "value": 100
+          },
+          "keys": [
+            "id",
+            "value"
+          ],
+          "labels": [
+            "IntConstant",
+            "Constant"
+          ]
+        },
+        {
+          "id": 1,
+          "properties": {
+            "id": 1,
+            "value": 101
+          },
+          "keys": [
+            "id",
+            "value"
+          ],
+          "labels": [
+            "IntConstant",
+            "Constant"
+          ]
+        },
+        {
+          "id": 2,
+          "properties": {
+            "id": 2,
+            "value": 102
+          },
+          "keys": [
+            "id",
+            "value"
+          ],
+          "labels": [
+            "IntConstant",
+            "Constant"
+          ]
+        },
+        {
+          "id": 3,
+          "properties": {
+            "id": 3,
+            "value": 103
+          },
+          "keys": [
+            "id",
+            "value"
+          ],
+          "labels": [
+            "IntConstant",
+            "Constant"
+          ]
+        },
+        {
+          "id": 4,
+          "properties": {
+            "id": 4,
+            "value": 104
+          },
+          "keys": [
+            "id",
+            "value"
+          ],
+          "labels": [
+            "IntConstant",
+            "Constant"
+          ]
+        },
+        {
+          "id": 5,
+          "properties": {
+            "id": 5,
+            "value": 105
+          },
+          "keys": [
+            "id",
+            "value"
+          ],
+          "labels": [
+            "IntConstant",
+            "Constant"
+          ]
+        },
+        {
+          "id": 6,
+          "properties": {
+            "id": 6,
+            "value": 106
+          },
+          "keys": [
+            "id",
+            "value"
+          ],
+          "labels": [
+            "IntConstant",
+            "Constant"
+          ]
+        },
+        {
+          "id": 7,
+          "properties": {
+            "id": 7,
+            "value": 107
+          },
+          "keys": [
+            "id",
+            "value"
+          ],
+          "labels": [
+            "IntConstant",
+            "Constant"
+          ]
+        }
+      ],
+      "name": "nodes-219"
+    },
+    {
+      "query": "MATCH (n:Method) RETURN properties(n) AS properties,keys(n) AS keys,qualifiedId(n) AS id",
+      "cross": false,
+      "columns": [
+        "properties",
+        "keys",
+        "id"
+      ],
+      "rows": [],
+      "name": "nodes-220"
+    },
+    {
+      "query": "MATCH (n {id:0}) RETURN toString(n) AS string",
+      "cross": false,
+      "columns": [
+        "string"
+      ],
+      "rows": [
+        {
+          "string": "IntConstant(id=node#0, value=100)"
+        }
+      ],
+      "name": "nodes-221"
+    },
+    {
+      "query": "MATCH p=(a {id:0})-[r*0]->(b) RETURN toString(p) AS string",
+      "cross": false,
+      "columns": [
+        "string"
+      ],
+      "rows": [
+        {
+          "string": "Path(nodes=[IntConstant(id=node#0, value=100)], edges=[])"
+        }
+      ],
+      "name": "nodes-222"
+    },
+    {
+      "query": "MATCH (n {id:0}) RETURN properties(n).value AS value,properties(n)=properties(n) AS eq",
+      "cross": false,
+      "columns": [
+        "value",
+        "eq"
+      ],
+      "rows": [
+        {
+          "value": 100,
+          "eq": true
+        }
+      ],
+      "name": "nodes-223"
+    },
+    {
+      "query": "MATCH (n) RETURN n.id AS id,properties(n) AS properties,keys(n) AS keys,labels(n) AS labels ORDER BY id",
+      "cross": true,
+      "columns": [
+        "id",
+        "properties",
+        "keys",
+        "labels"
+      ],
+      "rows": [
+        {
+          "id": 0,
+          "properties": {
+            "id": 0,
+            "value": 100,
+            "graphId": "orders",
+            "elementId": "orders:0",
+            "qualifiedId": "orders:0"
+          },
+          "keys": [
+            "id",
+            "value",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "IntConstant",
+            "Constant"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 0,
+          "properties": {
+            "id": 0,
+            "value": 100,
+            "graphId": "billing",
+            "elementId": "billing:0",
+            "qualifiedId": "billing:0"
+          },
+          "keys": [
+            "id",
+            "value",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "IntConstant",
+            "Constant"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 1,
+          "properties": {
+            "id": 1,
+            "value": 101,
+            "graphId": "orders",
+            "elementId": "orders:1",
+            "qualifiedId": "orders:1"
+          },
+          "keys": [
+            "id",
+            "value",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "IntConstant",
+            "Constant"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 1,
+          "properties": {
+            "id": 1,
+            "value": 101,
+            "graphId": "billing",
+            "elementId": "billing:1",
+            "qualifiedId": "billing:1"
+          },
+          "keys": [
+            "id",
+            "value",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "IntConstant",
+            "Constant"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 2,
+          "properties": {
+            "id": 2,
+            "value": 102,
+            "graphId": "orders",
+            "elementId": "orders:2",
+            "qualifiedId": "orders:2"
+          },
+          "keys": [
+            "id",
+            "value",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "IntConstant",
+            "Constant"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 2,
+          "properties": {
+            "id": 2,
+            "value": 102,
+            "graphId": "billing",
+            "elementId": "billing:2",
+            "qualifiedId": "billing:2"
+          },
+          "keys": [
+            "id",
+            "value",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "IntConstant",
+            "Constant"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 3,
+          "properties": {
+            "id": 3,
+            "value": 103,
+            "graphId": "orders",
+            "elementId": "orders:3",
+            "qualifiedId": "orders:3"
+          },
+          "keys": [
+            "id",
+            "value",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "IntConstant",
+            "Constant"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 3,
+          "properties": {
+            "id": 3,
+            "value": 103,
+            "graphId": "billing",
+            "elementId": "billing:3",
+            "qualifiedId": "billing:3"
+          },
+          "keys": [
+            "id",
+            "value",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "IntConstant",
+            "Constant"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "properties": {
+            "id": 4,
+            "value": 104,
+            "graphId": "orders",
+            "elementId": "orders:4",
+            "qualifiedId": "orders:4"
+          },
+          "keys": [
+            "id",
+            "value",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "IntConstant",
+            "Constant"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "properties": {
+            "id": 4,
+            "value": 104,
+            "graphId": "billing",
+            "elementId": "billing:4",
+            "qualifiedId": "billing:4"
+          },
+          "keys": [
+            "id",
+            "value",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "IntConstant",
+            "Constant"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 5,
+          "properties": {
+            "id": 5,
+            "value": 105,
+            "graphId": "orders",
+            "elementId": "orders:5",
+            "qualifiedId": "orders:5"
+          },
+          "keys": [
+            "id",
+            "value",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "IntConstant",
+            "Constant"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 5,
+          "properties": {
+            "id": 5,
+            "value": 105,
+            "graphId": "billing",
+            "elementId": "billing:5",
+            "qualifiedId": "billing:5"
+          },
+          "keys": [
+            "id",
+            "value",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "IntConstant",
+            "Constant"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 6,
+          "properties": {
+            "id": 6,
+            "value": 106,
+            "graphId": "orders",
+            "elementId": "orders:6",
+            "qualifiedId": "orders:6"
+          },
+          "keys": [
+            "id",
+            "value",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "IntConstant",
+            "Constant"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 6,
+          "properties": {
+            "id": 6,
+            "value": 106,
+            "graphId": "billing",
+            "elementId": "billing:6",
+            "qualifiedId": "billing:6"
+          },
+          "keys": [
+            "id",
+            "value",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "IntConstant",
+            "Constant"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 7,
+          "properties": {
+            "id": 7,
+            "value": 107,
+            "graphId": "orders",
+            "elementId": "orders:7",
+            "qualifiedId": "orders:7"
+          },
+          "keys": [
+            "id",
+            "value",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "IntConstant",
+            "Constant"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 7,
+          "properties": {
+            "id": 7,
+            "value": 107,
+            "graphId": "billing",
+            "elementId": "billing:7",
+            "qualifiedId": "billing:7"
+          },
+          "keys": [
+            "id",
+            "value",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "IntConstant",
+            "Constant"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        }
+      ],
+      "name": "nodes-224"
+    },
+    {
+      "query": "MATCH (n:Method) RETURN properties(n) AS properties,keys(n) AS keys,qualifiedId(n) AS id",
+      "cross": true,
+      "columns": [
+        "properties",
+        "keys",
+        "id"
+      ],
+      "rows": [],
+      "name": "nodes-225"
+    },
+    {
+      "query": "MATCH (n {id:0}) RETURN toString(n) AS string",
+      "cross": true,
+      "columns": [
+        "string"
+      ],
+      "rows": [
+        {
+          "string": "QualifiedNode(graphId=orders, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@73ee04c8, node=IntConstant(id=node#0, value=100))",
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "string": "QualifiedNode(graphId=billing, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@73ee04c8, node=IntConstant(id=node#0, value=100))",
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        }
+      ],
+      "name": "nodes-226"
+    },
+    {
+      "query": "MATCH p=(a {id:0})-[r*0]->(b) RETURN toString(p) AS string",
+      "cross": true,
+      "columns": [
+        "string"
+      ],
+      "rows": [
+        {
+          "string": "QualifiedPath(graphId=orders, nodes=[QualifiedNode(graphId=orders, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@73ee04c8, node=IntConstant(id=node#0, value=100))], edges=[])",
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "string": "QualifiedPath(graphId=billing, nodes=[QualifiedNode(graphId=billing, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@73ee04c8, node=IntConstant(id=node#0, value=100))], edges=[])",
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        }
+      ],
+      "name": "nodes-227"
+    },
+    {
+      "query": "MATCH (n {id:0}) RETURN properties(n).value AS value,properties(n)=properties(n) AS eq",
+      "cross": true,
+      "columns": [
+        "value",
+        "eq"
+      ],
+      "rows": [
+        {
+          "value": 100,
+          "eq": true,
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "value": 100,
+          "eq": true,
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        }
+      ],
+      "name": "nodes-228"
+    },
+    {
+      "query": "RETURN toInteger(\"\u0661\u0662\"),toInteger(\"\uff11\uff12\"),toInteger(\"+2147483648\"),toInteger(\"-9223372036854775808\")",
+      "cross": false,
+      "columns": [
+        "toInteger('\u0661\u0662')",
+        "toInteger('\uff11\uff12')",
+        "toInteger('+2147483648')",
+        "toInteger('-9223372036854775808')"
+      ],
+      "rows": [
+        {
+          "toInteger('\u0661\u0662')": 12,
+          "toInteger('\uff11\uff12')": 12,
+          "toInteger('+2147483648')": 2147483648,
+          "toInteger('-9223372036854775808')": -9223372036854775808
+        }
+      ],
+      "name": "boundary-0"
+    },
+    {
+      "query": "RETURN toFloat(\"1_0\"),toFloat(\"0X1.FP2\"),toFloat(\".2D\"),toFloat(\"+NaN\"),toFloat(\"-Infinity\"),toFloat(\"\t1\n\")",
+      "cross": false,
+      "columns": [
+        "toFloat('1_0')",
+        "toFloat('0X1.FP2')",
+        "toFloat('.2D')",
+        "toFloat('+NaN')",
+        "toFloat('-Infinity')",
+        "toFloat('\t1\n')"
+      ],
+      "rows": [
+        {
+          "toFloat('1_0')": null,
+          "toFloat('0X1.FP2')": 7.75,
+          "toFloat('.2D')": 0.2,
+          "toFloat('+NaN')": {
+            "$number": "NaN"
+          },
+          "toFloat('-Infinity')": {
+            "$number": "-Infinity"
+          },
+          "toFloat('\t1\n')": 1.0
+        }
+      ],
+      "name": "boundary-1"
+    },
+    {
+      "query": "RETURN range(1,2,-9223372036854775808)",
+      "cross": false,
+      "error": "NumberFormatException",
+      "message": "For input string: \"9223372036854775808\"",
+      "name": "boundary-2"
+    },
+    {
+      "query": "RETURN range(3.9,1.1,-1.9)",
+      "cross": false,
+      "columns": [
+        "range(3.9, 1.1, -1.9)"
+      ],
+      "rows": [
+        {
+          "range(3.9, 1.1, -1.9)": [
+            3,
+            2,
+            1
+          ]
+        }
+      ],
+      "name": "boundary-3"
+    },
+    {
+      "query": "RETURN range(9223372036854775806,9223372036854775807,2)",
+      "cross": false,
+      "columns": [
+        "range(9223372036854775806, 9223372036854775807, 2)"
+      ],
+      "rows": [
+        {
+          "range(9223372036854775806, 9223372036854775807, 2)": [
+            9223372036854775806
+          ]
+        }
+      ],
+      "name": "boundary-4"
+    },
+    {
+      "query": "RETURN range(-9223372036854775807,-9223372036854775808,-1)",
+      "cross": false,
+      "error": "NumberFormatException",
+      "message": "For input string: \"9223372036854775808\"",
+      "name": "boundary-5"
+    },
+    {
+      "query": "RETURN left(\"abc\",4294967297),right(\"abc\",toFloat(\"Infinity\")),substring(\"abc\",1,2147483647)",
+      "cross": false,
+      "error": "StringIndexOutOfBoundsException",
+      "message": "begin 1, end -2147483648, length 3",
+      "name": "boundary-6"
+    },
+    {
+      "query": "RETURN [10,20,30][4294967297],\"abc\"[4294967297],[1,2,3][4294967296..4294967297]",
+      "cross": false,
+      "columns": [
+        "[10, 20, 30][4294967297]",
+        "'abc'[4294967297]",
+        "[1, 2, 3][4294967296..4294967297]"
+      ],
+      "rows": [
+        {
+          "[10, 20, 30][4294967297]": 20,
+          "'abc'[4294967297]": "b",
+          "[1, 2, 3][4294967296..4294967297]": [
+            1
+          ]
+        }
+      ],
+      "name": "boundary-7"
+    },
+    {
+      "query": "RETURN [1,2][-1..-2]",
+      "cross": false,
+      "error": "IllegalArgumentException",
+      "message": "fromIndex(0) > toIndex(-2)",
+      "name": "boundary-8"
+    },
+    {
+      "query": "RETURN [1,2][9..10]",
+      "cross": false,
+      "error": "IllegalArgumentException",
+      "message": "fromIndex(9) > toIndex(2)",
+      "name": "boundary-9"
+    },
+    {
+      "query": "RETURN [1,2][1..0]",
+      "cross": false,
+      "error": "IllegalArgumentException",
+      "message": "fromIndex(1) > toIndex(0)",
+      "name": "boundary-10"
+    },
+    {
+      "query": "RETURN \"abc\"[3..1]",
+      "cross": false,
+      "error": "StringIndexOutOfBoundsException",
+      "message": "begin 3, end 1, length 3",
+      "name": "boundary-11"
+    },
+    {
+      "query": "RETURN split(\"\", \"\"),replace(\"\ud834\udd1e\", \"\", \".\"),reverse([1,null,{x:2}])",
+      "cross": false,
+      "columns": [
+        "split('', '')",
+        "replace('\ud834\udd1e', '', '.')",
+        "reverse([1, null, {x: 2}])"
+      ],
+      "rows": [
+        {
+          "split('', '')": [
+            "",
+            ""
+          ],
+          "replace('\ud834\udd1e', '', '.')": ".?.?.",
+          "reverse([1, null, {x: 2}])": [
+            {
+              "x": 2
+            },
+            null,
+            1
+          ]
+        }
+      ],
+      "name": "boundary-12"
+    },
+    {
+      "query": "RETURN \"\ud834\udd1e\" CONTAINS right(\"\ud834\udd1e\",1), \"\ud834\udd1e\" STARTS WITH left(\"\ud834\udd1e\",1),\"\ud834\udd1e\" ENDS WITH right(\"\ud834\udd1e\",1)",
+      "cross": false,
+      "columns": [
+        "'\ud834\udd1e' CONTAINS right('\ud834\udd1e', 1)",
+        "'\ud834\udd1e' STARTS WITH left('\ud834\udd1e', 1)",
+        "'\ud834\udd1e' ENDS WITH right('\ud834\udd1e', 1)"
+      ],
+      "rows": [
+        {
+          "'\ud834\udd1e' CONTAINS right('\ud834\udd1e', 1)": true,
+          "'\ud834\udd1e' STARTS WITH left('\ud834\udd1e', 1)": true,
+          "'\ud834\udd1e' ENDS WITH right('\ud834\udd1e', 1)": true
+        }
+      ],
+      "name": "boundary-13"
+    },
+    {
+      "query": "RETURN left(\"\ud834\udd1e\",1)+right(\"\ud834\udd1e\",1)=\"\ud834\udd1e\",toUpper(left(\"\ud834\udd1e\",1)),reverse(left(\"\ud834\udd1e\",1)+\"a\")",
+      "cross": false,
+      "columns": [
+        "left('\ud834\udd1e', 1) + right('\ud834\udd1e', 1) = '\ud834\udd1e'",
+        "toUpper(left('\ud834\udd1e', 1))",
+        "reverse(left('\ud834\udd1e', 1) + 'a')"
+      ],
+      "rows": [
+        {
+          "left('\ud834\udd1e', 1) + right('\ud834\udd1e', 1) = '\ud834\udd1e'": true,
+          "toUpper(left('\ud834\udd1e', 1))": "?",
+          "reverse(left('\ud834\udd1e', 1) + 'a')": "a?"
+        }
+      ],
+      "name": "boundary-14"
+    },
+    {
+      "query": "RETURN toLower(\"\u039f\u03a3. \u03a3\u039f\u03a3! A\u03a31 A\u03a3_A A\u03a3\u0301\"),toUpper(\"\ufb04 \u00df \u0149 \u01f0\"),trim(\"\u001c\u00a0x\u2007\u202f\")",
+      "cross": false,
+      "columns": [
+        "toLower('\u039f\u03a3. \u03a3\u039f\u03a3! A\u03a31 A\u03a3_A A\u03a3\u0301')",
+        "toUpper('\ufb04 \u00df \u0149 \u01f0')",
+        "trim('\u001c\u00a0x\u2007\u202f')"
+      ],
+      "rows": [
+        {
+          "toLower('\u039f\u03a3. \u03a3\u039f\u03a3! A\u03a31 A\u03a3_A A\u03a3\u0301')": "\u03bf\u03c2. \u03c3\u03bf\u03c2! a\u03c21 a\u03c3_a a\u03c2\u0301",
+          "toUpper('\ufb04 \u00df \u0149 \u01f0')": "FFL SS \u02bcN J\u030c",
+          "trim('\u001c\u00a0x\u2007\u202f')": "x"
+        }
+      ],
+      "name": "boundary-15"
+    },
+    {
+      "query": "RETURN properties({z:1}),keys([1]),labels(null),type({type:\"CALL\"})",
+      "cross": false,
+      "columns": [
+        "properties({z: 1})",
+        "keys([1])",
+        "labels(null)",
+        "type({type: 'CALL'})"
+      ],
+      "rows": [
+        {
+          "properties({z: 1})": null,
+          "keys([1])": null,
+          "labels(null)": [],
+          "type({type: 'CALL'})": null
+        }
+      ],
+      "name": "boundary-16"
+    },
+    {
+      "query": "RETURN UNKNOWN(1)",
+      "cross": false,
+      "error": "CypherException",
+      "message": "Unknown function: UNKNOWN",
+      "name": "boundary-17"
+    },
+    {
+      "query": "UNWIND [] AS x RETURN UNKNOWN(x)",
+      "cross": false,
+      "columns": [
+        "UNKNOWN(x)"
+      ],
+      "rows": [],
+      "name": "boundary-18"
+    },
+    {
+      "query": "RETURN range(\"1\",2)",
+      "cross": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "boundary-19"
+    },
+    {
+      "query": "RETURN split(\"x\",1)",
+      "cross": false,
+      "error": "ArrayStoreException",
+      "message": "java.lang.Integer",
+      "name": "boundary-20"
+    },
+    {
+      "query": "RETURN left(\"x\",false)",
+      "cross": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.Boolean cannot be cast to class java.lang.Number (java.lang.Boolean and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "boundary-21"
+    },
+    {
+      "query": "RETURN toString({z:1,a:2,z:3})",
+      "cross": false,
+      "columns": [
+        "toString({z: 3, a: 2})"
+      ],
+      "rows": [
+        {
+          "toString({z: 3, a: 2})": "{z=3, a=2}"
+        }
+      ],
+      "name": "boundary-22"
+    },
+    {
+      "query": "RETURN toString({z:1})+\"!\",toString([1,{a:null}])",
+      "cross": false,
+      "columns": [
+        "toString({z: 1}) + '!'",
+        "toString([1, {a: null}])"
+      ],
+      "rows": [
+        {
+          "toString({z: 1}) + '!'": "{z=1}!",
+          "toString([1, {a: null}])": "[1, {a=null}]"
+        }
+      ],
+      "name": "boundary-23"
+    },
+    {
+      "query": "RETURN coalesce(1,$missing)",
+      "cross": false,
+      "columns": [
+        "coalesce(1, $missing)"
+      ],
+      "rows": [
+        {
+          "coalesce(1, $missing)": 1
+        }
+      ],
+      "name": "boundary-24"
+    },
+    {
+      "query": "RETURN [1] < [2], {a:1} < {a:2}",
+      "cross": false,
+      "columns": [
+        "[1] < [2]",
+        "{a: 1} < {a: 2}"
+      ],
+      "rows": [
+        {
+          "[1] < [2]": true,
+          "{a: 1} < {a: 2}": true
+        }
+      ],
+      "name": "boundary-25"
+    },
+    {
+      "query": "UNWIND [toFloat(\"NaN\"),1,2] AS x RETURN min(x),max(x),sum(x),avg(x),stdev(x),percentileCont(x)",
+      "cross": false,
+      "columns": [
+        "min(x)",
+        "max(x)",
+        "sum(x)",
+        "avg(x)",
+        "stdev(x)",
+        "percentileCont(x)"
+      ],
+      "rows": [
+        {
+          "min(x)": 1,
+          "max(x)": {
+            "$number": "NaN"
+          },
+          "sum(x)": {
+            "$number": "NaN"
+          },
+          "avg(x)": {
+            "$number": "NaN"
+          },
+          "stdev(x)": {
+            "$number": "NaN"
+          },
+          "percentileCont(x)": {
+            "$number": "NaN"
+          }
+        }
+      ],
+      "name": "boundary-26"
+    },
+    {
+      "query": "UNWIND [toFloat(\"-Infinity\"),toFloat(\"Infinity\")] AS x RETURN percentileCont(x),percentileDisc(x),stdevp(x)",
+      "cross": false,
+      "columns": [
+        "percentileCont(x)",
+        "percentileDisc(x)",
+        "stdevp(x)"
+      ],
+      "rows": [
+        {
+          "percentileCont(x)": {
+            "$number": "NaN"
+          },
+          "percentileDisc(x)": {
+            "$number": "-Infinity"
+          },
+          "stdevp(x)": {
+            "$number": "NaN"
+          }
+        }
+      ],
+      "name": "boundary-27"
+    },
+    {
+      "query": "UNWIND [1,2] AS x RETURN CASE WHEN true THEN count(*) ELSE 1 END",
+      "cross": false,
+      "error": "CypherAggregationException",
+      "message": "Aggregation function 'count' must be used in RETURN or WITH clause",
+      "name": "boundary-28"
+    },
+    {
+      "query": "UNWIND [] AS x RETURN CASE WHEN true THEN count(*) ELSE 1 END",
+      "cross": false,
+      "columns": [
+        "CASE WHEN true THEN count(*) ELSE 1 END"
+      ],
+      "rows": [],
+      "name": "boundary-29"
+    },
+    {
+      "query": "UNWIND [] AS x RETURN count(*) IS NULL",
+      "cross": false,
+      "columns": [
+        "count(*) IS NULL"
+      ],
+      "rows": [],
+      "name": "boundary-30"
+    },
+    {
+      "query": "UNWIND [1,2] AS x RETURN count(*) IS NULL",
+      "cross": false,
+      "error": "CypherAggregationException",
+      "message": "Aggregation function 'count' must be used in RETURN or WITH clause",
+      "name": "boundary-31"
+    },
+    {
+      "query": "UNWIND [] AS x RETURN coalesce(sum(x),0)",
+      "cross": false,
+      "error": "CypherAggregationException",
+      "message": "Aggregation function 'sum' must be used in RETURN or WITH clause",
+      "name": "boundary-32"
+    },
+    {
+      "query": "UNWIND [1] AS x RETURN count(x) AS n ORDER BY sum(x)",
+      "cross": false,
+      "columns": [
+        "n"
+      ],
+      "rows": [
+        {
+          "n": 1
+        }
+      ],
+      "name": "boundary-33"
+    },
+    {
+      "query": "UNWIND [] AS x RETURN sum(x)+1 AS n",
+      "cross": false,
+      "error": "CypherAggregationException",
+      "message": "Aggregation function 'sum' must be used in RETURN or WITH clause",
+      "name": "boundary-34"
+    },
+    {
+      "query": "UNWIND [1,2] AS x RETURN count(DISTINCT x),collect(DISTINCT {x:x}),collect({x:x})",
+      "cross": false,
+      "columns": [
+        "count(DISTINCT x)",
+        "collect(DISTINCT {x: x})",
+        "collect({x: x})"
+      ],
+      "rows": [
+        {
+          "count(DISTINCT x)": 2,
+          "collect(DISTINCT {x: x})": [
+            {
+              "x": 1
+            },
+            {
+              "x": 2
+            }
+          ],
+          "collect({x: x})": [
+            {
+              "x": 1
+            },
+            {
+              "x": 2
+            }
+          ]
+        }
+      ],
+      "name": "boundary-35"
+    },
+    {
+      "query": "UNWIND [1] AS z UNWIND [2] AS a WITH collect() AS rows RETURN toString(rows) AS string",
+      "cross": false,
+      "columns": [
+        "string"
+      ],
+      "rows": [
+        {
+          "string": "[{z=1, a=2}]"
+        }
+      ],
+      "name": "binding-order-0-False"
+    },
+    {
+      "query": "UNWIND [1] AS z UNWIND [2] AS a WITH collect() AS rows RETURN toString(rows) AS string",
+      "cross": true,
+      "columns": [
+        "string"
+      ],
+      "rows": [
+        {
+          "string": "[{z=1, a=2}]",
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ],
+      "name": "binding-order-0-True"
+    },
+    {
+      "query": "UNWIND [1] AS z UNWIND [2] AS a RETURN *",
+      "cross": false,
+      "columns": [
+        "z",
+        "a"
+      ],
+      "rows": [
+        {
+          "z": 1,
+          "a": 2
+        }
+      ],
+      "name": "binding-order-1-False"
+    },
+    {
+      "query": "UNWIND [1] AS z UNWIND [2] AS a RETURN *",
+      "cross": true,
+      "columns": [
+        "z",
+        "a"
+      ],
+      "rows": [
+        {
+          "z": 1,
+          "a": 2,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ],
+      "name": "binding-order-1-True"
+    },
+    {
+      "query": "MATCH (z {id:0})-[r:CALL]->(a) WITH collect() AS rows RETURN toString(rows) AS string",
+      "cross": false,
+      "columns": [
+        "string"
+      ],
+      "rows": [
+        {
+          "string": "[{z=IntConstant(id=node#0, value=100), a=IntConstant(id=node#2, value=102), r=CallEdge(from=node#0, to=node#2, isVirtual=true, isDynamic=true)}]"
+        }
+      ],
+      "name": "binding-order-2-False"
+    },
+    {
+      "query": "MATCH (z {id:0})-[r:CALL]->(a) WITH collect() AS rows RETURN toString(rows) AS string",
+      "cross": true,
+      "columns": [
+        "string"
+      ],
+      "rows": [
+        {
+          "string": "[{z=QualifiedNode(graphId=orders, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@73ee04c8, node=IntConstant(id=node#0, value=100)), \u0000graphite.graphIds=[orders], a=QualifiedNode(graphId=orders, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@73ee04c8, node=IntConstant(id=node#2, value=102)), r=QualifiedEdge(graphId=orders, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@73ee04c8, edge=CallEdge(from=node#0, to=node#2, isVirtual=true, isDynamic=true))}, {z=QualifiedNode(graphId=billing, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@73ee04c8, node=IntConstant(id=node#0, value=100)), \u0000graphite.graphIds=[billing], a=QualifiedNode(graphId=billing, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@73ee04c8, node=IntConstant(id=node#2, value=102)), r=QualifiedEdge(graphId=billing, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@73ee04c8, edge=CallEdge(from=node#0, to=node#2, isVirtual=true, isDynamic=true))}]",
+          "$metadata": {
+            "graphIds": [
+              "billing",
+              "orders"
+            ]
+          }
+        }
+      ],
+      "name": "binding-order-2-True"
+    },
+    {
+      "query": "OPTIONAL MATCH (z {id:999})-[r:CALL]->(a) WITH collect() AS rows RETURN toString(rows) AS string",
+      "cross": false,
+      "columns": [
+        "string"
+      ],
+      "rows": [
+        {
+          "string": "[{z=null, r=null, a=null}]"
+        }
+      ],
+      "name": "binding-order-3-False"
+    },
+    {
+      "query": "OPTIONAL MATCH (z {id:999})-[r:CALL]->(a) WITH collect() AS rows RETURN toString(rows) AS string",
+      "cross": true,
+      "columns": [
+        "string"
+      ],
+      "rows": [
+        {
+          "string": "[{z=null, r=null, a=null}]",
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ],
+      "name": "binding-order-3-True"
+    },
+    {
+      "query": "UNWIND [1] AS z UNWIND [2] AS a WITH min() AS row RETURN toString(row) AS string",
+      "cross": false,
+      "columns": [
+        "string"
+      ],
+      "rows": [
+        {
+          "string": "{z=1, a=2}"
+        }
+      ],
+      "name": "binding-order-4-False"
+    },
+    {
+      "query": "UNWIND [1] AS z UNWIND [2] AS a WITH min() AS row RETURN toString(row) AS string",
+      "cross": true,
+      "columns": [
+        "string"
+      ],
+      "rows": [
+        {
+          "string": "{z=1, a=2}",
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ],
+      "name": "binding-order-4-True"
+    },
+    {
+      "query": "UNWIND [1] AS z UNWIND [2] AS a WITH COLLECT() AS rows RETURN toString(rows) AS string",
+      "cross": false,
+      "columns": [
+        "string"
+      ],
+      "rows": [
+        {
+          "string": "[{z=1, a=2}]"
+        }
+      ],
+      "name": "binding-order-5-False"
+    },
+    {
+      "query": "UNWIND [1] AS z UNWIND [2] AS a WITH COLLECT() AS rows RETURN toString(rows) AS string",
+      "cross": true,
+      "columns": [
+        "string"
+      ],
+      "rows": [
+        {
+          "string": "[{z=1, a=2}]",
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ],
+      "name": "binding-order-5-True"
+    },
+    {
+      "query": "MATCH (z {id:0})-[r:CALL]->(a) RETURN *",
+      "cross": false,
+      "columns": [
+        "z",
+        "a",
+        "r"
+      ],
+      "rows": [
+        {
+          "z": {
+            "id": 0,
+            "type": "IntConstant",
+            "value": 100
+          },
+          "a": {
+            "id": 2,
+            "type": "IntConstant",
+            "value": 102
+          },
+          "r": {
+            "from": 0,
+            "to": 2,
+            "isVirtual": true,
+            "isDynamic": true
+          }
+        }
+      ],
+      "name": "binding-order-6-False"
+    },
+    {
+      "query": "MATCH (z {id:0})-[r:CALL]->(a) RETURN *",
+      "cross": true,
+      "columns": [
+        "z",
+        "a",
+        "r"
+      ],
+      "rows": [
+        {
+          "z": {
+            "id": 0,
+            "type": "IntConstant",
+            "value": 100,
+            "graphId": "orders",
+            "elementId": "orders:0",
+            "qualifiedId": "orders:0"
+          },
+          "a": {
+            "id": 2,
+            "type": "IntConstant",
+            "value": 102,
+            "graphId": "orders",
+            "elementId": "orders:2",
+            "qualifiedId": "orders:2"
+          },
+          "r": {
+            "graphId": "orders",
+            "from": 0,
+            "to": 2,
+            "fromElementId": "orders:0",
+            "toElementId": "orders:2",
+            "type": "CALL",
+            "virtual": true,
+            "dynamic": true
+          },
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "z": {
+            "id": 0,
+            "type": "IntConstant",
+            "value": 100,
+            "graphId": "billing",
+            "elementId": "billing:0",
+            "qualifiedId": "billing:0"
+          },
+          "a": {
+            "id": 2,
+            "type": "IntConstant",
+            "value": 102,
+            "graphId": "billing",
+            "elementId": "billing:2",
+            "qualifiedId": "billing:2"
+          },
+          "r": {
+            "graphId": "billing",
+            "from": 0,
+            "to": 2,
+            "fromElementId": "billing:0",
+            "toElementId": "billing:2",
+            "type": "CALL",
+            "virtual": true,
+            "dynamic": true
+          },
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        }
+      ],
+      "name": "binding-order-6-True"
+    },
+    {
+      "query": "OPTIONAL MATCH (z {id:999})-[r:CALL]->(a) RETURN *",
+      "cross": false,
+      "columns": [
+        "z",
+        "r",
+        "a"
+      ],
+      "rows": [
+        {
+          "z": null,
+          "r": null,
+          "a": null
+        }
+      ],
+      "name": "binding-order-7-False"
+    },
+    {
+      "query": "OPTIONAL MATCH (z {id:999})-[r:CALL]->(a) RETURN *",
+      "cross": true,
+      "columns": [
+        "z",
+        "r",
+        "a"
+      ],
+      "rows": [
+        {
+          "z": null,
+          "r": null,
+          "a": null,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ],
+      "name": "binding-order-7-True"
+    },
+    {
+      "query": "RETURN \"abc\" =~ \"abc\" AS matched",
+      "cross": false,
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": true
+        }
+      ],
+      "name": "regex-0"
+    },
+    {
+      "query": "RETURN \"abc\" =~ \"ab.*\" AS matched",
+      "cross": false,
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": true
+        }
+      ],
+      "name": "regex-1"
+    },
+    {
+      "query": "RETURN \"abc\\n\" =~ \"ab.*\" AS matched",
+      "cross": false,
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": false
+        }
+      ],
+      "name": "regex-2"
+    },
+    {
+      "query": "RETURN \"a\\nb\" =~ \"a\\n.*\" AS matched",
+      "cross": false,
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": true
+        }
+      ],
+      "name": "regex-3"
+    },
+    {
+      "query": "RETURN \"ab\u0085\" =~ \"ab.*\" AS matched",
+      "cross": false,
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": false
+        }
+      ],
+      "name": "regex-4"
+    },
+    {
+      "query": "RETURN \"ab\u2028\" =~ \"ab.*\" AS matched",
+      "cross": false,
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": false
+        }
+      ],
+      "name": "regex-5"
+    },
+    {
+      "query": "RETURN \"ab\u2029\" =~ \"ab.*\" AS matched",
+      "cross": false,
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": false
+        }
+      ],
+      "name": "regex-6"
+    },
+    {
+      "query": "RETURN \"a.b\" =~ \"a\\\\.b\" AS matched",
+      "cross": false,
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": true
+        }
+      ],
+      "name": "regex-7"
+    },
+    {
+      "query": "RETURN \"a\\\\b\" =~ \"a\\\\\\\\b\" AS matched",
+      "cross": false,
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": true
+        }
+      ],
+      "name": "regex-8"
+    },
+    {
+      "query": "RETURN \"abc12\" =~ \"[a-z]+[0-9]+\" AS matched",
+      "cross": false,
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": true
+        }
+      ],
+      "name": "regex-9"
+    },
+    {
+      "query": "RETURN \"12abc\" =~ \"[a-z]+[0-9]+\" AS matched",
+      "cross": false,
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": false
+        }
+      ],
+      "name": "regex-10"
+    },
+    {
+      "query": "RETURN \"abc\" =~ \"[a-z]+[a-z]+\" AS matched",
+      "cross": false,
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": true
+        }
+      ],
+      "name": "regex-11"
+    },
+    {
+      "query": "RETURN \"aaa\" =~ \"[a]+[a]+\" AS matched",
+      "cross": false,
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": true
+        }
+      ],
+      "name": "regex-12"
+    },
+    {
+      "query": "RETURN \"A_123\" =~ \"[A-Z]+[_]+[0-9]+\" AS matched",
+      "cross": false,
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": true
+        }
+      ],
+      "name": "regex-13"
+    },
+    {
+      "query": "RETURN \"a\" =~ \"[z-a]+\" AS matched",
+      "cross": false,
+      "error": "PatternSyntaxException",
+      "message": "Illegal character range near index 3\n[z-a]+\n   ^",
+      "name": "regex-14"
+    },
+    {
+      "query": "RETURN \"abc\" =~ \"[\" AS matched",
+      "cross": false,
+      "error": "PatternSyntaxException",
+      "message": "Unclosed character class near index 0\n[\n^",
+      "name": "regex-15"
+    },
+    {
+      "query": "RETURN \"abc\" =~ \"(\" AS matched",
+      "cross": false,
+      "error": "PatternSyntaxException",
+      "message": "Unclosed group near index 1\n(",
+      "name": "regex-16"
+    },
+    {
+      "query": "RETURN \"abc\" =~ \"*\" AS matched",
+      "cross": false,
+      "error": "PatternSyntaxException",
+      "message": "Dangling meta character '*' near index 0\n*\n^",
+      "name": "regex-17"
+    },
+    {
+      "query": "RETURN \"abc\" =~ \"\\\\k<none>\" AS matched",
+      "cross": false,
+      "error": "PatternSyntaxException",
+      "message": "named capturing group <none> does not exist near index 7\n\\k<none>\n       ^",
+      "name": "regex-18"
+    },
+    {
+      "query": "RETURN \"ababa\" =~ \"(ab)\\\\1a\" AS matched",
+      "cross": false,
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": true
+        }
+      ],
+      "name": "regex-19"
+    },
+    {
+      "query": "RETURN \"FOO\" =~ \"(?i)foo\" AS matched",
+      "cross": false,
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": true
+        }
+      ],
+      "name": "regex-20"
+    },
+    {
+      "query": "RETURN \"\u00e9\" =~ \"\\\\w+\" AS matched",
+      "cross": false,
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": false
+        }
+      ],
+      "name": "regex-21"
+    },
+    {
+      "query": "RETURN \"\u00e9\" =~ \"(?U)\\\\w+\" AS matched",
+      "cross": false,
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": true
+        }
+      ],
+      "name": "regex-22"
+    },
+    {
+      "query": "RETURN \"\u00e9\" =~ \"\\\\b.\\\\b\" AS matched",
+      "cross": false,
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": true
+        }
+      ],
+      "name": "regex-23"
+    },
+    {
+      "query": "RETURN \"aaa\" =~ \"a++a\" AS matched",
+      "cross": false,
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": false
+        }
+      ],
+      "name": "regex-24"
+    },
+    {
+      "query": "RETURN \"a\\r\\nb\" =~ \"a\\\\Rb\" AS matched",
+      "cross": false,
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": true
+        }
+      ],
+      "name": "regex-25"
+    },
+    {
+      "query": "RETURN \"\u00e9\" =~ \"(?c)[\u00e9]\" AS matched",
+      "cross": false,
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": true
+        }
+      ],
+      "name": "regex-26"
+    },
+    {
+      "query": "RETURN \"e\u0301\" =~ \"(?c)[\u00e9]\" AS matched",
+      "cross": false,
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": true
+        }
+      ],
+      "name": "regex-27"
+    },
+    {
+      "query": "RETURN \"\ud834\udd1e\" =~ \".\" AS matched",
+      "cross": false,
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": true
+        }
+      ],
+      "name": "regex-28"
+    },
+    {
+      "query": "RETURN \"A\ud83d\ude00\" =~ \"(?<=(?:A|AB))\ud83d\ude00\" AS matched",
+      "cross": false,
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": false
+        }
+      ],
+      "name": "regex-29"
+    },
+    {
+      "query": "RETURN \"abc\" =~ \"^abc$\" AS matched",
+      "cross": false,
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": true
+        }
+      ],
+      "name": "regex-30"
+    },
+    {
+      "query": "RETURN \"abc\\n\" =~ \"^abc$\" AS matched",
+      "cross": false,
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": false
+        }
+      ],
+      "name": "regex-31"
+    },
+    {
+      "query": "RETURN \"a\" =~ \"\\\\\" AS matched",
+      "cross": false,
+      "error": "PatternSyntaxException",
+      "message": "Unexpected internal error near index 1\n\\",
+      "name": "regex-32"
+    },
+    {
+      "query": "RETURN null =~ \"[\" AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "regex-33"
+    },
+    {
+      "query": "RETURN 1 =~ \"[\" AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "regex-34"
+    },
+    {
+      "query": "RETURN [] =~ unknown() AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "regex-35"
+    },
+    {
+      "query": "RETURN null =~ unknown() AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "regex-36"
+    },
+    {
+      "query": "RETURN \"a\" =~ null AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "regex-37"
+    },
+    {
+      "query": "RETURN \"a\" =~ 1 AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "regex-38"
+    },
+    {
+      "query": "RETURN \"a\" =~ unknown() AS value",
+      "cross": false,
+      "error": "CypherException",
+      "message": "Unknown function: unknown",
+      "name": "regex-39"
+    },
+    {
+      "query": "RETURN null CONTAINS unknown() AS value,1 STARTS WITH unknown() AS starts",
+      "cross": false,
+      "columns": [
+        "value",
+        "starts"
+      ],
+      "rows": [
+        {
+          "value": null,
+          "starts": null
+        }
+      ],
+      "name": "regex-40"
+    },
+    {
+      "query": "UNWIND [] AS x RETURN x =~ \"[\" AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [],
+      "name": "regex-41"
+    },
+    {
+      "query": "RETURN CASE WHEN false THEN \"a\" =~ \"[\" ELSE 1 END AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 1
+        }
+      ],
+      "name": "regex-42"
+    },
+    {
+      "query": "RETURN false AND (\"a\" =~ \"[\") AS value",
+      "cross": false,
+      "error": "PatternSyntaxException",
+      "message": "Unclosed character class near index 0\n[\n^",
+      "name": "regex-43"
+    },
+    {
+      "query": "RETURN 1 AS value ORDER BY \"a\" =~ \"[\"",
+      "cross": false,
+      "error": "PatternSyntaxException",
+      "message": "Unclosed character class near index 0\n[\n^",
+      "name": "regex-44"
+    },
+    {
+      "query": "UNWIND [1] AS x RETURN count(*) AS n ORDER BY \"a\" =~ \"[\"",
+      "cross": false,
+      "columns": [
+        "n"
+      ],
+      "rows": [
+        {
+          "n": 1
+        }
+      ],
+      "name": "regex-45"
+    },
+    {
+      "query": "UNWIND [1,2] AS x RETURN x,count(*) AS n ORDER BY \"a\" =~ \"[\"",
+      "cross": false,
+      "error": "PatternSyntaxException",
+      "message": "Unclosed character class near index 0\n[\n^",
+      "name": "regex-46"
+    },
+    {
+      "query": "MATCH (a {id:0}) OPTIONAL MATCH (a)-[r:CALL]->(b) WHERE b.id =~ \"[\" RETURN b,r",
+      "cross": false,
+      "columns": [
+        "b",
+        "r"
+      ],
+      "rows": [
+        {
+          "b": null,
+          "r": null
+        }
+      ],
+      "name": "regex-47"
+    },
+    {
+      "query": "RETURN \"a\" =~ $missing AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "regex-48"
+    },
+    {
+      "query": "RETURN left(\"\ud834\udd1e\",1) =~ \".\" AS value,right(\"\ud834\udd1e\",1) =~ \".\" AS right",
+      "cross": false,
+      "columns": [
+        "value",
+        "right"
+      ],
+      "rows": [
+        {
+          "value": true,
+          "right": true
+        }
+      ],
+      "name": "regex-49"
+    },
+    {
+      "query": "RETURN left(\"\ud834\udd1e\",1) =~ left(\"\ud834\udd1e\",1) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": true
+        }
+      ],
+      "name": "regex-50"
+    },
+    {
+      "query": "RETURN \"\ud834\udd1e\" =~ (left(\"\ud834\udd1e\",1)+\".*\") AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": true
+        }
+      ],
+      "name": "regex-51"
+    },
+    {
+      "query": "RETURN left(\"\ud834\udd1e\",1) =~ \"[\" AS value",
+      "cross": false,
+      "error": "PatternSyntaxException",
+      "message": "Unclosed character class near index 0\n[\n^",
+      "name": "regex-52"
+    },
+    {
+      "query": "UNWIND [\"[a-z]+[0-9]+\",\"[a-z]+[a-z]+\",\"abc\",\"abc.*\",\"[\"] AS pattern RETURN pattern,\"abc12\" =~ pattern AS matched",
+      "cross": false,
+      "error": "PatternSyntaxException",
+      "message": "Unclosed character class near index 0\n[\n^",
+      "name": "regex-53"
+    },
+    {
+      "query": "RETURN toString(1e999) AS inf,1e-999 AS underflow",
+      "cross": false,
+      "columns": [
+        "inf",
+        "underflow"
+      ],
+      "rows": [
+        {
+          "inf": "Infinity",
+          "underflow": 0.0
+        }
+      ],
+      "name": "literal-boundary-0"
+    },
+    {
+      "query": "RETURN \"\\uD800\" AS literal,size(\"\\uD800\") AS size,toUpper(\"\\uD800\") AS upper",
+      "cross": false,
+      "columns": [
+        "literal",
+        "size",
+        "upper"
+      ],
+      "rows": [
+        {
+          "literal": "?",
+          "size": 1,
+          "upper": "?"
+        }
+      ],
+      "name": "literal-boundary-1"
+    },
+    {
+      "query": "RETURN \"\\uD800\" =~ \".\" AS matched, \"\\uD834\\uDD1E\" =~ \".\" AS pair",
+      "cross": false,
+      "columns": [
+        "matched",
+        "pair"
+      ],
+      "rows": [
+        {
+          "matched": true,
+          "pair": true
+        }
+      ],
+      "name": "literal-boundary-2"
+    },
+    {
+      "query": "RETURN size(\"\\uD800\"),\"\\uD800\",toString({\"\\uD800\":1}) AS string",
+      "cross": false,
+      "error": "CypherParseException",
+      "message": "Syntax error at position 41: mismatched input '\"\\uD800\"' expecting {'}', 'CALL', 'YIELD', 'FILTER', 'EXTRACT', 'COUNT', 'ANY', 'NONE', 'SINGLE', 'ALL', 'ASC', 'ASCENDING', 'BY', 'CREATE', 'DELETE', 'DESC', 'DESCENDING', 'DETACH', 'EXISTS', 'LIMIT', 'MATCH', 'MERGE', 'ON', 'OPTIONAL', 'ORDER', 'REMOVE', 'RETURN', 'SET', 'SKIP', 'WHERE', 'WITH', 'UNION', 'UNWIND', 'AND', 'AS', 'CONTAINS', 'DISTINCT', 'ENDS', 'IN', 'IS', 'NOT', 'OR', 'STARTS', 'XOR', 'FALSE', 'TRUE', 'NULL', 'CONSTRAINT', 'DO', 'FOR', 'REQUIRE', 'UNIQUE', 'CASE', 'WHEN', 'THEN', 'ELSE', 'END', 'MANDATORY', 'SCALAR', 'OF', 'ADD', 'DROP', ID, ESC_LITERAL}",
+      "name": "literal-boundary-3"
+    },
+    {
+      "query": "RETURN radians(1e300) AS rad,degrees(1e-300) AS deg,radians(-0.0) AS zero",
+      "cross": false,
+      "columns": [
+        "rad",
+        "deg",
+        "zero"
+      ],
+      "rows": [
+        {
+          "rad": 1.7453292519943297e+298,
+          "deg": 5.729577951308232e-299,
+          "zero": -0.0
+        }
+      ],
+      "name": "literal-boundary-4"
+    },
+    {
+      "query": "RETURN range(1,2,toInteger(\"-9223372036854775808\"))",
+      "cross": false,
+      "error": "IllegalArgumentException",
+      "message": "Step must be greater than Long.MIN_VALUE to avoid overflow on negation.",
+      "name": "literal-boundary-5"
+    },
+    {
+      "query": "RETURN \"\\f\" AS form,\"\\u000c\" AS unicodeForm",
+      "cross": false,
+      "columns": [
+        "form",
+        "unicodeForm"
+      ],
+      "rows": [
+        {
+          "form": "\\f",
+          "unicodeForm": "\f"
+        }
+      ],
+      "name": "literal-boundary-6"
+    },
+    {
+      "query": "RETURN toString(1,2),head([1],2),id(1,2),toLower(\"A\",2)",
+      "cross": false,
+      "columns": [
+        "toString(1, 2)",
+        "head([1], 2)",
+        "id(1, 2)",
+        "toLower('A', 2)"
+      ],
+      "rows": [
+        {
+          "toString(1, 2)": "1",
+          "head([1], 2)": 1,
+          "id(1, 2)": null,
+          "toLower('A', 2)": "a"
+        }
+      ],
+      "name": "dispatch-boundary-0"
+    },
+    {
+      "query": "RETURN NOT 1",
+      "cross": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.Integer cannot be cast to class java.lang.Boolean (java.lang.Integer and java.lang.Boolean are in module java.base of loader 'bootstrap')",
+      "name": "dispatch-boundary-1"
+    },
+    {
+      "query": "RETURN NOT [1]",
+      "cross": false,
+      "error": "ClassCastException",
+      "message": "class java.util.ArrayList cannot be cast to class java.lang.Boolean (java.util.ArrayList and java.lang.Boolean are in module java.base of loader 'bootstrap')",
+      "name": "dispatch-boundary-2"
+    },
+    {
+      "query": "RETURN SUM(1)+1",
+      "cross": false,
+      "error": "CypherAggregationException",
+      "message": "Aggregation function 'SUM' must be used in RETURN or WITH clause",
+      "name": "dispatch-boundary-3"
+    },
+    {
+      "query": "RETURN size(\"\\uD800\"),\"\\uD800\"",
+      "cross": false,
+      "columns": [
+        "size('?')",
+        "'?'"
+      ],
+      "rows": [
+        {
+          "size('?')": 1,
+          "'?'": "?"
+        }
+      ],
+      "name": "dispatch-boundary-4"
+    }
+  ]
+}

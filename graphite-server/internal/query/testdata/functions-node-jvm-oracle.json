@@ -1,0 +1,2490 @@
+{
+  "revision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "fixture": "../store/testdata/jvm-v3",
+  "cases": [
+    {
+      "query": "MATCH (n) RETURN n.id AS id,properties(n) AS properties,keys(n) AS keys,labels(n) AS labels ORDER BY id",
+      "cross": false,
+      "columns": [
+        "id",
+        "properties",
+        "keys",
+        "labels"
+      ],
+      "rows": [
+        {
+          "id": 0,
+          "properties": {
+            "id": 0,
+            "value": -17
+          },
+          "keys": [
+            "id",
+            "value"
+          ],
+          "labels": [
+            "IntConstant",
+            "Constant"
+          ]
+        },
+        {
+          "id": 2,
+          "properties": {
+            "id": 2,
+            "value": "hello\u0000\u4e16\u754c\ud83d\ude00"
+          },
+          "keys": [
+            "id",
+            "value"
+          ],
+          "labels": [
+            "StringConstant",
+            "Constant"
+          ]
+        },
+        {
+          "id": 4,
+          "properties": {
+            "id": 4,
+            "value": 9223372036854775806
+          },
+          "keys": [
+            "id",
+            "value"
+          ],
+          "labels": [
+            "LongConstant",
+            "Constant"
+          ]
+        },
+        {
+          "id": 6,
+          "properties": {
+            "id": 6,
+            "value": 1.25
+          },
+          "keys": [
+            "id",
+            "value"
+          ],
+          "labels": [
+            "FloatConstant",
+            "Constant"
+          ]
+        },
+        {
+          "id": 8,
+          "properties": {
+            "id": 8,
+            "value": -2.75
+          },
+          "keys": [
+            "id",
+            "value"
+          ],
+          "labels": [
+            "DoubleConstant",
+            "Constant"
+          ]
+        },
+        {
+          "id": 10,
+          "properties": {
+            "id": 10,
+            "value": true
+          },
+          "keys": [
+            "id",
+            "value"
+          ],
+          "labels": [
+            "BooleanConstant",
+            "Constant"
+          ]
+        },
+        {
+          "id": 12,
+          "properties": {
+            "id": 12,
+            "value": null
+          },
+          "keys": [
+            "id",
+            "value"
+          ],
+          "labels": [
+            "NullConstant",
+            "Constant"
+          ]
+        },
+        {
+          "id": 14,
+          "properties": {
+            "id": 14,
+            "value": [
+              42,
+              {
+                "enumClass": "Color",
+                "enumName": "RED"
+              },
+              [
+                null,
+                "hello\u0000\u4e16\u754c\ud83d\ude00"
+              ]
+            ],
+            "name": "RED",
+            "enum_type": "Color"
+          },
+          "keys": [
+            "id",
+            "value",
+            "name",
+            "enum_type"
+          ],
+          "labels": [
+            "EnumConstant",
+            "Constant"
+          ]
+        },
+        {
+          "id": 16,
+          "properties": {
+            "id": 16,
+            "name": "x",
+            "type": "int",
+            "method": "Example.run(int)"
+          },
+          "keys": [
+            "id",
+            "name",
+            "type",
+            "method"
+          ],
+          "labels": [
+            "LocalVariable"
+          ]
+        },
+        {
+          "id": 18,
+          "properties": {
+            "id": 18,
+            "name": "field",
+            "type": "int",
+            "class": "Example",
+            "static": true
+          },
+          "keys": [
+            "id",
+            "name",
+            "type",
+            "class",
+            "static"
+          ],
+          "labels": [
+            "FieldNode"
+          ]
+        },
+        {
+          "id": 20,
+          "properties": {
+            "id": 20,
+            "index": 2,
+            "type": "int",
+            "method": "Example.run(int)"
+          },
+          "keys": [
+            "id",
+            "index",
+            "type",
+            "method"
+          ],
+          "labels": [
+            "ParameterNode"
+          ]
+        },
+        {
+          "id": 22,
+          "properties": {
+            "id": 22,
+            "method": "Example.run(int)",
+            "actual_type": "int"
+          },
+          "keys": [
+            "id",
+            "method",
+            "actual_type"
+          ],
+          "labels": [
+            "ReturnNode"
+          ]
+        },
+        {
+          "id": 24,
+          "properties": {
+            "id": 24,
+            "callee_class": "Example",
+            "callee_name": "callee",
+            "callee_signature": "Example.callee(int)",
+            "caller_class": "Example",
+            "caller_name": "run",
+            "caller_signature": "Example.run(int)",
+            "line": 37
+          },
+          "keys": [
+            "id",
+            "callee_class",
+            "callee_name",
+            "callee_signature",
+            "caller_class",
+            "caller_name",
+            "caller_signature",
+            "line"
+          ],
+          "labels": [
+            "CallSiteNode"
+          ]
+        },
+        {
+          "id": 26,
+          "properties": {
+            "id": 26,
+            "name": "Annotation",
+            "class": "Example",
+            "member": "run",
+            "key": [
+              42,
+              {
+                "enumClass": "Color",
+                "enumName": "RED"
+              },
+              [
+                null,
+                "hello\u0000\u4e16\u754c\ud83d\ude00"
+              ]
+            ]
+          },
+          "keys": [
+            "id",
+            "name",
+            "class",
+            "member",
+            "key"
+          ],
+          "labels": [
+            "AnnotationNode",
+            "Annotation"
+          ]
+        },
+        {
+          "id": 28,
+          "properties": {
+            "id": 28,
+            "path": "config.yml",
+            "key": "key",
+            "value": [
+              42,
+              {
+                "enumClass": "Color",
+                "enumName": "RED"
+              },
+              [
+                null,
+                "hello\u0000\u4e16\u754c\ud83d\ude00"
+              ]
+            ],
+            "format": "yaml",
+            "profile": "prod"
+          },
+          "keys": [
+            "id",
+            "path",
+            "key",
+            "value",
+            "format",
+            "profile"
+          ],
+          "labels": [
+            "ResourceValueNode",
+            "ResourceValue",
+            "Resource"
+          ]
+        },
+        {
+          "id": 30,
+          "properties": {
+            "id": 30,
+            "path": "config.yml",
+            "source": "app.jar",
+            "format": "yaml",
+            "profile": null
+          },
+          "keys": [
+            "id",
+            "path",
+            "source",
+            "format",
+            "profile"
+          ],
+          "labels": [
+            "ResourceFileNode",
+            "ResourceFile"
+          ]
+        }
+      ],
+      "name": "node-0"
+    },
+    {
+      "query": "MATCH (n) RETURN n.id AS id,toString(n) AS string ORDER BY id",
+      "cross": false,
+      "columns": [
+        "id",
+        "string"
+      ],
+      "rows": [
+        {
+          "id": 0,
+          "string": "IntConstant(id=node#0, value=-17)"
+        },
+        {
+          "id": 2,
+          "string": "StringConstant(id=node#2, value=hello\u0000\u4e16\u754c\ud83d\ude00)"
+        },
+        {
+          "id": 4,
+          "string": "LongConstant(id=node#4, value=9223372036854775806)"
+        },
+        {
+          "id": 6,
+          "string": "FloatConstant(id=node#6, value=1.25)"
+        },
+        {
+          "id": 8,
+          "string": "DoubleConstant(id=node#8, value=-2.75)"
+        },
+        {
+          "id": 10,
+          "string": "BooleanConstant(id=node#10, value=true)"
+        },
+        {
+          "id": 12,
+          "string": "NullConstant(id=node#12)"
+        },
+        {
+          "id": 14,
+          "string": "EnumConstant(id=node#14, enumType=TypeDescriptor(className=Color, typeArguments=[]), enumName=RED, constructorArgs=[[42, Color.RED, [null, hello\u0000\u4e16\u754c\ud83d\ude00]]])"
+        },
+        {
+          "id": 16,
+          "string": "LocalVariable(id=node#16, name=x, type=TypeDescriptor(className=int, typeArguments=[]), method=MethodDescriptor(declaringClass=TypeDescriptor(className=Example, typeArguments=[]), name=run, parameterTypes=[TypeDescriptor(className=int, typeArguments=[])], returnType=TypeDescriptor(className=void, typeArguments=[])))"
+        },
+        {
+          "id": 18,
+          "string": "FieldNode(id=node#18, descriptor=FieldDescriptor(declaringClass=TypeDescriptor(className=Example, typeArguments=[]), name=field, type=TypeDescriptor(className=int, typeArguments=[])), isStatic=true)"
+        },
+        {
+          "id": 20,
+          "string": "ParameterNode(id=node#20, index=2, type=TypeDescriptor(className=int, typeArguments=[]), method=MethodDescriptor(declaringClass=TypeDescriptor(className=Example, typeArguments=[]), name=run, parameterTypes=[TypeDescriptor(className=int, typeArguments=[])], returnType=TypeDescriptor(className=void, typeArguments=[])))"
+        },
+        {
+          "id": 22,
+          "string": "ReturnNode(id=node#22, method=MethodDescriptor(declaringClass=TypeDescriptor(className=Example, typeArguments=[]), name=run, parameterTypes=[TypeDescriptor(className=int, typeArguments=[])], returnType=TypeDescriptor(className=void, typeArguments=[])), actualType=TypeDescriptor(className=int, typeArguments=[]))"
+        },
+        {
+          "id": 24,
+          "string": "CallSiteNode(id=node#24, caller=MethodDescriptor(declaringClass=TypeDescriptor(className=Example, typeArguments=[]), name=run, parameterTypes=[TypeDescriptor(className=int, typeArguments=[])], returnType=TypeDescriptor(className=void, typeArguments=[])), callee=MethodDescriptor(declaringClass=TypeDescriptor(className=Example, typeArguments=[]), name=callee, parameterTypes=[TypeDescriptor(className=int, typeArguments=[])], returnType=TypeDescriptor(className=void, typeArguments=[])), lineNumber=37, receiver=null, arguments=[node#0, node#2])"
+        },
+        {
+          "id": 26,
+          "string": "AnnotationNode(id=node#26, name=Annotation, className=Example, memberName=run, values={key=[42, Color.RED, [null, hello\u0000\u4e16\u754c\ud83d\ude00]]})"
+        },
+        {
+          "id": 28,
+          "string": "ResourceValueNode(id=node#28, path=config.yml, key=key, value=[42, Color.RED, [null, hello\u0000\u4e16\u754c\ud83d\ude00]], format=yaml, profile=prod)"
+        },
+        {
+          "id": 30,
+          "string": "ResourceFileNode(id=node#30, path=config.yml, source=app.jar, format=yaml, profile=null)"
+        }
+      ],
+      "name": "node-1"
+    },
+    {
+      "query": "MATCH (n:Method) RETURN properties(n) AS properties,keys(n) AS keys,toString(n) AS string,qualifiedId(n) AS id",
+      "cross": false,
+      "columns": [
+        "properties",
+        "keys",
+        "string",
+        "id"
+      ],
+      "rows": [
+        {
+          "properties": {
+            "signature": "Example.run(int)",
+            "class": "Example",
+            "name": "run",
+            "parameter_types": [
+              "int"
+            ],
+            "return_type": "void"
+          },
+          "keys": [
+            "signature",
+            "class",
+            "name",
+            "parameter_types",
+            "return_type"
+          ],
+          "string": "MethodValue(graphId=null, method=MethodDescriptor(declaringClass=TypeDescriptor(className=Example, typeArguments=[]), name=run, parameterTypes=[TypeDescriptor(className=int, typeArguments=[])], returnType=TypeDescriptor(className=void, typeArguments=[])))",
+          "id": "Method:Example.run(int)"
+        }
+      ],
+      "name": "node-2"
+    },
+    {
+      "query": "MATCH (n:Annotation) RETURN n.values AS values,toString(properties(n)) AS string,n.key AS key",
+      "cross": false,
+      "columns": [
+        "values",
+        "string",
+        "key"
+      ],
+      "rows": [
+        {
+          "values": "{key=[42, Color.RED, [null, hello\u0000\u4e16\u754c\ud83d\ude00]]}",
+          "string": "{id=26, name=Annotation, class=Example, member=run, key=[42, Color.RED, [null, hello\u0000\u4e16\u754c\ud83d\ude00]]}",
+          "key": [
+            42,
+            {
+              "enumClass": "Color",
+              "enumName": "RED"
+            },
+            [
+              null,
+              "hello\u0000\u4e16\u754c\ud83d\ude00"
+            ]
+          ]
+        }
+      ],
+      "name": "node-3"
+    },
+    {
+      "query": "MATCH (n:EnumConstant) RETURN n.value AS value,toString(n.value) AS string",
+      "cross": false,
+      "columns": [
+        "value",
+        "string"
+      ],
+      "rows": [
+        {
+          "value": [
+            42,
+            {
+              "enumClass": "Color",
+              "enumName": "RED"
+            },
+            [
+              null,
+              "hello\u0000\u4e16\u754c\ud83d\ude00"
+            ]
+          ],
+          "string": "[42, Color.RED, [null, hello\u0000\u4e16\u754c\ud83d\ude00]]"
+        }
+      ],
+      "name": "node-4"
+    },
+    {
+      "query": "MATCH (a)-[r]->(b) RETURN properties(r) AS props,keys(r) AS keys,toString(r) AS string ORDER BY r",
+      "cross": false,
+      "columns": [
+        "props",
+        "keys",
+        "string"
+      ],
+      "rows": [
+        {
+          "props": null,
+          "keys": null,
+          "string": "DataFlowEdge(from=node#0, to=node#2, kind=ASSIGN)"
+        },
+        {
+          "props": null,
+          "keys": null,
+          "string": "DataFlowEdge(from=node#0, to=node#4, kind=PARAMETER_PASS)"
+        },
+        {
+          "props": null,
+          "keys": null,
+          "string": "CallEdge(from=node#24, to=node#0, isVirtual=false, isDynamic=false)"
+        },
+        {
+          "props": null,
+          "keys": null,
+          "string": "ControlFlowEdge(from=node#24, to=node#2, kind=BRANCH_TRUE, comparison=BranchComparison(operator=LT, comparandNodeId=node#0))"
+        }
+      ],
+      "name": "node-5"
+    },
+    {
+      "query": "MATCH p=(a {id:24})-[r]->(b) RETURN toString(p) AS string ORDER BY p",
+      "cross": false,
+      "columns": [
+        "string"
+      ],
+      "rows": [
+        {
+          "string": "Path(nodes=[CallSiteNode(id=node#24, caller=MethodDescriptor(declaringClass=TypeDescriptor(className=Example, typeArguments=[]), name=run, parameterTypes=[TypeDescriptor(className=int, typeArguments=[])], returnType=TypeDescriptor(className=void, typeArguments=[])), callee=MethodDescriptor(declaringClass=TypeDescriptor(className=Example, typeArguments=[]), name=callee, parameterTypes=[TypeDescriptor(className=int, typeArguments=[])], returnType=TypeDescriptor(className=void, typeArguments=[])), lineNumber=37, receiver=null, arguments=[node#0, node#2]), IntConstant(id=node#0, value=-17)], edges=[CallEdge(from=node#24, to=node#0, isVirtual=false, isDynamic=false)])"
+        },
+        {
+          "string": "Path(nodes=[CallSiteNode(id=node#24, caller=MethodDescriptor(declaringClass=TypeDescriptor(className=Example, typeArguments=[]), name=run, parameterTypes=[TypeDescriptor(className=int, typeArguments=[])], returnType=TypeDescriptor(className=void, typeArguments=[])), callee=MethodDescriptor(declaringClass=TypeDescriptor(className=Example, typeArguments=[]), name=callee, parameterTypes=[TypeDescriptor(className=int, typeArguments=[])], returnType=TypeDescriptor(className=void, typeArguments=[])), lineNumber=37, receiver=null, arguments=[node#0, node#2]), StringConstant(id=node#2, value=hello\u0000\u4e16\u754c\ud83d\ude00)], edges=[ControlFlowEdge(from=node#24, to=node#2, kind=BRANCH_TRUE, comparison=BranchComparison(operator=LT, comparandNodeId=node#0))])"
+        }
+      ],
+      "name": "node-6"
+    },
+    {
+      "query": "MATCH (n) RETURN count(*) AS count,collect(DISTINCT labels(n)) AS labels,min(n) AS min,max(n) AS max",
+      "cross": false,
+      "columns": [
+        "count",
+        "labels",
+        "min",
+        "max"
+      ],
+      "rows": [
+        {
+          "count": 16,
+          "labels": [
+            [
+              "IntConstant",
+              "Constant"
+            ],
+            [
+              "StringConstant",
+              "Constant"
+            ],
+            [
+              "LongConstant",
+              "Constant"
+            ],
+            [
+              "FloatConstant",
+              "Constant"
+            ],
+            [
+              "DoubleConstant",
+              "Constant"
+            ],
+            [
+              "BooleanConstant",
+              "Constant"
+            ],
+            [
+              "NullConstant",
+              "Constant"
+            ],
+            [
+              "EnumConstant",
+              "Constant"
+            ],
+            [
+              "LocalVariable"
+            ],
+            [
+              "FieldNode"
+            ],
+            [
+              "ParameterNode"
+            ],
+            [
+              "ReturnNode"
+            ],
+            [
+              "CallSiteNode"
+            ],
+            [
+              "AnnotationNode",
+              "Annotation"
+            ],
+            [
+              "ResourceValueNode",
+              "ResourceValue",
+              "Resource"
+            ],
+            [
+              "ResourceFileNode",
+              "ResourceFile"
+            ]
+          ],
+          "min": {
+            "id": 0,
+            "type": "IntConstant",
+            "value": -17
+          },
+          "max": {
+            "id": 0,
+            "type": "IntConstant",
+            "value": -17
+          }
+        }
+      ],
+      "name": "node-7"
+    },
+    {
+      "query": "MATCH (n:Method) RETURN n.parameter_types AS types",
+      "cross": false,
+      "columns": [
+        "types"
+      ],
+      "rows": [
+        {
+          "types": [
+            "int"
+          ]
+        }
+      ],
+      "name": "node-8"
+    },
+    {
+      "query": "UNWIND [1,2] AS x RETURN collect() AS values",
+      "cross": false,
+      "columns": [
+        "values"
+      ],
+      "rows": [
+        {
+          "values": [
+            {
+              "x": 1
+            },
+            {
+              "x": 2
+            }
+          ]
+        }
+      ],
+      "name": "node-9"
+    },
+    {
+      "query": "MATCH (n {id:0}) RETURN collect() AS values",
+      "cross": false,
+      "columns": [
+        "values"
+      ],
+      "rows": [
+        {
+          "values": [
+            {
+              "n": {
+                "id": 0,
+                "type": "IntConstant",
+                "value": -17
+              }
+            }
+          ]
+        }
+      ],
+      "name": "node-10"
+    },
+    {
+      "query": "MATCH (n) RETURN n.id AS id,properties(n) AS properties,keys(n) AS keys,labels(n) AS labels ORDER BY id",
+      "cross": true,
+      "columns": [
+        "id",
+        "properties",
+        "keys",
+        "labels"
+      ],
+      "rows": [
+        {
+          "id": 0,
+          "properties": {
+            "id": 0,
+            "value": -17,
+            "graphId": "orders",
+            "elementId": "orders:0",
+            "qualifiedId": "orders:0"
+          },
+          "keys": [
+            "id",
+            "value",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "IntConstant",
+            "Constant"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 0,
+          "properties": {
+            "id": 0,
+            "value": -17,
+            "graphId": "billing",
+            "elementId": "billing:0",
+            "qualifiedId": "billing:0"
+          },
+          "keys": [
+            "id",
+            "value",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "IntConstant",
+            "Constant"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 2,
+          "properties": {
+            "id": 2,
+            "value": "hello\u0000\u4e16\u754c\ud83d\ude00",
+            "graphId": "orders",
+            "elementId": "orders:2",
+            "qualifiedId": "orders:2"
+          },
+          "keys": [
+            "id",
+            "value",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "StringConstant",
+            "Constant"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 2,
+          "properties": {
+            "id": 2,
+            "value": "hello\u0000\u4e16\u754c\ud83d\ude00",
+            "graphId": "billing",
+            "elementId": "billing:2",
+            "qualifiedId": "billing:2"
+          },
+          "keys": [
+            "id",
+            "value",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "StringConstant",
+            "Constant"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "properties": {
+            "id": 4,
+            "value": 9223372036854775806,
+            "graphId": "orders",
+            "elementId": "orders:4",
+            "qualifiedId": "orders:4"
+          },
+          "keys": [
+            "id",
+            "value",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "LongConstant",
+            "Constant"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "properties": {
+            "id": 4,
+            "value": 9223372036854775806,
+            "graphId": "billing",
+            "elementId": "billing:4",
+            "qualifiedId": "billing:4"
+          },
+          "keys": [
+            "id",
+            "value",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "LongConstant",
+            "Constant"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 6,
+          "properties": {
+            "id": 6,
+            "value": 1.25,
+            "graphId": "orders",
+            "elementId": "orders:6",
+            "qualifiedId": "orders:6"
+          },
+          "keys": [
+            "id",
+            "value",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "FloatConstant",
+            "Constant"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 6,
+          "properties": {
+            "id": 6,
+            "value": 1.25,
+            "graphId": "billing",
+            "elementId": "billing:6",
+            "qualifiedId": "billing:6"
+          },
+          "keys": [
+            "id",
+            "value",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "FloatConstant",
+            "Constant"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 8,
+          "properties": {
+            "id": 8,
+            "value": -2.75,
+            "graphId": "orders",
+            "elementId": "orders:8",
+            "qualifiedId": "orders:8"
+          },
+          "keys": [
+            "id",
+            "value",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "DoubleConstant",
+            "Constant"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 8,
+          "properties": {
+            "id": 8,
+            "value": -2.75,
+            "graphId": "billing",
+            "elementId": "billing:8",
+            "qualifiedId": "billing:8"
+          },
+          "keys": [
+            "id",
+            "value",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "DoubleConstant",
+            "Constant"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 10,
+          "properties": {
+            "id": 10,
+            "value": true,
+            "graphId": "orders",
+            "elementId": "orders:10",
+            "qualifiedId": "orders:10"
+          },
+          "keys": [
+            "id",
+            "value",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "BooleanConstant",
+            "Constant"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 10,
+          "properties": {
+            "id": 10,
+            "value": true,
+            "graphId": "billing",
+            "elementId": "billing:10",
+            "qualifiedId": "billing:10"
+          },
+          "keys": [
+            "id",
+            "value",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "BooleanConstant",
+            "Constant"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 12,
+          "properties": {
+            "id": 12,
+            "value": null,
+            "graphId": "orders",
+            "elementId": "orders:12",
+            "qualifiedId": "orders:12"
+          },
+          "keys": [
+            "id",
+            "value",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "NullConstant",
+            "Constant"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 12,
+          "properties": {
+            "id": 12,
+            "value": null,
+            "graphId": "billing",
+            "elementId": "billing:12",
+            "qualifiedId": "billing:12"
+          },
+          "keys": [
+            "id",
+            "value",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "NullConstant",
+            "Constant"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 14,
+          "properties": {
+            "id": 14,
+            "value": [
+              42,
+              {
+                "enumClass": "Color",
+                "enumName": "RED"
+              },
+              [
+                null,
+                "hello\u0000\u4e16\u754c\ud83d\ude00"
+              ]
+            ],
+            "name": "RED",
+            "enum_type": "Color",
+            "graphId": "orders",
+            "elementId": "orders:14",
+            "qualifiedId": "orders:14"
+          },
+          "keys": [
+            "id",
+            "value",
+            "name",
+            "enum_type",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "EnumConstant",
+            "Constant"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 14,
+          "properties": {
+            "id": 14,
+            "value": [
+              42,
+              {
+                "enumClass": "Color",
+                "enumName": "RED"
+              },
+              [
+                null,
+                "hello\u0000\u4e16\u754c\ud83d\ude00"
+              ]
+            ],
+            "name": "RED",
+            "enum_type": "Color",
+            "graphId": "billing",
+            "elementId": "billing:14",
+            "qualifiedId": "billing:14"
+          },
+          "keys": [
+            "id",
+            "value",
+            "name",
+            "enum_type",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "EnumConstant",
+            "Constant"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 16,
+          "properties": {
+            "id": 16,
+            "name": "x",
+            "type": "int",
+            "method": "Example.run(int)",
+            "graphId": "orders",
+            "elementId": "orders:16",
+            "qualifiedId": "orders:16"
+          },
+          "keys": [
+            "id",
+            "name",
+            "type",
+            "method",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "LocalVariable"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 16,
+          "properties": {
+            "id": 16,
+            "name": "x",
+            "type": "int",
+            "method": "Example.run(int)",
+            "graphId": "billing",
+            "elementId": "billing:16",
+            "qualifiedId": "billing:16"
+          },
+          "keys": [
+            "id",
+            "name",
+            "type",
+            "method",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "LocalVariable"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 18,
+          "properties": {
+            "id": 18,
+            "name": "field",
+            "type": "int",
+            "class": "Example",
+            "static": true,
+            "graphId": "orders",
+            "elementId": "orders:18",
+            "qualifiedId": "orders:18"
+          },
+          "keys": [
+            "id",
+            "name",
+            "type",
+            "class",
+            "static",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "FieldNode"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 18,
+          "properties": {
+            "id": 18,
+            "name": "field",
+            "type": "int",
+            "class": "Example",
+            "static": true,
+            "graphId": "billing",
+            "elementId": "billing:18",
+            "qualifiedId": "billing:18"
+          },
+          "keys": [
+            "id",
+            "name",
+            "type",
+            "class",
+            "static",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "FieldNode"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 20,
+          "properties": {
+            "id": 20,
+            "index": 2,
+            "type": "int",
+            "method": "Example.run(int)",
+            "graphId": "orders",
+            "elementId": "orders:20",
+            "qualifiedId": "orders:20"
+          },
+          "keys": [
+            "id",
+            "index",
+            "type",
+            "method",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "ParameterNode"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 20,
+          "properties": {
+            "id": 20,
+            "index": 2,
+            "type": "int",
+            "method": "Example.run(int)",
+            "graphId": "billing",
+            "elementId": "billing:20",
+            "qualifiedId": "billing:20"
+          },
+          "keys": [
+            "id",
+            "index",
+            "type",
+            "method",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "ParameterNode"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 22,
+          "properties": {
+            "id": 22,
+            "method": "Example.run(int)",
+            "actual_type": "int",
+            "graphId": "orders",
+            "elementId": "orders:22",
+            "qualifiedId": "orders:22"
+          },
+          "keys": [
+            "id",
+            "method",
+            "actual_type",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "ReturnNode"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 22,
+          "properties": {
+            "id": 22,
+            "method": "Example.run(int)",
+            "actual_type": "int",
+            "graphId": "billing",
+            "elementId": "billing:22",
+            "qualifiedId": "billing:22"
+          },
+          "keys": [
+            "id",
+            "method",
+            "actual_type",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "ReturnNode"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 24,
+          "properties": {
+            "id": 24,
+            "callee_class": "Example",
+            "callee_name": "callee",
+            "callee_signature": "Example.callee(int)",
+            "caller_class": "Example",
+            "caller_name": "run",
+            "caller_signature": "Example.run(int)",
+            "line": 37,
+            "graphId": "orders",
+            "elementId": "orders:24",
+            "qualifiedId": "orders:24"
+          },
+          "keys": [
+            "id",
+            "callee_class",
+            "callee_name",
+            "callee_signature",
+            "caller_class",
+            "caller_name",
+            "caller_signature",
+            "line",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "CallSiteNode"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 24,
+          "properties": {
+            "id": 24,
+            "callee_class": "Example",
+            "callee_name": "callee",
+            "callee_signature": "Example.callee(int)",
+            "caller_class": "Example",
+            "caller_name": "run",
+            "caller_signature": "Example.run(int)",
+            "line": 37,
+            "graphId": "billing",
+            "elementId": "billing:24",
+            "qualifiedId": "billing:24"
+          },
+          "keys": [
+            "id",
+            "callee_class",
+            "callee_name",
+            "callee_signature",
+            "caller_class",
+            "caller_name",
+            "caller_signature",
+            "line",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "CallSiteNode"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 26,
+          "properties": {
+            "id": 26,
+            "name": "Annotation",
+            "class": "Example",
+            "member": "run",
+            "key": [
+              42,
+              {
+                "enumClass": "Color",
+                "enumName": "RED"
+              },
+              [
+                null,
+                "hello\u0000\u4e16\u754c\ud83d\ude00"
+              ]
+            ],
+            "graphId": "orders",
+            "elementId": "orders:26",
+            "qualifiedId": "orders:26"
+          },
+          "keys": [
+            "id",
+            "name",
+            "class",
+            "member",
+            "key",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "AnnotationNode",
+            "Annotation"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 26,
+          "properties": {
+            "id": 26,
+            "name": "Annotation",
+            "class": "Example",
+            "member": "run",
+            "key": [
+              42,
+              {
+                "enumClass": "Color",
+                "enumName": "RED"
+              },
+              [
+                null,
+                "hello\u0000\u4e16\u754c\ud83d\ude00"
+              ]
+            ],
+            "graphId": "billing",
+            "elementId": "billing:26",
+            "qualifiedId": "billing:26"
+          },
+          "keys": [
+            "id",
+            "name",
+            "class",
+            "member",
+            "key",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "AnnotationNode",
+            "Annotation"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 28,
+          "properties": {
+            "id": 28,
+            "path": "config.yml",
+            "key": "key",
+            "value": [
+              42,
+              {
+                "enumClass": "Color",
+                "enumName": "RED"
+              },
+              [
+                null,
+                "hello\u0000\u4e16\u754c\ud83d\ude00"
+              ]
+            ],
+            "format": "yaml",
+            "profile": "prod",
+            "graphId": "orders",
+            "elementId": "orders:28",
+            "qualifiedId": "orders:28"
+          },
+          "keys": [
+            "id",
+            "path",
+            "key",
+            "value",
+            "format",
+            "profile",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "ResourceValueNode",
+            "ResourceValue",
+            "Resource"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 28,
+          "properties": {
+            "id": 28,
+            "path": "config.yml",
+            "key": "key",
+            "value": [
+              42,
+              {
+                "enumClass": "Color",
+                "enumName": "RED"
+              },
+              [
+                null,
+                "hello\u0000\u4e16\u754c\ud83d\ude00"
+              ]
+            ],
+            "format": "yaml",
+            "profile": "prod",
+            "graphId": "billing",
+            "elementId": "billing:28",
+            "qualifiedId": "billing:28"
+          },
+          "keys": [
+            "id",
+            "path",
+            "key",
+            "value",
+            "format",
+            "profile",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "ResourceValueNode",
+            "ResourceValue",
+            "Resource"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 30,
+          "properties": {
+            "id": 30,
+            "path": "config.yml",
+            "source": "app.jar",
+            "format": "yaml",
+            "profile": null,
+            "graphId": "orders",
+            "elementId": "orders:30",
+            "qualifiedId": "orders:30"
+          },
+          "keys": [
+            "id",
+            "path",
+            "source",
+            "format",
+            "profile",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "ResourceFileNode",
+            "ResourceFile"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 30,
+          "properties": {
+            "id": 30,
+            "path": "config.yml",
+            "source": "app.jar",
+            "format": "yaml",
+            "profile": null,
+            "graphId": "billing",
+            "elementId": "billing:30",
+            "qualifiedId": "billing:30"
+          },
+          "keys": [
+            "id",
+            "path",
+            "source",
+            "format",
+            "profile",
+            "graphId",
+            "elementId",
+            "qualifiedId"
+          ],
+          "labels": [
+            "ResourceFileNode",
+            "ResourceFile"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        }
+      ],
+      "name": "node-11"
+    },
+    {
+      "query": "MATCH (n) RETURN n.id AS id,toString(n) AS string ORDER BY id",
+      "cross": true,
+      "columns": [
+        "id",
+        "string"
+      ],
+      "rows": [
+        {
+          "id": 0,
+          "string": "QualifiedNode(graphId=orders, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, node=IntConstant(id=node#0, value=-17))",
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 0,
+          "string": "QualifiedNode(graphId=billing, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, node=IntConstant(id=node#0, value=-17))",
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 2,
+          "string": "QualifiedNode(graphId=orders, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, node=StringConstant(id=node#2, value=hello\u0000\u4e16\u754c\ud83d\ude00))",
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 2,
+          "string": "QualifiedNode(graphId=billing, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, node=StringConstant(id=node#2, value=hello\u0000\u4e16\u754c\ud83d\ude00))",
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "string": "QualifiedNode(graphId=orders, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, node=LongConstant(id=node#4, value=9223372036854775806))",
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "string": "QualifiedNode(graphId=billing, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, node=LongConstant(id=node#4, value=9223372036854775806))",
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 6,
+          "string": "QualifiedNode(graphId=orders, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, node=FloatConstant(id=node#6, value=1.25))",
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 6,
+          "string": "QualifiedNode(graphId=billing, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, node=FloatConstant(id=node#6, value=1.25))",
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 8,
+          "string": "QualifiedNode(graphId=orders, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, node=DoubleConstant(id=node#8, value=-2.75))",
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 8,
+          "string": "QualifiedNode(graphId=billing, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, node=DoubleConstant(id=node#8, value=-2.75))",
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 10,
+          "string": "QualifiedNode(graphId=orders, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, node=BooleanConstant(id=node#10, value=true))",
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 10,
+          "string": "QualifiedNode(graphId=billing, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, node=BooleanConstant(id=node#10, value=true))",
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 12,
+          "string": "QualifiedNode(graphId=orders, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, node=NullConstant(id=node#12))",
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 12,
+          "string": "QualifiedNode(graphId=billing, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, node=NullConstant(id=node#12))",
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 14,
+          "string": "QualifiedNode(graphId=orders, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, node=EnumConstant(id=node#14, enumType=TypeDescriptor(className=Color, typeArguments=[]), enumName=RED, constructorArgs=[[42, Color.RED, [null, hello\u0000\u4e16\u754c\ud83d\ude00]]]))",
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 14,
+          "string": "QualifiedNode(graphId=billing, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, node=EnumConstant(id=node#14, enumType=TypeDescriptor(className=Color, typeArguments=[]), enumName=RED, constructorArgs=[[42, Color.RED, [null, hello\u0000\u4e16\u754c\ud83d\ude00]]]))",
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 16,
+          "string": "QualifiedNode(graphId=orders, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, node=LocalVariable(id=node#16, name=x, type=TypeDescriptor(className=int, typeArguments=[]), method=MethodDescriptor(declaringClass=TypeDescriptor(className=Example, typeArguments=[]), name=run, parameterTypes=[TypeDescriptor(className=int, typeArguments=[])], returnType=TypeDescriptor(className=void, typeArguments=[]))))",
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 16,
+          "string": "QualifiedNode(graphId=billing, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, node=LocalVariable(id=node#16, name=x, type=TypeDescriptor(className=int, typeArguments=[]), method=MethodDescriptor(declaringClass=TypeDescriptor(className=Example, typeArguments=[]), name=run, parameterTypes=[TypeDescriptor(className=int, typeArguments=[])], returnType=TypeDescriptor(className=void, typeArguments=[]))))",
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 18,
+          "string": "QualifiedNode(graphId=orders, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, node=FieldNode(id=node#18, descriptor=FieldDescriptor(declaringClass=TypeDescriptor(className=Example, typeArguments=[]), name=field, type=TypeDescriptor(className=int, typeArguments=[])), isStatic=true))",
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 18,
+          "string": "QualifiedNode(graphId=billing, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, node=FieldNode(id=node#18, descriptor=FieldDescriptor(declaringClass=TypeDescriptor(className=Example, typeArguments=[]), name=field, type=TypeDescriptor(className=int, typeArguments=[])), isStatic=true))",
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 20,
+          "string": "QualifiedNode(graphId=orders, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, node=ParameterNode(id=node#20, index=2, type=TypeDescriptor(className=int, typeArguments=[]), method=MethodDescriptor(declaringClass=TypeDescriptor(className=Example, typeArguments=[]), name=run, parameterTypes=[TypeDescriptor(className=int, typeArguments=[])], returnType=TypeDescriptor(className=void, typeArguments=[]))))",
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 20,
+          "string": "QualifiedNode(graphId=billing, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, node=ParameterNode(id=node#20, index=2, type=TypeDescriptor(className=int, typeArguments=[]), method=MethodDescriptor(declaringClass=TypeDescriptor(className=Example, typeArguments=[]), name=run, parameterTypes=[TypeDescriptor(className=int, typeArguments=[])], returnType=TypeDescriptor(className=void, typeArguments=[]))))",
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 22,
+          "string": "QualifiedNode(graphId=orders, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, node=ReturnNode(id=node#22, method=MethodDescriptor(declaringClass=TypeDescriptor(className=Example, typeArguments=[]), name=run, parameterTypes=[TypeDescriptor(className=int, typeArguments=[])], returnType=TypeDescriptor(className=void, typeArguments=[])), actualType=TypeDescriptor(className=int, typeArguments=[])))",
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 22,
+          "string": "QualifiedNode(graphId=billing, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, node=ReturnNode(id=node#22, method=MethodDescriptor(declaringClass=TypeDescriptor(className=Example, typeArguments=[]), name=run, parameterTypes=[TypeDescriptor(className=int, typeArguments=[])], returnType=TypeDescriptor(className=void, typeArguments=[])), actualType=TypeDescriptor(className=int, typeArguments=[])))",
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 24,
+          "string": "QualifiedNode(graphId=orders, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, node=CallSiteNode(id=node#24, caller=MethodDescriptor(declaringClass=TypeDescriptor(className=Example, typeArguments=[]), name=run, parameterTypes=[TypeDescriptor(className=int, typeArguments=[])], returnType=TypeDescriptor(className=void, typeArguments=[])), callee=MethodDescriptor(declaringClass=TypeDescriptor(className=Example, typeArguments=[]), name=callee, parameterTypes=[TypeDescriptor(className=int, typeArguments=[])], returnType=TypeDescriptor(className=void, typeArguments=[])), lineNumber=37, receiver=null, arguments=[node#0, node#2]))",
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 24,
+          "string": "QualifiedNode(graphId=billing, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, node=CallSiteNode(id=node#24, caller=MethodDescriptor(declaringClass=TypeDescriptor(className=Example, typeArguments=[]), name=run, parameterTypes=[TypeDescriptor(className=int, typeArguments=[])], returnType=TypeDescriptor(className=void, typeArguments=[])), callee=MethodDescriptor(declaringClass=TypeDescriptor(className=Example, typeArguments=[]), name=callee, parameterTypes=[TypeDescriptor(className=int, typeArguments=[])], returnType=TypeDescriptor(className=void, typeArguments=[])), lineNumber=37, receiver=null, arguments=[node#0, node#2]))",
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 26,
+          "string": "QualifiedNode(graphId=orders, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, node=AnnotationNode(id=node#26, name=Annotation, className=Example, memberName=run, values={key=[42, Color.RED, [null, hello\u0000\u4e16\u754c\ud83d\ude00]]}))",
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 26,
+          "string": "QualifiedNode(graphId=billing, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, node=AnnotationNode(id=node#26, name=Annotation, className=Example, memberName=run, values={key=[42, Color.RED, [null, hello\u0000\u4e16\u754c\ud83d\ude00]]}))",
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 28,
+          "string": "QualifiedNode(graphId=orders, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, node=ResourceValueNode(id=node#28, path=config.yml, key=key, value=[42, Color.RED, [null, hello\u0000\u4e16\u754c\ud83d\ude00]], format=yaml, profile=prod))",
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 28,
+          "string": "QualifiedNode(graphId=billing, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, node=ResourceValueNode(id=node#28, path=config.yml, key=key, value=[42, Color.RED, [null, hello\u0000\u4e16\u754c\ud83d\ude00]], format=yaml, profile=prod))",
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 30,
+          "string": "QualifiedNode(graphId=orders, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, node=ResourceFileNode(id=node#30, path=config.yml, source=app.jar, format=yaml, profile=null))",
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 30,
+          "string": "QualifiedNode(graphId=billing, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, node=ResourceFileNode(id=node#30, path=config.yml, source=app.jar, format=yaml, profile=null))",
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        }
+      ],
+      "name": "node-12"
+    },
+    {
+      "query": "MATCH (n:Method) RETURN properties(n) AS properties,keys(n) AS keys,toString(n) AS string,qualifiedId(n) AS id",
+      "cross": true,
+      "columns": [
+        "properties",
+        "keys",
+        "string",
+        "id"
+      ],
+      "rows": [
+        {
+          "properties": {
+            "signature": "Example.run(int)",
+            "class": "Example",
+            "name": "run",
+            "parameter_types": [
+              "int"
+            ],
+            "return_type": "void",
+            "graphId": "orders"
+          },
+          "keys": [
+            "signature",
+            "class",
+            "name",
+            "parameter_types",
+            "return_type",
+            "graphId"
+          ],
+          "string": "MethodValue(graphId=orders, method=MethodDescriptor(declaringClass=TypeDescriptor(className=Example, typeArguments=[]), name=run, parameterTypes=[TypeDescriptor(className=int, typeArguments=[])], returnType=TypeDescriptor(className=void, typeArguments=[])))",
+          "id": "orders:Method:Example.run(int)",
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "properties": {
+            "signature": "Example.run(int)",
+            "class": "Example",
+            "name": "run",
+            "parameter_types": [
+              "int"
+            ],
+            "return_type": "void",
+            "graphId": "billing"
+          },
+          "keys": [
+            "signature",
+            "class",
+            "name",
+            "parameter_types",
+            "return_type",
+            "graphId"
+          ],
+          "string": "MethodValue(graphId=billing, method=MethodDescriptor(declaringClass=TypeDescriptor(className=Example, typeArguments=[]), name=run, parameterTypes=[TypeDescriptor(className=int, typeArguments=[])], returnType=TypeDescriptor(className=void, typeArguments=[])))",
+          "id": "billing:Method:Example.run(int)",
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        }
+      ],
+      "name": "node-13"
+    },
+    {
+      "query": "MATCH (n:Annotation) RETURN n.values AS values,toString(properties(n)) AS string,n.key AS key",
+      "cross": true,
+      "columns": [
+        "values",
+        "string",
+        "key"
+      ],
+      "rows": [
+        {
+          "values": "{key=[42, Color.RED, [null, hello\u0000\u4e16\u754c\ud83d\ude00]]}",
+          "string": "{id=26, name=Annotation, class=Example, member=run, key=[42, Color.RED, [null, hello\u0000\u4e16\u754c\ud83d\ude00]], graphId=orders, elementId=orders:26, qualifiedId=orders:26}",
+          "key": [
+            42,
+            {
+              "enumClass": "Color",
+              "enumName": "RED"
+            },
+            [
+              null,
+              "hello\u0000\u4e16\u754c\ud83d\ude00"
+            ]
+          ],
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "values": "{key=[42, Color.RED, [null, hello\u0000\u4e16\u754c\ud83d\ude00]]}",
+          "string": "{id=26, name=Annotation, class=Example, member=run, key=[42, Color.RED, [null, hello\u0000\u4e16\u754c\ud83d\ude00]], graphId=billing, elementId=billing:26, qualifiedId=billing:26}",
+          "key": [
+            42,
+            {
+              "enumClass": "Color",
+              "enumName": "RED"
+            },
+            [
+              null,
+              "hello\u0000\u4e16\u754c\ud83d\ude00"
+            ]
+          ],
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        }
+      ],
+      "name": "node-14"
+    },
+    {
+      "query": "MATCH (n:EnumConstant) RETURN n.value AS value,toString(n.value) AS string",
+      "cross": true,
+      "columns": [
+        "value",
+        "string"
+      ],
+      "rows": [
+        {
+          "value": [
+            42,
+            {
+              "enumClass": "Color",
+              "enumName": "RED"
+            },
+            [
+              null,
+              "hello\u0000\u4e16\u754c\ud83d\ude00"
+            ]
+          ],
+          "string": "[42, Color.RED, [null, hello\u0000\u4e16\u754c\ud83d\ude00]]",
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "value": [
+            42,
+            {
+              "enumClass": "Color",
+              "enumName": "RED"
+            },
+            [
+              null,
+              "hello\u0000\u4e16\u754c\ud83d\ude00"
+            ]
+          ],
+          "string": "[42, Color.RED, [null, hello\u0000\u4e16\u754c\ud83d\ude00]]",
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        }
+      ],
+      "name": "node-15"
+    },
+    {
+      "query": "MATCH (a)-[r]->(b) RETURN properties(r) AS props,keys(r) AS keys,toString(r) AS string ORDER BY r",
+      "cross": true,
+      "columns": [
+        "props",
+        "keys",
+        "string"
+      ],
+      "rows": [
+        {
+          "props": null,
+          "keys": null,
+          "string": "QualifiedEdge(graphId=billing, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, edge=DataFlowEdge(from=node#0, to=node#2, kind=ASSIGN))",
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "props": null,
+          "keys": null,
+          "string": "QualifiedEdge(graphId=billing, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, edge=DataFlowEdge(from=node#0, to=node#4, kind=PARAMETER_PASS))",
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "props": null,
+          "keys": null,
+          "string": "QualifiedEdge(graphId=billing, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, edge=CallEdge(from=node#24, to=node#0, isVirtual=false, isDynamic=false))",
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "props": null,
+          "keys": null,
+          "string": "QualifiedEdge(graphId=billing, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, edge=ControlFlowEdge(from=node#24, to=node#2, kind=BRANCH_TRUE, comparison=BranchComparison(operator=LT, comparandNodeId=node#0)))",
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "props": null,
+          "keys": null,
+          "string": "QualifiedEdge(graphId=orders, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, edge=DataFlowEdge(from=node#0, to=node#2, kind=ASSIGN))",
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "props": null,
+          "keys": null,
+          "string": "QualifiedEdge(graphId=orders, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, edge=DataFlowEdge(from=node#0, to=node#4, kind=PARAMETER_PASS))",
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "props": null,
+          "keys": null,
+          "string": "QualifiedEdge(graphId=orders, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, edge=CallEdge(from=node#24, to=node#0, isVirtual=false, isDynamic=false))",
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "props": null,
+          "keys": null,
+          "string": "QualifiedEdge(graphId=orders, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, edge=ControlFlowEdge(from=node#24, to=node#2, kind=BRANCH_TRUE, comparison=BranchComparison(operator=LT, comparandNodeId=node#0)))",
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        }
+      ],
+      "name": "node-16"
+    },
+    {
+      "query": "MATCH p=(a {id:24})-[r]->(b) RETURN toString(p) AS string ORDER BY p",
+      "cross": true,
+      "columns": [
+        "string"
+      ],
+      "rows": [
+        {
+          "string": "QualifiedPath(graphId=billing, nodes=[QualifiedNode(graphId=billing, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, node=CallSiteNode(id=node#24, caller=MethodDescriptor(declaringClass=TypeDescriptor(className=Example, typeArguments=[]), name=run, parameterTypes=[TypeDescriptor(className=int, typeArguments=[])], returnType=TypeDescriptor(className=void, typeArguments=[])), callee=MethodDescriptor(declaringClass=TypeDescriptor(className=Example, typeArguments=[]), name=callee, parameterTypes=[TypeDescriptor(className=int, typeArguments=[])], returnType=TypeDescriptor(className=void, typeArguments=[])), lineNumber=37, receiver=null, arguments=[node#0, node#2])), QualifiedNode(graphId=billing, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, node=IntConstant(id=node#0, value=-17))], edges=[QualifiedEdge(graphId=billing, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, edge=CallEdge(from=node#24, to=node#0, isVirtual=false, isDynamic=false))])",
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "string": "QualifiedPath(graphId=billing, nodes=[QualifiedNode(graphId=billing, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, node=CallSiteNode(id=node#24, caller=MethodDescriptor(declaringClass=TypeDescriptor(className=Example, typeArguments=[]), name=run, parameterTypes=[TypeDescriptor(className=int, typeArguments=[])], returnType=TypeDescriptor(className=void, typeArguments=[])), callee=MethodDescriptor(declaringClass=TypeDescriptor(className=Example, typeArguments=[]), name=callee, parameterTypes=[TypeDescriptor(className=int, typeArguments=[])], returnType=TypeDescriptor(className=void, typeArguments=[])), lineNumber=37, receiver=null, arguments=[node#0, node#2])), QualifiedNode(graphId=billing, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, node=StringConstant(id=node#2, value=hello\u0000\u4e16\u754c\ud83d\ude00))], edges=[QualifiedEdge(graphId=billing, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, edge=ControlFlowEdge(from=node#24, to=node#2, kind=BRANCH_TRUE, comparison=BranchComparison(operator=LT, comparandNodeId=node#0)))])",
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "string": "QualifiedPath(graphId=orders, nodes=[QualifiedNode(graphId=orders, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, node=CallSiteNode(id=node#24, caller=MethodDescriptor(declaringClass=TypeDescriptor(className=Example, typeArguments=[]), name=run, parameterTypes=[TypeDescriptor(className=int, typeArguments=[])], returnType=TypeDescriptor(className=void, typeArguments=[])), callee=MethodDescriptor(declaringClass=TypeDescriptor(className=Example, typeArguments=[]), name=callee, parameterTypes=[TypeDescriptor(className=int, typeArguments=[])], returnType=TypeDescriptor(className=void, typeArguments=[])), lineNumber=37, receiver=null, arguments=[node#0, node#2])), QualifiedNode(graphId=orders, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, node=IntConstant(id=node#0, value=-17))], edges=[QualifiedEdge(graphId=orders, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, edge=CallEdge(from=node#24, to=node#0, isVirtual=false, isDynamic=false))])",
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "string": "QualifiedPath(graphId=orders, nodes=[QualifiedNode(graphId=orders, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, node=CallSiteNode(id=node#24, caller=MethodDescriptor(declaringClass=TypeDescriptor(className=Example, typeArguments=[]), name=run, parameterTypes=[TypeDescriptor(className=int, typeArguments=[])], returnType=TypeDescriptor(className=void, typeArguments=[])), callee=MethodDescriptor(declaringClass=TypeDescriptor(className=Example, typeArguments=[]), name=callee, parameterTypes=[TypeDescriptor(className=int, typeArguments=[])], returnType=TypeDescriptor(className=void, typeArguments=[])), lineNumber=37, receiver=null, arguments=[node#0, node#2])), QualifiedNode(graphId=orders, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, node=StringConstant(id=node#2, value=hello\u0000\u4e16\u754c\ud83d\ude00))], edges=[QualifiedEdge(graphId=orders, graph=io.johnsonlee.graphite.webgraph.WebGraphBackedGraph@5dda768f, edge=ControlFlowEdge(from=node#24, to=node#2, kind=BRANCH_TRUE, comparison=BranchComparison(operator=LT, comparandNodeId=node#0)))])",
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        }
+      ],
+      "name": "node-17"
+    },
+    {
+      "query": "MATCH (n) RETURN count(*) AS count,collect(DISTINCT labels(n)) AS labels,min(n) AS min,max(n) AS max",
+      "cross": true,
+      "columns": [
+        "count",
+        "labels",
+        "min",
+        "max"
+      ],
+      "rows": [
+        {
+          "count": 32,
+          "labels": [
+            [
+              "IntConstant",
+              "Constant"
+            ],
+            [
+              "StringConstant",
+              "Constant"
+            ],
+            [
+              "LongConstant",
+              "Constant"
+            ],
+            [
+              "FloatConstant",
+              "Constant"
+            ],
+            [
+              "DoubleConstant",
+              "Constant"
+            ],
+            [
+              "BooleanConstant",
+              "Constant"
+            ],
+            [
+              "NullConstant",
+              "Constant"
+            ],
+            [
+              "EnumConstant",
+              "Constant"
+            ],
+            [
+              "LocalVariable"
+            ],
+            [
+              "FieldNode"
+            ],
+            [
+              "ParameterNode"
+            ],
+            [
+              "ReturnNode"
+            ],
+            [
+              "CallSiteNode"
+            ],
+            [
+              "AnnotationNode",
+              "Annotation"
+            ],
+            [
+              "ResourceValueNode",
+              "ResourceValue",
+              "Resource"
+            ],
+            [
+              "ResourceFileNode",
+              "ResourceFile"
+            ]
+          ],
+          "min": {
+            "id": 0,
+            "type": "IntConstant",
+            "value": -17,
+            "graphId": "orders",
+            "elementId": "orders:0",
+            "qualifiedId": "orders:0"
+          },
+          "max": {
+            "id": 0,
+            "type": "IntConstant",
+            "value": -17,
+            "graphId": "orders",
+            "elementId": "orders:0",
+            "qualifiedId": "orders:0"
+          },
+          "$metadata": {
+            "graphIds": [
+              "billing",
+              "orders"
+            ]
+          }
+        }
+      ],
+      "name": "node-18"
+    },
+    {
+      "query": "MATCH (n:Method) RETURN n.parameter_types AS types",
+      "cross": true,
+      "columns": [
+        "types"
+      ],
+      "rows": [
+        {
+          "types": [
+            "int"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "types": [
+            "int"
+          ],
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        }
+      ],
+      "name": "node-19"
+    },
+    {
+      "query": "UNWIND [1,2] AS x RETURN collect() AS values",
+      "cross": true,
+      "columns": [
+        "values"
+      ],
+      "rows": [
+        {
+          "values": [
+            {
+              "x": 1
+            },
+            {
+              "x": 2
+            }
+          ],
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ],
+      "name": "node-20"
+    },
+    {
+      "query": "MATCH (n {id:0}) RETURN collect() AS values",
+      "cross": true,
+      "columns": [
+        "values"
+      ],
+      "rows": [
+        {
+          "values": [
+            {
+              "n": {
+                "id": 0,
+                "type": "IntConstant",
+                "value": -17,
+                "graphId": "orders",
+                "elementId": "orders:0",
+                "qualifiedId": "orders:0"
+              },
+              "\u0000graphite.graphIds": [
+                "orders"
+              ]
+            },
+            {
+              "n": {
+                "id": 0,
+                "type": "IntConstant",
+                "value": -17,
+                "graphId": "billing",
+                "elementId": "billing:0",
+                "qualifiedId": "billing:0"
+              },
+              "\u0000graphite.graphIds": [
+                "billing"
+              ]
+            }
+          ],
+          "$metadata": {
+            "graphIds": [
+              "billing",
+              "orders"
+            ]
+          }
+        }
+      ],
+      "name": "node-21"
+    }
+  ]
+}

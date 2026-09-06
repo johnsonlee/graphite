@@ -36,9 +36,12 @@ to the complete compatibility matrix in [go-server-parity.md](../docs/go-server-
   fixture/artifact identities, CPU, RSS, allocation and GC evidence, and report
   cold/warm and concurrency strata separately.
 
-The goal is **not achieved**. Remaining work includes Java Pattern semantics,
-additional scalar/aggregate functions and expression combinations, planner and
-cache behavior, and JVM string/value/error boundary semantics. See the
+The goal is **not achieved**. All 59 scalar function names and 10 aggregates are
+implemented, with 369 main query oracles; native Java-compatible regex and the
+Java17 ARM64 math target have separate 4,172- and 30,320-case suites. Finite
+coverage does not prove full equivalence. Remaining work includes planner/cache
+behavior, broader malformed input and persisted-storage variants, and additional
+JVM string/value/error combinations. See the
 [query](internal/query/README.md) and [C4](internal/analysis/c4/README.md) scope
 records for precise limitations. Graph strings/metadata/adjacency are currently
 heap-backed even in MAPPED mode; only node data is memory mapped. There is no

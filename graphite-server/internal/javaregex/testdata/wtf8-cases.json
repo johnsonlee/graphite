@@ -1,0 +1,612 @@
+[
+  {
+    "name": "wtf8-0",
+    "pattern": ".",
+    "text": "\ud800"
+  },
+  {
+    "name": "wtf8-1",
+    "pattern": ".",
+    "text": "\udc00"
+  },
+  {
+    "name": "wtf8-2",
+    "pattern": ".",
+    "text": "\ud800\ud800"
+  },
+  {
+    "name": "wtf8-3",
+    "pattern": ".",
+    "text": "\ud800\udc00"
+  },
+  {
+    "name": "wtf8-4",
+    "pattern": ".",
+    "text": "\ud83d\ude00"
+  },
+  {
+    "name": "wtf8-5",
+    "pattern": ".",
+    "text": "\ufffd"
+  },
+  {
+    "name": "wtf8-6",
+    "pattern": ".",
+    "text": "?"
+  },
+  {
+    "name": "wtf8-7",
+    "pattern": ".",
+    "text": "\ud800a"
+  },
+  {
+    "name": "wtf8-8",
+    "pattern": ".",
+    "text": "a\udc00"
+  },
+  {
+    "name": "wtf8-9",
+    "pattern": "..",
+    "text": "\ud800"
+  },
+  {
+    "name": "wtf8-10",
+    "pattern": "..",
+    "text": "\udc00"
+  },
+  {
+    "name": "wtf8-11",
+    "pattern": "..",
+    "text": "\ud800\ud800"
+  },
+  {
+    "name": "wtf8-12",
+    "pattern": "..",
+    "text": "\ud800\udc00"
+  },
+  {
+    "name": "wtf8-13",
+    "pattern": "..",
+    "text": "\ud83d\ude00"
+  },
+  {
+    "name": "wtf8-14",
+    "pattern": "..",
+    "text": "\ufffd"
+  },
+  {
+    "name": "wtf8-15",
+    "pattern": "..",
+    "text": "?"
+  },
+  {
+    "name": "wtf8-16",
+    "pattern": "..",
+    "text": "\ud800a"
+  },
+  {
+    "name": "wtf8-17",
+    "pattern": "..",
+    "text": "a\udc00"
+  },
+  {
+    "name": "wtf8-18",
+    "pattern": "\\p{Cs}",
+    "text": "\ud800"
+  },
+  {
+    "name": "wtf8-19",
+    "pattern": "\\p{Cs}",
+    "text": "\udc00"
+  },
+  {
+    "name": "wtf8-20",
+    "pattern": "\\p{Cs}",
+    "text": "\ud800\ud800"
+  },
+  {
+    "name": "wtf8-21",
+    "pattern": "\\p{Cs}",
+    "text": "\ud800\udc00"
+  },
+  {
+    "name": "wtf8-22",
+    "pattern": "\\p{Cs}",
+    "text": "\ud83d\ude00"
+  },
+  {
+    "name": "wtf8-23",
+    "pattern": "\\p{Cs}",
+    "text": "\ufffd"
+  },
+  {
+    "name": "wtf8-24",
+    "pattern": "\\p{Cs}",
+    "text": "?"
+  },
+  {
+    "name": "wtf8-25",
+    "pattern": "\\p{Cs}",
+    "text": "\ud800a"
+  },
+  {
+    "name": "wtf8-26",
+    "pattern": "\\p{Cs}",
+    "text": "a\udc00"
+  },
+  {
+    "name": "wtf8-27",
+    "pattern": "[^\\p{Cs}]",
+    "text": "\ud800"
+  },
+  {
+    "name": "wtf8-28",
+    "pattern": "[^\\p{Cs}]",
+    "text": "\udc00"
+  },
+  {
+    "name": "wtf8-29",
+    "pattern": "[^\\p{Cs}]",
+    "text": "\ud800\ud800"
+  },
+  {
+    "name": "wtf8-30",
+    "pattern": "[^\\p{Cs}]",
+    "text": "\ud800\udc00"
+  },
+  {
+    "name": "wtf8-31",
+    "pattern": "[^\\p{Cs}]",
+    "text": "\ud83d\ude00"
+  },
+  {
+    "name": "wtf8-32",
+    "pattern": "[^\\p{Cs}]",
+    "text": "\ufffd"
+  },
+  {
+    "name": "wtf8-33",
+    "pattern": "[^\\p{Cs}]",
+    "text": "?"
+  },
+  {
+    "name": "wtf8-34",
+    "pattern": "[^\\p{Cs}]",
+    "text": "\ud800a"
+  },
+  {
+    "name": "wtf8-35",
+    "pattern": "[^\\p{Cs}]",
+    "text": "a\udc00"
+  },
+  {
+    "name": "wtf8-36",
+    "pattern": "\\X",
+    "text": "\ud800"
+  },
+  {
+    "name": "wtf8-37",
+    "pattern": "\\X",
+    "text": "\udc00"
+  },
+  {
+    "name": "wtf8-38",
+    "pattern": "\\X",
+    "text": "\ud800\ud800"
+  },
+  {
+    "name": "wtf8-39",
+    "pattern": "\\X",
+    "text": "\ud800\udc00"
+  },
+  {
+    "name": "wtf8-40",
+    "pattern": "\\X",
+    "text": "\ud83d\ude00"
+  },
+  {
+    "name": "wtf8-41",
+    "pattern": "\\X",
+    "text": "\ufffd"
+  },
+  {
+    "name": "wtf8-42",
+    "pattern": "\\X",
+    "text": "?"
+  },
+  {
+    "name": "wtf8-43",
+    "pattern": "\\X",
+    "text": "\ud800a"
+  },
+  {
+    "name": "wtf8-44",
+    "pattern": "\\X",
+    "text": "a\udc00"
+  },
+  {
+    "name": "wtf8-45",
+    "pattern": "(?c)[\\p{Cs}]",
+    "text": "\ud800"
+  },
+  {
+    "name": "wtf8-46",
+    "pattern": "(?c)[\\p{Cs}]",
+    "text": "\udc00"
+  },
+  {
+    "name": "wtf8-47",
+    "pattern": "(?c)[\\p{Cs}]",
+    "text": "\ud800\ud800"
+  },
+  {
+    "name": "wtf8-48",
+    "pattern": "(?c)[\\p{Cs}]",
+    "text": "\ud800\udc00"
+  },
+  {
+    "name": "wtf8-49",
+    "pattern": "(?c)[\\p{Cs}]",
+    "text": "\ud83d\ude00"
+  },
+  {
+    "name": "wtf8-50",
+    "pattern": "(?c)[\\p{Cs}]",
+    "text": "\ufffd"
+  },
+  {
+    "name": "wtf8-51",
+    "pattern": "(?c)[\\p{Cs}]",
+    "text": "?"
+  },
+  {
+    "name": "wtf8-52",
+    "pattern": "(?c)[\\p{Cs}]",
+    "text": "\ud800a"
+  },
+  {
+    "name": "wtf8-53",
+    "pattern": "(?c)[\\p{Cs}]",
+    "text": "a\udc00"
+  },
+  {
+    "name": "wtf8-54",
+    "pattern": "(.)\\1",
+    "text": "\ud800"
+  },
+  {
+    "name": "wtf8-55",
+    "pattern": "(.)\\1",
+    "text": "\udc00"
+  },
+  {
+    "name": "wtf8-56",
+    "pattern": "(.)\\1",
+    "text": "\ud800\ud800"
+  },
+  {
+    "name": "wtf8-57",
+    "pattern": "(.)\\1",
+    "text": "\ud800\udc00"
+  },
+  {
+    "name": "wtf8-58",
+    "pattern": "(.)\\1",
+    "text": "\ud83d\ude00"
+  },
+  {
+    "name": "wtf8-59",
+    "pattern": "(.)\\1",
+    "text": "\ufffd"
+  },
+  {
+    "name": "wtf8-60",
+    "pattern": "(.)\\1",
+    "text": "?"
+  },
+  {
+    "name": "wtf8-61",
+    "pattern": "(.)\\1",
+    "text": "\ud800a"
+  },
+  {
+    "name": "wtf8-62",
+    "pattern": "(.)\\1",
+    "text": "a\udc00"
+  },
+  {
+    "name": "wtf8-63",
+    "pattern": "\\b{g}.\\b{g}",
+    "text": "\ud800"
+  },
+  {
+    "name": "wtf8-64",
+    "pattern": "\\b{g}.\\b{g}",
+    "text": "\udc00"
+  },
+  {
+    "name": "wtf8-65",
+    "pattern": "\\b{g}.\\b{g}",
+    "text": "\ud800\ud800"
+  },
+  {
+    "name": "wtf8-66",
+    "pattern": "\\b{g}.\\b{g}",
+    "text": "\ud800\udc00"
+  },
+  {
+    "name": "wtf8-67",
+    "pattern": "\\b{g}.\\b{g}",
+    "text": "\ud83d\ude00"
+  },
+  {
+    "name": "wtf8-68",
+    "pattern": "\\b{g}.\\b{g}",
+    "text": "\ufffd"
+  },
+  {
+    "name": "wtf8-69",
+    "pattern": "\\b{g}.\\b{g}",
+    "text": "?"
+  },
+  {
+    "name": "wtf8-70",
+    "pattern": "\\b{g}.\\b{g}",
+    "text": "\ud800a"
+  },
+  {
+    "name": "wtf8-71",
+    "pattern": "\\b{g}.\\b{g}",
+    "text": "a\udc00"
+  },
+  {
+    "name": "wtf8-72",
+    "pattern": "\ud800",
+    "text": "\ud800"
+  },
+  {
+    "name": "wtf8-73",
+    "pattern": "\ud800",
+    "text": "\udc00"
+  },
+  {
+    "name": "wtf8-74",
+    "pattern": "\ud800",
+    "text": "\ud800\ud800"
+  },
+  {
+    "name": "wtf8-75",
+    "pattern": "\ud800",
+    "text": "\ud800\udc00"
+  },
+  {
+    "name": "wtf8-76",
+    "pattern": "\ud800",
+    "text": "\ud83d\ude00"
+  },
+  {
+    "name": "wtf8-77",
+    "pattern": "\ud800",
+    "text": "\ufffd"
+  },
+  {
+    "name": "wtf8-78",
+    "pattern": "\ud800",
+    "text": "?"
+  },
+  {
+    "name": "wtf8-79",
+    "pattern": "\ud800",
+    "text": "\ud800a"
+  },
+  {
+    "name": "wtf8-80",
+    "pattern": "\ud800",
+    "text": "a\udc00"
+  },
+  {
+    "name": "wtf8-81",
+    "pattern": "\\uD800",
+    "text": "\ud800"
+  },
+  {
+    "name": "wtf8-82",
+    "pattern": "\\uD800",
+    "text": "\udc00"
+  },
+  {
+    "name": "wtf8-83",
+    "pattern": "\\uD800",
+    "text": "\ud800\ud800"
+  },
+  {
+    "name": "wtf8-84",
+    "pattern": "\\uD800",
+    "text": "\ud800\udc00"
+  },
+  {
+    "name": "wtf8-85",
+    "pattern": "\\uD800",
+    "text": "\ud83d\ude00"
+  },
+  {
+    "name": "wtf8-86",
+    "pattern": "\\uD800",
+    "text": "\ufffd"
+  },
+  {
+    "name": "wtf8-87",
+    "pattern": "\\uD800",
+    "text": "?"
+  },
+  {
+    "name": "wtf8-88",
+    "pattern": "\\uD800",
+    "text": "\ud800a"
+  },
+  {
+    "name": "wtf8-89",
+    "pattern": "\\uD800",
+    "text": "a\udc00"
+  },
+  {
+    "name": "wtf8-90",
+    "pattern": "\udc00",
+    "text": "\ud800"
+  },
+  {
+    "name": "wtf8-91",
+    "pattern": "\udc00",
+    "text": "\udc00"
+  },
+  {
+    "name": "wtf8-92",
+    "pattern": "\udc00",
+    "text": "\ud800\ud800"
+  },
+  {
+    "name": "wtf8-93",
+    "pattern": "\udc00",
+    "text": "\ud800\udc00"
+  },
+  {
+    "name": "wtf8-94",
+    "pattern": "\udc00",
+    "text": "\ud83d\ude00"
+  },
+  {
+    "name": "wtf8-95",
+    "pattern": "\udc00",
+    "text": "\ufffd"
+  },
+  {
+    "name": "wtf8-96",
+    "pattern": "\udc00",
+    "text": "?"
+  },
+  {
+    "name": "wtf8-97",
+    "pattern": "\udc00",
+    "text": "\ud800a"
+  },
+  {
+    "name": "wtf8-98",
+    "pattern": "\udc00",
+    "text": "a\udc00"
+  },
+  {
+    "name": "wtf8-99",
+    "pattern": "\\uD83D\\uDE00",
+    "text": "\ud800"
+  },
+  {
+    "name": "wtf8-100",
+    "pattern": "\\uD83D\\uDE00",
+    "text": "\udc00"
+  },
+  {
+    "name": "wtf8-101",
+    "pattern": "\\uD83D\\uDE00",
+    "text": "\ud800\ud800"
+  },
+  {
+    "name": "wtf8-102",
+    "pattern": "\\uD83D\\uDE00",
+    "text": "\ud800\udc00"
+  },
+  {
+    "name": "wtf8-103",
+    "pattern": "\\uD83D\\uDE00",
+    "text": "\ud83d\ude00"
+  },
+  {
+    "name": "wtf8-104",
+    "pattern": "\\uD83D\\uDE00",
+    "text": "\ufffd"
+  },
+  {
+    "name": "wtf8-105",
+    "pattern": "\\uD83D\\uDE00",
+    "text": "?"
+  },
+  {
+    "name": "wtf8-106",
+    "pattern": "\\uD83D\\uDE00",
+    "text": "\ud800a"
+  },
+  {
+    "name": "wtf8-107",
+    "pattern": "\\uD83D\\uDE00",
+    "text": "a\udc00"
+  },
+  {
+    "name": "wtf8-108",
+    "pattern": "\ud83d\ude00",
+    "text": "\ud800"
+  },
+  {
+    "name": "wtf8-109",
+    "pattern": "\ud83d\ude00",
+    "text": "\udc00"
+  },
+  {
+    "name": "wtf8-110",
+    "pattern": "\ud83d\ude00",
+    "text": "\ud800\ud800"
+  },
+  {
+    "name": "wtf8-111",
+    "pattern": "\ud83d\ude00",
+    "text": "\ud800\udc00"
+  },
+  {
+    "name": "wtf8-112",
+    "pattern": "\ud83d\ude00",
+    "text": "\ud83d\ude00"
+  },
+  {
+    "name": "wtf8-113",
+    "pattern": "\ud83d\ude00",
+    "text": "\ufffd"
+  },
+  {
+    "name": "wtf8-114",
+    "pattern": "\ud83d\ude00",
+    "text": "?"
+  },
+  {
+    "name": "wtf8-115",
+    "pattern": "\ud83d\ude00",
+    "text": "\ud800a"
+  },
+  {
+    "name": "wtf8-116",
+    "pattern": "\ud83d\ude00",
+    "text": "a\udc00"
+  },
+  {
+    "name": "wtf8-117",
+    "pattern": "\ud800[",
+    "text": ""
+  },
+  {
+    "name": "wtf8-118",
+    "pattern": "\ud800(",
+    "text": ""
+  },
+  {
+    "name": "wtf8-119",
+    "pattern": "\\uD800[",
+    "text": ""
+  },
+  {
+    "name": "wtf8-120",
+    "pattern": "\ud83d\ude00[",
+    "text": ""
+  },
+  {
+    "name": "wtf8-121",
+    "pattern": "\ud800\ud800[",
+    "text": ""
+  }
+]

@@ -52,8 +52,15 @@ go vet ./internal/query ./internal/cypher/...
 fixture. The regeneration script invokes local JVM classes directly and never
 sends HTTP requests or runs benchmarks.
 
-Remaining executor gaps include Java regex semantics, additional functions and
-procedure/planner shapes, and general JVM object string rendering (including
-qualified edge/path `toString` and path relational predicates). Such unsupported
-operations raise explicit errors. Relationship/path traversal is implemented,
-but these tests do not establish complete Cypher or server parity.
+## Functions, aggregation and regex
+
+The complete main function dispatch table is implemented natively: 59 scalar
+names (including aliases) and 10 aggregates. See [FUNCTIONS.md](FUNCTIONS.md) for
+the matrix, 369 JVM query oracle cases, exact runtime quirks and limitations.
+Object string rendering, property-map order, Java 17 Unicode behavior, UTF-16
+boundaries and regex are included. The native mathematical and regex packages
+have additional independent JVM corpora.
+
+Procedure/planner shapes and the full server compatibility matrix remain separate
+work. Intermediate matching is still eager. These correctness fixtures establish
+neither complete server parity nor the required performance improvement.

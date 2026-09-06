@@ -24,3 +24,7 @@ go vet ./internal/javaregex
 ```
 
 Reproduce oracle inputs using `python3 internal/javaregex/testdata/generate_cases.py`, then compile/run `testdata/Oracle.java` against the pinned main fat JAR (used only for Gson on the development classpath). `GenerateUnicode.java` needs `--add-opens java.base/java.lang=ALL-UNNAMED`; `GenerateAdvanced.java` needs `--add-opens java.base/java.util.regex=ALL-UNNAMED --add-exports java.base/jdk.internal.icu.lang=ALL-UNNAMED`. The generators inspect private runtime data only during oracle construction; no such access occurs in Go.
+
+## WTF-8 follow-up after the 4,050-case snapshot
+
+The string API now also accepts WTF-8, matching the query engine's Java String representation. Isolated UTF-16 surrogates remain isolated code points; adjacent high/low surrogate units combine as Java `Character.codePointAt` would. The prior paragraph's isolated-surrogate limitation describes the original frozen snapshot. `testdata/java17-wtf8-oracle.json` independently adds 122 cases with UTF-16 unit arrays, including `\p{Cs}`, graphemes, canonical properties, captures, raw/escaped surrogate patterns, valid supplementary pairs, and syntax diagnostics. The original `verification.json` is unchanged; `verification-wtf8.json` records follow-up validation.

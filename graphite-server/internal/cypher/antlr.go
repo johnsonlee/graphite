@@ -40,15 +40,16 @@ func (l *errorsListener) SyntaxError(_ antlr.Recognizer, symbol interface{}, lin
 	if pos > len(l.source) {
 		pos = len(l.source)
 	}
-	l.first = &ParseError{Position: len(string(l.source[:pos])), Message: message}
+	l.first = &ParseError{Position: len(inputString(l.source[:pos])), Message: fmt.Sprintf("Syntax error at position %d: %s", column, message)}
 	panic(l.first)
 }
 func antlrParser(ctx context.Context, source string) (*g.CypherParser, *contextTokens, *errorsListener) {
 	if err := ctx.Err(); err != nil {
 		panic(err)
 	}
-	listener := &errorsListener{DefaultErrorListener: antlr.NewDefaultErrorListener(), source: []rune(source)}
-	characters := &contextCharacters{CharStream: antlr.NewInputStream(source), ctx: ctx}
+	input := newJavaInput(source)
+	listener := &errorsListener{DefaultErrorListener: antlr.NewDefaultErrorListener(), source: input.points}
+	characters := &contextCharacters{CharStream: input, ctx: ctx}
 	lexer := g.NewCypherLexer(characters)
 	lexer.RemoveErrorListeners()
 	lexer.AddErrorListener(listener)
@@ -119,7 +120,7 @@ func parseContext(ctx context.Context, source string) *Query {
 	if listener.first != nil {
 		panic(listener.first)
 	}
-	a := adapter{source: []rune(source), ctx: ctx}
+	a := adapter{source: listener.source, ctx: ctx}
 	query := &Query{Branches: []SingleQuery{{}}}
 	for _, statement := range script.AllStatement() {
 		regular := statement.Query().RegularQuery()
@@ -166,7 +167,7 @@ func ParseExpression(source string) (expression Expr, err error) {
 	if tokens.LA(1) != antlr.TokenEOF {
 		return nil, &ParseError{Position: tokens.LT(1).GetStart(), Message: "unexpected trailing token"}
 	}
-	a := adapter{source: []rune(source), ctx: context.Background()}
+	a := adapter{source: listener.source, ctx: context.Background()}
 	return a.expr(ctx), nil
 }
 
@@ -192,7 +193,7 @@ func name(ctx antlr.ParserRuleContext) string {
 	return s
 }
 func (a adapter) text(ctx antlr.ParserRuleContext) string {
-	return string(a.source[ctx.GetStart().GetStart() : ctx.GetStop().GetStop()+1])
+	return inputString(a.source[ctx.GetStart().GetStart() : ctx.GetStop().GetStop()+1])
 }
 func (a adapter) unsupported(ctx antlr.ParserRuleContext, message string) {
 	panic(&ParseError{Position: ctx.GetStart().GetStart(), Message: message})

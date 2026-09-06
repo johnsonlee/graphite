@@ -8,19 +8,23 @@ import (
 	"math"
 	"strconv"
 	"strings"
-	"unicode/utf16"
 )
 
-type Error struct{ Message string }
+type Error struct {
+	Message string
+	Class   string
+}
 
 func (e *Error) Error() string { return e.Message }
-func fail(message string)      { panic(&Error{Message: message}) }
+func fail(message string)      { panic(&Error{Message: message, Class: "CypherException"}) }
 
 type evaluator struct {
 	ctx        context.Context
 	parameters map[string]any
 	graphs     []Graph
 	cross      bool
+	rowOrders  map[string]rowOrder
+	regexes    *regexLRU
 }
 
 func (e evaluator) check() {
@@ -51,14 +55,12 @@ func (e evaluator) eval(expression cypher.Expr, row map[string]any) any {
 	case cypher.Variable:
 		return row[x.Name]
 	case cypher.Parameter:
-		v, ok := e.parameters[x.Name]
-		if !ok {
-			fail("Missing parameter: " + x.Name)
-		}
-		return v
+		return e.parameters[x.Name]
 	case cypher.Property:
 		obj := e.eval(x.Object, row)
 		switch o := obj.(type) {
+		case orderedMap:
+			return o.Values[x.Key]
 		case qualifiedNode, qualifiedMethod:
 			return qualifiedProperty(o, x.Key)
 		case qualifiedEdge:
@@ -97,7 +99,7 @@ func (e evaluator) eval(expression cypher.Expr, row map[string]any) any {
 			}
 			b, ok := v.(bool)
 			if !ok {
-				fail("NOT requires a boolean")
+				castError(v, "java.lang.Boolean")
 			}
 			return !b
 		case "+", "DISTINCT":
@@ -130,10 +132,10 @@ func (e evaluator) eval(expression cypher.Expr, row map[string]any) any {
 		return r
 	case cypher.Map:
 		r := make(map[string]any, len(x.Entries))
-		for k, v := range x.Entries {
-			r[k] = e.eval(v, row)
+		for _, k := range x.Keys {
+			r[k] = e.eval(x.Entries[k], row)
 		}
-		return r
+		return orderedMap{r, append([]string{}, x.Keys...)}
 	case cypher.Case:
 		v := e.eval(x.Test, row)
 		for _, w := range x.Whens {
@@ -153,8 +155,8 @@ func (e evaluator) eval(expression cypher.Expr, row map[string]any) any {
 		}
 		out := []any{}
 		for _, v := range values {
-			r := clone(row)
-			r[x.Variable] = v
+			r := e.cloneRow(row)
+			e.bind(r, x.Variable, v)
 			if x.Where != nil && e.eval(x.Where, r) != true {
 				continue
 			}
@@ -171,8 +173,8 @@ func (e evaluator) eval(expression cypher.Expr, row map[string]any) any {
 		}
 		yes, no, unknown := 0, 0, 0
 		for _, v := range values {
-			r := clone(row)
-			r[x.Variable] = v
+			r := e.cloneRow(row)
+			e.bind(r, x.Variable, v)
 			if x.Where != nil {
 				v = e.eval(x.Where, r)
 			}
@@ -221,11 +223,12 @@ func (e evaluator) eval(expression cypher.Expr, row map[string]any) any {
 		}
 	case cypher.Index:
 		v := e.eval(x.Object, row)
-		n, ok := number(e.eval(x.Index, row))
+		indexValue := e.eval(x.Index, row)
+		_, ok := number(indexValue)
 		if !ok {
 			return nil
 		}
-		idx := int(n)
+		idx := int(numberInt([]any{indexValue}, 0))
 		switch v := v.(type) {
 		case []any:
 			if idx < 0 {
@@ -235,15 +238,12 @@ func (e evaluator) eval(expression cypher.Expr, row map[string]any) any {
 				return v[idx]
 			}
 		case string:
-			u := utf16.Encode([]rune(v))
+			u := javaUTF16(v)
 			if idx < 0 {
 				idx += len(u)
 			}
 			if idx >= 0 && idx < len(u) {
-				if utf16.IsSurrogate(rune(u[idx])) {
-					fail("isolated UTF-16 surrogate indexing is not supported yet")
-				}
-				return string(rune(u[idx]))
+				return javaFromUTF16(u[idx : idx+1])
 			}
 		}
 		return nil
@@ -255,38 +255,43 @@ func (e evaluator) eval(expression cypher.Expr, row map[string]any) any {
 		case []any:
 			size = len(v)
 		case string:
-			size = len(utf16.Encode([]rune(v)))
+			size = len(javaUTF16(v))
 		default:
 			return nil
 		}
 		to := size
-		if n, ok := number(e.eval(x.From, row)); ok {
-			from = int(n)
+		if v := e.eval(x.From, row); v != nil {
+			if _, ok := number(v); ok {
+				from = int(numberInt([]any{v}, 0))
+			}
 		}
-		if n, ok := number(e.eval(x.To, row)); ok {
-			to = int(n)
+		if v := e.eval(x.To, row); v != nil {
+			if _, ok := number(v); ok {
+				to = int(numberInt([]any{v}, 0))
+			}
 		}
 		from = max(0, from)
 		to = min(size, to)
 		if from > to || from > size || to < 0 {
-			fail("slice bounds out of range")
+			if _, isString := v.(string); isString {
+				functionError("StringIndexOutOfBoundsException", fmt.Sprintf("begin %d, end %d, length %d", from, to, size))
+			}
+			functionError("IllegalArgumentException", fmt.Sprintf("fromIndex(%d) > toIndex(%d)", from, to))
 		}
 		switch v := v.(type) {
 		case []any:
 			return append([]any{}, v[from:to]...)
 		case string:
-			u := utf16.Encode([]rune(v))[from:to]
-			if len(u) > 0 && (u[0] >= 0xdc00 && u[0] <= 0xdfff || u[len(u)-1] >= 0xd800 && u[len(u)-1] <= 0xdbff) {
-				fail("isolated UTF-16 surrogate slicing is not supported yet")
-			}
-			return string(utf16.Decode(u))
+			u := javaUTF16(v)[from:to]
+
+			return javaFromUTF16(u)
 		}
 	case cypher.Call:
 		args := make([]any, len(x.Arguments))
 		for i, a := range x.Arguments {
 			args[i] = e.eval(a, row)
 		}
-		return e.call(strings.ToLower(x.Name), args)
+		return e.call(x.Name, args)
 	}
 	fail(fmt.Sprintf("unsupported expression %T", expression))
 	return nil
@@ -296,15 +301,33 @@ func toDouble(v any) float64 {
 		return n
 	}
 	if s, ok := v.(string); ok {
-		n, err := strconv.ParseFloat(s, 64)
-		if err == nil {
+		n, ok := parseJavaDouble(s)
+		if ok {
 			return n
 		}
 	}
 	return 0
 }
 func (e evaluator) binary(x cypher.Binary, row map[string]any) any {
-	a, b := e.eval(x.Left, row), e.eval(x.Right, row)
+	if x.Op == "=~" {
+		left, ok := e.eval(x.Left, row).(string)
+		if !ok {
+			return nil
+		}
+		pattern, ok := e.eval(x.Right, row).(string)
+		if !ok {
+			return nil
+		}
+		return e.regexMatch(pattern, left)
+	}
+	a := e.eval(x.Left, row)
+	switch x.Op {
+	case "STARTS WITH", "ENDS WITH", "CONTAINS", "NOT STARTS WITH", "NOT ENDS WITH", "NOT CONTAINS":
+		if _, ok := a.(string); !ok {
+			return nil
+		}
+	}
+	b := e.eval(x.Right, row)
 	switch x.Op {
 	case "AND":
 		a, b = asBool(a), asBool(b)
@@ -356,8 +379,6 @@ func (e evaluator) binary(x cypher.Binary, row map[string]any) any {
 			return nil
 		}
 		return false
-	case "=~":
-		fail("Java regular expression matching is not supported yet")
 	}
 	if a == nil || b == nil {
 		return nil
@@ -376,11 +397,12 @@ func (e evaluator) binary(x cypher.Binary, row map[string]any) any {
 		var result bool
 		switch op {
 		case "STARTS WITH":
-			result = strings.HasPrefix(l, r)
+			result = e.unitIndex(javaUTF16(l), javaUTF16(r), 0) == 0
 		case "ENDS WITH":
-			result = strings.HasSuffix(l, r)
+			left, right := javaUTF16(l), javaUTF16(r)
+			result = len(left) >= len(right) && e.unitIndex(left, right, len(left)-len(right)) >= 0
 		case "CONTAINS":
-			result = strings.Contains(l, r)
+			result = e.unitIndex(javaUTF16(l), javaUTF16(r), 0) >= 0
 		}
 		if op != x.Op {
 			return !result
@@ -396,10 +418,10 @@ func (e evaluator) binary(x cypher.Binary, row map[string]any) any {
 		return comparePredicate(a, b) >= 0
 	case "+":
 		if _, ok := a.(string); ok {
-			return scalarString(a) + scalarString(b)
+			return javaFromUTF16(javaUTF16(e.stringify(a) + e.stringify(b)))
 		}
 		if _, ok := b.(string); ok {
-			return scalarString(a) + scalarString(b)
+			return javaFromUTF16(javaUTF16(e.stringify(a) + e.stringify(b)))
 		}
 		if l, ok := a.([]any); ok {
 			out := append([]any{}, l...)
@@ -450,27 +472,8 @@ func (e evaluator) binary(x cypher.Binary, row map[string]any) any {
 	}
 	return result
 }
-func scalarString(v any) string {
-	switch n := v.(type) {
-	case store.Edge:
-		return edgeString(n)
-	case nil:
-		return "null"
-	case string:
-		return n
-	case bool:
-		return strconv.FormatBool(n)
-	case int, int32, int64:
-		return fmt.Sprint(n)
-	case float32:
-		return javaFloatString(float64(n), 32)
-	case float64:
-		return javaFloatString(n, 64)
-	}
-	fail("JVM object string rendering is not supported yet")
-	return ""
-}
-func (e evaluator) call(name string, args []any) any {
+func scalarString(v any) string { return objectString(v, nil) }
+func (e evaluator) callLegacy(name string, args []any) any {
 	if name == "coalesce" {
 		for _, v := range args {
 			if v != nil {
@@ -479,10 +482,7 @@ func (e evaluator) call(name string, args []any) any {
 		}
 		return nil
 	}
-	if len(args) != 1 {
-		fail(name + " requires one argument")
-	}
-	v := args[0]
+	v := argument(args, 0)
 	if name == "graphid" {
 		if id := valueGraphID(v); id != "" {
 			return id
@@ -547,7 +547,7 @@ func (e evaluator) call(name string, args []any) any {
 		return r
 	case "tolower", "tolowercase":
 		if value, ok := v.(string); ok {
-			return strings.ToLower(value)
+			return e.javaCase(value, false)
 		}
 		return nil
 	case "type":
@@ -588,7 +588,7 @@ func (e evaluator) call(name string, args []any) any {
 		case pathValue:
 			return int32(len(v.Edges))
 		case string:
-			return int32(len(utf16.Encode([]rune(v))))
+			return int32(len(javaUTF16(v)))
 		case []any:
 			return int32(len(v))
 		}
@@ -602,7 +602,12 @@ func (e evaluator) call(name string, args []any) any {
 			if len(list) == 0 {
 				return []any{}
 			}
-			return append([]any{}, list[1:]...)
+			out := make([]any, len(list)-1)
+			for i, v := range list[1:] {
+				e.check()
+				out[i] = v
+			}
+			return out
 		}
 		if len(list) == 0 {
 			return nil
@@ -615,7 +620,7 @@ func (e evaluator) call(name string, args []any) any {
 		if v == nil {
 			return nil
 		}
-		return scalarString(v)
+		return e.stringify(v)
 	case "tointeger", "toint":
 		if n, ok := integer(v); ok {
 			return n
@@ -633,7 +638,7 @@ func (e evaluator) call(name string, args []any) any {
 			return int64(n)
 		}
 		if s, ok := v.(string); ok {
-			n, err := strconv.ParseInt(s, 10, 64)
+			n, err := parseJavaLong(s)
 			if err == nil {
 				return n
 			}
