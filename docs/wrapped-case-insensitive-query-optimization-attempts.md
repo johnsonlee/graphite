@@ -5110,3 +5110,12 @@ failed on pair 1 only (6.69x: the wrapped-distinct/dense first execution at 17.6
 5.7-8.8 ms on the other five candidate replays of this and the previous head), with no collection
 recorded in any candidate replay of either head and a runner about 30% slower for both sides,
 so a documentation-only head re-samples both gates on the same code.
+
+**Result on 4f230fb (re-sample) and scoping:** routing passed again; global-wide failed a second
+time on identical production code, this time the wrapped non-DISTINCT 2x check on pair 3
+(base 6.72 ms, candidate 3.71 ms, 1.81x) while the 10x pairs passed at 15.38x / 12.49x /
+12.25x. Across the two heads that ran the wait, the candidate's first-execution rows are slower
+than on the five passing heads before it (DISTINCT-dense 7.9-17.6 ms against 5.0-9.4 ms, wrapped
+3.0-3.7 ms against 2.7-3.1 ms, targeted 2.4-3.2 ms against 2.0-2.8 ms) while the base's rows
+moved less, so the wait is scoped to the graph-routing coverage families, the ones the decision
+concerned, and the other families keep the invocation setup their gates were calibrated on.

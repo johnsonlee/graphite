@@ -155,7 +155,14 @@ open class LargeBroadQueryPressureBenchmark {
         }
         resetCallSiteScanMetrics()
         forcePressureGc()
-        awaitGcQuiescence()
+        // The graph-routing families measure sub-millisecond rows whose nearest-rank P95 a
+        // collection cycle left in flight by the forced collections can decide; the wait is
+        // scoped to them so the other families keep the setup their gates were calibrated on.
+        if (coverageFamily == GRAPH_ROUTING_COVERAGE_FAMILY ||
+            coverageFamily == GRAPH_ROUTING_REFERENCE_COVERAGE_FAMILY
+        ) {
+            awaitGcQuiescence()
+        }
         sampler.start()
     }
 
