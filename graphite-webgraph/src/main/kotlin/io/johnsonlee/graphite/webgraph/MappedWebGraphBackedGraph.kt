@@ -932,6 +932,7 @@ internal class MappedWebGraphBackedGraph(
             if (loaded == null) {
                 mappedCallSiteStringIndexViewUnavailable = true
             } else {
+                loaded.prime()
                 mappedCallSiteStringIndexView = loaded
             }
             loaded

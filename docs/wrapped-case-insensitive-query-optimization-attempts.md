@@ -4351,3 +4351,38 @@ cover the row's map contract, duplicate columns, and rows without metadata.
 
 **Conclusion:** keep for exact-head hosted validation of the cold routing fork; the global-wide
 gate is unchanged by this commit and still needs its own evidence.
+
+### 2026-09-06 - Attempt 134: Prime the mapped view's lookup paths when the view opens
+
+**Hypothesis:** on head `2c08684` the hosted global-wide gate reads `7.59x / 7.97x / 6.08x` with
+the candidate P95 (`19..28 ms`) on `wrapped-case-insensitive-distinct-dense`, the first DISTINCT
+query of the replay, and the next rows (`four-properties-targeted` `12.7..14.4 ms`,
+`four-properties-dense` `10.4..11.8 ms`) sit on the runner's 10x line (`11.7..22.7 ms`). In a
+fresh JVM at the benchmark's position the distinct-dense query costs `20..22 ms` on first
+execution with 26 classes loaded and `40..60 ms` of JIT compilation overlapping it, while a second
+DISTINCT query with another term right after costs `4.2..4.8 ms`; its profile is the provenance
+pass (`selectedTupleHits`, `TupleLookup.directoryRow`, `leadingValuePresent`) running interpreted.
+The candidate answers the replay's first query in under a second while the base scans for most
+of it, so every later shape runs on colder code in the candidate: the engine's first use, not the
+index work, carries the candidate's tail.
+
+**Change:** when a mapped view opens (lazily inside the first request, or at load under
+`prepareCallSiteStringIndexOnLoad`), it runs its own lookup, projection, DISTINCT, and provenance
+paths once over the view's first `caller_class` directory entry (an exact plan, a lowercase
+CONTAINS plan over the entry's last six characters, four projected rows, four distinct rows, and
+one selected-tuple provenance lookup). The work goes through the view's methods only, so the
+graph's lookup counters and the gate's mapped-lookup contract are untouched; failures are
+swallowed because queries validate their own ranges anyway.
+
+**Evidence (local, 64 fixtures, fresh JVM in benchmark order):** distinct-dense first execution
+`20..22 ms -> 8.6..11 ms`, `four-properties-targeted` `10.5..18 ms -> 7..10.5 ms`,
+`name-pair-targeted` `3.2..6.7 ms -> 2.8..3.5 ms`; the view-opening first query grows by `40..90 ms`
+(`287..377 ms -> 327..416 ms`). Priming four spread entries instead of one did not lower the
+later rows further (`8..11 ms`) and cost another `40..80 ms` at open, so one entry is kept. Two
+data-side cuts were tried on top and reverted as neutral: rejecting anchor candidates through the
+next two rarest trigram spans before decoding (targeted CPU `-15%` on four-property terms, but
+single-property targeted rows `+30..50%` from the extra binary searches), and sharing the
+lowercase trigrams of selected tuple values across the graphs of one request (no change).
+
+**Conclusion:** keep for exact-head hosted validation of the global-wide gate; the remaining
+`8..11 ms` of the distinct-dense row is provenance data work on C1-level code, still to be cut.
