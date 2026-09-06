@@ -119,10 +119,15 @@ func (e evaluator) nodeCandidates(graph *store.Store, pattern cypher.NodePattern
 }
 
 func (e evaluator) walkNodeCandidates(graph *store.Store, pattern cypher.NodePattern, bindings map[string]any, slot *candidateSlot, accept func(any)) {
+	e.walkNodeCandidatesUntil(graph, pattern, bindings, slot, func(value any) bool { accept(value); return true })
+}
+
+// walkNodeCandidatesUntil returns false when the consumer stops the source.
+// The budget belongs to the caller, across all graphs, never to each source.
+func (e evaluator) walkNodeCandidatesUntil(graph *store.Store, pattern cypher.NodePattern, bindings map[string]any, slot *candidateSlot, accept func(any) bool) bool {
 	if pattern.Variable != "" {
 		if value, bound := bindings[pattern.Variable]; bound {
-			accept(value)
-			return
+			return accept(value)
 		}
 	}
 	methods := false
@@ -140,13 +145,19 @@ func (e evaluator) walkNodeCandidates(graph *store.Store, pattern cypher.NodePat
 				if slot != nil {
 					slot.graph, slot.graphID, slot.qualified = source.Store, source.ID, e.cross
 					slot.isMethod, slot.method = true, method
-					accept(slot)
+					if !accept(slot) {
+						return false
+					}
 					continue
 				}
 				if e.cross {
-					accept(qualifiedMethod{source.ID, method})
+					if !accept(qualifiedMethod{source.ID, method}) {
+						return false
+					}
 				} else {
-					accept(method)
+					if !accept(method) {
+						return false
+					}
 				}
 			}
 			continue
@@ -160,16 +171,23 @@ func (e evaluator) walkNodeCandidates(graph *store.Store, pattern cypher.NodePat
 			if slot != nil {
 				slot.graph, slot.graphID, slot.qualified = source.Store, source.ID, e.cross
 				slot.isMethod, slot.node = false, node
-				accept(slot)
+				if !accept(slot) {
+					return false
+				}
 				continue
 			}
 			if e.cross {
-				accept(qualifiedNode{source.ID, source.Store, node})
+				if !accept(qualifiedNode{source.ID, source.Store, node}) {
+					return false
+				}
 			} else {
-				accept(node)
+				if !accept(node) {
+					return false
+				}
 			}
 		}
 	}
+	return true
 }
 func (e evaluator) makePath(nodes, edges []any) any {
 	path := pathValue{Qualified: e.cross, Nodes: []any{}, Edges: append([]any{}, edges...)}
@@ -279,9 +297,15 @@ func targetID(edge store.Edge, current int32, direction cypher.Direction) int32 
 	return edge.From
 }
 func (e evaluator) matchRelationship(graph *store.Store, state matchState, rel cypher.RelationshipPattern, target cypher.NodePattern, reserved map[edgeIdentity]bool) []matchState {
+	result := []matchState{}
+	e.matchRelationshipUntil(graph, state, rel, target, reserved, func(next matchState) bool { result = append(result, next); return true })
+	return result
+}
+
+func (e evaluator) matchRelationshipUntil(graph *store.Store, state matchState, rel cypher.RelationshipPattern, target cypher.NodePattern, reserved map[edgeIdentity]bool, accept func(matchState) bool) bool {
 	source, graphID, start, ok := e.cursor(graph, state.current)
 	if !ok {
-		return nil
+		return true
 	}
 	if len(rel.Types) > 0 {
 		known := false
@@ -289,17 +313,16 @@ func (e evaluator) matchRelationship(graph *store.Store, state matchState, rel c
 			known = known || edgeFamily(label) != ""
 		}
 		if !known {
-			return nil
+			return true
 		}
 	}
 	available := e.relationshipBindings(state.row[rel.Variable])
 	blocked := func(edge any) bool { id := edgeID(edge); return state.used[id] || reserved[id] && !available[id] }
-	result := []matchState{}
-	emit := func(end any, nodes, edges []any) {
+	emit := func(end any, nodes, edges []any) bool {
 		e.check()
 		bound, ok := e.targetNode(target, end, state.row)
 		if !ok {
-			return
+			return true
 		}
 		var relationship any
 		if rel.VariableLength {
@@ -309,7 +332,7 @@ func (e evaluator) matchRelationship(graph *store.Store, state matchState, rel c
 		}
 		if rel.Variable != "" {
 			if value, exists := state.row[rel.Variable]; exists && equal(value, relationship) != true {
-				return
+				return true
 			}
 			e.bind(bound, rel.Variable, relationship)
 			for edge := range e.relationshipBindings(relationship) {
@@ -330,7 +353,7 @@ func (e evaluator) matchRelationship(graph *store.Store, state matchState, rel c
 		}
 		pathNodes := append(append([]any{}, state.nodes...), nodes[1:]...)
 		pathEdges := append(append([]any{}, state.edges...), edges...)
-		result = append(result, matchState{row: bound, used: used, current: end, nodes: pathNodes, edges: pathEdges})
+		return accept(matchState{row: bound, used: used, current: end, nodes: pathNodes, edges: pathEdges})
 	}
 	load := func(id int32) (any, bool) {
 		e.check()
@@ -354,19 +377,23 @@ func (e evaluator) matchRelationship(graph *store.Store, state matchState, rel c
 			if !ok {
 				continue
 			}
-			emit(end, []any{state.current, end}, []any{value})
+			if !emit(end, []any{state.current, end}, []any{value}) {
+				return false
+			}
 		}
-		return result
+		return true
 	}
 	minHops := 1
 	if rel.MinHops != nil {
 		minHops = *rel.MinHops
 	}
 	if minHops <= 0 {
-		emit(state.current, []any{state.current}, nil)
+		if !emit(state.current, []any{state.current}, nil) {
+			return false
+		}
 	}
 	if rel.MaxHops != nil && *rel.MaxHops <= 0 {
-		return result
+		return true
 	}
 	type frame struct {
 		id       int32
@@ -406,7 +433,9 @@ func (e evaluator) matchRelationship(graph *store.Store, state matchState, rel c
 		nodes = append(nodes, end)
 		edges = append(edges, value)
 		if len(edges) >= minHops {
-			emit(end, nodes, edges)
+			if !emit(end, nodes, edges) {
+				return false
+			}
 		}
 		if rel.MaxHops == nil || len(edges) < *rel.MaxHops {
 			stack = append(stack, frame{id: id, edges: e.edgesForDirection(source, id, rel.Direction, true), incoming: identity})
@@ -416,5 +445,5 @@ func (e evaluator) matchRelationship(graph *store.Store, state matchState, rel c
 			edges = edges[:len(edges)-1]
 		}
 	}
-	return result
+	return true
 }

@@ -1,0 +1,520 @@
+[
+  {
+    "main": {
+      "name": "scan-literal",
+      "query": "MATCH (n:IntConstant) RETURN CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT 1",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "scan-literal",
+      "query": "MATCH (n:IntConstant) RETURN CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT 1"
+    }
+  },
+  {
+    "main": {
+      "name": "scan-literal",
+      "query": "MATCH (n:IntConstant) RETURN CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT 1",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "scan-literal",
+      "query": "MATCH (n:IntConstant) RETURN CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT 1"
+    }
+  },
+  {
+    "main": {
+      "name": "scan-parameter",
+      "query": "MATCH (n:IntConstant) RETURN CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT $l",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "scan-parameter",
+      "query": "MATCH (n:IntConstant) RETURN CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT $l"
+    }
+  },
+  {
+    "main": {
+      "name": "scan-parameter",
+      "query": "MATCH (n:IntConstant) RETURN CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT $l",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "scan-parameter",
+      "query": "MATCH (n:IntConstant) RETURN CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT $l"
+    }
+  },
+  {
+    "main": {
+      "name": "scan-expression",
+      "query": "MATCH (n:IntConstant) RETURN CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT 1+0",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "scan-expression",
+      "query": "MATCH (n:IntConstant) RETURN CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT 1+0"
+    }
+  },
+  {
+    "main": {
+      "name": "scan-expression",
+      "query": "MATCH (n:IntConstant) RETURN CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT 1+0",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "scan-expression",
+      "query": "MATCH (n:IntConstant) RETURN CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT 1+0"
+    }
+  },
+  {
+    "main": {
+      "name": "scan-limit-error",
+      "query": "MATCH (n:IntConstant) RETURN CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT 1/0",
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "Division by zero"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "scan-limit-error",
+      "query": "MATCH (n:IntConstant) RETURN CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT 1/0"
+    }
+  },
+  {
+    "main": {
+      "name": "scan-limit-error",
+      "query": "MATCH (n:IntConstant) RETURN CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT 1/0",
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "Division by zero"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "scan-limit-error",
+      "query": "MATCH (n:IntConstant) RETURN CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT 1/0"
+    }
+  },
+  {
+    "main": {
+      "name": "projection-ordinary",
+      "query": "MATCH (n:IntConstant) RETURN CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT $l",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "projection-ordinary",
+      "query": "MATCH (n:IntConstant) RETURN CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT $l"
+    }
+  },
+  {
+    "main": {
+      "name": "projection-ordinary",
+      "query": "MATCH (n:IntConstant) RETURN CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT $l",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "projection-ordinary",
+      "query": "MATCH (n:IntConstant) RETURN CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT $l"
+    }
+  },
+  {
+    "main": {
+      "name": "first-evaluation-smaller",
+      "query": "MATCH (n:IntConstant) RETURN id(n) AS id LIMIT CASE WHEN id IS NULL THEN 1 ELSE 3 END",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 0
+        }
+      ]
+    },
+    "native": {
+      "columns": [
+        "id"
+      ],
+      "cross": false,
+      "empty": false,
+      "name": "first-evaluation-smaller",
+      "query": "MATCH (n:IntConstant) RETURN id(n) AS id LIMIT CASE WHEN id IS NULL THEN 1 ELSE 3 END",
+      "rows": [
+        {
+          "id": 0
+        },
+        {
+          "id": 1
+        },
+        {
+          "id": 2
+        }
+      ]
+    }
+  },
+  {
+    "main": {
+      "name": "first-evaluation-smaller",
+      "query": "MATCH (n:IntConstant) RETURN id(n) AS id LIMIT CASE WHEN id IS NULL THEN 1 ELSE 3 END",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 0,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    },
+    "native": {
+      "columns": [
+        "id"
+      ],
+      "cross": true,
+      "empty": false,
+      "name": "first-evaluation-smaller",
+      "query": "MATCH (n:IntConstant) RETURN id(n) AS id LIMIT CASE WHEN id IS NULL THEN 1 ELSE 3 END",
+      "rows": [
+        {
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          },
+          "id": 0
+        },
+        {
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          },
+          "id": 1
+        },
+        {
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          },
+          "id": 2
+        }
+      ]
+    }
+  },
+  {
+    "main": {
+      "name": "prefix-with-limit-error",
+      "query": "WITH substring('x','bad') AS x MATCH (n) RETURN n LIMIT 1/0",
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "Division by zero"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "prefix-with-limit-error",
+      "query": "WITH substring('x','bad') AS x MATCH (n) RETURN n LIMIT 1/0"
+    }
+  },
+  {
+    "main": {
+      "name": "prefix-with-limit-error",
+      "query": "WITH substring('x','bad') AS x MATCH (n) RETURN n LIMIT 1/0",
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "Division by zero"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "prefix-with-limit-error",
+      "query": "WITH substring('x','bad') AS x MATCH (n) RETURN n LIMIT 1/0"
+    }
+  },
+  {
+    "main": {
+      "name": "prefix-unwind-limit-error",
+      "query": "UNWIND [substring('x','bad')] AS x MATCH (n) RETURN n LIMIT 1/0",
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "Division by zero"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "prefix-unwind-limit-error",
+      "query": "UNWIND [substring('x','bad')] AS x MATCH (n) RETURN n LIMIT 1/0"
+    }
+  },
+  {
+    "main": {
+      "name": "prefix-unwind-limit-error",
+      "query": "UNWIND [substring('x','bad')] AS x MATCH (n) RETURN n LIMIT 1/0",
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "Division by zero"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "prefix-unwind-limit-error",
+      "query": "UNWIND [substring('x','bad')] AS x MATCH (n) RETURN n LIMIT 1/0"
+    }
+  },
+  {
+    "main": {
+      "name": "relationship-projection-tail",
+      "query": "MATCH (a {id:0})-[r]->(b) RETURN CASE WHEN id(b)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT $l",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "relationship-projection-tail",
+      "query": "MATCH (a {id:0})-[r]->(b) RETURN CASE WHEN id(b)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT $l"
+    }
+  },
+  {
+    "main": {
+      "name": "relationship-projection-tail",
+      "query": "MATCH (a {id:0})-[r]->(b) RETURN CASE WHEN id(b)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT $l",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "relationship-projection-tail",
+      "query": "MATCH (a {id:0})-[r]->(b) RETURN CASE WHEN id(b)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT $l"
+    }
+  },
+  {
+    "main": {
+      "name": "variable-zero-stops-before-edge",
+      "query": "MATCH (a {id:0})-[r*0..3 {type:substring('x','bad')}]->(b) RETURN id(b) AS b LIMIT $l",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "b"
+      ],
+      "rows": [
+        {
+          "b": 0
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "variable-zero-stops-before-edge",
+      "query": "MATCH (a {id:0})-[r*0..3 {type:substring('x','bad')}]->(b) RETURN id(b) AS b LIMIT $l"
+    }
+  },
+  {
+    "main": {
+      "name": "variable-zero-stops-before-edge",
+      "query": "MATCH (a {id:0})-[r*0..3 {type:substring('x','bad')}]->(b) RETURN id(b) AS b LIMIT $l",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "b"
+      ],
+      "rows": [
+        {
+          "b": 0,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "variable-zero-stops-before-edge",
+      "query": "MATCH (a {id:0})-[r*0..3 {type:substring('x','bad')}]->(b) RETURN id(b) AS b LIMIT $l"
+    }
+  }
+]

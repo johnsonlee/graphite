@@ -39,19 +39,9 @@ func TestCountConversionMainOracle(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer graph.Close()
-	// Main evaluates an eligible MATCH limit before the branch and uses its
-	// positive value to stop lazy matching. That independent mechanism is not
-	// approximated by throwing an early error here; all eight outputs are saved.
-	earlyMatchDifference := map[string]bool{
-		"mapped-early-limit-error": true, "mapped-early-limit-property-error": true,
-		"early-before-unwind": true, "early-before-with": true,
-	}
 	for index, spec := range cases {
 		for mode, cross := range []bool{false, true} {
 			t.Run(fmt.Sprintf("%s/cross=%v", spec.Name, cross), func(t *testing.T) {
-				if earlyMatchDifference[spec.Name] {
-					t.Skip("separate computeEarlyLimit/lazy MATCH mismatch preserved in conversion-differences.json")
-				}
 				selected := graph
 				if spec.Empty {
 					selected = &store.Store{}

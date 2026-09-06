@@ -1,0 +1,28 @@
+--- FAIL: TestEarlyMatchStopsBeforeCorruptTail (0.01s)
+    --- FAIL: TestEarlyMatchStopsBeforeCorruptTail/node-stop-before-tail/cross=false (0.00s)
+        early_match_corrupt_test.go:104: main=map[string]interface {}{"columns":[]interface {}{"id"}, "cross":false, "name":"node-stop-before-tail", "query":"MATCH (n:IntConstant) RETURN n.id AS id LIMIT $l", "rows":[]interface {}{map[string]interface {}{"id":0}}}
+            native={"cross":false,"error":"CypherException","message":"node 7: unknown node tag 127","name":"node-stop-before-tail","query":"MATCH (n:IntConstant) RETURN n.id AS id LIMIT $l"}
+    --- FAIL: TestEarlyMatchStopsBeforeCorruptTail/node-stop-before-tail/cross=true (0.00s)
+        early_match_corrupt_test.go:104: main=map[string]interface {}{"columns":[]interface {}{"id"}, "cross":true, "name":"node-stop-before-tail", "query":"MATCH (n:IntConstant) RETURN n.id AS id LIMIT $l", "rows":[]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{"a"}}, "id":0}}}
+            native={"cross":true,"error":"CypherException","message":"node 7: unknown node tag 127","name":"node-stop-before-tail","query":"MATCH (n:IntConstant) RETURN n.id AS id LIMIT $l"}
+    --- FAIL: TestEarlyMatchStopsBeforeCorruptTail/zero-hop-stop-before-tail/cross=false (0.00s)
+        early_match_corrupt_test.go:104: main=map[string]interface {}{"columns":[]interface {}{"id"}, "cross":false, "name":"zero-hop-stop-before-tail", "query":"MATCH (a {id:0})-[r*0..4]->(b) RETURN id(b) AS id LIMIT $l", "rows":[]interface {}{map[string]interface {}{"id":0}}}
+            native={"cross":false,"error":"CypherException","message":"node 7: unknown node tag 127","name":"zero-hop-stop-before-tail","query":"MATCH (a {id:0})-[r*0..4]-\u003e(b) RETURN id(b) AS id LIMIT $l"}
+    --- FAIL: TestEarlyMatchStopsBeforeCorruptTail/zero-hop-stop-before-tail/cross=true (0.00s)
+        early_match_corrupt_test.go:104: main=map[string]interface {}{"columns":[]interface {}{"id"}, "cross":true, "name":"zero-hop-stop-before-tail", "query":"MATCH (a {id:0})-[r*0..4]->(b) RETURN id(b) AS id LIMIT $l", "rows":[]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{"a"}}, "id":0}}}
+            native={"cross":true,"error":"CypherException","message":"node 7: unknown node tag 127","name":"zero-hop-stop-before-tail","query":"MATCH (a {id:0})-[r*0..4]-\u003e(b) RETURN id(b) AS id LIMIT $l"}
+    --- FAIL: TestEarlyMatchStopsBeforeCorruptTail/single-hop-stop-before-tail/cross=false (0.00s)
+        early_match_corrupt_test.go:104: main=map[string]interface {}{"columns":[]interface {}{"id"}, "cross":false, "name":"single-hop-stop-before-tail", "query":"MATCH (a {id:0})-[r]->(b) RETURN id(b) AS id LIMIT $l", "rows":[]interface {}{map[string]interface {}{"id":0}}}
+            native={"cross":false,"error":"CypherException","message":"node 7: unknown node tag 127","name":"single-hop-stop-before-tail","query":"MATCH (a {id:0})-[r]-\u003e(b) RETURN id(b) AS id LIMIT $l"}
+    --- FAIL: TestEarlyMatchStopsBeforeCorruptTail/single-hop-stop-before-tail/cross=true (0.00s)
+        early_match_corrupt_test.go:104: main=map[string]interface {}{"columns":[]interface {}{"id"}, "cross":true, "name":"single-hop-stop-before-tail", "query":"MATCH (a {id:0})-[r]->(b) RETURN id(b) AS id LIMIT $l", "rows":[]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]interface {}{"a"}}, "id":0}}}
+            native={"cross":true,"error":"CypherException","message":"node 7: unknown node tag 127","name":"single-hop-stop-before-tail","query":"MATCH (a {id:0})-[r]-\u003e(b) RETURN id(b) AS id LIMIT $l"}
+    --- FAIL: TestEarlyMatchStopsBeforeCorruptTail/projection-before-tail/cross=false (0.00s)
+        early_match_corrupt_test.go:104: main=map[string]interface {}{"cross":false, "error":"ClassCastException", "message":"class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')", "name":"projection-before-tail", "query":"MATCH (n:IntConstant) RETURN substring('x','bad') AS x LIMIT $l"}
+            native={"cross":false,"error":"CypherException","message":"node 7: unknown node tag 127","name":"projection-before-tail","query":"MATCH (n:IntConstant) RETURN substring('x','bad') AS x LIMIT $l"}
+    --- FAIL: TestEarlyMatchStopsBeforeCorruptTail/projection-before-tail/cross=true (0.00s)
+        early_match_corrupt_test.go:104: main=map[string]interface {}{"cross":true, "error":"ClassCastException", "message":"class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')", "name":"projection-before-tail", "query":"MATCH (n:IntConstant) RETURN substring('x','bad') AS x LIMIT $l"}
+            native={"cross":true,"error":"CypherException","message":"node 7: unknown node tag 127","name":"projection-before-tail","query":"MATCH (n:IntConstant) RETURN substring('x','bad') AS x LIMIT $l"}
+FAIL
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/query	0.298s
+FAIL

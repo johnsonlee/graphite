@@ -1,0 +1,237 @@
+{
+  "frozenAtUtc": "2026-09-06T21:51:52.414188+00:00",
+  "effectiveBase": "cced41856dd8b4ad5cd41ca4eb9dd59f463fadae",
+  "baseCountCommit": "55621d1c218279b21b92c2d32a834f25142ddd14",
+  "explicitPrerequisiteCherryPicks": {
+    "a960b949": "3f08ecf2",
+    "cced4185": "d9844d42"
+  },
+  "commit": "6fd5516c18ae9de84664e12444a71eae74036aa5",
+  "worktree": "/tmp/graphite-go-early-match-55621d1c",
+  "main": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "patchSha256": "ec4c3cff21697eda5bef5189f78d4db1d183612ec274889aea39268158cb3735",
+  "files": [
+    {
+      "path": "graphite-server/internal/query/count_test.go",
+      "sha256": "adaa793cdcc7504383bf9305e4ca92bf43f74142bd4f47933996c9ef18b7bc7d"
+    },
+    {
+      "path": "graphite-server/internal/query/early_match.go",
+      "sha256": "298c3629ddae98b9333db3dd0688ca4d53b99960f6d272282ee216cabcc3721c"
+    },
+    {
+      "path": "graphite-server/internal/query/early_match_corrupt_test.go",
+      "sha256": "ef9a67142c648827dc128d0f6c67c1a07928e9294a04f9e9e3344d48f0f1fff5"
+    },
+    {
+      "path": "graphite-server/internal/query/early_match_test.go",
+      "sha256": "42a0923a3fdcbcc01acedcb5220089d6b69273ee28147de8f18412a99d61549f"
+    },
+    {
+      "path": "graphite-server/internal/query/early_match_trace_test.go",
+      "sha256": "233396c00ce50b5ea0bcbfeb994682c43babde09f3bafda6fe76b7f7549abbed"
+    },
+    {
+      "path": "graphite-server/internal/query/engine.go",
+      "sha256": "008eb969b09f4bb84b718915b1b03c46d921dafb69fcc6bcd06ab2c031d55c71"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/early-match/CorruptionOracle.java",
+      "sha256": "5728abeddb58eee98567a9988a0e00f05215e69cb34e3ce9534fbd4146db91f4"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/early-match/EarlyMatchOracle.java",
+      "sha256": "1b13e2a31b39bc847ce773d4d652e3e1a23b424fb294c6694846e1f64419f9c5"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/early-match/FunctionTrace.java",
+      "sha256": "7b833ea2e71a1d7992be10dba4dda1da9055aaca301dd0522b428d9ad93775ab"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/early-match/FunctionTraceTarget.java",
+      "sha256": "6f0ae5072ce899341ba7e1408535b99d379b3292b3b76c7f8e28112200ff1f87"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/early-match/README.md",
+      "sha256": "f6f0221915a4115e101370c9c631ac2117f9de9cf1865a90308dfab787c2d879"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/early-match/after-differences-EAGER.json",
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/early-match/after-differences-MAPPED.json",
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/early-match/before-command.json",
+      "sha256": "64c26bcdf9826a73e96d9af5e65fbf3346b54e013174d8927d18774726b6b450"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/early-match/before-differences-EAGER.json",
+      "sha256": "6bababaf468ee8fff5761e90f2960a2430fffe70481b65d154f8cf31efc8d1c9"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/early-match/before-differences-MAPPED.json",
+      "sha256": "6bababaf468ee8fff5761e90f2960a2430fffe70481b65d154f8cf31efc8d1c9"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/early-match/cases.json",
+      "sha256": "4d2c5b3784d8a84caa74d8b396fb50147fd757fca9986d2ddfc1932d15c34aa1"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/early-match/corrupt-before-test.log",
+      "sha256": "cda402cc37fbb3151668478adfd77599edd59f48ecf07523f38fc36221165bc0"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/early-match/corrupt-cases.json",
+      "sha256": "4dd641aa3152a3db2301068c03d0c952ce1db2c2a2983f7de6e7a7d3ba2a24dd"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/early-match/corrupt-command.json",
+      "sha256": "0c4e62462d19dc22efd8e20326ac9833d38b64bf2b804572092b0ca5a2d2f8d4"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/early-match/corrupt-differences.json",
+      "sha256": "b38570ae9d93fbf296d2866fe4409a29c58966bf6f6f72a2304d018228ae8d1b"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/early-match/corrupt-main.json",
+      "sha256": "5f3f01e4efc44cd7e3ddadc4ab7e14b864906a4557841a1e054d523e581d8057"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/early-match/corrupt-main.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/early-match/corrupt-native-before.json",
+      "sha256": "c8461ce0f9454b85bddfc354ebbe4e2cc44eadba1097b18e9255251b87db8ee2"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/early-match/corrupt-native.json",
+      "sha256": "8752efe9bc4b6911c0ca255eed724f3eecb426fb92b06f18b00db44008031c72"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/early-match/main-EAGER-command.json",
+      "sha256": "bed9aa8586ea26c0a8d63046bf9cd563d2b7acf3da50f99387663d793049ec12"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/early-match/main-EAGER.json",
+      "sha256": "48e09fced8d4e036105e1b3c0c9f0636720fb813917adae15736be475fc1e11a"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/early-match/main-EAGER.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/early-match/main-MAPPED-command.json",
+      "sha256": "bbf1738e825114a1047ba9702600b62b288a5c6f0451f938885897860a6d9e5d"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/early-match/main-MAPPED.json",
+      "sha256": "48e09fced8d4e036105e1b3c0c9f0636720fb813917adae15736be475fc1e11a"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/early-match/main-MAPPED.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/early-match/native-after-EAGER.json",
+      "sha256": "d35be41ea3b7fcb70b0465d31923619c96eadea54dbce4561bc9c1ebab7bb92d"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/early-match/native-after-MAPPED.json",
+      "sha256": "d35be41ea3b7fcb70b0465d31923619c96eadea54dbce4561bc9c1ebab7bb92d"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/early-match/native-before-EAGER.json",
+      "sha256": "4fcc4343b727ace49d0da95c8729c65d6934d7abe44e1119b0e36e4215937a32"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/early-match/native-before-MAPPED.json",
+      "sha256": "4fcc4343b727ace49d0da95c8729c65d6934d7abe44e1119b0e36e4215937a32"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/early-match/native_capture_test.go",
+      "sha256": "2f738f121956e8dea46887298e565e1de81239cb13df2da56511248e5ddea93e"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/early-match/previous-count-after.json",
+      "sha256": "150f26518bcc9879c363ccffa1d0955c81b5b2d88d755b3696777cd217b30f71"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/early-match/trace-EAGER-rand-false.json",
+      "sha256": "830ba38212aa6e15de32b139c137075876e671d76cc9cd0a868b7dffa9bab7a2"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/early-match/trace-EAGER-rand-true.json",
+      "sha256": "3ea6de93e99b22efb9f27cb70e7dfe0dbfe5611d1b19c2bb6d4eb06926ca6e99"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/early-match/trace-EAGER-timestamp-false.json",
+      "sha256": "97dfba4e77e83f1f789dd2a4259629cc64f4daac1e83c1013e9a5edbb5a9bde9"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/early-match/trace-EAGER-timestamp-true.json",
+      "sha256": "2080518aaf9e2ff7f122a7c19e3ec9c4ee592125e09a32a9038460404a39130a"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/early-match/trace-MAPPED-rand-false.json",
+      "sha256": "f219e48b3dced0611fde16ad3a3b84add5d4dd08cc7b3cc6b455a32fb3681515"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/early-match/trace-MAPPED-rand-true.json",
+      "sha256": "b011283c2c831c01c3e03588ffeebcd8f9dc4d2248c71d014b76ad4916e4fba8"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/early-match/trace-MAPPED-timestamp-false.json",
+      "sha256": "9b462d1758f3921f918942dab333148cd2a3b40e788f048720200f176395e51b"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/early-match/trace-MAPPED-timestamp-true.json",
+      "sha256": "ed565f842f604007ab0ff946f7ef8ecb9c3a475df91fba1ad82336b29b8fd042"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/early-match/trace-commands.json",
+      "sha256": "8bc257a7547cd610c566a3940f315ac228db792c46dc11a167a5fdfd39db2d33"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/early-match/verification.json",
+      "sha256": "4e40dc8b05ff5ee73495933191e5b670c7a9c736ac52d48e3ac5e4d85f82e3e6"
+    },
+    {
+      "path": "graphite-server/internal/query/traversal.go",
+      "sha256": "ad503bbacaa1086b41360a40c62a3e9c77ae7d483a1d3a15074563d1cd707480"
+    }
+  ],
+  "checks": [
+    {
+      "command": "go test -race ./...",
+      "exitCode": 0,
+      "log": "race.log",
+      "sha256": "08d7f828047a0f0a10a45137374cd65df0c5137abd897c48d6f10647b20722fc"
+    },
+    {
+      "command": "go vet ./...",
+      "exitCode": 0,
+      "log": "vet.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "primaryTotal": 240,
+  "primaryBeforeEqual": 200,
+  "primaryAfterEqual": 240,
+  "previousCountEqual": 320,
+  "previousCountTotal": 320,
+  "previousLimitZeroEqual": 180,
+  "previousLimitZeroTotal": 180,
+  "corruptTotal": 12,
+  "corruptBeforeEqual": 0,
+  "corruptAfterEqual": 8,
+  "corruptKnownDecoderDifferences": 4,
+  "mainScalarDispatchTraces": 8,
+  "dispatchesPerTrace": 2,
+  "nativeScalarStageTests": 8,
+  "rootProductionEdited": false,
+  "performanceRun": false
+}

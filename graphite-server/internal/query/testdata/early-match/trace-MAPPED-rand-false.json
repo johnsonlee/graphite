@@ -1,0 +1,49 @@
+{
+  "mode": "MAPPED",
+  "function": "rand",
+  "cross": false,
+  "calls": [
+    {
+      "function": "rand",
+      "stack": [
+        "io.johnsonlee.graphite.cypher.CypherFunctions.dispatch",
+        "io.johnsonlee.graphite.cypher.CypherFunctions.call",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluateBinaryOp",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluateBinaryOp",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.evaluateToInt",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.computeEarlyLimit",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.executeGeneralClauses",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher",
+        "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses",
+        "io.johnsonlee.graphite.cypher.CypherExecutor.execute",
+        "FunctionTraceTarget.main"
+      ]
+    },
+    {
+      "function": "rand",
+      "stack": [
+        "io.johnsonlee.graphite.cypher.CypherFunctions.dispatch",
+        "io.johnsonlee.graphite.cypher.CypherFunctions.call",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluateBinaryOp",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluateBinaryOp",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.evaluateToInt",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.executeGeneralClauses",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher",
+        "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses",
+        "io.johnsonlee.graphite.cypher.CypherExecutor.execute",
+        "FunctionTraceTarget.main"
+      ]
+    }
+  ],
+  "exitCode": 0,
+  "stdout": "{\"columns\":[\"id\"],\"query\":\"MATCH (n:IntConstant) RETURN n.id AS id LIMIT rand()*0+$l\",\"rows\":[{\"id\":0}]}\n",
+  "stderr": ""
+}

@@ -1,0 +1,51 @@
+{
+  "mode": "MAPPED",
+  "function": "timestamp",
+  "cross": true,
+  "calls": [
+    {
+      "stack": [
+        "io.johnsonlee.graphite.cypher.CypherFunctions.dispatch",
+        "io.johnsonlee.graphite.cypher.CypherFunctions.call",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluateBinaryOp",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluateBinaryOp",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.evaluateToInt",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.computeEarlyLimit",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.executeGeneralClauses",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher",
+        "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses",
+        "io.johnsonlee.graphite.cypher.CypherExecutor.execute",
+        "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.execute",
+        "FunctionTraceTarget.main"
+      ],
+      "function": "timestamp"
+    },
+    {
+      "stack": [
+        "io.johnsonlee.graphite.cypher.CypherFunctions.dispatch",
+        "io.johnsonlee.graphite.cypher.CypherFunctions.call",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluateBinaryOp",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluateBinaryOp",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.evaluateToInt",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.executeGeneralClauses",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher",
+        "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses",
+        "io.johnsonlee.graphite.cypher.CypherExecutor.execute",
+        "io.johnsonlee.graphite.cypher.CrossGraphCypherExecutor.execute",
+        "FunctionTraceTarget.main"
+      ],
+      "function": "timestamp"
+    }
+  ],
+  "exitCode": 0,
+  "stdout": "{\"columns\":[\"id\"],\"query\":\"MATCH (n:IntConstant) RETURN n.id AS id LIMIT timestamp()*0+$l\",\"rows\":[{\"id\":0,\"$metadata\":{\"graphIds\":[\"a\"]}}]}\n",
+  "stderr": ""
+}

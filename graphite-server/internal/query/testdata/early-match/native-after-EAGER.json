@@ -1,0 +1,4035 @@
+[
+  {
+    "columns": [
+      "x"
+    ],
+    "cross": false,
+    "empty": false,
+    "name": "scan-literal",
+    "query": "MATCH (n:IntConstant) RETURN CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT 1",
+    "rows": [
+      {
+        "x": 0
+      }
+    ]
+  },
+  {
+    "columns": [
+      "x"
+    ],
+    "cross": true,
+    "empty": false,
+    "name": "scan-literal",
+    "query": "MATCH (n:IntConstant) RETURN CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT 1",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "x": 0
+      }
+    ]
+  },
+  {
+    "columns": [
+      "x"
+    ],
+    "cross": false,
+    "empty": false,
+    "name": "scan-parameter",
+    "query": "MATCH (n:IntConstant) RETURN CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT $l",
+    "rows": [
+      {
+        "x": 0
+      }
+    ]
+  },
+  {
+    "columns": [
+      "x"
+    ],
+    "cross": true,
+    "empty": false,
+    "name": "scan-parameter",
+    "query": "MATCH (n:IntConstant) RETURN CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT $l",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "x": 0
+      }
+    ]
+  },
+  {
+    "columns": [
+      "x"
+    ],
+    "cross": false,
+    "empty": false,
+    "name": "scan-expression",
+    "query": "MATCH (n:IntConstant) RETURN CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT 1+0",
+    "rows": [
+      {
+        "x": 0
+      }
+    ]
+  },
+  {
+    "columns": [
+      "x"
+    ],
+    "cross": true,
+    "empty": false,
+    "name": "scan-expression",
+    "query": "MATCH (n:IntConstant) RETURN CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT 1+0",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "x": 0
+      }
+    ]
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+    "name": "scan-zero",
+    "query": "MATCH (n:IntConstant) RETURN CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT 0"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+    "name": "scan-zero",
+    "query": "MATCH (n:IntConstant) RETURN CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT 0"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+    "name": "scan-negative",
+    "query": "MATCH (n:IntConstant) RETURN CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT -1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+    "name": "scan-negative",
+    "query": "MATCH (n:IntConstant) RETURN CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT -1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero",
+    "name": "scan-limit-error",
+    "query": "MATCH (n:IntConstant) RETURN CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT 1/0"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero",
+    "name": "scan-limit-error",
+    "query": "MATCH (n:IntConstant) RETURN CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT 1/0"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+    "name": "scan-null",
+    "query": "MATCH (n:IntConstant) RETURN CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT null"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+    "name": "scan-null",
+    "query": "MATCH (n:IntConstant) RETURN CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT null"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+    "name": "projection-distinct",
+    "query": "MATCH (n:IntConstant) RETURN DISTINCT CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT $l"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+    "name": "projection-distinct",
+    "query": "MATCH (n:IntConstant) RETURN DISTINCT CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT $l"
+  },
+  {
+    "columns": [
+      "x"
+    ],
+    "cross": false,
+    "empty": false,
+    "name": "projection-ordinary",
+    "query": "MATCH (n:IntConstant) RETURN CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT $l",
+    "rows": [
+      {
+        "x": 0
+      }
+    ]
+  },
+  {
+    "columns": [
+      "x"
+    ],
+    "cross": true,
+    "empty": false,
+    "name": "projection-ordinary",
+    "query": "MATCH (n:IntConstant) RETURN CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT $l",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "x": 0
+      }
+    ]
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+    "name": "projection-with",
+    "query": "MATCH (n:IntConstant) WITH CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT $l RETURN x"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+    "name": "projection-with",
+    "query": "MATCH (n:IntConstant) WITH CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT $l RETURN x"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+    "name": "order-full-evaluation",
+    "query": "MATCH (n:IntConstant) RETURN CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x ORDER BY x LIMIT $l"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+    "name": "order-full-evaluation",
+    "query": "MATCH (n:IntConstant) RETURN CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x ORDER BY x LIMIT $l"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+    "name": "skip-full-evaluation",
+    "query": "MATCH (n:IntConstant) RETURN CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x SKIP 0 LIMIT $l"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+    "name": "skip-full-evaluation",
+    "query": "MATCH (n:IntConstant) RETURN CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x SKIP 0 LIMIT $l"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+    "name": "where-full-evaluation",
+    "query": "MATCH (n:IntConstant) WHERE true RETURN CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT $l"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+    "name": "where-full-evaluation",
+    "query": "MATCH (n:IntConstant) WHERE true RETURN CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT $l"
+  },
+  {
+    "columns": [
+      "id"
+    ],
+    "cross": false,
+    "empty": false,
+    "name": "first-evaluation-smaller",
+    "query": "MATCH (n:IntConstant) RETURN id(n) AS id LIMIT CASE WHEN id IS NULL THEN 1 ELSE 3 END",
+    "rows": [
+      {
+        "id": 0
+      }
+    ]
+  },
+  {
+    "columns": [
+      "id"
+    ],
+    "cross": true,
+    "empty": false,
+    "name": "first-evaluation-smaller",
+    "query": "MATCH (n:IntConstant) RETURN id(n) AS id LIMIT CASE WHEN id IS NULL THEN 1 ELSE 3 END",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "id": 0
+      }
+    ]
+  },
+  {
+    "columns": [
+      "id"
+    ],
+    "cross": false,
+    "empty": false,
+    "name": "second-evaluation-smaller",
+    "query": "MATCH (n:IntConstant) RETURN id(n) AS id LIMIT CASE WHEN id IS NULL THEN 3 ELSE 1 END",
+    "rows": [
+      {
+        "id": 0
+      }
+    ]
+  },
+  {
+    "columns": [
+      "id"
+    ],
+    "cross": true,
+    "empty": false,
+    "name": "second-evaluation-smaller",
+    "query": "MATCH (n:IntConstant) RETURN id(n) AS id LIMIT CASE WHEN id IS NULL THEN 3 ELSE 1 END",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "id": 0
+      }
+    ]
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+    "name": "first-budget-projection-error",
+    "query": "MATCH (n:IntConstant) RETURN CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT CASE WHEN x IS NULL THEN 3 ELSE 1 END"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+    "name": "first-budget-projection-error",
+    "query": "MATCH (n:IntConstant) RETURN CASE WHEN id(n)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT CASE WHEN x IS NULL THEN 3 ELSE 1 END"
+  },
+  {
+    "columns": [
+      "id"
+    ],
+    "cross": false,
+    "empty": false,
+    "name": "positive-global-cross",
+    "query": "MATCH (n:IntConstant) RETURN id(n) AS id LIMIT $l",
+    "rows": [
+      {
+        "id": 0
+      },
+      {
+        "id": 1
+      },
+      {
+        "id": 2
+      },
+      {
+        "id": 3
+      },
+      {
+        "id": 4
+      },
+      {
+        "id": 5
+      },
+      {
+        "id": 6
+      },
+      {
+        "id": 7
+      }
+    ]
+  },
+  {
+    "columns": [
+      "id"
+    ],
+    "cross": true,
+    "empty": false,
+    "name": "positive-global-cross",
+    "query": "MATCH (n:IntConstant) RETURN id(n) AS id LIMIT $l",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "id": 0
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "id": 1
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "id": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "id": 3
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "id": 4
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "id": 5
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "id": 6
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "id": 7
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        },
+        "id": 0
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        },
+        "id": 1
+      }
+    ]
+  },
+  {
+    "columns": [
+      "x",
+      "id"
+    ],
+    "cross": false,
+    "empty": false,
+    "name": "prefix-unwind-global",
+    "query": "UNWIND [1,2] AS x MATCH (n:IntConstant) RETURN x,id(n) AS id LIMIT $l",
+    "rows": [
+      {
+        "id": 0,
+        "x": 1
+      },
+      {
+        "id": 1,
+        "x": 1
+      },
+      {
+        "id": 2,
+        "x": 1
+      }
+    ]
+  },
+  {
+    "columns": [
+      "x",
+      "id"
+    ],
+    "cross": true,
+    "empty": false,
+    "name": "prefix-unwind-global",
+    "query": "UNWIND [1,2] AS x MATCH (n:IntConstant) RETURN x,id(n) AS id LIMIT $l",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "id": 0,
+        "x": 1
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "id": 1,
+        "x": 1
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "id": 2,
+        "x": 1
+      }
+    ]
+  },
+  {
+    "columns": [
+      "id"
+    ],
+    "cross": false,
+    "empty": false,
+    "name": "bound-existing",
+    "query": "MATCH (n:IntConstant {id:0}) WITH n MATCH (n) RETURN id(n) AS id LIMIT $l",
+    "rows": [
+      {
+        "id": 0
+      }
+    ]
+  },
+  {
+    "columns": [
+      "id"
+    ],
+    "cross": true,
+    "empty": false,
+    "name": "bound-existing",
+    "query": "MATCH (n:IntConstant {id:0}) WITH n MATCH (n) RETURN id(n) AS id LIMIT $l",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "id": 0
+      }
+    ]
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero",
+    "name": "prefix-with-limit-error",
+    "query": "WITH substring('x','bad') AS x MATCH (n) RETURN n LIMIT 1/0"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero",
+    "name": "prefix-with-limit-error",
+    "query": "WITH substring('x','bad') AS x MATCH (n) RETURN n LIMIT 1/0"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero",
+    "name": "prefix-unwind-limit-error",
+    "query": "UNWIND [substring('x','bad')] AS x MATCH (n) RETURN n LIMIT 1/0"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero",
+    "name": "prefix-unwind-limit-error",
+    "query": "UNWIND [substring('x','bad')] AS x MATCH (n) RETURN n LIMIT 1/0"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+    "name": "inline-before-projection",
+    "query": "MATCH (n:IntConstant {value:substring('x','bad')}) RETURN 1/0 AS x LIMIT $l"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+    "name": "inline-before-projection",
+    "query": "MATCH (n:IntConstant {value:substring('x','bad')}) RETURN 1/0 AS x LIMIT $l"
+  },
+  {
+    "cross": false,
+    "empty": true,
+    "error": "CypherException",
+    "message": "Division by zero",
+    "name": "empty-count-still-evaluated",
+    "query": "MATCH (n) RETURN substring('x','bad') AS x LIMIT 1/0"
+  },
+  {
+    "cross": true,
+    "empty": true,
+    "error": "CypherException",
+    "message": "Division by zero",
+    "name": "empty-count-still-evaluated",
+    "query": "MATCH (n) RETURN substring('x','bad') AS x LIMIT 1/0"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+    "name": "aggregate-full-input",
+    "query": "MATCH (n:IntConstant) RETURN count(substring('x','bad')) AS x LIMIT $l"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+    "name": "aggregate-full-input",
+    "query": "MATCH (n:IntConstant) RETURN count(substring('x','bad')) AS x LIMIT $l"
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": false,
+    "empty": false,
+    "name": "single-out-1",
+    "query": "MATCH p=(a {id:0})-[r]-\u003e(b) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "a": 0,
+        "b": 0,
+        "length": 1
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": true,
+    "empty": false,
+    "name": "single-out-1",
+    "query": "MATCH p=(a {id:0})-[r]-\u003e(b) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 1
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": false,
+    "empty": false,
+    "name": "single-out-3",
+    "query": "MATCH p=(a {id:0})-[r]-\u003e(b) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "a": 0,
+        "b": 0,
+        "length": 1
+      },
+      {
+        "a": 0,
+        "b": 1,
+        "length": 1
+      },
+      {
+        "a": 0,
+        "b": 2,
+        "length": 1
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": true,
+    "empty": false,
+    "name": "single-out-3",
+    "query": "MATCH p=(a {id:0})-[r]-\u003e(b) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 1
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 1,
+        "length": 1
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 2,
+        "length": 1
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": false,
+    "empty": false,
+    "name": "single-out-20",
+    "query": "MATCH p=(a {id:0})-[r]-\u003e(b) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "a": 0,
+        "b": 0,
+        "length": 1
+      },
+      {
+        "a": 0,
+        "b": 1,
+        "length": 1
+      },
+      {
+        "a": 0,
+        "b": 2,
+        "length": 1
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": true,
+    "empty": false,
+    "name": "single-out-20",
+    "query": "MATCH p=(a {id:0})-[r]-\u003e(b) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 1
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 1,
+        "length": 1
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 2,
+        "length": 1
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 1
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        },
+        "a": 0,
+        "b": 1,
+        "length": 1
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        },
+        "a": 0,
+        "b": 2,
+        "length": 1
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": false,
+    "empty": false,
+    "name": "single-in-1",
+    "query": "MATCH p=(a {id:0})\u003c-[r]-(b) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "a": 0,
+        "b": 0,
+        "length": 1
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": true,
+    "empty": false,
+    "name": "single-in-1",
+    "query": "MATCH p=(a {id:0})\u003c-[r]-(b) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 1
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": false,
+    "empty": false,
+    "name": "single-in-3",
+    "query": "MATCH p=(a {id:0})\u003c-[r]-(b) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "a": 0,
+        "b": 0,
+        "length": 1
+      },
+      {
+        "a": 0,
+        "b": 2,
+        "length": 1
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": true,
+    "empty": false,
+    "name": "single-in-3",
+    "query": "MATCH p=(a {id:0})\u003c-[r]-(b) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 1
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 2,
+        "length": 1
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 1
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": false,
+    "empty": false,
+    "name": "single-in-20",
+    "query": "MATCH p=(a {id:0})\u003c-[r]-(b) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "a": 0,
+        "b": 0,
+        "length": 1
+      },
+      {
+        "a": 0,
+        "b": 2,
+        "length": 1
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": true,
+    "empty": false,
+    "name": "single-in-20",
+    "query": "MATCH p=(a {id:0})\u003c-[r]-(b) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 1
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 2,
+        "length": 1
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 1
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        },
+        "a": 0,
+        "b": 2,
+        "length": 1
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": false,
+    "empty": false,
+    "name": "single-both-1",
+    "query": "MATCH p=(a {id:0})-[r]-(b) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "a": 0,
+        "b": 0,
+        "length": 1
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": true,
+    "empty": false,
+    "name": "single-both-1",
+    "query": "MATCH p=(a {id:0})-[r]-(b) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 1
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": false,
+    "empty": false,
+    "name": "single-both-3",
+    "query": "MATCH p=(a {id:0})-[r]-(b) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "a": 0,
+        "b": 0,
+        "length": 1
+      },
+      {
+        "a": 0,
+        "b": 1,
+        "length": 1
+      },
+      {
+        "a": 0,
+        "b": 2,
+        "length": 1
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": true,
+    "empty": false,
+    "name": "single-both-3",
+    "query": "MATCH p=(a {id:0})-[r]-(b) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 1
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 1,
+        "length": 1
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 2,
+        "length": 1
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": false,
+    "empty": false,
+    "name": "single-both-20",
+    "query": "MATCH p=(a {id:0})-[r]-(b) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "a": 0,
+        "b": 0,
+        "length": 1
+      },
+      {
+        "a": 0,
+        "b": 1,
+        "length": 1
+      },
+      {
+        "a": 0,
+        "b": 2,
+        "length": 1
+      },
+      {
+        "a": 0,
+        "b": 0,
+        "length": 1
+      },
+      {
+        "a": 0,
+        "b": 2,
+        "length": 1
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": true,
+    "empty": false,
+    "name": "single-both-20",
+    "query": "MATCH p=(a {id:0})-[r]-(b) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 1
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 1,
+        "length": 1
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 2,
+        "length": 1
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 1
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 2,
+        "length": 1
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 1
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        },
+        "a": 0,
+        "b": 1,
+        "length": 1
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        },
+        "a": 0,
+        "b": 2,
+        "length": 1
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 1
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        },
+        "a": 0,
+        "b": 2,
+        "length": 1
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": false,
+    "empty": false,
+    "name": "variable-zero-1",
+    "query": "MATCH p=(a {id:0})-[r*0..3]-\u003e(b) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "a": 0,
+        "b": 0,
+        "length": 0
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": true,
+    "empty": false,
+    "name": "variable-zero-1",
+    "query": "MATCH p=(a {id:0})-[r*0..3]-\u003e(b) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 0
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": false,
+    "empty": false,
+    "name": "variable-zero-3",
+    "query": "MATCH p=(a {id:0})-[r*0..3]-\u003e(b) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "a": 0,
+        "b": 0,
+        "length": 0
+      },
+      {
+        "a": 0,
+        "b": 0,
+        "length": 1
+      },
+      {
+        "a": 0,
+        "b": 1,
+        "length": 2
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": true,
+    "empty": false,
+    "name": "variable-zero-3",
+    "query": "MATCH p=(a {id:0})-[r*0..3]-\u003e(b) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 0
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 1
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 1,
+        "length": 2
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": false,
+    "empty": false,
+    "name": "variable-zero-20",
+    "query": "MATCH p=(a {id:0})-[r*0..3]-\u003e(b) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "a": 0,
+        "b": 0,
+        "length": 0
+      },
+      {
+        "a": 0,
+        "b": 0,
+        "length": 1
+      },
+      {
+        "a": 0,
+        "b": 1,
+        "length": 2
+      },
+      {
+        "a": 0,
+        "b": 2,
+        "length": 3
+      },
+      {
+        "a": 0,
+        "b": 3,
+        "length": 3
+      },
+      {
+        "a": 0,
+        "b": 2,
+        "length": 2
+      },
+      {
+        "a": 0,
+        "b": 0,
+        "length": 3
+      },
+      {
+        "a": 0,
+        "b": 3,
+        "length": 3
+      },
+      {
+        "a": 0,
+        "b": 1,
+        "length": 1
+      },
+      {
+        "a": 0,
+        "b": 2,
+        "length": 2
+      },
+      {
+        "a": 0,
+        "b": 0,
+        "length": 3
+      },
+      {
+        "a": 0,
+        "b": 3,
+        "length": 3
+      },
+      {
+        "a": 0,
+        "b": 3,
+        "length": 2
+      },
+      {
+        "a": 0,
+        "b": 4,
+        "length": 3
+      },
+      {
+        "a": 0,
+        "b": 5,
+        "length": 3
+      },
+      {
+        "a": 0,
+        "b": 6,
+        "length": 3
+      },
+      {
+        "a": 0,
+        "b": 7,
+        "length": 3
+      },
+      {
+        "a": 0,
+        "b": 2,
+        "length": 1
+      },
+      {
+        "a": 0,
+        "b": 0,
+        "length": 2
+      },
+      {
+        "a": 0,
+        "b": 0,
+        "length": 3
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": true,
+    "empty": false,
+    "name": "variable-zero-20",
+    "query": "MATCH p=(a {id:0})-[r*0..3]-\u003e(b) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 0
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 1
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 1,
+        "length": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 2,
+        "length": 3
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 3,
+        "length": 3
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 2,
+        "length": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 3
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 3,
+        "length": 3
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 1,
+        "length": 1
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 2,
+        "length": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 3
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 3,
+        "length": 3
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 3,
+        "length": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 4,
+        "length": 3
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 5,
+        "length": 3
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 6,
+        "length": 3
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 7,
+        "length": 3
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 2,
+        "length": 1
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 3
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": false,
+    "empty": false,
+    "name": "variable-positive-1",
+    "query": "MATCH p=(a {id:0})-[r*1..3]-\u003e(b) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "a": 0,
+        "b": 0,
+        "length": 1
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": true,
+    "empty": false,
+    "name": "variable-positive-1",
+    "query": "MATCH p=(a {id:0})-[r*1..3]-\u003e(b) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 1
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": false,
+    "empty": false,
+    "name": "variable-positive-3",
+    "query": "MATCH p=(a {id:0})-[r*1..3]-\u003e(b) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "a": 0,
+        "b": 0,
+        "length": 1
+      },
+      {
+        "a": 0,
+        "b": 1,
+        "length": 2
+      },
+      {
+        "a": 0,
+        "b": 2,
+        "length": 3
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": true,
+    "empty": false,
+    "name": "variable-positive-3",
+    "query": "MATCH p=(a {id:0})-[r*1..3]-\u003e(b) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 1
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 1,
+        "length": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 2,
+        "length": 3
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": false,
+    "empty": false,
+    "name": "variable-positive-20",
+    "query": "MATCH p=(a {id:0})-[r*1..3]-\u003e(b) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "a": 0,
+        "b": 0,
+        "length": 1
+      },
+      {
+        "a": 0,
+        "b": 1,
+        "length": 2
+      },
+      {
+        "a": 0,
+        "b": 2,
+        "length": 3
+      },
+      {
+        "a": 0,
+        "b": 3,
+        "length": 3
+      },
+      {
+        "a": 0,
+        "b": 2,
+        "length": 2
+      },
+      {
+        "a": 0,
+        "b": 0,
+        "length": 3
+      },
+      {
+        "a": 0,
+        "b": 3,
+        "length": 3
+      },
+      {
+        "a": 0,
+        "b": 1,
+        "length": 1
+      },
+      {
+        "a": 0,
+        "b": 2,
+        "length": 2
+      },
+      {
+        "a": 0,
+        "b": 0,
+        "length": 3
+      },
+      {
+        "a": 0,
+        "b": 3,
+        "length": 3
+      },
+      {
+        "a": 0,
+        "b": 3,
+        "length": 2
+      },
+      {
+        "a": 0,
+        "b": 4,
+        "length": 3
+      },
+      {
+        "a": 0,
+        "b": 5,
+        "length": 3
+      },
+      {
+        "a": 0,
+        "b": 6,
+        "length": 3
+      },
+      {
+        "a": 0,
+        "b": 7,
+        "length": 3
+      },
+      {
+        "a": 0,
+        "b": 2,
+        "length": 1
+      },
+      {
+        "a": 0,
+        "b": 0,
+        "length": 2
+      },
+      {
+        "a": 0,
+        "b": 0,
+        "length": 3
+      },
+      {
+        "a": 0,
+        "b": 1,
+        "length": 3
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": true,
+    "empty": false,
+    "name": "variable-positive-20",
+    "query": "MATCH p=(a {id:0})-[r*1..3]-\u003e(b) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 1
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 1,
+        "length": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 2,
+        "length": 3
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 3,
+        "length": 3
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 2,
+        "length": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 3
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 3,
+        "length": 3
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 1,
+        "length": 1
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 2,
+        "length": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 3
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 3,
+        "length": 3
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 3,
+        "length": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 4,
+        "length": 3
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 5,
+        "length": 3
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 6,
+        "length": 3
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 7,
+        "length": 3
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 2,
+        "length": 1
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 3
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 1,
+        "length": 3
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": false,
+    "empty": false,
+    "name": "variable-unbounded-1",
+    "query": "MATCH p=(a {id:0})-[r*]-\u003e(b) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "a": 0,
+        "b": 0,
+        "length": 1
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": true,
+    "empty": false,
+    "name": "variable-unbounded-1",
+    "query": "MATCH p=(a {id:0})-[r*]-\u003e(b) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 1
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": false,
+    "empty": false,
+    "name": "variable-unbounded-3",
+    "query": "MATCH p=(a {id:0})-[r*]-\u003e(b) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "a": 0,
+        "b": 0,
+        "length": 1
+      },
+      {
+        "a": 0,
+        "b": 1,
+        "length": 2
+      },
+      {
+        "a": 0,
+        "b": 2,
+        "length": 3
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": true,
+    "empty": false,
+    "name": "variable-unbounded-3",
+    "query": "MATCH p=(a {id:0})-[r*]-\u003e(b) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 1
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 1,
+        "length": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 2,
+        "length": 3
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": false,
+    "empty": false,
+    "name": "variable-unbounded-20",
+    "query": "MATCH p=(a {id:0})-[r*]-\u003e(b) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "a": 0,
+        "b": 0,
+        "length": 1
+      },
+      {
+        "a": 0,
+        "b": 1,
+        "length": 2
+      },
+      {
+        "a": 0,
+        "b": 2,
+        "length": 3
+      },
+      {
+        "a": 0,
+        "b": 0,
+        "length": 4
+      },
+      {
+        "a": 0,
+        "b": 2,
+        "length": 5
+      },
+      {
+        "a": 0,
+        "b": 3,
+        "length": 6
+      },
+      {
+        "a": 0,
+        "b": 4,
+        "length": 7
+      },
+      {
+        "a": 0,
+        "b": 5,
+        "length": 8
+      },
+      {
+        "a": 0,
+        "b": 3,
+        "length": 9
+      },
+      {
+        "a": 0,
+        "b": 5,
+        "length": 10
+      },
+      {
+        "a": 0,
+        "b": 6,
+        "length": 10
+      },
+      {
+        "a": 0,
+        "b": 7,
+        "length": 11
+      },
+      {
+        "a": 0,
+        "b": 7,
+        "length": 12
+      },
+      {
+        "a": 0,
+        "b": 7,
+        "length": 10
+      },
+      {
+        "a": 0,
+        "b": 7,
+        "length": 11
+      },
+      {
+        "a": 0,
+        "b": 5,
+        "length": 7
+      },
+      {
+        "a": 0,
+        "b": 3,
+        "length": 8
+      },
+      {
+        "a": 0,
+        "b": 4,
+        "length": 9
+      },
+      {
+        "a": 0,
+        "b": 5,
+        "length": 10
+      },
+      {
+        "a": 0,
+        "b": 6,
+        "length": 9
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": true,
+    "empty": false,
+    "name": "variable-unbounded-20",
+    "query": "MATCH p=(a {id:0})-[r*]-\u003e(b) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 1
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 1,
+        "length": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 2,
+        "length": 3
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 4
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 2,
+        "length": 5
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 3,
+        "length": 6
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 4,
+        "length": 7
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 5,
+        "length": 8
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 3,
+        "length": 9
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 5,
+        "length": 10
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 6,
+        "length": 10
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 7,
+        "length": 11
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 7,
+        "length": 12
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 7,
+        "length": 10
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 7,
+        "length": 11
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 5,
+        "length": 7
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 3,
+        "length": 8
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 4,
+        "length": 9
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 5,
+        "length": 10
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 6,
+        "length": 9
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": false,
+    "empty": false,
+    "name": "variable-both-1",
+    "query": "MATCH p=(a {id:0})-[r*0..3]-(b) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "a": 0,
+        "b": 0,
+        "length": 0
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": true,
+    "empty": false,
+    "name": "variable-both-1",
+    "query": "MATCH p=(a {id:0})-[r*0..3]-(b) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 0
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": false,
+    "empty": false,
+    "name": "variable-both-3",
+    "query": "MATCH p=(a {id:0})-[r*0..3]-(b) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "a": 0,
+        "b": 0,
+        "length": 0
+      },
+      {
+        "a": 0,
+        "b": 0,
+        "length": 1
+      },
+      {
+        "a": 0,
+        "b": 1,
+        "length": 2
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": true,
+    "empty": false,
+    "name": "variable-both-3",
+    "query": "MATCH p=(a {id:0})-[r*0..3]-(b) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 0
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 1
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 1,
+        "length": 2
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": false,
+    "empty": false,
+    "name": "variable-both-20",
+    "query": "MATCH p=(a {id:0})-[r*0..3]-(b) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "a": 0,
+        "b": 0,
+        "length": 0
+      },
+      {
+        "a": 0,
+        "b": 0,
+        "length": 1
+      },
+      {
+        "a": 0,
+        "b": 1,
+        "length": 2
+      },
+      {
+        "a": 0,
+        "b": 2,
+        "length": 3
+      },
+      {
+        "a": 0,
+        "b": 3,
+        "length": 3
+      },
+      {
+        "a": 0,
+        "b": 2,
+        "length": 2
+      },
+      {
+        "a": 0,
+        "b": 0,
+        "length": 3
+      },
+      {
+        "a": 0,
+        "b": 3,
+        "length": 3
+      },
+      {
+        "a": 0,
+        "b": 1,
+        "length": 3
+      },
+      {
+        "a": 0,
+        "b": 2,
+        "length": 2
+      },
+      {
+        "a": 0,
+        "b": 3,
+        "length": 3
+      },
+      {
+        "a": 0,
+        "b": 0,
+        "length": 3
+      },
+      {
+        "a": 0,
+        "b": 1,
+        "length": 3
+      },
+      {
+        "a": 0,
+        "b": 1,
+        "length": 1
+      },
+      {
+        "a": 0,
+        "b": 2,
+        "length": 2
+      },
+      {
+        "a": 0,
+        "b": 0,
+        "length": 3
+      },
+      {
+        "a": 0,
+        "b": 3,
+        "length": 3
+      },
+      {
+        "a": 0,
+        "b": 0,
+        "length": 3
+      },
+      {
+        "a": 0,
+        "b": 3,
+        "length": 2
+      },
+      {
+        "a": 0,
+        "b": 4,
+        "length": 3
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": true,
+    "empty": false,
+    "name": "variable-both-20",
+    "query": "MATCH p=(a {id:0})-[r*0..3]-(b) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 0
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 1
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 1,
+        "length": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 2,
+        "length": 3
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 3,
+        "length": 3
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 2,
+        "length": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 3
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 3,
+        "length": 3
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 1,
+        "length": 3
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 2,
+        "length": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 3,
+        "length": 3
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 3
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 1,
+        "length": 3
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 1,
+        "length": 1
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 2,
+        "length": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 3
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 3,
+        "length": 3
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 3
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 3,
+        "length": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 4,
+        "length": 3
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": false,
+    "empty": false,
+    "name": "chain-1",
+    "query": "MATCH p=(a {id:0})-[r]-\u003e(b)-[s]-\u003e(c) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "a": 0,
+        "b": 0,
+        "length": 2
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": true,
+    "empty": false,
+    "name": "chain-1",
+    "query": "MATCH p=(a {id:0})-[r]-\u003e(b)-[s]-\u003e(c) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 2
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": false,
+    "empty": false,
+    "name": "chain-3",
+    "query": "MATCH p=(a {id:0})-[r]-\u003e(b)-[s]-\u003e(c) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "a": 0,
+        "b": 0,
+        "length": 2
+      },
+      {
+        "a": 0,
+        "b": 0,
+        "length": 2
+      },
+      {
+        "a": 0,
+        "b": 1,
+        "length": 2
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": true,
+    "empty": false,
+    "name": "chain-3",
+    "query": "MATCH p=(a {id:0})-[r]-\u003e(b)-[s]-\u003e(c) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 1,
+        "length": 2
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": false,
+    "empty": false,
+    "name": "chain-20",
+    "query": "MATCH p=(a {id:0})-[r]-\u003e(b)-[s]-\u003e(c) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "a": 0,
+        "b": 0,
+        "length": 2
+      },
+      {
+        "a": 0,
+        "b": 0,
+        "length": 2
+      },
+      {
+        "a": 0,
+        "b": 1,
+        "length": 2
+      },
+      {
+        "a": 0,
+        "b": 1,
+        "length": 2
+      },
+      {
+        "a": 0,
+        "b": 2,
+        "length": 2
+      },
+      {
+        "a": 0,
+        "b": 2,
+        "length": 2
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": true,
+    "empty": false,
+    "name": "chain-20",
+    "query": "MATCH p=(a {id:0})-[r]-\u003e(b)-[s]-\u003e(c) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 1,
+        "length": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 1,
+        "length": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 2,
+        "length": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 2,
+        "length": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        },
+        "a": 0,
+        "b": 1,
+        "length": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        },
+        "a": 0,
+        "b": 1,
+        "length": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        },
+        "a": 0,
+        "b": 2,
+        "length": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        },
+        "a": 0,
+        "b": 2,
+        "length": 2
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": false,
+    "empty": false,
+    "name": "chain-variable-1",
+    "query": "MATCH p=(a {id:0})-[r*0..2]-\u003e(b)-[s*0..2]-\u003e(c) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "a": 0,
+        "b": 0,
+        "length": 0
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": true,
+    "empty": false,
+    "name": "chain-variable-1",
+    "query": "MATCH p=(a {id:0})-[r*0..2]-\u003e(b)-[s*0..2]-\u003e(c) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 0
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": false,
+    "empty": false,
+    "name": "chain-variable-3",
+    "query": "MATCH p=(a {id:0})-[r*0..2]-\u003e(b)-[s*0..2]-\u003e(c) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "a": 0,
+        "b": 0,
+        "length": 0
+      },
+      {
+        "a": 0,
+        "b": 0,
+        "length": 1
+      },
+      {
+        "a": 0,
+        "b": 0,
+        "length": 2
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": true,
+    "empty": false,
+    "name": "chain-variable-3",
+    "query": "MATCH p=(a {id:0})-[r*0..2]-\u003e(b)-[s*0..2]-\u003e(c) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 0
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 1
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 2
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": false,
+    "empty": false,
+    "name": "chain-variable-20",
+    "query": "MATCH p=(a {id:0})-[r*0..2]-\u003e(b)-[s*0..2]-\u003e(c) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "a": 0,
+        "b": 0,
+        "length": 0
+      },
+      {
+        "a": 0,
+        "b": 0,
+        "length": 1
+      },
+      {
+        "a": 0,
+        "b": 0,
+        "length": 2
+      },
+      {
+        "a": 0,
+        "b": 0,
+        "length": 2
+      },
+      {
+        "a": 0,
+        "b": 0,
+        "length": 1
+      },
+      {
+        "a": 0,
+        "b": 0,
+        "length": 2
+      },
+      {
+        "a": 0,
+        "b": 0,
+        "length": 2
+      },
+      {
+        "a": 0,
+        "b": 0,
+        "length": 1
+      },
+      {
+        "a": 0,
+        "b": 0,
+        "length": 2
+      },
+      {
+        "a": 0,
+        "b": 0,
+        "length": 2
+      },
+      {
+        "a": 0,
+        "b": 0,
+        "length": 1
+      },
+      {
+        "a": 0,
+        "b": 0,
+        "length": 2
+      },
+      {
+        "a": 0,
+        "b": 0,
+        "length": 3
+      },
+      {
+        "a": 0,
+        "b": 0,
+        "length": 3
+      },
+      {
+        "a": 0,
+        "b": 0,
+        "length": 2
+      },
+      {
+        "a": 0,
+        "b": 0,
+        "length": 3
+      },
+      {
+        "a": 0,
+        "b": 0,
+        "length": 3
+      },
+      {
+        "a": 0,
+        "b": 1,
+        "length": 2
+      },
+      {
+        "a": 0,
+        "b": 1,
+        "length": 3
+      },
+      {
+        "a": 0,
+        "b": 1,
+        "length": 4
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": true,
+    "empty": false,
+    "name": "chain-variable-20",
+    "query": "MATCH p=(a {id:0})-[r*0..2]-\u003e(b)-[s*0..2]-\u003e(c) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 0
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 1
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 1
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 1
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 1
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 3
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 3
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 3
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 0,
+        "length": 3
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 1,
+        "length": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 1,
+        "length": 3
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "a": 0,
+        "b": 1,
+        "length": 4
+      }
+    ]
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": false,
+    "empty": false,
+    "name": "same-edge-1",
+    "query": "MATCH p=(a {id:0})-[r]-\u003e(b)-[r]-\u003e(c) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": []
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": true,
+    "empty": false,
+    "name": "same-edge-1",
+    "query": "MATCH p=(a {id:0})-[r]-\u003e(b)-[r]-\u003e(c) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": []
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": false,
+    "empty": false,
+    "name": "same-edge-3",
+    "query": "MATCH p=(a {id:0})-[r]-\u003e(b)-[r]-\u003e(c) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": []
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": true,
+    "empty": false,
+    "name": "same-edge-3",
+    "query": "MATCH p=(a {id:0})-[r]-\u003e(b)-[r]-\u003e(c) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": []
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": false,
+    "empty": false,
+    "name": "same-edge-20",
+    "query": "MATCH p=(a {id:0})-[r]-\u003e(b)-[r]-\u003e(c) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": []
+  },
+  {
+    "columns": [
+      "a",
+      "b",
+      "length"
+    ],
+    "cross": true,
+    "empty": false,
+    "name": "same-edge-20",
+    "query": "MATCH p=(a {id:0})-[r]-\u003e(b)-[r]-\u003e(c) RETURN id(a) AS a,id(b) AS b,length(p) AS length LIMIT $l",
+    "rows": []
+  },
+  {
+    "columns": [
+      "x"
+    ],
+    "cross": false,
+    "empty": false,
+    "name": "relationship-projection-tail",
+    "query": "MATCH (a {id:0})-[r]-\u003e(b) RETURN CASE WHEN id(b)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT $l",
+    "rows": [
+      {
+        "x": 0
+      }
+    ]
+  },
+  {
+    "columns": [
+      "x"
+    ],
+    "cross": true,
+    "empty": false,
+    "name": "relationship-projection-tail",
+    "query": "MATCH (a {id:0})-[r]-\u003e(b) RETURN CASE WHEN id(b)=0 THEN 0 ELSE substring('x','bad') END AS x LIMIT $l",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "x": 0
+      }
+    ]
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+    "name": "relationship-target-error",
+    "query": "MATCH (a {id:0})-[r]-\u003e(b {value:substring('x','bad')}) RETURN 1/0 AS x LIMIT $l"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+    "name": "relationship-target-error",
+    "query": "MATCH (a {id:0})-[r]-\u003e(b {value:substring('x','bad')}) RETURN 1/0 AS x LIMIT $l"
+  },
+  {
+    "columns": [
+      "b"
+    ],
+    "cross": false,
+    "empty": false,
+    "name": "variable-zero-stops-before-edge",
+    "query": "MATCH (a {id:0})-[r*0..3 {type:substring('x','bad')}]-\u003e(b) RETURN id(b) AS b LIMIT $l",
+    "rows": [
+      {
+        "b": 0
+      }
+    ]
+  },
+  {
+    "columns": [
+      "b"
+    ],
+    "cross": true,
+    "empty": false,
+    "name": "variable-zero-stops-before-edge",
+    "query": "MATCH (a {id:0})-[r*0..3 {type:substring('x','bad')}]-\u003e(b) RETURN id(b) AS b LIMIT $l",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "b": 0
+      }
+    ]
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero",
+    "name": "union-other-branch-error",
+    "query": "MATCH (n:IntConstant) RETURN id(n) AS x LIMIT $l UNION RETURN 1/0 AS x"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero",
+    "name": "union-other-branch-error",
+    "query": "MATCH (n:IntConstant) RETURN id(n) AS x LIMIT $l UNION RETURN 1/0 AS x"
+  },
+  {
+    "columns": [
+      "id"
+    ],
+    "cross": false,
+    "empty": false,
+    "name": "trace-rand",
+    "query": "MATCH (n:IntConstant) RETURN n.id AS id LIMIT rand()*0+$l",
+    "rows": [
+      {
+        "id": 0
+      }
+    ]
+  },
+  {
+    "columns": [
+      "id"
+    ],
+    "cross": true,
+    "empty": false,
+    "name": "trace-rand",
+    "query": "MATCH (n:IntConstant) RETURN n.id AS id LIMIT rand()*0+$l",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "id": 0
+      }
+    ]
+  },
+  {
+    "columns": [
+      "id"
+    ],
+    "cross": false,
+    "empty": false,
+    "name": "trace-timestamp",
+    "query": "MATCH (n:IntConstant) RETURN n.id AS id LIMIT timestamp()*0+$l",
+    "rows": [
+      {
+        "id": 0
+      }
+    ]
+  },
+  {
+    "columns": [
+      "id"
+    ],
+    "cross": true,
+    "empty": false,
+    "name": "trace-timestamp",
+    "query": "MATCH (n:IntConstant) RETURN n.id AS id LIMIT timestamp()*0+$l",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "id": 0
+      }
+    ]
+  }
+]

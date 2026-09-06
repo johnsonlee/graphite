@@ -29,8 +29,9 @@ objects and call flags deliberately differ from qualified edge output, as in mai
 The matcher uses an explicit traversal stack and checks the query context during
 node enumeration, edge expansion, binding inspection and output materialization.
 Single-node WHERE clauses filter candidates before retaining rows; relationship
-and path matches still materialize intermediate rows eagerly. Main's lazy LIMIT
-pushdown and other planner optimizations are not implemented. The isolated
+and path matches use early stopping when main's general LIMIT eligibility permits
+it. Other relationship and path matches still retain intermediate rows. Additional
+planner paths remain unimplemented. The isolated
 64-graph allocation experiment is recorded in `docs/go-server-optimization-attempts.md`;
 it is not a P95 or traversal performance acceptance result.
 
@@ -92,10 +93,14 @@ specific initial filtered-MATCH branch. It can skip even throwing WHERE, inline
 property and projection expressions, as verified against main. It is not general
 lazy LIMIT execution. [General SKIP/LIMIT conversion](testdata/count-conversion/README.md)
 now follows main value conversion and evaluates each count against the correct
-first projected row. The new corpus matches 312/320 main results, and all 180
-prior zero-limit results now match. The eight remaining discrepancies concern
-early LIMIT evaluation and lazy MATCH; positive-limit early stopping and
-relationship materialization remain separate work.
+first projected row. The subsequent [early MATCH implementation](testdata/early-match/README.md)
+reproduces preliminary LIMIT evaluation, lazy node/relationship traversal and
+per-pattern stopping across graph sources. All 240 new observations, the prior
+320 count observations and 180 zero-limit observations match main. Eight JVM
+traces and native checks also verify two rand/timestamp dispatches in the early
+and final count stages. Four consumed-corrupt-node error classification
+differences remain explicitly recorded; general planner and error parity are
+still incomplete.
 
 Valid UTF-8 string predicates avoid temporary UTF-16 arrays while malformed or
 isolated-surrogate strings use the original Java-compatible path. The frozen

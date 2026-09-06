@@ -1,0 +1,66 @@
+[
+  {
+    "main": {
+      "name": "consumed-corrupt-tail",
+      "query": "MATCH (n:IntConstant) RETURN n.id AS id LIMIT $l",
+      "cross": false,
+      "error": "IllegalArgumentException",
+      "message": "Unknown node tag: 127"
+    },
+    "native": {
+      "cross": false,
+      "error": "CypherException",
+      "message": "node 7: unknown node tag 127",
+      "name": "consumed-corrupt-tail",
+      "query": "MATCH (n:IntConstant) RETURN n.id AS id LIMIT $l"
+    }
+  },
+  {
+    "main": {
+      "name": "consumed-corrupt-tail",
+      "query": "MATCH (n:IntConstant) RETURN n.id AS id LIMIT $l",
+      "cross": true,
+      "error": "IllegalArgumentException",
+      "message": "Unknown node tag: 127"
+    },
+    "native": {
+      "cross": true,
+      "error": "CypherException",
+      "message": "node 7: unknown node tag 127",
+      "name": "consumed-corrupt-tail",
+      "query": "MATCH (n:IntConstant) RETURN n.id AS id LIMIT $l"
+    }
+  },
+  {
+    "main": {
+      "name": "unlimited-corrupt-tail",
+      "query": "MATCH (n:IntConstant) RETURN n.id AS id",
+      "cross": false,
+      "error": "IllegalArgumentException",
+      "message": "Unknown node tag: 127"
+    },
+    "native": {
+      "cross": false,
+      "error": "CypherException",
+      "message": "node 7: unknown node tag 127",
+      "name": "unlimited-corrupt-tail",
+      "query": "MATCH (n:IntConstant) RETURN n.id AS id"
+    }
+  },
+  {
+    "main": {
+      "name": "unlimited-corrupt-tail",
+      "query": "MATCH (n:IntConstant) RETURN n.id AS id",
+      "cross": true,
+      "error": "IllegalArgumentException",
+      "message": "Unknown node tag: 127"
+    },
+    "native": {
+      "cross": true,
+      "error": "CypherException",
+      "message": "node 7: unknown node tag 127",
+      "name": "unlimited-corrupt-tail",
+      "query": "MATCH (n:IntConstant) RETURN n.id AS id"
+    }
+  }
+]

@@ -148,13 +148,18 @@ func (e evaluator) branch(graph *store.Store, branch cypher.SingleQuery) Result 
 	if empty, ok := filteredLiteralEmpty(branch); ok {
 		return empty
 	}
+	earlyLimit := e.computeEarlyLimit(branch)
 	rows := []map[string]any{{}}
 	columns := []string{}
 	for _, clause := range branch.Clauses {
 		e.check()
 		switch c := clause.(type) {
 		case cypher.MatchClause:
-			rows = e.match(graph, rows, c)
+			if earlyLimit > 0 && !c.Optional {
+				rows = e.matchWithLimit(graph, rows, c, earlyLimit)
+			} else {
+				rows = e.match(graph, rows, c)
+			}
 		case cypher.UnwindClause:
 			next := []map[string]any{}
 			for _, r := range rows {

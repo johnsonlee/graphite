@@ -1,0 +1,137 @@
+[
+  {
+    "name": "node-stop-before-tail",
+    "query": "MATCH (n:IntConstant) RETURN n.id AS id LIMIT $l",
+    "cross": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 0
+      }
+    ]
+  },
+  {
+    "name": "node-stop-before-tail",
+    "query": "MATCH (n:IntConstant) RETURN n.id AS id LIMIT $l",
+    "cross": true,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 0,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "zero-hop-stop-before-tail",
+    "query": "MATCH (a {id:0})-[r*0..4]-\u003e(b) RETURN id(b) AS id LIMIT $l",
+    "cross": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 0
+      }
+    ]
+  },
+  {
+    "name": "zero-hop-stop-before-tail",
+    "query": "MATCH (a {id:0})-[r*0..4]-\u003e(b) RETURN id(b) AS id LIMIT $l",
+    "cross": true,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 0,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "single-hop-stop-before-tail",
+    "query": "MATCH (a {id:0})-[r]-\u003e(b) RETURN id(b) AS id LIMIT $l",
+    "cross": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 0
+      }
+    ]
+  },
+  {
+    "name": "single-hop-stop-before-tail",
+    "query": "MATCH (a {id:0})-[r]-\u003e(b) RETURN id(b) AS id LIMIT $l",
+    "cross": true,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 0,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "projection-before-tail",
+    "query": "MATCH (n:IntConstant) RETURN substring(\u0027x\u0027,\u0027bad\u0027) AS x LIMIT $l",
+    "cross": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "projection-before-tail",
+    "query": "MATCH (n:IntConstant) RETURN substring(\u0027x\u0027,\u0027bad\u0027) AS x LIMIT $l",
+    "cross": true,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "consumed-corrupt-tail",
+    "query": "MATCH (n:IntConstant) RETURN n.id AS id LIMIT $l",
+    "cross": false,
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: 127"
+  },
+  {
+    "name": "consumed-corrupt-tail",
+    "query": "MATCH (n:IntConstant) RETURN n.id AS id LIMIT $l",
+    "cross": true,
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: 127"
+  },
+  {
+    "name": "unlimited-corrupt-tail",
+    "query": "MATCH (n:IntConstant) RETURN n.id AS id",
+    "cross": false,
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: 127"
+  },
+  {
+    "name": "unlimited-corrupt-tail",
+    "query": "MATCH (n:IntConstant) RETURN n.id AS id",
+    "cross": true,
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: 127"
+  }
+]

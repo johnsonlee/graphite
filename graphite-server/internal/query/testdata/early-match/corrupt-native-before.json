@@ -1,0 +1,86 @@
+[
+  {
+    "cross": false,
+    "error": "CypherException",
+    "message": "node 7: unknown node tag 127",
+    "name": "node-stop-before-tail",
+    "query": "MATCH (n:IntConstant) RETURN n.id AS id LIMIT $l"
+  },
+  {
+    "cross": true,
+    "error": "CypherException",
+    "message": "node 7: unknown node tag 127",
+    "name": "node-stop-before-tail",
+    "query": "MATCH (n:IntConstant) RETURN n.id AS id LIMIT $l"
+  },
+  {
+    "cross": false,
+    "error": "CypherException",
+    "message": "node 7: unknown node tag 127",
+    "name": "zero-hop-stop-before-tail",
+    "query": "MATCH (a {id:0})-[r*0..4]-\u003e(b) RETURN id(b) AS id LIMIT $l"
+  },
+  {
+    "cross": true,
+    "error": "CypherException",
+    "message": "node 7: unknown node tag 127",
+    "name": "zero-hop-stop-before-tail",
+    "query": "MATCH (a {id:0})-[r*0..4]-\u003e(b) RETURN id(b) AS id LIMIT $l"
+  },
+  {
+    "cross": false,
+    "error": "CypherException",
+    "message": "node 7: unknown node tag 127",
+    "name": "single-hop-stop-before-tail",
+    "query": "MATCH (a {id:0})-[r]-\u003e(b) RETURN id(b) AS id LIMIT $l"
+  },
+  {
+    "cross": true,
+    "error": "CypherException",
+    "message": "node 7: unknown node tag 127",
+    "name": "single-hop-stop-before-tail",
+    "query": "MATCH (a {id:0})-[r]-\u003e(b) RETURN id(b) AS id LIMIT $l"
+  },
+  {
+    "cross": false,
+    "error": "CypherException",
+    "message": "node 7: unknown node tag 127",
+    "name": "projection-before-tail",
+    "query": "MATCH (n:IntConstant) RETURN substring('x','bad') AS x LIMIT $l"
+  },
+  {
+    "cross": true,
+    "error": "CypherException",
+    "message": "node 7: unknown node tag 127",
+    "name": "projection-before-tail",
+    "query": "MATCH (n:IntConstant) RETURN substring('x','bad') AS x LIMIT $l"
+  },
+  {
+    "cross": false,
+    "error": "CypherException",
+    "message": "node 7: unknown node tag 127",
+    "name": "consumed-corrupt-tail",
+    "query": "MATCH (n:IntConstant) RETURN n.id AS id LIMIT $l"
+  },
+  {
+    "cross": true,
+    "error": "CypherException",
+    "message": "node 7: unknown node tag 127",
+    "name": "consumed-corrupt-tail",
+    "query": "MATCH (n:IntConstant) RETURN n.id AS id LIMIT $l"
+  },
+  {
+    "cross": false,
+    "error": "CypherException",
+    "message": "node 7: unknown node tag 127",
+    "name": "unlimited-corrupt-tail",
+    "query": "MATCH (n:IntConstant) RETURN n.id AS id"
+  },
+  {
+    "cross": true,
+    "error": "CypherException",
+    "message": "node 7: unknown node tag 127",
+    "name": "unlimited-corrupt-tail",
+    "query": "MATCH (n:IntConstant) RETURN n.id AS id"
+  }
+]

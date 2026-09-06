@@ -1,0 +1,138 @@
+[
+  {
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "--add-modules",
+      "jdk.jdi",
+      "-cp",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-early-match-classes-trz7jinm:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "FunctionTrace",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-early-match-classes-trz7jinm:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-early-match-main-uwkegqhp/fixture",
+      "MAPPED",
+      "rand",
+      "false",
+      "/private/tmp/graphite-go-early-match-55621d1c/graphite-server/internal/query/testdata/early-match/trace-MAPPED-rand-false.json"
+    ],
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "--add-modules",
+      "jdk.jdi",
+      "-cp",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-early-match-classes-trz7jinm:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "FunctionTrace",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-early-match-classes-trz7jinm:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-early-match-main-uwkegqhp/fixture",
+      "MAPPED",
+      "rand",
+      "true",
+      "/private/tmp/graphite-go-early-match-55621d1c/graphite-server/internal/query/testdata/early-match/trace-MAPPED-rand-true.json"
+    ],
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "--add-modules",
+      "jdk.jdi",
+      "-cp",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-early-match-classes-trz7jinm:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "FunctionTrace",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-early-match-classes-trz7jinm:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-early-match-main-uwkegqhp/fixture",
+      "MAPPED",
+      "timestamp",
+      "false",
+      "/private/tmp/graphite-go-early-match-55621d1c/graphite-server/internal/query/testdata/early-match/trace-MAPPED-timestamp-false.json"
+    ],
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "--add-modules",
+      "jdk.jdi",
+      "-cp",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-early-match-classes-trz7jinm:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "FunctionTrace",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-early-match-classes-trz7jinm:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-early-match-main-uwkegqhp/fixture",
+      "MAPPED",
+      "timestamp",
+      "true",
+      "/private/tmp/graphite-go-early-match-55621d1c/graphite-server/internal/query/testdata/early-match/trace-MAPPED-timestamp-true.json"
+    ],
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "--add-modules",
+      "jdk.jdi",
+      "-cp",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-early-match-classes-trz7jinm:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "FunctionTrace",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-early-match-classes-trz7jinm:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-early-match-main-uwkegqhp/fixture",
+      "EAGER",
+      "rand",
+      "false",
+      "/private/tmp/graphite-go-early-match-55621d1c/graphite-server/internal/query/testdata/early-match/trace-EAGER-rand-false.json"
+    ],
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "--add-modules",
+      "jdk.jdi",
+      "-cp",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-early-match-classes-trz7jinm:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "FunctionTrace",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-early-match-classes-trz7jinm:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-early-match-main-uwkegqhp/fixture",
+      "EAGER",
+      "rand",
+      "true",
+      "/private/tmp/graphite-go-early-match-55621d1c/graphite-server/internal/query/testdata/early-match/trace-EAGER-rand-true.json"
+    ],
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "--add-modules",
+      "jdk.jdi",
+      "-cp",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-early-match-classes-trz7jinm:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "FunctionTrace",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-early-match-classes-trz7jinm:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-early-match-main-uwkegqhp/fixture",
+      "EAGER",
+      "timestamp",
+      "false",
+      "/private/tmp/graphite-go-early-match-55621d1c/graphite-server/internal/query/testdata/early-match/trace-EAGER-timestamp-false.json"
+    ],
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "--add-modules",
+      "jdk.jdi",
+      "-cp",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-early-match-classes-trz7jinm:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "FunctionTrace",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-early-match-classes-trz7jinm:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-early-match-main-uwkegqhp/fixture",
+      "EAGER",
+      "timestamp",
+      "true",
+      "/private/tmp/graphite-go-early-match-55621d1c/graphite-server/internal/query/testdata/early-match/trace-EAGER-timestamp-true.json"
+    ],
+    "exitCode": 0
+  }
+]
