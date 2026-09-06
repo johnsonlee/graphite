@@ -1,0 +1,8 @@
+{
+  "graphite-explore.jar": "e8064fe891ab1ed97a0754b2030c3808ba76410099882146f319612c6a38a0de",
+  "graphite-server-3.0.0-root-release-audit-darwin-amd64.tar.gz": "533283bacaa3be8a1d49791008ba71a2f999a9a2babc6f42552c018a6c5ea6fe",
+  "graphite-server-3.0.0-root-release-audit-darwin-arm64.tar.gz": "0488cc43ce9a2a4aa8c9b321143685b4c58568da5ce244fa8927fd70227f4a19",
+  "graphite-server-3.0.0-root-release-audit-linux-amd64.tar.gz": "95878fdd4b064d0368ed2f4d8d6a0baa2f2139f7f9031dd3e155aadf8774d373",
+  "graphite-server-3.0.0-root-release-audit-linux-arm64.tar.gz": "bb7284d56b10897be081c40de72b14cbc1fcd7471632b72a2ed59c9071ab0c66",
+  "graphite.jar": "93b0c9d9fe65661932c25cd13deca8da0fec12af705106009a5df2eef6e75273"
+}

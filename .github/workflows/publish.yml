@@ -25,6 +25,10 @@ jobs:
       with:
         distribution: 'temurin'
         java-version: '17'
+    - uses: actions/setup-go@v7
+      with:
+        go-version-file: graphite-server/go.mod
+        cache-dependency-path: graphite-server/go.sum
     - name: Resolve release version
       run: |
         if [ -z "${RELEASE_TAG:-}" ] || [ "${RELEASE_TAG#v}" = "${RELEASE_TAG}" ]; then
@@ -69,6 +73,10 @@ jobs:
       with:
         distribution: 'temurin'
         java-version: '17'
+    - uses: actions/setup-go@v7
+      with:
+        go-version-file: graphite-server/go.mod
+        cache-dependency-path: graphite-server/go.sum
     - name: Resolve release version
       run: |
         if [ -z "${RELEASE_TAG:-}" ] || [ "${RELEASE_TAG#v}" = "${RELEASE_TAG}" ]; then
@@ -78,16 +86,31 @@ jobs:
         echo "RELEASE_VERSION=${RELEASE_TAG#v}" >> "${GITHUB_ENV}"
     - name: Build CLI shadow JARs
       run: |
-        ./gradlew :query:shadowJar --no-daemon -Pversion=${RELEASE_VERSION}
-        mkdir -p release-assets
-        cp graphite-query/build/libs/graphite.jar release-assets/graphite.jar
+        python3 graphite-server/internal/web/generate.py --check
+        go test scripts/native/build.go scripts/native/build_test.go
+        ./gradlew :query:shadowJar :explore:shadowJar :query:installDist :explore:installDist --no-daemon -Pversion=${RELEASE_VERSION}
+        python3 scripts/native/smoke.py --output native-package-smoke.json
+        python3 scripts/native/release.py --version "${RELEASE_VERSION}" \
+          --resources graphite-explore/build/generated/native-resources/graphite-native \
+          --query-jar graphite-query/build/libs/graphite.jar \
+          --explore-jar graphite-explore/build/libs/graphite-explore.jar \
+          --output release-assets
+    - name: Retain package correctness evidence
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-package-smoke
+        path: native-package-smoke.json
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
       with:
         name: Release ${{ env.RELEASE_TAG }}
         tag_name: ${{ env.RELEASE_TAG }}
         generate_release_notes: true
-        files: release-assets/*.jar
+        files: |
+          release-assets/*.jar
+          release-assets/*.tar.gz
+          release-assets/SHA256SUMS
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Update Homebrew tap
@@ -99,60 +122,10 @@ jobs:
           exit 0
         fi
 
-        QUERY_SHA=$(sha256sum release-assets/graphite.jar | awk '{print $1}')
-
         git clone "https://x-access-token:${HOMEBREW_TAP_TOKEN}@github.com/johnsonlee/homebrew-tap.git" tap
+        mkdir -p tap/Formula
+        cp release-assets/graphite.rb tap/Formula/graphite.rb
         cd tap
-        mkdir -p Formula
-
-        cat > Formula/graphite.rb <<RUBY
-        class Graphite < Formula
-          desc "Build, query, and serve Graphite static analysis graphs"
-          homepage "https://github.com/johnsonlee/graphite"
-          url "https://github.com/johnsonlee/graphite/releases/download/v${RELEASE_VERSION}/graphite.jar"
-          version "${RELEASE_VERSION}"
-          sha256 "${QUERY_SHA}"
-          license "Apache-2.0"
-
-          depends_on "openjdk@17"
-
-          def install
-            libexec.install "graphite.jar"
-            (bin/"graphite").write <<~EOS
-              #!/bin/bash
-              export JAVA_TOOL_OPTIONS="\${JAVA_TOOL_OPTIONS:-\${JAVA_OPTS:--Xmx8g}}"
-              AGENT_ARGS=""
-              PASSTHROUGH_ARGS=()
-              for arg in "\$@"; do
-                if [ "\$arg" = "--profile" ]; then
-                  PROFILE_OUT="\${GRAPHITE_PROFILE:-profile.html}"
-                  AP_LIB=""
-                  ASPROF="\$(which asprof 2>/dev/null)"
-                  if [ -n "\$ASPROF" ]; then
-                    AP_DIR="\$(dirname "\$ASPROF")/../lib"
-                    for ext in dylib so; do
-                      [ -f "\$AP_DIR/libasyncProfiler.\$ext" ] && AP_LIB="\$AP_DIR/libasyncProfiler.\$ext" && break
-                    done
-                  fi
-                  if [ -n "\$AP_LIB" ]; then
-                    AGENT_ARGS="-agentpath:\$AP_LIB=start,event=cpu,file=\$PROFILE_OUT"
-                  else
-                    echo "async-profiler not found. Install: brew install async-profiler" >&2
-                    exit 1
-                  fi
-                else
-                  PASSTHROUGH_ARGS+=("\$arg")
-                fi
-              done
-              exec "#{formula_opt_bin("openjdk@17")}/java" \$AGENT_ARGS -jar "#{libexec}/graphite.jar" "\${PASSTHROUGH_ARGS[@]}"
-            EOS
-          end
-
-          test do
-            assert_match "Usage", shell_output("#{bin}/graphite --help")
-          end
-        end
-        RUBY
 
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -165,7 +138,7 @@ jobs:
           git push origin main
         fi
 
-  # ---- Docker image (depends on release for the pre-built jar) ----
+  # ---- Docker image (verified native Linux release artifacts; no JVM runtime) ----
   docker:
     needs: release
     permissions:
@@ -184,9 +157,10 @@ jobs:
           exit 1
         fi
         echo "RELEASE_VERSION=${RELEASE_TAG#v}" >> "${GITHUB_ENV}"
-    - name: Download graphite jar from GitHub Release
+    - name: Download and verify native Linux release archives
       run: |
-        gh release download "${RELEASE_TAG}" -p "graphite.jar" -D .
+        gh release download "${RELEASE_TAG}" -p "graphite-server-${RELEASE_VERSION}-linux-*.tar.gz" -p SHA256SUMS -D release-download
+        python3 scripts/native/stage_docker.py --assets release-download --version "${RELEASE_VERSION}" --output native-runtime
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - uses: docker/setup-qemu-action@v3

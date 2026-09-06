@@ -1,0 +1,168 @@
+{
+  "passed": true,
+  "version": "3.0.0-root-release-audit",
+  "checks": [
+    {
+      "name": "query-jar",
+      "command": [
+        "java",
+        "-Djava.io.tmpdir=/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite installed package i7wf5wfq",
+        "-Dfile.encoding=UTF-8",
+        "-Xmx128m",
+        "-XX:ActiveProcessorCount=2",
+        "-jar",
+        "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-release-root-_qu5nbxc/source/graphite-query/build/libs/graphite.jar",
+        "serve",
+        "--id",
+        "tiny",
+        "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-release-root-_qu5nbxc/source/graphite-server/internal/store/testdata/callsite-index/store",
+        "--port",
+        "0"
+      ],
+      "catalog": {
+        "count": 1,
+        "data": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-release-root-_qu5nbxc/source/graphite-server/internal/store/testdata/callsite-index",
+        "graphs": [
+          {
+            "id": "tiny",
+            "path": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-release-root-_qu5nbxc/source/graphite-server/internal/store/testdata/callsite-index/store",
+            "loadMode": "MAPPED",
+            "loadedAt": "2026-09-06T23:24:22.43055Z",
+            "nodes": 4,
+            "edges": 0,
+            "methods": 0,
+            "callSites": 4
+          }
+        ],
+        "loadMode": "MAPPED",
+        "totals": {
+          "nodes": 4,
+          "edges": 0,
+          "methods": 0,
+          "callSites": 4
+        }
+      },
+      "uiSHA256": "cde253d3a96ba6fa9562bacdd43373fc1b6a73f73feddacb637a8a2421d61057",
+      "exitCode": 143,
+      "extractionRemoved": true
+    },
+    {
+      "name": "query-installDist",
+      "command": [
+        "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-release-root-_qu5nbxc/source/graphite-query/build/install/graphite/bin/graphite",
+        "serve",
+        "--id",
+        "tiny",
+        "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-release-root-_qu5nbxc/source/graphite-server/internal/store/testdata/callsite-index/store",
+        "--port",
+        "0"
+      ],
+      "catalog": {
+        "count": 1,
+        "data": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-release-root-_qu5nbxc/source/graphite-server/internal/store/testdata/callsite-index",
+        "graphs": [
+          {
+            "id": "tiny",
+            "path": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-release-root-_qu5nbxc/source/graphite-server/internal/store/testdata/callsite-index/store",
+            "loadMode": "MAPPED",
+            "loadedAt": "2026-09-06T23:24:23.313026Z",
+            "nodes": 4,
+            "edges": 0,
+            "methods": 0,
+            "callSites": 4
+          }
+        ],
+        "loadMode": "MAPPED",
+        "totals": {
+          "nodes": 4,
+          "edges": 0,
+          "methods": 0,
+          "callSites": 4
+        }
+      },
+      "uiSHA256": "cde253d3a96ba6fa9562bacdd43373fc1b6a73f73feddacb637a8a2421d61057",
+      "exitCode": 143,
+      "extractionRemoved": true
+    },
+    {
+      "name": "explore-jar",
+      "command": [
+        "java",
+        "-Djava.io.tmpdir=/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite installed package 17u6cnw2",
+        "-Dfile.encoding=UTF-8",
+        "-Xmx128m",
+        "-XX:ActiveProcessorCount=2",
+        "-jar",
+        "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-release-root-_qu5nbxc/source/graphite-explore/build/libs/graphite-explore.jar",
+        "--id",
+        "tiny",
+        "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-release-root-_qu5nbxc/source/graphite-server/internal/store/testdata/callsite-index/store",
+        "--port",
+        "0"
+      ],
+      "catalog": {
+        "count": 1,
+        "data": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-release-root-_qu5nbxc/source/graphite-server/internal/store/testdata/callsite-index",
+        "graphs": [
+          {
+            "id": "tiny",
+            "path": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-release-root-_qu5nbxc/source/graphite-server/internal/store/testdata/callsite-index/store",
+            "loadMode": "MAPPED",
+            "loadedAt": "2026-09-06T23:24:23.900714Z",
+            "nodes": 4,
+            "edges": 0,
+            "methods": 0,
+            "callSites": 4
+          }
+        ],
+        "loadMode": "MAPPED",
+        "totals": {
+          "nodes": 4,
+          "edges": 0,
+          "methods": 0,
+          "callSites": 4
+        }
+      },
+      "uiSHA256": "cde253d3a96ba6fa9562bacdd43373fc1b6a73f73feddacb637a8a2421d61057",
+      "exitCode": 143,
+      "extractionRemoved": true
+    },
+    {
+      "name": "explore-installDist",
+      "command": [
+        "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-release-root-_qu5nbxc/source/graphite-explore/build/install/explore/bin/explore",
+        "--id",
+        "tiny",
+        "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-release-root-_qu5nbxc/source/graphite-server/internal/store/testdata/callsite-index/store",
+        "--port",
+        "0"
+      ],
+      "catalog": {
+        "count": 1,
+        "data": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-release-root-_qu5nbxc/source/graphite-server/internal/store/testdata/callsite-index",
+        "graphs": [
+          {
+            "id": "tiny",
+            "path": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-release-root-_qu5nbxc/source/graphite-server/internal/store/testdata/callsite-index/store",
+            "loadMode": "MAPPED",
+            "loadedAt": "2026-09-06T23:24:24.736661Z",
+            "nodes": 4,
+            "edges": 0,
+            "methods": 0,
+            "callSites": 4
+          }
+        ],
+        "loadMode": "MAPPED",
+        "totals": {
+          "nodes": 4,
+          "edges": 0,
+          "methods": 0,
+          "callSites": 4
+        }
+      },
+      "uiSHA256": "cde253d3a96ba6fa9562bacdd43373fc1b6a73f73feddacb637a8a2421d61057",
+      "exitCode": 143,
+      "extractionRemoved": true
+    }
+  ]
+}

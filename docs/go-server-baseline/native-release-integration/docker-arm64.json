@@ -1,0 +1,87 @@
+{
+  "image": "graphite-root-release-audit:arm64",
+  "platform": "linux/arm64",
+  "container": "8b7f312996ae48ac599269b60c9b85d061d9824f5265821cb91c925deb457f4c",
+  "passed": true,
+  "catalog": {
+    "count": 1,
+    "data": "/",
+    "graphs": [
+      {
+        "id": "app",
+        "path": "/data",
+        "loadMode": "MAPPED",
+        "loadedAt": "2026-09-06T23:25:03.631524895Z",
+        "nodes": 4,
+        "edges": 0,
+        "methods": 0,
+        "callSites": 4
+      }
+    ],
+    "loadMode": "MAPPED",
+    "totals": {
+      "nodes": 4,
+      "edges": 0,
+      "methods": 0,
+      "callSites": 4
+    }
+  },
+  "top": "PID                 PPID                COMMAND\n2785                2762                /app/graphite-server serve --id app /data",
+  "uiSHA256": "cde253d3a96ba6fa9562bacdd43373fc1b6a73f73feddacb637a8a2421d61057",
+  "imageId": "sha256:e6e5377a6158008dbadde3625f313ae34f833a4e53fa0872b4919656a68289d6",
+  "config": {
+    "AttachStderr": true,
+    "AttachStdin": false,
+    "AttachStdout": true,
+    "Cmd": [
+      "--id",
+      "app",
+      "/data"
+    ],
+    "Domainname": "",
+    "Entrypoint": [
+      "/app/graphite-server",
+      "serve"
+    ],
+    "Env": [
+      "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+      "HOME=/home/graphite"
+    ],
+    "ExposedPorts": {
+      "8080/tcp": {}
+    },
+    "Hostname": "8b7f312996ae",
+    "Image": "graphite-root-release-audit:arm64",
+    "Labels": {
+      "org.opencontainers.image.description": "Interactive web visualization for Graphite static analysis graphs",
+      "org.opencontainers.image.licenses": "Apache-2.0",
+      "org.opencontainers.image.source": "https://github.com/johnsonlee/graphite",
+      "org.opencontainers.image.title": "graphite-explore",
+      "org.opencontainers.image.url": "https://github.com/johnsonlee/graphite",
+      "org.opencontainers.image.version": "3.0.0-root-release-audit"
+    },
+    "OpenStdin": false,
+    "StdinOnce": false,
+    "StopSignal": "SIGTERM",
+    "Tty": false,
+    "User": "1000:1000",
+    "Volumes": {
+      "/data": {}
+    },
+    "WorkingDir": "/app"
+  },
+  "mounts": [
+    {
+      "Destination": "/data",
+      "Driver": "local",
+      "Mode": "",
+      "Name": "18cb245daa5f04c59318ff7b0188fa52e9ff96a2db902642465df7a707564cad",
+      "Propagation": "",
+      "RW": true,
+      "Source": "/var/lib/docker/volumes/18cb245daa5f04c59318ff7b0188fa52e9ff96a2db902642465df7a707564cad/_data",
+      "Type": "volume"
+    }
+  ],
+  "exitCode": 0,
+  "logs": ""
+}

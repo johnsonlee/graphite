@@ -1,0 +1,54 @@
+#0 building with "colima" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.30kB done
+#1 DONE 0.0s
+
+#2 resolve image config for docker-image://docker.io/docker/dockerfile:1.7
+#2 DONE 0.6s
+
+#3 docker-image://docker.io/docker/dockerfile:1.7@sha256:a57df69d0ea827fb7266491f2813635de6f17269be881f696fbfdf2d83dda33e
+#3 resolve docker.io/docker/dockerfile:1.7@sha256:a57df69d0ea827fb7266491f2813635de6f17269be881f696fbfdf2d83dda33e 0.0s done
+#3 CACHED
+
+#4 [internal] load .dockerignore
+#4 transferring context: 192B done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 15.31MB 0.1s done
+#5 DONE 0.1s
+
+#6 [1/6] COPY native-runtime/rootfs/ /
+#6 DONE 0.0s
+
+#7 [2/6] COPY --chown=1000:1000 native-runtime/writable/ /
+#7 DONE 0.0s
+
+#8 [3/6] COPY --chmod=0755 native-runtime/linux-arm64/graphite-server /app/graphite-server
+#8 DONE 0.0s
+
+#9 [4/6] COPY native-runtime/linux-arm64/LICENSE native-runtime/linux-arm64/VERSION /app/
+#9 DONE 0.0s
+
+#10 [5/6] COPY native-runtime/linux-arm64/licenses/ /app/licenses/
+#10 DONE 0.0s
+
+#11 [6/6] WORKDIR /app
+#11 DONE 0.0s
+
+#12 exporting to image
+#12 exporting layers
+#12 exporting layers 0.4s done
+#12 exporting manifest sha256:3c51095f5177769af46738a297c279718235fe62717bfd1d606441ab8a7d35b8 done
+#12 exporting config sha256:edf38dddfcd3799790c86aad1f83d12b5d2380a5243e084f1514882ac2589682 done
+#12 exporting attestation manifest sha256:a606f2f6f292aed2e5d29a9c2edda63c0702cce7eff2476fba9c34214d7728ac done
+#12 exporting manifest list sha256:747ba6a4c0b9c7395b7a5c5ccfa701bfc66143b810eb8a88ba175129223b34e2 done
+#12 naming to docker.io/library/graphite-native-packaging-audit:arm64 done
+#12 unpacking to docker.io/library/graphite-native-packaging-audit:arm64 0.1s done
+#12 DONE 0.5s
+
+View build details: docker-desktop://dashboard/build/colima/colima/m7mq7r80xwpkofqu06dwu1bmb
+
+What's Next?
+  View a summary of image vulnerabilities and recommendations → docker scout quickview

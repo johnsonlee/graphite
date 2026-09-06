@@ -1,17 +1,10 @@
 # syntax=docker/dockerfile:1.7
-#
-# Runtime-only image — no build stage needed.
-# The unified Graphite CLI shadow jar is pre-built by CI and downloaded from
-# the GitHub Release before building this runtime image.
-#
-# Usage:
-#   docker build -f graphite-explore/Dockerfile \
-#     -t graphite-explore .
-#
-#   docker run --rm -p 8080:8080 -v /path/to/graph:/data graphite-explore
+# Run scripts/native/stage_docker.py on the checksum-verified Linux release
+# archives first. The runtime contains the native server and its notices only.
+# No build/query functionality is removed from the separate unified JVM CLI.
+FROM scratch
 
-FROM eclipse-temurin:17-jre-jammy
-
+ARG TARGETARCH
 ARG VERSION=0.0.0-dev
 
 LABEL org.opencontainers.image.title="graphite-explore" \
@@ -21,18 +14,17 @@ LABEL org.opencontainers.image.title="graphite-explore" \
       org.opencontainers.image.licenses="Apache-2.0" \
       org.opencontainers.image.version="${VERSION}"
 
-RUN groupadd --system --gid 1000 graphite \
- && useradd  --system --uid 1000 --gid graphite --home /home/graphite --create-home graphite
+COPY native-runtime/rootfs/ /
+COPY --chown=1000:1000 native-runtime/writable/ /
+COPY --chmod=0755 native-runtime/linux-${TARGETARCH}/graphite-server /app/graphite-server
+COPY native-runtime/linux-${TARGETARCH}/LICENSE native-runtime/linux-${TARGETARCH}/VERSION /app/
+COPY native-runtime/linux-${TARGETARCH}/licenses/ /app/licenses/
 
 WORKDIR /app
-COPY graphite.jar /app/graphite.jar
-
-USER graphite:graphite
-
-ENV JAVA_TOOL_OPTIONS="-Xmx4g"
-
+USER 1000:1000
+ENV HOME="/home/graphite"
 EXPOSE 8080
 VOLUME ["/data"]
-
-ENTRYPOINT ["java", "-jar", "/app/graphite.jar", "serve"]
+STOPSIGNAL SIGTERM
+ENTRYPOINT ["/app/graphite-server", "serve"]
 CMD ["--id", "app", "/data"]

@@ -1,0 +1,19 @@
+Traceback (most recent call last):
+  File "/private/tmp/graphite-go-native-release-274cd678/scripts/native/release.py", line 160, in <module>
+    if __name__ == "__main__": main()
+                               ~~~~^^
+  File "/private/tmp/graphite-go-native-release-274cd678/scripts/native/release.py", line 155, in main
+    hashes = build_release(args.repo.resolve(), args.resources.resolve(), args.output.resolve(), args.version,
+                           {"graphite.jar": args.query_jar.resolve(), "graphite-explore.jar": args.explore_jar.resolve()})
+  File "/private/tmp/graphite-go-native-release-274cd678/scripts/native/release.py", line 127, in build_release
+    licenses = module_licenses(repo)
+  File "/private/tmp/graphite-go-native-release-274cd678/scripts/native/release.py", line 48, in module_licenses
+    result["licenses/Go-LICENSE"] = (goroot / "LICENSE").read_bytes()
+                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/pathlib/__init__.py", line 777, in read_bytes
+    with self.open(mode='rb', buffering=0) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/pathlib/__init__.py", line 771, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/opt/homebrew/Cellar/go/1.22.0/libexec/LICENSE'

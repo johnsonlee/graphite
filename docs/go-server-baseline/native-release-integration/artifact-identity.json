@@ -1,0 +1,35 @@
+{
+  "version": "3.0.0-root-release-audit",
+  "files": {
+    "graphite-server-3.0.0-root-release-audit-darwin-amd64.tar.gz": {
+      "sha256": "533283bacaa3be8a1d49791008ba71a2f999a9a2babc6f42552c018a6c5ea6fe",
+      "nativeSHA256": "d48c300a95430ca5e63b1542f9b3a641591601ed5e46fda480c8ffe9bfe3bc0f",
+      "nativeBytes": 20800912
+    },
+    "graphite-server-3.0.0-root-release-audit-darwin-arm64.tar.gz": {
+      "sha256": "0488cc43ce9a2a4aa8c9b321143685b4c58568da5ce244fa8927fd70227f4a19",
+      "nativeSHA256": "6a1e01fcc097d068daac540d2b3f6d101bb50b18f8a85132df0f214d1240b878",
+      "nativeBytes": 20294786
+    },
+    "graphite-server-3.0.0-root-release-audit-linux-amd64.tar.gz": {
+      "sha256": "95878fdd4b064d0368ed2f4d8d6a0baa2f2139f7f9031dd3e155aadf8774d373",
+      "nativeSHA256": "4d38ed4fd6ba5d4bd8ff5a1f19e8189dfe45dcc947c233add5b34f49596674da",
+      "nativeBytes": 20589185
+    },
+    "graphite-server-3.0.0-root-release-audit-linux-arm64.tar.gz": {
+      "sha256": "bb7284d56b10897be081c40de72b14cbc1fcd7471632b72a2ed59c9071ab0c66",
+      "nativeSHA256": "0ca8e9fed2b433b40873ea9ab395b02bc9a7b1f36b46b486d287b71eeeb4e26d",
+      "nativeBytes": 19999271
+    },
+    "graphite.jar": {
+      "sha256": "93b0c9d9fe65661932c25cd13deca8da0fec12af705106009a5df2eef6e75273",
+      "allEmbeddedResourcesMatch": true
+    },
+    "graphite-explore.jar": {
+      "sha256": "e8064fe891ab1ed97a0754b2030c3808ba76410099882146f319612c6a38a0de",
+      "allEmbeddedResourcesMatch": true
+    }
+  },
+  "googlePprofLicenseIncludedAllTargets": true,
+  "formulaSHA256": "759cfaf27b31700af616acccd68c885e48454d85da68ecf51c799c2282f8a43f"
+}

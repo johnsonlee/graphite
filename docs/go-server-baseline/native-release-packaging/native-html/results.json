@@ -1,0 +1,80 @@
+{
+  "passed": true,
+  "native": "/private/tmp/graphite-native-html-profile-bbdfae2a-final",
+  "nativeSHA256": "7741020d44e4ea640626152923de90043989fe5d17c0e96fbcb2fd53674fb50d",
+  "jar": "/private/tmp/graphite-native-release-build-274cd678/graphite-query/build/libs/graphite.jar",
+  "jarSHA256": "dfaea0fd1e11bbc2ec15b28fe3fdc76ea38306f3eea9c2dda47da7b8ab775d43",
+  "checks": [
+    {
+      "route": "direct",
+      "command": [
+        "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite real native profile w861hi6y/graphite",
+        "--profile",
+        "serve",
+        "--id",
+        "tiny",
+        "/private/tmp/graphite-go-native-release-274cd678/graphite-server/internal/store/testdata/callsite-index/store",
+        "--data",
+        "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite real native profile w861hi6y/data",
+        "--port",
+        "0"
+      ],
+      "exitCode": 0,
+      "query": "UNWIND range(1,1000) AS n RETURN sum(sin(n)+cos(n)+sqrt(n)) AS total",
+      "requestCount": 30,
+      "response": {
+        "columns": [
+          "total"
+        ],
+        "graphCount": 1,
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "total": 21098.807843076123
+          }
+        ]
+      },
+      "allResponsesEqual": true,
+      "reportSHA256": "5c63b3ad673e7564127e39e052c00394b400357e04a3f6e644b0c8871f3c8fef",
+      "sampledCPUNanos": "50000000",
+      "stdout": "",
+      "stderr": "Graphite Go server (in development): http://localhost:50069\n",
+      "onlyNativeHTMLWriter": true
+    },
+    {
+      "route": "nested-argument-file",
+      "command": [
+        "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite real native profile 9dabrrok/graphite",
+        "--profile",
+        "@/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite real native profile 9dabrrok/top.args"
+      ],
+      "exitCode": 143,
+      "query": "UNWIND range(1,1000) AS n RETURN sum(sin(n)+cos(n)+sqrt(n)) AS total",
+      "requestCount": 30,
+      "response": {
+        "columns": [
+          "total"
+        ],
+        "graphCount": 1,
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": []
+            },
+            "total": 21098.807843076123
+          }
+        ]
+      },
+      "allResponsesEqual": true,
+      "reportSHA256": "a34f35d5b5b3384c86a3580e881f48a47b930815ac4c5a51a00b9f027a312df5",
+      "sampledCPUNanos": "40000000",
+      "stdout": "",
+      "stderr": "Picked up JAVA_TOOL_OPTIONS: -Xmx128m -XX:ActiveProcessorCount=2\nGraphite Go server (in development): http://localhost:50102\n",
+      "onlyNativeHTMLWriter": true
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+#0 building with "colima" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.30kB done
+#1 DONE 0.0s
+
+#2 [auth] docker/dockerfile:pull token for registry-1.docker.io
+#2 DONE 0.0s
+
+#3 resolve image config for docker-image://docker.io/docker/dockerfile:1.7
+#3 DONE 1.0s
+
+#4 docker-image://docker.io/docker/dockerfile:1.7@sha256:a57df69d0ea827fb7266491f2813635de6f17269be881f696fbfdf2d83dda33e
+#4 resolve docker.io/docker/dockerfile:1.7@sha256:a57df69d0ea827fb7266491f2813635de6f17269be881f696fbfdf2d83dda33e 0.0s done
+#4 CACHED
+
+#5 [internal] load .dockerignore
+#5 transferring context: 192B done
+#5 DONE 0.0s
+
+#6 [internal] load build context
+#6 transferring context: 15.84MB 0.1s done
+#6 DONE 0.1s
+
+#7 [1/6] COPY native-runtime/rootfs/ /
+#7 CACHED
+
+#8 [2/6] COPY --chown=1000:1000 native-runtime/writable/ /
+#8 CACHED
+
+#9 [3/6] COPY --chmod=0755 native-runtime/linux-amd64/graphite-server /app/graphite-server
+#9 DONE 0.0s
+
+#10 [4/6] COPY native-runtime/linux-amd64/LICENSE native-runtime/linux-amd64/VERSION /app/
+#10 DONE 0.0s
+
+#11 [5/6] COPY native-runtime/linux-amd64/licenses/ /app/licenses/
+#11 DONE 0.0s
+
+#12 [6/6] WORKDIR /app
+#12 DONE 0.0s
+
+#13 exporting to image
+#13 exporting layers
+#13 exporting layers 0.3s done
+#13 exporting manifest sha256:df7b7464b375716d280c5b2d8a042b0cccce468891e5f5fe9d1910ae4238de5a done
+#13 exporting config sha256:62eb4c74f9b08f5d4b6fe4ef2208f8ae6cc0097ea09eab25e1b541d4079dbf05 done
+#13 exporting attestation manifest sha256:8f8265b69ff1e6bd985cc9a0d4ed305746bd99f40c2b1b4b8258421e920f4ef0 done
+#13 exporting manifest list sha256:5ecc59d8aec4afb20b477a9d65e11a6b3b24a0652fafe6c0f51d25da4841427d done
+#13 naming to docker.io/library/graphite-native-packaging-audit:amd64 done
+#13 DONE 0.3s
+
+View build details: docker-desktop://dashboard/build/colima/colima/s8yiolu7atrbw3hnhfgr3wyip
+
+What's Next?
+  View a summary of image vulnerabilities and recommendations → docker scout quickview

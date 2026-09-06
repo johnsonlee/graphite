@@ -1,0 +1,180 @@
+{
+  "passed": true,
+  "jar": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-release-root-_qu5nbxc/source/graphite-query/build/libs/graphite.jar",
+  "jarSHA256": "93b0c9d9fe65661932c25cd13deca8da0fec12af705106009a5df2eef6e75273",
+  "checks": [
+    {
+      "name": "direct",
+      "command": [
+        "serve",
+        "--profile",
+        "--data",
+        "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite wrapper space hwqcot1h/must not exist",
+        "--port",
+        "0"
+      ],
+      "exitCode": 37,
+      "child": {
+        "args": [
+          "serve",
+          "--data",
+          "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite wrapper space hwqcot1h/must not exist",
+          "--port",
+          "0"
+        ],
+        "cwd": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite wrapper space hwqcot1h",
+        "stdin": "literal stdin\n",
+        "nativeProfile": "1",
+        "profilePath": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite wrapper space hwqcot1h/direct profile.html"
+      },
+      "stdout": "native stdout\n",
+      "stderr": "native stderr\n",
+      "onlyNativeProfileSelected": true
+    },
+    {
+      "name": "profile-prefix",
+      "command": [
+        "--profile",
+        "serve",
+        "--data",
+        "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite wrapper space hwqcot1h/must not exist",
+        "--port",
+        "0"
+      ],
+      "exitCode": 37,
+      "child": {
+        "args": [
+          "serve",
+          "--data",
+          "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite wrapper space hwqcot1h/must not exist",
+          "--port",
+          "0"
+        ],
+        "cwd": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite wrapper space hwqcot1h",
+        "stdin": "literal stdin\n",
+        "nativeProfile": "1",
+        "profilePath": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite wrapper space hwqcot1h/profile-prefix profile.html"
+      },
+      "stdout": "native stdout\n",
+      "stderr": "native stderr\n",
+      "onlyNativeProfileSelected": true
+    },
+    {
+      "name": "argument-file",
+      "command": [
+        "--profile",
+        "@/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite wrapper space hwqcot1h/nested.args"
+      ],
+      "exitCode": 37,
+      "child": {
+        "args": [
+          "serve",
+          "--data",
+          "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite wrapper space hwqcot1h/must not exist",
+          "--port",
+          "0"
+        ],
+        "cwd": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite wrapper space hwqcot1h",
+        "stdin": "literal stdin\n",
+        "nativeProfile": "1",
+        "profilePath": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite wrapper space hwqcot1h/argument-file profile.html"
+      },
+      "stdout": "native stdout\n",
+      "stderr": "Picked up JAVA_TOOL_OPTIONS: -Xmx128m -XX:ActiveProcessorCount=2 -Dfile.encoding=UTF-8\nnative stderr\n",
+      "onlyNativeProfileSelected": true
+    },
+    {
+      "name": "nested-argument-file",
+      "command": [
+        "--profile",
+        "@/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite wrapper space hwqcot1h/top.args"
+      ],
+      "exitCode": 37,
+      "child": {
+        "args": [
+          "serve",
+          "--data",
+          "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite wrapper space hwqcot1h/must not exist",
+          "--port",
+          "0"
+        ],
+        "cwd": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite wrapper space hwqcot1h",
+        "stdin": "literal stdin\n",
+        "nativeProfile": "1",
+        "profilePath": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite wrapper space hwqcot1h/nested-argument-file profile.html"
+      },
+      "stdout": "native stdout\n",
+      "stderr": "Picked up JAVA_TOOL_OPTIONS: -Xmx128m -XX:ActiveProcessorCount=2 -Dfile.encoding=UTF-8\nnative stderr\n",
+      "onlyNativeProfileSelected": true
+    },
+    {
+      "name": "jvm-build",
+      "command": [
+        "build",
+        "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite wrapper space hwqcot1h/classes",
+        "--output",
+        "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite wrapper space hwqcot1h/built-store"
+      ],
+      "exitCode": 0,
+      "stdout": "Profiling started\n",
+      "stderr": "Picked up JAVA_TOOL_OPTIONS: -Xmx128m -XX:ActiveProcessorCount=2 -Dfile.encoding=UTF-8\nLoading bytecode from: /var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite wrapper space hwqcot1h/classes\nGraph built: 10 nodes\nSaving to: /var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite wrapper space hwqcot1h/built-store\nDone.\n",
+      "htmlSHA256": "6cbb2a5b421eeb48ba26fd94248aef45366e892bc29d7a8ccad9054b456711f8",
+      "htmlBytes": 29902,
+      "onlyJVMProfileSelected": true
+    },
+    {
+      "name": "jvm-query",
+      "command": [
+        "query",
+        "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-release-root-_qu5nbxc/source/graphite-server/internal/store/testdata/callsite-index/store",
+        "MATCH (n:CallSite) RETURN count(n) AS count",
+        "--format",
+        "json"
+      ],
+      "exitCode": 0,
+      "stdout": "Profiling started\n{\n  \"columns\": [\n    \"count\"\n  ],\n  \"rows\": [\n    {\n      \"count\": 4\n    }\n  ],\n  \"rowCount\": 1\n}\n",
+      "stderr": "Picked up JAVA_TOOL_OPTIONS: -Xmx128m -XX:ActiveProcessorCount=2 -Dfile.encoding=UTF-8\n",
+      "htmlSHA256": "15da0832bbe9edfe84f86918068387d0430d9933e79cb7847bca83707879e2c7",
+      "htmlBytes": 23043,
+      "onlyJVMProfileSelected": true
+    },
+    {
+      "name": "global-help",
+      "command": [
+        "--help",
+        "@/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite wrapper space hwqcot1h/top.args"
+      ],
+      "exitCode": 0,
+      "stdout": "Profiling started\nUsage: graphite [-hV] [COMMAND]\nBuild and query Graphite graphs\n  -h, --help      Show this help message and exit.\n  -V, --version   Print version information and exit.\nCommands:\n  build  Build graph from JAR/WAR/APK/directory and save to disk\n  query  Execute a Cypher query against a saved graph\n  serve  Serve one or more saved Graphite webgraphs over HTTP\n",
+      "stderr": "Picked up JAVA_TOOL_OPTIONS: -Xmx128m -XX:ActiveProcessorCount=2 -Dfile.encoding=UTF-8\n",
+      "htmlSHA256": "627893b28d2e20607cb2bf40621cd9756de63e010e6a0ee819324532c37286ef",
+      "htmlBytes": 19536,
+      "onlyJVMProfileSelected": true
+    },
+    {
+      "name": "global-version",
+      "command": [
+        "--version",
+        "@/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite wrapper space hwqcot1h/top.args"
+      ],
+      "exitCode": 0,
+      "stdout": "Profiling started\ngraphite 3.0.0-root-release-audit\n",
+      "stderr": "Picked up JAVA_TOOL_OPTIONS: -Xmx128m -XX:ActiveProcessorCount=2 -Dfile.encoding=UTF-8\n",
+      "htmlSHA256": "327af1fd51a8af658c080789c9f6c1921eb8172a26f4c1f425e2b88a5ead9c83",
+      "htmlBytes": 18933,
+      "onlyJVMProfileSelected": true
+    },
+    {
+      "name": "parse-failure",
+      "command": [
+        "@/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite wrapper space hwqcot1h/invalid.args"
+      ],
+      "exitCode": 2,
+      "stdout": "Profiling started\n",
+      "stderr": "Picked up JAVA_TOOL_OPTIONS: -Xmx128m -XX:ActiveProcessorCount=2 -Dfile.encoding=UTF-8\nInvalid value for option '--port': 'invalid' is not an int\nUsage: graphite serve [-hV] [--metrics]\n                      [--cypher-max-timeout-ms=<cypherMaxTimeoutMillis>]\n                      [--cypher-work-budget=<cypherWorkBudget>] [--data=<data>]\n                      [--id=<graphId>] [--load-mode=<loadMode>]\n                      [--max-concurrent-cypher=<maxConcurrentCypher>]\n                      [-p=<port>] [--topology=<topology>]\n                      [--graph=<graphSpecs>]... [<graphDir>]\nServe one or more saved Graphite webgraphs over HTTP\n      [<graphDir>]           Optional saved graph directory for single-graph\n                               startup\n      --cypher-max-timeout-ms=<cypherMaxTimeoutMillis>\n                             Maximum Cypher request timeout in milliseconds\n      --cypher-work-budget=<cypherWorkBudget>\n                             Deprecated and ignored; Cypher execution is\n                               limited by timeout instead\n      --data=<data>          Data directory used to resolve relative graph\n                               paths and allow empty startup\n      --graph=<graphSpecs>   Initial graph mapping id:path. Repeat for multiple\n                               graphs.\n  -h, --help                 Show this help message and exit.\n      --id=<graphId>         Required graph id for the optional positional graph\n      --load-mode=<loadMode> Graph load mode: EAGER, MAPPED, AUTO. Defaults to\n                               MAPPED for multi-graph heap stability.\n      --max-concurrent-cypher=<maxConcurrentCypher>\n                             Maximum number of Cypher queries executing at once\n      --metrics              Expose Prometheus performance metrics at /metrics\n  -p, --port=<port>          HTTP port\n      --topology=<topology>  Cypher file or directory used at startup to derive\n                               graph-to-graph calls. Queries return source,\n                               target, and optional protocol, operation,\n                               weight, evidence.\n  -V, --version              Print version information and exit.\n",
+      "htmlSHA256": "5513bc09e64c271d50f9f7637cb0e43a3230e14b17d59a9782e00d81478cb9d3",
+      "htmlBytes": 19926,
+      "onlyJVMProfileSelected": true
+    }
+  ]
+}

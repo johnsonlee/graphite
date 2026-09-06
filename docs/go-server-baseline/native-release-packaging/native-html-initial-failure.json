@@ -1,0 +1,5 @@
+{
+  "passed": false,
+  "error": "AssertionError(('direct', 1, 'Error: start CPU profile: open docs/go-server-baseline/native-release-packaging/native-html/.graphite-cpu-3134534123.pprof: no such file or directory\\n'))",
+  "checks": []
+}

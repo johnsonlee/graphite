@@ -1,0 +1,66 @@
+{
+  "runs": [
+    {
+      "command": [
+        "docker",
+        "build",
+        "--platform",
+        "linux/arm64",
+        "--build-arg",
+        "VERSION=3.0.0-root-release-audit",
+        "-f",
+        "graphite-explore/Dockerfile",
+        "-t",
+        "graphite-root-release-audit:arm64",
+        "."
+      ],
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "python3",
+        "-W",
+        "error::ResourceWarning",
+        "scripts/native/verify_docker.py",
+        "--image",
+        "graphite-root-release-audit:arm64",
+        "--platform",
+        "linux/arm64",
+        "--output",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-release-integration/docker-arm64.json"
+      ],
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "docker",
+        "build",
+        "--platform",
+        "linux/amd64",
+        "--build-arg",
+        "VERSION=3.0.0-root-release-audit",
+        "-f",
+        "graphite-explore/Dockerfile",
+        "-t",
+        "graphite-root-release-audit:amd64",
+        "."
+      ],
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "python3",
+        "-W",
+        "error::ResourceWarning",
+        "scripts/native/verify_docker.py",
+        "--image",
+        "graphite-root-release-audit:amd64",
+        "--platform",
+        "linux/amd64",
+        "--output",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-release-integration/docker-amd64.json"
+      ],
+      "exitCode": 0
+    }
+  ]
+}

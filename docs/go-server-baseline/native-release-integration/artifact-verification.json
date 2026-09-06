@@ -1,0 +1,37 @@
+{
+  "runs": [
+    {
+      "command": [
+        "python3",
+        "scripts/native/release.py",
+        "--version",
+        "3.0.0-root-release-audit",
+        "--resources",
+        "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-release-root-_qu5nbxc/source/graphite-explore/build/generated/native-resources/graphite-native",
+        "--query-jar",
+        "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-release-root-_qu5nbxc/source/graphite-query/build/libs/graphite.jar",
+        "--explore-jar",
+        "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-release-root-_qu5nbxc/source/graphite-explore/build/libs/graphite-explore.jar",
+        "--output",
+        "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-release-root-_qu5nbxc/source/release-assets"
+      ],
+      "exitCode": 0,
+      "log": "release-prepare.log"
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/native/stage_docker.py",
+        "--assets",
+        "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-release-root-_qu5nbxc/source/release-assets",
+        "--version",
+        "3.0.0-root-release-audit",
+        "--output",
+        "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-release-root-_qu5nbxc/source/native-runtime"
+      ],
+      "exitCode": 0,
+      "log": "docker-stage.log"
+    }
+  ],
+  "finishedAt": "2026-09-06T23:19:18.915069+00:00"
+}

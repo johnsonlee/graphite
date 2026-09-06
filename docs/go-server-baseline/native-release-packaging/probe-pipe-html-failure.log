@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/private/tmp/graphite-go-native-release-274cd678/scripts/native/verify_native_wrapper.py", line 76, in <module>
+    if __name__=='__main__':main()
+                            ~~~~^^
+  File "/private/tmp/graphite-go-native-release-274cd678/scripts/native/verify_native_wrapper.py", line 63, in main
+    assert match, 'not the native self-contained HTML report'
+           ^^^^^
+AssertionError: not the native self-contained HTML report

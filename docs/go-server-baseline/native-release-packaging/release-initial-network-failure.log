@@ -1,0 +1,21 @@
+go: github.com/google/go-cmp@v0.6.0: Get "https://proxy.golang.org/github.com/google/go-cmp/@v/v0.6.0.info": dial tcp 34.128.9.241:443: i/o timeout
+Traceback (most recent call last):
+  File "/private/tmp/graphite-go-native-release-274cd678/scripts/native/release.py", line 157, in <module>
+    if __name__ == "__main__": main()
+                               ~~~~^^
+  File "/private/tmp/graphite-go-native-release-274cd678/scripts/native/release.py", line 152, in main
+    hashes = build_release(args.repo.resolve(), args.resources.resolve(), args.output.resolve(), args.version,
+                           {"graphite.jar": args.query_jar.resolve(), "graphite-explore.jar": args.explore_jar.resolve()})
+  File "/private/tmp/graphite-go-native-release-274cd678/scripts/native/release.py", line 124, in build_release
+    licenses = module_licenses(repo)
+  File "/private/tmp/graphite-go-native-release-274cd678/scripts/native/release.py", line 29, in module_licenses
+    data = subprocess.check_output(["go", "list", "-m", "-json", "all"], cwd=repo / "graphite-server", text=True)
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 472, in check_output
+    return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,
+           ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+               **kwargs).stdout
+               ^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 577, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['go', 'list', '-m', '-json', 'all']' returned non-zero exit status 1.

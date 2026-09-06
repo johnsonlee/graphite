@@ -1,0 +1,63 @@
+#0 building with "colima" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.30kB done
+#1 DONE 0.0s
+
+#2 resolve image config for docker-image://docker.io/docker/dockerfile:1.7
+#2 ...
+
+#3 [auth] docker/dockerfile:pull token for registry-1.docker.io
+#3 DONE 0.0s
+
+#2 resolve image config for docker-image://docker.io/docker/dockerfile:1.7
+#2 DONE 2.3s
+
+#4 docker-image://docker.io/docker/dockerfile:1.7@sha256:a57df69d0ea827fb7266491f2813635de6f17269be881f696fbfdf2d83dda33e
+#4 resolve docker.io/docker/dockerfile:1.7@sha256:a57df69d0ea827fb7266491f2813635de6f17269be881f696fbfdf2d83dda33e 0.0s done
+#4 sha256:6e230fe0035dc5b9d8d5e65513d1f11ae3b25d14362031fb540a4c23bf862933 0B / 11.24MB 0.2s
+#4 sha256:6e230fe0035dc5b9d8d5e65513d1f11ae3b25d14362031fb540a4c23bf862933 3.15MB / 11.24MB 0.3s
+#4 sha256:6e230fe0035dc5b9d8d5e65513d1f11ae3b25d14362031fb540a4c23bf862933 11.24MB / 11.24MB 0.4s done
+#4 extracting sha256:6e230fe0035dc5b9d8d5e65513d1f11ae3b25d14362031fb540a4c23bf862933 0.1s done
+#4 DONE 0.6s
+
+#5 [internal] load .dockerignore
+#5 transferring context: 192B done
+#5 DONE 0.0s
+
+#6 [internal] load build context
+#6 transferring context: 2B done
+#6 DONE 0.0s
+
+#7 [1/6] COPY native-runtime/rootfs/ /
+#7 ERROR: failed to calculate checksum of ref t2a68ymmrtgeahojirst77o83::5y86784rqjqfiwmcnrr0h799l: "/native-runtime/rootfs": not found
+
+#8 [5/6] COPY native-runtime/linux-arm64/licenses/ /app/licenses/
+#8 ERROR: failed to calculate checksum of ref t2a68ymmrtgeahojirst77o83::5y86784rqjqfiwmcnrr0h799l: "/native-runtime/linux-arm64/licenses": not found
+
+#9 [3/6] COPY --chmod=0755 native-runtime/linux-arm64/graphite-server /app/graphite-server
+#9 ERROR: failed to calculate checksum of ref t2a68ymmrtgeahojirst77o83::5y86784rqjqfiwmcnrr0h799l: "/native-runtime/linux-arm64/graphite-server": not found
+
+#10 [2/6] COPY --chown=1000:1000 native-runtime/writable/ /
+#10 ERROR: failed to calculate checksum of ref t2a68ymmrtgeahojirst77o83::5y86784rqjqfiwmcnrr0h799l: "/native-runtime/writable": not found
+
+#11 [4/6] COPY native-runtime/linux-arm64/LICENSE native-runtime/linux-arm64/VERSION /app/
+#11 ERROR: failed to calculate checksum of ref t2a68ymmrtgeahojirst77o83::5y86784rqjqfiwmcnrr0h799l: "/native-runtime/linux-arm64/VERSION": not found
+------
+ > [1/6] COPY native-runtime/rootfs/ /:
+------
+------
+ > [2/6] COPY --chown=1000:1000 native-runtime/writable/ /:
+------
+------
+ > [3/6] COPY --chmod=0755 native-runtime/linux-arm64/graphite-server /app/graphite-server:
+------
+------
+ > [4/6] COPY native-runtime/linux-arm64/LICENSE native-runtime/linux-arm64/VERSION /app/:
+------
+------
+ > [5/6] COPY native-runtime/linux-arm64/licenses/ /app/licenses/:
+------
+ERROR: failed to solve: failed to compute cache key: failed to calculate checksum of ref t2a68ymmrtgeahojirst77o83::5y86784rqjqfiwmcnrr0h799l: "/native-runtime/linux-arm64/licenses": not found
+
+View build details: docker-desktop://dashboard/build/colima/colima/lke5wosg82bxkme5hkna050rp

@@ -1,0 +1,24 @@
+{
+  "command": [
+    "./gradlew",
+    ":query:shadowJar",
+    ":explore:shadowJar",
+    ":query:installDist",
+    ":explore:installDist",
+    "--no-daemon",
+    "-Dorg.gradle.jvmargs=-Xmx2g",
+    "-Pversion=3.0.0-root-release-audit"
+  ],
+  "exitCode": 0,
+  "gradleSHA256": "32314e0798479cacdd2c52665998c801a8606d1e66b5f9ef75dd0d09d7897eca",
+  "resourcesUnchanged": true,
+  "resources": {
+    "VERSION": "b5855e7a71f60260398213f01e2f4c081f6908295194d66cce2d0ea345820e2b",
+    "SHA256SUMS": "0753a7e8cb2c9999d7e827fb869cd54df35e6b8f44329a49e735895304743e0f",
+    "darwin-amd64/graphite-server": "d48c300a95430ca5e63b1542f9b3a641591601ed5e46fda480c8ffe9bfe3bc0f",
+    "linux-arm64/graphite-server": "0ca8e9fed2b433b40873ea9ab395b02bc9a7b1f36b46b486d287b71eeeb4e26d",
+    "linux-amd64/graphite-server": "4d38ed4fd6ba5d4bd8ff5a1f19e8189dfe45dcc947c233add5b34f49596674da",
+    "darwin-arm64/graphite-server": "6a1e01fcc097d068daac540d2b3f6d101bb50b18f8a85132df0f214d1240b878"
+  },
+  "note": "Only build input declaration changed; source resource bytes unchanged."
+}

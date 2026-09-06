@@ -1,0 +1,85 @@
+{
+  "base": "274cd678ff2b91ac603836467b1026e33ab50b4c",
+  "requiredGradlePatch": {
+    "path": "/tmp/graphite-native-gradle-packaging-delivery/gradle-packaging.patch",
+    "sha256": "1f27e1329d36f55815adfd5cb073dc04e60db2e0ee216007227b8e0138b0a22b"
+  },
+  "sourceRoot": "/private/tmp/graphite-go-native-release-274cd678",
+  "buildSnapshot": "/tmp/graphite-native-release-build-274cd678",
+  "source": {
+    ".github/workflows/publish.yml": "e6d87be7efe48e38b34449593f8e600de689e3041cf7c4b3c441cec19f0e80ab",
+    ".github/workflows/native-packaging.yml": "9d507b92728274d39062a017dc0c7df0991fe58390d6eb73607f01f85cacc859",
+    "graphite-explore/Dockerfile": "16a2ccc055ffe0e1e030f6e107c0cde4b735b0e77d232e10156610af8bf39d79",
+    "graphite-query/src/main/kotlin/io/johnsonlee/graphite/cli/CommandRouteMain.kt": "7ee857485f4f80209151425006db1d1d73e51913a3c712a7e075e93cdb4fba4b",
+    "graphite-query/src/test/kotlin/io/johnsonlee/graphite/cli/CommandRouteTest.kt": "a1a1d521e90d0a8c4cdda4e0a395772bbf5c00715fc66a95e317353ff27d7a27",
+    "scripts/native/graphite-launcher.sh.in": "6238b1482939e905ce270fe887527e40fde935d626a1fb146f4dda9b9f304216",
+    "scripts/native/release.py": "a4843f722a09269b538375208458aa9f3b1eb58a78d23946e4f9b3402958e34f",
+    "scripts/native/stage_docker.py": "e31166aba2bde3d98a4299a87594aaa3dfb1e41bc8c999fbdf7c27cdf8d1cb0e",
+    "scripts/native/test_release.py": "9733dd50c37b2a6d4af5c750756a6f19fca064fccf3bf383aa36a77ea59e09d1",
+    "scripts/native/verify_launcher.py": "c644b9baef8e9dd2cdbe010f27a67764f29bd357eb61dc97cbf31c17456d9416",
+    "scripts/native/verify_native_wrapper.py": "446eca37365d57f7f4f1de2862e3215042f9830d3395a3c7329f851aa278a5e5",
+    "scripts/native/verify_probe_lifecycle.py": "9266a0ab51709e83ee937967ce89aeefc2843f37eeecc051c97755ce271756e3",
+    "scripts/native/verify_docker.py": "67da4c0e640400a1e0ad8363ae00ac1bd818256738a8babaea91420c8cd6e4f8",
+    "scripts/native/RELEASE.md": "bf89c0b8ca3cb21173f29837e3e7a3e572868c5631055fc0195c784800e2a0ef"
+  },
+  "releaseArtifacts": {
+    "/tmp/graphite-native-release-assets-delivery/SHA256SUMS": {
+      "sha256": "95d938d9c5c94169edf4055f5a114f9a066526e0877dd1fc97ef25b55a9ca5a2",
+      "bytes": 660
+    },
+    "/tmp/graphite-native-release-assets-delivery/graphite-explore.jar": {
+      "sha256": "9a7558aa87da840f191d51a36885e6a2aaccd0b8a2d743e729d2e061ccbbf0f8",
+      "bytes": 54929637
+    },
+    "/tmp/graphite-native-release-assets-delivery/graphite-server-3.0.0-packaging-audit-darwin-amd64.tar.gz": {
+      "sha256": "7b8ebb36df5a7b79acfca5dce7ee84509e0fc047d42b77a70bd3eeed47674c77",
+      "bytes": 7156156
+    },
+    "/tmp/graphite-native-release-assets-delivery/graphite-server-3.0.0-packaging-audit-darwin-arm64.tar.gz": {
+      "sha256": "842b2cdf69a1f005b1e11ec1b57917ce09441de4706ea5942eb546a6d32c14e3",
+      "bytes": 6880580
+    },
+    "/tmp/graphite-native-release-assets-delivery/graphite-server-3.0.0-packaging-audit-linux-amd64.tar.gz": {
+      "sha256": "2a63e6e8a4b70cac21e70284edab8821d0ab303000e62f9d8419cc638fa2de81",
+      "bytes": 7152716
+    },
+    "/tmp/graphite-native-release-assets-delivery/graphite-server-3.0.0-packaging-audit-linux-arm64.tar.gz": {
+      "sha256": "0f914cf69a71978a4430e3eab1caa064dd581128526fe9130971a3a3dae3a351",
+      "bytes": 6740727
+    },
+    "/tmp/graphite-native-release-assets-delivery/graphite.jar": {
+      "sha256": "dfaea0fd1e11bbc2ec15b28fe3fdc76ea38306f3eea9c2dda47da7b8ab775d43",
+      "bytes": 65088821
+    },
+    "/tmp/graphite-native-release-assets-delivery/graphite.rb": {
+      "sha256": "087762ada655ef1184de9417dc4a5de56247eb47ffe9910f71d83925dc3bdf85",
+      "bytes": 5208
+    }
+  },
+  "extraNativeProfilingInput": {
+    "path": "/tmp/graphite-native-html-profile-bbdfae2a-final",
+    "sha256": "7741020d44e4ea640626152923de90043989fe5d17c0e96fbcb2fd53674fb50d",
+    "sourceManifest": "/tmp/graphite-go-native-html-profile-bbdfae2a/native-profile-freeze/manifest.json",
+    "sourceManifestSHA256": "e833a7b3f004487fb32120bf8891074e091166c20e5d5e305709c1750116f33d",
+    "note": "Separate frozen profiling task binary; not embedded in the base JARs or archives in this record."
+  },
+  "goVersion": "go version go1.22.0 darwin/arm64",
+  "javaVersion": "openjdk version \"17.0.18\" 2026-01-20\nOpenJDK Runtime Environment Homebrew (build 17.0.18+0)\nOpenJDK 64-Bit Server VM Homebrew (build 17.0.18+0, mixed mode, sharing)\n",
+  "host": "Darwin johnsonlee.local 23.3.0 Darwin Kernel Version 23.3.0: Wed Dec 20 21:31:10 PST 2023; root:xnu-10002.81.5~7/RELEASE_ARM64_T6031 arm64 arm Darwin",
+  "dockerVersion": "Client:\n Cloud integration: v1.0.35+desktop.10\n Version:           25.0.3\n API version:       1.44\n Go version:        go1.21.6\n Git commit:        4debf41\n Built:             Tue Feb  6 21:13:26 2024\n OS/Arch:           darwin/arm64\n Context:           colima\n\nServer: Docker Engine - Community\n Engine:\n  Version:          29.5.2\n  API version:      1.54 (minimum version 1.40)\n  Go version:       go1.26.3\n  Git commit:       568f755\n  Built:            Wed May 20 14:39:25 2026\n  OS/Arch:          linux/arm64\n  Experimental:     false\n containerd:\n  Version:          v2.2.4\n  GitCommit:        193637f7ee8ae5f5aa5248f49e7baa3e6164966e\n runc:\n  Version:          1.3.5\n  GitCommit:        v1.3.5-0-g488fc13e\n docker-init:\n  Version:          0.19.0\n  GitCommit:        de40ad0\n",
+  "homebrewVersion": "Homebrew 6.0.22-67-g29b882c\n",
+  "asyncProfilerVersion": "Async-profiler 4.3 built on Jan 13 2026\n",
+  "completedExitCodes": {
+    "gradleRouteTestsAndDetektAndJARs": 0,
+    "releaseGeneration": 0,
+    "releaseTests": 0,
+    "shellSyntax": 0,
+    "formulaSyntaxAndActualDSL": 0,
+    "launcherNineCases": 0,
+    "routeChildSignalsTwoCases": 0,
+    "nativeHTMLTwoRoutesFinalBinary": 0,
+    "dockerARM64": 0,
+    "dockerAMD64": 0
+  },
+  "performance": "No64 runtime, benchmark, latency, throughput, percentile or speedup measurement. Functional profiler sampling only; other root work may share the host."
+}

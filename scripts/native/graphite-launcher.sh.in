@@ -1,0 +1,73 @@
+#!/bin/bash
+# Server requests run the native executable; graph building and offline query
+# retain the JVM CLI. Arguments are always passed as an array, never evaluated.
+PROFILE=0
+PASSTHROUGH_ARGS=()
+for arg in "$@"; do
+  if [ "$arg" = "--profile" ]; then
+    PROFILE=1
+  else
+    PASSTHROUGH_ARGS+=("$arg")
+  fi
+done
+
+if [ "${PASSTHROUGH_ARGS[0]:-}" = "serve" ]; then
+  if [ "$PROFILE" = 1 ]; then
+    export GRAPHITE_NATIVE_CPU_PROFILE=1
+    export GRAPHITE_PROFILE="${GRAPHITE_PROFILE:-profile.html}"
+  fi
+  exec @NATIVE@ "${PASSTHROUGH_ARGS[@]}"
+fi
+
+export JAVA_TOOL_OPTIONS="${JAVA_TOOL_OPTIONS:-${JAVA_OPTS:--Xmx8g}}"
+# @files and global flags are parsed by the same Picocli command model as the
+# real invocation. The probe never executes user commands. A failed probe goes
+# through the normal JVM path so it cannot silently select a different command.
+if [ "$PROFILE" = 1 ]; then
+  PROBE_DIR="$(mktemp -d "${TMPDIR:-/tmp}/graphite-route.XXXXXX")" || exit 1
+  PROBE_PID=""
+  stop_probe() {
+    trap - TERM INT
+    if [ -n "$PROBE_PID" ]; then
+      kill -TERM "$PROBE_PID" 2>/dev/null
+      wait "$PROBE_PID" 2>/dev/null
+    fi
+    rm -rf -- "$PROBE_DIR"
+    exit "$1"
+  }
+  trap 'stop_probe 143' TERM
+  trap 'stop_probe 130' INT
+  env -u JAVA_TOOL_OPTIONS -u JDK_JAVA_OPTIONS @JAVA@ -Xmx128m -cp @JAR@ io.johnsonlee.graphite.cli.CommandRouteMainKt "${PASSTHROUGH_ARGS[@]}" > "$PROBE_DIR/route" &
+  PROBE_PID=$!
+  ROUTE=""
+  if wait "$PROBE_PID"; then ROUTE="$(cat "$PROBE_DIR/route")"; fi
+  PROBE_PID=""
+  rm -rf -- "$PROBE_DIR"
+  trap - TERM INT
+  if [ "$ROUTE" = "serve" ]; then
+    export GRAPHITE_NATIVE_CPU_PROFILE=1
+    export GRAPHITE_PROFILE="${GRAPHITE_PROFILE:-profile.html}"
+    exec @JAVA@ -jar @JAR@ "${PASSTHROUGH_ARGS[@]}"
+  fi
+fi
+AGENT_ARGS=()
+if [ "$PROFILE" = 1 ]; then
+  PROFILE_OUT="${GRAPHITE_PROFILE:-profile.html}"
+  AP_LIB=""
+  ASPROF="$(command -v asprof 2>/dev/null)"
+  if [ -n "$ASPROF" ]; then
+    AP_DIR="$(dirname "$ASPROF")/../lib"
+    for ext in dylib so; do
+      if [ -f "$AP_DIR/libasyncProfiler.$ext" ]; then
+        AP_LIB="$AP_DIR/libasyncProfiler.$ext"
+        break
+      fi
+    done
+  fi
+  if [ -z "$AP_LIB" ]; then
+    echo "async-profiler not found. Install: brew install async-profiler" >&2
+    exit 1
+  fi
+  AGENT_ARGS=("-agentpath:$AP_LIB=start,event=cpu,file=$PROFILE_OUT")
+fi
+exec @JAVA@ "${AGENT_ARGS[@]}" -jar @JAR@ "${PASSTHROUGH_ARGS[@]}"

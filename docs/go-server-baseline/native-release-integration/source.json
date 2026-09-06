@@ -1,0 +1,39 @@
+{
+  "base": "de0608f0",
+  "archive": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-release-root-_qu5nbxc/source",
+  "files": {
+    ".github/workflows/native-packaging.yml": "9d507b92728274d39062a017dc0c7df0991fe58390d6eb73607f01f85cacc859",
+    ".github/workflows/publish.yml": "e6d87be7efe48e38b34449593f8e600de689e3041cf7c4b3c441cec19f0e80ab",
+    "graphite-explore/Dockerfile": "16a2ccc055ffe0e1e030f6e107c0cde4b735b0e77d232e10156610af8bf39d79",
+    "graphite-explore/build.gradle.kts": "b330ebcb8e4636a58e949b0f8792d1c87514a90799892168bf819a3807a771d1",
+    "graphite-query/src/main/kotlin/io/johnsonlee/graphite/cli/CommandRouteMain.kt": "7ee857485f4f80209151425006db1d1d73e51913a3c712a7e075e93cdb4fba4b",
+    "graphite-query/src/test/kotlin/io/johnsonlee/graphite/cli/CommandRouteTest.kt": "a1a1d521e90d0a8c4cdda4e0a395772bbf5c00715fc66a95e317353ff27d7a27",
+    "graphite-server/README.md": "cf32de803233253d56425b5b32201c6526caeb7cd5a499669b92f752bf1691be",
+    "graphite-server/cmd/graphite-server/main.go": "6d23940b6ab17a71eb2f9acb7f6b7eb148be7f82ef67bd7356147c11c1945006",
+    "graphite-server/cmd/graphite-server/profiling.go": "a98075632a3112171694ee7a263ddc14a83dc946606b75096a370a58d5218487",
+    "graphite-server/cmd/graphite-server/profiling_test.go": "ca99894ddcb6c4d6886dd51b6199cacd7de723ddf244d1a05b1ffecd9e622fd9",
+    "graphite-server/go.mod": "f6e6d88bd6fd905ebf229be49fa18c72371e30b1cfb80c2d7e3d194160bdf0b0",
+    "graphite-server/go.sum": "4a99dfa3f7e66bbdcdd49652f52bac26ad71c5ebcd4c66df6509a6f6bd9d8152",
+    "graphite-server/internal/profiling/README.md": "21dbb8dd0637954130246f7ea3b285464e0ed83226c2e945041bfc1a6cf03606",
+    "graphite-server/internal/profiling/report.go": "56d8733c08cbc7973d053285c9d8db7677fca4e265f36ccc99312a9a8a1cfed2",
+    "graphite-server/internal/profiling/report.html": "c3fda3af962c143f0517ad6cbc4badce3614e2275a01861b0309c3473efd2f61",
+    "graphite-server/internal/profiling/report_test.go": "49c363f41f2b4701a60b5c04687bd1b06d7cc97741fabb144a6d9b76805572b1",
+    "graphite-server/internal/profiling/session.go": "93515c63b31395cb38c43cb7c2bdcbb348774b21baf974d6eb4ecbcaf91a9179",
+    "graphite-server/internal/profiling/session_test.go": "907bef8f5d9c513856c11ba5f0f3acbd53ff443d8111f080fba08d7395cf08eb",
+    "scripts/native/RELEASE.md": "bf89c0b8ca3cb21173f29837e3e7a3e572868c5631055fc0195c784800e2a0ef",
+    "scripts/native/graphite-launcher.sh.in": "6238b1482939e905ce270fe887527e40fde935d626a1fb146f4dda9b9f304216",
+    "scripts/native/release.py": "a4843f722a09269b538375208458aa9f3b1eb58a78d23946e4f9b3402958e34f",
+    "scripts/native/stage_docker.py": "e31166aba2bde3d98a4299a87594aaa3dfb1e41bc8c999fbdf7c27cdf8d1cb0e",
+    "scripts/native/test_release.py": "9733dd50c37b2a6d4af5c750756a6f19fca064fccf3bf383aa36a77ea59e09d1",
+    "scripts/native/verify_docker.py": "67da4c0e640400a1e0ad8363ae00ac1bd818256738a8babaea91420c8cd6e4f8",
+    "scripts/native/verify_launcher.py": "c644b9baef8e9dd2cdbe010f27a67764f29bd357eb61dc97cbf31c17456d9416",
+    "scripts/native/verify_native_wrapper.py": "446eca37365d57f7f4f1de2862e3215042f9830d3395a3c7329f851aa278a5e5",
+    "scripts/native/verify_probe_lifecycle.py": "9266a0ab51709e83ee937967ce89aeefc2843f37eeecc051c97755ce271756e3"
+  },
+  "combinedFeatures": [
+    "native HTML profile",
+    "release packaging",
+    "Gradle report.html input"
+  ],
+  "version": "3.0.0-root-release-audit"
+}

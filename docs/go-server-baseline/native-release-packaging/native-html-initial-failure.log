@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/private/tmp/graphite-go-native-release-274cd678/scripts/native/verify_native_wrapper.py", line 75, in <module>
+    if __name__=='__main__':main()
+                            ~~~~^^
+  File "/private/tmp/graphite-go-native-release-274cd678/scripts/native/verify_native_wrapper.py", line 50, in main
+    if process.poll() is not None or time.monotonic()>=deadline:raise AssertionError((route,process.poll(),text))
+                                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('direct', 1, 'Error: start CPU profile: open docs/go-server-baseline/native-release-packaging/native-html/.graphite-cpu-3134534123.pprof: no such file or directory\n')

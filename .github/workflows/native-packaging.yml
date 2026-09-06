@@ -1,0 +1,73 @@
+name: Native delivery correctness
+
+on:
+  pull_request:
+    paths:
+      - 'scripts/native/**'
+      - 'graphite-explore/build.gradle.kts'
+      - 'graphite-explore/Dockerfile'
+      - 'graphite-query/**'
+      - 'graphite-server/**'
+      - '.github/workflows/native-packaging.yml'
+      - '.github/workflows/publish.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/native/**'
+      - 'graphite-explore/build.gradle.kts'
+      - 'graphite-explore/Dockerfile'
+      - 'graphite-query/**'
+      - 'graphite-server/**'
+      - '.github/workflows/native-packaging.yml'
+      - '.github/workflows/publish.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  linux-packages:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: graphite-server/go.mod
+          cache-dependency-path: graphite-server/go.sum
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Verify packaging inputs and internal command routing
+        run: |
+          python3 graphite-server/internal/web/generate.py --check
+          python3 -W error::ResourceWarning scripts/native/test_release.py
+          python3 -W error::ResourceWarning scripts/native/verify_probe_lifecycle.py --output delivery-evidence/probe-lifecycle.json
+          ./gradlew :query:shadowJar :explore:shadowJar :query:test --tests io.johnsonlee.graphite.cli.CommandRouteTest :query:detekt --no-daemon -Pversion=0.0.0-ci
+      - name: Prepare local release artifacts without publishing
+        run: |
+          python3 scripts/native/release.py --version 0.0.0-ci \
+            --resources graphite-explore/build/generated/native-resources/graphite-native \
+            --query-jar graphite-query/build/libs/graphite.jar \
+            --explore-jar graphite-explore/build/libs/graphite-explore.jar \
+            --output release-assets
+          python3 scripts/native/stage_docker.py --assets release-assets --version 0.0.0-ci --output native-runtime
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - name: Verify actual Linux containers and native PID1
+        run: |
+          docker build --platform linux/amd64 -f graphite-explore/Dockerfile -t graphite-delivery:amd64 .
+          python3 -W error::ResourceWarning scripts/native/verify_docker.py --image graphite-delivery:amd64 --platform linux/amd64 --output delivery-evidence/docker-amd64.json
+          docker build --platform linux/arm64 -f graphite-explore/Dockerfile -t graphite-delivery:arm64 .
+          python3 -W error::ResourceWarning scripts/native/verify_docker.py --image graphite-delivery:arm64 --platform linux/arm64 --output delivery-evidence/docker-arm64.json
+      - name: Verify native HTML profiler through both wrapper routes
+        run: |
+          python3 -W error::ResourceWarning scripts/native/verify_native_wrapper.py \
+            --jar graphite-query/build/libs/graphite.jar \
+            --native graphite-explore/build/generated/native-resources/graphite-native/linux-amd64/graphite-server \
+            --output delivery-evidence/native-html
+      - name: Retain correctness evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-delivery-correctness
+          path: delivery-evidence

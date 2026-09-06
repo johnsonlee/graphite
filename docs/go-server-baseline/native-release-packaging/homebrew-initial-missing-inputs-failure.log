@@ -1,0 +1,3 @@
+/opt/homebrew/Library/Homebrew/formulary.rb:881:in 'Formulary::NullLoader#get_formula': No available formula with the name "graphite". Did you mean graphite2, graphqlite or graphene? (FormulaUnavailableError)
+	from /opt/homebrew/Library/Homebrew/formulary.rb:1010:in 'Formulary.factory'
+	from -e:1:in '<main>'

@@ -1,0 +1,44 @@
+{
+  "runs": [
+    {
+      "command": [
+        "python3",
+        "-W",
+        "error::ResourceWarning",
+        "scripts/native/test_release.py"
+      ],
+      "exitCode": 0,
+      "log": "release-tests.log"
+    },
+    {
+      "command": [
+        "python3",
+        "-W",
+        "error::ResourceWarning",
+        "scripts/native/verify_probe_lifecycle.py",
+        "--output",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-release-integration/probe-lifecycle.json"
+      ],
+      "exitCode": 0,
+      "log": "probe-lifecycle.log"
+    },
+    {
+      "command": [
+        "./gradlew",
+        ":query:shadowJar",
+        ":explore:shadowJar",
+        ":query:installDist",
+        ":explore:installDist",
+        ":query:test",
+        "--tests",
+        "io.johnsonlee.graphite.cli.CommandRouteTest",
+        ":query:detekt",
+        "--no-daemon",
+        "-Dorg.gradle.jvmargs=-Xmx2g",
+        "-Pversion=3.0.0-root-release-audit"
+      ],
+      "exitCode": 0,
+      "log": "gradle.log"
+    }
+  ]
+}

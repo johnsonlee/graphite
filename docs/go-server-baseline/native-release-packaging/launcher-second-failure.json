@@ -1,0 +1,125 @@
+{
+  "passed": false,
+  "error": "JSONDecodeError('Expecting value: line 1 column 1 (char 0)')",
+  "checks": [
+    {
+      "name": "direct",
+      "command": [
+        "serve",
+        "--profile",
+        "--data",
+        "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite wrapper space lulchco8/must not exist",
+        "--port",
+        "0"
+      ],
+      "exitCode": 37,
+      "child": {
+        "args": [
+          "serve",
+          "--data",
+          "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite wrapper space lulchco8/must not exist",
+          "--port",
+          "0"
+        ],
+        "cwd": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite wrapper space lulchco8",
+        "stdin": "literal stdin\n",
+        "nativeProfile": "1",
+        "profilePath": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite wrapper space lulchco8/direct profile.html"
+      },
+      "stdout": "native stdout\n",
+      "stderr": "native stderr\n",
+      "onlyNativeProfileSelected": true
+    },
+    {
+      "name": "profile-prefix",
+      "command": [
+        "--profile",
+        "serve",
+        "--data",
+        "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite wrapper space lulchco8/must not exist",
+        "--port",
+        "0"
+      ],
+      "exitCode": 37,
+      "child": {
+        "args": [
+          "serve",
+          "--data",
+          "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite wrapper space lulchco8/must not exist",
+          "--port",
+          "0"
+        ],
+        "cwd": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite wrapper space lulchco8",
+        "stdin": "literal stdin\n",
+        "nativeProfile": "1",
+        "profilePath": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite wrapper space lulchco8/profile-prefix profile.html"
+      },
+      "stdout": "native stdout\n",
+      "stderr": "native stderr\n",
+      "onlyNativeProfileSelected": true
+    },
+    {
+      "name": "argument-file",
+      "command": [
+        "--profile",
+        "@/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite wrapper space lulchco8/nested.args"
+      ],
+      "exitCode": 37,
+      "child": {
+        "args": [
+          "serve",
+          "--data",
+          "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite wrapper space lulchco8/must not exist",
+          "--port",
+          "0"
+        ],
+        "cwd": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite wrapper space lulchco8",
+        "stdin": "literal stdin\n",
+        "nativeProfile": "1",
+        "profilePath": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite wrapper space lulchco8/argument-file profile.html"
+      },
+      "stdout": "native stdout\n",
+      "stderr": "Picked up JAVA_TOOL_OPTIONS: -Xmx128m -XX:ActiveProcessorCount=2 -Dfile.encoding=UTF-8\nnative stderr\n",
+      "onlyNativeProfileSelected": true
+    },
+    {
+      "name": "nested-argument-file",
+      "command": [
+        "--profile",
+        "@/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite wrapper space lulchco8/top.args"
+      ],
+      "exitCode": 37,
+      "child": {
+        "args": [
+          "serve",
+          "--data",
+          "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite wrapper space lulchco8/must not exist",
+          "--port",
+          "0"
+        ],
+        "cwd": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite wrapper space lulchco8",
+        "stdin": "literal stdin\n",
+        "nativeProfile": "1",
+        "profilePath": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite wrapper space lulchco8/nested-argument-file profile.html"
+      },
+      "stdout": "native stdout\n",
+      "stderr": "Picked up JAVA_TOOL_OPTIONS: -Xmx128m -XX:ActiveProcessorCount=2 -Dfile.encoding=UTF-8\nnative stderr\n",
+      "onlyNativeProfileSelected": true
+    },
+    {
+      "name": "jvm-build",
+      "command": [
+        "build",
+        "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite wrapper space lulchco8/classes",
+        "--output",
+        "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite wrapper space lulchco8/built-store"
+      ],
+      "exitCode": 0,
+      "stdout": "Profiling started\n",
+      "stderr": "Picked up JAVA_TOOL_OPTIONS: -Xmx128m -XX:ActiveProcessorCount=2 -Dfile.encoding=UTF-8\nLoading bytecode from: /var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite wrapper space lulchco8/classes\nGraph built: 10 nodes\nSaving to: /var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite wrapper space lulchco8/built-store\nDone.\n",
+      "htmlSHA256": "c170071ea0f7cecaffdf48289f727d79d441f9e65d43ed85e8c6b835a50c075e",
+      "htmlBytes": 29043,
+      "onlyJVMProfileSelected": true
+    }
+  ]
+}

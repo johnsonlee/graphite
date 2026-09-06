@@ -1,0 +1,61 @@
+#0 building with "colima" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.30kB done
+#1 DONE 0.0s
+
+#2 resolve image config for docker-image://docker.io/docker/dockerfile:1.7
+#2 ...
+
+#3 [auth] docker/dockerfile:pull token for registry-1.docker.io
+#3 DONE 0.0s
+
+#2 resolve image config for docker-image://docker.io/docker/dockerfile:1.7
+#2 DONE 1.3s
+
+#4 docker-image://docker.io/docker/dockerfile:1.7@sha256:a57df69d0ea827fb7266491f2813635de6f17269be881f696fbfdf2d83dda33e
+#4 resolve docker.io/docker/dockerfile:1.7@sha256:a57df69d0ea827fb7266491f2813635de6f17269be881f696fbfdf2d83dda33e 0.0s done
+#4 CACHED
+
+#5 [internal] load .dockerignore
+#5 transferring context: 192B done
+#5 DONE 0.0s
+
+#6 [internal] load build context
+#6 transferring context: 20.03MB 0.1s done
+#6 DONE 0.1s
+
+#7 [1/6] COPY native-runtime/rootfs/ /
+#7 CACHED
+
+#8 [2/6] COPY --chown=1000:1000 native-runtime/writable/ /
+#8 CACHED
+
+#9 [3/6] COPY --chmod=0755 native-runtime/linux-arm64/graphite-server /app/graphite-server
+#9 DONE 0.0s
+
+#10 [4/6] COPY native-runtime/linux-arm64/LICENSE native-runtime/linux-arm64/VERSION /app/
+#10 DONE 0.0s
+
+#11 [5/6] COPY native-runtime/linux-arm64/licenses/ /app/licenses/
+#11 DONE 0.0s
+
+#12 [6/6] WORKDIR /app
+#12 DONE 0.0s
+
+#13 exporting to image
+#13 exporting layers
+#13 exporting layers 0.4s done
+#13 exporting manifest sha256:cb403d10853568dd39fb11caeba8cab8abf169e33ea20ce5c02ffb575f7cee04
+#13 exporting manifest sha256:cb403d10853568dd39fb11caeba8cab8abf169e33ea20ce5c02ffb575f7cee04 done
+#13 exporting config sha256:efe3456c2824700da318e041303b5a84abc9c999841ed6b33dc3c5127157e523 done
+#13 exporting attestation manifest sha256:10f5c3a233ffc6371173b9f8c94ca24fbbbb6576c2ebe9bdc330320e04aa704b done
+#13 exporting manifest list sha256:e6e5377a6158008dbadde3625f313ae34f833a4e53fa0872b4919656a68289d6 done
+#13 naming to docker.io/library/graphite-root-release-audit:arm64 done
+#13 unpacking to docker.io/library/graphite-root-release-audit:arm64 0.1s done
+#13 DONE 0.5s
+
+View build details: docker-desktop://dashboard/build/colima/colima/7s7m4by3tjuj9xl41r7xz4wu9
+
+What's Next?
+  View a summary of image vulnerabilities and recommendations → docker scout quickview

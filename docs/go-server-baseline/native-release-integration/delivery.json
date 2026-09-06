@@ -1,0 +1,25 @@
+{
+  "base": "274cd678",
+  "requiredGradlePatchSHA256": "1f27e1329d36f55815adfd5cb073dc04e60db2e0ee216007227b8e0138b0a22b",
+  "patch": "/tmp/graphite-native-release-packaging-delivery/release-packaging.patch",
+  "patchSHA256": "19b53e606d3faa4baa63ef2fe031d9a1ccce1876151da5743a7002c66d17e0bb",
+  "manifest": "/private/tmp/graphite-go-native-release-274cd678/docs/go-server-baseline/native-release-packaging/manifest.json",
+  "manifestSHA256": "08095bb92c6ae4c4edd309fd475015bc55d9c5bef0665053fb6cae19126dbdf7",
+  "sourceFiles": [
+    ".github/workflows/publish.yml",
+    ".github/workflows/native-packaging.yml",
+    "graphite-explore/Dockerfile",
+    "graphite-query/src/main/kotlin/io/johnsonlee/graphite/cli/CommandRouteMain.kt",
+    "graphite-query/src/test/kotlin/io/johnsonlee/graphite/cli/CommandRouteTest.kt",
+    "scripts/native/graphite-launcher.sh.in",
+    "scripts/native/release.py",
+    "scripts/native/stage_docker.py",
+    "scripts/native/test_release.py",
+    "scripts/native/verify_launcher.py",
+    "scripts/native/verify_native_wrapper.py",
+    "scripts/native/verify_probe_lifecycle.py",
+    "scripts/native/verify_docker.py",
+    "scripts/native/RELEASE.md"
+  ],
+  "bytes": 298575
+}

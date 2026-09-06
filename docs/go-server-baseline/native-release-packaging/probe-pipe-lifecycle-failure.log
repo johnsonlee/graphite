@@ -1,0 +1,20 @@
+Traceback (most recent call last):
+  File "/private/tmp/graphite-go-native-release-274cd678/scripts/native/verify_probe_lifecycle.py", line 55, in <module>
+    if __name__=='__main__':main()
+                            ~~~~^^
+  File "/private/tmp/graphite-go-native-release-274cd678/scripts/native/verify_probe_lifecycle.py", line 38, in main
+    process.send_signal(sig);stdout,stderr=process.communicate(timeout=15)
+                                           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 1220, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 2153, in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.3_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 1267, in _check_timeout
+    raise TimeoutExpired(
+    ...<2 lines>...
+            stderr=b''.join(stderr_seq) if stderr_seq else None)
+subprocess.TimeoutExpired: Command '['/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite route lifecycle ncvio7oo/graphite', '--profile', '@args']' timed out after 15 seconds
+Exception ignored while finalizing file <_io.FileIO name=6 mode='rb' closefd=True>:
+ResourceWarning: unclosed file <_io.TextIOWrapper name=6 encoding='utf-8'>
