@@ -4262,11 +4262,19 @@ pool is never consulted for CallSite projections.
   on rows charging one work unit, so the hosted paired gate remains the authoritative reading.
 - The first hosted run of PR #117 failed the wrapped-query resource guard with "invalid
   loaded/retained/peak heap relationship": the view's in-heap trigram directory (about 128 KiB per
-  graph, 4.6 MiB across the 36 resource-benchmark graphs) was retained after the query and exceeded
-  the sampled peak. The directory now lives in direct buffers, still reserved against the CallSite
-  index budget, so a request retains no heap for it; the same run's method-compatibility aggregate
-  shards flagged process CPU time on Method-label count/order scenarios that this change does not
-  touch, with the base itself measuring `3.21 s` CPU on one of those single-shot runs.
+  graph, 4.6 MiB across the 36 resource-benchmark graphs) is retained after the query and exceeds
+  the sampled peak because the harness samples `totalMemory - freeMemory` every millisecond in
+  2 MiB G1 region steps, so a query allocating under one region leaves the sampled peak at the
+  loaded value. Moving the directory into direct buffers was tried and rejected in review: the
+  budget reservation is released synchronously on close while direct buffers are only reclaimed by
+  the cleaner, so a rapid open/close cycle could exceed the index budget natively. The directory
+  stays on the heap under its reservation, the view load scratch pool holds weak references and
+  the posting range validation cache allocates lazily, and the comparator relationship check is a
+  base-owned fix for `main` (peak = max(sampled, loaded + retained)). The same run's
+  method-compatibility aggregate shards flagged single-shot process CPU on Method-label
+  count/order scenarios this change does not touch; six interleaved local runs per revision swing
+  `2.66..4.97 s` (main) and `2.75..4.82 s` (candidate) with equal wall time, and with JFR
+  compilation events attached both revisions measure identical CPU, JIT totals, and GC pauses.
 - The same hosted run failed the 10x global-wide gate at `3.64x / 14.05x / 5.76x` (base P95
   `116.9 / 357.5 / 140.7 ms`, candidate `32.1 / 25.4 / 24.4 ms`). The gate's P95 is the second-largest
   of 34 cold single-shot latencies, and the candidate's second-largest is the first row-producing
