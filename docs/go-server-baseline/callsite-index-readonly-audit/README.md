@@ -76,8 +76,11 @@ int64 trigram postings, and one int64 holding an unsigned CRC32 value. Exact siz
 
 `76 + Σp(8*U[p] + 4*C) + 8*S + 8*T + 8`.
 
-CRC32 covers every preceding byte, including the header, using the same big-endian
-serialization. The footer is excluded; trailing bytes are rejected. A trigram
+CRC32 covers the preceding logical fields, including the header, but uses
+**little-endian bytes for each int32/int64 value**, unlike the big-endian disk
+encoding. The 32-byte content identity is fed to CRC unchanged. The footer is
+excluded; trailing bytes are rejected. CRC over the raw file prefix is incorrect.
+A trigram
 posting is `(int64(hash) << 32) | uint32(stringId)`, sorted in Java long order.
 The hash is `(u0*31 + u1)*31 + u2` over three **UTF-16 units of Java ROOT-lowercased
 text**. Each hash occurs at most once per string. Only strings used by at least
@@ -90,6 +93,16 @@ exact membership proof.
 Source: `MappedCallSiteStringIndex.kt` `writePersistent` (720),
 `PropertyCsr.writePersistent` (1026), `readPersistent` (1476), trigram generation
 (2611–2659), constants (2695–2711); `MappedCallSiteStringIndexView.kt` `load` (260).
+
+Correction after the initial audit: commit `0ce67544` incorrectly described CRC
+as operating on big-endian file bytes. A main-generated tiny-index reader test
+exposed that error. `persistentChecksum` (1617–1648) uses `updateInt`/`updateLong`
+(2681–2691), whose shifts feed low-order bytes first; the mapped view validator
+uses `reverseBytes` before its buffer updates (448–499). The independent
+`crc-endianness-check.py` validates this against one real persisted index and
+records both the matching typed-field CRC and the nonmatching raw-file CRC.
+The original 64-header inventory remains unchanged; this correction does not
+claim full 64-file CRC/CSR validation or a performance result.
 
 ## Identity and validity contract
 

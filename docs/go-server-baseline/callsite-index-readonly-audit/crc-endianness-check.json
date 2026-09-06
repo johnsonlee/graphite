@@ -1,0 +1,11 @@
+{
+  "path": "/tmp/pr113-exp037-fixture.nXn4fg/fixture-android-00/graph.callsite-string-index",
+  "sha256": "eb123708408e4a5062a15ea649512be3c7dc09c7acfa88af8c07329fb272f608",
+  "bytes": 7054100,
+  "footerCRC32": 2720212970,
+  "typedLittleEndianCRC32": 2720212970,
+  "rawFileCRC32": 4090894897,
+  "typedEncodingMatches": true,
+  "rawEncodingMatches": false,
+  "scope": "One real index checksum; no posting semantic validation or performance measurement."
+}
