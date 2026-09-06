@@ -1,0 +1,151 @@
+{
+  "purpose": "Tiny correctness only, four concurrent workers, no performance measurement",
+  "cases": [
+    {
+      "case": "root-0",
+      "defaultStatus": 200,
+      "zeroBudgetStatus": 200,
+      "equivalent": true
+    },
+    {
+      "case": "root-1",
+      "defaultStatus": 200,
+      "zeroBudgetStatus": 200,
+      "equivalent": true
+    },
+    {
+      "case": "root-2",
+      "defaultStatus": 200,
+      "zeroBudgetStatus": 400,
+      "equivalent": false
+    },
+    {
+      "case": "root-3",
+      "defaultStatus": 200,
+      "zeroBudgetStatus": 400,
+      "equivalent": false
+    },
+    {
+      "case": "root-4",
+      "defaultStatus": 200,
+      "zeroBudgetStatus": 200,
+      "equivalent": true
+    },
+    {
+      "case": "root-5",
+      "defaultStatus": 200,
+      "zeroBudgetStatus": 200,
+      "equivalent": true
+    },
+    {
+      "case": "scoped-0",
+      "defaultStatus": 200,
+      "zeroBudgetStatus": 200,
+      "equivalent": true
+    },
+    {
+      "case": "scoped-1",
+      "defaultStatus": 200,
+      "zeroBudgetStatus": 200,
+      "equivalent": false
+    },
+    {
+      "case": "scoped-2",
+      "defaultStatus": 200,
+      "zeroBudgetStatus": 400,
+      "equivalent": false
+    },
+    {
+      "case": "scoped-3",
+      "defaultStatus": 200,
+      "zeroBudgetStatus": 400,
+      "equivalent": false
+    },
+    {
+      "case": "scoped-4",
+      "defaultStatus": 200,
+      "zeroBudgetStatus": 200,
+      "equivalent": true
+    },
+    {
+      "case": "scoped-5",
+      "defaultStatus": 200,
+      "zeroBudgetStatus": 200,
+      "equivalent": true
+    },
+    {
+      "case": "selected-0",
+      "defaultStatus": 200,
+      "zeroBudgetStatus": 200,
+      "equivalent": true
+    },
+    {
+      "case": "selected-1",
+      "defaultStatus": 200,
+      "zeroBudgetStatus": 200,
+      "equivalent": true
+    },
+    {
+      "case": "selected-2",
+      "defaultStatus": 200,
+      "zeroBudgetStatus": 400,
+      "equivalent": false
+    },
+    {
+      "case": "selected-3",
+      "defaultStatus": 200,
+      "zeroBudgetStatus": 400,
+      "equivalent": false
+    },
+    {
+      "case": "selected-4",
+      "defaultStatus": 200,
+      "zeroBudgetStatus": 200,
+      "equivalent": true
+    },
+    {
+      "case": "selected-5",
+      "defaultStatus": 200,
+      "zeroBudgetStatus": 200,
+      "equivalent": true
+    },
+    {
+      "case": "fanout-0",
+      "defaultStatus": 200,
+      "zeroBudgetStatus": 200,
+      "equivalent": true
+    },
+    {
+      "case": "fanout-1",
+      "defaultStatus": 200,
+      "zeroBudgetStatus": 200,
+      "equivalent": false
+    },
+    {
+      "case": "fanout-2",
+      "defaultStatus": 200,
+      "zeroBudgetStatus": 400,
+      "equivalent": false
+    },
+    {
+      "case": "fanout-3",
+      "defaultStatus": 200,
+      "zeroBudgetStatus": 400,
+      "equivalent": false
+    },
+    {
+      "case": "fanout-4",
+      "defaultStatus": 200,
+      "zeroBudgetStatus": 200,
+      "equivalent": true
+    },
+    {
+      "case": "fanout-5",
+      "defaultStatus": 200,
+      "zeroBudgetStatus": 200,
+      "equivalent": true
+    }
+  ],
+  "passed": 14,
+  "total": 24
+}

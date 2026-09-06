@@ -1,0 +1,1292 @@
+[
+  {
+    "case": {
+      "name": "root-0",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n:CallSiteNode) RETURN n.caller_class AS caller,n.callee_name AS callee",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:30:35 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "242"
+        ]
+      ],
+      "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgImNhbGxlciIsCiAgICAiY2FsbGVlIgogIF0sCiAgInJvd3MiOiBbCiAgICB7CiAgICAgICJjYWxsZXIiOiAiRXhhbXBsZSIsCiAgICAgICJjYWxsZWUiOiAiY2FsbGVlIiwKICAgICAgIiRtZXRhZGF0YSI6IHsKICAgICAgICAiZ3JhcGhJZHMiOiBbCiAgICAgICAgICAiYSIKICAgICAgICBdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0=",
+      "bodyUTF8": "{\n  \"columns\": [\n    \"caller\",\n    \"callee\"\n  ],\n  \"rows\": [\n    {\n      \"caller\": \"Example\",\n      \"callee\": \"callee\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    }\n  ],\n  \"rowCount\": 1,\n  \"graphCount\": 1\n}",
+      "json": {
+        "columns": [
+          "caller",
+          "callee"
+        ],
+        "rows": [
+          {
+            "caller": "Example",
+            "callee": "callee",
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            }
+          }
+        ],
+        "rowCount": 1,
+        "graphCount": 1
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "root-1",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n:CallSiteNode) WHERE n.callee_name CONTAINS 'cal' RETURN n.callee_name AS name",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:30:35 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "197"
+        ]
+      ],
+      "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIm5hbWUiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIm5hbWUiOiAiY2FsbGVlIiwKICAgICAgIiRtZXRhZGF0YSI6IHsKICAgICAgICAiZ3JhcGhJZHMiOiBbCiAgICAgICAgICAiYSIKICAgICAgICBdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0=",
+      "bodyUTF8": "{\n  \"columns\": [\n    \"name\"\n  ],\n  \"rows\": [\n    {\n      \"name\": \"callee\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    }\n  ],\n  \"rowCount\": 1,\n  \"graphCount\": 1\n}",
+      "json": {
+        "columns": [
+          "name"
+        ],
+        "rows": [
+          {
+            "name": "callee",
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            }
+          }
+        ],
+        "rowCount": 1,
+        "graphCount": 1
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "root-2",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n:CallSiteNode) WHERE toLower(n.callee_name) CONTAINS 'cal' OR toLower(n.caller_class) STARTS WITH 'exa' RETURN DISTINCT n.callee_name AS name",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:30:35 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "197"
+        ]
+      ],
+      "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIm5hbWUiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIm5hbWUiOiAiY2FsbGVlIiwKICAgICAgIiRtZXRhZGF0YSI6IHsKICAgICAgICAiZ3JhcGhJZHMiOiBbCiAgICAgICAgICAiYSIKICAgICAgICBdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0=",
+      "bodyUTF8": "{\n  \"columns\": [\n    \"name\"\n  ],\n  \"rows\": [\n    {\n      \"name\": \"callee\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    }\n  ],\n  \"rowCount\": 1,\n  \"graphCount\": 1\n}",
+      "json": {
+        "columns": [
+          "name"
+        ],
+        "rows": [
+          {
+            "name": "callee",
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            }
+          }
+        ],
+        "rowCount": 1,
+        "graphCount": 1
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "root-3",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n:CallSiteNode) WHERE n.callee_name CONTAINS 'missing-never' RETURN DISTINCT n.callee_name AS name",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:30:35 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "83"
+        ]
+      ],
+      "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIm5hbWUiCiAgXSwKICAicm93cyI6IFtdLAogICJyb3dDb3VudCI6IDAsCiAgImdyYXBoQ291bnQiOiAxCn0=",
+      "bodyUTF8": "{\n  \"columns\": [\n    \"name\"\n  ],\n  \"rows\": [],\n  \"rowCount\": 0,\n  \"graphCount\": 1\n}",
+      "json": {
+        "columns": [
+          "name"
+        ],
+        "rows": [],
+        "rowCount": 0,
+        "graphCount": 1
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "root-4",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n:CallSiteNode) WHERE n.callee_name CONTAINS 'cal' RETURN count(n) AS count",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:30:35 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "192"
+        ]
+      ],
+      "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgImNvdW50IgogIF0sCiAgInJvd3MiOiBbCiAgICB7CiAgICAgICJjb3VudCI6IDEsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogWwogICAgICAgICAgImEiCiAgICAgICAgXQogICAgICB9CiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxLAogICJncmFwaENvdW50IjogMQp9",
+      "bodyUTF8": "{\n  \"columns\": [\n    \"count\"\n  ],\n  \"rows\": [\n    {\n      \"count\": 1,\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    }\n  ],\n  \"rowCount\": 1,\n  \"graphCount\": 1\n}",
+      "json": {
+        "columns": [
+          "count"
+        ],
+        "rows": [
+          {
+            "count": 1,
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            }
+          }
+        ],
+        "rowCount": 1,
+        "graphCount": 1
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "root-5",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n:CallSiteNode) RETURN DISTINCT n.caller_class AS caller,n.callee_name AS callee",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:30:35 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "242"
+        ]
+      ],
+      "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgImNhbGxlciIsCiAgICAiY2FsbGVlIgogIF0sCiAgInJvd3MiOiBbCiAgICB7CiAgICAgICJjYWxsZXIiOiAiRXhhbXBsZSIsCiAgICAgICJjYWxsZWUiOiAiY2FsbGVlIiwKICAgICAgIiRtZXRhZGF0YSI6IHsKICAgICAgICAiZ3JhcGhJZHMiOiBbCiAgICAgICAgICAiYSIKICAgICAgICBdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0=",
+      "bodyUTF8": "{\n  \"columns\": [\n    \"caller\",\n    \"callee\"\n  ],\n  \"rows\": [\n    {\n      \"caller\": \"Example\",\n      \"callee\": \"callee\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    }\n  ],\n  \"rowCount\": 1,\n  \"graphCount\": 1\n}",
+      "json": {
+        "columns": [
+          "caller",
+          "callee"
+        ],
+        "rows": [
+          {
+            "caller": "Example",
+            "callee": "callee",
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            }
+          }
+        ],
+        "rowCount": 1,
+        "graphCount": 1
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "scoped-0",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher",
+      "body": {
+        "query": "MATCH (n:CallSiteNode) RETURN n.caller_class AS caller,n.callee_name AS callee",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:30:35 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "147"
+        ]
+      ],
+      "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgImNhbGxlciIsCiAgICAiY2FsbGVlIgogIF0sCiAgInJvd3MiOiBbCiAgICB7CiAgICAgICJjYWxsZXIiOiAiRXhhbXBsZSIsCiAgICAgICJjYWxsZWUiOiAiY2FsbGVlIgogICAgfQogIF0sCiAgInJvd0NvdW50IjogMQp9",
+      "bodyUTF8": "{\n  \"columns\": [\n    \"caller\",\n    \"callee\"\n  ],\n  \"rows\": [\n    {\n      \"caller\": \"Example\",\n      \"callee\": \"callee\"\n    }\n  ],\n  \"rowCount\": 1\n}",
+      "json": {
+        "columns": [
+          "caller",
+          "callee"
+        ],
+        "rows": [
+          {
+            "caller": "Example",
+            "callee": "callee"
+          }
+        ],
+        "rowCount": 1
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "scoped-1",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher",
+      "body": {
+        "query": "MATCH (n:CallSiteNode) WHERE n.callee_name CONTAINS 'cal' RETURN n.callee_name AS name",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:30:35 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "183"
+        ]
+      ],
+      "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIm5hbWUiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIm5hbWUiOiAiY2FsbGVlIiwKICAgICAgIiRtZXRhZGF0YSI6IHsKICAgICAgICAiZ3JhcGhJZHMiOiBbCiAgICAgICAgICAic2luZ2xlIgogICAgICAgIF0KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMQp9",
+      "bodyUTF8": "{\n  \"columns\": [\n    \"name\"\n  ],\n  \"rows\": [\n    {\n      \"name\": \"callee\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"single\"\n        ]\n      }\n    }\n  ],\n  \"rowCount\": 1\n}",
+      "json": {
+        "columns": [
+          "name"
+        ],
+        "rows": [
+          {
+            "name": "callee",
+            "$metadata": {
+              "graphIds": [
+                "single"
+              ]
+            }
+          }
+        ],
+        "rowCount": 1
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "scoped-2",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher",
+      "body": {
+        "query": "MATCH (n:CallSiteNode) WHERE toLower(n.callee_name) CONTAINS 'cal' OR toLower(n.caller_class) STARTS WITH 'exa' RETURN DISTINCT n.callee_name AS name",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:30:35 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "183"
+        ]
+      ],
+      "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIm5hbWUiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIm5hbWUiOiAiY2FsbGVlIiwKICAgICAgIiRtZXRhZGF0YSI6IHsKICAgICAgICAiZ3JhcGhJZHMiOiBbCiAgICAgICAgICAic2luZ2xlIgogICAgICAgIF0KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMQp9",
+      "bodyUTF8": "{\n  \"columns\": [\n    \"name\"\n  ],\n  \"rows\": [\n    {\n      \"name\": \"callee\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"single\"\n        ]\n      }\n    }\n  ],\n  \"rowCount\": 1\n}",
+      "json": {
+        "columns": [
+          "name"
+        ],
+        "rows": [
+          {
+            "name": "callee",
+            "$metadata": {
+              "graphIds": [
+                "single"
+              ]
+            }
+          }
+        ],
+        "rowCount": 1
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "scoped-3",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher",
+      "body": {
+        "query": "MATCH (n:CallSiteNode) WHERE n.callee_name CONTAINS 'missing-never' RETURN DISTINCT n.callee_name AS name",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:30:35 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "64"
+        ]
+      ],
+      "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIm5hbWUiCiAgXSwKICAicm93cyI6IFtdLAogICJyb3dDb3VudCI6IDAKfQ==",
+      "bodyUTF8": "{\n  \"columns\": [\n    \"name\"\n  ],\n  \"rows\": [],\n  \"rowCount\": 0\n}",
+      "json": {
+        "columns": [
+          "name"
+        ],
+        "rows": [],
+        "rowCount": 0
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "scoped-4",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher",
+      "body": {
+        "query": "MATCH (n:CallSiteNode) WHERE n.callee_name CONTAINS 'cal' RETURN count(n) AS count",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:30:35 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "97"
+        ]
+      ],
+      "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgImNvdW50IgogIF0sCiAgInJvd3MiOiBbCiAgICB7CiAgICAgICJjb3VudCI6IDEKICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEKfQ==",
+      "bodyUTF8": "{\n  \"columns\": [\n    \"count\"\n  ],\n  \"rows\": [\n    {\n      \"count\": 1\n    }\n  ],\n  \"rowCount\": 1\n}",
+      "json": {
+        "columns": [
+          "count"
+        ],
+        "rows": [
+          {
+            "count": 1
+          }
+        ],
+        "rowCount": 1
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "scoped-5",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher",
+      "body": {
+        "query": "MATCH (n:CallSiteNode) RETURN DISTINCT n.caller_class AS caller,n.callee_name AS callee",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:30:35 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "147"
+        ]
+      ],
+      "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgImNhbGxlciIsCiAgICAiY2FsbGVlIgogIF0sCiAgInJvd3MiOiBbCiAgICB7CiAgICAgICJjYWxsZXIiOiAiRXhhbXBsZSIsCiAgICAgICJjYWxsZWUiOiAiY2FsbGVlIgogICAgfQogIF0sCiAgInJvd0NvdW50IjogMQp9",
+      "bodyUTF8": "{\n  \"columns\": [\n    \"caller\",\n    \"callee\"\n  ],\n  \"rows\": [\n    {\n      \"caller\": \"Example\",\n      \"callee\": \"callee\"\n    }\n  ],\n  \"rowCount\": 1\n}",
+      "json": {
+        "columns": [
+          "caller",
+          "callee"
+        ],
+        "rows": [
+          {
+            "caller": "Example",
+            "callee": "callee"
+          }
+        ],
+        "rowCount": 1
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "selected-0",
+      "method": "POST",
+      "path": "/api/cypher/graphs",
+      "body": {
+        "query": "MATCH (n:CallSiteNode) RETURN n.caller_class AS caller,n.callee_name AS callee",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:30:35 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "311"
+        ]
+      ],
+      "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAiY2FsbGVyIiwKICAgICJjYWxsZWUiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgImNhbGxlciI6ICJFeGFtcGxlIiwKICAgICAgImNhbGxlZSI6ICJjYWxsZWUiLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFsKICAgICAgICAgICJhIgogICAgICAgIF0KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAibGltaXQiOiAxMDAwCn0=",
+      "bodyUTF8": "{\n  \"mode\": \"cross-graph\",\n  \"graphs\": [\n    \"a\"\n  ],\n  \"graphCount\": 1,\n  \"columns\": [\n    \"caller\",\n    \"callee\"\n  ],\n  \"rows\": [\n    {\n      \"caller\": \"Example\",\n      \"callee\": \"callee\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    }\n  ],\n  \"rowCount\": 1,\n  \"limit\": 1000\n}",
+      "json": {
+        "mode": "cross-graph",
+        "graphs": [
+          "a"
+        ],
+        "graphCount": 1,
+        "columns": [
+          "caller",
+          "callee"
+        ],
+        "rows": [
+          {
+            "caller": "Example",
+            "callee": "callee",
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            }
+          }
+        ],
+        "rowCount": 1,
+        "limit": 1000
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "selected-1",
+      "method": "POST",
+      "path": "/api/cypher/graphs",
+      "body": {
+        "query": "MATCH (n:CallSiteNode) WHERE n.callee_name CONTAINS 'cal' RETURN n.callee_name AS name",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:30:35 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "266"
+        ]
+      ],
+      "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAibmFtZSIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAibmFtZSI6ICJjYWxsZWUiLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFsKICAgICAgICAgICJhIgogICAgICAgIF0KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAibGltaXQiOiAxMDAwCn0=",
+      "bodyUTF8": "{\n  \"mode\": \"cross-graph\",\n  \"graphs\": [\n    \"a\"\n  ],\n  \"graphCount\": 1,\n  \"columns\": [\n    \"name\"\n  ],\n  \"rows\": [\n    {\n      \"name\": \"callee\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    }\n  ],\n  \"rowCount\": 1,\n  \"limit\": 1000\n}",
+      "json": {
+        "mode": "cross-graph",
+        "graphs": [
+          "a"
+        ],
+        "graphCount": 1,
+        "columns": [
+          "name"
+        ],
+        "rows": [
+          {
+            "name": "callee",
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            }
+          }
+        ],
+        "rowCount": 1,
+        "limit": 1000
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "selected-2",
+      "method": "POST",
+      "path": "/api/cypher/graphs",
+      "body": {
+        "query": "MATCH (n:CallSiteNode) WHERE toLower(n.callee_name) CONTAINS 'cal' OR toLower(n.caller_class) STARTS WITH 'exa' RETURN DISTINCT n.callee_name AS name",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:30:35 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "266"
+        ]
+      ],
+      "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAibmFtZSIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAibmFtZSI6ICJjYWxsZWUiLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFsKICAgICAgICAgICJhIgogICAgICAgIF0KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAibGltaXQiOiAxMDAwCn0=",
+      "bodyUTF8": "{\n  \"mode\": \"cross-graph\",\n  \"graphs\": [\n    \"a\"\n  ],\n  \"graphCount\": 1,\n  \"columns\": [\n    \"name\"\n  ],\n  \"rows\": [\n    {\n      \"name\": \"callee\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    }\n  ],\n  \"rowCount\": 1,\n  \"limit\": 1000\n}",
+      "json": {
+        "mode": "cross-graph",
+        "graphs": [
+          "a"
+        ],
+        "graphCount": 1,
+        "columns": [
+          "name"
+        ],
+        "rows": [
+          {
+            "name": "callee",
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            }
+          }
+        ],
+        "rowCount": 1,
+        "limit": 1000
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "selected-3",
+      "method": "POST",
+      "path": "/api/cypher/graphs",
+      "body": {
+        "query": "MATCH (n:CallSiteNode) WHERE n.callee_name CONTAINS 'missing-never' RETURN DISTINCT n.callee_name AS name",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:30:35 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "152"
+        ]
+      ],
+      "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAibmFtZSIKICBdLAogICJyb3dzIjogW10sCiAgInJvd0NvdW50IjogMCwKICAibGltaXQiOiAxMDAwCn0=",
+      "bodyUTF8": "{\n  \"mode\": \"cross-graph\",\n  \"graphs\": [\n    \"a\"\n  ],\n  \"graphCount\": 1,\n  \"columns\": [\n    \"name\"\n  ],\n  \"rows\": [],\n  \"rowCount\": 0,\n  \"limit\": 1000\n}",
+      "json": {
+        "mode": "cross-graph",
+        "graphs": [
+          "a"
+        ],
+        "graphCount": 1,
+        "columns": [
+          "name"
+        ],
+        "rows": [],
+        "rowCount": 0,
+        "limit": 1000
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "selected-4",
+      "method": "POST",
+      "path": "/api/cypher/graphs",
+      "body": {
+        "query": "MATCH (n:CallSiteNode) WHERE n.callee_name CONTAINS 'cal' RETURN count(n) AS count",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:30:35 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "261"
+        ]
+      ],
+      "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAiY291bnQiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgImNvdW50IjogMSwKICAgICAgIiRtZXRhZGF0YSI6IHsKICAgICAgICAiZ3JhcGhJZHMiOiBbCiAgICAgICAgICAiYSIKICAgICAgICBdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImxpbWl0IjogMTAwMAp9",
+      "bodyUTF8": "{\n  \"mode\": \"cross-graph\",\n  \"graphs\": [\n    \"a\"\n  ],\n  \"graphCount\": 1,\n  \"columns\": [\n    \"count\"\n  ],\n  \"rows\": [\n    {\n      \"count\": 1,\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    }\n  ],\n  \"rowCount\": 1,\n  \"limit\": 1000\n}",
+      "json": {
+        "mode": "cross-graph",
+        "graphs": [
+          "a"
+        ],
+        "graphCount": 1,
+        "columns": [
+          "count"
+        ],
+        "rows": [
+          {
+            "count": 1,
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            }
+          }
+        ],
+        "rowCount": 1,
+        "limit": 1000
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "selected-5",
+      "method": "POST",
+      "path": "/api/cypher/graphs",
+      "body": {
+        "query": "MATCH (n:CallSiteNode) RETURN DISTINCT n.caller_class AS caller,n.callee_name AS callee",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:30:35 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "311"
+        ]
+      ],
+      "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAiY2FsbGVyIiwKICAgICJjYWxsZWUiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgImNhbGxlciI6ICJFeGFtcGxlIiwKICAgICAgImNhbGxlZSI6ICJjYWxsZWUiLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFsKICAgICAgICAgICJhIgogICAgICAgIF0KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAibGltaXQiOiAxMDAwCn0=",
+      "bodyUTF8": "{\n  \"mode\": \"cross-graph\",\n  \"graphs\": [\n    \"a\"\n  ],\n  \"graphCount\": 1,\n  \"columns\": [\n    \"caller\",\n    \"callee\"\n  ],\n  \"rows\": [\n    {\n      \"caller\": \"Example\",\n      \"callee\": \"callee\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"a\"\n        ]\n      }\n    }\n  ],\n  \"rowCount\": 1,\n  \"limit\": 1000\n}",
+      "json": {
+        "mode": "cross-graph",
+        "graphs": [
+          "a"
+        ],
+        "graphCount": 1,
+        "columns": [
+          "caller",
+          "callee"
+        ],
+        "rows": [
+          {
+            "caller": "Example",
+            "callee": "callee",
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            }
+          }
+        ],
+        "rowCount": 1,
+        "limit": 1000
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "fanout-0",
+      "method": "POST",
+      "path": "/api/cypher/graphs?mode=fanout&includeGraphRows=true",
+      "body": {
+        "query": "MATCH (n:CallSiteNode) RETURN n.caller_class AS caller,n.callee_name AS callee",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:30:35 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "580"
+        ]
+      ],
+      "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgImdyYXBoSWQiLAogICAgImNhbGxlciIsCiAgICAiY2FsbGVlIgogIF0sCiAgInJvd3MiOiBbCiAgICB7CiAgICAgICJncmFwaElkIjogImEiLAogICAgICAiY2FsbGVyIjogIkV4YW1wbGUiLAogICAgICAiY2FsbGVlIjogImNhbGxlZSIKICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxLAogICJxdWVyaWVkR3JhcGhDb3VudCI6IDEsCiAgInBlckdyYXBoTGltaXQiOiAxMDAwLAogICJsaW1pdCI6IDEwMDAsCiAgInRydW5jYXRlZCI6IGZhbHNlLAogICJncmFwaHMiOiBbCiAgICB7CiAgICAgICJncmFwaElkIjogImEiLAogICAgICAiY29sdW1ucyI6IFsKICAgICAgICAiY2FsbGVyIiwKICAgICAgICAiY2FsbGVlIgogICAgICBdLAogICAgICAicm93Q291bnQiOiAxLAogICAgICAicm93cyI6IFsKICAgICAgICB7CiAgICAgICAgICAiZ3JhcGhJZCI6ICJhIiwKICAgICAgICAgICJjYWxsZXIiOiAiRXhhbXBsZSIsCiAgICAgICAgICAiY2FsbGVlIjogImNhbGxlZSIKICAgICAgICB9CiAgICAgIF0KICAgIH0KICBdLAogICJtb2RlIjogImZhbm91dCIKfQ==",
+      "bodyUTF8": "{\n  \"columns\": [\n    \"graphId\",\n    \"caller\",\n    \"callee\"\n  ],\n  \"rows\": [\n    {\n      \"graphId\": \"a\",\n      \"caller\": \"Example\",\n      \"callee\": \"callee\"\n    }\n  ],\n  \"rowCount\": 1,\n  \"graphCount\": 1,\n  \"queriedGraphCount\": 1,\n  \"perGraphLimit\": 1000,\n  \"limit\": 1000,\n  \"truncated\": false,\n  \"graphs\": [\n    {\n      \"graphId\": \"a\",\n      \"columns\": [\n        \"caller\",\n        \"callee\"\n      ],\n      \"rowCount\": 1,\n      \"rows\": [\n        {\n          \"graphId\": \"a\",\n          \"caller\": \"Example\",\n          \"callee\": \"callee\"\n        }\n      ]\n    }\n  ],\n  \"mode\": \"fanout\"\n}",
+      "json": {
+        "columns": [
+          "graphId",
+          "caller",
+          "callee"
+        ],
+        "rows": [
+          {
+            "graphId": "a",
+            "caller": "Example",
+            "callee": "callee"
+          }
+        ],
+        "rowCount": 1,
+        "graphCount": 1,
+        "queriedGraphCount": 1,
+        "perGraphLimit": 1000,
+        "limit": 1000,
+        "truncated": false,
+        "graphs": [
+          {
+            "graphId": "a",
+            "columns": [
+              "caller",
+              "callee"
+            ],
+            "rowCount": 1,
+            "rows": [
+              {
+                "graphId": "a",
+                "caller": "Example",
+                "callee": "callee"
+              }
+            ]
+          }
+        ],
+        "mode": "fanout"
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "fanout-1",
+      "method": "POST",
+      "path": "/api/cypher/graphs?mode=fanout&includeGraphRows=true",
+      "body": {
+        "query": "MATCH (n:CallSiteNode) WHERE n.callee_name CONTAINS 'cal' RETURN n.callee_name AS name",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:30:35 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "664"
+        ]
+      ],
+      "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgImdyYXBoSWQiLAogICAgIm5hbWUiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgImdyYXBoSWQiOiAiYSIsCiAgICAgICJuYW1lIjogImNhbGxlZSIsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogWwogICAgICAgICAgInNpbmdsZSIKICAgICAgICBdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxLAogICJxdWVyaWVkR3JhcGhDb3VudCI6IDEsCiAgInBlckdyYXBoTGltaXQiOiAxMDAwLAogICJsaW1pdCI6IDEwMDAsCiAgInRydW5jYXRlZCI6IGZhbHNlLAogICJncmFwaHMiOiBbCiAgICB7CiAgICAgICJncmFwaElkIjogImEiLAogICAgICAiY29sdW1ucyI6IFsKICAgICAgICAibmFtZSIKICAgICAgXSwKICAgICAgInJvd0NvdW50IjogMSwKICAgICAgInJvd3MiOiBbCiAgICAgICAgewogICAgICAgICAgImdyYXBoSWQiOiAiYSIsCiAgICAgICAgICAibmFtZSI6ICJjYWxsZWUiLAogICAgICAgICAgIiRtZXRhZGF0YSI6IHsKICAgICAgICAgICAgImdyYXBoSWRzIjogWwogICAgICAgICAgICAgICJzaW5nbGUiCiAgICAgICAgICAgIF0KICAgICAgICAgIH0KICAgICAgICB9CiAgICAgIF0KICAgIH0KICBdLAogICJtb2RlIjogImZhbm91dCIKfQ==",
+      "bodyUTF8": "{\n  \"columns\": [\n    \"graphId\",\n    \"name\"\n  ],\n  \"rows\": [\n    {\n      \"graphId\": \"a\",\n      \"name\": \"callee\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"single\"\n        ]\n      }\n    }\n  ],\n  \"rowCount\": 1,\n  \"graphCount\": 1,\n  \"queriedGraphCount\": 1,\n  \"perGraphLimit\": 1000,\n  \"limit\": 1000,\n  \"truncated\": false,\n  \"graphs\": [\n    {\n      \"graphId\": \"a\",\n      \"columns\": [\n        \"name\"\n      ],\n      \"rowCount\": 1,\n      \"rows\": [\n        {\n          \"graphId\": \"a\",\n          \"name\": \"callee\",\n          \"$metadata\": {\n            \"graphIds\": [\n              \"single\"\n            ]\n          }\n        }\n      ]\n    }\n  ],\n  \"mode\": \"fanout\"\n}",
+      "json": {
+        "columns": [
+          "graphId",
+          "name"
+        ],
+        "rows": [
+          {
+            "graphId": "a",
+            "name": "callee",
+            "$metadata": {
+              "graphIds": [
+                "single"
+              ]
+            }
+          }
+        ],
+        "rowCount": 1,
+        "graphCount": 1,
+        "queriedGraphCount": 1,
+        "perGraphLimit": 1000,
+        "limit": 1000,
+        "truncated": false,
+        "graphs": [
+          {
+            "graphId": "a",
+            "columns": [
+              "name"
+            ],
+            "rowCount": 1,
+            "rows": [
+              {
+                "graphId": "a",
+                "name": "callee",
+                "$metadata": {
+                  "graphIds": [
+                    "single"
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        "mode": "fanout"
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "fanout-2",
+      "method": "POST",
+      "path": "/api/cypher/graphs?mode=fanout&includeGraphRows=true",
+      "body": {
+        "query": "MATCH (n:CallSiteNode) WHERE toLower(n.callee_name) CONTAINS 'cal' OR toLower(n.caller_class) STARTS WITH 'exa' RETURN DISTINCT n.callee_name AS name",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:30:35 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "664"
+        ]
+      ],
+      "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgImdyYXBoSWQiLAogICAgIm5hbWUiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgImdyYXBoSWQiOiAiYSIsCiAgICAgICJuYW1lIjogImNhbGxlZSIsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogWwogICAgICAgICAgInNpbmdsZSIKICAgICAgICBdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxLAogICJxdWVyaWVkR3JhcGhDb3VudCI6IDEsCiAgInBlckdyYXBoTGltaXQiOiAxMDAwLAogICJsaW1pdCI6IDEwMDAsCiAgInRydW5jYXRlZCI6IGZhbHNlLAogICJncmFwaHMiOiBbCiAgICB7CiAgICAgICJncmFwaElkIjogImEiLAogICAgICAiY29sdW1ucyI6IFsKICAgICAgICAibmFtZSIKICAgICAgXSwKICAgICAgInJvd0NvdW50IjogMSwKICAgICAgInJvd3MiOiBbCiAgICAgICAgewogICAgICAgICAgImdyYXBoSWQiOiAiYSIsCiAgICAgICAgICAibmFtZSI6ICJjYWxsZWUiLAogICAgICAgICAgIiRtZXRhZGF0YSI6IHsKICAgICAgICAgICAgImdyYXBoSWRzIjogWwogICAgICAgICAgICAgICJzaW5nbGUiCiAgICAgICAgICAgIF0KICAgICAgICAgIH0KICAgICAgICB9CiAgICAgIF0KICAgIH0KICBdLAogICJtb2RlIjogImZhbm91dCIKfQ==",
+      "bodyUTF8": "{\n  \"columns\": [\n    \"graphId\",\n    \"name\"\n  ],\n  \"rows\": [\n    {\n      \"graphId\": \"a\",\n      \"name\": \"callee\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"single\"\n        ]\n      }\n    }\n  ],\n  \"rowCount\": 1,\n  \"graphCount\": 1,\n  \"queriedGraphCount\": 1,\n  \"perGraphLimit\": 1000,\n  \"limit\": 1000,\n  \"truncated\": false,\n  \"graphs\": [\n    {\n      \"graphId\": \"a\",\n      \"columns\": [\n        \"name\"\n      ],\n      \"rowCount\": 1,\n      \"rows\": [\n        {\n          \"graphId\": \"a\",\n          \"name\": \"callee\",\n          \"$metadata\": {\n            \"graphIds\": [\n              \"single\"\n            ]\n          }\n        }\n      ]\n    }\n  ],\n  \"mode\": \"fanout\"\n}",
+      "json": {
+        "columns": [
+          "graphId",
+          "name"
+        ],
+        "rows": [
+          {
+            "graphId": "a",
+            "name": "callee",
+            "$metadata": {
+              "graphIds": [
+                "single"
+              ]
+            }
+          }
+        ],
+        "rowCount": 1,
+        "graphCount": 1,
+        "queriedGraphCount": 1,
+        "perGraphLimit": 1000,
+        "limit": 1000,
+        "truncated": false,
+        "graphs": [
+          {
+            "graphId": "a",
+            "columns": [
+              "name"
+            ],
+            "rowCount": 1,
+            "rows": [
+              {
+                "graphId": "a",
+                "name": "callee",
+                "$metadata": {
+                  "graphIds": [
+                    "single"
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        "mode": "fanout"
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "fanout-3",
+      "method": "POST",
+      "path": "/api/cypher/graphs?mode=fanout&includeGraphRows=true",
+      "body": {
+        "query": "MATCH (n:CallSiteNode) WHERE n.callee_name CONTAINS 'missing-never' RETURN DISTINCT n.callee_name AS name",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:30:35 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "342"
+        ]
+      ],
+      "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgImdyYXBoSWQiLAogICAgIm5hbWUiCiAgXSwKICAicm93cyI6IFtdLAogICJyb3dDb3VudCI6IDAsCiAgImdyYXBoQ291bnQiOiAxLAogICJxdWVyaWVkR3JhcGhDb3VudCI6IDEsCiAgInBlckdyYXBoTGltaXQiOiAxMDAwLAogICJsaW1pdCI6IDEwMDAsCiAgInRydW5jYXRlZCI6IGZhbHNlLAogICJncmFwaHMiOiBbCiAgICB7CiAgICAgICJncmFwaElkIjogImEiLAogICAgICAiY29sdW1ucyI6IFsKICAgICAgICAibmFtZSIKICAgICAgXSwKICAgICAgInJvd0NvdW50IjogMCwKICAgICAgInJvd3MiOiBbXQogICAgfQogIF0sCiAgIm1vZGUiOiAiZmFub3V0Igp9",
+      "bodyUTF8": "{\n  \"columns\": [\n    \"graphId\",\n    \"name\"\n  ],\n  \"rows\": [],\n  \"rowCount\": 0,\n  \"graphCount\": 1,\n  \"queriedGraphCount\": 1,\n  \"perGraphLimit\": 1000,\n  \"limit\": 1000,\n  \"truncated\": false,\n  \"graphs\": [\n    {\n      \"graphId\": \"a\",\n      \"columns\": [\n        \"name\"\n      ],\n      \"rowCount\": 0,\n      \"rows\": []\n    }\n  ],\n  \"mode\": \"fanout\"\n}",
+      "json": {
+        "columns": [
+          "graphId",
+          "name"
+        ],
+        "rows": [],
+        "rowCount": 0,
+        "graphCount": 1,
+        "queriedGraphCount": 1,
+        "perGraphLimit": 1000,
+        "limit": 1000,
+        "truncated": false,
+        "graphs": [
+          {
+            "graphId": "a",
+            "columns": [
+              "name"
+            ],
+            "rowCount": 0,
+            "rows": []
+          }
+        ],
+        "mode": "fanout"
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "fanout-4",
+      "method": "POST",
+      "path": "/api/cypher/graphs?mode=fanout&includeGraphRows=true",
+      "body": {
+        "query": "MATCH (n:CallSiteNode) WHERE n.callee_name CONTAINS 'cal' RETURN count(n) AS count",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:30:35 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "472"
+        ]
+      ],
+      "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgImdyYXBoSWQiLAogICAgImNvdW50IgogIF0sCiAgInJvd3MiOiBbCiAgICB7CiAgICAgICJncmFwaElkIjogImEiLAogICAgICAiY291bnQiOiAxCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxLAogICJncmFwaENvdW50IjogMSwKICAicXVlcmllZEdyYXBoQ291bnQiOiAxLAogICJwZXJHcmFwaExpbWl0IjogMTAwMCwKICAibGltaXQiOiAxMDAwLAogICJ0cnVuY2F0ZWQiOiBmYWxzZSwKICAiZ3JhcGhzIjogWwogICAgewogICAgICAiZ3JhcGhJZCI6ICJhIiwKICAgICAgImNvbHVtbnMiOiBbCiAgICAgICAgImNvdW50IgogICAgICBdLAogICAgICAicm93Q291bnQiOiAxLAogICAgICAicm93cyI6IFsKICAgICAgICB7CiAgICAgICAgICAiZ3JhcGhJZCI6ICJhIiwKICAgICAgICAgICJjb3VudCI6IDEKICAgICAgICB9CiAgICAgIF0KICAgIH0KICBdLAogICJtb2RlIjogImZhbm91dCIKfQ==",
+      "bodyUTF8": "{\n  \"columns\": [\n    \"graphId\",\n    \"count\"\n  ],\n  \"rows\": [\n    {\n      \"graphId\": \"a\",\n      \"count\": 1\n    }\n  ],\n  \"rowCount\": 1,\n  \"graphCount\": 1,\n  \"queriedGraphCount\": 1,\n  \"perGraphLimit\": 1000,\n  \"limit\": 1000,\n  \"truncated\": false,\n  \"graphs\": [\n    {\n      \"graphId\": \"a\",\n      \"columns\": [\n        \"count\"\n      ],\n      \"rowCount\": 1,\n      \"rows\": [\n        {\n          \"graphId\": \"a\",\n          \"count\": 1\n        }\n      ]\n    }\n  ],\n  \"mode\": \"fanout\"\n}",
+      "json": {
+        "columns": [
+          "graphId",
+          "count"
+        ],
+        "rows": [
+          {
+            "graphId": "a",
+            "count": 1
+          }
+        ],
+        "rowCount": 1,
+        "graphCount": 1,
+        "queriedGraphCount": 1,
+        "perGraphLimit": 1000,
+        "limit": 1000,
+        "truncated": false,
+        "graphs": [
+          {
+            "graphId": "a",
+            "columns": [
+              "count"
+            ],
+            "rowCount": 1,
+            "rows": [
+              {
+                "graphId": "a",
+                "count": 1
+              }
+            ]
+          }
+        ],
+        "mode": "fanout"
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "fanout-5",
+      "method": "POST",
+      "path": "/api/cypher/graphs?mode=fanout&includeGraphRows=true",
+      "body": {
+        "query": "MATCH (n:CallSiteNode) RETURN DISTINCT n.caller_class AS caller,n.callee_name AS callee",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:30:35 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "580"
+        ]
+      ],
+      "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgImdyYXBoSWQiLAogICAgImNhbGxlciIsCiAgICAiY2FsbGVlIgogIF0sCiAgInJvd3MiOiBbCiAgICB7CiAgICAgICJncmFwaElkIjogImEiLAogICAgICAiY2FsbGVyIjogIkV4YW1wbGUiLAogICAgICAiY2FsbGVlIjogImNhbGxlZSIKICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxLAogICJxdWVyaWVkR3JhcGhDb3VudCI6IDEsCiAgInBlckdyYXBoTGltaXQiOiAxMDAwLAogICJsaW1pdCI6IDEwMDAsCiAgInRydW5jYXRlZCI6IGZhbHNlLAogICJncmFwaHMiOiBbCiAgICB7CiAgICAgICJncmFwaElkIjogImEiLAogICAgICAiY29sdW1ucyI6IFsKICAgICAgICAiY2FsbGVyIiwKICAgICAgICAiY2FsbGVlIgogICAgICBdLAogICAgICAicm93Q291bnQiOiAxLAogICAgICAicm93cyI6IFsKICAgICAgICB7CiAgICAgICAgICAiZ3JhcGhJZCI6ICJhIiwKICAgICAgICAgICJjYWxsZXIiOiAiRXhhbXBsZSIsCiAgICAgICAgICAiY2FsbGVlIjogImNhbGxlZSIKICAgICAgICB9CiAgICAgIF0KICAgIH0KICBdLAogICJtb2RlIjogImZhbm91dCIKfQ==",
+      "bodyUTF8": "{\n  \"columns\": [\n    \"graphId\",\n    \"caller\",\n    \"callee\"\n  ],\n  \"rows\": [\n    {\n      \"graphId\": \"a\",\n      \"caller\": \"Example\",\n      \"callee\": \"callee\"\n    }\n  ],\n  \"rowCount\": 1,\n  \"graphCount\": 1,\n  \"queriedGraphCount\": 1,\n  \"perGraphLimit\": 1000,\n  \"limit\": 1000,\n  \"truncated\": false,\n  \"graphs\": [\n    {\n      \"graphId\": \"a\",\n      \"columns\": [\n        \"caller\",\n        \"callee\"\n      ],\n      \"rowCount\": 1,\n      \"rows\": [\n        {\n          \"graphId\": \"a\",\n          \"caller\": \"Example\",\n          \"callee\": \"callee\"\n        }\n      ]\n    }\n  ],\n  \"mode\": \"fanout\"\n}",
+      "json": {
+        "columns": [
+          "graphId",
+          "caller",
+          "callee"
+        ],
+        "rows": [
+          {
+            "graphId": "a",
+            "caller": "Example",
+            "callee": "callee"
+          }
+        ],
+        "rowCount": 1,
+        "graphCount": 1,
+        "queriedGraphCount": 1,
+        "perGraphLimit": 1000,
+        "limit": 1000,
+        "truncated": false,
+        "graphs": [
+          {
+            "graphId": "a",
+            "columns": [
+              "caller",
+              "callee"
+            ],
+            "rowCount": 1,
+            "rows": [
+              {
+                "graphId": "a",
+                "caller": "Example",
+                "callee": "callee"
+              }
+            ]
+          }
+        ],
+        "mode": "fanout"
+      }
+    }
+  }
+]

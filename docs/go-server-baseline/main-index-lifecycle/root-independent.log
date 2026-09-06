@@ -1,0 +1,15 @@
+prepared=true
+loadedFromPersistence=true
+borrowerPausedInsideIndex=true
+indexClosedWhileBorrowed=true
+borrowerFailure=java.lang.IllegalStateException: Cannot grow a closed mapped CallSite string-index reservation
+java.lang.IllegalStateException: Cannot grow a closed mapped CallSite string-index reservation
+	at io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndexMemoryBudget$Reservation.tryGrowTo(MappedCallSiteStringIndex.kt:2183)
+	at io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndex.cacheMatchingStringIds(MappedCallSiteStringIndex.kt:448)
+	at io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndex.matchingStringIds(MappedCallSiteStringIndex.kt:362)
+	at io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndex.matchingRanges(MappedCallSiteStringIndex.kt:274)
+	at io.johnsonlee.graphite.webgraph.MappedCallSiteStringIndex.aggregate(MappedCallSiteStringIndex.kt:240)
+	at io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.aggregateStringPropertyDisjunctionInternal(MappedWebGraphBackedGraph.kt:365)
+	at io.johnsonlee.graphite.webgraph.MappedWebGraphBackedGraph.aggregateStringPropertyDisjunction(MappedWebGraphBackedGraph.kt:337)
+	at IndexLifecycleProbe.lambda$main$4(IndexLifecycleProbe.java:27)
+	at java.base/java.lang.Thread.run(Thread.java:840)

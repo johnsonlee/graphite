@@ -1,0 +1,21 @@
+{
+  "compile": [
+    "javac",
+    "-cp",
+    "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+    "-d",
+    "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-index-root-audit-5os6zl_y",
+    "docs/go-server-baseline/main-index-lifecycle/IndexLifecycleProbe.java"
+  ],
+  "command": [
+    "java",
+    "-Xmx256m",
+    "-cp",
+    "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-index-root-audit-5os6zl_y:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+    "IndexLifecycleProbe",
+    "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-index-root-audit-5os6zl_y/fixture"
+  ],
+  "exitCode": 0,
+  "fixtureCopy": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-index-root-audit-5os6zl_y/fixture",
+  "purpose": "Independent deterministic correctness repro, no benchmark"
+}

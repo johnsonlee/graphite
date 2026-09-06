@@ -1,0 +1,12 @@
+{
+  "command": [
+    "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+    "-Xmx256m",
+    "-Dgraphite.webgraph.callSiteStringIndexBudgetBytes=0",
+    "-cp",
+    "/tmp/graphite-index-lifecycle-classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+    "IndexLifecycleProbe",
+    "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-index-lifecycle-7t_7t9mg/fixture"
+  ],
+  "exitCode": 1
+}

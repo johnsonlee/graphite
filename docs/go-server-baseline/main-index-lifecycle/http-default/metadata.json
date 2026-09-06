@@ -1,0 +1,9 @@
+{
+  "purpose": "Correctness only; no performance",
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "jarSha256": "91c3a1d154ca96004c55df195d9f752e077cab3e33ca1570b2c88b872d9bc34d",
+  "cases": 24,
+  "pid": 91862,
+  "exitCode": 143,
+  "dedicatedServerStopped": true
+}

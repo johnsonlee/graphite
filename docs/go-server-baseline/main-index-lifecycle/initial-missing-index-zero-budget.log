@@ -1,0 +1,11 @@
+Exception in thread "main" java.lang.IllegalArgumentException: Node index file not found: /var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-index-lifecycle-7t_7t9mg/fixture/graph.nodeindex. Re-save the graph to generate it.
+	at io.johnsonlee.graphite.webgraph.GraphStoreKt.readMappedNodeIndex(GraphStore.kt:189)
+	at io.johnsonlee.graphite.webgraph.GraphStoreKt.access$readMappedNodeIndex(GraphStore.kt:1)
+	at io.johnsonlee.graphite.webgraph.GraphStore.loadMapped$lambda$20(GraphStore.kt:907)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.run(CompletableFuture.java:1768)
+	at java.base/java.util.concurrent.CompletableFuture$AsyncSupply.exec(CompletableFuture.java:1760)
+	at java.base/java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:373)
+	at java.base/java.util.concurrent.ForkJoinPool$WorkQueue.topLevelExec(ForkJoinPool.java:1182)
+	at java.base/java.util.concurrent.ForkJoinPool.scan(ForkJoinPool.java:1655)
+	at java.base/java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:1622)
+	at java.base/java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:165)

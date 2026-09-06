@@ -1,0 +1,13 @@
+[
+  "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+  "-Xmx512m",
+  "-Dgraphite.webgraph.callSiteStringIndexBudgetBytes=0",
+  "-jar",
+  "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+  "--data",
+  "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-surrogate-mapkeys-_qek8jo6",
+  "--port",
+  "19874",
+  "--graph",
+  "a:/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-surrogate-mapkeys-_qek8jo6/fixture"
+]

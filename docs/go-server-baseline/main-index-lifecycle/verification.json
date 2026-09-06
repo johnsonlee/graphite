@@ -1,0 +1,284 @@
+{
+  "recordedAtUTC": "2026-09-06T20:33:04.189001+00:00",
+  "purpose": "Read-only pinned-main source audit plus tiny correctness repro; no performance",
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "javaVersion": "17.0.18",
+  "jar": {
+    "path": "graphite-explore/build/libs/graphite-explore.jar",
+    "bytes": 26940017,
+    "sha256": "91c3a1d154ca96004c55df195d9f752e077cab3e33ca1570b2c88b872d9bc34d"
+  },
+  "defaultProbe": {
+    "exitCode": 0,
+    "exactClosedReservationFailureReproduced": true
+  },
+  "zeroBudgetProbe": {
+    "exitCode": 0,
+    "retainedIndexUnavailable": true
+  },
+  "httpCounterexample": {
+    "default200": 24,
+    "zero200": 16,
+    "zero400": 8,
+    "equivalent": 14,
+    "different": 10,
+    "total": 24,
+    "concurrency": 4,
+    "configRejectedForBaseline": true
+  },
+  "original64C4": {
+    "errors": 190,
+    "attempts": 8400,
+    "allFailuresRetained": true,
+    "byCase": {
+      "wrapped-denseDistributedMethodContains": 9,
+      "global-wide-wrapped-case-insensitive-distinct-targeted": 4,
+      "wrapped-middleGraphsClassPrefix": 28,
+      "wrapped-lateGraphClassPrefix": 27,
+      "wrapped-broadlyDistributedClassPrefix": 26,
+      "wrapped-firstLastGraphBimodalClassPrefix": 33,
+      "wrapped-earlyGraphClassPrefix": 21,
+      "wrapped-skewedMixedClassMethodOperator": 31,
+      "global-wide-wrapped-case-insensitive-distinct-dense": 7,
+      "wrapped-zeroHitBroadContains": 2,
+      "global-wide-callee-class-zero": 1,
+      "global-wide-wrapped-case-insensitive-distinct-zero": 1
+    }
+  },
+  "sourceManifest": [
+    {
+      "path": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt",
+      "bytes": 145024,
+      "sha256": "9133289c4382b59f4bc880f9de3d8aee0930d449a32f9a487893dabb56255cb7"
+    },
+    {
+      "path": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndex.kt",
+      "bytes": 115191,
+      "sha256": "c1c4f07d818a4a25f712ad25094b30723fa25fa7531f424b2391bba792938a77"
+    },
+    {
+      "path": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndexView.kt",
+      "bytes": 28184,
+      "sha256": "6abdd90ff1f4676dbfeae568e13e3f4419c45fc62d63ab1b9ec981ea1282a7a5"
+    },
+    {
+      "path": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/GraphStore.kt",
+      "bytes": 53704,
+      "sha256": "2fe499f043740e7b70970a242613f760bf23577aef45d6fa612161e1d4d546ad"
+    },
+    {
+      "path": "graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/QueryPipeline.kt",
+      "bytes": 241874,
+      "sha256": "9522dff099e2843f32115ae52f01adfb29c14d147dd3b9919daf907181c4f4ae"
+    },
+    {
+      "path": "graphite-core/src/main/kotlin/io/johnsonlee/graphite/graph/Graph.kt",
+      "bytes": 24912,
+      "sha256": "9f82ae8246869468415967f95c0107670c662e79f4baa3276b4ed389aa8638b2"
+    },
+    {
+      "path": "docs/large-broad-query-pressure-benchmark.md",
+      "bytes": 23403,
+      "sha256": "c326eb0cfc22c487915038dc69a39b85412ba711a89048abd4c5f17856f0a955"
+    }
+  ],
+  "temporaryFixtureManifest": [
+    {
+      "path": "forward.graph",
+      "bytes": 8,
+      "sha256": "3679d417c7945e591afd5c0c09645bb9ea654fccc52438c7dc79ed0e0a8e9241"
+    },
+    {
+      "path": "forward.offsets",
+      "bytes": 13,
+      "sha256": "d63273006a3020247605960f168572e50a4e3eda33cff2763dd81aae020351ad"
+    },
+    {
+      "path": "forward.properties",
+      "bytes": 706,
+      "sha256": "b6c52a66cf7bf62d3ffeac8e6c34272251446f4d64d10a757f4712f24c367036"
+    },
+    {
+      "path": "graph.callsite-string-index",
+      "bytes": 380,
+      "sha256": "7c2eccf7f60502ef2eff0d23cf927cde05a2ddf7c8217acf0489d4a5a58468e5"
+    },
+    {
+      "path": "graph.comparisons",
+      "bytes": 24,
+      "sha256": "99649b1c79a1a984dbaf78c3d77038852cf186e8b0adb7ecc97da5add24ab749"
+    },
+    {
+      "path": "graph.labels",
+      "bytes": 4,
+      "sha256": "2c44818b3b600deba7bd6170bbc097269c98946e94ccb45541d46c8231f7597e"
+    },
+    {
+      "path": "graph.metadata",
+      "bytes": 240,
+      "sha256": "4c8c47a145fea5dd4a37b858ace718f27587e02d37874e38e8d4c5ca53d04ad4"
+    },
+    {
+      "path": "graph.nodedata",
+      "bytes": 423,
+      "sha256": "a1cd445e7bac375fd6aa73f1d282267d5ea4328633130fbc5c954dd9cfd4bdcb"
+    },
+    {
+      "path": "graph.nodeindex",
+      "bytes": 216,
+      "sha256": "54cf522486908aa55f75f165bda0117cd48c5e3a57863f23714fcdf2740d5296"
+    },
+    {
+      "path": "graph.nodeoffsets",
+      "bytes": 256,
+      "sha256": "aa71626c1b1d4050f042c10a7a69a2ff07c03d976eb865a80773922fcf0d3796"
+    },
+    {
+      "path": "graph.resources",
+      "bytes": 150,
+      "sha256": "fbe4481a9f205005bb0a8a6dbd944499310287ea7188f5443ddd1611a6a31ca3"
+    },
+    {
+      "path": "graph.strings",
+      "bytes": 669,
+      "sha256": "a7e12e7636a6396f8adb3e64999c7d72d63b132ebb436df5873bfa4f6975d717"
+    },
+    {
+      "path": "graph.typeindex",
+      "bytes": 280,
+      "sha256": "be67652c2a54b74f543e00bc696ba110e341dbb80a6a3d9297483faf6ac0484c"
+    }
+  ],
+  "evidenceManifest": [
+    {
+      "path": "docs/go-server-baseline/main-index-lifecycle/IndexLifecycleProbe.java",
+      "bytes": 3005,
+      "sha256": "6a28572e24886ef07ead76dbd867c7500b6c9b45fd80c6759392f1da5971e81d"
+    },
+    {
+      "path": "docs/go-server-baseline/main-index-lifecycle/README.md",
+      "bytes": 6922,
+      "sha256": "60c9d7f5d51b9f97f0a4aeb13a24a86d9455d2fa3b31d8c383b85d2d00c1890a"
+    },
+    {
+      "path": "docs/go-server-baseline/main-index-lifecycle/capture-budget.py",
+      "bytes": 3569,
+      "sha256": "5abef2f6cdebf605a2ac4b9f8b14d92c7bcf1721ac7303d096d43be79f8b1f17"
+    },
+    {
+      "path": "docs/go-server-baseline/main-index-lifecycle/default-command.json",
+      "bytes": 420,
+      "sha256": "0b160e9a254659dba76e94503965630441f30dd1ec400c37c84b9d1ad7f81800"
+    },
+    {
+      "path": "docs/go-server-baseline/main-index-lifecycle/default.log",
+      "bytes": 1278,
+      "sha256": "793294b4b48b7875152c9f080f346053f0d119bcc7c43fa23fc84c22951d4a8e"
+    },
+    {
+      "path": "docs/go-server-baseline/main-index-lifecycle/fixture-path.json",
+      "bytes": 93,
+      "sha256": "8ff1e0c0c9b41362d527533eb8a1fe643ad403f13d5bad3d5d2348e13c57c0b2"
+    },
+    {
+      "path": "docs/go-server-baseline/main-index-lifecycle/http-comparison.json",
+      "bytes": 3104,
+      "sha256": "e50eeba2684f070c3555f1437edbc2be533b79806ea5a3c2f392dc1269981cfd"
+    },
+    {
+      "path": "docs/go-server-baseline/main-index-lifecycle/http-default/capture.log",
+      "bytes": 7725,
+      "sha256": "d3d16d1623fe727f0a60c3baed80cc2b21257adb10317177298db48ba69456d0"
+    },
+    {
+      "path": "docs/go-server-baseline/main-index-lifecycle/http-default/cases.json",
+      "bytes": 7054,
+      "sha256": "0480e2ba3ae92c498aae8c4e3bd3aff10d64dfb2f6bc8edb1f04055687e81fb0"
+    },
+    {
+      "path": "docs/go-server-baseline/main-index-lifecycle/http-default/main-command.json",
+      "bytes": 452,
+      "sha256": "29b61db85049516500c557aa7c3f28dd45a2f1e825245b9bf5eec61eb994e6a0"
+    },
+    {
+      "path": "docs/go-server-baseline/main-index-lifecycle/http-default/main-server.log",
+      "bytes": 378,
+      "sha256": "a37bf3ca86d96ddc90e7607c84f9c91197b260d516a99f3f944c8786ae804a23"
+    },
+    {
+      "path": "docs/go-server-baseline/main-index-lifecycle/http-default/metadata.json",
+      "bytes": 281,
+      "sha256": "03d25896bbbb7bebe38a183dea55028737ae9eba0f67d1425f2c819c26efb2c1"
+    },
+    {
+      "path": "docs/go-server-baseline/main-index-lifecycle/http-default/observations.json",
+      "bytes": 43032,
+      "sha256": "e0c297f7217b54192ba007754cdd038efa3dcf8350a8447c3f9f269cb3b2a088"
+    },
+    {
+      "path": "docs/go-server-baseline/main-index-lifecycle/http-zero/capture.log",
+      "bytes": 6169,
+      "sha256": "73cff826086a092116189341e932736ef1e89b7042801ccd8f510f18bd51cb34"
+    },
+    {
+      "path": "docs/go-server-baseline/main-index-lifecycle/http-zero/cases.json",
+      "bytes": 7054,
+      "sha256": "0480e2ba3ae92c498aae8c4e3bd3aff10d64dfb2f6bc8edb1f04055687e81fb0"
+    },
+    {
+      "path": "docs/go-server-baseline/main-index-lifecycle/http-zero/main-command.json",
+      "bytes": 510,
+      "sha256": "6fdf3edb140bdcb6eb3726a1a0d534f6565c2deee5fa8b36da91d019943da132"
+    },
+    {
+      "path": "docs/go-server-baseline/main-index-lifecycle/http-zero/main-server.log",
+      "bytes": 378,
+      "sha256": "290f2f1f740f8fc08452cbb837da07bf092c186d54387f1e16c69c037fa3af98"
+    },
+    {
+      "path": "docs/go-server-baseline/main-index-lifecycle/http-zero/metadata.json",
+      "bytes": 281,
+      "sha256": "3364d5ec720682235df3dc017dcb1e22e968e56a2a7e90ae8ffbb1540565345e"
+    },
+    {
+      "path": "docs/go-server-baseline/main-index-lifecycle/http-zero/observations.json",
+      "bytes": 37172,
+      "sha256": "ebeb02abdb6e6972442e3590c9c98acb2f2636bdf3bc77b0094b37431f00e683"
+    },
+    {
+      "path": "docs/go-server-baseline/main-index-lifecycle/initial-missing-index-default-command.json",
+      "bytes": 420,
+      "sha256": "05c94686f4be46f9b29475b6f67545071af2911fd2557497ebd3e4b043588fa0"
+    },
+    {
+      "path": "docs/go-server-baseline/main-index-lifecycle/initial-missing-index-default.log",
+      "bytes": 1120,
+      "sha256": "4c42ada10bd2ecbd9974f2abbaa02163d21f4854ef4c1ec4a6452ccccfdadc00"
+    },
+    {
+      "path": "docs/go-server-baseline/main-index-lifecycle/initial-missing-index-zero-budget-command.json",
+      "bytes": 480,
+      "sha256": "613b1842a1088d1605da8afc399e7ab34c17d6f02ebb01f3b31d4930dea92eb6"
+    },
+    {
+      "path": "docs/go-server-baseline/main-index-lifecycle/initial-missing-index-zero-budget.log",
+      "bytes": 1120,
+      "sha256": "4c42ada10bd2ecbd9974f2abbaa02163d21f4854ef4c1ec4a6452ccccfdadc00"
+    },
+    {
+      "path": "docs/go-server-baseline/main-index-lifecycle/zero-budget-command.json",
+      "bytes": 480,
+      "sha256": "321ef37aac10ce31dfa2f9443c78d87c3461659e6d3e175419ea52720c798e30"
+    },
+    {
+      "path": "docs/go-server-baseline/main-index-lifecycle/zero-budget.log",
+      "bytes": 40,
+      "sha256": "d68d4289272faab0f174c544686402231e8fa0554986afe29de46a39cc174b64"
+    }
+  ],
+  "productionFilesModified": false,
+  "runtime64Started": false,
+  "performanceRuns": 0,
+  "dedicatedProcessesExited": true,
+  "conclusion": "No semantics-preserving alternative baseline configuration validated; keep reporting default main c4 errors. Do not substitute zero-budget results."
+}
