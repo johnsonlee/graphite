@@ -1,0 +1,868 @@
+[
+  {
+    "name": "parameter-null-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "params": {
+      "count": null
+    }
+  },
+  {
+    "name": "parameter-null-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "params": {
+      "count": null
+    }
+  },
+  {
+    "name": "parameter-false-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "params": {
+      "count": false
+    }
+  },
+  {
+    "name": "parameter-false-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "params": {
+      "count": false
+    }
+  },
+  {
+    "name": "parameter-true-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "params": {
+      "count": true
+    }
+  },
+  {
+    "name": "parameter-true-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "params": {
+      "count": true
+    }
+  },
+  {
+    "name": "parameter-zero-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "params": {
+      "count": 0
+    }
+  },
+  {
+    "name": "parameter-zero-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "params": {
+      "count": 0
+    }
+  },
+  {
+    "name": "parameter-one-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "params": {
+      "count": 1
+    }
+  },
+  {
+    "name": "parameter-one-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "params": {
+      "count": 1
+    }
+  },
+  {
+    "name": "parameter-positive-fraction-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "params": {
+      "count": 1.9
+    }
+  },
+  {
+    "name": "parameter-positive-fraction-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "params": {
+      "count": 1.9
+    }
+  },
+  {
+    "name": "parameter-negative-fraction-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "params": {
+      "count": -0.9
+    }
+  },
+  {
+    "name": "parameter-negative-fraction-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "params": {
+      "count": -0.9
+    }
+  },
+  {
+    "name": "parameter-negative-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "params": {
+      "count": -1
+    }
+  },
+  {
+    "name": "parameter-negative-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "params": {
+      "count": -1
+    }
+  },
+  {
+    "name": "parameter-negative-truncation-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "params": {
+      "count": -1.9
+    }
+  },
+  {
+    "name": "parameter-negative-truncation-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "params": {
+      "count": -1.9
+    }
+  },
+  {
+    "name": "parameter-intmax-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "params": {
+      "count": 2147483647
+    }
+  },
+  {
+    "name": "parameter-intmax-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "params": {
+      "count": 2147483647
+    }
+  },
+  {
+    "name": "parameter-int-overflow-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "params": {
+      "count": 2147483648
+    }
+  },
+  {
+    "name": "parameter-int-overflow-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "params": {
+      "count": 2147483648
+    }
+  },
+  {
+    "name": "parameter-int-underflow-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "params": {
+      "count": -2147483649
+    }
+  },
+  {
+    "name": "parameter-int-underflow-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "params": {
+      "count": -2147483649
+    }
+  },
+  {
+    "name": "parameter-large-number-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "params": {
+      "count": 1e+25
+    }
+  },
+  {
+    "name": "parameter-large-number-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "params": {
+      "count": 1e+25
+    }
+  },
+  {
+    "name": "parameter-small-number-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "params": {
+      "count": -1e+25
+    }
+  },
+  {
+    "name": "parameter-small-number-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "params": {
+      "count": -1e+25
+    }
+  },
+  {
+    "name": "parameter-string-empty-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "params": {
+      "count": ""
+    }
+  },
+  {
+    "name": "parameter-string-empty-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "params": {
+      "count": ""
+    }
+  },
+  {
+    "name": "parameter-string-one-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "params": {
+      "count": "1"
+    }
+  },
+  {
+    "name": "parameter-string-one-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "params": {
+      "count": "1"
+    }
+  },
+  {
+    "name": "parameter-string-signed-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "params": {
+      "count": "+2"
+    }
+  },
+  {
+    "name": "parameter-string-signed-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "params": {
+      "count": "+2"
+    }
+  },
+  {
+    "name": "parameter-string-negative-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "params": {
+      "count": "-1"
+    }
+  },
+  {
+    "name": "parameter-string-negative-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "params": {
+      "count": "-1"
+    }
+  },
+  {
+    "name": "parameter-string-negative-zero-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "params": {
+      "count": "-0"
+    }
+  },
+  {
+    "name": "parameter-string-negative-zero-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "params": {
+      "count": "-0"
+    }
+  },
+  {
+    "name": "parameter-string-fraction-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "params": {
+      "count": "1.9"
+    }
+  },
+  {
+    "name": "parameter-string-fraction-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "params": {
+      "count": "1.9"
+    }
+  },
+  {
+    "name": "parameter-string-whitespace-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "params": {
+      "count": " 1"
+    }
+  },
+  {
+    "name": "parameter-string-whitespace-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "params": {
+      "count": " 1"
+    }
+  },
+  {
+    "name": "parameter-string-tailspace-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "params": {
+      "count": "1 "
+    }
+  },
+  {
+    "name": "parameter-string-tailspace-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "params": {
+      "count": "1 "
+    }
+  },
+  {
+    "name": "parameter-string-hex-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "params": {
+      "count": "0x1"
+    }
+  },
+  {
+    "name": "parameter-string-hex-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "params": {
+      "count": "0x1"
+    }
+  },
+  {
+    "name": "parameter-string-exponent-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "params": {
+      "count": "1e0"
+    }
+  },
+  {
+    "name": "parameter-string-exponent-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "params": {
+      "count": "1e0"
+    }
+  },
+  {
+    "name": "parameter-string-nan-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "params": {
+      "count": "NaN"
+    }
+  },
+  {
+    "name": "parameter-string-nan-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "params": {
+      "count": "NaN"
+    }
+  },
+  {
+    "name": "parameter-string-infinity-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "params": {
+      "count": "Infinity"
+    }
+  },
+  {
+    "name": "parameter-string-infinity-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "params": {
+      "count": "Infinity"
+    }
+  },
+  {
+    "name": "parameter-string-unicode-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "params": {
+      "count": "\u0662"
+    }
+  },
+  {
+    "name": "parameter-string-unicode-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "params": {
+      "count": "\u0662"
+    }
+  },
+  {
+    "name": "parameter-string-unicode-zero-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "params": {
+      "count": "\u0660"
+    }
+  },
+  {
+    "name": "parameter-string-unicode-zero-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "params": {
+      "count": "\u0660"
+    }
+  },
+  {
+    "name": "parameter-string-unicode-signed-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "params": {
+      "count": "+\u0662"
+    }
+  },
+  {
+    "name": "parameter-string-unicode-signed-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "params": {
+      "count": "+\u0662"
+    }
+  },
+  {
+    "name": "parameter-string-supplementary-digit-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "params": {
+      "count": "\ud835\udfd9"
+    }
+  },
+  {
+    "name": "parameter-string-supplementary-digit-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "params": {
+      "count": "\ud835\udfd9"
+    }
+  },
+  {
+    "name": "parameter-string-longmax-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "params": {
+      "count": "9223372036854775807"
+    }
+  },
+  {
+    "name": "parameter-string-longmax-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "params": {
+      "count": "9223372036854775807"
+    }
+  },
+  {
+    "name": "parameter-string-longmin-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "params": {
+      "count": "-9223372036854775808"
+    }
+  },
+  {
+    "name": "parameter-string-longmin-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "params": {
+      "count": "-9223372036854775808"
+    }
+  },
+  {
+    "name": "parameter-string-overflow-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "params": {
+      "count": "9223372036854775808"
+    }
+  },
+  {
+    "name": "parameter-string-overflow-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "params": {
+      "count": "9223372036854775808"
+    }
+  },
+  {
+    "name": "parameter-string-underflow-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "params": {
+      "count": "-9223372036854775809"
+    }
+  },
+  {
+    "name": "parameter-string-underflow-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "params": {
+      "count": "-9223372036854775809"
+    }
+  },
+  {
+    "name": "parameter-list-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "params": {
+      "count": [
+        1
+      ]
+    }
+  },
+  {
+    "name": "parameter-list-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "params": {
+      "count": [
+        1
+      ]
+    }
+  },
+  {
+    "name": "parameter-map-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "params": {
+      "count": {
+        "x": 1
+      }
+    }
+  },
+  {
+    "name": "parameter-map-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "params": {
+      "count": {
+        "x": 1
+      }
+    }
+  },
+  {
+    "name": "expression-nan-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP toFloat('NaN')"
+  },
+  {
+    "name": "expression-nan-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT toFloat('NaN')"
+  },
+  {
+    "name": "expression-infinity-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP toFloat('Infinity')"
+  },
+  {
+    "name": "expression-infinity-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT toFloat('Infinity')"
+  },
+  {
+    "name": "expression-negative-infinity-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP toFloat('-Infinity')"
+  },
+  {
+    "name": "expression-negative-infinity-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT toFloat('-Infinity')"
+  },
+  {
+    "name": "expression-overflow-double-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP 1e999"
+  },
+  {
+    "name": "expression-overflow-double-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT 1e999"
+  },
+  {
+    "name": "expression-sqrt-nan-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP sqrt(-1)"
+  },
+  {
+    "name": "expression-sqrt-nan-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT sqrt(-1)"
+  },
+  {
+    "name": "expression-log-infinity-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP log(0)"
+  },
+  {
+    "name": "expression-log-infinity-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT log(0)"
+  },
+  {
+    "name": "expression-addition-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP 1+1"
+  },
+  {
+    "name": "expression-addition-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT 1+1"
+  },
+  {
+    "name": "expression-division-error-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP 1/0"
+  },
+  {
+    "name": "expression-division-error-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT 1/0"
+  },
+  {
+    "name": "expression-cast-error-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP substring('x','bad')"
+  },
+  {
+    "name": "expression-cast-error-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT substring('x','bad')"
+  },
+  {
+    "name": "expression-undefined-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP missing"
+  },
+  {
+    "name": "expression-undefined-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT missing"
+  },
+  {
+    "name": "expression-list-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP [1]"
+  },
+  {
+    "name": "expression-list-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT [1]"
+  },
+  {
+    "name": "expression-map-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP {a:1}"
+  },
+  {
+    "name": "expression-map-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT {a:1}"
+  },
+  {
+    "name": "expression-numeric-string-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP toString(2)"
+  },
+  {
+    "name": "expression-numeric-string-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT toString(2)"
+  },
+  {
+    "name": "expression-floating-zero-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP -0.0"
+  },
+  {
+    "name": "expression-floating-zero-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT -0.0"
+  },
+  {
+    "name": "literal-return-row-limit",
+    "query": "RETURN 1 AS x LIMIT x"
+  },
+  {
+    "name": "literal-return-row-skip",
+    "query": "RETURN 1 AS x SKIP x"
+  },
+  {
+    "name": "literal-return-postskip-limit",
+    "query": "RETURN 1 AS x SKIP 1 LIMIT x"
+  },
+  {
+    "name": "literal-return-empty-limit-error",
+    "query": "RETURN 1 AS x SKIP 9 LIMIT 1/0"
+  },
+  {
+    "name": "literal-return-negative",
+    "query": "RETURN 1 AS x LIMIT -1"
+  },
+  {
+    "name": "unwind-row-limit",
+    "query": "UNWIND [2,1,0] AS x RETURN x LIMIT x"
+  },
+  {
+    "name": "unwind-row-skip",
+    "query": "UNWIND [2,1,0] AS x RETURN x SKIP x"
+  },
+  {
+    "name": "unwind-postskip-limit",
+    "query": "UNWIND [2,1,0] AS x RETURN x SKIP 1 LIMIT x"
+  },
+  {
+    "name": "unwind-empty-limit-error",
+    "query": "UNWIND [2,1,0] AS x RETURN x SKIP 9 LIMIT 1/0"
+  },
+  {
+    "name": "unwind-negative",
+    "query": "UNWIND [2,1,0] AS x RETURN x LIMIT -1"
+  },
+  {
+    "name": "order-row-limit",
+    "query": "UNWIND [2,1,0] AS x RETURN x ORDER BY x LIMIT x"
+  },
+  {
+    "name": "order-row-skip",
+    "query": "UNWIND [2,1,0] AS x RETURN x ORDER BY x SKIP x"
+  },
+  {
+    "name": "order-postskip-limit",
+    "query": "UNWIND [2,1,0] AS x RETURN x ORDER BY x SKIP 1 LIMIT x"
+  },
+  {
+    "name": "order-empty-limit-error",
+    "query": "UNWIND [2,1,0] AS x RETURN x ORDER BY x SKIP 9 LIMIT 1/0"
+  },
+  {
+    "name": "order-negative",
+    "query": "UNWIND [2,1,0] AS x RETURN x ORDER BY x LIMIT -1"
+  },
+  {
+    "name": "aggregate-row-limit",
+    "query": "UNWIND [2,1,0] AS x RETURN count(x) AS x LIMIT x"
+  },
+  {
+    "name": "aggregate-row-skip",
+    "query": "UNWIND [2,1,0] AS x RETURN count(x) AS x SKIP x"
+  },
+  {
+    "name": "aggregate-postskip-limit",
+    "query": "UNWIND [2,1,0] AS x RETURN count(x) AS x SKIP 1 LIMIT x"
+  },
+  {
+    "name": "aggregate-empty-limit-error",
+    "query": "UNWIND [2,1,0] AS x RETURN count(x) AS x SKIP 9 LIMIT 1/0"
+  },
+  {
+    "name": "aggregate-negative",
+    "query": "UNWIND [2,1,0] AS x RETURN count(x) AS x LIMIT -1"
+  },
+  {
+    "name": "distinct-row-limit",
+    "query": "UNWIND [2,1,0,2] AS x RETURN DISTINCT x LIMIT x"
+  },
+  {
+    "name": "distinct-row-skip",
+    "query": "UNWIND [2,1,0,2] AS x RETURN DISTINCT x SKIP x"
+  },
+  {
+    "name": "distinct-postskip-limit",
+    "query": "UNWIND [2,1,0,2] AS x RETURN DISTINCT x SKIP 1 LIMIT x"
+  },
+  {
+    "name": "distinct-empty-limit-error",
+    "query": "UNWIND [2,1,0,2] AS x RETURN DISTINCT x SKIP 9 LIMIT 1/0"
+  },
+  {
+    "name": "distinct-negative",
+    "query": "UNWIND [2,1,0,2] AS x RETURN DISTINCT x LIMIT -1"
+  },
+  {
+    "name": "where-false-row-limit",
+    "query": "WITH 1 AS x WHERE false RETURN x LIMIT x"
+  },
+  {
+    "name": "where-false-row-skip",
+    "query": "WITH 1 AS x WHERE false RETURN x SKIP x"
+  },
+  {
+    "name": "where-false-postskip-limit",
+    "query": "WITH 1 AS x WHERE false RETURN x SKIP 1 LIMIT x"
+  },
+  {
+    "name": "where-false-empty-limit-error",
+    "query": "WITH 1 AS x WHERE false RETURN x SKIP 9 LIMIT 1/0"
+  },
+  {
+    "name": "where-false-negative",
+    "query": "WITH 1 AS x WHERE false RETURN x LIMIT -1"
+  },
+  {
+    "name": "mapped-filtered-row-limit",
+    "query": "MATCH (n:CallSiteNode) WHERE true RETURN id(n) AS x LIMIT x"
+  },
+  {
+    "name": "mapped-filtered-row-skip",
+    "query": "MATCH (n:CallSiteNode) WHERE true RETURN id(n) AS x SKIP x"
+  },
+  {
+    "name": "mapped-filtered-postskip-limit",
+    "query": "MATCH (n:CallSiteNode) WHERE true RETURN id(n) AS x SKIP 1 LIMIT x"
+  },
+  {
+    "name": "mapped-filtered-empty-limit-error",
+    "query": "MATCH (n:CallSiteNode) WHERE true RETURN id(n) AS x SKIP 9 LIMIT 1/0"
+  },
+  {
+    "name": "mapped-filtered-negative",
+    "query": "MATCH (n:CallSiteNode) WHERE true RETURN id(n) AS x LIMIT -1"
+  },
+  {
+    "name": "mapped-unfiltered-row-limit",
+    "query": "MATCH (n:CallSiteNode) RETURN id(n) AS x LIMIT x"
+  },
+  {
+    "name": "mapped-unfiltered-row-skip",
+    "query": "MATCH (n:CallSiteNode) RETURN id(n) AS x SKIP x"
+  },
+  {
+    "name": "mapped-unfiltered-postskip-limit",
+    "query": "MATCH (n:CallSiteNode) RETURN id(n) AS x SKIP 1 LIMIT x"
+  },
+  {
+    "name": "mapped-unfiltered-empty-limit-error",
+    "query": "MATCH (n:CallSiteNode) RETURN id(n) AS x SKIP 9 LIMIT 1/0"
+  },
+  {
+    "name": "mapped-unfiltered-negative",
+    "query": "MATCH (n:CallSiteNode) RETURN id(n) AS x LIMIT -1"
+  },
+  {
+    "name": "projection-before-limit",
+    "query": "UNWIND [1] AS n RETURN substring('x','bad') AS x LIMIT 1/0"
+  },
+  {
+    "name": "projection-before-skip",
+    "query": "UNWIND [1] AS n RETURN substring('x','bad') AS x SKIP 1/0"
+  },
+  {
+    "name": "order-before-limit",
+    "query": "UNWIND [1,2] AS n RETURN n ORDER BY substring('x','bad') LIMIT 1/0"
+  },
+  {
+    "name": "where-before-limit",
+    "query": "WITH 1 AS n WHERE substring('x','bad')='a' RETURN n LIMIT 1/0"
+  },
+  {
+    "name": "aggregate-before-limit",
+    "query": "UNWIND [1] AS n RETURN count(substring('x','bad')) AS x LIMIT 1/0"
+  },
+  {
+    "name": "where-before-skip",
+    "query": "MATCH (n) WHERE substring('x','bad')='a' RETURN n SKIP 1/0"
+  },
+  {
+    "name": "mapped-early-limit-error",
+    "query": "MATCH (n) RETURN substring('x','bad') AS x LIMIT 1/0"
+  },
+  {
+    "name": "mapped-early-limit-property-error",
+    "query": "MATCH (n {name:substring('x','bad')}) RETURN n LIMIT 1/0"
+  },
+  {
+    "name": "early-before-unwind",
+    "query": "UNWIND [substring('x','bad')] AS x MATCH (n) RETURN n LIMIT 1/0"
+  },
+  {
+    "name": "early-before-with",
+    "query": "WITH substring('x','bad') AS x MATCH (n) RETURN n LIMIT 1/0"
+  },
+  {
+    "name": "no-early-distinct",
+    "query": "MATCH (n) RETURN DISTINCT substring('x','bad') AS x LIMIT 1/0"
+  },
+  {
+    "name": "no-early-order",
+    "query": "MATCH (n) RETURN substring('x','bad') AS x ORDER BY x LIMIT 1/0"
+  },
+  {
+    "name": "optional-no-early",
+    "query": "OPTIONAL MATCH (n) RETURN substring('x','bad') AS x LIMIT 1/0"
+  },
+  {
+    "name": "union-later-error",
+    "query": "RETURN 1 AS x LIMIT 0 UNION RETURN 1/0 AS x"
+  },
+  {
+    "name": "skip-before-limit",
+    "query": "RETURN 1 AS x SKIP -1 LIMIT 1/0"
+  },
+  {
+    "name": "limit-after-skip-error",
+    "query": "RETURN 1 AS x SKIP 9 LIMIT 1/0"
+  },
+  {
+    "name": "empty-unfiltered-early",
+    "query": "MATCH (n) RETURN substring('x','bad') AS x LIMIT 1/0",
+    "empty": true
+  },
+  {
+    "name": "empty-filtered-limit",
+    "query": "MATCH (n) WHERE true RETURN substring('x','bad') AS x LIMIT 1/0",
+    "empty": true
+  },
+  {
+    "name": "guard-nonliteral-skip",
+    "query": "MATCH (n) WHERE true RETURN substring('x','bad') AS x SKIP 1/0 LIMIT 0"
+  },
+  {
+    "name": "guard-negative-string-skip",
+    "query": "MATCH (n) WHERE true RETURN substring('x','bad') AS x SKIP '-1' LIMIT 0"
+  }
+]

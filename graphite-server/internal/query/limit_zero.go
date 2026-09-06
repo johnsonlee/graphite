@@ -53,13 +53,5 @@ func plannerLiteralCount(expr cypher.Expr) (int32, bool) {
 	if !ok {
 		return 0, false
 	}
-	if n, numeric := number(literal.Value); numeric {
-		return javaInt(n), true
-	}
-	if s, stringValue := literal.Value.(string); stringValue {
-		if n, err := parseJavaLong(s); err == nil {
-			return javaInt(float64(n)), true
-		}
-	}
-	return 0, true
+	return cypherCountValue(literal.Value), true
 }

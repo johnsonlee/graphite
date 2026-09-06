@@ -1,0 +1,4724 @@
+[
+  {
+    "name": "parameter-null-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0
+      },
+      {
+        "x": 1
+      },
+      {
+        "x": 2
+      },
+      {
+        "x": 3
+      }
+    ]
+  },
+  {
+    "name": "parameter-null-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 3,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "parameter-null-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-null-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-false-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0
+      },
+      {
+        "x": 1
+      },
+      {
+        "x": 2
+      },
+      {
+        "x": 3
+      }
+    ]
+  },
+  {
+    "name": "parameter-false-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 3,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "parameter-false-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-false-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-true-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0
+      },
+      {
+        "x": 1
+      },
+      {
+        "x": 2
+      },
+      {
+        "x": 3
+      }
+    ]
+  },
+  {
+    "name": "parameter-true-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 3,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "parameter-true-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-true-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-zero-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0
+      },
+      {
+        "x": 1
+      },
+      {
+        "x": 2
+      },
+      {
+        "x": 3
+      }
+    ]
+  },
+  {
+    "name": "parameter-zero-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 3,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "parameter-zero-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-zero-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-one-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 1
+      },
+      {
+        "x": 2
+      },
+      {
+        "x": 3
+      }
+    ]
+  },
+  {
+    "name": "parameter-one-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 3,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "parameter-one-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0
+      }
+    ]
+  },
+  {
+    "name": "parameter-one-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "parameter-positive-fraction-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 1
+      },
+      {
+        "x": 2
+      },
+      {
+        "x": 3
+      }
+    ]
+  },
+  {
+    "name": "parameter-positive-fraction-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 3,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "parameter-positive-fraction-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0
+      }
+    ]
+  },
+  {
+    "name": "parameter-positive-fraction-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "parameter-negative-fraction-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0
+      },
+      {
+        "x": 1
+      },
+      {
+        "x": 2
+      },
+      {
+        "x": 3
+      }
+    ]
+  },
+  {
+    "name": "parameter-negative-fraction-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 3,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "parameter-negative-fraction-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-negative-fraction-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-negative-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": false,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -1 is less than zero."
+  },
+  {
+    "name": "parameter-negative-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": true,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -1 is less than zero."
+  },
+  {
+    "name": "parameter-negative-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": false,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -1 is less than zero."
+  },
+  {
+    "name": "parameter-negative-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": true,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -1 is less than zero."
+  },
+  {
+    "name": "parameter-negative-truncation-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": false,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -1 is less than zero."
+  },
+  {
+    "name": "parameter-negative-truncation-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": true,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -1 is less than zero."
+  },
+  {
+    "name": "parameter-negative-truncation-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": false,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -1 is less than zero."
+  },
+  {
+    "name": "parameter-negative-truncation-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": true,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -1 is less than zero."
+  },
+  {
+    "name": "parameter-intmax-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-intmax-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-intmax-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0
+      },
+      {
+        "x": 1
+      },
+      {
+        "x": 2
+      },
+      {
+        "x": 3
+      }
+    ]
+  },
+  {
+    "name": "parameter-intmax-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 3,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "parameter-int-overflow-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-int-overflow-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-int-overflow-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0
+      },
+      {
+        "x": 1
+      },
+      {
+        "x": 2
+      },
+      {
+        "x": 3
+      }
+    ]
+  },
+  {
+    "name": "parameter-int-overflow-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 3,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "parameter-int-underflow-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": false,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -2147483648 is less than zero."
+  },
+  {
+    "name": "parameter-int-underflow-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": true,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -2147483648 is less than zero."
+  },
+  {
+    "name": "parameter-int-underflow-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": false,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -2147483648 is less than zero."
+  },
+  {
+    "name": "parameter-int-underflow-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": true,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -2147483648 is less than zero."
+  },
+  {
+    "name": "parameter-large-number-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-large-number-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-large-number-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0
+      },
+      {
+        "x": 1
+      },
+      {
+        "x": 2
+      },
+      {
+        "x": 3
+      }
+    ]
+  },
+  {
+    "name": "parameter-large-number-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 3,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "parameter-small-number-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": false,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -2147483648 is less than zero."
+  },
+  {
+    "name": "parameter-small-number-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": true,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -2147483648 is less than zero."
+  },
+  {
+    "name": "parameter-small-number-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": false,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -2147483648 is less than zero."
+  },
+  {
+    "name": "parameter-small-number-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": true,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -2147483648 is less than zero."
+  },
+  {
+    "name": "parameter-string-empty-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0
+      },
+      {
+        "x": 1
+      },
+      {
+        "x": 2
+      },
+      {
+        "x": 3
+      }
+    ]
+  },
+  {
+    "name": "parameter-string-empty-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 3,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "parameter-string-empty-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-string-empty-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-string-one-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 1
+      },
+      {
+        "x": 2
+      },
+      {
+        "x": 3
+      }
+    ]
+  },
+  {
+    "name": "parameter-string-one-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 3,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "parameter-string-one-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0
+      }
+    ]
+  },
+  {
+    "name": "parameter-string-one-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "parameter-string-signed-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2
+      },
+      {
+        "x": 3
+      }
+    ]
+  },
+  {
+    "name": "parameter-string-signed-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 3,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "parameter-string-signed-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0
+      },
+      {
+        "x": 1
+      }
+    ]
+  },
+  {
+    "name": "parameter-string-signed-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "parameter-string-negative-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": false,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -1 is less than zero."
+  },
+  {
+    "name": "parameter-string-negative-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": true,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -1 is less than zero."
+  },
+  {
+    "name": "parameter-string-negative-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": false,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -1 is less than zero."
+  },
+  {
+    "name": "parameter-string-negative-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": true,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -1 is less than zero."
+  },
+  {
+    "name": "parameter-string-negative-zero-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0
+      },
+      {
+        "x": 1
+      },
+      {
+        "x": 2
+      },
+      {
+        "x": 3
+      }
+    ]
+  },
+  {
+    "name": "parameter-string-negative-zero-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 3,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "parameter-string-negative-zero-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-string-negative-zero-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-string-fraction-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0
+      },
+      {
+        "x": 1
+      },
+      {
+        "x": 2
+      },
+      {
+        "x": 3
+      }
+    ]
+  },
+  {
+    "name": "parameter-string-fraction-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 3,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "parameter-string-fraction-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-string-fraction-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-string-whitespace-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0
+      },
+      {
+        "x": 1
+      },
+      {
+        "x": 2
+      },
+      {
+        "x": 3
+      }
+    ]
+  },
+  {
+    "name": "parameter-string-whitespace-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 3,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "parameter-string-whitespace-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-string-whitespace-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-string-tailspace-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0
+      },
+      {
+        "x": 1
+      },
+      {
+        "x": 2
+      },
+      {
+        "x": 3
+      }
+    ]
+  },
+  {
+    "name": "parameter-string-tailspace-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 3,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "parameter-string-tailspace-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-string-tailspace-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-string-hex-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0
+      },
+      {
+        "x": 1
+      },
+      {
+        "x": 2
+      },
+      {
+        "x": 3
+      }
+    ]
+  },
+  {
+    "name": "parameter-string-hex-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 3,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "parameter-string-hex-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-string-hex-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-string-exponent-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0
+      },
+      {
+        "x": 1
+      },
+      {
+        "x": 2
+      },
+      {
+        "x": 3
+      }
+    ]
+  },
+  {
+    "name": "parameter-string-exponent-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 3,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "parameter-string-exponent-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-string-exponent-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-string-nan-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0
+      },
+      {
+        "x": 1
+      },
+      {
+        "x": 2
+      },
+      {
+        "x": 3
+      }
+    ]
+  },
+  {
+    "name": "parameter-string-nan-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 3,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "parameter-string-nan-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-string-nan-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-string-infinity-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0
+      },
+      {
+        "x": 1
+      },
+      {
+        "x": 2
+      },
+      {
+        "x": 3
+      }
+    ]
+  },
+  {
+    "name": "parameter-string-infinity-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 3,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "parameter-string-infinity-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-string-infinity-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-string-unicode-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2
+      },
+      {
+        "x": 3
+      }
+    ]
+  },
+  {
+    "name": "parameter-string-unicode-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 3,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "parameter-string-unicode-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0
+      },
+      {
+        "x": 1
+      }
+    ]
+  },
+  {
+    "name": "parameter-string-unicode-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "parameter-string-unicode-zero-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0
+      },
+      {
+        "x": 1
+      },
+      {
+        "x": 2
+      },
+      {
+        "x": 3
+      }
+    ]
+  },
+  {
+    "name": "parameter-string-unicode-zero-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 3,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "parameter-string-unicode-zero-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-string-unicode-zero-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-string-unicode-signed-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2
+      },
+      {
+        "x": 3
+      }
+    ]
+  },
+  {
+    "name": "parameter-string-unicode-signed-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 3,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "parameter-string-unicode-signed-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0
+      },
+      {
+        "x": 1
+      }
+    ]
+  },
+  {
+    "name": "parameter-string-unicode-signed-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "parameter-string-supplementary-digit-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0
+      },
+      {
+        "x": 1
+      },
+      {
+        "x": 2
+      },
+      {
+        "x": 3
+      }
+    ]
+  },
+  {
+    "name": "parameter-string-supplementary-digit-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 3,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "parameter-string-supplementary-digit-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-string-supplementary-digit-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-string-longmax-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-string-longmax-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-string-longmax-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0
+      },
+      {
+        "x": 1
+      },
+      {
+        "x": 2
+      },
+      {
+        "x": 3
+      }
+    ]
+  },
+  {
+    "name": "parameter-string-longmax-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 3,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "parameter-string-longmin-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": false,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -2147483648 is less than zero."
+  },
+  {
+    "name": "parameter-string-longmin-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": true,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -2147483648 is less than zero."
+  },
+  {
+    "name": "parameter-string-longmin-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": false,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -2147483648 is less than zero."
+  },
+  {
+    "name": "parameter-string-longmin-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": true,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -2147483648 is less than zero."
+  },
+  {
+    "name": "parameter-string-overflow-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0
+      },
+      {
+        "x": 1
+      },
+      {
+        "x": 2
+      },
+      {
+        "x": 3
+      }
+    ]
+  },
+  {
+    "name": "parameter-string-overflow-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 3,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "parameter-string-overflow-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-string-overflow-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-string-underflow-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0
+      },
+      {
+        "x": 1
+      },
+      {
+        "x": 2
+      },
+      {
+        "x": 3
+      }
+    ]
+  },
+  {
+    "name": "parameter-string-underflow-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 3,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "parameter-string-underflow-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-string-underflow-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-list-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0
+      },
+      {
+        "x": 1
+      },
+      {
+        "x": 2
+      },
+      {
+        "x": 3
+      }
+    ]
+  },
+  {
+    "name": "parameter-list-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 3,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "parameter-list-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-list-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-map-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0
+      },
+      {
+        "x": 1
+      },
+      {
+        "x": 2
+      },
+      {
+        "x": 3
+      }
+    ]
+  },
+  {
+    "name": "parameter-map-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 3,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "parameter-map-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-map-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "expression-nan-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP toFloat(\u0027NaN\u0027)",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0
+      },
+      {
+        "x": 1
+      },
+      {
+        "x": 2
+      },
+      {
+        "x": 3
+      }
+    ]
+  },
+  {
+    "name": "expression-nan-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP toFloat(\u0027NaN\u0027)",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 3,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "expression-nan-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT toFloat(\u0027NaN\u0027)",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "expression-nan-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT toFloat(\u0027NaN\u0027)",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "expression-infinity-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP toFloat(\u0027Infinity\u0027)",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "expression-infinity-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP toFloat(\u0027Infinity\u0027)",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "expression-infinity-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT toFloat(\u0027Infinity\u0027)",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0
+      },
+      {
+        "x": 1
+      },
+      {
+        "x": 2
+      },
+      {
+        "x": 3
+      }
+    ]
+  },
+  {
+    "name": "expression-infinity-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT toFloat(\u0027Infinity\u0027)",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 3,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "expression-negative-infinity-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP toFloat(\u0027-Infinity\u0027)",
+    "cross": false,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -2147483648 is less than zero."
+  },
+  {
+    "name": "expression-negative-infinity-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP toFloat(\u0027-Infinity\u0027)",
+    "cross": true,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -2147483648 is less than zero."
+  },
+  {
+    "name": "expression-negative-infinity-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT toFloat(\u0027-Infinity\u0027)",
+    "cross": false,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -2147483648 is less than zero."
+  },
+  {
+    "name": "expression-negative-infinity-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT toFloat(\u0027-Infinity\u0027)",
+    "cross": true,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -2147483648 is less than zero."
+  },
+  {
+    "name": "expression-overflow-double-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP 1e999",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "expression-overflow-double-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP 1e999",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "expression-overflow-double-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT 1e999",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0
+      },
+      {
+        "x": 1
+      },
+      {
+        "x": 2
+      },
+      {
+        "x": 3
+      }
+    ]
+  },
+  {
+    "name": "expression-overflow-double-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT 1e999",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 3,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "expression-sqrt-nan-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP sqrt(-1)",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0
+      },
+      {
+        "x": 1
+      },
+      {
+        "x": 2
+      },
+      {
+        "x": 3
+      }
+    ]
+  },
+  {
+    "name": "expression-sqrt-nan-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP sqrt(-1)",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 3,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "expression-sqrt-nan-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT sqrt(-1)",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "expression-sqrt-nan-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT sqrt(-1)",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "expression-log-infinity-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP log(0)",
+    "cross": false,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -2147483648 is less than zero."
+  },
+  {
+    "name": "expression-log-infinity-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP log(0)",
+    "cross": true,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -2147483648 is less than zero."
+  },
+  {
+    "name": "expression-log-infinity-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT log(0)",
+    "cross": false,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -2147483648 is less than zero."
+  },
+  {
+    "name": "expression-log-infinity-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT log(0)",
+    "cross": true,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -2147483648 is less than zero."
+  },
+  {
+    "name": "expression-addition-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP 1+1",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2
+      },
+      {
+        "x": 3
+      }
+    ]
+  },
+  {
+    "name": "expression-addition-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP 1+1",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 3,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "expression-addition-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT 1+1",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0
+      },
+      {
+        "x": 1
+      }
+    ]
+  },
+  {
+    "name": "expression-addition-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT 1+1",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "expression-division-error-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP 1/0",
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "expression-division-error-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP 1/0",
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "expression-division-error-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT 1/0",
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "expression-division-error-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT 1/0",
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "expression-cast-error-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP substring(\u0027x\u0027,\u0027bad\u0027)",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "expression-cast-error-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP substring(\u0027x\u0027,\u0027bad\u0027)",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "expression-cast-error-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT substring(\u0027x\u0027,\u0027bad\u0027)",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "expression-cast-error-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT substring(\u0027x\u0027,\u0027bad\u0027)",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "expression-undefined-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP missing",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0
+      },
+      {
+        "x": 1
+      },
+      {
+        "x": 2
+      },
+      {
+        "x": 3
+      }
+    ]
+  },
+  {
+    "name": "expression-undefined-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP missing",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 3,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "expression-undefined-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT missing",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "expression-undefined-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT missing",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "expression-list-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP [1]",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0
+      },
+      {
+        "x": 1
+      },
+      {
+        "x": 2
+      },
+      {
+        "x": 3
+      }
+    ]
+  },
+  {
+    "name": "expression-list-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP [1]",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 3,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "expression-list-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT [1]",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "expression-list-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT [1]",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "expression-map-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP {a:1}",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0
+      },
+      {
+        "x": 1
+      },
+      {
+        "x": 2
+      },
+      {
+        "x": 3
+      }
+    ]
+  },
+  {
+    "name": "expression-map-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP {a:1}",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 3,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "expression-map-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT {a:1}",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "expression-map-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT {a:1}",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "expression-numeric-string-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP toString(2)",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2
+      },
+      {
+        "x": 3
+      }
+    ]
+  },
+  {
+    "name": "expression-numeric-string-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP toString(2)",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 3,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "expression-numeric-string-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT toString(2)",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0
+      },
+      {
+        "x": 1
+      }
+    ]
+  },
+  {
+    "name": "expression-numeric-string-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT toString(2)",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "expression-floating-zero-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP -0.0",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0
+      },
+      {
+        "x": 1
+      },
+      {
+        "x": 2
+      },
+      {
+        "x": 3
+      }
+    ]
+  },
+  {
+    "name": "expression-floating-zero-skip",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP -0.0",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 3,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "expression-floating-zero-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT -0.0",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "expression-floating-zero-limit",
+    "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT -0.0",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "literal-return-row-limit",
+    "query": "RETURN 1 AS x LIMIT x",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 1
+      }
+    ]
+  },
+  {
+    "name": "literal-return-row-limit",
+    "query": "RETURN 1 AS x LIMIT x",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "literal-return-row-skip",
+    "query": "RETURN 1 AS x SKIP x",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "literal-return-row-skip",
+    "query": "RETURN 1 AS x SKIP x",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "literal-return-postskip-limit",
+    "query": "RETURN 1 AS x SKIP 1 LIMIT x",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "literal-return-postskip-limit",
+    "query": "RETURN 1 AS x SKIP 1 LIMIT x",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "literal-return-empty-limit-error",
+    "query": "RETURN 1 AS x SKIP 9 LIMIT 1/0",
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "literal-return-empty-limit-error",
+    "query": "RETURN 1 AS x SKIP 9 LIMIT 1/0",
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "literal-return-negative",
+    "query": "RETURN 1 AS x LIMIT -1",
+    "cross": false,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -1 is less than zero."
+  },
+  {
+    "name": "literal-return-negative",
+    "query": "RETURN 1 AS x LIMIT -1",
+    "cross": true,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -1 is less than zero."
+  },
+  {
+    "name": "unwind-row-limit",
+    "query": "UNWIND [2,1,0] AS x RETURN x LIMIT x",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2
+      },
+      {
+        "x": 1
+      }
+    ]
+  },
+  {
+    "name": "unwind-row-limit",
+    "query": "UNWIND [2,1,0] AS x RETURN x LIMIT x",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "unwind-row-skip",
+    "query": "UNWIND [2,1,0] AS x RETURN x SKIP x",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0
+      }
+    ]
+  },
+  {
+    "name": "unwind-row-skip",
+    "query": "UNWIND [2,1,0] AS x RETURN x SKIP x",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "unwind-postskip-limit",
+    "query": "UNWIND [2,1,0] AS x RETURN x SKIP 1 LIMIT x",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 1
+      }
+    ]
+  },
+  {
+    "name": "unwind-postskip-limit",
+    "query": "UNWIND [2,1,0] AS x RETURN x SKIP 1 LIMIT x",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "unwind-empty-limit-error",
+    "query": "UNWIND [2,1,0] AS x RETURN x SKIP 9 LIMIT 1/0",
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "unwind-empty-limit-error",
+    "query": "UNWIND [2,1,0] AS x RETURN x SKIP 9 LIMIT 1/0",
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "unwind-negative",
+    "query": "UNWIND [2,1,0] AS x RETURN x LIMIT -1",
+    "cross": false,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -1 is less than zero."
+  },
+  {
+    "name": "unwind-negative",
+    "query": "UNWIND [2,1,0] AS x RETURN x LIMIT -1",
+    "cross": true,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -1 is less than zero."
+  },
+  {
+    "name": "order-row-limit",
+    "query": "UNWIND [2,1,0] AS x RETURN x ORDER BY x LIMIT x",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "order-row-limit",
+    "query": "UNWIND [2,1,0] AS x RETURN x ORDER BY x LIMIT x",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "order-row-skip",
+    "query": "UNWIND [2,1,0] AS x RETURN x ORDER BY x SKIP x",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0
+      },
+      {
+        "x": 1
+      },
+      {
+        "x": 2
+      }
+    ]
+  },
+  {
+    "name": "order-row-skip",
+    "query": "UNWIND [2,1,0] AS x RETURN x ORDER BY x SKIP x",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "order-postskip-limit",
+    "query": "UNWIND [2,1,0] AS x RETURN x ORDER BY x SKIP 1 LIMIT x",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 1
+      }
+    ]
+  },
+  {
+    "name": "order-postskip-limit",
+    "query": "UNWIND [2,1,0] AS x RETURN x ORDER BY x SKIP 1 LIMIT x",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "order-empty-limit-error",
+    "query": "UNWIND [2,1,0] AS x RETURN x ORDER BY x SKIP 9 LIMIT 1/0",
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "order-empty-limit-error",
+    "query": "UNWIND [2,1,0] AS x RETURN x ORDER BY x SKIP 9 LIMIT 1/0",
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "order-negative",
+    "query": "UNWIND [2,1,0] AS x RETURN x ORDER BY x LIMIT -1",
+    "cross": false,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -1 is less than zero."
+  },
+  {
+    "name": "order-negative",
+    "query": "UNWIND [2,1,0] AS x RETURN x ORDER BY x LIMIT -1",
+    "cross": true,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -1 is less than zero."
+  },
+  {
+    "name": "aggregate-row-limit",
+    "query": "UNWIND [2,1,0] AS x RETURN count(x) AS x LIMIT x",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 3
+      }
+    ]
+  },
+  {
+    "name": "aggregate-row-limit",
+    "query": "UNWIND [2,1,0] AS x RETURN count(x) AS x LIMIT x",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 3,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "aggregate-row-skip",
+    "query": "UNWIND [2,1,0] AS x RETURN count(x) AS x SKIP x",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "aggregate-row-skip",
+    "query": "UNWIND [2,1,0] AS x RETURN count(x) AS x SKIP x",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "aggregate-postskip-limit",
+    "query": "UNWIND [2,1,0] AS x RETURN count(x) AS x SKIP 1 LIMIT x",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "aggregate-postskip-limit",
+    "query": "UNWIND [2,1,0] AS x RETURN count(x) AS x SKIP 1 LIMIT x",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "aggregate-empty-limit-error",
+    "query": "UNWIND [2,1,0] AS x RETURN count(x) AS x SKIP 9 LIMIT 1/0",
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "aggregate-empty-limit-error",
+    "query": "UNWIND [2,1,0] AS x RETURN count(x) AS x SKIP 9 LIMIT 1/0",
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "aggregate-negative",
+    "query": "UNWIND [2,1,0] AS x RETURN count(x) AS x LIMIT -1",
+    "cross": false,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -1 is less than zero."
+  },
+  {
+    "name": "aggregate-negative",
+    "query": "UNWIND [2,1,0] AS x RETURN count(x) AS x LIMIT -1",
+    "cross": true,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -1 is less than zero."
+  },
+  {
+    "name": "distinct-row-limit",
+    "query": "UNWIND [2,1,0,2] AS x RETURN DISTINCT x LIMIT x",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2
+      },
+      {
+        "x": 1
+      }
+    ]
+  },
+  {
+    "name": "distinct-row-limit",
+    "query": "UNWIND [2,1,0,2] AS x RETURN DISTINCT x LIMIT x",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": []
+        }
+      },
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "distinct-row-skip",
+    "query": "UNWIND [2,1,0,2] AS x RETURN DISTINCT x SKIP x",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0
+      }
+    ]
+  },
+  {
+    "name": "distinct-row-skip",
+    "query": "UNWIND [2,1,0,2] AS x RETURN DISTINCT x SKIP x",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "distinct-postskip-limit",
+    "query": "UNWIND [2,1,0,2] AS x RETURN DISTINCT x SKIP 1 LIMIT x",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 1
+      }
+    ]
+  },
+  {
+    "name": "distinct-postskip-limit",
+    "query": "UNWIND [2,1,0,2] AS x RETURN DISTINCT x SKIP 1 LIMIT x",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "distinct-empty-limit-error",
+    "query": "UNWIND [2,1,0,2] AS x RETURN DISTINCT x SKIP 9 LIMIT 1/0",
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "distinct-empty-limit-error",
+    "query": "UNWIND [2,1,0,2] AS x RETURN DISTINCT x SKIP 9 LIMIT 1/0",
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "distinct-negative",
+    "query": "UNWIND [2,1,0,2] AS x RETURN DISTINCT x LIMIT -1",
+    "cross": false,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -1 is less than zero."
+  },
+  {
+    "name": "distinct-negative",
+    "query": "UNWIND [2,1,0,2] AS x RETURN DISTINCT x LIMIT -1",
+    "cross": true,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -1 is less than zero."
+  },
+  {
+    "name": "where-false-row-limit",
+    "query": "WITH 1 AS x WHERE false RETURN x LIMIT x",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "where-false-row-limit",
+    "query": "WITH 1 AS x WHERE false RETURN x LIMIT x",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "where-false-row-skip",
+    "query": "WITH 1 AS x WHERE false RETURN x SKIP x",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "where-false-row-skip",
+    "query": "WITH 1 AS x WHERE false RETURN x SKIP x",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "where-false-postskip-limit",
+    "query": "WITH 1 AS x WHERE false RETURN x SKIP 1 LIMIT x",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "where-false-postskip-limit",
+    "query": "WITH 1 AS x WHERE false RETURN x SKIP 1 LIMIT x",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "where-false-empty-limit-error",
+    "query": "WITH 1 AS x WHERE false RETURN x SKIP 9 LIMIT 1/0",
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "where-false-empty-limit-error",
+    "query": "WITH 1 AS x WHERE false RETURN x SKIP 9 LIMIT 1/0",
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "where-false-negative",
+    "query": "WITH 1 AS x WHERE false RETURN x LIMIT -1",
+    "cross": false,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -1 is less than zero."
+  },
+  {
+    "name": "where-false-negative",
+    "query": "WITH 1 AS x WHERE false RETURN x LIMIT -1",
+    "cross": true,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -1 is less than zero."
+  },
+  {
+    "name": "mapped-filtered-row-limit",
+    "query": "MATCH (n:CallSiteNode) WHERE true RETURN id(n) AS x LIMIT x",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 24
+      }
+    ]
+  },
+  {
+    "name": "mapped-filtered-row-limit",
+    "query": "MATCH (n:CallSiteNode) WHERE true RETURN id(n) AS x LIMIT x",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 24,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": 24,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "mapped-filtered-row-skip",
+    "query": "MATCH (n:CallSiteNode) WHERE true RETURN id(n) AS x SKIP x",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "mapped-filtered-row-skip",
+    "query": "MATCH (n:CallSiteNode) WHERE true RETURN id(n) AS x SKIP x",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "mapped-filtered-postskip-limit",
+    "query": "MATCH (n:CallSiteNode) WHERE true RETURN id(n) AS x SKIP 1 LIMIT x",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "mapped-filtered-postskip-limit",
+    "query": "MATCH (n:CallSiteNode) WHERE true RETURN id(n) AS x SKIP 1 LIMIT x",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 24,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "mapped-filtered-empty-limit-error",
+    "query": "MATCH (n:CallSiteNode) WHERE true RETURN id(n) AS x SKIP 9 LIMIT 1/0",
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "mapped-filtered-empty-limit-error",
+    "query": "MATCH (n:CallSiteNode) WHERE true RETURN id(n) AS x SKIP 9 LIMIT 1/0",
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "mapped-filtered-negative",
+    "query": "MATCH (n:CallSiteNode) WHERE true RETURN id(n) AS x LIMIT -1",
+    "cross": false,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -1 is less than zero."
+  },
+  {
+    "name": "mapped-filtered-negative",
+    "query": "MATCH (n:CallSiteNode) WHERE true RETURN id(n) AS x LIMIT -1",
+    "cross": true,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -1 is less than zero."
+  },
+  {
+    "name": "mapped-unfiltered-row-limit",
+    "query": "MATCH (n:CallSiteNode) RETURN id(n) AS x LIMIT x",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 24
+      }
+    ]
+  },
+  {
+    "name": "mapped-unfiltered-row-limit",
+    "query": "MATCH (n:CallSiteNode) RETURN id(n) AS x LIMIT x",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 24,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": 24,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "mapped-unfiltered-row-skip",
+    "query": "MATCH (n:CallSiteNode) RETURN id(n) AS x SKIP x",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "mapped-unfiltered-row-skip",
+    "query": "MATCH (n:CallSiteNode) RETURN id(n) AS x SKIP x",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "mapped-unfiltered-postskip-limit",
+    "query": "MATCH (n:CallSiteNode) RETURN id(n) AS x SKIP 1 LIMIT x",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "mapped-unfiltered-postskip-limit",
+    "query": "MATCH (n:CallSiteNode) RETURN id(n) AS x SKIP 1 LIMIT x",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 24,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "mapped-unfiltered-empty-limit-error",
+    "query": "MATCH (n:CallSiteNode) RETURN id(n) AS x SKIP 9 LIMIT 1/0",
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "mapped-unfiltered-empty-limit-error",
+    "query": "MATCH (n:CallSiteNode) RETURN id(n) AS x SKIP 9 LIMIT 1/0",
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "mapped-unfiltered-negative",
+    "query": "MATCH (n:CallSiteNode) RETURN id(n) AS x LIMIT -1",
+    "cross": false,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -1 is less than zero."
+  },
+  {
+    "name": "mapped-unfiltered-negative",
+    "query": "MATCH (n:CallSiteNode) RETURN id(n) AS x LIMIT -1",
+    "cross": true,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -1 is less than zero."
+  },
+  {
+    "name": "projection-before-limit",
+    "query": "UNWIND [1] AS n RETURN substring(\u0027x\u0027,\u0027bad\u0027) AS x LIMIT 1/0",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "projection-before-limit",
+    "query": "UNWIND [1] AS n RETURN substring(\u0027x\u0027,\u0027bad\u0027) AS x LIMIT 1/0",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "projection-before-skip",
+    "query": "UNWIND [1] AS n RETURN substring(\u0027x\u0027,\u0027bad\u0027) AS x SKIP 1/0",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "projection-before-skip",
+    "query": "UNWIND [1] AS n RETURN substring(\u0027x\u0027,\u0027bad\u0027) AS x SKIP 1/0",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "order-before-limit",
+    "query": "UNWIND [1,2] AS n RETURN n ORDER BY substring(\u0027x\u0027,\u0027bad\u0027) LIMIT 1/0",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "order-before-limit",
+    "query": "UNWIND [1,2] AS n RETURN n ORDER BY substring(\u0027x\u0027,\u0027bad\u0027) LIMIT 1/0",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "where-before-limit",
+    "query": "WITH 1 AS n WHERE substring(\u0027x\u0027,\u0027bad\u0027)\u003d\u0027a\u0027 RETURN n LIMIT 1/0",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "where-before-limit",
+    "query": "WITH 1 AS n WHERE substring(\u0027x\u0027,\u0027bad\u0027)\u003d\u0027a\u0027 RETURN n LIMIT 1/0",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "aggregate-before-limit",
+    "query": "UNWIND [1] AS n RETURN count(substring(\u0027x\u0027,\u0027bad\u0027)) AS x LIMIT 1/0",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "aggregate-before-limit",
+    "query": "UNWIND [1] AS n RETURN count(substring(\u0027x\u0027,\u0027bad\u0027)) AS x LIMIT 1/0",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "where-before-skip",
+    "query": "MATCH (n) WHERE substring(\u0027x\u0027,\u0027bad\u0027)\u003d\u0027a\u0027 RETURN n SKIP 1/0",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "where-before-skip",
+    "query": "MATCH (n) WHERE substring(\u0027x\u0027,\u0027bad\u0027)\u003d\u0027a\u0027 RETURN n SKIP 1/0",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "mapped-early-limit-error",
+    "query": "MATCH (n) RETURN substring(\u0027x\u0027,\u0027bad\u0027) AS x LIMIT 1/0",
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "mapped-early-limit-error",
+    "query": "MATCH (n) RETURN substring(\u0027x\u0027,\u0027bad\u0027) AS x LIMIT 1/0",
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "mapped-early-limit-property-error",
+    "query": "MATCH (n {name:substring(\u0027x\u0027,\u0027bad\u0027)}) RETURN n LIMIT 1/0",
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "mapped-early-limit-property-error",
+    "query": "MATCH (n {name:substring(\u0027x\u0027,\u0027bad\u0027)}) RETURN n LIMIT 1/0",
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "early-before-unwind",
+    "query": "UNWIND [substring(\u0027x\u0027,\u0027bad\u0027)] AS x MATCH (n) RETURN n LIMIT 1/0",
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "early-before-unwind",
+    "query": "UNWIND [substring(\u0027x\u0027,\u0027bad\u0027)] AS x MATCH (n) RETURN n LIMIT 1/0",
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "early-before-with",
+    "query": "WITH substring(\u0027x\u0027,\u0027bad\u0027) AS x MATCH (n) RETURN n LIMIT 1/0",
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "early-before-with",
+    "query": "WITH substring(\u0027x\u0027,\u0027bad\u0027) AS x MATCH (n) RETURN n LIMIT 1/0",
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "no-early-distinct",
+    "query": "MATCH (n) RETURN DISTINCT substring(\u0027x\u0027,\u0027bad\u0027) AS x LIMIT 1/0",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "no-early-distinct",
+    "query": "MATCH (n) RETURN DISTINCT substring(\u0027x\u0027,\u0027bad\u0027) AS x LIMIT 1/0",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "no-early-order",
+    "query": "MATCH (n) RETURN substring(\u0027x\u0027,\u0027bad\u0027) AS x ORDER BY x LIMIT 1/0",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "no-early-order",
+    "query": "MATCH (n) RETURN substring(\u0027x\u0027,\u0027bad\u0027) AS x ORDER BY x LIMIT 1/0",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "optional-no-early",
+    "query": "OPTIONAL MATCH (n) RETURN substring(\u0027x\u0027,\u0027bad\u0027) AS x LIMIT 1/0",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "optional-no-early",
+    "query": "OPTIONAL MATCH (n) RETURN substring(\u0027x\u0027,\u0027bad\u0027) AS x LIMIT 1/0",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "union-later-error",
+    "query": "RETURN 1 AS x LIMIT 0 UNION RETURN 1/0 AS x",
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "union-later-error",
+    "query": "RETURN 1 AS x LIMIT 0 UNION RETURN 1/0 AS x",
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "skip-before-limit",
+    "query": "RETURN 1 AS x SKIP -1 LIMIT 1/0",
+    "cross": false,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -1 is less than zero."
+  },
+  {
+    "name": "skip-before-limit",
+    "query": "RETURN 1 AS x SKIP -1 LIMIT 1/0",
+    "cross": true,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -1 is less than zero."
+  },
+  {
+    "name": "limit-after-skip-error",
+    "query": "RETURN 1 AS x SKIP 9 LIMIT 1/0",
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "limit-after-skip-error",
+    "query": "RETURN 1 AS x SKIP 9 LIMIT 1/0",
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "empty-unfiltered-early",
+    "query": "MATCH (n) RETURN substring(\u0027x\u0027,\u0027bad\u0027) AS x LIMIT 1/0",
+    "cross": false,
+    "empty": true,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "empty-unfiltered-early",
+    "query": "MATCH (n) RETURN substring(\u0027x\u0027,\u0027bad\u0027) AS x LIMIT 1/0",
+    "cross": true,
+    "empty": true,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "empty-filtered-limit",
+    "query": "MATCH (n) WHERE true RETURN substring(\u0027x\u0027,\u0027bad\u0027) AS x LIMIT 1/0",
+    "cross": false,
+    "empty": true,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "empty-filtered-limit",
+    "query": "MATCH (n) WHERE true RETURN substring(\u0027x\u0027,\u0027bad\u0027) AS x LIMIT 1/0",
+    "cross": true,
+    "empty": true,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "guard-nonliteral-skip",
+    "query": "MATCH (n) WHERE true RETURN substring(\u0027x\u0027,\u0027bad\u0027) AS x SKIP 1/0 LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "guard-nonliteral-skip",
+    "query": "MATCH (n) WHERE true RETURN substring(\u0027x\u0027,\u0027bad\u0027) AS x SKIP 1/0 LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "guard-negative-string-skip",
+    "query": "MATCH (n) WHERE true RETURN substring(\u0027x\u0027,\u0027bad\u0027) AS x SKIP \u0027-1\u0027 LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "guard-negative-string-skip",
+    "query": "MATCH (n) WHERE true RETURN substring(\u0027x\u0027,\u0027bad\u0027) AS x SKIP \u0027-1\u0027 LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  }
+]

@@ -1,0 +1,146 @@
+[
+  {
+    "main": {
+      "name": "mapped-early-limit-error",
+      "query": "MATCH (n) RETURN substring('x','bad') AS x LIMIT 1/0",
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "Division by zero"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "mapped-early-limit-error",
+      "query": "MATCH (n) RETURN substring('x','bad') AS x LIMIT 1/0"
+    }
+  },
+  {
+    "main": {
+      "name": "mapped-early-limit-error",
+      "query": "MATCH (n) RETURN substring('x','bad') AS x LIMIT 1/0",
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "Division by zero"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "mapped-early-limit-error",
+      "query": "MATCH (n) RETURN substring('x','bad') AS x LIMIT 1/0"
+    }
+  },
+  {
+    "main": {
+      "name": "mapped-early-limit-property-error",
+      "query": "MATCH (n {name:substring('x','bad')}) RETURN n LIMIT 1/0",
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "Division by zero"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "mapped-early-limit-property-error",
+      "query": "MATCH (n {name:substring('x','bad')}) RETURN n LIMIT 1/0"
+    }
+  },
+  {
+    "main": {
+      "name": "mapped-early-limit-property-error",
+      "query": "MATCH (n {name:substring('x','bad')}) RETURN n LIMIT 1/0",
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "Division by zero"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "mapped-early-limit-property-error",
+      "query": "MATCH (n {name:substring('x','bad')}) RETURN n LIMIT 1/0"
+    }
+  },
+  {
+    "main": {
+      "name": "early-before-unwind",
+      "query": "UNWIND [substring('x','bad')] AS x MATCH (n) RETURN n LIMIT 1/0",
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "Division by zero"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "early-before-unwind",
+      "query": "UNWIND [substring('x','bad')] AS x MATCH (n) RETURN n LIMIT 1/0"
+    }
+  },
+  {
+    "main": {
+      "name": "early-before-unwind",
+      "query": "UNWIND [substring('x','bad')] AS x MATCH (n) RETURN n LIMIT 1/0",
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "Division by zero"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "early-before-unwind",
+      "query": "UNWIND [substring('x','bad')] AS x MATCH (n) RETURN n LIMIT 1/0"
+    }
+  },
+  {
+    "main": {
+      "name": "early-before-with",
+      "query": "WITH substring('x','bad') AS x MATCH (n) RETURN n LIMIT 1/0",
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "Division by zero"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "early-before-with",
+      "query": "WITH substring('x','bad') AS x MATCH (n) RETURN n LIMIT 1/0"
+    }
+  },
+  {
+    "main": {
+      "name": "early-before-with",
+      "query": "WITH substring('x','bad') AS x MATCH (n) RETURN n LIMIT 1/0",
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "Division by zero"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "early-before-with",
+      "query": "WITH substring('x','bad') AS x MATCH (n) RETURN n LIMIT 1/0"
+    }
+  }
+]

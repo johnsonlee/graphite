@@ -1,0 +1,68 @@
+{
+  "capturedAtUtc": "2026-09-06T21:31:26.452065+00:00",
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "nativeBase": "795e970b470f3359dfe09cec8b4363373c69079e",
+  "java": "17.0.18",
+  "jarSha256": "91c3a1d154ca96004c55df195d9f752e077cab3e33ca1570b2c88b872d9bc34d",
+  "scenarios": 160,
+  "observations": 320,
+  "beforeEqual": 78,
+  "beforeDifferent": 242,
+  "afterEqual": 312,
+  "afterDifferent": 8,
+  "fixed": 234,
+  "regressions": 0,
+  "previousLimitZeroObservations": 180,
+  "previousLimitZeroEqual": 180,
+  "performanceRun": false,
+  "files": [
+    {
+      "path": "PlannerOracle.java",
+      "sha256": "8ec40966ac5c770ef3026fc56cb08b35d7ef4ef22e022621fb5b05dd56ae5093"
+    },
+    {
+      "path": "README.md",
+      "sha256": "92d9f4caafff52647dd6db2c241d409ceea5d177e9e861e25e876568caef3926"
+    },
+    {
+      "path": "before-differences.json",
+      "sha256": "6101058fdfe2726089dff108f032b00e3ff1fa43d05b63d5e3f4912f1ba87855"
+    },
+    {
+      "path": "cases.json",
+      "sha256": "ef3b30c272e0a317daf2f58a4a4ee8e06dd257296c83fcfcb748787385ade7ff"
+    },
+    {
+      "path": "conversion-differences.json",
+      "sha256": "20671a13d3f6588c3c6a5afee55c09ca77deb792cc4322ac575a718df5a24f17"
+    },
+    {
+      "path": "main-command.json",
+      "sha256": "d7d01ab2e7d2057deb969db8d06b33c06ac14b3d69b544cd3a41eb6a79ac4893"
+    },
+    {
+      "path": "main-oracle.json",
+      "sha256": "872078688809dae320a881db3de38bb596d5f465f3bb794d40f70771f9e4ce6b"
+    },
+    {
+      "path": "main.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "native-after-conversion.json",
+      "sha256": "b4be898ce73e082a0197cb915fc64d4a2406b28c3f39b9f70c25f190f82d9a81"
+    },
+    {
+      "path": "native-before.json",
+      "sha256": "c9f2c35a451ee68e6bdb2637646e5996f2dc043e14000b3a79f83a0d7a657627"
+    },
+    {
+      "path": "native_capture_test.go",
+      "sha256": "111fb0f8d803c2faa055b1a34808f05015884b1bfe5691b5afe9f9621487878a"
+    },
+    {
+      "path": "previous-limit-zero-after.json",
+      "sha256": "a874c211a10f5e06f16fdebffb6a25e9089baeb3129c520900f0c6e819a66bdc"
+    }
+  ]
+}

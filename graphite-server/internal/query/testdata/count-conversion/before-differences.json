@@ -1,0 +1,6236 @@
+[
+  {
+    "main": {
+      "name": "parameter-null-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0
+        },
+        {
+          "x": 1
+        },
+        {
+          "x": 2
+        },
+        {
+          "x": 3
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-null-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-null-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 2,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 3,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-null-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-null-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-null-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-null-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-null-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-false-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0
+        },
+        {
+          "x": 1
+        },
+        {
+          "x": 2
+        },
+        {
+          "x": 3
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-false-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-false-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 2,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 3,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-false-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-false-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-false-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-false-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-false-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-true-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0
+        },
+        {
+          "x": 1
+        },
+        {
+          "x": 2
+        },
+        {
+          "x": 3
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-true-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-true-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 2,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 3,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-true-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-true-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-true-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-true-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-true-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-positive-fraction-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 1
+        },
+        {
+          "x": 2
+        },
+        {
+          "x": 3
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-positive-fraction-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-positive-fraction-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 2,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 3,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-positive-fraction-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-positive-fraction-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-positive-fraction-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-positive-fraction-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-positive-fraction-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-negative-fraction-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0
+        },
+        {
+          "x": 1
+        },
+        {
+          "x": 2
+        },
+        {
+          "x": 3
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-negative-fraction-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-negative-fraction-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 2,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 3,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-negative-fraction-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-negative-fraction-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-negative-fraction-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-negative-fraction-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-negative-fraction-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-negative-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": false,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -1 is less than zero."
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-negative-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-negative-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": true,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -1 is less than zero."
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-negative-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-negative-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": false,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -1 is less than zero."
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-negative-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-negative-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": true,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -1 is less than zero."
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-negative-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-negative-truncation-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": false,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -1 is less than zero."
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-negative-truncation-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-negative-truncation-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": true,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -1 is less than zero."
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-negative-truncation-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-negative-truncation-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": false,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -1 is less than zero."
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-negative-truncation-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-negative-truncation-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": true,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -1 is less than zero."
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-negative-truncation-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-int-underflow-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": false,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -2147483648 is less than zero."
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-int-underflow-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-int-underflow-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": true,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -2147483648 is less than zero."
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-int-underflow-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-int-underflow-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": false,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -2147483648 is less than zero."
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-int-underflow-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-int-underflow-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": true,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -2147483648 is less than zero."
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-int-underflow-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-large-number-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-large-number-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-large-number-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-large-number-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-large-number-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0
+        },
+        {
+          "x": 1
+        },
+        {
+          "x": 2
+        },
+        {
+          "x": 3
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-large-number-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-large-number-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 2,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 3,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-large-number-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-small-number-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": false,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -2147483648 is less than zero."
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-small-number-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-small-number-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": true,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -2147483648 is less than zero."
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-small-number-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-small-number-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": false,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -2147483648 is less than zero."
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-small-number-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-small-number-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": true,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -2147483648 is less than zero."
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-small-number-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-empty-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0
+        },
+        {
+          "x": 1
+        },
+        {
+          "x": 2
+        },
+        {
+          "x": 3
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-empty-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-empty-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 2,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 3,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-empty-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-empty-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-empty-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-empty-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-empty-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-one-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 1
+        },
+        {
+          "x": 2
+        },
+        {
+          "x": 3
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-one-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-one-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 2,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 3,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-one-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-one-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-one-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-one-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-one-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-signed-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 2
+        },
+        {
+          "x": 3
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-signed-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-signed-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 2,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 3,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-signed-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-signed-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0
+        },
+        {
+          "x": 1
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-signed-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-signed-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-signed-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-negative-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": false,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -1 is less than zero."
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-negative-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-negative-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": true,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -1 is less than zero."
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-negative-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-negative-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": false,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -1 is less than zero."
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-negative-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-negative-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": true,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -1 is less than zero."
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-negative-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-negative-zero-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0
+        },
+        {
+          "x": 1
+        },
+        {
+          "x": 2
+        },
+        {
+          "x": 3
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-negative-zero-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-negative-zero-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 2,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 3,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-negative-zero-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-negative-zero-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-negative-zero-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-negative-zero-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-negative-zero-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-fraction-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0
+        },
+        {
+          "x": 1
+        },
+        {
+          "x": 2
+        },
+        {
+          "x": 3
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-fraction-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-fraction-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 2,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 3,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-fraction-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-fraction-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-fraction-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-fraction-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-fraction-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-whitespace-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0
+        },
+        {
+          "x": 1
+        },
+        {
+          "x": 2
+        },
+        {
+          "x": 3
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-whitespace-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-whitespace-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 2,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 3,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-whitespace-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-whitespace-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-whitespace-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-whitespace-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-whitespace-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-tailspace-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0
+        },
+        {
+          "x": 1
+        },
+        {
+          "x": 2
+        },
+        {
+          "x": 3
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-tailspace-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-tailspace-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 2,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 3,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-tailspace-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-tailspace-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-tailspace-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-tailspace-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-tailspace-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-hex-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0
+        },
+        {
+          "x": 1
+        },
+        {
+          "x": 2
+        },
+        {
+          "x": 3
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-hex-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-hex-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 2,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 3,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-hex-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-hex-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-hex-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-hex-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-hex-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-exponent-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0
+        },
+        {
+          "x": 1
+        },
+        {
+          "x": 2
+        },
+        {
+          "x": 3
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-exponent-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-exponent-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 2,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 3,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-exponent-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-exponent-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-exponent-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-exponent-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-exponent-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-nan-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0
+        },
+        {
+          "x": 1
+        },
+        {
+          "x": 2
+        },
+        {
+          "x": 3
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-nan-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-nan-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 2,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 3,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-nan-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-nan-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-nan-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-nan-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-nan-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-infinity-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0
+        },
+        {
+          "x": 1
+        },
+        {
+          "x": 2
+        },
+        {
+          "x": 3
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-infinity-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-infinity-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 2,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 3,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-infinity-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-infinity-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-infinity-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-infinity-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-infinity-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-unicode-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 2
+        },
+        {
+          "x": 3
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-unicode-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-unicode-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 2,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 3,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-unicode-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-unicode-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0
+        },
+        {
+          "x": 1
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-unicode-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-unicode-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-unicode-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-unicode-zero-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0
+        },
+        {
+          "x": 1
+        },
+        {
+          "x": 2
+        },
+        {
+          "x": 3
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-unicode-zero-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-unicode-zero-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 2,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 3,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-unicode-zero-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-unicode-zero-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-unicode-zero-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-unicode-zero-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-unicode-zero-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-unicode-signed-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 2
+        },
+        {
+          "x": 3
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-unicode-signed-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-unicode-signed-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 2,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 3,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-unicode-signed-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-unicode-signed-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0
+        },
+        {
+          "x": 1
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-unicode-signed-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-unicode-signed-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-unicode-signed-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-supplementary-digit-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0
+        },
+        {
+          "x": 1
+        },
+        {
+          "x": 2
+        },
+        {
+          "x": 3
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-supplementary-digit-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-supplementary-digit-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 2,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 3,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-supplementary-digit-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-supplementary-digit-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-supplementary-digit-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-supplementary-digit-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-supplementary-digit-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-longmax-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-longmax-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-longmax-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-longmax-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-longmax-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0
+        },
+        {
+          "x": 1
+        },
+        {
+          "x": 2
+        },
+        {
+          "x": 3
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-longmax-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-longmax-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 2,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 3,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-longmax-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-longmin-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": false,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -2147483648 is less than zero."
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-longmin-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-longmin-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": true,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -2147483648 is less than zero."
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-longmin-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-longmin-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": false,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -2147483648 is less than zero."
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-longmin-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-longmin-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": true,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -2147483648 is less than zero."
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-longmin-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-overflow-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0
+        },
+        {
+          "x": 1
+        },
+        {
+          "x": 2
+        },
+        {
+          "x": 3
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-overflow-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-overflow-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 2,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 3,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-overflow-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-overflow-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-overflow-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-overflow-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-overflow-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-underflow-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0
+        },
+        {
+          "x": 1
+        },
+        {
+          "x": 2
+        },
+        {
+          "x": 3
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-underflow-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-underflow-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 2,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 3,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-underflow-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-underflow-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-underflow-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-string-underflow-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-string-underflow-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-list-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0
+        },
+        {
+          "x": 1
+        },
+        {
+          "x": 2
+        },
+        {
+          "x": 3
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-list-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-list-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 2,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 3,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-list-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-list-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-list-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-list-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-list-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-map-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0
+        },
+        {
+          "x": 1
+        },
+        {
+          "x": 2
+        },
+        {
+          "x": 3
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-map-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-map-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 2,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 3,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-map-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-map-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-map-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "parameter-map-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "parameter-map-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT $count"
+    }
+  },
+  {
+    "main": {
+      "name": "expression-nan-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP toFloat('NaN')",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0
+        },
+        {
+          "x": 1
+        },
+        {
+          "x": 2
+        },
+        {
+          "x": 3
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "expression-nan-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP toFloat('NaN')"
+    }
+  },
+  {
+    "main": {
+      "name": "expression-nan-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP toFloat('NaN')",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 2,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 3,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "expression-nan-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP toFloat('NaN')"
+    }
+  },
+  {
+    "main": {
+      "name": "expression-nan-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT toFloat('NaN')",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "expression-nan-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT toFloat('NaN')"
+    }
+  },
+  {
+    "main": {
+      "name": "expression-nan-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT toFloat('NaN')",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "expression-nan-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT toFloat('NaN')"
+    }
+  },
+  {
+    "main": {
+      "name": "expression-infinity-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP toFloat('Infinity')",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "expression-infinity-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP toFloat('Infinity')"
+    }
+  },
+  {
+    "main": {
+      "name": "expression-infinity-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP toFloat('Infinity')",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "expression-infinity-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP toFloat('Infinity')"
+    }
+  },
+  {
+    "main": {
+      "name": "expression-infinity-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT toFloat('Infinity')",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0
+        },
+        {
+          "x": 1
+        },
+        {
+          "x": 2
+        },
+        {
+          "x": 3
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "expression-infinity-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT toFloat('Infinity')"
+    }
+  },
+  {
+    "main": {
+      "name": "expression-infinity-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT toFloat('Infinity')",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 2,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 3,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "expression-infinity-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT toFloat('Infinity')"
+    }
+  },
+  {
+    "main": {
+      "name": "expression-negative-infinity-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP toFloat('-Infinity')",
+      "cross": false,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -2147483648 is less than zero."
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "expression-negative-infinity-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP toFloat('-Infinity')"
+    }
+  },
+  {
+    "main": {
+      "name": "expression-negative-infinity-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP toFloat('-Infinity')",
+      "cross": true,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -2147483648 is less than zero."
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "expression-negative-infinity-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP toFloat('-Infinity')"
+    }
+  },
+  {
+    "main": {
+      "name": "expression-negative-infinity-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT toFloat('-Infinity')",
+      "cross": false,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -2147483648 is less than zero."
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "expression-negative-infinity-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT toFloat('-Infinity')"
+    }
+  },
+  {
+    "main": {
+      "name": "expression-negative-infinity-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT toFloat('-Infinity')",
+      "cross": true,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -2147483648 is less than zero."
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "expression-negative-infinity-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT toFloat('-Infinity')"
+    }
+  },
+  {
+    "main": {
+      "name": "expression-overflow-double-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP 1e999",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "expression-overflow-double-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP 1e999"
+    }
+  },
+  {
+    "main": {
+      "name": "expression-overflow-double-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP 1e999",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "expression-overflow-double-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP 1e999"
+    }
+  },
+  {
+    "main": {
+      "name": "expression-overflow-double-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT 1e999",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0
+        },
+        {
+          "x": 1
+        },
+        {
+          "x": 2
+        },
+        {
+          "x": 3
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "expression-overflow-double-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT 1e999"
+    }
+  },
+  {
+    "main": {
+      "name": "expression-overflow-double-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT 1e999",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 2,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 3,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "expression-overflow-double-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT 1e999"
+    }
+  },
+  {
+    "main": {
+      "name": "expression-sqrt-nan-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP sqrt(-1)",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0
+        },
+        {
+          "x": 1
+        },
+        {
+          "x": 2
+        },
+        {
+          "x": 3
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "expression-sqrt-nan-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP sqrt(-1)"
+    }
+  },
+  {
+    "main": {
+      "name": "expression-sqrt-nan-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP sqrt(-1)",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 2,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 3,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "expression-sqrt-nan-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP sqrt(-1)"
+    }
+  },
+  {
+    "main": {
+      "name": "expression-sqrt-nan-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT sqrt(-1)",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "expression-sqrt-nan-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT sqrt(-1)"
+    }
+  },
+  {
+    "main": {
+      "name": "expression-sqrt-nan-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT sqrt(-1)",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "expression-sqrt-nan-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT sqrt(-1)"
+    }
+  },
+  {
+    "main": {
+      "name": "expression-log-infinity-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP log(0)",
+      "cross": false,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -2147483648 is less than zero."
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "expression-log-infinity-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP log(0)"
+    }
+  },
+  {
+    "main": {
+      "name": "expression-log-infinity-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP log(0)",
+      "cross": true,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -2147483648 is less than zero."
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "expression-log-infinity-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP log(0)"
+    }
+  },
+  {
+    "main": {
+      "name": "expression-log-infinity-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT log(0)",
+      "cross": false,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -2147483648 is less than zero."
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "expression-log-infinity-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT log(0)"
+    }
+  },
+  {
+    "main": {
+      "name": "expression-log-infinity-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT log(0)",
+      "cross": true,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -2147483648 is less than zero."
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "expression-log-infinity-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT log(0)"
+    }
+  },
+  {
+    "main": {
+      "name": "expression-undefined-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP missing",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0
+        },
+        {
+          "x": 1
+        },
+        {
+          "x": 2
+        },
+        {
+          "x": 3
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "expression-undefined-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP missing"
+    }
+  },
+  {
+    "main": {
+      "name": "expression-undefined-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP missing",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 2,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 3,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "expression-undefined-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP missing"
+    }
+  },
+  {
+    "main": {
+      "name": "expression-undefined-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT missing",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "expression-undefined-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT missing"
+    }
+  },
+  {
+    "main": {
+      "name": "expression-undefined-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT missing",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "expression-undefined-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT missing"
+    }
+  },
+  {
+    "main": {
+      "name": "expression-list-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP [1]",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0
+        },
+        {
+          "x": 1
+        },
+        {
+          "x": 2
+        },
+        {
+          "x": 3
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "expression-list-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP [1]"
+    }
+  },
+  {
+    "main": {
+      "name": "expression-list-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP [1]",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 2,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 3,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "expression-list-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP [1]"
+    }
+  },
+  {
+    "main": {
+      "name": "expression-list-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT [1]",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "expression-list-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT [1]"
+    }
+  },
+  {
+    "main": {
+      "name": "expression-list-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT [1]",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "expression-list-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT [1]"
+    }
+  },
+  {
+    "main": {
+      "name": "expression-map-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP {a:1}",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0
+        },
+        {
+          "x": 1
+        },
+        {
+          "x": 2
+        },
+        {
+          "x": 3
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "expression-map-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP {a:1}"
+    }
+  },
+  {
+    "main": {
+      "name": "expression-map-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP {a:1}",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 2,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 3,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "expression-map-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP {a:1}"
+    }
+  },
+  {
+    "main": {
+      "name": "expression-map-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT {a:1}",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "expression-map-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT {a:1}"
+    }
+  },
+  {
+    "main": {
+      "name": "expression-map-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT {a:1}",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "expression-map-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT {a:1}"
+    }
+  },
+  {
+    "main": {
+      "name": "expression-numeric-string-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP toString(2)",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 2
+        },
+        {
+          "x": 3
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "expression-numeric-string-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP toString(2)"
+    }
+  },
+  {
+    "main": {
+      "name": "expression-numeric-string-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP toString(2)",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 2,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 3,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "expression-numeric-string-skip",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x SKIP toString(2)"
+    }
+  },
+  {
+    "main": {
+      "name": "expression-numeric-string-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT toString(2)",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0
+        },
+        {
+          "x": 1
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "expression-numeric-string-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT toString(2)"
+    }
+  },
+  {
+    "main": {
+      "name": "expression-numeric-string-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT toString(2)",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "expression-numeric-string-limit",
+      "query": "UNWIND [0,1,2,3] AS x RETURN x LIMIT toString(2)"
+    }
+  },
+  {
+    "main": {
+      "name": "literal-return-row-limit",
+      "query": "RETURN 1 AS x LIMIT x",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 1
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "literal-return-row-limit",
+      "query": "RETURN 1 AS x LIMIT x"
+    }
+  },
+  {
+    "main": {
+      "name": "literal-return-row-limit",
+      "query": "RETURN 1 AS x LIMIT x",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "literal-return-row-limit",
+      "query": "RETURN 1 AS x LIMIT x"
+    }
+  },
+  {
+    "main": {
+      "name": "literal-return-row-skip",
+      "query": "RETURN 1 AS x SKIP x",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "literal-return-row-skip",
+      "query": "RETURN 1 AS x SKIP x"
+    }
+  },
+  {
+    "main": {
+      "name": "literal-return-row-skip",
+      "query": "RETURN 1 AS x SKIP x",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "literal-return-row-skip",
+      "query": "RETURN 1 AS x SKIP x"
+    }
+  },
+  {
+    "main": {
+      "name": "literal-return-postskip-limit",
+      "query": "RETURN 1 AS x SKIP 1 LIMIT x",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "literal-return-postskip-limit",
+      "query": "RETURN 1 AS x SKIP 1 LIMIT x"
+    }
+  },
+  {
+    "main": {
+      "name": "literal-return-postskip-limit",
+      "query": "RETURN 1 AS x SKIP 1 LIMIT x",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "literal-return-postskip-limit",
+      "query": "RETURN 1 AS x SKIP 1 LIMIT x"
+    }
+  },
+  {
+    "main": {
+      "name": "literal-return-negative",
+      "query": "RETURN 1 AS x LIMIT -1",
+      "cross": false,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -1 is less than zero."
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "literal-return-negative",
+      "query": "RETURN 1 AS x LIMIT -1"
+    }
+  },
+  {
+    "main": {
+      "name": "literal-return-negative",
+      "query": "RETURN 1 AS x LIMIT -1",
+      "cross": true,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -1 is less than zero."
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "literal-return-negative",
+      "query": "RETURN 1 AS x LIMIT -1"
+    }
+  },
+  {
+    "main": {
+      "name": "unwind-row-limit",
+      "query": "UNWIND [2,1,0] AS x RETURN x LIMIT x",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 2
+        },
+        {
+          "x": 1
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "unwind-row-limit",
+      "query": "UNWIND [2,1,0] AS x RETURN x LIMIT x"
+    }
+  },
+  {
+    "main": {
+      "name": "unwind-row-limit",
+      "query": "UNWIND [2,1,0] AS x RETURN x LIMIT x",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 2,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "unwind-row-limit",
+      "query": "UNWIND [2,1,0] AS x RETURN x LIMIT x"
+    }
+  },
+  {
+    "main": {
+      "name": "unwind-row-skip",
+      "query": "UNWIND [2,1,0] AS x RETURN x SKIP x",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "unwind-row-skip",
+      "query": "UNWIND [2,1,0] AS x RETURN x SKIP x"
+    }
+  },
+  {
+    "main": {
+      "name": "unwind-row-skip",
+      "query": "UNWIND [2,1,0] AS x RETURN x SKIP x",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "unwind-row-skip",
+      "query": "UNWIND [2,1,0] AS x RETURN x SKIP x"
+    }
+  },
+  {
+    "main": {
+      "name": "unwind-postskip-limit",
+      "query": "UNWIND [2,1,0] AS x RETURN x SKIP 1 LIMIT x",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 1
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "unwind-postskip-limit",
+      "query": "UNWIND [2,1,0] AS x RETURN x SKIP 1 LIMIT x"
+    }
+  },
+  {
+    "main": {
+      "name": "unwind-postskip-limit",
+      "query": "UNWIND [2,1,0] AS x RETURN x SKIP 1 LIMIT x",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "unwind-postskip-limit",
+      "query": "UNWIND [2,1,0] AS x RETURN x SKIP 1 LIMIT x"
+    }
+  },
+  {
+    "main": {
+      "name": "unwind-negative",
+      "query": "UNWIND [2,1,0] AS x RETURN x LIMIT -1",
+      "cross": false,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -1 is less than zero."
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "unwind-negative",
+      "query": "UNWIND [2,1,0] AS x RETURN x LIMIT -1"
+    }
+  },
+  {
+    "main": {
+      "name": "unwind-negative",
+      "query": "UNWIND [2,1,0] AS x RETURN x LIMIT -1",
+      "cross": true,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -1 is less than zero."
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "unwind-negative",
+      "query": "UNWIND [2,1,0] AS x RETURN x LIMIT -1"
+    }
+  },
+  {
+    "main": {
+      "name": "order-row-limit",
+      "query": "UNWIND [2,1,0] AS x RETURN x ORDER BY x LIMIT x",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "order-row-limit",
+      "query": "UNWIND [2,1,0] AS x RETURN x ORDER BY x LIMIT x"
+    }
+  },
+  {
+    "main": {
+      "name": "order-row-limit",
+      "query": "UNWIND [2,1,0] AS x RETURN x ORDER BY x LIMIT x",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "order-row-limit",
+      "query": "UNWIND [2,1,0] AS x RETURN x ORDER BY x LIMIT x"
+    }
+  },
+  {
+    "main": {
+      "name": "order-row-skip",
+      "query": "UNWIND [2,1,0] AS x RETURN x ORDER BY x SKIP x",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0
+        },
+        {
+          "x": 1
+        },
+        {
+          "x": 2
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "order-row-skip",
+      "query": "UNWIND [2,1,0] AS x RETURN x ORDER BY x SKIP x"
+    }
+  },
+  {
+    "main": {
+      "name": "order-row-skip",
+      "query": "UNWIND [2,1,0] AS x RETURN x ORDER BY x SKIP x",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 2,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "order-row-skip",
+      "query": "UNWIND [2,1,0] AS x RETURN x ORDER BY x SKIP x"
+    }
+  },
+  {
+    "main": {
+      "name": "order-postskip-limit",
+      "query": "UNWIND [2,1,0] AS x RETURN x ORDER BY x SKIP 1 LIMIT x",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 1
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "order-postskip-limit",
+      "query": "UNWIND [2,1,0] AS x RETURN x ORDER BY x SKIP 1 LIMIT x"
+    }
+  },
+  {
+    "main": {
+      "name": "order-postskip-limit",
+      "query": "UNWIND [2,1,0] AS x RETURN x ORDER BY x SKIP 1 LIMIT x",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "order-postskip-limit",
+      "query": "UNWIND [2,1,0] AS x RETURN x ORDER BY x SKIP 1 LIMIT x"
+    }
+  },
+  {
+    "main": {
+      "name": "order-negative",
+      "query": "UNWIND [2,1,0] AS x RETURN x ORDER BY x LIMIT -1",
+      "cross": false,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -1 is less than zero."
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "order-negative",
+      "query": "UNWIND [2,1,0] AS x RETURN x ORDER BY x LIMIT -1"
+    }
+  },
+  {
+    "main": {
+      "name": "order-negative",
+      "query": "UNWIND [2,1,0] AS x RETURN x ORDER BY x LIMIT -1",
+      "cross": true,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -1 is less than zero."
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "order-negative",
+      "query": "UNWIND [2,1,0] AS x RETURN x ORDER BY x LIMIT -1"
+    }
+  },
+  {
+    "main": {
+      "name": "aggregate-row-limit",
+      "query": "UNWIND [2,1,0] AS x RETURN count(x) AS x LIMIT x",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 3
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "aggregate-row-limit",
+      "query": "UNWIND [2,1,0] AS x RETURN count(x) AS x LIMIT x"
+    }
+  },
+  {
+    "main": {
+      "name": "aggregate-row-limit",
+      "query": "UNWIND [2,1,0] AS x RETURN count(x) AS x LIMIT x",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 3,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "aggregate-row-limit",
+      "query": "UNWIND [2,1,0] AS x RETURN count(x) AS x LIMIT x"
+    }
+  },
+  {
+    "main": {
+      "name": "aggregate-row-skip",
+      "query": "UNWIND [2,1,0] AS x RETURN count(x) AS x SKIP x",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "aggregate-row-skip",
+      "query": "UNWIND [2,1,0] AS x RETURN count(x) AS x SKIP x"
+    }
+  },
+  {
+    "main": {
+      "name": "aggregate-row-skip",
+      "query": "UNWIND [2,1,0] AS x RETURN count(x) AS x SKIP x",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "aggregate-row-skip",
+      "query": "UNWIND [2,1,0] AS x RETURN count(x) AS x SKIP x"
+    }
+  },
+  {
+    "main": {
+      "name": "aggregate-postskip-limit",
+      "query": "UNWIND [2,1,0] AS x RETURN count(x) AS x SKIP 1 LIMIT x",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "aggregate-postskip-limit",
+      "query": "UNWIND [2,1,0] AS x RETURN count(x) AS x SKIP 1 LIMIT x"
+    }
+  },
+  {
+    "main": {
+      "name": "aggregate-postskip-limit",
+      "query": "UNWIND [2,1,0] AS x RETURN count(x) AS x SKIP 1 LIMIT x",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "aggregate-postskip-limit",
+      "query": "UNWIND [2,1,0] AS x RETURN count(x) AS x SKIP 1 LIMIT x"
+    }
+  },
+  {
+    "main": {
+      "name": "aggregate-negative",
+      "query": "UNWIND [2,1,0] AS x RETURN count(x) AS x LIMIT -1",
+      "cross": false,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -1 is less than zero."
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "aggregate-negative",
+      "query": "UNWIND [2,1,0] AS x RETURN count(x) AS x LIMIT -1"
+    }
+  },
+  {
+    "main": {
+      "name": "aggregate-negative",
+      "query": "UNWIND [2,1,0] AS x RETURN count(x) AS x LIMIT -1",
+      "cross": true,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -1 is less than zero."
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "aggregate-negative",
+      "query": "UNWIND [2,1,0] AS x RETURN count(x) AS x LIMIT -1"
+    }
+  },
+  {
+    "main": {
+      "name": "distinct-row-limit",
+      "query": "UNWIND [2,1,0,2] AS x RETURN DISTINCT x LIMIT x",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 2
+        },
+        {
+          "x": 1
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "distinct-row-limit",
+      "query": "UNWIND [2,1,0,2] AS x RETURN DISTINCT x LIMIT x"
+    }
+  },
+  {
+    "main": {
+      "name": "distinct-row-limit",
+      "query": "UNWIND [2,1,0,2] AS x RETURN DISTINCT x LIMIT x",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 2,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "x": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "distinct-row-limit",
+      "query": "UNWIND [2,1,0,2] AS x RETURN DISTINCT x LIMIT x"
+    }
+  },
+  {
+    "main": {
+      "name": "distinct-row-skip",
+      "query": "UNWIND [2,1,0,2] AS x RETURN DISTINCT x SKIP x",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "distinct-row-skip",
+      "query": "UNWIND [2,1,0,2] AS x RETURN DISTINCT x SKIP x"
+    }
+  },
+  {
+    "main": {
+      "name": "distinct-row-skip",
+      "query": "UNWIND [2,1,0,2] AS x RETURN DISTINCT x SKIP x",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 0,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "distinct-row-skip",
+      "query": "UNWIND [2,1,0,2] AS x RETURN DISTINCT x SKIP x"
+    }
+  },
+  {
+    "main": {
+      "name": "distinct-postskip-limit",
+      "query": "UNWIND [2,1,0,2] AS x RETURN DISTINCT x SKIP 1 LIMIT x",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 1
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "distinct-postskip-limit",
+      "query": "UNWIND [2,1,0,2] AS x RETURN DISTINCT x SKIP 1 LIMIT x"
+    }
+  },
+  {
+    "main": {
+      "name": "distinct-postskip-limit",
+      "query": "UNWIND [2,1,0,2] AS x RETURN DISTINCT x SKIP 1 LIMIT x",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "distinct-postskip-limit",
+      "query": "UNWIND [2,1,0,2] AS x RETURN DISTINCT x SKIP 1 LIMIT x"
+    }
+  },
+  {
+    "main": {
+      "name": "distinct-negative",
+      "query": "UNWIND [2,1,0,2] AS x RETURN DISTINCT x LIMIT -1",
+      "cross": false,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -1 is less than zero."
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "distinct-negative",
+      "query": "UNWIND [2,1,0,2] AS x RETURN DISTINCT x LIMIT -1"
+    }
+  },
+  {
+    "main": {
+      "name": "distinct-negative",
+      "query": "UNWIND [2,1,0,2] AS x RETURN DISTINCT x LIMIT -1",
+      "cross": true,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -1 is less than zero."
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "distinct-negative",
+      "query": "UNWIND [2,1,0,2] AS x RETURN DISTINCT x LIMIT -1"
+    }
+  },
+  {
+    "main": {
+      "name": "where-false-row-limit",
+      "query": "WITH 1 AS x WHERE false RETURN x LIMIT x",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "where-false-row-limit",
+      "query": "WITH 1 AS x WHERE false RETURN x LIMIT x"
+    }
+  },
+  {
+    "main": {
+      "name": "where-false-row-limit",
+      "query": "WITH 1 AS x WHERE false RETURN x LIMIT x",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "where-false-row-limit",
+      "query": "WITH 1 AS x WHERE false RETURN x LIMIT x"
+    }
+  },
+  {
+    "main": {
+      "name": "where-false-row-skip",
+      "query": "WITH 1 AS x WHERE false RETURN x SKIP x",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "where-false-row-skip",
+      "query": "WITH 1 AS x WHERE false RETURN x SKIP x"
+    }
+  },
+  {
+    "main": {
+      "name": "where-false-row-skip",
+      "query": "WITH 1 AS x WHERE false RETURN x SKIP x",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "where-false-row-skip",
+      "query": "WITH 1 AS x WHERE false RETURN x SKIP x"
+    }
+  },
+  {
+    "main": {
+      "name": "where-false-postskip-limit",
+      "query": "WITH 1 AS x WHERE false RETURN x SKIP 1 LIMIT x",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "where-false-postskip-limit",
+      "query": "WITH 1 AS x WHERE false RETURN x SKIP 1 LIMIT x"
+    }
+  },
+  {
+    "main": {
+      "name": "where-false-postskip-limit",
+      "query": "WITH 1 AS x WHERE false RETURN x SKIP 1 LIMIT x",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "where-false-postskip-limit",
+      "query": "WITH 1 AS x WHERE false RETURN x SKIP 1 LIMIT x"
+    }
+  },
+  {
+    "main": {
+      "name": "where-false-negative",
+      "query": "WITH 1 AS x WHERE false RETURN x LIMIT -1",
+      "cross": false,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -1 is less than zero."
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "where-false-negative",
+      "query": "WITH 1 AS x WHERE false RETURN x LIMIT -1"
+    }
+  },
+  {
+    "main": {
+      "name": "where-false-negative",
+      "query": "WITH 1 AS x WHERE false RETURN x LIMIT -1",
+      "cross": true,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -1 is less than zero."
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "where-false-negative",
+      "query": "WITH 1 AS x WHERE false RETURN x LIMIT -1"
+    }
+  },
+  {
+    "main": {
+      "name": "mapped-filtered-row-limit",
+      "query": "MATCH (n:CallSiteNode) WHERE true RETURN id(n) AS x LIMIT x",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 24
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "mapped-filtered-row-limit",
+      "query": "MATCH (n:CallSiteNode) WHERE true RETURN id(n) AS x LIMIT x"
+    }
+  },
+  {
+    "main": {
+      "name": "mapped-filtered-row-limit",
+      "query": "MATCH (n:CallSiteNode) WHERE true RETURN id(n) AS x LIMIT x",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 24,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "x": 24,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "mapped-filtered-row-limit",
+      "query": "MATCH (n:CallSiteNode) WHERE true RETURN id(n) AS x LIMIT x"
+    }
+  },
+  {
+    "main": {
+      "name": "mapped-filtered-row-skip",
+      "query": "MATCH (n:CallSiteNode) WHERE true RETURN id(n) AS x SKIP x",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "mapped-filtered-row-skip",
+      "query": "MATCH (n:CallSiteNode) WHERE true RETURN id(n) AS x SKIP x"
+    }
+  },
+  {
+    "main": {
+      "name": "mapped-filtered-row-skip",
+      "query": "MATCH (n:CallSiteNode) WHERE true RETURN id(n) AS x SKIP x",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "mapped-filtered-row-skip",
+      "query": "MATCH (n:CallSiteNode) WHERE true RETURN id(n) AS x SKIP x"
+    }
+  },
+  {
+    "main": {
+      "name": "mapped-filtered-postskip-limit",
+      "query": "MATCH (n:CallSiteNode) WHERE true RETURN id(n) AS x SKIP 1 LIMIT x",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "mapped-filtered-postskip-limit",
+      "query": "MATCH (n:CallSiteNode) WHERE true RETURN id(n) AS x SKIP 1 LIMIT x"
+    }
+  },
+  {
+    "main": {
+      "name": "mapped-filtered-postskip-limit",
+      "query": "MATCH (n:CallSiteNode) WHERE true RETURN id(n) AS x SKIP 1 LIMIT x",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 24,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "mapped-filtered-postskip-limit",
+      "query": "MATCH (n:CallSiteNode) WHERE true RETURN id(n) AS x SKIP 1 LIMIT x"
+    }
+  },
+  {
+    "main": {
+      "name": "mapped-filtered-negative",
+      "query": "MATCH (n:CallSiteNode) WHERE true RETURN id(n) AS x LIMIT -1",
+      "cross": false,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -1 is less than zero."
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "mapped-filtered-negative",
+      "query": "MATCH (n:CallSiteNode) WHERE true RETURN id(n) AS x LIMIT -1"
+    }
+  },
+  {
+    "main": {
+      "name": "mapped-filtered-negative",
+      "query": "MATCH (n:CallSiteNode) WHERE true RETURN id(n) AS x LIMIT -1",
+      "cross": true,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -1 is less than zero."
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "mapped-filtered-negative",
+      "query": "MATCH (n:CallSiteNode) WHERE true RETURN id(n) AS x LIMIT -1"
+    }
+  },
+  {
+    "main": {
+      "name": "mapped-unfiltered-row-limit",
+      "query": "MATCH (n:CallSiteNode) RETURN id(n) AS x LIMIT x",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 24
+        }
+      ]
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "mapped-unfiltered-row-limit",
+      "query": "MATCH (n:CallSiteNode) RETURN id(n) AS x LIMIT x"
+    }
+  },
+  {
+    "main": {
+      "name": "mapped-unfiltered-row-limit",
+      "query": "MATCH (n:CallSiteNode) RETURN id(n) AS x LIMIT x",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 24,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "x": 24,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "mapped-unfiltered-row-limit",
+      "query": "MATCH (n:CallSiteNode) RETURN id(n) AS x LIMIT x"
+    }
+  },
+  {
+    "main": {
+      "name": "mapped-unfiltered-row-skip",
+      "query": "MATCH (n:CallSiteNode) RETURN id(n) AS x SKIP x",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "mapped-unfiltered-row-skip",
+      "query": "MATCH (n:CallSiteNode) RETURN id(n) AS x SKIP x"
+    }
+  },
+  {
+    "main": {
+      "name": "mapped-unfiltered-row-skip",
+      "query": "MATCH (n:CallSiteNode) RETURN id(n) AS x SKIP x",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "mapped-unfiltered-row-skip",
+      "query": "MATCH (n:CallSiteNode) RETURN id(n) AS x SKIP x"
+    }
+  },
+  {
+    "main": {
+      "name": "mapped-unfiltered-postskip-limit",
+      "query": "MATCH (n:CallSiteNode) RETURN id(n) AS x SKIP 1 LIMIT x",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": []
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "mapped-unfiltered-postskip-limit",
+      "query": "MATCH (n:CallSiteNode) RETURN id(n) AS x SKIP 1 LIMIT x"
+    }
+  },
+  {
+    "main": {
+      "name": "mapped-unfiltered-postskip-limit",
+      "query": "MATCH (n:CallSiteNode) RETURN id(n) AS x SKIP 1 LIMIT x",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 24,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        }
+      ]
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "mapped-unfiltered-postskip-limit",
+      "query": "MATCH (n:CallSiteNode) RETURN id(n) AS x SKIP 1 LIMIT x"
+    }
+  },
+  {
+    "main": {
+      "name": "mapped-unfiltered-negative",
+      "query": "MATCH (n:CallSiteNode) RETURN id(n) AS x LIMIT -1",
+      "cross": false,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -1 is less than zero."
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "mapped-unfiltered-negative",
+      "query": "MATCH (n:CallSiteNode) RETURN id(n) AS x LIMIT -1"
+    }
+  },
+  {
+    "main": {
+      "name": "mapped-unfiltered-negative",
+      "query": "MATCH (n:CallSiteNode) RETURN id(n) AS x LIMIT -1",
+      "cross": true,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -1 is less than zero."
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "mapped-unfiltered-negative",
+      "query": "MATCH (n:CallSiteNode) RETURN id(n) AS x LIMIT -1"
+    }
+  },
+  {
+    "main": {
+      "name": "mapped-early-limit-error",
+      "query": "MATCH (n) RETURN substring('x','bad') AS x LIMIT 1/0",
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "Division by zero"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "mapped-early-limit-error",
+      "query": "MATCH (n) RETURN substring('x','bad') AS x LIMIT 1/0"
+    }
+  },
+  {
+    "main": {
+      "name": "mapped-early-limit-error",
+      "query": "MATCH (n) RETURN substring('x','bad') AS x LIMIT 1/0",
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "Division by zero"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "mapped-early-limit-error",
+      "query": "MATCH (n) RETURN substring('x','bad') AS x LIMIT 1/0"
+    }
+  },
+  {
+    "main": {
+      "name": "mapped-early-limit-property-error",
+      "query": "MATCH (n {name:substring('x','bad')}) RETURN n LIMIT 1/0",
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "Division by zero"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "mapped-early-limit-property-error",
+      "query": "MATCH (n {name:substring('x','bad')}) RETURN n LIMIT 1/0"
+    }
+  },
+  {
+    "main": {
+      "name": "mapped-early-limit-property-error",
+      "query": "MATCH (n {name:substring('x','bad')}) RETURN n LIMIT 1/0",
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "Division by zero"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "mapped-early-limit-property-error",
+      "query": "MATCH (n {name:substring('x','bad')}) RETURN n LIMIT 1/0"
+    }
+  },
+  {
+    "main": {
+      "name": "early-before-unwind",
+      "query": "UNWIND [substring('x','bad')] AS x MATCH (n) RETURN n LIMIT 1/0",
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "Division by zero"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "early-before-unwind",
+      "query": "UNWIND [substring('x','bad')] AS x MATCH (n) RETURN n LIMIT 1/0"
+    }
+  },
+  {
+    "main": {
+      "name": "early-before-unwind",
+      "query": "UNWIND [substring('x','bad')] AS x MATCH (n) RETURN n LIMIT 1/0",
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "Division by zero"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "early-before-unwind",
+      "query": "UNWIND [substring('x','bad')] AS x MATCH (n) RETURN n LIMIT 1/0"
+    }
+  },
+  {
+    "main": {
+      "name": "early-before-with",
+      "query": "WITH substring('x','bad') AS x MATCH (n) RETURN n LIMIT 1/0",
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "Division by zero"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "early-before-with",
+      "query": "WITH substring('x','bad') AS x MATCH (n) RETURN n LIMIT 1/0"
+    }
+  },
+  {
+    "main": {
+      "name": "early-before-with",
+      "query": "WITH substring('x','bad') AS x MATCH (n) RETURN n LIMIT 1/0",
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "Division by zero"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "early-before-with",
+      "query": "WITH substring('x','bad') AS x MATCH (n) RETURN n LIMIT 1/0"
+    }
+  },
+  {
+    "main": {
+      "name": "skip-before-limit",
+      "query": "RETURN 1 AS x SKIP -1 LIMIT 1/0",
+      "cross": false,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -1 is less than zero."
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "skip-before-limit",
+      "query": "RETURN 1 AS x SKIP -1 LIMIT 1/0"
+    }
+  },
+  {
+    "main": {
+      "name": "skip-before-limit",
+      "query": "RETURN 1 AS x SKIP -1 LIMIT 1/0",
+      "cross": true,
+      "empty": false,
+      "error": "IllegalArgumentException",
+      "message": "Requested element count -1 is less than zero."
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "CypherException",
+      "message": "SKIP/LIMIT requires a nonnegative integer",
+      "name": "skip-before-limit",
+      "query": "RETURN 1 AS x SKIP -1 LIMIT 1/0"
+    }
+  }
+]

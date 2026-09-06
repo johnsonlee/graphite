@@ -400,12 +400,18 @@ func (e evaluator) project(rows []map[string]any, c cypher.ProjectionClause) ([]
 			return false
 		})
 	}
+	bindingsAt := func(index int) map[string]any {
+		if index < len(out) {
+			return out[index].row
+		}
+		return map[string]any{}
+	}
 	start, end := 0, len(out)
 	if c.Skip != nil {
-		start = min(end, e.count(c.Skip))
+		start = min(end, e.count(c.Skip, bindingsAt(0)))
 	}
 	if c.Limit != nil {
-		end = start + min(end-start, e.count(c.Limit))
+		end = start + min(end-start, e.count(c.Limit, bindingsAt(start)))
 	}
 	result := make([]map[string]any, 0, end-start)
 	for _, r := range out[start:end] {
@@ -413,11 +419,10 @@ func (e evaluator) project(rows []map[string]any, c cypher.ProjectionClause) ([]
 	}
 	return result, columns
 }
-func (e evaluator) count(expr cypher.Expr) int {
-	v := e.eval(expr, map[string]any{})
-	n, ok := number(v)
-	if !ok || n < 0 || n != float64(int(n)) {
-		fail("SKIP/LIMIT requires a nonnegative integer")
+func (e evaluator) count(expr cypher.Expr, bindings map[string]any) int {
+	n := cypherCountValue(e.eval(expr, bindings))
+	if n < 0 {
+		functionError("IllegalArgumentException", fmt.Sprintf("Requested element count %d is less than zero.", n))
 	}
 	return int(n)
 }
