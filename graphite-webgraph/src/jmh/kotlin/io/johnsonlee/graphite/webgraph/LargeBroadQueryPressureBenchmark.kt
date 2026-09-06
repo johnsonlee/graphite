@@ -1150,26 +1150,57 @@ private fun forcePressureGc() {
 }
 
 /**
- * Lets a collection cycle that was already in flight when the forced collections ran finish
- * before the measured replay starts: the replay begins only once no collector has recorded an
- * event for [GC_QUIESCENCE_STABLE_MILLIS], or after [GC_QUIESCENCE_TIMEOUT_MILLIS]. A cycle the
- * replay itself initiates stays inside the measurement; no collector setting changes.
+ * Proves, before the measured replay starts, that no collection cycle is in flight. G1 aborts
+ * a concurrent cycle at a full collection, and `System.gc()` is a full collection unless
+ * `ExplicitGCInvokesConcurrent` is set, in which case it would start a cycle instead, so that
+ * option is rejected first. The collectors' notifications are then observed: the explicit full
+ * collection must be reported before the deadline, and no young collection (the only way a new
+ * cycle starts) may follow it inside the settle window; a young collection repeats the full
+ * collection once. Anything short of that proof fails closed instead of starting the replay.
  */
 private fun awaitGcQuiescence() {
-    val deadline = System.nanoTime() + GC_QUIESCENCE_TIMEOUT_MILLIS * NANOS_PER_MILLI
-    var last = gcSnapshot()
-    var stableSince = System.nanoTime()
-    while (System.nanoTime() < deadline) {
-        Thread.sleep(GC_QUIESCENCE_POLL_MILLIS)
-        val now = gcSnapshot()
-        if (now != last) {
-            last = now
-            stableSince = System.nanoTime()
-        } else if (System.nanoTime() - stableSince >= GC_QUIESCENCE_STABLE_MILLIS * NANOS_PER_MILLI) {
-            return
+    val diagnostics = ManagementFactory.getPlatformMXBean(com.sun.management.HotSpotDiagnosticMXBean::class.java)
+    check(diagnostics.getVMOption(EXPLICIT_GC_CONCURRENT_OPTION).value == "false") {
+        "$EXPLICIT_GC_CONCURRENT_OPTION must be off: an explicit collection would start a concurrent cycle"
+    }
+    val events = java.util.concurrent.ConcurrentLinkedQueue<com.sun.management.GarbageCollectionNotificationInfo>()
+    val listener = javax.management.NotificationListener { notification, _ ->
+        if (notification.type == com.sun.management.GarbageCollectionNotificationInfo.GARBAGE_COLLECTION_NOTIFICATION) {
+            events.add(
+                com.sun.management.GarbageCollectionNotificationInfo.from(
+                    notification.userData as javax.management.openmbean.CompositeData
+                )
+            )
         }
     }
+    val emitters = ManagementFactory.getGarbageCollectorMXBeans().map { it as javax.management.NotificationEmitter }
+    emitters.forEach { it.addNotificationListener(listener, null, null) }
+    try {
+        val deadline = System.nanoTime() + GC_QUIESCENCE_TIMEOUT_MILLIS * NANOS_PER_MILLI
+        repeat(GC_QUIESCENCE_ATTEMPTS) {
+            events.clear()
+            System.gc()
+            while (events.none { it.isExplicitFullCollection() }) {
+                check(System.nanoTime() < deadline) {
+                    "Explicit full collection was not reported within ${GC_QUIESCENCE_TIMEOUT_MILLIS} ms"
+                }
+                Thread.sleep(GC_QUIESCENCE_POLL_MILLIS)
+            }
+            val settleUntil = System.nanoTime() + GC_QUIESCENCE_STABLE_MILLIS * NANOS_PER_MILLI
+            while (System.nanoTime() < settleUntil) Thread.sleep(GC_QUIESCENCE_POLL_MILLIS)
+            if (events.none { it.isYoungCollection() }) return
+        }
+        error("A young collection followed each of $GC_QUIESCENCE_ATTEMPTS explicit full collections; quiescence not proven")
+    } finally {
+        emitters.forEach { it.removeNotificationListener(listener) }
+    }
 }
+
+private fun com.sun.management.GarbageCollectionNotificationInfo.isExplicitFullCollection(): Boolean =
+    gcAction == END_OF_MAJOR_GC && gcCause == EXPLICIT_GC_CAUSE
+
+private fun com.sun.management.GarbageCollectionNotificationInfo.isYoungCollection(): Boolean =
+    gcAction == END_OF_MINOR_GC
 
 private data class BroadQueryTerms(
     val term: String,
@@ -2224,7 +2255,12 @@ private const val GC_PAUSE_MILLIS = 100L
 private const val GC_QUIESCENCE_STABLE_MILLIS = 250L
 private const val GC_QUIESCENCE_POLL_MILLIS = 10L
 private const val GC_QUIESCENCE_TIMEOUT_MILLIS = 10_000L
+private const val GC_QUIESCENCE_ATTEMPTS = 2
 private const val NANOS_PER_MILLI = 1_000_000L
+private const val EXPLICIT_GC_CONCURRENT_OPTION = "ExplicitGCInvokesConcurrent"
+private const val EXPLICIT_GC_CAUSE = "System.gc()"
+private const val END_OF_MAJOR_GC = "end of major GC"
+private const val END_OF_MINOR_GC = "end of minor GC"
 
 private val TARGETED_TERMS = listOf("android.", "org.apache.tika.", "org.apache.hadoop.hive.", "kotlin")
 private val DENSE_TERMS = listOf("java", "org", "get", "set")

@@ -5119,3 +5119,12 @@ than on the five passing heads before it (DISTINCT-dense 7.9-17.6 ms against 5.0
 3.0-3.7 ms against 2.7-3.1 ms, targeted 2.4-3.2 ms against 2.0-2.8 ms) while the base's rows
 moved less, so the wait is scoped to the graph-routing coverage families, the ones the decision
 concerned, and the other families keep the invocation setup their gates were calibrated on.
+
+**Owner review on the wait (P1):** collector counts do not establish that a concurrent cycle has
+finished, since G1's concurrent mark runs between recorded pauses, and the timeout fell through
+silently. The step now proves quiescence through the collectors' notifications: it rejects
+`ExplicitGCInvokesConcurrent` (an explicit collection would start a cycle instead of ending
+one), forces a full collection, which is what aborts a concurrent cycle in flight, requires the
+explicit full collection to be reported before the deadline, waits a settle window in which no
+young collection (the only event that starts a cycle) may be reported, repeats once if one is,
+and otherwise fails closed instead of starting the replay.
