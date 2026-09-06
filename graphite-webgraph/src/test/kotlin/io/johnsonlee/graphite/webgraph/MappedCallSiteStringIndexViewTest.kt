@@ -500,6 +500,67 @@ class MappedCallSiteStringIndexViewTest {
     }
 
     @Test
+    fun `a graph the presence bits prove foreign answers before a plan or cached rows are built`() =
+        withPersistedGraph(prepareIndex = true) { _, _, graph ->
+            var work = 0L
+            val counting = object : GraphWorkBatchConsumer {
+                override fun consume(workUnits: Long) {
+                    work += workUnits
+                }
+            }
+            val absent = predicate("caller_class", StringMatchMode.CONTAINS, "zzz.nowhere.MissingCaller")
+            val present = predicate("caller_class", StringMatchMode.CONTAINS, "app.target.TargetedCaller")
+            // The first request opens and validates the mapped view; its work is not the check's.
+            graph.projectStringPropertyDisjunction(CallSiteNode::class.java, listOf(present), listOf("caller_class"), 1, counting)
+            work = 0L
+            val lookups = graph.callSiteMappedViewLookupCount()
+            val projected = graph.projectStringPropertyDisjunction(
+                CallSiteNode::class.java,
+                listOf(absent, absent),
+                listOf("caller_class"),
+                limit = 5,
+                workConsumer = counting
+            )
+            assertEquals(emptyList(), projected)
+            assertEquals(lookups + 1, graph.callSiteMappedViewLookupCount())
+            // Only the presence bits were consulted, and the second copy of the predicate reused
+            // the remembered absence instead of testing its trigrams again.
+            assertTrue(work in 1L until absent.expected.length.toLong(), "work $work")
+            assertEquals(
+                emptyList(),
+                graph.distinctStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    listOf(absent),
+                    listOf("caller_class"),
+                    limit = 5,
+                    selectedValues = null,
+                    workConsumer = counting
+                )
+            )
+            assertEquals(0, graph.nodesByStringPropertyDisjunction(CallSiteNode::class.java, listOf(absent), 5)?.count())
+            // A disjunction with a present predicate is decided by the plan, not rejected.
+            val rows = graph.projectStringPropertyDisjunction(
+                CallSiteNode::class.java,
+                listOf(absent, present),
+                listOf("caller_class"),
+                limit = 5,
+                workConsumer = counting
+            )
+            assertEquals(listOf(listOf("app.target.TargetedCaller")), rows?.map { row -> row.values }?.distinct())
+            // A term the postings cannot serve leaves the decision to the plan as well.
+            assertEquals(
+                emptyList(),
+                graph.projectStringPropertyDisjunction(
+                    CallSiteNode::class.java,
+                    listOf(predicate("caller_class", StringMatchMode.CONTAINS, "\u00e9\u00e9\u00e9")),
+                    listOf("caller_class"),
+                    limit = 5,
+                    workConsumer = counting
+                )
+            )
+        }
+
+    @Test
     fun `a present term's anchoring trigram becomes the rarest hint that shortens the next graph's range walk`() =
         withPersistedGraph(prepareIndex = true) { dir, _, first ->
             val predicate = predicate("caller_class", StringMatchMode.CONTAINS, "app.target.TargetedCaller")

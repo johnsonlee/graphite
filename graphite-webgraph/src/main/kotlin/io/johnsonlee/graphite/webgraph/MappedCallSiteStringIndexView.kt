@@ -118,6 +118,60 @@ internal class MappedCallSiteStringIndexView private constructor(
         object Scan : PredicateProbe()
     }
 
+    /**
+     * True when the presence bits prove that no predicate of the disjunction matches any string
+     * of this graph, so a caller can answer an empty result before it builds cache keys, a plan
+     * or a cached empty row list: a cross-graph request finds its term in a few graphs and
+     * those per-graph objects are the bulk of what the other graphs cost on the interpreted code
+     * a first execution runs. A term is rejected by the first missing trigram from its absent
+     * hint, and a term whose first [REJECTION_CHECK_LIMIT] trigrams are all present is left to
+     * the plan, so a graph that does hold the term pays a handful of bit tests here and not a
+     * second full pass. Consecutive predicates with one key are decided once; a proven-absent
+     * term is remembered and the work is consumed exactly as [probe] does.
+     */
+    @Suppress("ReturnCount")
+    fun rejectsAllPredicates(predicates: List<StringPropertyPredicate>, workConsumer: GraphWorkConsumer?): Boolean {
+        val directory = trigramDirectory ?: return false
+        if (predicates.isEmpty()) return false
+        var checks = 0L
+        var previous: StringPropertyPredicate? = null
+        try {
+            for (predicate in predicates) {
+                if (previous != null && sameKey(previous, predicate)) continue
+                if (callSiteStringPropertyIndex(predicate.property) < 0) return false
+                val key = MappedPredicateKey(predicate.transform, predicate.mode, predicate.expected)
+                val cached = matchCache?.get(key)
+                if (cached != null) {
+                    if (cached.isNotEmpty()) return false
+                } else {
+                    val term = TrigramTerm.of(predicate) ?: return false
+                    val trigrams = term.trigrams
+                    val start = term.absentHint
+                    val limit = minOf(trigrams.size, REJECTION_CHECK_LIMIT)
+                    var missing = -1
+                    for (offset in 0 until limit) {
+                        val index = (start + offset) % trigrams.size
+                        checks++
+                        if (!directory.contains(trigrams[index])) {
+                            missing = index
+                            break
+                        }
+                    }
+                    if (missing < 0) return false
+                    term.absentHint = missing
+                    matchCache?.put(key, EMPTY_INTS)
+                }
+                previous = predicate
+            }
+        } finally {
+            if (checks > 0L) consumeGraphWork(workConsumer, checks)
+        }
+        return true
+    }
+
+    private fun sameKey(left: StringPropertyPredicate, right: StringPropertyPredicate): Boolean =
+        left.transform == right.transform && left.mode == right.mode && left.expected == right.expected
+
     private fun probe(predicate: StringPropertyPredicate, workConsumer: GraphWorkConsumer?): PredicateProbe {
         val key = MappedPredicateKey(predicate.transform, predicate.mode, predicate.expected)
         matchCache?.get(key)?.let { cached ->
@@ -1721,6 +1775,7 @@ private const val VALIDATION_EMPTY: Byte = 0
 private const val VALIDATION_VALID: Byte = 1
 private const val VALIDATION_INVALID: Byte = 2
 private const val TRIGRAM_LENGTH = 3
+private const val REJECTION_CHECK_LIMIT = 8
 private const val STRING_HASH_FACTOR = 31
 private const val ASCII_MAX = 0x7f
 private const val UINT_MASK = 0xffff_ffffL

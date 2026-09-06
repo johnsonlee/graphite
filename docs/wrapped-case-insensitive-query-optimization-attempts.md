@@ -4568,3 +4568,66 @@ unchanged (`4.75 -> 4.83 ms`). The replay loads no `CharArrays` class at all and
 row's class count drops `21 -> 14`.
 
 **Conclusion:** keep for exact-head hosted validation.
+
+### 2026-09-06 - Attempt 143: Compare directory probes from the prefix their bounds share (rejected)
+
+**Hypothesis:** the provenance pass makes `3,889` directory probes for its `646` searches, and
+each probe decoded a class name into a reusable buffer and compared it from its first character
+although class names of one package agree on dozens of leading characters that the search
+bounds already establish.
+
+**Change (not kept):** the search tracked the prefix length its low and high bounds share with
+the value, compared each probe's decoded code units from that prefix on, and read the decoded
+array in place instead of copying it into a buffer.
+
+**Evidence (local, 64 fixtures, fresh JVM in benchmark order, five alternating runs, medians):**
+distinct-dense first execution CPU `11.8 -> 13.0 ms` (both inside a `10.6..14.1 ms` spread),
+second `6.0 -> 5.7 ms`; four-properties-targeted `8.5 -> 7.0 ms` inside overlapping spreads;
+the dense rows unchanged. No gain outside the noise band.
+
+**Conclusion:** reverted; the compared characters are not where the probe's time goes.
+
+### 2026-09-06 - Attempt 144: Cap the leading-value trigram presence check (rejected)
+
+**Hypothesis:** `628` of the provenance pass's `1,467` leading-value presence checks pass, and a
+passing value tests every one of its forty-odd trigrams before the directory search decides
+anyway, so capping the check at twelve trigrams (those of the simple class name come first)
+would trade a few extra searches for tens of thousands of bit tests.
+
+**Change (not kept):** the presence check stopped after twelve trigrams.
+
+**Evidence (local, 64 fixtures, fresh JVM in benchmark order, five alternating runs, medians):**
+distinct-dense first execution CPU `11.4 -> 12.2 ms`, second execution `5.2 -> 6.4 ms`; the
+`add` rows `9.3 -> 9.9 ms` and `7.1 -> 7.9 ms`. The extra searches cost more than the bit tests
+they replaced: the presence test is cheap even on cold code, and the trigrams beyond the
+twelfth still reject values whose simple name trigrams are common.
+
+**Conclusion:** reverted.
+
+### 2026-09-06 - Attempt 145: Reject a foreign graph at the projection entry before its keys, plan and cached rows exist
+
+**Hypothesis:** a pure-interpreter replay (`-Xint`) of the benchmark order shows which parts of a
+first execution the JIT never reaches: the directory searches and posting scans are hot loops
+that compile within the row, while the code that runs once per graph (63-64 times per request)
+stays interpreted. For the targeted rows 53 of the 64 graphs lack the term, yet each of them
+built a projection cache key, a plan with its probe map and predicate keys, evaluated the plan's
+emptiness through lambdas and inserted a cached empty row list before the presence bits, which
+had already rejected the term, took effect.
+
+**Change:** the view answers a presence question for a whole disjunction before any of that is
+built: consecutive predicates with one key are decided once, a cached absence is honoured, a
+term is rejected by the first missing trigram from its absent hint, and a term whose first eight
+trigrams are all present is left to the plan so a graph that holds the term pays a handful of
+bit tests and not a second full pass. The projection, DISTINCT and node-sequence entries return
+an empty result on rejection with the same lookup count and the same remembered absence as the
+plan path; the work consumed is the number of bit tests. A first version that checked every
+predicate separately and ran the full pass on graphs holding the term made the targeted row
+`7.9 -> 10.8 ms` and was replaced by this one.
+
+**Evidence (local, 64 fixtures, fresh JVM in benchmark order, five alternating runs, medians):**
+four-properties-targeted first execution CPU `8.04 -> 7.29 ms` (wall `9.49 -> 8.15 ms`),
+class-pair-zero `1.90 -> 0.94 ms`, class-pair-targeted `3.80 -> 3.27 ms`, wrapped
+case-insensitive targeted `0.84 -> 0.67 ms` and its second execution `0.84 -> 0.59 ms`; the
+dense and DISTINCT-dense rows, which decide on their first graph, are unchanged within noise.
+
+**Conclusion:** keep for exact-head hosted validation.

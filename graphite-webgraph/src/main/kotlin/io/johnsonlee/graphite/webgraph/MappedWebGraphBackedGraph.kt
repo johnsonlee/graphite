@@ -375,6 +375,10 @@ internal class MappedWebGraphBackedGraph(
                     .sortedBy(StringPropertyDistinctRow::encounterOrder)
                     .take(minOf(limit, selectedValues.size))
             }
+            if (view.rejectsAllPredicates(predicates, workConsumer)) {
+                callSiteMappedViewLookupCount.incrementAndGet()
+                return emptyList()
+            }
             val plan = view.matchPlan(predicates, workConsumer)
             if (plan != null) {
                 callSiteMappedViewLookupCount.incrementAndGet()
@@ -512,6 +516,12 @@ internal class MappedWebGraphBackedGraph(
         }
         val projectedPropertyIndexes = projectedProperties.map(::requiredCallSiteStringPropertyIndex).toIntArray()
         mappedCallSiteStringIndexView(workConsumer)?.let { view ->
+            // A graph the presence bits prove foreign to every predicate answers before the
+            // cache key, the plan and the cached empty row list are built for it.
+            if (view.rejectsAllPredicates(predicates, workConsumer)) {
+                callSiteMappedViewLookupCount.incrementAndGet()
+                return emptyList()
+            }
             // Repeated bounded projections of one predicate set answer from the rows they already
             // decoded, the way the retained index serves its projection cache.
             val rowsKey = RawProjectionRowsKey(
@@ -740,6 +750,10 @@ internal class MappedWebGraphBackedGraph(
                     .map(type::cast)
             }
             mappedCallSiteStringIndexView(workConsumer)?.let { view ->
+                if (view.rejectsAllPredicates(predicates, workConsumer)) {
+                    callSiteMappedViewLookupCount.incrementAndGet()
+                    return emptySequence()
+                }
                 val plan = view.matchPlan(predicates, workConsumer)
                 if (plan != null) {
                     callSiteMappedViewLookupCount.incrementAndGet()
