@@ -1,0 +1,38 @@
+File: profile-query
+Type: cpu
+Time: Sep 7, 2026 at 5:25am (KST)
+Duration: 64.22s, Total samples = 91.50s (142.47%)
+Showing nodes accounting for 49.50s, 54.10% of 91.50s total
+Dropped 193 nodes (cum <= 0.46s)
+Showing top 30 nodes out of 115
+      flat  flat%   sum%        cum   cum%
+         0     0%     0%     53.72s 58.71%  github.com/johnsonlee/graphite/graphite-server/internal/query.ExecuteCross
+         0     0%     0%     53.72s 58.71%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.branch
+         0     0%     0%     53.72s 58.71%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.match
+         0     0%     0%     53.72s 58.71%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.matchSingleNode
+     0.04s 0.044% 0.044%     53.72s 58.71%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.nodeCandidates
+         0     0% 0.044%     53.72s 58.71%  github.com/johnsonlee/graphite/graphite-server/internal/query.executeSources
+         0     0% 0.044%     53.72s 58.71%  main.main
+         0     0% 0.044%     53.72s 58.71%  main.profile
+         0     0% 0.044%     53.72s 58.71%  main.profile.func1
+         0     0% 0.044%     53.72s 58.71%  runtime.main
+         0     0% 0.044%     53.72s 58.71%  runtime/pprof.Do
+     0.06s 0.066%  0.11%     41.21s 45.04%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).Node
+     0.01s 0.011%  0.12%     40.72s 44.50%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).node
+     0.10s  0.11%  0.23%     40.37s 44.12%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).bytes
+     0.01s 0.011%  0.24%     39.95s 43.66%  io.ReadFull (inline)
+    39.95s 43.66% 43.90%     39.95s 43.66%  runtime.memmove
+     0.04s 0.044% 43.95%     39.94s 43.65%  io.ReadAtLeast
+     0.06s 0.066% 44.01%     39.90s 43.61%  bytes.(*Reader).Read
+         0     0% 44.01%     39.14s 42.78%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).i32 (inline)
+         0     0% 44.01%     35.72s 39.04%  runtime.systemstack
+         0     0% 44.01%     28.08s 30.69%  runtime.gcBgMarkWorker.func2
+     1.61s  1.76% 45.77%     28.08s 30.69%  runtime.gcDrain
+     0.02s 0.022% 45.79%     26.20s 28.63%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).method
+     0.08s 0.087% 45.88%     25.92s 28.33%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).str
+     0.01s 0.011% 45.89%     24.86s 27.17%  runtime.gcBgMarkWorker
+     7.10s  7.76% 53.65%     22.33s 24.40%  runtime.scanobject
+         0     0% 53.65%     20.38s 22.27%  runtime.gcDrainMarkWorkerIdle (inline)
+     0.01s 0.011% 53.66%     11.34s 12.39%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.matchSingleNode.func1
+     0.29s  0.32% 53.98%     10.99s 12.01%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.eval
+     0.11s  0.12% 54.10%     10.97s 11.99%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.binary

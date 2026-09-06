@@ -1,0 +1,38 @@
+File: profile-query
+Type: cpu
+Time: Sep 7, 2026 at 5:42am (KST)
+Duration: 62.76s, Total samples = 83.83s (133.58%)
+Showing nodes accounting for 78.99s, 94.23% of 83.83s total
+Dropped 161 nodes (cum <= 0.42s)
+Showing top 30 nodes out of 112
+      flat  flat%   sum%        cum   cum%
+    38.29s 45.68% 45.68%     38.29s 45.68%  runtime.memmove
+     6.76s  8.06% 53.74%      6.76s  8.06%  runtime.madvise
+     5.51s  6.57% 60.31%     17.80s 21.23%  runtime.scanobject
+     3.87s  4.62% 64.93%      3.87s  4.62%  runtime.memclrNoHeapPointers
+     2.81s  3.35% 68.28%      6.26s  7.47%  runtime.greyobject
+     2.61s  3.11% 71.39%      2.61s  3.11%  runtime.(*gcBits).bytep (inline)
+     2.55s  3.04% 74.44%      2.55s  3.04%  runtime.pthread_kill
+     2.14s  2.55% 76.99%      2.91s  3.47%  runtime.findObject
+     1.89s  2.25% 79.24%      1.89s  2.25%  runtime.typePointers.nextFast (inline)
+     1.63s  1.94% 81.19%      1.63s  1.94%  runtime.(*mspan).base (inline)
+     1.19s  1.42% 82.61%      1.19s  1.42%  runtime.usleep
+     1.12s  1.34% 83.94%     22.09s 26.35%  runtime.gcDrain
+     0.90s  1.07% 85.02%      4.74s  5.65%  runtime.mallocgc
+     0.85s  1.01% 86.03%      0.85s  1.01%  runtime.mmap
+     0.82s  0.98% 87.01%      0.83s  0.99%  runtime.pthread_cond_signal
+     0.79s  0.94% 87.95%      0.79s  0.94%  runtime.pthread_cond_wait
+     0.67s   0.8% 88.75%      6.13s  7.31%  github.com/johnsonlee/graphite/graphite-server/internal/javastring.UTF16
+     0.54s  0.64% 89.40%      0.54s  0.64%  runtime.spanOf (inline)
+     0.48s  0.57% 89.97%      0.65s  0.78%  runtime.typePointers.next
+     0.47s  0.56% 90.53%      0.47s  0.56%  runtime.(*mspan).heapBitsSmallForAddr
+     0.45s  0.54% 91.07%      0.45s  0.54%  runtime.(*mspan).init
+     0.45s  0.54% 91.60%      0.45s  0.54%  unicode/utf8.DecodeRuneInString
+     0.44s  0.52% 92.13%      0.44s  0.52%  runtime.(*gcWork).tryGetFast (inline)
+     0.39s  0.47% 92.59%      1.22s  1.46%  runtime.newArenaMayUnlock
+     0.33s  0.39% 92.99%      0.44s  0.52%  runtime.mapaccess2_fast32
+     0.23s  0.27% 93.26%      0.70s  0.84%  runtime.(*mspan).typePointersOfUnchecked
+     0.22s  0.26% 93.52%     11.15s 13.30%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.eval
+     0.22s  0.26% 93.79%      0.44s  0.52%  strings.ToLower
+     0.21s  0.25% 94.04%      6.70s  7.99%  runtime.growslice
+     0.16s  0.19% 94.23%      3.27s  3.90%  github.com/johnsonlee/graphite/graphite-server/internal/javastring.Case

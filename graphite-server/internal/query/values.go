@@ -86,6 +86,7 @@ func compareNumbers(a, b any) int {
 
 // equal is three-valued Cypher equality, including nested lists/maps.
 func equal(a, b any) any {
+	a, b = freezeCandidate(a), freezeCandidate(b)
 	a, b = mapValues(a), mapValues(b)
 	if a == nil || b == nil {
 		return nil
@@ -165,6 +166,7 @@ func equal(a, b any) any {
 // compare orders projected values; Cypher relational predicates deliberately
 // use a different comparison for qualified node identity strings.
 func compare(a, b any) int {
+	a, b = freezeCandidate(a), freezeCandidate(b)
 	a, b = mapValues(a), mapValues(b)
 	if a == nil {
 		if b == nil {
@@ -361,6 +363,7 @@ func comparableString(value any) string {
 	return scalarString(value)
 }
 func comparePredicate(a, b any) int {
+	a, b = freezeCandidate(a), freezeCandidate(b)
 	if x, ok := a.(qualifiedEdge); ok {
 		if y, ok := b.(qualifiedEdge); ok {
 			if equal(x, y) == true {
@@ -397,6 +400,7 @@ func comparePredicate(a, b any) int {
 // key normalizes numeric types for DISTINCT/GROUP/UNION and distinguishes null
 // from missing map entries. Length prefixes prevent concatenation collisions.
 func key(v any) string {
+	v = freezeCandidate(v)
 	v = mapValues(v)
 	if v == nil {
 		return "null"

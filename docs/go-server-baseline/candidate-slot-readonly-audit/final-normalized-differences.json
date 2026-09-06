@@ -1,0 +1,7 @@
+{
+  "boxed": 198,
+  "candidate": 198,
+  "normalization": "Only MappedWebGraphBackedGraph@hex instance identity text, whose source copy paths differ; member order, graph IDs and all other text retained",
+  "different": 0,
+  "cases": []
+}

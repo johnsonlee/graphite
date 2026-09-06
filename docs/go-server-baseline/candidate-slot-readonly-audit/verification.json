@@ -1,0 +1,109 @@
+{
+  "recordedAtUTC": "2026-09-06T20:42:06.997863+00:00",
+  "purpose": "Independent read-only candidateSlot semantic/lifecycle audit, external copies only",
+  "implementationSource": "/tmp/graphite-go-candidate-slot-4124bfc4/graphite-server",
+  "finalImplementationStillMatchesSnapshot": true,
+  "frozenPatchSha256": "6084e090235c6f6505e17e05fafe657023ba148b1d70667be20454dd13d6955a",
+  "initialQueryDifferences": 6,
+  "finalQueries": {
+    "passed": 198,
+    "total": 198
+  },
+  "expressions": {
+    "passed": 4318,
+    "total": 4318,
+    "expressions": 127,
+    "entities": 17,
+    "qualificationModes": 2
+  },
+  "raceDetector": true,
+  "finalTestExitCode": 0,
+  "productionFilesModified": false,
+  "implementationWorktreeModified": false,
+  "performanceRuns": 0,
+  "newJVMOracle": false,
+  "normalization": "Only MappedWebGraphBackedGraph@hex identity embedded in graph.toString, because independent copy fixture paths differ",
+  "remainingScope": "Finite expressions and queries; no64 correctness or performance proof",
+  "evidence": [
+    {
+      "path": "docs/go-server-baseline/candidate-slot-readonly-audit/README.md",
+      "bytes": 3835,
+      "sha256": "aa1fff7947868b2456503bfe1b48e903cd0c8132121b41f8947a7f66b15ab0a4"
+    },
+    {
+      "path": "docs/go-server-baseline/candidate-slot-readonly-audit/boxed-control-queries.jsonl",
+      "bytes": 193312,
+      "sha256": "55ba7cbd5f277e61cf7850a54d70e521cce9ea2fff3577da432e338c568f0ea3"
+    },
+    {
+      "path": "docs/go-server-baseline/candidate-slot-readonly-audit/boxed-control.json",
+      "bytes": 287,
+      "sha256": "0123ebedaccdc1ff1bfee2a4ab460752ee8211d26727197d3620338d984281ef"
+    },
+    {
+      "path": "docs/go-server-baseline/candidate-slot-readonly-audit/compare.py",
+      "bytes": 1370,
+      "sha256": "75d3bcdc31e3a1784bc89c8be5b0ca8016ce9d6b48649543f82707f6155d0cde"
+    },
+    {
+      "path": "docs/go-server-baseline/candidate-slot-readonly-audit/expressions.log",
+      "bytes": 258,
+      "sha256": "746ec6a35cc2c496b66789cacff007a11674e8031154358de1107a9a4ab9f988"
+    },
+    {
+      "path": "docs/go-server-baseline/candidate-slot-readonly-audit/final-candidate-tests.jsonl",
+      "bytes": 194422,
+      "sha256": "ca720b42e25cf1f164553496eb342d45fd84ffafd889d358e9828b3b554e7d41"
+    },
+    {
+      "path": "docs/go-server-baseline/candidate-slot-readonly-audit/final-differences.json",
+      "bytes": 55344,
+      "sha256": "c07761f5e54869901aa0c29fe002aaef86a73db9571f9ba5495dae004575b6b6"
+    },
+    {
+      "path": "docs/go-server-baseline/candidate-slot-readonly-audit/final-normalized-differences.json",
+      "bytes": 237,
+      "sha256": "28e6fc79d7b2d18c3a1a176e2b9fd366952569ae5a16930ec9e86932756ca9fa"
+    },
+    {
+      "path": "docs/go-server-baseline/candidate-slot-readonly-audit/final-snapshot.json",
+      "bytes": 12938,
+      "sha256": "d91d93dab87305fcdf7f2b25d122927c4a844f6b6f6e5803c03b9506bd187f5c"
+    },
+    {
+      "path": "docs/go-server-baseline/candidate-slot-readonly-audit/full-query-cases.json",
+      "bytes": 6934,
+      "sha256": "c7a6a85bdb36567f348b54b5bae6ace786bd40af5fa05aef7334b00aea66caa4"
+    },
+    {
+      "path": "docs/go-server-baseline/candidate-slot-readonly-audit/initial-candidate-queries.jsonl",
+      "bytes": 193317,
+      "sha256": "84817bfa5d38e93b5d9061422a13a75d89260b3826f11ded0523f7e1d754a72e"
+    },
+    {
+      "path": "docs/go-server-baseline/candidate-slot-readonly-audit/initial-differences.json",
+      "bytes": 56099,
+      "sha256": "62b319a73934859411450f3b833211d38624f15b076e026146ed5beb1ffc4fb0"
+    },
+    {
+      "path": "docs/go-server-baseline/candidate-slot-readonly-audit/initial-normalized-differences.json",
+      "bytes": 55509,
+      "sha256": "28621060e8d233d2f1258231674245e3e54723836372a41ff243414715a7fdb7"
+    },
+    {
+      "path": "docs/go-server-baseline/candidate-slot-readonly-audit/query_audit_test.go",
+      "bytes": 964,
+      "sha256": "f2c8589542c14c4ce76814dc55613cad883d5ffbea575e6d2a4b49f61ba79518"
+    },
+    {
+      "path": "docs/go-server-baseline/candidate-slot-readonly-audit/slot_audit_test.go",
+      "bytes": 3863,
+      "sha256": "7c583339919e838345bcd8daafa85d6d5b074c16c5940a582d0c52aeddeab9ed"
+    },
+    {
+      "path": "docs/go-server-baseline/candidate-slot-readonly-audit/snapshot.json",
+      "bytes": 12948,
+      "sha256": "9519ffdd66fc2eb0ab628e6189cd1b3ab8dd65edcd7b6b05d0598a7abab760e5"
+    }
+  ]
+}

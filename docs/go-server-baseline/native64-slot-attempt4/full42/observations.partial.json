@@ -1,0 +1,1320 @@
+[
+  {
+    "case": {
+      "name": "wrapped-zeroHitBroadContains",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'graphite_latency_no_such_symbol_9f36'\n   OR toLower(coalesce(n.caller_name, '')) CONTAINS 'graphite_latency_no_such_symbol_9f36'\n   OR toLower(coalesce(n.callee_class, '')) CONTAINS 'graphite_latency_no_such_symbol_9f36'\n   OR toLower(coalesce(n.callee_name, '')) CONTAINS 'graphite_latency_no_such_symbol_9f36'\nRETURN DISTINCT n.graph_id, n.caller_class AS caller, n.caller_name AS callerMethod,\n    n.callee_class AS callee, n.callee_name AS calleeMethod\nLIMIT 250"
+      },
+      "phase": "query",
+      "family": "all-fixture-wrapped",
+      "sourceConstant": "ZERO_HIT_QUERY"
+    },
+    "baseline": {
+      "status": 200,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:32:32 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "158"
+      },
+      "body": "{\n  \"columns\": [\n    \"n.graph_id\",\n    \"caller\",\n    \"callerMethod\",\n    \"callee\",\n    \"calleeMethod\"\n  ],\n  \"rows\": [],\n  \"rowCount\": 0,\n  \"graphCount\": 64\n}",
+      "json": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callerMethod",
+          "callee",
+          "calleeMethod"
+        ],
+        "rows": [],
+        "rowCount": 0,
+        "graphCount": 64
+      }
+    },
+    "candidate": {
+      "status": 504,
+      "headers": {
+        "Content-Type": "application/json",
+        "Date": "Sun, 06 Sep 2026 20:45:43 GMT",
+        "Content-Length": "97",
+        "Connection": "close"
+      },
+      "body": "{\"error\":\"Cypher query timed out after 60000 ms\",\"code\":\"cypher_query_timeout\",\"timeoutMs\":60000}",
+      "json": {
+        "error": "Cypher query timed out after 60000 ms",
+        "code": "cypher_query_timeout",
+        "timeoutMs": 60000
+      }
+    },
+    "equal": false,
+    "headerDifferences": {}
+  },
+  {
+    "case": {
+      "name": "wrapped-denseDistributedMethodContains",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_name, '')) CONTAINS 'get'\n   OR toLower(coalesce(n.callee_name, '')) CONTAINS 'get'\nRETURN DISTINCT n.graph_id, n.caller_class AS caller, n.caller_name AS callerMethod,\n    n.callee_class AS callee, n.callee_name AS calleeMethod\nLIMIT 50"
+      },
+      "phase": "query",
+      "family": "all-fixture-wrapped",
+      "sourceConstant": "DENSE_DISTRIBUTED_METHOD_QUERY"
+    },
+    "baseline": {
+      "status": 200,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:32:59 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "14249"
+      },
+      "body": "{\n  \"columns\": [\n    \"n.graph_id\",\n    \"caller\",\n    \"callerMethod\",\n    \"callee\",\n    \"calleeMethod\"\n  ],\n  \"rows\": [\n    {\n      \"caller\": \"org.ccil.cowan.tagsoup.Schema\",\n      \"callerMethod\": \"attribute\",\n      \"callee\": \"org.ccil.cowan.tagsoup.Schema\",\n      \"calleeMethod\": \"getElementType\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\",\n          \"fixture-tika-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"org.ccil.cowan.tagsoup.Schema\",\n      \"callerMethod\": \"parent\",\n      \"callee\": \"org.ccil.cowan.tagsoup.Schema\",\n      \"calleeMethod\": \"getElementType\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\",\n          \"fixture-tika-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"org.ccil.cowan.tagsoup.Schema\",\n      \"callerMethod\": \"getElementType\",\n      \"callee\": \"java.lang.String\",\n      \"calleeMethod\": \"toLowerCase\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\",\n          \"fixture-tika-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"org.ccil.cowan.tagsoup.Schema\",\n      \"callerMethod\": \"getElementType\",\n      \"callee\": \"java.util.HashMap\",\n      \"calleeMethod\": \"get\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\",\n          \"fixture-tika-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"org.ccil.cowan.tagsoup.Schema\",\n      \"callerMethod\": \"getEntity\",\n      \"callee\": \"java.util.HashMap\",\n      \"calleeMethod\": \"get\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\",\n          \"fixture-tika-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"org.ccil.cowan.tagsoup.Element\",\n      \"callerMethod\": \"anonymize\",\n      \"callee\": \"org.ccil.cowan.tagsoup.AttributesImpl\",\n      \"calleeMethod\": \"getLength\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\",\n          \"fixture-tika-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"org.ccil.cowan.tagsoup.Element\",\n      \"callerMethod\": \"anonymize\",\n      \"callee\": \"org.ccil.cowan.tagsoup.AttributesImpl\",\n      \"calleeMethod\": \"getType\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\",\n          \"fixture-tika-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"org.ccil.cowan.tagsoup.Element\",\n      \"callerMethod\": \"anonymize\",\n      \"callee\": \"org.ccil.cowan.tagsoup.AttributesImpl\",\n      \"calleeMethod\": \"getQName\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\",\n          \"fixture-tika-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"org.ccil.cowan.tagsoup.Element\",\n      \"callerMethod\": \"clean\",\n      \"callee\": \"org.ccil.cowan.tagsoup.AttributesImpl\",\n      \"calleeMethod\": \"getLength\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\",\n          \"fixture-tika-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"org.ccil.cowan.tagsoup.Element\",\n      \"callerMethod\": \"clean\",\n      \"callee\": \"org.ccil.cowan.tagsoup.AttributesImpl\",\n      \"calleeMethod\": \"getLocalName\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\",\n          \"fixture-tika-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"org.ccil.cowan.tagsoup.Element\",\n      \"callerMethod\": \"clean\",\n      \"callee\": \"org.ccil.cowan.tagsoup.AttributesImpl\",\n      \"calleeMethod\": \"getValue\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\",\n          \"fixture-tika-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"org.apache.http.conn.ssl.AbstractVerifier\",\n      \"callerMethod\": \"verify\",\n      \"callee\": \"javax.net.ssl.SSLSocket\",\n      \"calleeMethod\": \"getSession\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"org.apache.http.conn.ssl.AbstractVerifier\",\n      \"callerMethod\": \"verify\",\n      \"callee\": \"javax.net.ssl.SSLSession\",\n      \"calleeMethod\": \"getPeerCertificates\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"org.apache.http.conn.ssl.AbstractVerifier\",\n      \"callerMethod\": \"verify\",\n      \"callee\": \"org.apache.http.conn.ssl.AbstractVerifier\",\n      \"calleeMethod\": \"getCNs\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"org.apache.http.conn.ssl.AbstractVerifier\",\n      \"callerMethod\": \"verify\",\n      \"callee\": \"org.apache.http.conn.ssl.AbstractVerifier\",\n      \"calleeMethod\": \"getDNSSubjectAlts\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"org.apache.http.conn.ssl.AbstractVerifier\",\n      \"callerMethod\": \"getCNs\",\n      \"callee\": \"java.security.cert.X509Certificate\",\n      \"calleeMethod\": \"getSubjectX500Principal\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"org.apache.http.conn.ssl.AbstractVerifier\",\n      \"callerMethod\": \"getCNs\",\n      \"callee\": \"org.apache.http.conn.ssl.AndroidDistinguishedNameParser\",\n      \"calleeMethod\": \"\\u003cinit\\u003e\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"org.apache.http.conn.ssl.AbstractVerifier\",\n      \"callerMethod\": \"getCNs\",\n      \"callee\": \"org.apache.http.conn.ssl.AndroidDistinguishedNameParser\",\n      \"calleeMethod\": \"getAllMostSpecificFirst\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"org.apache.http.conn.ssl.AbstractVerifier\",\n      \"callerMethod\": \"getCNs\",\n      \"callee\": \"java.util.List\",\n      \"calleeMethod\": \"isEmpty\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"org.apache.http.conn.ssl.AbstractVerifier\",\n      \"callerMethod\": \"getCNs\",\n      \"callee\": \"java.util.List\",\n      \"calleeMethod\": \"size\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"org.apache.http.conn.ssl.AbstractVerifier\",\n      \"callerMethod\": \"getCNs\",\n      \"callee\": \"java.util.List\",\n      \"calleeMethod\": \"toArray\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"org.apache.http.conn.ssl.AbstractVerifier\",\n      \"callerMethod\": \"getDNSSubjectAlts\",\n      \"callee\": \"java.util.LinkedList\",\n      \"calleeMethod\": \"\\u003cinit\\u003e\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"org.apache.http.conn.ssl.AbstractVerifier\",\n      \"callerMethod\": \"getDNSSubjectAlts\",\n      \"callee\": \"java.security.cert.X509Certificate\",\n      \"calleeMethod\": \"getSubjectAlternativeNames\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"org.apache.http.conn.ssl.AbstractVerifier\",\n      \"callerMethod\": \"getDNSSubjectAlts\",\n      \"callee\": \"java.lang.Class\",\n      \"calleeMethod\": \"getName\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"org.apache.http.conn.ssl.AbstractVerifier\",\n      \"callerMethod\": \"getDNSSubjectAlts\",\n      \"callee\": \"java.util.logging.Logger\",\n      \"calleeMethod\": \"getLogger\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"org.apache.http.conn.ssl.AbstractVerifier\",\n      \"callerMethod\": \"getDNSSubjectAlts\",\n      \"callee\": \"java.util.logging.Logger\",\n      \"calleeMethod\": \"log\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"org.apache.http.conn.ssl.AbstractVerifier\",\n      \"callerMethod\": \"getDNSSubjectAlts\",\n      \"callee\": \"java.util.Collection\",\n      \"calleeMethod\": \"iterator\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"org.apache.http.conn.ssl.AbstractVerifier\",\n      \"callerMethod\": \"getDNSSubjectAlts\",\n      \"callee\": \"java.util.Iterator\",\n      \"calleeMethod\": \"hasNext\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"org.apache.http.conn.ssl.AbstractVerifier\",\n      \"callerMethod\": \"getDNSSubjectAlts\",\n      \"callee\": \"java.util.Iterator\",\n      \"calleeMethod\": \"next\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"org.apache.http.conn.ssl.AbstractVerifier\",\n      \"callerMethod\": \"getDNSSubjectAlts\",\n      \"callee\": \"java.util.List\",\n      \"calleeMethod\": \"get\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"org.apache.http.conn.ssl.AbstractVerifier\",\n      \"callerMethod\": \"getDNSSubjectAlts\",\n      \"callee\": \"java.util.LinkedList\",\n      \"calleeMethod\": \"add\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"org.apache.http.conn.ssl.AbstractVerifier\",\n      \"callerMethod\": \"getDNSSubjectAlts\",\n      \"callee\": \"java.util.LinkedList\",\n      \"calleeMethod\": \"isEmpty\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"org.apache.http.conn.ssl.AbstractVerifier\",\n      \"callerMethod\": \"getDNSSubjectAlts\",\n      \"callee\": \"java.util.LinkedList\",\n      \"calleeMethod\": \"size\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"org.apache.http.conn.ssl.AbstractVerifier\",\n      \"callerMethod\": \"getDNSSubjectAlts\",\n      \"callee\": \"java.util.LinkedList\",\n      \"calleeMethod\": \"toArray\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"libcore.util.CollectionUtils$1$1\",\n      \"callerMethod\": \"computeNext\",\n      \"callee\": \"java.lang.ref.Reference\",\n      \"calleeMethod\": \"get\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"libcore.reflect.Types\",\n      \"callerMethod\": \"getTypeArray\",\n      \"callee\": \"libcore.reflect.ListOfTypes\",\n      \"calleeMethod\": \"length\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"libcore.reflect.Types\",\n      \"callerMethod\": \"getTypeArray\",\n      \"callee\": \"libcore.reflect.ListOfTypes\",\n      \"calleeMethod\": \"getResolvedTypes\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"libcore.reflect.Types\",\n      \"callerMethod\": \"getTypeArray\",\n      \"callee\": \"java.lang.Object\",\n      \"calleeMethod\": \"clone\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"libcore.reflect.Types\",\n      \"callerMethod\": \"getType\",\n      \"callee\": \"libcore.reflect.ParameterizedTypeImpl\",\n      \"calleeMethod\": \"getResolvedType\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"libcore.reflect.Types\",\n      \"callerMethod\": \"getSignature\",\n      \"callee\": \"java.util.Map\",\n      \"calleeMethod\": \"get\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"libcore.reflect.Types\",\n      \"callerMethod\": \"getSignature\",\n      \"callee\": \"java.lang.Class\",\n      \"calleeMethod\": \"isArray\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"libcore.reflect.Types\",\n      \"callerMethod\": \"getSignature\",\n      \"callee\": \"java.lang.StringBuilder\",\n      \"calleeMethod\": \"\\u003cinit\\u003e\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"libcore.reflect.Types\",\n      \"callerMethod\": \"getSignature\",\n      \"callee\": \"java.lang.StringBuilder\",\n      \"calleeMethod\": \"append\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"libcore.reflect.Types\",\n      \"callerMethod\": \"getSignature\",\n      \"callee\": \"java.lang.Class\",\n      \"calleeMethod\": \"getComponentType\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"libcore.reflect.Types\",\n      \"callerMethod\": \"getSignature\",\n      \"callee\": \"libcore.reflect.Types\",\n      \"calleeMethod\": \"getSignature\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"libcore.reflect.Types\",\n      \"callerMethod\": \"getSignature\",\n      \"callee\": \"java.lang.StringBuilder\",\n      \"calleeMethod\": \"toString\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"libcore.reflect.Types\",\n      \"callerMethod\": \"getSignature\",\n      \"callee\": \"java.lang.Class\",\n      \"calleeMethod\": \"getName\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"libcore.reflect.Types\",\n      \"callerMethod\": \"appendTypeName\",\n      \"callee\": \"java.lang.Class\",\n      \"calleeMethod\": \"getComponentType\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"libcore.reflect.Types\",\n      \"callerMethod\": \"appendTypeName\",\n      \"callee\": \"java.lang.Class\",\n      \"calleeMethod\": \"getName\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\"\n        ]\n      }\n    },\n    {\n      \"caller\": \"libcore.reflect.Types\",\n      \"callerMethod\": \"appendGenericType\",\n      \"callee\": \"java.lang.reflect.TypeVariable\",\n      \"calleeMethod\": \"getName\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\"\n        ]\n      }\n    }\n  ],\n  \"rowCount\": 50,\n  \"graphCount\": 64\n}",
+      "json": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callerMethod",
+          "callee",
+          "calleeMethod"
+        ],
+        "rows": [
+          {
+            "caller": "org.ccil.cowan.tagsoup.Schema",
+            "callerMethod": "attribute",
+            "callee": "org.ccil.cowan.tagsoup.Schema",
+            "calleeMethod": "getElementType",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00",
+                "fixture-tika-00"
+              ]
+            }
+          },
+          {
+            "caller": "org.ccil.cowan.tagsoup.Schema",
+            "callerMethod": "parent",
+            "callee": "org.ccil.cowan.tagsoup.Schema",
+            "calleeMethod": "getElementType",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00",
+                "fixture-tika-00"
+              ]
+            }
+          },
+          {
+            "caller": "org.ccil.cowan.tagsoup.Schema",
+            "callerMethod": "getElementType",
+            "callee": "java.lang.String",
+            "calleeMethod": "toLowerCase",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00",
+                "fixture-tika-00"
+              ]
+            }
+          },
+          {
+            "caller": "org.ccil.cowan.tagsoup.Schema",
+            "callerMethod": "getElementType",
+            "callee": "java.util.HashMap",
+            "calleeMethod": "get",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00",
+                "fixture-tika-00"
+              ]
+            }
+          },
+          {
+            "caller": "org.ccil.cowan.tagsoup.Schema",
+            "callerMethod": "getEntity",
+            "callee": "java.util.HashMap",
+            "calleeMethod": "get",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00",
+                "fixture-tika-00"
+              ]
+            }
+          },
+          {
+            "caller": "org.ccil.cowan.tagsoup.Element",
+            "callerMethod": "anonymize",
+            "callee": "org.ccil.cowan.tagsoup.AttributesImpl",
+            "calleeMethod": "getLength",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00",
+                "fixture-tika-00"
+              ]
+            }
+          },
+          {
+            "caller": "org.ccil.cowan.tagsoup.Element",
+            "callerMethod": "anonymize",
+            "callee": "org.ccil.cowan.tagsoup.AttributesImpl",
+            "calleeMethod": "getType",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00",
+                "fixture-tika-00"
+              ]
+            }
+          },
+          {
+            "caller": "org.ccil.cowan.tagsoup.Element",
+            "callerMethod": "anonymize",
+            "callee": "org.ccil.cowan.tagsoup.AttributesImpl",
+            "calleeMethod": "getQName",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00",
+                "fixture-tika-00"
+              ]
+            }
+          },
+          {
+            "caller": "org.ccil.cowan.tagsoup.Element",
+            "callerMethod": "clean",
+            "callee": "org.ccil.cowan.tagsoup.AttributesImpl",
+            "calleeMethod": "getLength",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00",
+                "fixture-tika-00"
+              ]
+            }
+          },
+          {
+            "caller": "org.ccil.cowan.tagsoup.Element",
+            "callerMethod": "clean",
+            "callee": "org.ccil.cowan.tagsoup.AttributesImpl",
+            "calleeMethod": "getLocalName",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00",
+                "fixture-tika-00"
+              ]
+            }
+          },
+          {
+            "caller": "org.ccil.cowan.tagsoup.Element",
+            "callerMethod": "clean",
+            "callee": "org.ccil.cowan.tagsoup.AttributesImpl",
+            "calleeMethod": "getValue",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00",
+                "fixture-tika-00"
+              ]
+            }
+          },
+          {
+            "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+            "callerMethod": "verify",
+            "callee": "javax.net.ssl.SSLSocket",
+            "calleeMethod": "getSession",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            }
+          },
+          {
+            "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+            "callerMethod": "verify",
+            "callee": "javax.net.ssl.SSLSession",
+            "calleeMethod": "getPeerCertificates",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            }
+          },
+          {
+            "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+            "callerMethod": "verify",
+            "callee": "org.apache.http.conn.ssl.AbstractVerifier",
+            "calleeMethod": "getCNs",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            }
+          },
+          {
+            "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+            "callerMethod": "verify",
+            "callee": "org.apache.http.conn.ssl.AbstractVerifier",
+            "calleeMethod": "getDNSSubjectAlts",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            }
+          },
+          {
+            "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+            "callerMethod": "getCNs",
+            "callee": "java.security.cert.X509Certificate",
+            "calleeMethod": "getSubjectX500Principal",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            }
+          },
+          {
+            "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+            "callerMethod": "getCNs",
+            "callee": "org.apache.http.conn.ssl.AndroidDistinguishedNameParser",
+            "calleeMethod": "<init>",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            }
+          },
+          {
+            "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+            "callerMethod": "getCNs",
+            "callee": "org.apache.http.conn.ssl.AndroidDistinguishedNameParser",
+            "calleeMethod": "getAllMostSpecificFirst",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            }
+          },
+          {
+            "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+            "callerMethod": "getCNs",
+            "callee": "java.util.List",
+            "calleeMethod": "isEmpty",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            }
+          },
+          {
+            "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+            "callerMethod": "getCNs",
+            "callee": "java.util.List",
+            "calleeMethod": "size",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            }
+          },
+          {
+            "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+            "callerMethod": "getCNs",
+            "callee": "java.util.List",
+            "calleeMethod": "toArray",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            }
+          },
+          {
+            "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+            "callerMethod": "getDNSSubjectAlts",
+            "callee": "java.util.LinkedList",
+            "calleeMethod": "<init>",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            }
+          },
+          {
+            "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+            "callerMethod": "getDNSSubjectAlts",
+            "callee": "java.security.cert.X509Certificate",
+            "calleeMethod": "getSubjectAlternativeNames",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            }
+          },
+          {
+            "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+            "callerMethod": "getDNSSubjectAlts",
+            "callee": "java.lang.Class",
+            "calleeMethod": "getName",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            }
+          },
+          {
+            "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+            "callerMethod": "getDNSSubjectAlts",
+            "callee": "java.util.logging.Logger",
+            "calleeMethod": "getLogger",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            }
+          },
+          {
+            "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+            "callerMethod": "getDNSSubjectAlts",
+            "callee": "java.util.logging.Logger",
+            "calleeMethod": "log",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            }
+          },
+          {
+            "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+            "callerMethod": "getDNSSubjectAlts",
+            "callee": "java.util.Collection",
+            "calleeMethod": "iterator",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            }
+          },
+          {
+            "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+            "callerMethod": "getDNSSubjectAlts",
+            "callee": "java.util.Iterator",
+            "calleeMethod": "hasNext",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            }
+          },
+          {
+            "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+            "callerMethod": "getDNSSubjectAlts",
+            "callee": "java.util.Iterator",
+            "calleeMethod": "next",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            }
+          },
+          {
+            "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+            "callerMethod": "getDNSSubjectAlts",
+            "callee": "java.util.List",
+            "calleeMethod": "get",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            }
+          },
+          {
+            "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+            "callerMethod": "getDNSSubjectAlts",
+            "callee": "java.util.LinkedList",
+            "calleeMethod": "add",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            }
+          },
+          {
+            "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+            "callerMethod": "getDNSSubjectAlts",
+            "callee": "java.util.LinkedList",
+            "calleeMethod": "isEmpty",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            }
+          },
+          {
+            "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+            "callerMethod": "getDNSSubjectAlts",
+            "callee": "java.util.LinkedList",
+            "calleeMethod": "size",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            }
+          },
+          {
+            "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+            "callerMethod": "getDNSSubjectAlts",
+            "callee": "java.util.LinkedList",
+            "calleeMethod": "toArray",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            }
+          },
+          {
+            "caller": "libcore.util.CollectionUtils$1$1",
+            "callerMethod": "computeNext",
+            "callee": "java.lang.ref.Reference",
+            "calleeMethod": "get",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            }
+          },
+          {
+            "caller": "libcore.reflect.Types",
+            "callerMethod": "getTypeArray",
+            "callee": "libcore.reflect.ListOfTypes",
+            "calleeMethod": "length",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            }
+          },
+          {
+            "caller": "libcore.reflect.Types",
+            "callerMethod": "getTypeArray",
+            "callee": "libcore.reflect.ListOfTypes",
+            "calleeMethod": "getResolvedTypes",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            }
+          },
+          {
+            "caller": "libcore.reflect.Types",
+            "callerMethod": "getTypeArray",
+            "callee": "java.lang.Object",
+            "calleeMethod": "clone",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            }
+          },
+          {
+            "caller": "libcore.reflect.Types",
+            "callerMethod": "getType",
+            "callee": "libcore.reflect.ParameterizedTypeImpl",
+            "calleeMethod": "getResolvedType",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            }
+          },
+          {
+            "caller": "libcore.reflect.Types",
+            "callerMethod": "getSignature",
+            "callee": "java.util.Map",
+            "calleeMethod": "get",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            }
+          },
+          {
+            "caller": "libcore.reflect.Types",
+            "callerMethod": "getSignature",
+            "callee": "java.lang.Class",
+            "calleeMethod": "isArray",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            }
+          },
+          {
+            "caller": "libcore.reflect.Types",
+            "callerMethod": "getSignature",
+            "callee": "java.lang.StringBuilder",
+            "calleeMethod": "<init>",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            }
+          },
+          {
+            "caller": "libcore.reflect.Types",
+            "callerMethod": "getSignature",
+            "callee": "java.lang.StringBuilder",
+            "calleeMethod": "append",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            }
+          },
+          {
+            "caller": "libcore.reflect.Types",
+            "callerMethod": "getSignature",
+            "callee": "java.lang.Class",
+            "calleeMethod": "getComponentType",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            }
+          },
+          {
+            "caller": "libcore.reflect.Types",
+            "callerMethod": "getSignature",
+            "callee": "libcore.reflect.Types",
+            "calleeMethod": "getSignature",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            }
+          },
+          {
+            "caller": "libcore.reflect.Types",
+            "callerMethod": "getSignature",
+            "callee": "java.lang.StringBuilder",
+            "calleeMethod": "toString",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            }
+          },
+          {
+            "caller": "libcore.reflect.Types",
+            "callerMethod": "getSignature",
+            "callee": "java.lang.Class",
+            "calleeMethod": "getName",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            }
+          },
+          {
+            "caller": "libcore.reflect.Types",
+            "callerMethod": "appendTypeName",
+            "callee": "java.lang.Class",
+            "calleeMethod": "getComponentType",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            }
+          },
+          {
+            "caller": "libcore.reflect.Types",
+            "callerMethod": "appendTypeName",
+            "callee": "java.lang.Class",
+            "calleeMethod": "getName",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            }
+          },
+          {
+            "caller": "libcore.reflect.Types",
+            "callerMethod": "appendGenericType",
+            "callee": "java.lang.reflect.TypeVariable",
+            "calleeMethod": "getName",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            }
+          }
+        ],
+        "rowCount": 50,
+        "graphCount": 64
+      }
+    },
+    "candidate": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json",
+        "Date": "Sun, 06 Sep 2026 20:46:13 GMT",
+        "Connection": "close",
+        "Transfer-Encoding": "chunked"
+      },
+      "body": "{\"columns\":[\"n.graph_id\",\"caller\",\"callerMethod\",\"callee\",\"calleeMethod\"],\"graphCount\":64,\"rowCount\":50,\"rows\":[{\"$metadata\":{\"graphIds\":[\"fixture-android-00\",\"fixture-tika-00\"]},\"callee\":\"org.ccil.cowan.tagsoup.Schema\",\"calleeMethod\":\"getElementType\",\"caller\":\"org.ccil.cowan.tagsoup.Schema\",\"callerMethod\":\"attribute\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\",\"fixture-tika-00\"]},\"callee\":\"org.ccil.cowan.tagsoup.Schema\",\"calleeMethod\":\"getElementType\",\"caller\":\"org.ccil.cowan.tagsoup.Schema\",\"callerMethod\":\"parent\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\",\"fixture-tika-00\"]},\"callee\":\"java.lang.String\",\"calleeMethod\":\"toLowerCase\",\"caller\":\"org.ccil.cowan.tagsoup.Schema\",\"callerMethod\":\"getElementType\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\",\"fixture-tika-00\"]},\"callee\":\"java.util.HashMap\",\"calleeMethod\":\"get\",\"caller\":\"org.ccil.cowan.tagsoup.Schema\",\"callerMethod\":\"getElementType\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\",\"fixture-tika-00\"]},\"callee\":\"java.util.HashMap\",\"calleeMethod\":\"get\",\"caller\":\"org.ccil.cowan.tagsoup.Schema\",\"callerMethod\":\"getEntity\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\",\"fixture-tika-00\"]},\"callee\":\"org.ccil.cowan.tagsoup.AttributesImpl\",\"calleeMethod\":\"getLength\",\"caller\":\"org.ccil.cowan.tagsoup.Element\",\"callerMethod\":\"anonymize\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\",\"fixture-tika-00\"]},\"callee\":\"org.ccil.cowan.tagsoup.AttributesImpl\",\"calleeMethod\":\"getType\",\"caller\":\"org.ccil.cowan.tagsoup.Element\",\"callerMethod\":\"anonymize\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\",\"fixture-tika-00\"]},\"callee\":\"org.ccil.cowan.tagsoup.AttributesImpl\",\"calleeMethod\":\"getQName\",\"caller\":\"org.ccil.cowan.tagsoup.Element\",\"callerMethod\":\"anonymize\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\",\"fixture-tika-00\"]},\"callee\":\"org.ccil.cowan.tagsoup.AttributesImpl\",\"calleeMethod\":\"getLength\",\"caller\":\"org.ccil.cowan.tagsoup.Element\",\"callerMethod\":\"clean\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\",\"fixture-tika-00\"]},\"callee\":\"org.ccil.cowan.tagsoup.AttributesImpl\",\"calleeMethod\":\"getLocalName\",\"caller\":\"org.ccil.cowan.tagsoup.Element\",\"callerMethod\":\"clean\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\",\"fixture-tika-00\"]},\"callee\":\"org.ccil.cowan.tagsoup.AttributesImpl\",\"calleeMethod\":\"getValue\",\"caller\":\"org.ccil.cowan.tagsoup.Element\",\"callerMethod\":\"clean\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\"]},\"callee\":\"javax.net.ssl.SSLSocket\",\"calleeMethod\":\"getSession\",\"caller\":\"org.apache.http.conn.ssl.AbstractVerifier\",\"callerMethod\":\"verify\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\"]},\"callee\":\"javax.net.ssl.SSLSession\",\"calleeMethod\":\"getPeerCertificates\",\"caller\":\"org.apache.http.conn.ssl.AbstractVerifier\",\"callerMethod\":\"verify\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\"]},\"callee\":\"org.apache.http.conn.ssl.AbstractVerifier\",\"calleeMethod\":\"getCNs\",\"caller\":\"org.apache.http.conn.ssl.AbstractVerifier\",\"callerMethod\":\"verify\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\"]},\"callee\":\"org.apache.http.conn.ssl.AbstractVerifier\",\"calleeMethod\":\"getDNSSubjectAlts\",\"caller\":\"org.apache.http.conn.ssl.AbstractVerifier\",\"callerMethod\":\"verify\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\"]},\"callee\":\"java.security.cert.X509Certificate\",\"calleeMethod\":\"getSubjectX500Principal\",\"caller\":\"org.apache.http.conn.ssl.AbstractVerifier\",\"callerMethod\":\"getCNs\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\"]},\"callee\":\"org.apache.http.conn.ssl.AndroidDistinguishedNameParser\",\"calleeMethod\":\"\\u003cinit\\u003e\",\"caller\":\"org.apache.http.conn.ssl.AbstractVerifier\",\"callerMethod\":\"getCNs\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\"]},\"callee\":\"org.apache.http.conn.ssl.AndroidDistinguishedNameParser\",\"calleeMethod\":\"getAllMostSpecificFirst\",\"caller\":\"org.apache.http.conn.ssl.AbstractVerifier\",\"callerMethod\":\"getCNs\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\"]},\"callee\":\"java.util.List\",\"calleeMethod\":\"isEmpty\",\"caller\":\"org.apache.http.conn.ssl.AbstractVerifier\",\"callerMethod\":\"getCNs\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\"]},\"callee\":\"java.util.List\",\"calleeMethod\":\"size\",\"caller\":\"org.apache.http.conn.ssl.AbstractVerifier\",\"callerMethod\":\"getCNs\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\"]},\"callee\":\"java.util.List\",\"calleeMethod\":\"toArray\",\"caller\":\"org.apache.http.conn.ssl.AbstractVerifier\",\"callerMethod\":\"getCNs\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\"]},\"callee\":\"java.util.LinkedList\",\"calleeMethod\":\"\\u003cinit\\u003e\",\"caller\":\"org.apache.http.conn.ssl.AbstractVerifier\",\"callerMethod\":\"getDNSSubjectAlts\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\"]},\"callee\":\"java.security.cert.X509Certificate\",\"calleeMethod\":\"getSubjectAlternativeNames\",\"caller\":\"org.apache.http.conn.ssl.AbstractVerifier\",\"callerMethod\":\"getDNSSubjectAlts\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\"]},\"callee\":\"java.lang.Class\",\"calleeMethod\":\"getName\",\"caller\":\"org.apache.http.conn.ssl.AbstractVerifier\",\"callerMethod\":\"getDNSSubjectAlts\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\"]},\"callee\":\"java.util.logging.Logger\",\"calleeMethod\":\"getLogger\",\"caller\":\"org.apache.http.conn.ssl.AbstractVerifier\",\"callerMethod\":\"getDNSSubjectAlts\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\"]},\"callee\":\"java.util.logging.Logger\",\"calleeMethod\":\"log\",\"caller\":\"org.apache.http.conn.ssl.AbstractVerifier\",\"callerMethod\":\"getDNSSubjectAlts\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\"]},\"callee\":\"java.util.Collection\",\"calleeMethod\":\"iterator\",\"caller\":\"org.apache.http.conn.ssl.AbstractVerifier\",\"callerMethod\":\"getDNSSubjectAlts\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\"]},\"callee\":\"java.util.Iterator\",\"calleeMethod\":\"hasNext\",\"caller\":\"org.apache.http.conn.ssl.AbstractVerifier\",\"callerMethod\":\"getDNSSubjectAlts\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\"]},\"callee\":\"java.util.Iterator\",\"calleeMethod\":\"next\",\"caller\":\"org.apache.http.conn.ssl.AbstractVerifier\",\"callerMethod\":\"getDNSSubjectAlts\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\"]},\"callee\":\"java.util.List\",\"calleeMethod\":\"get\",\"caller\":\"org.apache.http.conn.ssl.AbstractVerifier\",\"callerMethod\":\"getDNSSubjectAlts\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\"]},\"callee\":\"java.util.LinkedList\",\"calleeMethod\":\"add\",\"caller\":\"org.apache.http.conn.ssl.AbstractVerifier\",\"callerMethod\":\"getDNSSubjectAlts\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\"]},\"callee\":\"java.util.LinkedList\",\"calleeMethod\":\"isEmpty\",\"caller\":\"org.apache.http.conn.ssl.AbstractVerifier\",\"callerMethod\":\"getDNSSubjectAlts\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\"]},\"callee\":\"java.util.LinkedList\",\"calleeMethod\":\"size\",\"caller\":\"org.apache.http.conn.ssl.AbstractVerifier\",\"callerMethod\":\"getDNSSubjectAlts\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\"]},\"callee\":\"java.util.LinkedList\",\"calleeMethod\":\"toArray\",\"caller\":\"org.apache.http.conn.ssl.AbstractVerifier\",\"callerMethod\":\"getDNSSubjectAlts\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\"]},\"callee\":\"java.lang.ref.Reference\",\"calleeMethod\":\"get\",\"caller\":\"libcore.util.CollectionUtils$1$1\",\"callerMethod\":\"computeNext\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\"]},\"callee\":\"libcore.reflect.ListOfTypes\",\"calleeMethod\":\"length\",\"caller\":\"libcore.reflect.Types\",\"callerMethod\":\"getTypeArray\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\"]},\"callee\":\"libcore.reflect.ListOfTypes\",\"calleeMethod\":\"getResolvedTypes\",\"caller\":\"libcore.reflect.Types\",\"callerMethod\":\"getTypeArray\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\"]},\"callee\":\"java.lang.Object\",\"calleeMethod\":\"clone\",\"caller\":\"libcore.reflect.Types\",\"callerMethod\":\"getTypeArray\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\"]},\"callee\":\"libcore.reflect.ParameterizedTypeImpl\",\"calleeMethod\":\"getResolvedType\",\"caller\":\"libcore.reflect.Types\",\"callerMethod\":\"getType\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\"]},\"callee\":\"java.util.Map\",\"calleeMethod\":\"get\",\"caller\":\"libcore.reflect.Types\",\"callerMethod\":\"getSignature\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\"]},\"callee\":\"java.lang.Class\",\"calleeMethod\":\"isArray\",\"caller\":\"libcore.reflect.Types\",\"callerMethod\":\"getSignature\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\"]},\"callee\":\"java.lang.StringBuilder\",\"calleeMethod\":\"\\u003cinit\\u003e\",\"caller\":\"libcore.reflect.Types\",\"callerMethod\":\"getSignature\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\"]},\"callee\":\"java.lang.StringBuilder\",\"calleeMethod\":\"append\",\"caller\":\"libcore.reflect.Types\",\"callerMethod\":\"getSignature\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\"]},\"callee\":\"java.lang.Class\",\"calleeMethod\":\"getComponentType\",\"caller\":\"libcore.reflect.Types\",\"callerMethod\":\"getSignature\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\"]},\"callee\":\"libcore.reflect.Types\",\"calleeMethod\":\"getSignature\",\"caller\":\"libcore.reflect.Types\",\"callerMethod\":\"getSignature\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\"]},\"callee\":\"java.lang.StringBuilder\",\"calleeMethod\":\"toString\",\"caller\":\"libcore.reflect.Types\",\"callerMethod\":\"getSignature\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\"]},\"callee\":\"java.lang.Class\",\"calleeMethod\":\"getName\",\"caller\":\"libcore.reflect.Types\",\"callerMethod\":\"getSignature\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\"]},\"callee\":\"java.lang.Class\",\"calleeMethod\":\"getComponentType\",\"caller\":\"libcore.reflect.Types\",\"callerMethod\":\"appendTypeName\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\"]},\"callee\":\"java.lang.Class\",\"calleeMethod\":\"getName\",\"caller\":\"libcore.reflect.Types\",\"callerMethod\":\"appendTypeName\"},{\"$metadata\":{\"graphIds\":[\"fixture-android-00\"]},\"callee\":\"java.lang.reflect.TypeVariable\",\"calleeMethod\":\"getName\",\"caller\":\"libcore.reflect.Types\",\"callerMethod\":\"appendGenericType\"}]}",
+      "json": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callerMethod",
+          "callee",
+          "calleeMethod"
+        ],
+        "graphCount": 64,
+        "rowCount": 50,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00",
+                "fixture-tika-00"
+              ]
+            },
+            "callee": "org.ccil.cowan.tagsoup.Schema",
+            "calleeMethod": "getElementType",
+            "caller": "org.ccil.cowan.tagsoup.Schema",
+            "callerMethod": "attribute"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00",
+                "fixture-tika-00"
+              ]
+            },
+            "callee": "org.ccil.cowan.tagsoup.Schema",
+            "calleeMethod": "getElementType",
+            "caller": "org.ccil.cowan.tagsoup.Schema",
+            "callerMethod": "parent"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00",
+                "fixture-tika-00"
+              ]
+            },
+            "callee": "java.lang.String",
+            "calleeMethod": "toLowerCase",
+            "caller": "org.ccil.cowan.tagsoup.Schema",
+            "callerMethod": "getElementType"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00",
+                "fixture-tika-00"
+              ]
+            },
+            "callee": "java.util.HashMap",
+            "calleeMethod": "get",
+            "caller": "org.ccil.cowan.tagsoup.Schema",
+            "callerMethod": "getElementType"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00",
+                "fixture-tika-00"
+              ]
+            },
+            "callee": "java.util.HashMap",
+            "calleeMethod": "get",
+            "caller": "org.ccil.cowan.tagsoup.Schema",
+            "callerMethod": "getEntity"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00",
+                "fixture-tika-00"
+              ]
+            },
+            "callee": "org.ccil.cowan.tagsoup.AttributesImpl",
+            "calleeMethod": "getLength",
+            "caller": "org.ccil.cowan.tagsoup.Element",
+            "callerMethod": "anonymize"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00",
+                "fixture-tika-00"
+              ]
+            },
+            "callee": "org.ccil.cowan.tagsoup.AttributesImpl",
+            "calleeMethod": "getType",
+            "caller": "org.ccil.cowan.tagsoup.Element",
+            "callerMethod": "anonymize"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00",
+                "fixture-tika-00"
+              ]
+            },
+            "callee": "org.ccil.cowan.tagsoup.AttributesImpl",
+            "calleeMethod": "getQName",
+            "caller": "org.ccil.cowan.tagsoup.Element",
+            "callerMethod": "anonymize"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00",
+                "fixture-tika-00"
+              ]
+            },
+            "callee": "org.ccil.cowan.tagsoup.AttributesImpl",
+            "calleeMethod": "getLength",
+            "caller": "org.ccil.cowan.tagsoup.Element",
+            "callerMethod": "clean"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00",
+                "fixture-tika-00"
+              ]
+            },
+            "callee": "org.ccil.cowan.tagsoup.AttributesImpl",
+            "calleeMethod": "getLocalName",
+            "caller": "org.ccil.cowan.tagsoup.Element",
+            "callerMethod": "clean"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00",
+                "fixture-tika-00"
+              ]
+            },
+            "callee": "org.ccil.cowan.tagsoup.AttributesImpl",
+            "calleeMethod": "getValue",
+            "caller": "org.ccil.cowan.tagsoup.Element",
+            "callerMethod": "clean"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            },
+            "callee": "javax.net.ssl.SSLSocket",
+            "calleeMethod": "getSession",
+            "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+            "callerMethod": "verify"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            },
+            "callee": "javax.net.ssl.SSLSession",
+            "calleeMethod": "getPeerCertificates",
+            "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+            "callerMethod": "verify"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            },
+            "callee": "org.apache.http.conn.ssl.AbstractVerifier",
+            "calleeMethod": "getCNs",
+            "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+            "callerMethod": "verify"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            },
+            "callee": "org.apache.http.conn.ssl.AbstractVerifier",
+            "calleeMethod": "getDNSSubjectAlts",
+            "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+            "callerMethod": "verify"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            },
+            "callee": "java.security.cert.X509Certificate",
+            "calleeMethod": "getSubjectX500Principal",
+            "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+            "callerMethod": "getCNs"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            },
+            "callee": "org.apache.http.conn.ssl.AndroidDistinguishedNameParser",
+            "calleeMethod": "<init>",
+            "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+            "callerMethod": "getCNs"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            },
+            "callee": "org.apache.http.conn.ssl.AndroidDistinguishedNameParser",
+            "calleeMethod": "getAllMostSpecificFirst",
+            "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+            "callerMethod": "getCNs"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            },
+            "callee": "java.util.List",
+            "calleeMethod": "isEmpty",
+            "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+            "callerMethod": "getCNs"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            },
+            "callee": "java.util.List",
+            "calleeMethod": "size",
+            "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+            "callerMethod": "getCNs"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            },
+            "callee": "java.util.List",
+            "calleeMethod": "toArray",
+            "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+            "callerMethod": "getCNs"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            },
+            "callee": "java.util.LinkedList",
+            "calleeMethod": "<init>",
+            "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+            "callerMethod": "getDNSSubjectAlts"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            },
+            "callee": "java.security.cert.X509Certificate",
+            "calleeMethod": "getSubjectAlternativeNames",
+            "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+            "callerMethod": "getDNSSubjectAlts"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            },
+            "callee": "java.lang.Class",
+            "calleeMethod": "getName",
+            "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+            "callerMethod": "getDNSSubjectAlts"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            },
+            "callee": "java.util.logging.Logger",
+            "calleeMethod": "getLogger",
+            "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+            "callerMethod": "getDNSSubjectAlts"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            },
+            "callee": "java.util.logging.Logger",
+            "calleeMethod": "log",
+            "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+            "callerMethod": "getDNSSubjectAlts"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            },
+            "callee": "java.util.Collection",
+            "calleeMethod": "iterator",
+            "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+            "callerMethod": "getDNSSubjectAlts"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            },
+            "callee": "java.util.Iterator",
+            "calleeMethod": "hasNext",
+            "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+            "callerMethod": "getDNSSubjectAlts"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            },
+            "callee": "java.util.Iterator",
+            "calleeMethod": "next",
+            "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+            "callerMethod": "getDNSSubjectAlts"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            },
+            "callee": "java.util.List",
+            "calleeMethod": "get",
+            "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+            "callerMethod": "getDNSSubjectAlts"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            },
+            "callee": "java.util.LinkedList",
+            "calleeMethod": "add",
+            "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+            "callerMethod": "getDNSSubjectAlts"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            },
+            "callee": "java.util.LinkedList",
+            "calleeMethod": "isEmpty",
+            "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+            "callerMethod": "getDNSSubjectAlts"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            },
+            "callee": "java.util.LinkedList",
+            "calleeMethod": "size",
+            "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+            "callerMethod": "getDNSSubjectAlts"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            },
+            "callee": "java.util.LinkedList",
+            "calleeMethod": "toArray",
+            "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+            "callerMethod": "getDNSSubjectAlts"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            },
+            "callee": "java.lang.ref.Reference",
+            "calleeMethod": "get",
+            "caller": "libcore.util.CollectionUtils$1$1",
+            "callerMethod": "computeNext"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            },
+            "callee": "libcore.reflect.ListOfTypes",
+            "calleeMethod": "length",
+            "caller": "libcore.reflect.Types",
+            "callerMethod": "getTypeArray"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            },
+            "callee": "libcore.reflect.ListOfTypes",
+            "calleeMethod": "getResolvedTypes",
+            "caller": "libcore.reflect.Types",
+            "callerMethod": "getTypeArray"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            },
+            "callee": "java.lang.Object",
+            "calleeMethod": "clone",
+            "caller": "libcore.reflect.Types",
+            "callerMethod": "getTypeArray"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            },
+            "callee": "libcore.reflect.ParameterizedTypeImpl",
+            "calleeMethod": "getResolvedType",
+            "caller": "libcore.reflect.Types",
+            "callerMethod": "getType"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            },
+            "callee": "java.util.Map",
+            "calleeMethod": "get",
+            "caller": "libcore.reflect.Types",
+            "callerMethod": "getSignature"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            },
+            "callee": "java.lang.Class",
+            "calleeMethod": "isArray",
+            "caller": "libcore.reflect.Types",
+            "callerMethod": "getSignature"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            },
+            "callee": "java.lang.StringBuilder",
+            "calleeMethod": "<init>",
+            "caller": "libcore.reflect.Types",
+            "callerMethod": "getSignature"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            },
+            "callee": "java.lang.StringBuilder",
+            "calleeMethod": "append",
+            "caller": "libcore.reflect.Types",
+            "callerMethod": "getSignature"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            },
+            "callee": "java.lang.Class",
+            "calleeMethod": "getComponentType",
+            "caller": "libcore.reflect.Types",
+            "callerMethod": "getSignature"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            },
+            "callee": "libcore.reflect.Types",
+            "calleeMethod": "getSignature",
+            "caller": "libcore.reflect.Types",
+            "callerMethod": "getSignature"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            },
+            "callee": "java.lang.StringBuilder",
+            "calleeMethod": "toString",
+            "caller": "libcore.reflect.Types",
+            "callerMethod": "getSignature"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            },
+            "callee": "java.lang.Class",
+            "calleeMethod": "getName",
+            "caller": "libcore.reflect.Types",
+            "callerMethod": "getSignature"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            },
+            "callee": "java.lang.Class",
+            "calleeMethod": "getComponentType",
+            "caller": "libcore.reflect.Types",
+            "callerMethod": "appendTypeName"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            },
+            "callee": "java.lang.Class",
+            "calleeMethod": "getName",
+            "caller": "libcore.reflect.Types",
+            "callerMethod": "appendTypeName"
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            },
+            "callee": "java.lang.reflect.TypeVariable",
+            "calleeMethod": "getName",
+            "caller": "libcore.reflect.Types",
+            "callerMethod": "appendGenericType"
+          }
+        ]
+      }
+    },
+    "equal": true,
+    "headerDifferences": {}
+  },
+  {
+    "case": {
+      "name": "wrapped-earlyGraphClassPrefix",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) STARTS WITH 'android.'\n   OR toLower(coalesce(n.callee_class, '')) STARTS WITH 'android.'\nRETURN DISTINCT n.graph_id, n.caller_class AS caller, n.caller_name AS callerMethod,\n    n.callee_class AS callee, n.callee_name AS calleeMethod\nLIMIT 1"
+      },
+      "phase": "query",
+      "family": "all-fixture-wrapped",
+      "sourceConstant": "EARLY_GRAPH_PREFIX_QUERY"
+    },
+    "baseline": {
+      "status": 200,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:33:23 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "429"
+      },
+      "body": "{\n  \"columns\": [\n    \"n.graph_id\",\n    \"caller\",\n    \"callerMethod\",\n    \"callee\",\n    \"calleeMethod\"\n  ],\n  \"rows\": [\n    {\n      \"caller\": \"com.google.android.mms.util.PduCache\",\n      \"callerMethod\": \"purge\",\n      \"callee\": \"android.content.UriMatcher\",\n      \"calleeMethod\": \"match\",\n      \"$metadata\": {\n        \"graphIds\": [\n          \"fixture-android-00\"\n        ]\n      }\n    }\n  ],\n  \"rowCount\": 1,\n  \"graphCount\": 64\n}",
+      "json": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callerMethod",
+          "callee",
+          "calleeMethod"
+        ],
+        "rows": [
+          {
+            "caller": "com.google.android.mms.util.PduCache",
+            "callerMethod": "purge",
+            "callee": "android.content.UriMatcher",
+            "calleeMethod": "match",
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            }
+          }
+        ],
+        "rowCount": 1,
+        "graphCount": 64
+      }
+    },
+    "candidate": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json",
+        "Date": "Sun, 06 Sep 2026 20:46:55 GMT",
+        "Content-Length": "294",
+        "Connection": "close"
+      },
+      "body": "{\"columns\":[\"n.graph_id\",\"caller\",\"callerMethod\",\"callee\",\"calleeMethod\"],\"graphCount\":64,\"rowCount\":1,\"rows\":[{\"$metadata\":{\"graphIds\":[\"fixture-android-00\"]},\"callee\":\"android.content.UriMatcher\",\"calleeMethod\":\"match\",\"caller\":\"com.google.android.mms.util.PduCache\",\"callerMethod\":\"purge\"}]}",
+      "json": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callerMethod",
+          "callee",
+          "calleeMethod"
+        ],
+        "graphCount": 64,
+        "rowCount": 1,
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "fixture-android-00"
+              ]
+            },
+            "callee": "android.content.UriMatcher",
+            "calleeMethod": "match",
+            "caller": "com.google.android.mms.util.PduCache",
+            "callerMethod": "purge"
+          }
+        ]
+      }
+    },
+    "equal": true,
+    "headerDifferences": {}
+  }
+]

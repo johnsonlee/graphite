@@ -11,11 +11,20 @@ import (
 func (e evaluator) matchSingleNode(graph *store.Store, rows []map[string]any, clause cypher.MatchClause) []map[string]any {
 	pattern := clause.Patterns[0].Nodes[0]
 	result := []map[string]any{}
+	slot := &candidateSlot{}
 	for _, row := range rows {
 		e.check()
 		bound := e.cloneRow(row)
 		accepted := false
-		e.nodeCandidates(graph, pattern, row, func(value any) {
+		e.walkNodeCandidates(graph, pattern, row, slot, func(value any) {
+			// Scratch bindings may be retained for key-order bookkeeping. Never
+			// leave the borrowed view in them after this candidate finishes.
+			// Retain the key position even on a miss, as the original scanner did.
+			defer func() {
+				if borrowed, ok := bound[pattern.Variable].(*candidateSlot); ok && borrowed == slot {
+					bound[pattern.Variable] = nil
+				}
+			}()
 			e.check()
 			if !e.matches(value, pattern, row) {
 				return
@@ -33,6 +42,9 @@ func (e evaluator) matchSingleNode(graph *store.Store, rows []map[string]any, cl
 			}
 			if clause.Where != nil && e.eval(clause.Where, bound) != true {
 				return
+			}
+			if pattern.Variable != "" {
+				bound[pattern.Variable] = freezeCandidate(bound[pattern.Variable])
 			}
 			result = append(result, e.cloneRow(bound))
 			accepted = true

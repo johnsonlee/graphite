@@ -1,0 +1,11 @@
+{
+  "stagedTree": "39d8c5a758b65bfd0e7c25de638b8b3f9c11c725",
+  "archive": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-integration-7ssy47la",
+  "commands": [
+    "go test -race ./... -count=1",
+    "go vet ./..."
+  ],
+  "exitCode": 0,
+  "candidate14SourceHashesMatch": true,
+  "scope": "Independent staged source archive including current C4/HTTP fixes and the unchanged frozen Attempt4 query candidate; profiling source remains the isolated4124base candidate"
+}

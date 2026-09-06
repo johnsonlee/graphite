@@ -1,0 +1,5 @@
+=== RUN   TestExternalSlotTransparency
+    external_slot_audit_test.go:38: expressions=127 entities=17 qualifiedModes=2 checks=4318
+--- PASS: TestExternalSlotTransparency (0.14s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/query	1.577s

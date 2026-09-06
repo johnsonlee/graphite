@@ -1,0 +1,362 @@
+{
+  "copy": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-contract-audit-2ic7c1b7/graphite-server",
+  "source": "/tmp/graphite-go-candidate-slot-4124bfc4/graphite-server",
+  "productionSources": [
+    {
+      "path": "cmd/graphite-server/main.go",
+      "sha256": "cab08b4fb4c4550de05c2295db9e7e37aba7007c4ebe6fde1577e31af22428fc"
+    },
+    {
+      "path": "internal/analysis/c4/boundary.go",
+      "sha256": "a559ab74d0806d03db637451f5e7251bfdb6814f1f25b44c167f5b1e6e8a5344"
+    },
+    {
+      "path": "internal/analysis/c4/component.go",
+      "sha256": "2c759e2520a637d2e6a61cecca94df15cef656199a415134588228f1d988917f"
+    },
+    {
+      "path": "internal/analysis/c4/container.go",
+      "sha256": "63a9391b1dd73af94bfb42f6932a045a690b79b21323d60d0dce5a244558fe4c"
+    },
+    {
+      "path": "internal/analysis/c4/diagram.go",
+      "sha256": "571eee3ff46c25b360d4c509b892e9dc42eb184c342576594eb7ae10a4e24d89"
+    },
+    {
+      "path": "internal/analysis/c4/dsl.go",
+      "sha256": "24c5af7874a0336d0e6e7b471763e4b6f98e52f27f9b9ea9ad0136bece96d829"
+    },
+    {
+      "path": "internal/analysis/c4/external.go",
+      "sha256": "a7b5ab1f2e5eb7514ca4962ee77ce7078cafeef8c9858248f3f7950b21ad60ee"
+    },
+    {
+      "path": "internal/analysis/c4/model.go",
+      "sha256": "a743cdec6c2109ee993c635db2993f23d5d16bd8c298e94df8f69007230b3648"
+    },
+    {
+      "path": "internal/analysis/c4/reachability.go",
+      "sha256": "fc0766e35ed6dee510322b07b39a94d3119eecd803620ebbc689b120d52c6a97"
+    },
+    {
+      "path": "internal/analysis/c4/reduction.go",
+      "sha256": "d8aadb76affa0819ebfb82fd75004ca251ab9004a36ccea71a862a028f8a63b3"
+    },
+    {
+      "path": "internal/analysis/c4/subject.go",
+      "sha256": "8ee7180ae9201700cb604557277b40baa91201cffb2eb91c0dec5b67211faf5d"
+    },
+    {
+      "path": "internal/analysis/c4/support.go",
+      "sha256": "d8f6486d151d1d1fe919fe30740ab4025422c0e00f276b6ce5b230cdd547ff8b"
+    },
+    {
+      "path": "internal/analysis/c4/types.go",
+      "sha256": "b2fe69c4884db292bd4457adbcf8064284642731980d06c8ea236e8d2de1de41"
+    },
+    {
+      "path": "internal/analysis/c4/workspace.go",
+      "sha256": "a62570a908b5d1b2bceb6b76e433acd30dd434f235063e8aba1739e347dd4bf2"
+    },
+    {
+      "path": "internal/analysis/endpoints.go",
+      "sha256": "7ba0b2694dae2c64a166e94f6dc1836e70e474d318363ddb9d3b17a33388423d"
+    },
+    {
+      "path": "internal/cypher/antlr.go",
+      "sha256": "fcf081a4325a5910ec7d0576acd8921e7467f5793b8a98ce6a82d0ce6dbf694e"
+    },
+    {
+      "path": "internal/cypher/ast.go",
+      "sha256": "5190ce32842975638038412ad573f4288757c14b6ad4f9261fe52a2c17d2c9ef"
+    },
+    {
+      "path": "internal/cypher/cmd/normalize/main.go",
+      "sha256": "5cfcfbc1e567789941b0abfa726bc467da1779aed4e135ea372cf4378124b574"
+    },
+    {
+      "path": "internal/cypher/context.go",
+      "sha256": "aa8b30b6259cdfd52a2b0fad5db635fe07433351e8a212faf9421ce7b9d036fa"
+    },
+    {
+      "path": "internal/cypher/generated/cypher_lexer.go",
+      "sha256": "4e88ac836d40e3bf1cdf76bd7abefbdcb52f83e6df6658b2ed4e79b7780ca17c"
+    },
+    {
+      "path": "internal/cypher/generated/cypher_parser.go",
+      "sha256": "f2fb5b7dc99d4981b3671df48959d8ddda88d798a0b184977b20e60f61be2e19"
+    },
+    {
+      "path": "internal/cypher/generated/cypherparser_base_visitor.go",
+      "sha256": "b1e2e0c6cb062612f4e91be7e2d31363cfb7f257dd96a9f8120a95eaf83e03a2"
+    },
+    {
+      "path": "internal/cypher/generated/cypherparser_visitor.go",
+      "sha256": "811339a54d13b8694bfea0f6e9c7a1fd2c2044c9622d4e2a854be448512c5c0c"
+    },
+    {
+      "path": "internal/cypher/java_input.go",
+      "sha256": "bcbaa46890568b9c5c4903e6d288166a07cf9b701f98420cb2a0b8a7c12675b6"
+    },
+    {
+      "path": "internal/cypher/number_literal.go",
+      "sha256": "564ac166502a9ef72a4aed737ccc5d905052f301c50448cdfb832ffd31c08b79"
+    },
+    {
+      "path": "internal/cypher/string_literal.go",
+      "sha256": "796cbf344726e2ff6184778e69e0c0accf9045187646ff89af4b4411d5071190"
+    },
+    {
+      "path": "internal/javamath/fdlibm.go",
+      "sha256": "a84afd0919cb2a1a58f247e956104fe3d9e34e43b312d6ca422f10cfcfaf0945"
+    },
+    {
+      "path": "internal/javamath/reduction.go",
+      "sha256": "6ef8099ecb57d9bcf73cef7c69ae79688f4634c1ebb809ddcc492a80bce7f38b"
+    },
+    {
+      "path": "internal/javamath/sincos.go",
+      "sha256": "b56c4d357ca5c74dbd53330fb3e77b122457a4e13491d02391f769c44413e9d4"
+    },
+    {
+      "path": "internal/javamath/tan.go",
+      "sha256": "535cbd4134f75f05b611fd218d8e55573b51b3403fedb9c1555be195146d1622"
+    },
+    {
+      "path": "internal/javaregex/advanced.go",
+      "sha256": "e80ddc525d398f2993923d6847669733c9f8639cfed4d770539bf7cbdd6347e6"
+    },
+    {
+      "path": "internal/javaregex/match.go",
+      "sha256": "3a9f7a36b31b3c4b1c417f86802f7dde9b33d7a5c9709a02f9a76f8df5f4f7ac"
+    },
+    {
+      "path": "internal/javaregex/parse.go",
+      "sha256": "aaaa16381b837a364f7d33a6a0f5516fbf10351d5e9df34f60a70dd9567ea3f5"
+    },
+    {
+      "path": "internal/javaregex/regex.go",
+      "sha256": "3e87294e867c0bafafbcffa5977af69c4ec611de790887c5f174ec16db724ff3"
+    },
+    {
+      "path": "internal/javaregex/unicode.go",
+      "sha256": "f026bd8303907723a5acac161c3bc00ab20203400b6313f42408436fcafc77b1"
+    },
+    {
+      "path": "internal/javastring/unicode.go",
+      "sha256": "f0f0cdec80a40971ed667e6788ff476cfec66c29b056722e08660d92fa8ba641"
+    },
+    {
+      "path": "internal/javastring/unicode_generated.go",
+      "sha256": "58dee198f80fb337e2cb82839a8374a1f7bca32abc42725a08ace08667fee19d"
+    },
+    {
+      "path": "internal/javastring/utf16.go",
+      "sha256": "acafb0dc4fae8955117f49b96bfb63034b5dc53f6400f82a9b370e7f520c5981"
+    },
+    {
+      "path": "internal/query/aggregation.go",
+      "sha256": "5200db487be93bb137de761c49bdb3091084d796b0897b695840eff33f7f9710"
+    },
+    {
+      "path": "internal/query/candidate.go",
+      "sha256": "e84e32589c490ab13d155416987e3df5314078f45e2d3dba2f6e14d4b83f275c"
+    },
+    {
+      "path": "internal/query/columns.go",
+      "sha256": "3aad9203b91a106cf357a7e81e58699240bc6666c14e54905d0ecd671982acc3"
+    },
+    {
+      "path": "internal/query/cross.go",
+      "sha256": "c815b99ea24c66b65ffd4a8ed3fa77dfaf36c85263d163096b3e2df9ac676492"
+    },
+    {
+      "path": "internal/query/engine.go",
+      "sha256": "2407d928abc0f66b20a55e83ef534ffe3e0ccd5e332184d692dcd7996baddb7f"
+    },
+    {
+      "path": "internal/query/eval.go",
+      "sha256": "dbe4b520c83a4dad243c7cfcdf2d72c50df0cfeeb21d5c3d1f11d8630f714201"
+    },
+    {
+      "path": "internal/query/function_properties.go",
+      "sha256": "1195addcabde70d13a6fcc358897be1a1fcfb874286b84e5fa5a367ef275bbea"
+    },
+    {
+      "path": "internal/query/functions.go",
+      "sha256": "796fe8140b5f5c8b64f1d240c39120ef07fb0240c217f627cd0e18c658107096"
+    },
+    {
+      "path": "internal/query/java_string.go",
+      "sha256": "317e2cff94ee476958d9f12d837a6235b2abec46acf8b7f88c1c89375f70c4f3"
+    },
+    {
+      "path": "internal/query/jvm_float.go",
+      "sha256": "8e652d32a31155dffed21e727be7728161cf0a8845b2e8fed53474400950d394"
+    },
+    {
+      "path": "internal/query/materialize.go",
+      "sha256": "340d69524aa325b1fedc7a021ca24f2752a4e03572816a6b9cfe481d7a87a1f3"
+    },
+    {
+      "path": "internal/query/object_string.go",
+      "sha256": "fccde562ba016561d37845d499351664736e154e67965194006bc331f0c2fc7c"
+    },
+    {
+      "path": "internal/query/output_object.go",
+      "sha256": "e1a9cc04e0c91d3355cd874d2df87682578986cf7a283cb6ba1c3851ebb4c994"
+    },
+    {
+      "path": "internal/query/properties.go",
+      "sha256": "63bb363cbbc66149f0cebb8b8bf12d8dc0f80f33230016bd5afad9f2aeec5076"
+    },
+    {
+      "path": "internal/query/regex.go",
+      "sha256": "4ec60a52f63822cb5350b07330ee2c7235276ca02c4b7356a648a167978b6df4"
+    },
+    {
+      "path": "internal/query/relationships.go",
+      "sha256": "62bd9d60a9ca5deff48c18bc515e77d6d43f6492c86708f8dd270b3e59991220"
+    },
+    {
+      "path": "internal/query/row_order.go",
+      "sha256": "d67935abc7f8777b512c2a0aaf534cd82451e39582c490460a4cd275847cecc6"
+    },
+    {
+      "path": "internal/query/scan.go",
+      "sha256": "88b0992a88dc4a6dee8fb10b280e50d9d5cb4542eb1c2cc553c5832378fdb0c6"
+    },
+    {
+      "path": "internal/query/traversal.go",
+      "sha256": "6bb33da86a9932a92fe110aec86d820ac8f630a08635d82f2ca5e1a733363ca9"
+    },
+    {
+      "path": "internal/query/values.go",
+      "sha256": "c77ed3536aa23d44a54cd0e7450d1e251794abfb0cb78fee6146ad39c19f9bd4"
+    },
+    {
+      "path": "internal/server/architecture.go",
+      "sha256": "e196382bebcad89741d697426e961a7013f81a3064004f7b35e7ec3911b7f62f"
+    },
+    {
+      "path": "internal/server/connection.go",
+      "sha256": "8888bf292041d6e04ff8ab5c98c1a9fc717262fecd887b2fe392a24b611c46fc"
+    },
+    {
+      "path": "internal/server/cross.go",
+      "sha256": "5965f85a3a08b0b8fe4a5e8b3cc111b1ac1d19f3734c57a325e217e85ea0a7cb"
+    },
+    {
+      "path": "internal/server/cypher.go",
+      "sha256": "7b7e1f9db87eb310070063c2c7cb29fdcc7e139f787d56240c5b76d86ffb1ef4"
+    },
+    {
+      "path": "internal/server/gson_json.go",
+      "sha256": "c5209928475228b87f7f4e5b97ebbd8bb3463a73eb608693d1758b3d195e2c19"
+    },
+    {
+      "path": "internal/server/gson_json_wire.go",
+      "sha256": "4d5b3ce3dff7cedc70d9cc5abc0124915446a83c4767df8a27ae3ecc298ab55f"
+    },
+    {
+      "path": "internal/server/guard.go",
+      "sha256": "eff7dc8861931bf72fc08da3c6f517854eb87138f0f8e4f9db7db14304e28ee0"
+    },
+    {
+      "path": "internal/server/http.go",
+      "sha256": "f569ec3cb9dd0caa80d2ec2caa9f4269b222fcce0516033bbf17d38659deecb2"
+    },
+    {
+      "path": "internal/server/http_metrics.go",
+      "sha256": "5d6c3d9ea4355e632c649b0f19e4a6c9648508071d034464bda0f17accfd9d7e"
+    },
+    {
+      "path": "internal/server/json_input.go",
+      "sha256": "19f235da658ca19bf71d4c4fd304106face6feff056ebe3a1ee76d8dad268692"
+    },
+    {
+      "path": "internal/server/metrics.go",
+      "sha256": "59758ecb3f4992d4bc2d290852c0e18670e6de8d90a80a5647b341f89d9d0935"
+    },
+    {
+      "path": "internal/server/native.go",
+      "sha256": "a6601f40b39be4d4594d1c67fa5faf6df3618832292021d0d61176d28adb7d3d"
+    },
+    {
+      "path": "internal/server/registry.go",
+      "sha256": "6ed7bdc6914f087f7569d3100ac25e71b33d018f1e9ae24379ebd194f44c04b0"
+    },
+    {
+      "path": "internal/server/resources.go",
+      "sha256": "1dca2cb4985dc57a50863958d741cedfa96ecb329c2b148b4cac9eb7c918dc4b"
+    },
+    {
+      "path": "internal/server/spec.go",
+      "sha256": "98216788b0c38cef2f588707938c498e358628373b75d6794bc717ff6caed4e1"
+    },
+    {
+      "path": "internal/server/topology.go",
+      "sha256": "e8c92d9649ad07165e450bc78a5d944e82184df3784da887962f029fb056e41b"
+    },
+    {
+      "path": "internal/server/traversal.go",
+      "sha256": "ede89e7a3bcf9498b270b85d8b72973d1b35596b74a7744f2e4130f937ed6148"
+    },
+    {
+      "path": "internal/server/views.go",
+      "sha256": "acf8b1bc7833d7ce28767e1cac3b2761ad3eaea0753bedb79b249472b45ad384"
+    },
+    {
+      "path": "internal/store/bvgraph.go",
+      "sha256": "50117b8cc6e3c7ef0589ce2881ff806b69c2186c886a1b21a11cfd1ac9554d91"
+    },
+    {
+      "path": "internal/store/bvgraph_coding.go",
+      "sha256": "41f9f3d2487e8fca3fdc8b2b1afb51013ffada41d0925aed78177e5b990a1205"
+    },
+    {
+      "path": "internal/store/decode.go",
+      "sha256": "dc4947dbae04dc59124d4a6571872215b17ed534cd46b15539884e6091c6b2bb"
+    },
+    {
+      "path": "internal/store/edges.go",
+      "sha256": "72b711add5f9902a3607bb14852bafc1ee6984a41971c3ec4b2eb41baaed5161"
+    },
+    {
+      "path": "internal/store/java_serialization.go",
+      "sha256": "55d05fe638ffa3d15b3195b28f25d1460fbca5816ddacaa16a79bfb39355d919"
+    },
+    {
+      "path": "internal/store/mmap_other.go",
+      "sha256": "3d651ae17b183d14a561edd749a672ba5f90ff4df05f0abe21729cf337b339fc"
+    },
+    {
+      "path": "internal/store/mmap_unix.go",
+      "sha256": "167e0b9510b857e72da094151c51095593f6d3bfd0153c103f6198d25223c0f7"
+    },
+    {
+      "path": "internal/store/overview.go",
+      "sha256": "d58d0245e3851a1798476c24725fa4aade99cfb2d74df833bd4e81755d46eb06"
+    },
+    {
+      "path": "internal/store/resources.go",
+      "sha256": "5b00d4751c0c12f1ccad2e749c4514b13d5a941389984250f7d070827ddc027d"
+    },
+    {
+      "path": "internal/store/store.go",
+      "sha256": "68f9a0dcf46cd3da625e8a45454d89b2e2f7e16e04f4e876f4662ff139a7f77f"
+    },
+    {
+      "path": "internal/store/string_encoding.go",
+      "sha256": "2669e879b371187381377ae69b34ad9346989db134954f1e41aa663f87c03de7"
+    },
+    {
+      "path": "internal/store/strings.go",
+      "sha256": "350c5197a45f4b9f71a333f3b2cf60dc21b4814ff3fe4ecc8d4d2b52b4755e36"
+    },
+    {
+      "path": "internal/web/assets.go",
+      "sha256": "897726fb9b96e2dd9fdc8821b7c5ccbee49bd53a5e66e38f97a8600fd650492e"
+    }
+  ]
+}

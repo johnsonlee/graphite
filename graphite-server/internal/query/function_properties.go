@@ -17,6 +17,7 @@ func mapValues(v any) any {
 	return v
 }
 func (e evaluator) propertyFunction(value any, keysOnly bool) any {
+	value = freezeCandidate(value)
 	var keys []string
 	values := map[string]any{}
 	switch v := value.(type) {

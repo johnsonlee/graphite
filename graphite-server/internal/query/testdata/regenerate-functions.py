@@ -14,7 +14,7 @@ root = pathlib.Path(__file__).resolve().parent
 jar = pathlib.Path(sys.argv[1]).resolve()
 with tempfile.TemporaryDirectory(prefix="graphite-functions-oracle-") as classes:
     subprocess.run(["javac", "-cp", str(jar), "-d", classes, str(root / "FunctionsOracle.java")], check=True)
-    for corpus in [root / "functions-jvm-oracle.json", root / "functions-node-jvm-oracle.json", root / "property-order-jvm-oracle.json", root / "enum-key-jvm-oracle.json"]:
+    for corpus in [root / "functions-jvm-oracle.json", root / "functions-node-jvm-oracle.json", root / "property-order-jvm-oracle.json", root / "enum-key-jvm-oracle.json", root / "candidate-slot-jvm-oracle.json"]:
         data = json.loads(corpus.read_text())
         fixture = root.parent / data.get("fixture", "testdata/traversal")
         command = ["java", "-Dfile.encoding=UTF-8", "-cp", classes + ":" + str(jar), "FunctionsOracle", str(fixture)]

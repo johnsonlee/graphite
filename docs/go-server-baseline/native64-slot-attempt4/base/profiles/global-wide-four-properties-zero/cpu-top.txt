@@ -1,0 +1,38 @@
+File: profile-query
+Type: cpu
+Time: Sep 7, 2026 at 5:26am (KST)
+Duration: 23.56s, Total samples = 35.62s (151.16%)
+Showing nodes accounting for 33.79s, 94.86% of 35.62s total
+Dropped 119 nodes (cum <= 0.18s)
+Showing top 30 nodes out of 89
+      flat  flat%   sum%        cum   cum%
+    13.60s 38.18% 38.18%     13.60s 38.18%  runtime.memmove
+     5.04s 14.15% 52.33%      5.04s 14.15%  runtime.madvise
+     3.34s  9.38% 61.71%     10.39s 29.17%  runtime.scanobject
+     1.53s  4.30% 66.00%      3.24s  9.10%  runtime.greyobject
+     1.32s  3.71% 69.71%      1.68s  4.72%  runtime.findObject
+     1.16s  3.26% 72.96%      1.16s  3.26%  runtime.typePointers.nextFast (inline)
+     1.06s  2.98% 75.94%      1.06s  2.98%  runtime.(*mspan).base (inline)
+     1.03s  2.89% 78.83%      1.03s  2.89%  runtime.pthread_kill
+     0.83s  2.33% 81.16%      0.83s  2.33%  runtime.usleep
+     0.72s  2.02% 83.18%     12.52s 35.15%  runtime.gcDrain
+     0.41s  1.15% 84.33%      0.45s  1.26%  runtime.typePointers.next
+     0.37s  1.04% 85.37%      0.97s  2.72%  github.com/johnsonlee/graphite/graphite-server/internal/javastring.UTF16
+     0.35s  0.98% 86.36%      0.35s  0.98%  runtime.(*gcWork).tryGetFast (inline)
+     0.34s  0.95% 87.31%      0.34s  0.95%  runtime.pthread_cond_signal
+     0.32s   0.9% 88.21%      0.58s  1.63%  runtime.mallocgc
+     0.31s  0.87% 89.08%      0.31s  0.87%  runtime.pthread_cond_wait
+     0.30s  0.84% 89.92%      0.30s  0.84%  runtime.(*mspan).heapBitsSmallForAddr
+     0.27s  0.76% 90.68%      0.27s  0.76%  runtime.duffcopy
+     0.27s  0.76% 91.44%      0.27s  0.76%  runtime.spanOf (inline)
+     0.25s   0.7% 92.14%      0.25s   0.7%  unicode/utf8.DecodeRuneInString
+     0.23s  0.65% 92.78%      0.53s  1.49%  runtime.(*mspan).typePointersOfUnchecked
+     0.18s  0.51% 93.29%      1.57s  4.41%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.eval
+     0.18s  0.51% 93.80%      0.18s  0.51%  runtime/internal/atomic.(*Int64).Add (inline)
+     0.08s  0.22% 94.02%      1.56s  4.38%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.binary
+     0.08s  0.22% 94.24%      0.44s  1.24%  runtime.growslice
+     0.06s  0.17% 94.41%     13.65s 38.32%  io.ReadAtLeast
+     0.05s  0.14% 94.55%     13.85s 38.88%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).bytes
+     0.04s  0.11% 94.67%     13.59s 38.15%  bytes.(*Reader).Read
+     0.04s  0.11% 94.78%      0.21s  0.59%  runtime.makeslice
+     0.03s 0.084% 94.86%      0.18s  0.51%  github.com/johnsonlee/graphite/graphite-server/internal/query.addProvenance

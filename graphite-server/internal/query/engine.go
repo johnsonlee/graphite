@@ -179,6 +179,13 @@ func (e evaluator) branch(graph *store.Store, branch cypher.SingleQuery) Result 
 func (e evaluator) matches(value any, n cypher.NodePattern, row map[string]any) bool {
 	var property func(string) any
 	switch v := value.(type) {
+	case *candidateSlot:
+		for _, label := range n.Labels {
+			if !v.matchesLabel(label) {
+				return false
+			}
+		}
+		property = v.property
 	case qualifiedNode:
 		for _, label := range n.Labels {
 			if !matchesLabel(v.Node, label) {

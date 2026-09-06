@@ -1,0 +1,51 @@
+{
+  "case": {
+    "name": "wrapped-zeroHitBroadContains",
+    "method": "POST",
+    "path": "/api/cypher",
+    "body": {
+      "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'graphite_latency_no_such_symbol_9f36'\n   OR toLower(coalesce(n.caller_name, '')) CONTAINS 'graphite_latency_no_such_symbol_9f36'\n   OR toLower(coalesce(n.callee_class, '')) CONTAINS 'graphite_latency_no_such_symbol_9f36'\n   OR toLower(coalesce(n.callee_name, '')) CONTAINS 'graphite_latency_no_such_symbol_9f36'\nRETURN DISTINCT n.graph_id, n.caller_class AS caller, n.caller_name AS callerMethod,\n    n.callee_class AS callee, n.callee_name AS calleeMethod\nLIMIT 250"
+    },
+    "phase": "query",
+    "family": "all-fixture-wrapped",
+    "sourceConstant": "ZERO_HIT_QUERY"
+  },
+  "main": {
+    "status": 200,
+    "headers": {
+      "Date": "Sun, 06 Sep 2026 18:32:32 GMT",
+      "Connection": "close",
+      "Content-Type": "application/json",
+      "Content-Length": "158"
+    },
+    "body": "{\n  \"columns\": [\n    \"n.graph_id\",\n    \"caller\",\n    \"callerMethod\",\n    \"callee\",\n    \"calleeMethod\"\n  ],\n  \"rows\": [],\n  \"rowCount\": 0,\n  \"graphCount\": 64\n}",
+    "json": {
+      "columns": [
+        "n.graph_id",
+        "caller",
+        "callerMethod",
+        "callee",
+        "calleeMethod"
+      ],
+      "rows": [],
+      "rowCount": 0,
+      "graphCount": 64
+    }
+  },
+  "nativeBase": {
+    "status": 504,
+    "headers": {
+      "Content-Type": "application/json",
+      "Date": "Sun, 06 Sep 2026 20:49:18 GMT",
+      "Content-Length": "97",
+      "Connection": "close"
+    },
+    "body": "{\"error\":\"Cypher query timed out after 60000 ms\",\"code\":\"cypher_query_timeout\",\"timeoutMs\":60000}",
+    "json": {
+      "error": "Cypher query timed out after 60000 ms",
+      "code": "cypher_query_timeout",
+      "timeoutMs": 60000
+    }
+  },
+  "equalToMain": false
+}

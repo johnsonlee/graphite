@@ -59,6 +59,8 @@ func (e evaluator) eval(expression cypher.Expr, row map[string]any) any {
 	case cypher.Property:
 		obj := e.eval(x.Object, row)
 		switch o := obj.(type) {
+		case *candidateSlot:
+			return o.property(x.Key)
 		case orderedMap:
 			return o.Values[x.Key]
 		case qualifiedNode, qualifiedMethod:
@@ -127,13 +129,13 @@ func (e evaluator) eval(expression cypher.Expr, row map[string]any) any {
 	case cypher.List:
 		r := make([]any, len(x.Elements))
 		for i, v := range x.Elements {
-			r[i] = e.eval(v, row)
+			r[i] = freezeCandidate(e.eval(v, row))
 		}
 		return r
 	case cypher.Map:
 		r := make(map[string]any, len(x.Entries))
 		for _, k := range x.Keys {
-			r[k] = e.eval(x.Entries[k], row)
+			r[k] = freezeCandidate(e.eval(x.Entries[k], row))
 		}
 		return orderedMap{r, append([]string{}, x.Keys...)}
 	case cypher.Case:
@@ -163,7 +165,7 @@ func (e evaluator) eval(expression cypher.Expr, row map[string]any) any {
 			if x.Projection != nil {
 				v = e.eval(x.Projection, r)
 			}
-			out = append(out, v)
+			out = append(out, freezeCandidate(v))
 		}
 		return out
 	case cypher.Predicate:
@@ -428,10 +430,10 @@ func (e evaluator) binary(x cypher.Binary, row map[string]any) any {
 			if r, ok := b.([]any); ok {
 				return append(out, r...)
 			}
-			return append(out, b)
+			return append(out, freezeCandidate(b))
 		}
 		if r, ok := b.([]any); ok {
-			return append([]any{a}, r...)
+			return append([]any{freezeCandidate(a)}, r...)
 		}
 	}
 	l, r := toDouble(a), toDouble(b)
@@ -482,7 +484,7 @@ func (e evaluator) callLegacy(name string, args []any) any {
 		}
 		return nil
 	}
-	v := argument(args, 0)
+	v := freezeCandidate(argument(args, 0))
 	if name == "graphid" {
 		if id := valueGraphID(v); id != "" {
 			return id

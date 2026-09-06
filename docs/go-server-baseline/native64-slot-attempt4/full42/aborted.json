@@ -1,0 +1,26 @@
+{
+  "reason": "First full HTTP response timed out under default 60-second deadline. Stop incomplete replay and improve dominant string conversion before a new complete gate.",
+  "completed": 3,
+  "required": 42,
+  "passed": 2,
+  "statuses": [
+    {
+      "case": "wrapped-zeroHitBroadContains",
+      "status": 504,
+      "equal": false
+    },
+    {
+      "case": "wrapped-denseDistributedMethodContains",
+      "status": 200,
+      "equal": true
+    },
+    {
+      "case": "wrapped-earlyGraphClassPrefix",
+      "status": 200,
+      "equal": true
+    }
+  ],
+  "stopSignal": "SIGINT to verified owned Python runner; its finally stops owned native server",
+  "stoppedAtUTC": "2026-09-06T20:47:22.026206+00:00",
+  "P95Claim": false
+}

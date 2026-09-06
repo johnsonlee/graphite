@@ -115,6 +115,10 @@ func (e evaluator) matchPattern(graph *store.Store, pattern cypher.Pattern, init
 	return states
 }
 func (e evaluator) nodeCandidates(graph *store.Store, pattern cypher.NodePattern, bindings map[string]any, accept func(any)) {
+	e.walkNodeCandidates(graph, pattern, bindings, nil, accept)
+}
+
+func (e evaluator) walkNodeCandidates(graph *store.Store, pattern cypher.NodePattern, bindings map[string]any, slot *candidateSlot, accept func(any)) {
 	if pattern.Variable != "" {
 		if value, bound := bindings[pattern.Variable]; bound {
 			accept(value)
@@ -133,6 +137,12 @@ func (e evaluator) nodeCandidates(graph *store.Store, pattern cypher.NodePattern
 		e.check()
 		if methods {
 			for _, method := range source.Store.Metadata.MethodList {
+				if slot != nil {
+					slot.graph, slot.graphID, slot.qualified = source.Store, source.ID, e.cross
+					slot.isMethod, slot.method = true, method
+					accept(slot)
+					continue
+				}
 				if e.cross {
 					accept(qualifiedMethod{source.ID, method})
 				} else {
@@ -146,6 +156,12 @@ func (e evaluator) nodeCandidates(graph *store.Store, pattern cypher.NodePattern
 			node, err := source.Store.Node(id)
 			if err != nil {
 				fail(err.Error())
+			}
+			if slot != nil {
+				slot.graph, slot.graphID, slot.qualified = source.Store, source.ID, e.cross
+				slot.isMethod, slot.node = false, node
+				accept(slot)
+				continue
 			}
 			if e.cross {
 				accept(qualifiedNode{source.ID, source.Store, node})

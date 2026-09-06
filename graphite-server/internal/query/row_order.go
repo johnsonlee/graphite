@@ -99,7 +99,10 @@ func (e evaluator) rowKeys(row map[string]any) []string {
 	return append(keys, extra...)
 }
 func (e evaluator) cloneRow(row map[string]any) map[string]any {
-	result := clone(row)
+	result := make(map[string]any, len(row)+1)
+	for key, value := range row {
+		result[key] = freezeCandidate(value)
+	}
 	if e.rowOrders != nil {
 		e.rowOrders[rowAddress(result)] = rowOrder{result, e.rowKeys(row)}
 	}

@@ -1,0 +1,4 @@
+{
+  "module": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-contract-audit-2ic7c1b7/boxed",
+  "change": "Only scanner call walkNodeCandidates(..., slot, ...) becomes walkNodeCandidates(..., nil, ...), restoring boxed candidate enumeration in the immutable snapshot."
+}

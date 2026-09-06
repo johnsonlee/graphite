@@ -107,3 +107,30 @@ property evaluation and source-visible error behavior must be established first.
 `native64-cache-attempt3/README.md` explains the exact incomplete denominator,
 commands, scope and intentional process shutdown. Later successful runs must not
 replace this record.
+
+## 2026-09-07 — Attempt 4: reuse decoded single-node WHERE candidates
+
+Hypothesis: keep a borrowed decoded candidate while evaluating WHERE, avoiding
+one large node/method interface allocation per rejected candidate. Freeze values
+before any container, retained binding or output; retain existing decode and
+error order. This does not change string algorithms or use an index/cache.
+
+| Item | Evidence / status |
+|---|---|
+| Native base | `4124bfc44bedd7915e238b7a08f2524b48ed47b6`; includes later compatibility work omitted by Attempt 2's older profiles |
+| Candidate identity | `native64-slot-attempt4/candidate-source-final.json`, complete 14-file patch SHA-256 `6084e090235c6f6505e17e05fafe657023ba148b1d70667be20454dd13d6955a`; profile binary `d13e93d94e755f5d8a3d3f7cc319969b6d4ecea8f19a81ff4d4ee705542de9da` |
+| Real fixture | All 64 persisted shards at `/tmp/pr113-exp037-fixture.nXn4fg`; all catalog counts and 1,152 frozen file hashes rechecked before both profiles |
+| Correctness | Three complete profiled responses match; 40 main JVM query cases, 198 independent boxed/candidate queries and 4,318 expression/error/lifetime comparisons pass; full-module race/vet pass |
+| Allocation | Wrapped zero-hit: 55,093,306,872 → 42,656,840,592 bytes (about −23%); raw four-property zero-hit: 24,431,143,712 → 11,994,716,656 (about −51%) |
+| CPU / heap | User+system CPU 103.565 → 93.482 s and 41.058 → 30.540 s; request-end heap 8.89 → 7.39 GB and 8.11 → 6.61 GB; post-forced-GC heap about 6.28 GB. These are not peak RSS measurements |
+| Diagnostic latency | Wrapped execution+marshal 64.053 → 62.580 s; raw 23.378 → 21.677 s. Single profiled observations with host co-tenancy, not P95 or paired acceptance |
+| Control | No-WHERE Method count stays on the original enumeration: +7 allocations / +1,040 bytes; 0.772 → 0.778 s is one noisy observation, not a regression conclusion |
+| Variant history | Initial scratch-key deletion changed six whole-row string orders; final nil placeholder preserves original key position. Only the corrected source was profiled; failed audit evidence retained |
+| HTTP limitation | Replay stopped after 3/42 completed responses: first query HTTP 504, next two HTTP 200 fully equal. A fresh unmodified native base also returns HTTP 504 for the first query. Remaining 39 have no completed result; no complete HTTP parity claim |
+| Decision | Keep verified allocation reduction while the existing native timeout remains unresolved. Full 42-response parity, cold/warm P95 and the 10× goal remain outstanding; do not count the timeout as a faster result |
+
+Raw profiles, source/binary identities, counters, output bodies and default
+deadline diagnostics are in `docs/go-server-baseline/native64-slot-attempt4/`.
+Independent before/after correctness audit is in `candidate-slot-readonly-audit/`.
+No performance run used a synthetic fixture, no failed body was discarded, and
+subsequent experiments must preserve this incomplete HTTP record.

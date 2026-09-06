@@ -312,6 +312,7 @@ func castError(value any, target string) {
 	functionError("ClassCastException", "class "+source+" cannot be cast to class "+target+" ("+source+" and "+target+" are in module java.base of loader 'bootstrap')")
 }
 func javaClassName(value any) string {
+	value = freezeCandidate(value)
 	source := "java.lang.Object"
 	switch value.(type) {
 	case string:

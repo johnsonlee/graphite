@@ -12,6 +12,7 @@ import (
 
 func (e evaluator) stringify(value any) string { return objectString(value, e.check) }
 func objectString(value any, check func()) string {
+	value = freezeCandidate(value)
 	if check != nil {
 		check()
 	}

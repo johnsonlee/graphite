@@ -3,6 +3,7 @@
 .gradle
 .idea
 build/
+__pycache__/
 
 # Ignore Gradle GUI config
 gradle-app.setting
