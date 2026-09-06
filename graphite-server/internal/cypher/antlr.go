@@ -311,7 +311,8 @@ func (a adapter) pattern(ctx g.IPatternPartContext) Pattern {
 			}
 		}
 		if n.Properties() != nil {
-			node.Properties = a.mapExpr(n.Properties().MapLiteral()).Entries
+			properties := a.mapExpr(n.Properties().MapLiteral())
+			node.Properties, node.PropertyKeys = properties.Entries, properties.Keys
 		}
 		p.Nodes = append(p.Nodes, node)
 	}
@@ -374,7 +375,8 @@ func (a adapter) pattern(ctx g.IPatternPartContext) Pattern {
 				}
 			}
 			if detail.Properties() != nil {
-				rel.Properties = a.mapExpr(detail.Properties().MapLiteral()).Entries
+				properties := a.mapExpr(detail.Properties().MapLiteral())
+				rel.Properties, rel.PropertyKeys = properties.Entries, properties.Keys
 			}
 		}
 		p.Relationships = append(p.Relationships, rel)

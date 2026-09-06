@@ -222,12 +222,12 @@ func (e evaluator) edgeConstraints(edge store.Edge, rel cypher.RelationshipPatte
 			return false
 		}
 	}
-	for key, expression := range rel.Properties {
+	for _, key := range rel.PropertyKeys {
 		var actual any
 		if key != "type" {
 			actual = edgeProperty(edge, key)
 		}
-		if equal(actual, e.eval(expression, row)) != true {
+		if equal(actual, e.eval(rel.Properties[key], row)) != true {
 			return false
 		}
 	}

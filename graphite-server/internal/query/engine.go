@@ -174,8 +174,8 @@ func (e evaluator) matches(value any, n cypher.NodePattern, row map[string]any) 
 	default:
 		return false
 	}
-	for k, expr := range n.Properties {
-		if equal(property(k), e.eval(expr, row)) != true {
+	for _, k := range n.PropertyKeys {
+		if equal(property(k), e.eval(n.Properties[k], row)) != true {
 			return false
 		}
 	}

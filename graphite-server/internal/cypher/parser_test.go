@@ -34,7 +34,7 @@ func TestMatchTraversalAndOptionalPredicate(t *testing.T) {
 	}
 	first := q.Branches[0].Clauses[0].(MatchClause)
 	one, three := 1, 3
-	assertEqual(t, first, MatchClause{Patterns: []Pattern{{PathVariable: "p", Nodes: []NodePattern{{Variable: "a", Labels: []string{"Class"}, Properties: map[string]Expr{"name": Parameter{Name: "name"}}}, {Variable: "b", Labels: []string{"Class"}}}, Relationships: []RelationshipPattern{{Variable: "r", Types: []string{"EXTENDS", "IMPLEMENTS"}, Direction: Outgoing, VariableLength: true, MinHops: &one, MaxHops: &three}}}}})
+	assertEqual(t, first, MatchClause{Patterns: []Pattern{{PathVariable: "p", Nodes: []NodePattern{{Variable: "a", Labels: []string{"Class"}, Properties: map[string]Expr{"name": Parameter{Name: "name"}}, PropertyKeys: []string{"name"}}, {Variable: "b", Labels: []string{"Class"}}}, Relationships: []RelationshipPattern{{Variable: "r", Types: []string{"EXTENDS", "IMPLEMENTS"}, Direction: Outgoing, VariableLength: true, MinHops: &one, MaxHops: &three}}}}})
 	second := q.Branches[0].Clauses[1].(MatchClause)
 	if !second.Optional {
 		t.Fatal("lost OPTIONAL")

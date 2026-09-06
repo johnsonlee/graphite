@@ -42,6 +42,15 @@ The persisted fixture contains eight nodes and fifteen edges covering every edge
 family. It is exclusively a correctness fixture, never a performance workload.
 A separate test cancels inside traversal after parsing and node lookup.
 
+Inline node and relationship properties evaluate in source insertion order and
+stop at the first mismatch. Duplicate keys retain their first position and use
+the final expression, as do ordinary map literals. `property-order-jvm-oracle.json`
+captures 34 scoped/cross-graph cases, each repeated 20 times in the independent
+main JVM (680 observations), including mismatch/error order, duplicate keys,
+OPTIONAL, bound nodes, variable-length relationships and map error order. The
+Go tests compare complete columns/rows or exception class/message. Recapture it
+with `testdata/regenerate-functions.py`; this is correctness evidence only.
+
 To recapture using a jar built from that exact revision:
 
 ```sh

@@ -60,6 +60,9 @@ func TestFunctionsMainJVMOracle(t *testing.T) {
 func TestNodeFunctionsMainJVMOracle(t *testing.T) {
 	testFunctionsOracle(t, "testdata/functions-node-jvm-oracle.json", "../store/testdata/jvm-v3")
 }
+func TestPropertyEvaluationOrderMainJVMOracle(t *testing.T) {
+	testFunctionsOracle(t, "testdata/property-order-jvm-oracle.json", "../store/testdata/jvm-v3")
+}
 func testFunctionsOracle(t *testing.T, corpusPath, fixture string) {
 	graph, err := store.OpenMode(fixture, "EAGER")
 	if err != nil {

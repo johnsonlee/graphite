@@ -1,0 +1,319 @@
+{
+  "mainCommit": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "java": "OpenJDK 17.0.18+0 Homebrew arm64",
+  "fixture": "../store/testdata/jvm-v3",
+  "repetitionsPerCase": 20,
+  "observations": 680,
+  "cases": [
+    {
+      "query": "MATCH (m:Method {name:'absent', class:1/0}) RETURN m.name AS name",
+      "cross": false,
+      "columns": [
+        "name"
+      ],
+      "rows": [],
+      "name": "method-mismatch-before-error-scoped"
+    },
+    {
+      "query": "MATCH (m:Method {name:'absent', class:1/0}) RETURN m.name AS name",
+      "cross": true,
+      "columns": [
+        "name"
+      ],
+      "rows": [],
+      "name": "method-mismatch-before-error-cross"
+    },
+    {
+      "query": "MATCH (m:Method {class:1/0, name:'absent'}) RETURN m.name AS name",
+      "cross": false,
+      "error": "CypherException",
+      "message": "Division by zero",
+      "name": "method-error-before-mismatch-scoped"
+    },
+    {
+      "query": "MATCH (m:Method {class:1/0, name:'absent'}) RETURN m.name AS name",
+      "cross": true,
+      "error": "CypherException",
+      "message": "Division by zero",
+      "name": "method-error-before-mismatch-cross"
+    },
+    {
+      "query": "MATCH (m:Method {name:'initial', class:1/0, name:'absent'}) RETURN m.name AS name",
+      "cross": false,
+      "columns": [
+        "name"
+      ],
+      "rows": [],
+      "name": "method-duplicate-first-position-scoped"
+    },
+    {
+      "query": "MATCH (m:Method {name:'initial', class:1/0, name:'absent'}) RETURN m.name AS name",
+      "cross": true,
+      "columns": [
+        "name"
+      ],
+      "rows": [],
+      "name": "method-duplicate-first-position-cross"
+    },
+    {
+      "query": "MATCH (n:IntConstant {value:-999, missing:1/0}) RETURN n.value AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [],
+      "name": "node-mismatch-before-error-scoped"
+    },
+    {
+      "query": "MATCH (n:IntConstant {value:-999, missing:1/0}) RETURN n.value AS value",
+      "cross": true,
+      "columns": [
+        "value"
+      ],
+      "rows": [],
+      "name": "node-mismatch-before-error-cross"
+    },
+    {
+      "query": "MATCH (n:IntConstant {missing:1/0, value:-999}) RETURN n.value AS value",
+      "cross": false,
+      "error": "CypherException",
+      "message": "Division by zero",
+      "name": "node-error-before-mismatch-scoped"
+    },
+    {
+      "query": "MATCH (n:IntConstant {missing:1/0, value:-999}) RETURN n.value AS value",
+      "cross": true,
+      "error": "CypherException",
+      "message": "Division by zero",
+      "name": "node-error-before-mismatch-cross"
+    },
+    {
+      "query": "MATCH (n:IntConstant {value:0, missing:1/0, value:-999}) RETURN n.value AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [],
+      "name": "node-duplicate-first-position-scoped"
+    },
+    {
+      "query": "MATCH (n:IntConstant {value:0, missing:1/0, value:-999}) RETURN n.value AS value",
+      "cross": true,
+      "columns": [
+        "value"
+      ],
+      "rows": [],
+      "name": "node-duplicate-first-position-cross"
+    },
+    {
+      "query": "MATCH (n:IntConstant {value:1/0, value:-999}) RETURN n.value AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [],
+      "name": "node-replaced-error-not-evaluated-scoped"
+    },
+    {
+      "query": "MATCH (n:IntConstant {value:1/0, value:-999}) RETURN n.value AS value",
+      "cross": true,
+      "columns": [
+        "value"
+      ],
+      "rows": [],
+      "name": "node-replaced-error-not-evaluated-cross"
+    },
+    {
+      "query": "OPTIONAL MATCH (n:IntConstant {value:-999, missing:1/0}) RETURN n.value AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null
+        }
+      ],
+      "name": "optional-mismatch-before-error-scoped"
+    },
+    {
+      "query": "OPTIONAL MATCH (n:IntConstant {value:-999, missing:1/0}) RETURN n.value AS value",
+      "cross": true,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": null,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ],
+      "name": "optional-mismatch-before-error-cross"
+    },
+    {
+      "query": "MATCH (n:IntConstant) MATCH (n {value:-999, missing:1/0}) RETURN n.value AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [],
+      "name": "bound-node-mismatch-before-error-scoped"
+    },
+    {
+      "query": "MATCH (n:IntConstant) MATCH (n {value:-999, missing:1/0}) RETURN n.value AS value",
+      "cross": true,
+      "columns": [
+        "value"
+      ],
+      "rows": [],
+      "name": "bound-node-mismatch-before-error-cross"
+    },
+    {
+      "query": "MATCH (a)-[r {kind:'absent', missing:1/0}]->(b) RETURN type(r) AS type",
+      "cross": false,
+      "columns": [
+        "type"
+      ],
+      "rows": [],
+      "name": "relationship-mismatch-before-error-scoped"
+    },
+    {
+      "query": "MATCH (a)-[r {kind:'absent', missing:1/0}]->(b) RETURN type(r) AS type",
+      "cross": true,
+      "columns": [
+        "type"
+      ],
+      "rows": [],
+      "name": "relationship-mismatch-before-error-cross"
+    },
+    {
+      "query": "MATCH (a)-[r {missing:1/0, kind:'absent'}]->(b) RETURN type(r) AS type",
+      "cross": false,
+      "error": "CypherException",
+      "message": "Division by zero",
+      "name": "relationship-error-before-mismatch-scoped"
+    },
+    {
+      "query": "MATCH (a)-[r {missing:1/0, kind:'absent'}]->(b) RETURN type(r) AS type",
+      "cross": true,
+      "error": "CypherException",
+      "message": "Division by zero",
+      "name": "relationship-error-before-mismatch-cross"
+    },
+    {
+      "query": "MATCH (a)-[r {kind:'initial', missing:1/0, kind:'absent'}]->(b) RETURN type(r) AS type",
+      "cross": false,
+      "columns": [
+        "type"
+      ],
+      "rows": [],
+      "name": "relationship-duplicate-first-position-scoped"
+    },
+    {
+      "query": "MATCH (a)-[r {kind:'initial', missing:1/0, kind:'absent'}]->(b) RETURN type(r) AS type",
+      "cross": true,
+      "columns": [
+        "type"
+      ],
+      "rows": [],
+      "name": "relationship-duplicate-first-position-cross"
+    },
+    {
+      "query": "MATCH (a)-[r*1..2 {kind:'absent', missing:1/0}]->(b) RETURN length(r) AS length",
+      "cross": false,
+      "columns": [
+        "length"
+      ],
+      "rows": [],
+      "name": "variable-relationship-mismatch-before-error-scoped"
+    },
+    {
+      "query": "MATCH (a)-[r*1..2 {kind:'absent', missing:1/0}]->(b) RETURN length(r) AS length",
+      "cross": true,
+      "columns": [
+        "length"
+      ],
+      "rows": [],
+      "name": "variable-relationship-mismatch-before-error-cross"
+    },
+    {
+      "query": "RETURN {z:1/0,a:'x'=~'['} AS value",
+      "cross": false,
+      "error": "CypherException",
+      "message": "Division by zero",
+      "name": "map-first-division-error-scoped"
+    },
+    {
+      "query": "RETURN {z:1/0,a:'x'=~'['} AS value",
+      "cross": true,
+      "error": "CypherException",
+      "message": "Division by zero",
+      "name": "map-first-division-error-cross"
+    },
+    {
+      "query": "RETURN {z:'x'=~'[',a:1/0} AS value",
+      "cross": false,
+      "error": "PatternSyntaxException",
+      "message": "Unclosed character class near index 0\n[\n^",
+      "name": "map-first-regex-error-scoped"
+    },
+    {
+      "query": "RETURN {z:'x'=~'[',a:1/0} AS value",
+      "cross": true,
+      "error": "PatternSyntaxException",
+      "message": "Unclosed character class near index 0\n[\n^",
+      "name": "map-first-regex-error-cross"
+    },
+    {
+      "query": "RETURN {z:0,a:'x'=~'[',z:1/0} AS value",
+      "cross": false,
+      "error": "CypherException",
+      "message": "Division by zero",
+      "name": "map-duplicate-preserves-first-position-scoped"
+    },
+    {
+      "query": "RETURN {z:0,a:'x'=~'[',z:1/0} AS value",
+      "cross": true,
+      "error": "CypherException",
+      "message": "Division by zero",
+      "name": "map-duplicate-preserves-first-position-cross"
+    },
+    {
+      "query": "RETURN {z:1/0,a:2,z:3} AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": {
+            "z": 3,
+            "a": 2
+          }
+        }
+      ],
+      "name": "map-replaced-error-not-evaluated-scoped"
+    },
+    {
+      "query": "RETURN {z:1/0,a:2,z:3} AS value",
+      "cross": true,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": {
+            "z": 3,
+            "a": 2
+          },
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ],
+      "name": "map-replaced-error-not-evaluated-cross"
+    }
+  ]
+}

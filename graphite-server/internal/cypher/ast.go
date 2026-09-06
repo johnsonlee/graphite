@@ -51,11 +51,14 @@ type NodePattern struct {
 	Variable   string
 	Labels     []string
 	Properties map[string]Expr
+	// PropertyKeys preserves first insertion order; duplicate keys replace values.
+	PropertyKeys []string
 }
 type RelationshipPattern struct {
 	Variable         string
 	Types            []string
 	Properties       map[string]Expr
+	PropertyKeys     []string
 	Direction        Direction
 	VariableLength   bool
 	MinHops, MaxHops *int

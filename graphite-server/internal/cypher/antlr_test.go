@@ -15,6 +15,20 @@ func TestSharedGrammarPreservesOrderedMapEntriesAndExpressionText(t *testing.T) 
 	q := mustParse(t, "RETURN '中文' + /* gap */ '😀' AS message")
 	assertEqual(t, q.Branches[0].Clauses[0].(ProjectionClause).Items, []ReturnItem{{Expression: Binary{Op: "+", Left: Literal{Value: "中文"}, Right: Literal{Value: "😀"}}, Alias: "message", Text: "'中文' + /* gap */ '😀'"}})
 }
+
+func TestInlinePropertiesPreserveFirstInsertionOrderAndLastValue(t *testing.T) {
+	q := mustParse(t, "MATCH (a {z:1,a:2,z:3})-[r {y:4,b:5,y:6}]->(b) RETURN a")
+	p := q.Branches[0].Clauses[0].(MatchClause).Patterns[0]
+	assertEqual(t, p.Nodes[0], NodePattern{
+		Variable: "a", Properties: map[string]Expr{"z": Literal{Value: int32(3)}, "a": Literal{Value: int32(2)}},
+		PropertyKeys: []string{"z", "a"},
+	})
+	assertEqual(t, p.Relationships[0], RelationshipPattern{
+		Variable: "r", Direction: Outgoing,
+		Properties:   map[string]Expr{"y": Literal{Value: int32(6)}, "b": Literal{Value: int32(5)}},
+		PropertyKeys: []string{"y", "b"},
+	})
+}
 func TestSharedGrammarChainedPredicatesAndPrecedence(t *testing.T) {
 	assertEqual(t, mustExpr(t, "a < b < c"), Binary{Op: "<", Left: Binary{Op: "<", Left: Variable{Name: "a"}, Right: Variable{Name: "b"}}, Right: Variable{Name: "c"}})
 	assertEqual(t, mustExpr(t, "a NOT STARTS WITH 'x' IS NOT NULL"), Unary{Op: "IS NOT NULL", Operand: Binary{Op: "NOT STARTS WITH", Left: Variable{Name: "a"}, Right: Literal{Value: "x"}}})

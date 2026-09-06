@@ -42,7 +42,7 @@ func TestNoInventedBracketNestingLimit(t *testing.T) {
 }
 func TestMutationASTFollowsKotlinAdapter(t *testing.T) {
 	q := mustParse(t, "CREATE (n:Thing {name:'x'})")
-	assertEqual(t, q.Branches[0].Clauses[0], CreateClause{Patterns: []Pattern{{Nodes: []NodePattern{{Variable: "n", Labels: []string{"Thing"}, Properties: map[string]Expr{"name": Literal{Value: "x"}}}}}}})
+	assertEqual(t, q.Branches[0].Clauses[0], CreateClause{Patterns: []Pattern{{Nodes: []NodePattern{{Variable: "n", Labels: []string{"Thing"}, Properties: map[string]Expr{"name": Literal{Value: "x"}}, PropertyKeys: []string{"name"}}}}}})
 	assertEqual(t, mustParse(t, "MERGE (n:Thing)").Branches[0].Clauses[0], CreateClause{Patterns: []Pattern{{Nodes: []NodePattern{{Variable: "n", Labels: []string{"Thing"}}}}}})
 	assertEqual(t, mustParse(t, "DETACH DELETE n,n.x").Branches[0].Clauses[0], DeleteClause{Detach: true, Expressions: []Expr{Variable{Name: "n"}, Property{Object: Variable{Name: "n"}, Key: "x"}}})
 	assertEqual(t, mustParse(t, "SET n.x=1,n += {a:2},n={b:3},n:A:B").Branches[0].Clauses[0], SetClause{Items: []SetItem{{Kind: SetProperty, Variable: "n", Property: "x", Expression: Literal{Value: int32(1)}}, {Kind: SetMergeProperties, Variable: "n", Expression: Map{Entries: map[string]Expr{"a": Literal{Value: int32(2)}}, Keys: []string{"a"}}}, {Kind: SetAllProperties, Variable: "n", Expression: Map{Entries: map[string]Expr{"b": Literal{Value: int32(3)}}, Keys: []string{"b"}}}, {Kind: SetLabels, Variable: "n", Labels: []string{"A", "B"}}}})
