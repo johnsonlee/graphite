@@ -1,0 +1,201 @@
+{
+  "mainCommit": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "java": "OpenJDK 17.0.18+0 Homebrew arm64",
+  "fixture": "../store/testdata/jvm-v3",
+  "repetitionsPerCase": 20,
+  "observations": 160,
+  "cases": [
+    {
+      "query": "MATCH (n:EnumConstant) RETURN DISTINCT n.value AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": [
+            42,
+            {
+              "enumClass": "Color",
+              "enumName": "RED"
+            },
+            [
+              null,
+              "hello\u0000\u4e16\u754c\ud83d\ude00"
+            ]
+          ]
+        }
+      ],
+      "name": "enum-distinct-scoped"
+    },
+    {
+      "query": "MATCH (n:EnumConstant) RETURN DISTINCT n.value AS value",
+      "cross": true,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": [
+            42,
+            {
+              "enumClass": "Color",
+              "enumName": "RED"
+            },
+            [
+              null,
+              "hello\u0000\u4e16\u754c\ud83d\ude00"
+            ]
+          ],
+          "$metadata": {
+            "graphIds": [
+              "billing",
+              "orders"
+            ]
+          }
+        }
+      ],
+      "name": "enum-distinct-cross"
+    },
+    {
+      "query": "MATCH (n:Annotation) RETURN DISTINCT n.key AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": [
+            42,
+            {
+              "enumClass": "Color",
+              "enumName": "RED"
+            },
+            [
+              null,
+              "hello\u0000\u4e16\u754c\ud83d\ude00"
+            ]
+          ]
+        }
+      ],
+      "name": "annotation-distinct-scoped"
+    },
+    {
+      "query": "MATCH (n:Annotation) RETURN DISTINCT n.key AS value",
+      "cross": true,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": [
+            42,
+            {
+              "enumClass": "Color",
+              "enumName": "RED"
+            },
+            [
+              null,
+              "hello\u0000\u4e16\u754c\ud83d\ude00"
+            ]
+          ],
+          "$metadata": {
+            "graphIds": [
+              "billing",
+              "orders"
+            ]
+          }
+        }
+      ],
+      "name": "annotation-distinct-cross"
+    },
+    {
+      "query": "MATCH (n:EnumConstant) RETURN count(DISTINCT n.value) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 1
+        }
+      ],
+      "name": "enum-count-distinct-scoped"
+    },
+    {
+      "query": "MATCH (n:EnumConstant) RETURN count(DISTINCT n.value) AS value",
+      "cross": true,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 1,
+          "$metadata": {
+            "graphIds": [
+              "billing",
+              "orders"
+            ]
+          }
+        }
+      ],
+      "name": "enum-count-distinct-cross"
+    },
+    {
+      "query": "MATCH (n:EnumConstant) RETURN collect(DISTINCT n.value) AS value",
+      "cross": false,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": [
+            [
+              42,
+              {
+                "enumClass": "Color",
+                "enumName": "RED"
+              },
+              [
+                null,
+                "hello\u0000\u4e16\u754c\ud83d\ude00"
+              ]
+            ]
+          ]
+        }
+      ],
+      "name": "enum-collect-distinct-scoped"
+    },
+    {
+      "query": "MATCH (n:EnumConstant) RETURN collect(DISTINCT n.value) AS value",
+      "cross": true,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": [
+            [
+              42,
+              {
+                "enumClass": "Color",
+                "enumName": "RED"
+              },
+              [
+                null,
+                "hello\u0000\u4e16\u754c\ud83d\ude00"
+              ]
+            ]
+          ],
+          "$metadata": {
+            "graphIds": [
+              "billing",
+              "orders"
+            ]
+          }
+        }
+      ],
+      "name": "enum-collect-distinct-cross"
+    }
+  ]
+}

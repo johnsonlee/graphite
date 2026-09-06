@@ -1,0 +1,28 @@
+{
+  "commands": [
+    {
+      "command": "go test -race ./internal/store",
+      "outcome": "passed, including complete UTF16 units and hash assertions for all successful table cases and MAPPED/EAGER node surrogate preservation"
+    },
+    {
+      "command": "go vet ./internal/store",
+      "outcome": "passed"
+    },
+    {
+      "command": "GOOS=linux GOARCH=amd64 go test -c -o /tmp/graphite-store-strings-linux.test ./internal/store",
+      "outcome": "compiled, not executed on Linux"
+    }
+  ],
+  "productionFiles": [
+    "strings.go",
+    "java_serialization.go",
+    "string_encoding.go"
+  ],
+  "api": "LoadStrings(path string) ([]string,error) unchanged",
+  "notCovered": [
+    "arbitrary malformed UTF8 byte arrays",
+    "general Java serialization classes/hooks/reset/proxy/annotated descriptors",
+    "historical classes with different field layouts",
+    "all lazy JVM failure timing"
+  ]
+}

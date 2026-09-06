@@ -412,6 +412,8 @@ func key(v any) string {
 		return "num:" + r.RatString()
 	}
 	switch x := v.(type) {
+	case store.EnumReference:
+		return "enum:" + strconv.Quote(x.EnumClass) + ":" + strconv.Quote(x.EnumName)
 	case store.Edge, qualifiedEdge:
 		return fmt.Sprintf("edge:%#v:%T", edgeID(x), x)
 	case pathValue:

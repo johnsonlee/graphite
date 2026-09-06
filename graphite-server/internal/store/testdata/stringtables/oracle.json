@@ -1,0 +1,96 @@
+[
+  {
+    "name": "char-ratio-1",
+    "count": 15,
+    "utf16SHA256": "0e5f2c9e69ae06f712e8bf056fc299d840a339faca36173aab57453066421ade"
+  },
+  {
+    "name": "utf8-ratio-1",
+    "count": 15,
+    "utf16SHA256": "e7b1570102be62fd3d97b84cc6cd7e3637efb35159df036c3c1cb13bf8043699"
+  },
+  {
+    "name": "char-ratio-3",
+    "count": 15,
+    "utf16SHA256": "0e5f2c9e69ae06f712e8bf056fc299d840a339faca36173aab57453066421ade"
+  },
+  {
+    "name": "utf8-ratio-3",
+    "count": 15,
+    "utf16SHA256": "e7b1570102be62fd3d97b84cc6cd7e3637efb35159df036c3c1cb13bf8043699"
+  },
+  {
+    "name": "char-ratio-128",
+    "count": 15,
+    "utf16SHA256": "0e5f2c9e69ae06f712e8bf056fc299d840a339faca36173aab57453066421ade"
+  },
+  {
+    "name": "utf8-ratio-128",
+    "count": 15,
+    "utf16SHA256": "e7b1570102be62fd3d97b84cc6cd7e3637efb35159df036c3c1cb13bf8043699"
+  },
+  {
+    "name": "char-lengths",
+    "count": 10,
+    "utf16SHA256": "02c38edd1316d9abe55f01f7b8b859d0b20a20d302e503e27273005bbe30fba0"
+  },
+  {
+    "name": "utf8-lengths",
+    "count": 10,
+    "utf16SHA256": "02c38edd1316d9abe55f01f7b8b859d0b20a20d302e503e27273005bbe30fba0"
+  },
+  {
+    "name": "char-empty",
+    "count": 0,
+    "utf16SHA256": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119"
+  },
+  {
+    "name": "utf8-empty",
+    "count": 0,
+    "utf16SHA256": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119"
+  },
+  {
+    "name": "utf8-astral-ascii",
+    "errorPhase": "get",
+    "errorClass": "ArrayIndexOutOfBoundsException",
+    "errorMessage": "Index 2 out of bounds for length 2"
+  },
+  {
+    "name": "char-ratio-3-trailing",
+    "count": 15,
+    "utf16SHA256": "0e5f2c9e69ae06f712e8bf056fc299d840a339faca36173aab57453066421ade"
+  },
+  {
+    "name": "utf8-ratio-3-trailing",
+    "count": 15,
+    "utf16SHA256": "e7b1570102be62fd3d97b84cc6cd7e3637efb35159df036c3c1cb13bf8043699"
+  },
+  {
+    "name": "char-root-uid",
+    "errorPhase": "load",
+    "errorClass": "InvalidClassException",
+    "errorMessage": "it.unimi.dsi.util.FrontCodedStringList; local class incompatible: stream classdesc serialVersionUID \u003d 72057594037927937, local class serialVersionUID \u003d 1"
+  },
+  {
+    "name": "char-list-uid",
+    "errorPhase": "load",
+    "errorClass": "InvalidClassException",
+    "errorMessage": "it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList; local class incompatible: stream classdesc serialVersionUID \u003d 72057594037927937, local class serialVersionUID \u003d 1"
+  },
+  {
+    "name": "utf8-list-uid",
+    "errorPhase": "load",
+    "errorClass": "InvalidClassException",
+    "errorMessage": "it.unimi.dsi.fastutil.bytes.ByteArrayFrontCodedList; local class incompatible: stream classdesc serialVersionUID \u003d 72057594037927937, local class serialVersionUID \u003d 1"
+  },
+  {
+    "name": "char-array-uid",
+    "count": 15,
+    "utf16SHA256": "0e5f2c9e69ae06f712e8bf056fc299d840a339faca36173aab57453066421ade"
+  },
+  {
+    "name": "byte-array-uid",
+    "count": 15,
+    "utf16SHA256": "e7b1570102be62fd3d97b84cc6cd7e3637efb35159df036c3c1cb13bf8043699"
+  }
+]
