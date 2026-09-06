@@ -1,0 +1,3472 @@
+diff --git a/graphite-server/internal/query/eval.go b/graphite-server/internal/query/eval.go
+--- a/graphite-server/internal/query/eval.go
++++ b/graphite-server/internal/query/eval.go
+@@ -8,6 +8,7 @@
+ 	"math"
+ 	"strconv"
+ 	"strings"
++	"unicode/utf8"
+ )
+ 
+ type Error struct {
+@@ -397,14 +398,30 @@
+ 		}
+ 		op := strings.TrimPrefix(x.Op, "NOT ")
+ 		var result bool
+-		switch op {
+-		case "STARTS WITH":
+-			result = e.unitIndex(javaUTF16(l), javaUTF16(r), 0) == 0
+-		case "ENDS WITH":
+-			left, right := javaUTF16(l), javaUTF16(r)
+-			result = len(left) >= len(right) && e.unitIndex(left, right, len(left)-len(right)) >= 0
+-		case "CONTAINS":
+-			result = e.unitIndex(javaUTF16(l), javaUTF16(r), 0) >= 0
++		e.check()
++		// With two well-formed strings, a UTF-16 match cannot start or end
++		// inside a surrogate pair. UTF-8 byte matches have the same complete
++		// code-point boundaries. Isolated units still require the old path.
++		if utf8.ValidString(l) && utf8.ValidString(r) {
++			switch op {
++			case "STARTS WITH":
++				result = strings.HasPrefix(l, r)
++			case "ENDS WITH":
++				result = strings.HasSuffix(l, r)
++			case "CONTAINS":
++				result = strings.Contains(l, r)
++			}
++			e.check()
++		} else {
++			switch op {
++			case "STARTS WITH":
++				result = e.unitIndex(javaUTF16(l), javaUTF16(r), 0) == 0
++			case "ENDS WITH":
++				left, right := javaUTF16(l), javaUTF16(r)
++				result = len(left) >= len(right) && e.unitIndex(left, right, len(left)-len(right)) >= 0
++			case "CONTAINS":
++				result = e.unitIndex(javaUTF16(l), javaUTF16(r), 0) >= 0
++			}
+ 		}
+ 		if op != x.Op {
+ 			return !result
+diff --git a/graphite-server/internal/query/string_predicate_test.go b/graphite-server/internal/query/string_predicate_test.go
+new file mode 100644
+--- /dev/null
++++ b/graphite-server/internal/query/string_predicate_test.go
+@@ -0,0 +1,122 @@
++package query
++
++import (
++	"context"
++	"errors"
++	"fmt"
++	"github.com/johnsonlee/graphite/graphite-server/internal/cypher"
++	"strings"
++	"testing"
++	"unicode/utf8"
++)
++
++func TestStringPredicatesMainJVMOracle(t *testing.T) {
++	testFunctionsOracle(t, "testdata/string-predicate-jvm-oracle.json", "../store/testdata/jvm-v3")
++}
++
++// Arbitrary malformed Go strings have no corresponding Java input bytes. For
++// those cases the established UTF16 decoding, rather than byte matching, stays.
++func TestStringPredicateEncodingBoundaries(t *testing.T) {
++	values := []string{"", "a", "abc", "甲中文乙", "中文", "日本語", "한국어", "😀", "a😀b", "😀😁", "😁", "é", "e\u0301", "\u0301", "\x00", "�", "\xed\xa0\xbd", "\xed\xb8\x80", "\xed\xa0\xbd\xed\xb8\x80", "\xed\xb8\x80\xed\xa0\xbd", "\xff", "a\xc0\xafb", "\xf0\x9f", "\x80"}
++	e := evaluator{ctx: context.Background()}
++	for _, left := range values {
++		for _, right := range values {
++			for _, op := range stringPredicateOps {
++				want := utf16PredicateDefinition(left, right, op)
++				got := e.binary(cypher.Binary{Left: cypher.Literal{Value: left}, Op: op, Right: cypher.Literal{Value: right}}, nil)
++				if got != want {
++					t.Fatalf("%q %s %q (valid %v/%v): got %v, want %v", left, op, right, utf8.ValidString(left), utf8.ValidString(right), got, want)
++				}
++			}
++		}
++	}
++}
++
++var stringPredicateOps = []string{"STARTS WITH", "ENDS WITH", "CONTAINS", "NOT STARTS WITH", "NOT ENDS WITH", "NOT CONTAINS"}
++
++func utf16PredicateDefinition(left, right, op string) bool {
++	l, r := javaUTF16(left), javaUTF16(right)
++	at := func(i int) bool {
++		if i < 0 || i+len(r) > len(l) {
++			return false
++		}
++		for j := range r {
++			if l[i+j] != r[j] {
++				return false
++			}
++		}
++		return true
++	}
++	base := strings.TrimPrefix(op, "NOT ")
++	var result bool
++	switch base {
++	case "STARTS WITH":
++		result = at(0)
++	case "ENDS WITH":
++		result = at(len(l) - len(r))
++	case "CONTAINS":
++		for i := 0; i <= len(l); i++ {
++			if at(i) {
++				result = true
++				break
++			}
++		}
++	}
++	if base != op {
++		return !result
++	}
++	return result
++}
++func TestStringPredicateParametersRetainUTF16Units(t *testing.T) {
++	for _, c := range []struct {
++		name, left, right        string
++		prefix, suffix, contains bool
++	}{
++		{"high-half", "😀", "\xed\xa0\xbd", true, false, true},
++		{"low-half", "😀", "\xed\xb8\x80", false, true, true},
++		{"wtf8-pair", "\xed\xa0\xbd\xed\xb8\x80", "😀", true, true, true},
++		{"replacement-distinct", "�", "\xed\xa0\xbd", false, false, false},
++		{"malformed-retained", "\xff", "�", true, true, true},
++	} {
++		t.Run(c.name, func(t *testing.T) {
++			result, err := Execute(context.Background(), nil, "RETURN $l STARTS WITH $r AS prefix, $l ENDS WITH $r AS suffix, $l CONTAINS $r AS contains", map[string]any{"l": c.left, "r": c.right}, -1)
++			if err != nil {
++				t.Fatal(err)
++			}
++			if len(result.Rows) != 1 || result.Rows[0]["prefix"] != c.prefix || result.Rows[0]["suffix"] != c.suffix || result.Rows[0]["contains"] != c.contains {
++				t.Fatalf("got %#v, want prefix=%v suffix=%v contains=%v", result, c.prefix, c.suffix, c.contains)
++			}
++		})
++	}
++}
++func TestStringPredicateCancellationAtFastPathBoundaries(t *testing.T) {
++	for _, op := range stringPredicateOps {
++		for _, cancelAt := range []int{3, 4} {
++			t.Run(fmt.Sprintf("%s/%d", op, cancelAt), func(t *testing.T) {
++				ctx := &traversalCancelContext{Context: context.Background(), cancelAt: cancelAt}
++				e := evaluator{ctx: ctx}
++				defer func() {
++					failure, ok := recover().(error)
++					if !ok || !errors.Is(failure, context.Canceled) || ctx.checks != cancelAt {
++						t.Fatalf("got %v at check %d, want canceled at %d", failure, ctx.checks, cancelAt)
++					}
++				}()
++				// Two operand checks precede the fast path's entry/exit checks.
++				e.binary(cypher.Binary{Left: cypher.Literal{Value: "甲😀乙"}, Op: op, Right: cypher.Literal{Value: "😀"}}, nil)
++				t.Fatal("canceled predicate returned a value")
++			})
++		}
++	}
++}
++func TestStringPredicateCancellationDuringUTF16Fallback(t *testing.T) {
++	ctx := &traversalCancelContext{Context: context.Background(), cancelAt: 6}
++	e := evaluator{ctx: ctx}
++	defer func() {
++		failure, ok := recover().(error)
++		if !ok || !errors.Is(failure, context.Canceled) || ctx.checks != 6 {
++			t.Fatalf("got %v at check %d, want canceled at 6", failure, ctx.checks)
++		}
++	}()
++	e.binary(cypher.Binary{Left: cypher.Literal{Value: "abcdef\xed\xa0\xbd"}, Op: "CONTAINS", Right: cypher.Literal{Value: "\xed\xa0\xbd"}}, nil)
++	t.Fatal("canceled fallback returned a value")
++}
+diff --git a/graphite-server/internal/query/testdata/regenerate-string-predicates.py b/graphite-server/internal/query/testdata/regenerate-string-predicates.py
+new file mode 100644
+--- /dev/null
++++ b/graphite-server/internal/query/testdata/regenerate-string-predicates.py
+@@ -0,0 +1,78 @@
++#!/usr/bin/env python3
++"""Capture tiny-fixture string predicate correctness cases from the pinned main JVM.
++Usage: python3 regenerate-string-predicates.py /path/to/graphite-explore.jar
++No HTTP or performance workload is involved.
++"""
++import hashlib
++import json
++import pathlib
++import subprocess
++import sys
++import tempfile
++
++root = pathlib.Path(__file__).resolve().parent
++jar = pathlib.Path(sys.argv[1]).resolve()
++pairs = [
++    ("empty-empty", "", ""), ("empty-needle", "abc", ""),
++    ("empty-haystack", "", "a"), ("equal", "abc", "abc"),
++    ("prefix", "abc", "ab"), ("suffix", "abc", "bc"),
++    ("middle", "abcd", "bc"), ("absent", "abc", "x"),
++    ("longer", "abc", "abcd"), ("case-sensitive", "ABC", "abc"),
++    ("chinese", "甲中文乙", "中文"), ("japanese", "日本語", "語"),
++    ("korean", "한국어", "한국"), ("supplementary", "😀中😀", "😀"),
++    ("supplementary-middle", "a😀b", "😀"),
++    ("different-supplementary", "😀", "😁"),
++    ("combining", "e\u0301", "\u0301"),
++    ("no-normalization", "é", "e\u0301"),
++    ("nul", "a\u0000b", "\u0000"), ("replacement", "�", "�"),
++    ("high-half", "😀", "\ud83d"), ("low-half", "😀", "\ude00"),
++    ("isolated-high", "\ud83dx", "\ud83d"),
++    ("isolated-low", "x\ude00", "\ude00"),
++    ("reverse-halves", "\ude00\ud83d", "\ud83d\ude00"),
++    ("high-is-not-replacement", "\ud83d", "�"),
++    ("low-is-not-replacement", "�", "\ude00"),
++    ("paired-surrogates", "\ud83d\ude00", "😀"),
++    ("across-pair-boundary", "😀😁", "\ude00\ud83d"),
++    ("high-empty", "\ud83d", ""), ("empty-low", "", "\ude00"),
++]
++# JSON's double-quoted literals and Unicode escapes are also Cypher literals.
++def literal(value):
++    return json.dumps(value, ensure_ascii=True)
++
++cases = []
++for op in ["STARTS WITH", "ENDS WITH", "CONTAINS", "NOT STARTS WITH", "NOT ENDS WITH", "NOT CONTAINS"]:
++    for name, left, right in pairs:
++        cases.append({"name": op.lower().replace(" ", "-") + "-" + name,
++                      "query": f"RETURN {literal(left)} {op} {literal(right)} AS value"})
++    for name, left, right in [
++        ("null-left-skips-error", "null", "1/0"),
++        ("number-left-skips-error", "123", "1/0"),
++        ("list-left-skips-error", "[]", "1/0"),
++        ("map-left-skips-error", "{}", "1/0"),
++        ("null-right", "'abc'", "null"),
++        ("number-right", "'abc'", "123"),
++        ("list-right", "'abc'", "[]"),
++        ("right-error", "'abc'", "1/0"),
++        ("left-error", "1/0", "substring('abc','wrong')"),
++        ("right-function-null", "'abc'", "sqrt('wrong')"),
++        ("right-class-error", "'abc'", "substring('abc','wrong')"),
++    ]:
++        cases.append({"name": op.lower().replace(" ", "-") + "-" + name,
++                      "query": f"RETURN ({left}) {op} ({right}) AS value"})
++
++with tempfile.TemporaryDirectory(prefix="graphite-string-predicates-") as classes:
++    subprocess.run(["javac", "-cp", str(jar), "-d", classes, str(root / "FunctionsOracle.java")], check=True)
++    command = ["java", "-Dfile.encoding=UTF-8", "-cp", classes + ":" + str(jar), "FunctionsOracle", str(root.parent.parent / "store/testdata/jvm-v3")]
++    # Repeat all queries to ensure that these complete outputs are stable.
++    output = subprocess.run(command, input="".join(json.dumps(case) + "\n" for case in cases * 3), text=True, capture_output=True, check=True)
++    results = [json.loads(line) for line in output.stdout.splitlines() if line.startswith("{")]
++    assert len(results) == len(cases) * 3, output.stderr
++    for i, case in enumerate(cases):
++        assert results[i] == results[i + len(cases)] == results[i + 2 * len(cases)], case
++        results[i]["name"] = case["name"]
++    data = {"mainCommit": "4e328b0109e13c896b74004823fb049fcb19251a",
++            "java": subprocess.run(["java", "-version"], capture_output=True, text=True, check=True).stderr.strip(),
++            "jarSHA256": hashlib.sha256(jar.read_bytes()).hexdigest(),
++            "fixture": "../store/testdata/jvm-v3", "repetitionsPerCase": 3,
++            "cases": results[:len(cases)]}
++    (root / "string-predicate-jvm-oracle.json").write_text(json.dumps(data, indent=2) + "\n")
+diff --git a/graphite-server/internal/query/testdata/string-predicate-jvm-oracle.json b/graphite-server/internal/query/testdata/string-predicate-jvm-oracle.json
+new file mode 100644
+--- /dev/null
++++ b/graphite-server/internal/query/testdata/string-predicate-jvm-oracle.json
+@@ -0,0 +1,3177 @@
++{
++  "mainCommit": "4e328b0109e13c896b74004823fb049fcb19251a",
++  "java": "openjdk version \"17.0.18\" 2026-01-20\nOpenJDK Runtime Environment Homebrew (build 17.0.18+0)\nOpenJDK 64-Bit Server VM Homebrew (build 17.0.18+0, mixed mode, sharing)",
++  "jarSHA256": "91c3a1d154ca96004c55df195d9f752e077cab3e33ca1570b2c88b872d9bc34d",
++  "fixture": "../store/testdata/jvm-v3",
++  "repetitionsPerCase": 3,
++  "cases": [
++    {
++      "query": "RETURN \"\" STARTS WITH \"\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "starts-with-empty-empty"
++    },
++    {
++      "query": "RETURN \"abc\" STARTS WITH \"\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "starts-with-empty-needle"
++    },
++    {
++      "query": "RETURN \"\" STARTS WITH \"a\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "starts-with-empty-haystack"
++    },
++    {
++      "query": "RETURN \"abc\" STARTS WITH \"abc\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "starts-with-equal"
++    },
++    {
++      "query": "RETURN \"abc\" STARTS WITH \"ab\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "starts-with-prefix"
++    },
++    {
++      "query": "RETURN \"abc\" STARTS WITH \"bc\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "starts-with-suffix"
++    },
++    {
++      "query": "RETURN \"abcd\" STARTS WITH \"bc\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "starts-with-middle"
++    },
++    {
++      "query": "RETURN \"abc\" STARTS WITH \"x\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "starts-with-absent"
++    },
++    {
++      "query": "RETURN \"abc\" STARTS WITH \"abcd\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "starts-with-longer"
++    },
++    {
++      "query": "RETURN \"ABC\" STARTS WITH \"abc\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "starts-with-case-sensitive"
++    },
++    {
++      "query": "RETURN \"\\u7532\\u4e2d\\u6587\\u4e59\" STARTS WITH \"\\u4e2d\\u6587\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "starts-with-chinese"
++    },
++    {
++      "query": "RETURN \"\\u65e5\\u672c\\u8a9e\" STARTS WITH \"\\u8a9e\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "starts-with-japanese"
++    },
++    {
++      "query": "RETURN \"\\ud55c\\uad6d\\uc5b4\" STARTS WITH \"\\ud55c\\uad6d\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "starts-with-korean"
++    },
++    {
++      "query": "RETURN \"\\ud83d\\ude00\\u4e2d\\ud83d\\ude00\" STARTS WITH \"\\ud83d\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "starts-with-supplementary"
++    },
++    {
++      "query": "RETURN \"a\\ud83d\\ude00b\" STARTS WITH \"\\ud83d\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "starts-with-supplementary-middle"
++    },
++    {
++      "query": "RETURN \"\\ud83d\\ude00\" STARTS WITH \"\\ud83d\\ude01\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "starts-with-different-supplementary"
++    },
++    {
++      "query": "RETURN \"e\\u0301\" STARTS WITH \"\\u0301\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "starts-with-combining"
++    },
++    {
++      "query": "RETURN \"\\u00e9\" STARTS WITH \"e\\u0301\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "starts-with-no-normalization"
++    },
++    {
++      "query": "RETURN \"a\\u0000b\" STARTS WITH \"\\u0000\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "starts-with-nul"
++    },
++    {
++      "query": "RETURN \"\\ufffd\" STARTS WITH \"\\ufffd\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "starts-with-replacement"
++    },
++    {
++      "query": "RETURN \"\\ud83d\\ude00\" STARTS WITH \"\\ud83d\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "starts-with-high-half"
++    },
++    {
++      "query": "RETURN \"\\ud83d\\ude00\" STARTS WITH \"\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "starts-with-low-half"
++    },
++    {
++      "query": "RETURN \"\\ud83dx\" STARTS WITH \"\\ud83d\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "starts-with-isolated-high"
++    },
++    {
++      "query": "RETURN \"x\\ude00\" STARTS WITH \"\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "starts-with-isolated-low"
++    },
++    {
++      "query": "RETURN \"\\ude00\\ud83d\" STARTS WITH \"\\ud83d\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "starts-with-reverse-halves"
++    },
++    {
++      "query": "RETURN \"\\ud83d\" STARTS WITH \"\\ufffd\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "starts-with-high-is-not-replacement"
++    },
++    {
++      "query": "RETURN \"\\ufffd\" STARTS WITH \"\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "starts-with-low-is-not-replacement"
++    },
++    {
++      "query": "RETURN \"\\ud83d\\ude00\" STARTS WITH \"\\ud83d\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "starts-with-paired-surrogates"
++    },
++    {
++      "query": "RETURN \"\\ud83d\\ude00\\ud83d\\ude01\" STARTS WITH \"\\ude00\\ud83d\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "starts-with-across-pair-boundary"
++    },
++    {
++      "query": "RETURN \"\\ud83d\" STARTS WITH \"\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "starts-with-high-empty"
++    },
++    {
++      "query": "RETURN \"\" STARTS WITH \"\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "starts-with-empty-low"
++    },
++    {
++      "query": "RETURN (null) STARTS WITH (1/0) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "starts-with-null-left-skips-error"
++    },
++    {
++      "query": "RETURN (123) STARTS WITH (1/0) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "starts-with-number-left-skips-error"
++    },
++    {
++      "query": "RETURN ([]) STARTS WITH (1/0) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "starts-with-list-left-skips-error"
++    },
++    {
++      "query": "RETURN ({}) STARTS WITH (1/0) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "starts-with-map-left-skips-error"
++    },
++    {
++      "query": "RETURN ('abc') STARTS WITH (null) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "starts-with-null-right"
++    },
++    {
++      "query": "RETURN ('abc') STARTS WITH (123) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "starts-with-number-right"
++    },
++    {
++      "query": "RETURN ('abc') STARTS WITH ([]) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "starts-with-list-right"
++    },
++    {
++      "query": "RETURN ('abc') STARTS WITH (1/0) AS value",
++      "cross": false,
++      "error": "CypherException",
++      "message": "Division by zero",
++      "name": "starts-with-right-error"
++    },
++    {
++      "query": "RETURN (1/0) STARTS WITH (substring('abc','wrong')) AS value",
++      "cross": false,
++      "error": "CypherException",
++      "message": "Division by zero",
++      "name": "starts-with-left-error"
++    },
++    {
++      "query": "RETURN ('abc') STARTS WITH (sqrt('wrong')) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "starts-with-right-function-null"
++    },
++    {
++      "query": "RETURN ('abc') STARTS WITH (substring('abc','wrong')) AS value",
++      "cross": false,
++      "error": "ClassCastException",
++      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
++      "name": "starts-with-right-class-error"
++    },
++    {
++      "query": "RETURN \"\" ENDS WITH \"\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "ends-with-empty-empty"
++    },
++    {
++      "query": "RETURN \"abc\" ENDS WITH \"\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "ends-with-empty-needle"
++    },
++    {
++      "query": "RETURN \"\" ENDS WITH \"a\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "ends-with-empty-haystack"
++    },
++    {
++      "query": "RETURN \"abc\" ENDS WITH \"abc\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "ends-with-equal"
++    },
++    {
++      "query": "RETURN \"abc\" ENDS WITH \"ab\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "ends-with-prefix"
++    },
++    {
++      "query": "RETURN \"abc\" ENDS WITH \"bc\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "ends-with-suffix"
++    },
++    {
++      "query": "RETURN \"abcd\" ENDS WITH \"bc\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "ends-with-middle"
++    },
++    {
++      "query": "RETURN \"abc\" ENDS WITH \"x\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "ends-with-absent"
++    },
++    {
++      "query": "RETURN \"abc\" ENDS WITH \"abcd\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "ends-with-longer"
++    },
++    {
++      "query": "RETURN \"ABC\" ENDS WITH \"abc\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "ends-with-case-sensitive"
++    },
++    {
++      "query": "RETURN \"\\u7532\\u4e2d\\u6587\\u4e59\" ENDS WITH \"\\u4e2d\\u6587\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "ends-with-chinese"
++    },
++    {
++      "query": "RETURN \"\\u65e5\\u672c\\u8a9e\" ENDS WITH \"\\u8a9e\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "ends-with-japanese"
++    },
++    {
++      "query": "RETURN \"\\ud55c\\uad6d\\uc5b4\" ENDS WITH \"\\ud55c\\uad6d\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "ends-with-korean"
++    },
++    {
++      "query": "RETURN \"\\ud83d\\ude00\\u4e2d\\ud83d\\ude00\" ENDS WITH \"\\ud83d\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "ends-with-supplementary"
++    },
++    {
++      "query": "RETURN \"a\\ud83d\\ude00b\" ENDS WITH \"\\ud83d\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "ends-with-supplementary-middle"
++    },
++    {
++      "query": "RETURN \"\\ud83d\\ude00\" ENDS WITH \"\\ud83d\\ude01\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "ends-with-different-supplementary"
++    },
++    {
++      "query": "RETURN \"e\\u0301\" ENDS WITH \"\\u0301\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "ends-with-combining"
++    },
++    {
++      "query": "RETURN \"\\u00e9\" ENDS WITH \"e\\u0301\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "ends-with-no-normalization"
++    },
++    {
++      "query": "RETURN \"a\\u0000b\" ENDS WITH \"\\u0000\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "ends-with-nul"
++    },
++    {
++      "query": "RETURN \"\\ufffd\" ENDS WITH \"\\ufffd\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "ends-with-replacement"
++    },
++    {
++      "query": "RETURN \"\\ud83d\\ude00\" ENDS WITH \"\\ud83d\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "ends-with-high-half"
++    },
++    {
++      "query": "RETURN \"\\ud83d\\ude00\" ENDS WITH \"\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "ends-with-low-half"
++    },
++    {
++      "query": "RETURN \"\\ud83dx\" ENDS WITH \"\\ud83d\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "ends-with-isolated-high"
++    },
++    {
++      "query": "RETURN \"x\\ude00\" ENDS WITH \"\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "ends-with-isolated-low"
++    },
++    {
++      "query": "RETURN \"\\ude00\\ud83d\" ENDS WITH \"\\ud83d\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "ends-with-reverse-halves"
++    },
++    {
++      "query": "RETURN \"\\ud83d\" ENDS WITH \"\\ufffd\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "ends-with-high-is-not-replacement"
++    },
++    {
++      "query": "RETURN \"\\ufffd\" ENDS WITH \"\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "ends-with-low-is-not-replacement"
++    },
++    {
++      "query": "RETURN \"\\ud83d\\ude00\" ENDS WITH \"\\ud83d\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "ends-with-paired-surrogates"
++    },
++    {
++      "query": "RETURN \"\\ud83d\\ude00\\ud83d\\ude01\" ENDS WITH \"\\ude00\\ud83d\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "ends-with-across-pair-boundary"
++    },
++    {
++      "query": "RETURN \"\\ud83d\" ENDS WITH \"\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "ends-with-high-empty"
++    },
++    {
++      "query": "RETURN \"\" ENDS WITH \"\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "ends-with-empty-low"
++    },
++    {
++      "query": "RETURN (null) ENDS WITH (1/0) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "ends-with-null-left-skips-error"
++    },
++    {
++      "query": "RETURN (123) ENDS WITH (1/0) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "ends-with-number-left-skips-error"
++    },
++    {
++      "query": "RETURN ([]) ENDS WITH (1/0) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "ends-with-list-left-skips-error"
++    },
++    {
++      "query": "RETURN ({}) ENDS WITH (1/0) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "ends-with-map-left-skips-error"
++    },
++    {
++      "query": "RETURN ('abc') ENDS WITH (null) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "ends-with-null-right"
++    },
++    {
++      "query": "RETURN ('abc') ENDS WITH (123) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "ends-with-number-right"
++    },
++    {
++      "query": "RETURN ('abc') ENDS WITH ([]) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "ends-with-list-right"
++    },
++    {
++      "query": "RETURN ('abc') ENDS WITH (1/0) AS value",
++      "cross": false,
++      "error": "CypherException",
++      "message": "Division by zero",
++      "name": "ends-with-right-error"
++    },
++    {
++      "query": "RETURN (1/0) ENDS WITH (substring('abc','wrong')) AS value",
++      "cross": false,
++      "error": "CypherException",
++      "message": "Division by zero",
++      "name": "ends-with-left-error"
++    },
++    {
++      "query": "RETURN ('abc') ENDS WITH (sqrt('wrong')) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "ends-with-right-function-null"
++    },
++    {
++      "query": "RETURN ('abc') ENDS WITH (substring('abc','wrong')) AS value",
++      "cross": false,
++      "error": "ClassCastException",
++      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
++      "name": "ends-with-right-class-error"
++    },
++    {
++      "query": "RETURN \"\" CONTAINS \"\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "contains-empty-empty"
++    },
++    {
++      "query": "RETURN \"abc\" CONTAINS \"\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "contains-empty-needle"
++    },
++    {
++      "query": "RETURN \"\" CONTAINS \"a\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "contains-empty-haystack"
++    },
++    {
++      "query": "RETURN \"abc\" CONTAINS \"abc\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "contains-equal"
++    },
++    {
++      "query": "RETURN \"abc\" CONTAINS \"ab\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "contains-prefix"
++    },
++    {
++      "query": "RETURN \"abc\" CONTAINS \"bc\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "contains-suffix"
++    },
++    {
++      "query": "RETURN \"abcd\" CONTAINS \"bc\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "contains-middle"
++    },
++    {
++      "query": "RETURN \"abc\" CONTAINS \"x\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "contains-absent"
++    },
++    {
++      "query": "RETURN \"abc\" CONTAINS \"abcd\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "contains-longer"
++    },
++    {
++      "query": "RETURN \"ABC\" CONTAINS \"abc\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "contains-case-sensitive"
++    },
++    {
++      "query": "RETURN \"\\u7532\\u4e2d\\u6587\\u4e59\" CONTAINS \"\\u4e2d\\u6587\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "contains-chinese"
++    },
++    {
++      "query": "RETURN \"\\u65e5\\u672c\\u8a9e\" CONTAINS \"\\u8a9e\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "contains-japanese"
++    },
++    {
++      "query": "RETURN \"\\ud55c\\uad6d\\uc5b4\" CONTAINS \"\\ud55c\\uad6d\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "contains-korean"
++    },
++    {
++      "query": "RETURN \"\\ud83d\\ude00\\u4e2d\\ud83d\\ude00\" CONTAINS \"\\ud83d\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "contains-supplementary"
++    },
++    {
++      "query": "RETURN \"a\\ud83d\\ude00b\" CONTAINS \"\\ud83d\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "contains-supplementary-middle"
++    },
++    {
++      "query": "RETURN \"\\ud83d\\ude00\" CONTAINS \"\\ud83d\\ude01\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "contains-different-supplementary"
++    },
++    {
++      "query": "RETURN \"e\\u0301\" CONTAINS \"\\u0301\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "contains-combining"
++    },
++    {
++      "query": "RETURN \"\\u00e9\" CONTAINS \"e\\u0301\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "contains-no-normalization"
++    },
++    {
++      "query": "RETURN \"a\\u0000b\" CONTAINS \"\\u0000\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "contains-nul"
++    },
++    {
++      "query": "RETURN \"\\ufffd\" CONTAINS \"\\ufffd\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "contains-replacement"
++    },
++    {
++      "query": "RETURN \"\\ud83d\\ude00\" CONTAINS \"\\ud83d\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "contains-high-half"
++    },
++    {
++      "query": "RETURN \"\\ud83d\\ude00\" CONTAINS \"\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "contains-low-half"
++    },
++    {
++      "query": "RETURN \"\\ud83dx\" CONTAINS \"\\ud83d\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "contains-isolated-high"
++    },
++    {
++      "query": "RETURN \"x\\ude00\" CONTAINS \"\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "contains-isolated-low"
++    },
++    {
++      "query": "RETURN \"\\ude00\\ud83d\" CONTAINS \"\\ud83d\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "contains-reverse-halves"
++    },
++    {
++      "query": "RETURN \"\\ud83d\" CONTAINS \"\\ufffd\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "contains-high-is-not-replacement"
++    },
++    {
++      "query": "RETURN \"\\ufffd\" CONTAINS \"\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "contains-low-is-not-replacement"
++    },
++    {
++      "query": "RETURN \"\\ud83d\\ude00\" CONTAINS \"\\ud83d\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "contains-paired-surrogates"
++    },
++    {
++      "query": "RETURN \"\\ud83d\\ude00\\ud83d\\ude01\" CONTAINS \"\\ude00\\ud83d\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "contains-across-pair-boundary"
++    },
++    {
++      "query": "RETURN \"\\ud83d\" CONTAINS \"\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "contains-high-empty"
++    },
++    {
++      "query": "RETURN \"\" CONTAINS \"\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "contains-empty-low"
++    },
++    {
++      "query": "RETURN (null) CONTAINS (1/0) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "contains-null-left-skips-error"
++    },
++    {
++      "query": "RETURN (123) CONTAINS (1/0) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "contains-number-left-skips-error"
++    },
++    {
++      "query": "RETURN ([]) CONTAINS (1/0) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "contains-list-left-skips-error"
++    },
++    {
++      "query": "RETURN ({}) CONTAINS (1/0) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "contains-map-left-skips-error"
++    },
++    {
++      "query": "RETURN ('abc') CONTAINS (null) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "contains-null-right"
++    },
++    {
++      "query": "RETURN ('abc') CONTAINS (123) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "contains-number-right"
++    },
++    {
++      "query": "RETURN ('abc') CONTAINS ([]) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "contains-list-right"
++    },
++    {
++      "query": "RETURN ('abc') CONTAINS (1/0) AS value",
++      "cross": false,
++      "error": "CypherException",
++      "message": "Division by zero",
++      "name": "contains-right-error"
++    },
++    {
++      "query": "RETURN (1/0) CONTAINS (substring('abc','wrong')) AS value",
++      "cross": false,
++      "error": "CypherException",
++      "message": "Division by zero",
++      "name": "contains-left-error"
++    },
++    {
++      "query": "RETURN ('abc') CONTAINS (sqrt('wrong')) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "contains-right-function-null"
++    },
++    {
++      "query": "RETURN ('abc') CONTAINS (substring('abc','wrong')) AS value",
++      "cross": false,
++      "error": "ClassCastException",
++      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
++      "name": "contains-right-class-error"
++    },
++    {
++      "query": "RETURN \"\" NOT STARTS WITH \"\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "not-starts-with-empty-empty"
++    },
++    {
++      "query": "RETURN \"abc\" NOT STARTS WITH \"\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "not-starts-with-empty-needle"
++    },
++    {
++      "query": "RETURN \"\" NOT STARTS WITH \"a\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-starts-with-empty-haystack"
++    },
++    {
++      "query": "RETURN \"abc\" NOT STARTS WITH \"abc\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "not-starts-with-equal"
++    },
++    {
++      "query": "RETURN \"abc\" NOT STARTS WITH \"ab\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "not-starts-with-prefix"
++    },
++    {
++      "query": "RETURN \"abc\" NOT STARTS WITH \"bc\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-starts-with-suffix"
++    },
++    {
++      "query": "RETURN \"abcd\" NOT STARTS WITH \"bc\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-starts-with-middle"
++    },
++    {
++      "query": "RETURN \"abc\" NOT STARTS WITH \"x\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-starts-with-absent"
++    },
++    {
++      "query": "RETURN \"abc\" NOT STARTS WITH \"abcd\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-starts-with-longer"
++    },
++    {
++      "query": "RETURN \"ABC\" NOT STARTS WITH \"abc\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-starts-with-case-sensitive"
++    },
++    {
++      "query": "RETURN \"\\u7532\\u4e2d\\u6587\\u4e59\" NOT STARTS WITH \"\\u4e2d\\u6587\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-starts-with-chinese"
++    },
++    {
++      "query": "RETURN \"\\u65e5\\u672c\\u8a9e\" NOT STARTS WITH \"\\u8a9e\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-starts-with-japanese"
++    },
++    {
++      "query": "RETURN \"\\ud55c\\uad6d\\uc5b4\" NOT STARTS WITH \"\\ud55c\\uad6d\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "not-starts-with-korean"
++    },
++    {
++      "query": "RETURN \"\\ud83d\\ude00\\u4e2d\\ud83d\\ude00\" NOT STARTS WITH \"\\ud83d\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "not-starts-with-supplementary"
++    },
++    {
++      "query": "RETURN \"a\\ud83d\\ude00b\" NOT STARTS WITH \"\\ud83d\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-starts-with-supplementary-middle"
++    },
++    {
++      "query": "RETURN \"\\ud83d\\ude00\" NOT STARTS WITH \"\\ud83d\\ude01\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-starts-with-different-supplementary"
++    },
++    {
++      "query": "RETURN \"e\\u0301\" NOT STARTS WITH \"\\u0301\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-starts-with-combining"
++    },
++    {
++      "query": "RETURN \"\\u00e9\" NOT STARTS WITH \"e\\u0301\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-starts-with-no-normalization"
++    },
++    {
++      "query": "RETURN \"a\\u0000b\" NOT STARTS WITH \"\\u0000\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-starts-with-nul"
++    },
++    {
++      "query": "RETURN \"\\ufffd\" NOT STARTS WITH \"\\ufffd\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "not-starts-with-replacement"
++    },
++    {
++      "query": "RETURN \"\\ud83d\\ude00\" NOT STARTS WITH \"\\ud83d\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "not-starts-with-high-half"
++    },
++    {
++      "query": "RETURN \"\\ud83d\\ude00\" NOT STARTS WITH \"\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-starts-with-low-half"
++    },
++    {
++      "query": "RETURN \"\\ud83dx\" NOT STARTS WITH \"\\ud83d\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "not-starts-with-isolated-high"
++    },
++    {
++      "query": "RETURN \"x\\ude00\" NOT STARTS WITH \"\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-starts-with-isolated-low"
++    },
++    {
++      "query": "RETURN \"\\ude00\\ud83d\" NOT STARTS WITH \"\\ud83d\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-starts-with-reverse-halves"
++    },
++    {
++      "query": "RETURN \"\\ud83d\" NOT STARTS WITH \"\\ufffd\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-starts-with-high-is-not-replacement"
++    },
++    {
++      "query": "RETURN \"\\ufffd\" NOT STARTS WITH \"\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-starts-with-low-is-not-replacement"
++    },
++    {
++      "query": "RETURN \"\\ud83d\\ude00\" NOT STARTS WITH \"\\ud83d\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "not-starts-with-paired-surrogates"
++    },
++    {
++      "query": "RETURN \"\\ud83d\\ude00\\ud83d\\ude01\" NOT STARTS WITH \"\\ude00\\ud83d\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-starts-with-across-pair-boundary"
++    },
++    {
++      "query": "RETURN \"\\ud83d\" NOT STARTS WITH \"\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "not-starts-with-high-empty"
++    },
++    {
++      "query": "RETURN \"\" NOT STARTS WITH \"\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-starts-with-empty-low"
++    },
++    {
++      "query": "RETURN (null) NOT STARTS WITH (1/0) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "not-starts-with-null-left-skips-error"
++    },
++    {
++      "query": "RETURN (123) NOT STARTS WITH (1/0) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "not-starts-with-number-left-skips-error"
++    },
++    {
++      "query": "RETURN ([]) NOT STARTS WITH (1/0) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "not-starts-with-list-left-skips-error"
++    },
++    {
++      "query": "RETURN ({}) NOT STARTS WITH (1/0) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "not-starts-with-map-left-skips-error"
++    },
++    {
++      "query": "RETURN ('abc') NOT STARTS WITH (null) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "not-starts-with-null-right"
++    },
++    {
++      "query": "RETURN ('abc') NOT STARTS WITH (123) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "not-starts-with-number-right"
++    },
++    {
++      "query": "RETURN ('abc') NOT STARTS WITH ([]) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "not-starts-with-list-right"
++    },
++    {
++      "query": "RETURN ('abc') NOT STARTS WITH (1/0) AS value",
++      "cross": false,
++      "error": "CypherException",
++      "message": "Division by zero",
++      "name": "not-starts-with-right-error"
++    },
++    {
++      "query": "RETURN (1/0) NOT STARTS WITH (substring('abc','wrong')) AS value",
++      "cross": false,
++      "error": "CypherException",
++      "message": "Division by zero",
++      "name": "not-starts-with-left-error"
++    },
++    {
++      "query": "RETURN ('abc') NOT STARTS WITH (sqrt('wrong')) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "not-starts-with-right-function-null"
++    },
++    {
++      "query": "RETURN ('abc') NOT STARTS WITH (substring('abc','wrong')) AS value",
++      "cross": false,
++      "error": "ClassCastException",
++      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
++      "name": "not-starts-with-right-class-error"
++    },
++    {
++      "query": "RETURN \"\" NOT ENDS WITH \"\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "not-ends-with-empty-empty"
++    },
++    {
++      "query": "RETURN \"abc\" NOT ENDS WITH \"\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "not-ends-with-empty-needle"
++    },
++    {
++      "query": "RETURN \"\" NOT ENDS WITH \"a\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-ends-with-empty-haystack"
++    },
++    {
++      "query": "RETURN \"abc\" NOT ENDS WITH \"abc\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "not-ends-with-equal"
++    },
++    {
++      "query": "RETURN \"abc\" NOT ENDS WITH \"ab\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-ends-with-prefix"
++    },
++    {
++      "query": "RETURN \"abc\" NOT ENDS WITH \"bc\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "not-ends-with-suffix"
++    },
++    {
++      "query": "RETURN \"abcd\" NOT ENDS WITH \"bc\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-ends-with-middle"
++    },
++    {
++      "query": "RETURN \"abc\" NOT ENDS WITH \"x\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-ends-with-absent"
++    },
++    {
++      "query": "RETURN \"abc\" NOT ENDS WITH \"abcd\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-ends-with-longer"
++    },
++    {
++      "query": "RETURN \"ABC\" NOT ENDS WITH \"abc\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-ends-with-case-sensitive"
++    },
++    {
++      "query": "RETURN \"\\u7532\\u4e2d\\u6587\\u4e59\" NOT ENDS WITH \"\\u4e2d\\u6587\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-ends-with-chinese"
++    },
++    {
++      "query": "RETURN \"\\u65e5\\u672c\\u8a9e\" NOT ENDS WITH \"\\u8a9e\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "not-ends-with-japanese"
++    },
++    {
++      "query": "RETURN \"\\ud55c\\uad6d\\uc5b4\" NOT ENDS WITH \"\\ud55c\\uad6d\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-ends-with-korean"
++    },
++    {
++      "query": "RETURN \"\\ud83d\\ude00\\u4e2d\\ud83d\\ude00\" NOT ENDS WITH \"\\ud83d\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "not-ends-with-supplementary"
++    },
++    {
++      "query": "RETURN \"a\\ud83d\\ude00b\" NOT ENDS WITH \"\\ud83d\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-ends-with-supplementary-middle"
++    },
++    {
++      "query": "RETURN \"\\ud83d\\ude00\" NOT ENDS WITH \"\\ud83d\\ude01\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-ends-with-different-supplementary"
++    },
++    {
++      "query": "RETURN \"e\\u0301\" NOT ENDS WITH \"\\u0301\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "not-ends-with-combining"
++    },
++    {
++      "query": "RETURN \"\\u00e9\" NOT ENDS WITH \"e\\u0301\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-ends-with-no-normalization"
++    },
++    {
++      "query": "RETURN \"a\\u0000b\" NOT ENDS WITH \"\\u0000\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-ends-with-nul"
++    },
++    {
++      "query": "RETURN \"\\ufffd\" NOT ENDS WITH \"\\ufffd\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "not-ends-with-replacement"
++    },
++    {
++      "query": "RETURN \"\\ud83d\\ude00\" NOT ENDS WITH \"\\ud83d\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-ends-with-high-half"
++    },
++    {
++      "query": "RETURN \"\\ud83d\\ude00\" NOT ENDS WITH \"\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "not-ends-with-low-half"
++    },
++    {
++      "query": "RETURN \"\\ud83dx\" NOT ENDS WITH \"\\ud83d\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-ends-with-isolated-high"
++    },
++    {
++      "query": "RETURN \"x\\ude00\" NOT ENDS WITH \"\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "not-ends-with-isolated-low"
++    },
++    {
++      "query": "RETURN \"\\ude00\\ud83d\" NOT ENDS WITH \"\\ud83d\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-ends-with-reverse-halves"
++    },
++    {
++      "query": "RETURN \"\\ud83d\" NOT ENDS WITH \"\\ufffd\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-ends-with-high-is-not-replacement"
++    },
++    {
++      "query": "RETURN \"\\ufffd\" NOT ENDS WITH \"\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-ends-with-low-is-not-replacement"
++    },
++    {
++      "query": "RETURN \"\\ud83d\\ude00\" NOT ENDS WITH \"\\ud83d\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "not-ends-with-paired-surrogates"
++    },
++    {
++      "query": "RETURN \"\\ud83d\\ude00\\ud83d\\ude01\" NOT ENDS WITH \"\\ude00\\ud83d\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-ends-with-across-pair-boundary"
++    },
++    {
++      "query": "RETURN \"\\ud83d\" NOT ENDS WITH \"\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "not-ends-with-high-empty"
++    },
++    {
++      "query": "RETURN \"\" NOT ENDS WITH \"\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-ends-with-empty-low"
++    },
++    {
++      "query": "RETURN (null) NOT ENDS WITH (1/0) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "not-ends-with-null-left-skips-error"
++    },
++    {
++      "query": "RETURN (123) NOT ENDS WITH (1/0) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "not-ends-with-number-left-skips-error"
++    },
++    {
++      "query": "RETURN ([]) NOT ENDS WITH (1/0) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "not-ends-with-list-left-skips-error"
++    },
++    {
++      "query": "RETURN ({}) NOT ENDS WITH (1/0) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "not-ends-with-map-left-skips-error"
++    },
++    {
++      "query": "RETURN ('abc') NOT ENDS WITH (null) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "not-ends-with-null-right"
++    },
++    {
++      "query": "RETURN ('abc') NOT ENDS WITH (123) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "not-ends-with-number-right"
++    },
++    {
++      "query": "RETURN ('abc') NOT ENDS WITH ([]) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "not-ends-with-list-right"
++    },
++    {
++      "query": "RETURN ('abc') NOT ENDS WITH (1/0) AS value",
++      "cross": false,
++      "error": "CypherException",
++      "message": "Division by zero",
++      "name": "not-ends-with-right-error"
++    },
++    {
++      "query": "RETURN (1/0) NOT ENDS WITH (substring('abc','wrong')) AS value",
++      "cross": false,
++      "error": "CypherException",
++      "message": "Division by zero",
++      "name": "not-ends-with-left-error"
++    },
++    {
++      "query": "RETURN ('abc') NOT ENDS WITH (sqrt('wrong')) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "not-ends-with-right-function-null"
++    },
++    {
++      "query": "RETURN ('abc') NOT ENDS WITH (substring('abc','wrong')) AS value",
++      "cross": false,
++      "error": "ClassCastException",
++      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
++      "name": "not-ends-with-right-class-error"
++    },
++    {
++      "query": "RETURN \"\" NOT CONTAINS \"\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "not-contains-empty-empty"
++    },
++    {
++      "query": "RETURN \"abc\" NOT CONTAINS \"\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "not-contains-empty-needle"
++    },
++    {
++      "query": "RETURN \"\" NOT CONTAINS \"a\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-contains-empty-haystack"
++    },
++    {
++      "query": "RETURN \"abc\" NOT CONTAINS \"abc\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "not-contains-equal"
++    },
++    {
++      "query": "RETURN \"abc\" NOT CONTAINS \"ab\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "not-contains-prefix"
++    },
++    {
++      "query": "RETURN \"abc\" NOT CONTAINS \"bc\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "not-contains-suffix"
++    },
++    {
++      "query": "RETURN \"abcd\" NOT CONTAINS \"bc\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "not-contains-middle"
++    },
++    {
++      "query": "RETURN \"abc\" NOT CONTAINS \"x\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-contains-absent"
++    },
++    {
++      "query": "RETURN \"abc\" NOT CONTAINS \"abcd\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-contains-longer"
++    },
++    {
++      "query": "RETURN \"ABC\" NOT CONTAINS \"abc\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-contains-case-sensitive"
++    },
++    {
++      "query": "RETURN \"\\u7532\\u4e2d\\u6587\\u4e59\" NOT CONTAINS \"\\u4e2d\\u6587\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "not-contains-chinese"
++    },
++    {
++      "query": "RETURN \"\\u65e5\\u672c\\u8a9e\" NOT CONTAINS \"\\u8a9e\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "not-contains-japanese"
++    },
++    {
++      "query": "RETURN \"\\ud55c\\uad6d\\uc5b4\" NOT CONTAINS \"\\ud55c\\uad6d\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "not-contains-korean"
++    },
++    {
++      "query": "RETURN \"\\ud83d\\ude00\\u4e2d\\ud83d\\ude00\" NOT CONTAINS \"\\ud83d\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "not-contains-supplementary"
++    },
++    {
++      "query": "RETURN \"a\\ud83d\\ude00b\" NOT CONTAINS \"\\ud83d\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "not-contains-supplementary-middle"
++    },
++    {
++      "query": "RETURN \"\\ud83d\\ude00\" NOT CONTAINS \"\\ud83d\\ude01\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-contains-different-supplementary"
++    },
++    {
++      "query": "RETURN \"e\\u0301\" NOT CONTAINS \"\\u0301\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "not-contains-combining"
++    },
++    {
++      "query": "RETURN \"\\u00e9\" NOT CONTAINS \"e\\u0301\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-contains-no-normalization"
++    },
++    {
++      "query": "RETURN \"a\\u0000b\" NOT CONTAINS \"\\u0000\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "not-contains-nul"
++    },
++    {
++      "query": "RETURN \"\\ufffd\" NOT CONTAINS \"\\ufffd\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "not-contains-replacement"
++    },
++    {
++      "query": "RETURN \"\\ud83d\\ude00\" NOT CONTAINS \"\\ud83d\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "not-contains-high-half"
++    },
++    {
++      "query": "RETURN \"\\ud83d\\ude00\" NOT CONTAINS \"\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "not-contains-low-half"
++    },
++    {
++      "query": "RETURN \"\\ud83dx\" NOT CONTAINS \"\\ud83d\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "not-contains-isolated-high"
++    },
++    {
++      "query": "RETURN \"x\\ude00\" NOT CONTAINS \"\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "not-contains-isolated-low"
++    },
++    {
++      "query": "RETURN \"\\ude00\\ud83d\" NOT CONTAINS \"\\ud83d\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-contains-reverse-halves"
++    },
++    {
++      "query": "RETURN \"\\ud83d\" NOT CONTAINS \"\\ufffd\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-contains-high-is-not-replacement"
++    },
++    {
++      "query": "RETURN \"\\ufffd\" NOT CONTAINS \"\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-contains-low-is-not-replacement"
++    },
++    {
++      "query": "RETURN \"\\ud83d\\ude00\" NOT CONTAINS \"\\ud83d\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "not-contains-paired-surrogates"
++    },
++    {
++      "query": "RETURN \"\\ud83d\\ude00\\ud83d\\ude01\" NOT CONTAINS \"\\ude00\\ud83d\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "not-contains-across-pair-boundary"
++    },
++    {
++      "query": "RETURN \"\\ud83d\" NOT CONTAINS \"\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": false
++        }
++      ],
++      "name": "not-contains-high-empty"
++    },
++    {
++      "query": "RETURN \"\" NOT CONTAINS \"\\ude00\" AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": true
++        }
++      ],
++      "name": "not-contains-empty-low"
++    },
++    {
++      "query": "RETURN (null) NOT CONTAINS (1/0) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "not-contains-null-left-skips-error"
++    },
++    {
++      "query": "RETURN (123) NOT CONTAINS (1/0) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "not-contains-number-left-skips-error"
++    },
++    {
++      "query": "RETURN ([]) NOT CONTAINS (1/0) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "not-contains-list-left-skips-error"
++    },
++    {
++      "query": "RETURN ({}) NOT CONTAINS (1/0) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "not-contains-map-left-skips-error"
++    },
++    {
++      "query": "RETURN ('abc') NOT CONTAINS (null) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "not-contains-null-right"
++    },
++    {
++      "query": "RETURN ('abc') NOT CONTAINS (123) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "not-contains-number-right"
++    },
++    {
++      "query": "RETURN ('abc') NOT CONTAINS ([]) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "not-contains-list-right"
++    },
++    {
++      "query": "RETURN ('abc') NOT CONTAINS (1/0) AS value",
++      "cross": false,
++      "error": "CypherException",
++      "message": "Division by zero",
++      "name": "not-contains-right-error"
++    },
++    {
++      "query": "RETURN (1/0) NOT CONTAINS (substring('abc','wrong')) AS value",
++      "cross": false,
++      "error": "CypherException",
++      "message": "Division by zero",
++      "name": "not-contains-left-error"
++    },
++    {
++      "query": "RETURN ('abc') NOT CONTAINS (sqrt('wrong')) AS value",
++      "cross": false,
++      "columns": [
++        "value"
++      ],
++      "rows": [
++        {
++          "value": null
++        }
++      ],
++      "name": "not-contains-right-function-null"
++    },
++    {
++      "query": "RETURN ('abc') NOT CONTAINS (substring('abc','wrong')) AS value",
++      "cross": false,
++      "error": "ClassCastException",
++      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
++      "name": "not-contains-right-class-error"
++    }
++  ]
++}
+diff --git a/graphite-server/internal/query/testdata/string-predicates.md b/graphite-server/internal/query/testdata/string-predicates.md
+new file mode 100644
+--- /dev/null
++++ b/graphite-server/internal/query/testdata/string-predicates.md
+@@ -0,0 +1,25 @@
++# String predicate candidate (Attempt 5)
++
++Effective base: commit `4124bfc44bedd7915e238b7a08f2524b48ed47b6` plus the frozen Attempt 4 patch with SHA-256 `6084e090235c6f6505e17e05fafe657023ba148b1d70667be20454dd13d6955a`.
++
++The production delta only changes `STARTS WITH`, `ENDS WITH`, `CONTAINS`, and their `NOT` forms in `eval.go`. When both operands are valid UTF-8, it uses Go's byte predicates after checking cancellation and checks cancellation again before returning. Any WTF-8 surrogate or other malformed UTF-8 in either operand retains the existing UTF-16 comparison. Operand evaluation and null/type handling precede this branch and are unchanged. Case conversion, node iteration, indexes, and regular expressions are unchanged.
++
++## Why matching valid UTF-8 is equivalent
++
++A valid UTF-8 string represents Unicode scalar values, so its UTF-16 encoding is well formed. A nonempty well-formed UTF-16 needle cannot begin with an isolated low surrogate or end with an isolated high surrogate. Thus a match cannot begin or end halfway through a surrogate pair. In UTF-8, a valid needle begins with an ASCII or leading byte, never a continuation byte; a full match also ends on a code-point boundary. Both predicates therefore match exactly the same sequence of Unicode scalar values. Empty needles match in all three predicates. Neither representation normalizes combining characters or changes case.
++
++A needle containing only the high or low half of an emoji is not valid UTF-8. Such needles require the UTF-16 fallback: the high half is a prefix, the low half is a suffix, and both are contained in the full emoji. Adjacent surrogate units encoded separately as WTF-8 also use the fallback. Genuine U+FFFD stays distinct from isolated surrogate units.
++
++## Correctness evidence
++
++`string-predicate-jvm-oracle.json` records complete columns/rows or exception class/message for 252 independent queries against main `4e328b0109e13c896b74004823fb049fcb19251a`, using Java 17.0.18 ARM64 and the tiny `store/testdata/jvm-v3` correctness fixture. Each query ran three times with identical output. The corpus records the exact jar digest and Java version. It includes empty strings, CJK, supplementary characters, combining sequences, NUL, isolated surrogates, matching across surrogate boundaries, all six operators, null/type handling, and left/right exception order. Regenerate from the Go module directory with:
++
++```
++python3 internal/query/testdata/regenerate-string-predicates.py /path/to/graphite-explore.jar
++```
++
++The generator compiles the existing `FunctionsOracle.java` helper and runs it locally; it starts no HTTP server and performs no performance measurement. It only updates this new oracle corpus, not any inherited corpus.
++
++`string_predicate_test.go` also compares all six operators over 24 × 24 string pairs against the UTF-16 definition (3,456 comparisons), checks WTF-8 and malformed-string parameters through native `Execute`, and checks cancellation at both fast-path boundaries and during the UTF-16 fallback. Arbitrary malformed Go strings are checked against the existing decoder behavior, not claimed to be raw Java input-byte semantics.
++
++The standard byte predicates do not poll cancellation internally. Cancellation is observed before validation/matching and immediately afterward; the UTF-16 fallback retains its loop checks. Full module race tests and vet are required before freezing this candidate. Performance and complete 64-graph HTTP acceptance are separate experiments; this correctness corpus does not establish a performance result or unrestricted semantic parity.

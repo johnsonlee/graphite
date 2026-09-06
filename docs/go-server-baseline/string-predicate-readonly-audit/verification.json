@@ -1,0 +1,51 @@
+{
+  "recordedAtUTC": "2026-09-06T20:56:50.335669+00:00",
+  "purpose": "Bounded read-only Attempt5 string-predicate audit; no performance",
+  "patchSha256": "6f3b553bc33ff58d5fc7701156a49406e61fab070c297efd9dbe27a6698f973d",
+  "freezeStillMatches": true,
+  "productionDeltaAgainstAttempt4": [
+    "internal/query/eval.go"
+  ],
+  "independentUTF16DefinitionComparisons": {
+    "passed": 24576,
+    "total": 24576
+  },
+  "operandOrderCases": {
+    "passed": 60,
+    "total": 60
+  },
+  "cancellationBoundaryCases": {
+    "passed": 12,
+    "total": 12
+  },
+  "raceDetector": true,
+  "testExitCode": 0,
+  "counterexamplesFound": 0,
+  "standardLibraryOperationInternallyCancellable": false,
+  "cancellationLatencyBoundClaimed": false,
+  "newJVMOracle": false,
+  "performanceRuns": 0,
+  "implementationTreesModified": false,
+  "evidence": [
+    {
+      "path": "docs/go-server-baseline/string-predicate-readonly-audit/README.md",
+      "bytes": 2979,
+      "sha256": "3e91d29069d4f24acfe7082e4732378f26db2cdf09ef83d8fab0c38432ac38a3"
+    },
+    {
+      "path": "docs/go-server-baseline/string-predicate-readonly-audit/independent-tests.log",
+      "bytes": 519,
+      "sha256": "af451d2fbce91ebf4162121ab61fe4d754fcc7a9a34c2add7369b715b4180d83"
+    },
+    {
+      "path": "docs/go-server-baseline/string-predicate-readonly-audit/snapshot.json",
+      "bytes": 2063,
+      "sha256": "1da1d981e0afd1f9eac4531a007bbcd0ad0c66934b641e36cdb8fa8b6feb8d76"
+    },
+    {
+      "path": "docs/go-server-baseline/string-predicate-readonly-audit/string_audit_test.go",
+      "bytes": 3991,
+      "sha256": "577db515a0703cf63878bcc364e3e9819a96e06f758d62aa26d0dc8e8b941789"
+    }
+  ]
+}

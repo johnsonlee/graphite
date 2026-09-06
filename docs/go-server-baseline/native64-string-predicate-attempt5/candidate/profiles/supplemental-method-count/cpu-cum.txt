@@ -1,0 +1,37 @@
+File: profile-query
+Type: cpu
+Time: Sep 7, 2026 at 5:58am (KST)
+Duration: 921.68ms, Total samples = 650ms (70.52%)
+Showing nodes accounting for 590ms, 90.77% of 650ms total
+Showing top 30 nodes out of 53
+      flat  flat%   sum%        cum   cum%
+         0     0%     0%      490ms 75.38%  runtime.(*mheap).alloc.func1
+         0     0%     0%      490ms 75.38%  runtime.(*mheap).allocSpan
+     490ms 75.38% 75.38%      490ms 75.38%  runtime.madvise
+         0     0% 75.38%      490ms 75.38%  runtime.sysUsed (inline)
+         0     0% 75.38%      490ms 75.38%  runtime.sysUsedOS (inline)
+         0     0% 75.38%      490ms 75.38%  runtime.systemstack
+         0     0% 75.38%      150ms 23.08%  github.com/johnsonlee/graphite/graphite-server/internal/query.ExecuteCross
+         0     0% 75.38%      150ms 23.08%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.branch
+         0     0% 75.38%      150ms 23.08%  github.com/johnsonlee/graphite/graphite-server/internal/query.executeSources
+         0     0% 75.38%      150ms 23.08%  main.main
+         0     0% 75.38%      150ms 23.08%  main.profile
+         0     0% 75.38%      150ms 23.08%  main.profile.func1
+         0     0% 75.38%      150ms 23.08%  runtime.main
+         0     0% 75.38%      150ms 23.08%  runtime/pprof.Do
+         0     0% 75.38%      130ms 20.00%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.match
+         0     0% 75.38%      130ms 20.00%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.matchMaterialized
+         0     0% 75.38%      130ms 20.00%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.matchPattern
+         0     0% 75.38%      130ms 20.00%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.nodeCandidates (inline)
+         0     0% 75.38%      130ms 20.00%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.walkNodeCandidates
+         0     0% 75.38%      120ms 18.46%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.matchPattern.func1
+      40ms  6.15% 81.54%       90ms 13.85%  runtime.mallocgc
+         0     0% 81.54%       60ms  9.23%  runtime.newobject (partial-inline)
+      10ms  1.54% 83.08%       40ms  6.15%  github.com/johnsonlee/graphite/graphite-server/internal/query.addProvenance
+      10ms  1.54% 84.62%       40ms  6.15%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.bind
+      10ms  1.54% 86.15%       40ms  6.15%  runtime.(*mspan).writeHeapBitsSmall
+         0     0% 86.15%       40ms  6.15%  runtime.heapSetType
+      30ms  4.62% 90.77%       30ms  4.62%  runtime.mapaccess1_faststr
+         0     0% 90.77%       30ms  4.62%  runtime.mapassign_faststr
+         0     0% 90.77%       20ms  3.08%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.aggregate
+         0     0% 90.77%       20ms  3.08%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.eval

@@ -1,0 +1,31 @@
+{
+  "baseRevision": "f85418822fbc01e902e08514b4e25aea2a517ef2",
+  "archive": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-string-predicate-integration-owiecx4m",
+  "deltaSHA256": "6f3b553bc33ff58d5fc7701156a49406e61fab070c297efd9dbe27a6698f973d",
+  "candidateFiveHashesMatch": true,
+  "verifiedAtUTC": "2026-09-06T21:17:28.398822+00:00",
+  "commands": [
+    {
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./..."
+      ],
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "exitCode": 0
+    }
+  ],
+  "workingDirectory": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-string-predicate-integration-owiecx4m/graphite-server",
+  "executionSession": 35238,
+  "candidateFiveHashesRechecked": true,
+  "independentAudit": "../string-predicate-readonly-audit/verification.json",
+  "scope": "Independent archive of root f8541882 plus frozen five-file delta; no production tree mutations."
+}

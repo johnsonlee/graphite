@@ -1,0 +1,86 @@
+{
+  "purpose": "Derived single-run diagnostic comparison; not P95 or HTTP.",
+  "queries": [
+    {
+      "name": "wrapped-zeroHitBroadContains",
+      "base": {
+        "receipt": "docs/go-server-baseline/native64-slot-attempt4/candidate/profiles/wrapped-zeroHitBroadContains/receipt.json",
+        "receiptSHA256": "f0667066a0b218bbe7a2eed4c4c2030d098289361f23eab4a9ddd2ff560a09c0",
+        "allocationBytes": 42656840592,
+        "gcCycles": 7,
+        "gcPauseNs": 896544,
+        "userPlusSystemCPUSeconds": 93.481636,
+        "executeAndMarshalSeconds": 62.580030375,
+        "requestEndHeapBytes": 7385322496,
+        "postForcedGCHeapBytes": 6282447440,
+        "fullOutputMatchesExpected": true
+      },
+      "candidate": {
+        "receipt": "docs/go-server-baseline/native64-string-predicate-attempt5/candidate/profiles/wrapped-zeroHitBroadContains/receipt.json",
+        "receiptSHA256": "3d4d95855c2eb7ff0a86c80fc3d811880cc118bb5f5d3a183196a7ff0d2c99f9",
+        "allocationBytes": 20063190576,
+        "gcCycles": 3,
+        "gcPauseNs": 193668,
+        "userPlusSystemCPUSeconds": 57.650239000000006,
+        "executeAndMarshalSeconds": 44.366572958,
+        "requestEndHeapBytes": 9179084976,
+        "postForcedGCHeapBytes": 6282371448,
+        "fullOutputMatchesExpected": true
+      }
+    },
+    {
+      "name": "global-wide-four-properties-zero",
+      "base": {
+        "receipt": "docs/go-server-baseline/native64-slot-attempt4/candidate/profiles/global-wide-four-properties-zero/receipt.json",
+        "receiptSHA256": "3f2ae32a1cbd09fa8f56bed95041616e3e02bcee008668939c04c369a10cfe4e",
+        "allocationBytes": 11994716656,
+        "gcCycles": 2,
+        "gcPauseNs": 150749,
+        "userPlusSystemCPUSeconds": 30.540258,
+        "executeAndMarshalSeconds": 21.676857458,
+        "requestEndHeapBytes": 6608383160,
+        "postForcedGCHeapBytes": 6282564264,
+        "fullOutputMatchesExpected": true
+      },
+      "candidate": {
+        "receipt": "docs/go-server-baseline/native64-string-predicate-attempt5/candidate/profiles/global-wide-four-properties-zero/receipt.json",
+        "receiptSHA256": "fcdef08ea332cee50c347b1208b0f174a46fb70604599cb59486243a77cb78e0",
+        "allocationBytes": 3661645640,
+        "gcCycles": 0,
+        "gcPauseNs": 0,
+        "userPlusSystemCPUSeconds": 13.519981000000005,
+        "executeAndMarshalSeconds": 13.531838834,
+        "requestEndHeapBytes": 9945225920,
+        "postForcedGCHeapBytes": 6282443320,
+        "fullOutputMatchesExpected": true
+      }
+    },
+    {
+      "name": "supplemental-method-count",
+      "base": {
+        "receipt": "docs/go-server-baseline/native64-slot-attempt4/candidate/profiles/supplemental-method-count/receipt.json",
+        "receiptSHA256": "f55bc663e6ba9a70e71c9b6476cc116812bc47bc14e8748dd1f32be95ecf7a9f",
+        "allocationBytes": 2441488968,
+        "gcCycles": 0,
+        "gcPauseNs": 0,
+        "userPlusSystemCPUSeconds": 0.7923970000000038,
+        "executeAndMarshalSeconds": 0.778050542,
+        "requestEndHeapBytes": 8725233040,
+        "postForcedGCHeapBytes": 6282705776,
+        "fullOutputMatchesExpected": true
+      },
+      "candidate": {
+        "receipt": "docs/go-server-baseline/native64-string-predicate-attempt5/candidate/profiles/supplemental-method-count/receipt.json",
+        "receiptSHA256": "ad010a8e1e24959376038e661686cbd7d5c5326d9756f77b87dd31b52d6da334",
+        "allocationBytes": 2441489352,
+        "gcCycles": 0,
+        "gcPauseNs": 0,
+        "userPlusSystemCPUSeconds": 0.7686240000000053,
+        "executeAndMarshalSeconds": 0.765247958,
+        "requestEndHeapBytes": 8725114944,
+        "postForcedGCHeapBytes": 6282648536,
+        "fullOutputMatchesExpected": true
+      }
+    }
+  ]
+}

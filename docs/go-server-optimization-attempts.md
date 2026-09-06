@@ -134,3 +134,32 @@ deadline diagnostics are in `docs/go-server-baseline/native64-slot-attempt4/`.
 Independent before/after correctness audit is in `candidate-slot-readonly-audit/`.
 No performance run used a synthetic fixture, no failed body was discarded, and
 subsequent experiments must preserve this incomplete HTTP record.
+
+
+## 2026-09-07 — Attempt 5: match well-formed strings without UTF-16 arrays
+
+Hypothesis: valid UTF-8 operands have the same complete-code-point substring,
+prefix and suffix matches as their Java UTF-16 representations; using byte
+matching for those operands avoids transient arrays. Keep the UTF-16 fallback
+for malformed/WTF-8 operands and preserve evaluation/null/type/error behavior.
+
+| Item | Evidence / status |
+|---|---|
+| Native base | Frozen Attempt 4 candidate: `4124bfc4` plus patch `6084e090235c6f6505e17e05fafe657023ba148b1d70667be20454dd13d6955a`, subsequently integrated as `f8541882`; native-to-native diagnostic, not main latency comparison |
+| Candidate identity | Five-file delta `6f3b553bc33ff58d5fc7701156a49406e61fab070c297efd9dbe27a6698f973d`; only `internal/query/eval.go` changes production; profile binary `3f45fb79dea5b40f331a96bb784e2e6975341be7320d764ba950c977e8110a5b`; separate HTTP binary identity retained |
+| Real fixture | All 64 `/tmp/pr113-exp037-fixture.nXn4fg` shards, 19,431,891 nodes / 20,448,885 edges; all 1,152 frozen files freshly hash-verified and all per-graph catalog counts checked |
+| Correctness | 252 main JVM queries × 3 repetitions, 3,456 definition comparisons; independent 24,576 definition / 60 operand-order / 12 cancellation-boundary cases; independent root archive full-module race/vet passes |
+| HTTP | 42/42 HTTP 200, complete ordered response equality and no checked header differences against pinned main; default timeout, sequential full-corpus replay. The prior first-query timeout is resolved in this replay |
+| Allocation | Wrapped zero-hit 42,656,840,592 → 20,063,190,576 bytes (about −53%); raw four-property zero-hit 11,994,716,656 → 3,661,645,640 (about −69%) |
+| CPU / GC | User+system CPU 93.482 → 57.650 s and 30.540 → 13.520 s; request GC cycles 7 → 3 and 2 → 0 |
+| Heap limitation | Request-end heap rises 7.39 → 9.18 GB and 6.61 → 9.95 GB with fewer collections; post-forced-GC heap remains about 6.28 GB. No reduced retained-heap or peak-RSS claim |
+| Diagnostic latency | Wrapped execution+marshal 62.580 → 44.367 s; raw 21.677 → 13.532 s. Single instrumented observations with co-tenancy, not P95 or controlled paired acceptance |
+| Control | Supplemental no-WHERE Method count allocation +384 bytes, wall 0.778 → 0.765 s; one noisy observation does not establish a regression or improvement |
+| Cancellation boundary | Checks bracket the valid-UTF-8 fast path; the standard-library operation is not internally cancellable. No maximum cancellation latency claim |
+| Decision | Keep verified allocation reduction and fixed-workload HTTP parity. Overall functional parity, cold/warm repeated P95 and the 10× main-relative goal remain outstanding |
+
+Raw source identities, full responses, profiles, exact commands and derived
+counter comparisons are in `docs/go-server-baseline/native64-string-predicate-attempt5/`;
+the independent review is in `string-predicate-readonly-audit/`. Attempt 4's
+incomplete/504 receipt is preserved. No performance measurement uses synthetic
+data or drops a failed response from its denominator.

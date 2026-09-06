@@ -1,0 +1,9 @@
+{
+  "baseRevision": "4124bfc44bedd7915e238b7a08f2524b48ed47b6",
+  "basePatch": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-slot-attempt4/candidate.patch",
+  "basePatchSHA256": "6084e090235c6f6505e17e05fafe657023ba148b1d70667be20454dd13d6955a",
+  "profileBaseline": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-slot-attempt4/candidate/identity.json",
+  "profileBaselineSHA256": "e26749bd2db1fb3c9598f4f1145b31ad48a577ef824ba8aa28cb5261ecc896bc",
+  "rootIntegrationCommit": "f85418822fbc01e902e08514b4e25aea2a517ef2",
+  "note": "Candidate retains the exact isolated native query base used for Attempt4 profiles; root C4 changes are outside this profile comparison."
+}

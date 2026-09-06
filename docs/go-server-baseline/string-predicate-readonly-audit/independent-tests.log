@@ -1,0 +1,10 @@
+=== RUN   TestExternalPredicateUTF16Boundary
+    external_string_audit_test.go:33: unitVectors=64 operators=6 comparisons=24576
+--- PASS: TestExternalPredicateUTF16Boundary (0.04s)
+=== RUN   TestExternalPredicateOperandOrder
+    external_string_audit_test.go:43: operandOrderCases=60
+--- PASS: TestExternalPredicateOperandOrder (0.03s)
+=== RUN   TestExternalPredicateCancelBoundaries
+--- PASS: TestExternalPredicateCancelBoundaries (0.00s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/query	1.423s

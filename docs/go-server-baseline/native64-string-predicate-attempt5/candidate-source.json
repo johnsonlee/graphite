@@ -1,0 +1,45 @@
+{
+  "baseCommit": "4124bfc44bedd7915e238b7a08f2524b48ed47b6",
+  "effectiveBasePatchSHA256": "6084e090235c6f6505e17e05fafe657023ba148b1d70667be20454dd13d6955a",
+  "worktree": "/private/tmp/graphite-go-string-predicate-attempt5",
+  "deltaPatchSHA256": "6f3b553bc33ff58d5fc7701156a49406e61fab070c297efd9dbe27a6698f973d",
+  "files": {
+    "graphite-server/internal/query/eval.go": {
+      "sha256": "10b192a5d60a4d952b0789773fccea38358fdd2f8de4786f42cd89cc1006d54b",
+      "bytes": 13956,
+      "new": false
+    },
+    "graphite-server/internal/query/string_predicate_test.go": {
+      "sha256": "d03e67bfcd55658a1b3c39b189aef2a14a7ae6182f25402d97aee28c310ca6b6",
+      "bytes": 4489,
+      "new": true
+    },
+    "graphite-server/internal/query/testdata/regenerate-string-predicates.py": {
+      "sha256": "c63f0a6391c2120ca1abb1bac4c31f8dcdcea7acad7047201e9b66b23e72d946",
+      "bytes": 4148,
+      "new": true
+    },
+    "graphite-server/internal/query/testdata/string-predicate-jvm-oracle.json": {
+      "sha256": "438de8cfc3fb5c4fca3d9f8e2cbb2eaaa3ed2db34eec9fbefbed3ddbac97c998",
+      "bytes": 66320,
+      "new": true
+    },
+    "graphite-server/internal/query/testdata/string-predicates.md": {
+      "sha256": "b1257613a8a9b6e39c8108dcb956c311453b10dc5f85d56f687d4817f4d86aca",
+      "bytes": 3599,
+      "new": true
+    }
+  },
+  "correctness": {
+    "mainJVMQueries": 252,
+    "repetitionsPerQuery": 3,
+    "oracleRegeneration": "byte-for-byte identical",
+    "UTF16DefinitionComparisons": 3456,
+    "fullModuleRace": "passed",
+    "fullModuleVet": "passed",
+    "cancellation": "entry/exit checks of all six fast predicates, plus UTF16 fallback",
+    "independentReview": "pending"
+  },
+  "performanceRunsByThisAgent": 0,
+  "commitsByThisAgent": 0
+}

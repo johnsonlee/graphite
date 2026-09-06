@@ -1,0 +1,319 @@
+diff --git a/graphite-server/internal/query/cross.go b/graphite-server/internal/query/cross.go
+index 29a35a1c..00d74998 100644
+--- a/graphite-server/internal/query/cross.go
++++ b/graphite-server/internal/query/cross.go
+@@ -27,6 +27,11 @@ const provenanceKey = "\x00graphite.graphIds"
+ 
+ func valueGraphID(value any) string {
+ 	switch v := value.(type) {
++	case *candidateSlot:
++		if v.qualified {
++			return v.graphID
++		}
++		return ""
+ 	case qualifiedEdge:
+ 		return v.GraphID
+ 	case pathValue:
+diff --git a/graphite-server/internal/query/engine.go b/graphite-server/internal/query/engine.go
+index 6176968d..461b47fd 100644
+--- a/graphite-server/internal/query/engine.go
++++ b/graphite-server/internal/query/engine.go
+@@ -179,6 +179,13 @@ func (e evaluator) branch(graph *store.Store, branch cypher.SingleQuery) Result
+ func (e evaluator) matches(value any, n cypher.NodePattern, row map[string]any) bool {
+ 	var property func(string) any
+ 	switch v := value.(type) {
++	case *candidateSlot:
++		for _, label := range n.Labels {
++			if !v.matchesLabel(label) {
++				return false
++			}
++		}
++		property = v.property
+ 	case qualifiedNode:
+ 		for _, label := range n.Labels {
+ 			if !matchesLabel(v.Node, label) {
+diff --git a/graphite-server/internal/query/eval.go b/graphite-server/internal/query/eval.go
+index 8ae368e3..2c91d6a7 100644
+--- a/graphite-server/internal/query/eval.go
++++ b/graphite-server/internal/query/eval.go
+@@ -8,6 +8,7 @@ import (
+ 	"math"
+ 	"strconv"
+ 	"strings"
++	"unicode/utf8"
+ )
+ 
+ type Error struct {
+@@ -59,6 +60,8 @@ func (e evaluator) eval(expression cypher.Expr, row map[string]any) any {
+ 	case cypher.Property:
+ 		obj := e.eval(x.Object, row)
+ 		switch o := obj.(type) {
++		case *candidateSlot:
++			return o.property(x.Key)
+ 		case orderedMap:
+ 			return o.Values[x.Key]
+ 		case qualifiedNode, qualifiedMethod:
+@@ -127,13 +130,13 @@ func (e evaluator) eval(expression cypher.Expr, row map[string]any) any {
+ 	case cypher.List:
+ 		r := make([]any, len(x.Elements))
+ 		for i, v := range x.Elements {
+-			r[i] = e.eval(v, row)
++			r[i] = freezeCandidate(e.eval(v, row))
+ 		}
+ 		return r
+ 	case cypher.Map:
+ 		r := make(map[string]any, len(x.Entries))
+ 		for _, k := range x.Keys {
+-			r[k] = e.eval(x.Entries[k], row)
++			r[k] = freezeCandidate(e.eval(x.Entries[k], row))
+ 		}
+ 		return orderedMap{r, append([]string{}, x.Keys...)}
+ 	case cypher.Case:
+@@ -163,7 +166,7 @@ func (e evaluator) eval(expression cypher.Expr, row map[string]any) any {
+ 			if x.Projection != nil {
+ 				v = e.eval(x.Projection, r)
+ 			}
+-			out = append(out, v)
++			out = append(out, freezeCandidate(v))
+ 		}
+ 		return out
+ 	case cypher.Predicate:
+@@ -395,14 +398,30 @@ func (e evaluator) binary(x cypher.Binary, row map[string]any) any {
+ 		}
+ 		op := strings.TrimPrefix(x.Op, "NOT ")
+ 		var result bool
+-		switch op {
+-		case "STARTS WITH":
+-			result = e.unitIndex(javaUTF16(l), javaUTF16(r), 0) == 0
+-		case "ENDS WITH":
+-			left, right := javaUTF16(l), javaUTF16(r)
+-			result = len(left) >= len(right) && e.unitIndex(left, right, len(left)-len(right)) >= 0
+-		case "CONTAINS":
+-			result = e.unitIndex(javaUTF16(l), javaUTF16(r), 0) >= 0
++		e.check()
++		// With two well-formed strings, a UTF-16 match cannot start or end
++		// inside a surrogate pair. UTF-8 byte matches have the same complete
++		// code-point boundaries. Isolated units still require the old path.
++		if utf8.ValidString(l) && utf8.ValidString(r) {
++			switch op {
++			case "STARTS WITH":
++				result = strings.HasPrefix(l, r)
++			case "ENDS WITH":
++				result = strings.HasSuffix(l, r)
++			case "CONTAINS":
++				result = strings.Contains(l, r)
++			}
++			e.check()
++		} else {
++			switch op {
++			case "STARTS WITH":
++				result = e.unitIndex(javaUTF16(l), javaUTF16(r), 0) == 0
++			case "ENDS WITH":
++				left, right := javaUTF16(l), javaUTF16(r)
++				result = len(left) >= len(right) && e.unitIndex(left, right, len(left)-len(right)) >= 0
++			case "CONTAINS":
++				result = e.unitIndex(javaUTF16(l), javaUTF16(r), 0) >= 0
++			}
+ 		}
+ 		if op != x.Op {
+ 			return !result
+@@ -428,10 +447,10 @@ func (e evaluator) binary(x cypher.Binary, row map[string]any) any {
+ 			if r, ok := b.([]any); ok {
+ 				return append(out, r...)
+ 			}
+-			return append(out, b)
++			return append(out, freezeCandidate(b))
+ 		}
+ 		if r, ok := b.([]any); ok {
+-			return append([]any{a}, r...)
++			return append([]any{freezeCandidate(a)}, r...)
+ 		}
+ 	}
+ 	l, r := toDouble(a), toDouble(b)
+@@ -482,7 +501,7 @@ func (e evaluator) callLegacy(name string, args []any) any {
+ 		}
+ 		return nil
+ 	}
+-	v := argument(args, 0)
++	v := freezeCandidate(argument(args, 0))
+ 	if name == "graphid" {
+ 		if id := valueGraphID(v); id != "" {
+ 			return id
+diff --git a/graphite-server/internal/query/function_properties.go b/graphite-server/internal/query/function_properties.go
+index 04665b76..afd56744 100644
+--- a/graphite-server/internal/query/function_properties.go
++++ b/graphite-server/internal/query/function_properties.go
+@@ -17,6 +17,7 @@ func mapValues(v any) any {
+ 	return v
+ }
+ func (e evaluator) propertyFunction(value any, keysOnly bool) any {
++	value = freezeCandidate(value)
+ 	var keys []string
+ 	values := map[string]any{}
+ 	switch v := value.(type) {
+diff --git a/graphite-server/internal/query/functions.go b/graphite-server/internal/query/functions.go
+index 9ed8a495..b2c44345 100644
+--- a/graphite-server/internal/query/functions.go
++++ b/graphite-server/internal/query/functions.go
+@@ -312,6 +312,7 @@ func castError(value any, target string) {
+ 	functionError("ClassCastException", "class "+source+" cannot be cast to class "+target+" ("+source+" and "+target+" are in module java.base of loader 'bootstrap')")
+ }
+ func javaClassName(value any) string {
++	value = freezeCandidate(value)
+ 	source := "java.lang.Object"
+ 	switch value.(type) {
+ 	case string:
+diff --git a/graphite-server/internal/query/object_string.go b/graphite-server/internal/query/object_string.go
+index 5036bc2c..35d8cac9 100644
+--- a/graphite-server/internal/query/object_string.go
++++ b/graphite-server/internal/query/object_string.go
+@@ -12,6 +12,7 @@ import (
+ 
+ func (e evaluator) stringify(value any) string { return objectString(value, e.check) }
+ func objectString(value any, check func()) string {
++	value = freezeCandidate(value)
+ 	if check != nil {
+ 		check()
+ 	}
+diff --git a/graphite-server/internal/query/row_order.go b/graphite-server/internal/query/row_order.go
+index 8cb914b1..d1c51ec3 100644
+--- a/graphite-server/internal/query/row_order.go
++++ b/graphite-server/internal/query/row_order.go
+@@ -99,7 +99,10 @@ func (e evaluator) rowKeys(row map[string]any) []string {
+ 	return append(keys, extra...)
+ }
+ func (e evaluator) cloneRow(row map[string]any) map[string]any {
+-	result := clone(row)
++	result := make(map[string]any, len(row)+1)
++	for key, value := range row {
++		result[key] = freezeCandidate(value)
++	}
+ 	if e.rowOrders != nil {
+ 		e.rowOrders[rowAddress(result)] = rowOrder{result, e.rowKeys(row)}
+ 	}
+diff --git a/graphite-server/internal/query/scan.go b/graphite-server/internal/query/scan.go
+index da01f8d9..5040326a 100644
+--- a/graphite-server/internal/query/scan.go
++++ b/graphite-server/internal/query/scan.go
+@@ -11,11 +11,20 @@ import (
+ func (e evaluator) matchSingleNode(graph *store.Store, rows []map[string]any, clause cypher.MatchClause) []map[string]any {
+ 	pattern := clause.Patterns[0].Nodes[0]
+ 	result := []map[string]any{}
++	slot := &candidateSlot{}
+ 	for _, row := range rows {
+ 		e.check()
+ 		bound := e.cloneRow(row)
+ 		accepted := false
+-		e.nodeCandidates(graph, pattern, row, func(value any) {
++		e.walkNodeCandidates(graph, pattern, row, slot, func(value any) {
++			// Scratch bindings may be retained for key-order bookkeeping. Never
++			// leave the borrowed view in them after this candidate finishes.
++			// Retain the key position even on a miss, as the original scanner did.
++			defer func() {
++				if borrowed, ok := bound[pattern.Variable].(*candidateSlot); ok && borrowed == slot {
++					bound[pattern.Variable] = nil
++				}
++			}()
+ 			e.check()
+ 			if !e.matches(value, pattern, row) {
+ 				return
+@@ -34,6 +43,9 @@ func (e evaluator) matchSingleNode(graph *store.Store, rows []map[string]any, cl
+ 			if clause.Where != nil && e.eval(clause.Where, bound) != true {
+ 				return
+ 			}
++			if pattern.Variable != "" {
++				bound[pattern.Variable] = freezeCandidate(bound[pattern.Variable])
++			}
+ 			result = append(result, e.cloneRow(bound))
+ 			accepted = true
+ 		})
+diff --git a/graphite-server/internal/query/testdata/regenerate-functions.py b/graphite-server/internal/query/testdata/regenerate-functions.py
+index 6719fea3..d0b56e2b 100644
+--- a/graphite-server/internal/query/testdata/regenerate-functions.py
++++ b/graphite-server/internal/query/testdata/regenerate-functions.py
+@@ -14,7 +14,7 @@ root = pathlib.Path(__file__).resolve().parent
+ jar = pathlib.Path(sys.argv[1]).resolve()
+ with tempfile.TemporaryDirectory(prefix="graphite-functions-oracle-") as classes:
+     subprocess.run(["javac", "-cp", str(jar), "-d", classes, str(root / "FunctionsOracle.java")], check=True)
+-    for corpus in [root / "functions-jvm-oracle.json", root / "functions-node-jvm-oracle.json", root / "property-order-jvm-oracle.json", root / "enum-key-jvm-oracle.json"]:
++    for corpus in [root / "functions-jvm-oracle.json", root / "functions-node-jvm-oracle.json", root / "property-order-jvm-oracle.json", root / "enum-key-jvm-oracle.json", root / "candidate-slot-jvm-oracle.json"]:
+         data = json.loads(corpus.read_text())
+         fixture = root.parent / data.get("fixture", "testdata/traversal")
+         command = ["java", "-Dfile.encoding=UTF-8", "-cp", classes + ":" + str(jar), "FunctionsOracle", str(fixture)]
+diff --git a/graphite-server/internal/query/traversal.go b/graphite-server/internal/query/traversal.go
+index 0b98c9e1..2470afbc 100644
+--- a/graphite-server/internal/query/traversal.go
++++ b/graphite-server/internal/query/traversal.go
+@@ -115,6 +115,10 @@ func (e evaluator) matchPattern(graph *store.Store, pattern cypher.Pattern, init
+ 	return states
+ }
+ func (e evaluator) nodeCandidates(graph *store.Store, pattern cypher.NodePattern, bindings map[string]any, accept func(any)) {
++	e.walkNodeCandidates(graph, pattern, bindings, nil, accept)
++}
++
++func (e evaluator) walkNodeCandidates(graph *store.Store, pattern cypher.NodePattern, bindings map[string]any, slot *candidateSlot, accept func(any)) {
+ 	if pattern.Variable != "" {
+ 		if value, bound := bindings[pattern.Variable]; bound {
+ 			accept(value)
+@@ -133,6 +137,12 @@ func (e evaluator) nodeCandidates(graph *store.Store, pattern cypher.NodePattern
+ 		e.check()
+ 		if methods {
+ 			for _, method := range source.Store.Metadata.MethodList {
++				if slot != nil {
++					slot.graph, slot.graphID, slot.qualified = source.Store, source.ID, e.cross
++					slot.isMethod, slot.method = true, method
++					accept(slot)
++					continue
++				}
+ 				if e.cross {
+ 					accept(qualifiedMethod{source.ID, method})
+ 				} else {
+@@ -147,6 +157,12 @@ func (e evaluator) nodeCandidates(graph *store.Store, pattern cypher.NodePattern
+ 			if err != nil {
+ 				fail(err.Error())
+ 			}
++			if slot != nil {
++				slot.graph, slot.graphID, slot.qualified = source.Store, source.ID, e.cross
++				slot.isMethod, slot.node = false, node
++				accept(slot)
++				continue
++			}
+ 			if e.cross {
+ 				accept(qualifiedNode{source.ID, source.Store, node})
+ 			} else {
+diff --git a/graphite-server/internal/query/values.go b/graphite-server/internal/query/values.go
+index 9997bf57..56747627 100644
+--- a/graphite-server/internal/query/values.go
++++ b/graphite-server/internal/query/values.go
+@@ -86,6 +86,7 @@ func compareNumbers(a, b any) int {
+ 
+ // equal is three-valued Cypher equality, including nested lists/maps.
+ func equal(a, b any) any {
++	a, b = freezeCandidate(a), freezeCandidate(b)
+ 	a, b = mapValues(a), mapValues(b)
+ 	if a == nil || b == nil {
+ 		return nil
+@@ -165,6 +166,7 @@ func equal(a, b any) any {
+ // compare orders projected values; Cypher relational predicates deliberately
+ // use a different comparison for qualified node identity strings.
+ func compare(a, b any) int {
++	a, b = freezeCandidate(a), freezeCandidate(b)
+ 	a, b = mapValues(a), mapValues(b)
+ 	if a == nil {
+ 		if b == nil {
+@@ -361,6 +363,7 @@ func comparableString(value any) string {
+ 	return scalarString(value)
+ }
+ func comparePredicate(a, b any) int {
++	a, b = freezeCandidate(a), freezeCandidate(b)
+ 	if x, ok := a.(qualifiedEdge); ok {
+ 		if y, ok := b.(qualifiedEdge); ok {
+ 			if equal(x, y) == true {
+@@ -397,6 +400,7 @@ func comparePredicate(a, b any) int {
+ // key normalizes numeric types for DISTINCT/GROUP/UNION and distinguishes null
+ // from missing map entries. Length prefixes prevent concatenation collisions.
+ func key(v any) string {
++	v = freezeCandidate(v)
+ 	v = mapValues(v)
+ 	if v == nil {
+ 		return "null"

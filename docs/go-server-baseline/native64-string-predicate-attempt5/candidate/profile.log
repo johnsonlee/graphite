@@ -1,0 +1,72 @@
+loaded 1/64 fixture-android-00
+loaded 2/64 fixture-android-01
+loaded 3/64 fixture-android-02
+loaded 4/64 fixture-android-03
+loaded 5/64 fixture-android-04
+loaded 6/64 fixture-android-05
+loaded 7/64 fixture-android-06
+loaded 8/64 fixture-android-07
+loaded 9/64 fixture-android-08
+loaded 10/64 fixture-android-09
+loaded 11/64 fixture-android-10
+loaded 12/64 fixture-android-11
+loaded 13/64 fixture-android-12
+loaded 14/64 fixture-android-13
+loaded 15/64 fixture-android-14
+loaded 16/64 fixture-android-15
+loaded 17/64 fixture-hive-00
+loaded 18/64 fixture-hive-01
+loaded 19/64 fixture-hive-02
+loaded 20/64 fixture-hive-03
+loaded 21/64 fixture-hive-04
+loaded 22/64 fixture-hive-05
+loaded 23/64 fixture-hive-06
+loaded 24/64 fixture-hive-07
+loaded 25/64 fixture-hive-08
+loaded 26/64 fixture-hive-09
+loaded 27/64 fixture-hive-10
+loaded 28/64 fixture-hive-11
+loaded 29/64 fixture-hive-12
+loaded 30/64 fixture-hive-13
+loaded 31/64 fixture-hive-14
+loaded 32/64 fixture-hive-15
+loaded 33/64 fixture-kotlin-compiler-00
+loaded 34/64 fixture-kotlin-compiler-01
+loaded 35/64 fixture-kotlin-compiler-02
+loaded 36/64 fixture-kotlin-compiler-03
+loaded 37/64 fixture-kotlin-compiler-04
+loaded 38/64 fixture-kotlin-compiler-05
+loaded 39/64 fixture-kotlin-compiler-06
+loaded 40/64 fixture-kotlin-compiler-07
+loaded 41/64 fixture-kotlin-compiler-08
+loaded 42/64 fixture-kotlin-compiler-09
+loaded 43/64 fixture-kotlin-compiler-10
+loaded 44/64 fixture-kotlin-compiler-11
+loaded 45/64 fixture-kotlin-compiler-12
+loaded 46/64 fixture-kotlin-compiler-13
+loaded 47/64 fixture-kotlin-compiler-14
+loaded 48/64 fixture-kotlin-compiler-15
+loaded 49/64 fixture-tika-00
+loaded 50/64 fixture-tika-01
+loaded 51/64 fixture-tika-02
+loaded 52/64 fixture-tika-03
+loaded 53/64 fixture-tika-04
+loaded 54/64 fixture-tika-05
+loaded 55/64 fixture-tika-06
+loaded 56/64 fixture-tika-07
+loaded 57/64 fixture-tika-08
+loaded 58/64 fixture-tika-09
+loaded 59/64 fixture-tika-10
+loaded 60/64 fixture-tika-11
+loaded 61/64 fixture-tika-12
+loaded 62/64 fixture-tika-13
+loaded 63/64 fixture-tika-14
+loaded 64/64 fixture-tika-15
+CATALOG VERIFIED map[callSites:5046935 edges:20448885 methods:1374983 nodes:19431891]
+PROFILE START wrapped-zeroHitBroadContains 2026-09-06T20:57:34.089016Z
+PROFILE DONE wrapped-zeroHitBroadContains bytes=113 hash=b776d360f1d6eb34c3a0594d0d8239821bbe4f96958a90907764d5a48a6aa1dd equal=true alloc=20063190576 GC=3
+PROFILE START global-wide-four-properties-zero 2026-09-06T20:58:20.118688Z
+PROFILE DONE global-wide-four-properties-zero bytes=118 hash=f585f8c837c05a598d43e16848760d2ef6a76ea7dc015ca1ffb187dece3a5e03 equal=true alloc=3661645640 GC=0
+PROFILE START supplemental-method-count 2026-09-06T20:58:35.277702Z
+PROFILE DONE supplemental-method-count bytes=1480 hash=21daca2ccd004eb51e41c0e51c8d4bad939861279acfa168c4f65b2c269e8a2b equal=true alloc=2441489352 GC=0
+COMPLETE
