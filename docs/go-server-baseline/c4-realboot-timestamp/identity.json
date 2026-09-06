@@ -1,0 +1,31 @@
+{
+  "main_revision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "native_recorded_head": "e61fa1e13dac1d85f0ab4bf4502e6ec2aaf55cc4",
+  "native_snapshot_includes": "C4 Unicode candidate files frozen by storage agent; authoritative per-file hashes in native-source-manifest.json",
+  "artifact_maven": "org.springframework.cloud.task.app:timestamp-task:2.1.1.RELEASE",
+  "artifact_url": "https://repo.maven.apache.org/maven2/org/springframework/cloud/task/app/timestamp-task/2.1.1.RELEASE/timestamp-task-2.1.1.RELEASE.jar",
+  "artifact_sha256": "8076696d54b72f75640859b53a5c8be135955f79c1d7666222b187a68a8f07ca",
+  "native_binary_sha256": "96968a4c5deee42723faa5b40691d0b5517d599002aad439fe620a759c00cede",
+  "go": "go version go1.22.0 darwin/arm64",
+  "java": "openjdk version \"17.0.18\" 2026-01-20\nOpenJDK Runtime Environment Homebrew (build 17.0.18+0)\nOpenJDK 64-Bit Server VM Homebrew (build 17.0.18+0, mixed mode, sharing)",
+  "java_memory_flags": [
+    "-Xmx512m",
+    "-XX:ActiveProcessorCount=2"
+  ],
+  "scope": {
+    "includeLibraries": true,
+    "includePackages": [
+      "org.springframework.cloud.task.app.timestamp"
+    ],
+    "libraryFilters": [
+      "spring-cloud-starter-task-timestamp-*.jar"
+    ],
+    "buildCallGraph": true,
+    "extractAnnotations": true,
+    "trackCrossMethodFunctionalDispatch": true,
+    "callGraphAlgorithm": "CHA",
+    "useMmapBuilder": true
+  },
+  "performance": "none; bounded correctness; host co-tenancy with root work possible",
+  "app_executed": false
+}

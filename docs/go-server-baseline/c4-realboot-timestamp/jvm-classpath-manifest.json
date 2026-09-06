@@ -1,0 +1,338 @@
+[
+  {
+    "path": "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+    "sha256": "91c3a1d154ca96004c55df195d9f752e077cab3e33ca1570b2c88b872d9bc34d"
+  },
+  {
+    "path": "/private/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/explore-1.0.0-SNAPSHOT-slim.jar",
+    "sha256": "688a661e44363a935d23c24affa8984596dc570c849b3c87a315773efab59fd5"
+  },
+  {
+    "path": "/private/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-cypher/build/libs/cypher-1.0.0-SNAPSHOT.jar",
+    "sha256": "4e6a15fc374847f52f2077f2d1877221c4016a7f6fd0370f95271c2591fb6331"
+  },
+  {
+    "path": "/private/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-sootup/build/libs/sootup-1.0.0-SNAPSHOT.jar",
+    "sha256": "d5db1187b3926a2d0cac9e9fd884d0939ce3b8dca3da240d18e3ea41c1cfb2eb"
+  },
+  {
+    "path": "/private/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-webgraph/build/libs/webgraph-1.0.0-SNAPSHOT.jar",
+    "sha256": "2f61478619d7c9aa2d8320aa0b175418ab439a786fc3df92e7ed3e640b2489f2"
+  },
+  {
+    "path": "/private/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-core/build/libs/core-1.0.0-SNAPSHOT.jar",
+    "sha256": "903b74119bcb9a9ecc5a406241366ee36a267d374a9651cab10be4a3345fd513"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/io.javalin/javalin/6.4.0/f78468626c6f83b805ac3af3243277fd2cfb4481/javalin-6.4.0.jar",
+    "sha256": "b344f00063918077535bcca671a1cbfa54c847d98f2e294500c1d0cfcaff0d88"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/io.javalin/javalin-micrometer/6.4.0/fdb34dfe5c56abfe378e3ab2f5ca39b5c2ac138b/javalin-micrometer-6.4.0.jar",
+    "sha256": "cedbbcf97b28b1e151f32bd7db891cc93be2e9d2ea82834b7eb0c83c2045fdf1"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-jdk8/1.9.25/20d44e880a284f7b5cd99dd69450b403073f49b2/kotlin-stdlib-jdk8-1.9.25.jar",
+    "sha256": "f94fdf78390ce9be30383bf039c5a935caea33b11f037fc7f86bbcee19287e5a"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib-jdk7/1.9.25/1c166692314a2639e5edfed0d23ed7eee4a5c7a5/kotlin-stdlib-jdk7-1.9.25.jar",
+    "sha256": "fb5373dd761b4e93e3f538c5e853bba38a71143a181536e8f193ed6e4eddb3b8"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-stdlib/2.0.21/618b539767b4899b4660a83006e052b63f1db551/kotlin-stdlib-2.0.21.jar",
+    "sha256": "f31cc53f105a7e48c093683bbd5437561d1233920513774b470805641bedbc09"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/info.picocli/picocli/4.7.6/77c2cb87814b6a03d431fc856024a9f8ff605ad4/picocli-4.7.6.jar",
+    "sha256": "ed441183f309b93f104ca9e071e314a4062a893184e18a3c7ad72ec9cba12ba0"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.soot-oss/sootup.java.bytecode.frontend/2.0.0/c72cad03b1ca9ad0fa8f8a835b10075da751bfa3/sootup.java.bytecode.frontend-2.0.0.jar",
+    "sha256": "d8489670850d661caa256b3c95f3f1a14e4855b217f6c76457546505c9198472"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/com.google.code.gson/gson/2.11.0/527175ca6d81050b53bdd4c457a6d6e017626b0e/gson-2.11.0.jar",
+    "sha256": "57928d6e5a6edeb2abd3770a8f95ba44dce45f3b23b7a9dc2b309c581552a78b"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.slf4j/slf4j-nop/2.0.13/f46230afff57b938ff9e7ac315270a83fdf21e87/slf4j-nop-2.0.13.jar",
+    "sha256": "8962a107b4a8bdf80b6c17e470cd3614ad3329643833ff5cf0c60c7dce9deaac"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.jetbrains/annotations/13.0/919f0dfe192fb4e063e7dacadee7f8bb9a2672a9/annotations-13.0.jar",
+    "sha256": "ace2a10dc8e2d5fd34925ecac03e4988b2c0f851650c94b8cef49ba1bd111478"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/it.unimi.dsi/webgraph/3.6.12/933a75a96609224ca332ad6b125678d63aaa2709/webgraph-3.6.12.jar",
+    "sha256": "8daddd3881aecc7095643936c9e16d825cbe0e431df507519e36df68d06444ef"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/it.unimi.dsi/sux4j/5.4.1/851e44b37782ec911ff708e26ae23f3cbc709861/sux4j-5.4.1.jar",
+    "sha256": "f723ed570899e3fce17b1423ff2b56b72cb56f4202573f596ae7109c036f9a00"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/it.unimi.dsi/dsiutils/2.7.4/defb81136038dda4b3450b922b4b10a987e118ea/dsiutils-2.7.4.jar",
+    "sha256": "65fd7c9957563b83c0b20485f466cf6f2cc49a3fe295718ef03ec365ca896b5f"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/it.unimi.dsi/fastutil/8.5.16/34d13fa04fc72b5d9674adc6fd765afaaccc551e/fastutil-8.5.16.jar",
+    "sha256": "317a1c26252da2c6f5cb32454e2995f6b93940f09c6642969a330c6b9ff67342"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.antlr/antlr4/4.13.2/a2bc0d399506a7297568baee188b481727d45d3b/antlr4-4.13.2.jar",
+    "sha256": "e6f0b10d2ad206f338afe16867fc47148b6729d6e3a260ea28379b91f03a3657"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.antlr/antlr4-runtime/4.13.2/fc3db6d844df652a3d5db31c87fa12757f13691d/antlr4-runtime-4.13.2.jar",
+    "sha256": "dd3e8a13a2d669bf84fb8d834de35ce4875f27157698d206241ec8488aadcaf7"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/io.micrometer/micrometer-registry-prometheus/1.13.4/8e19d08ff3b493318b50a49e8a3d831a6ccb573d/micrometer-registry-prometheus-1.13.4.jar",
+    "sha256": "40297ae3260371b451f587087eb1da867baf2cbcc1961939a8c74aa96278e79c"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/io.micrometer/micrometer-jetty11/1.13.4/b9f28fda64942f2f77477c80f60be0e5f02e82de/micrometer-jetty11-1.13.4.jar",
+    "sha256": "e187f235c6821ac0beb0a2c1ebccbdac25f7a4ea85a1e935d839eac027df3354"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/io.micrometer/micrometer-core/1.13.4/6a333b0ac647afa33616e142797da950ff295b7b/micrometer-core-1.13.4.jar",
+    "sha256": "1e9e2f8cae4e03b27a531538258e8ac4996d4069dce6a5874692b1eac43af4cd"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.soot-oss/sootup.apk.frontend/2.0.0/e93f4e444d9bc9573a5d1d35be53881e4edbecd5/sootup.apk.frontend-2.0.0.jar",
+    "sha256": "d2d3bb1839e66dc4ed81b3c3071b54cc178040ce906f7c2c24ef629b58399362"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.soot-oss/sootup.interceptors/2.0.0/d7c44673d48db59cb22cab108bc3741ccb0e70ff/sootup.interceptors-2.0.0.jar",
+    "sha256": "f6c63ea7fe8fbf2a029f687b3ba9d6d27cf4da6f60c38f897faff915972a1fd5"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.soot-oss/sootup.java.core/2.0.0/d7e10779a0b3758a5adbf2eb6ea51b9b1845bdd7/sootup.java.core-2.0.0.jar",
+    "sha256": "6b28d9d60e71e165d933414ea09cc8694a099eeeceaed7ed4f7d904105600dc9"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.soot-oss/sootup.callgraph/2.0.0/1162912ffa8d3d7547777b8e309e7dd9b190e421/sootup.callgraph-2.0.0.jar",
+    "sha256": "9489c1c69283655ae4ce8d966969ecbedfcf7872046d071c34accd7ae3acb4de"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.soot-oss/sootup.analysis.intraprocedural/2.0.0/da446af6207020867e6d502e494215c3948b0383/sootup.analysis.intraprocedural-2.0.0.jar",
+    "sha256": "9b7fe714de22a6bd8e6f3e72f55bf5516d6b80e43113853da9bb03bafa17a42e"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.soot-oss/sootup.core/2.0.0/3ccfc6d55ca06ee3170f45b2ac5a204edabcb10a/sootup.core-2.0.0.jar",
+    "sha256": "a6cdc05a88ba12baba8b8a3b51f8f92d0ede76b7669755fa6a6ce0b5b99ded24"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.ow2.asm/asm-util/9.7.1/9e23359b598ec6b74b23e53110dd5c577adf2243/asm-util-9.7.1.jar",
+    "sha256": "f885be71b5c90556f5f1ad1c4f9276b29b96057c497d46666fe4ddbec3cb43c6"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.ow2.asm/asm-commons/9.7.1/406c6a2225cfe1819f102a161e54cc16a5c24f75/asm-commons-9.7.1.jar",
+    "sha256": "9a579b54d292ad9be171d4313fd4739c635592c2b5ac3a459bbd1049cddec6a0"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.ow2.asm/asm-analysis/9.7.1/f97a3b319f0ed6a8cd944dc79060d3912a28985f/asm-analysis-9.7.1.jar",
+    "sha256": "85b29371884ba31bb76edf22323c2c24e172c3267a67152eba3d1ccc2e041ef2"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.ow2.asm/asm-tree/9.7.1/3a53139787663b139de76b627fca0084ab60d32c/asm-tree-9.7.1.jar",
+    "sha256": "9929881f59eb6b840e86d54570c77b59ce721d104e6dfd7a40978991c2d3b41f"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.ow2.asm/asm/9.7.1/f0ed132a49244b042cd0e15702ab9f2ce3cc8436/asm-9.7.1.jar",
+    "sha256": "8cadd43ac5eb6d09de05faecca38b917a040bb9139c7edeb4cc81c740b713281"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.smali/dexlib2/2.5.2/8b664182af455b0757a7f59a42020fa5608c7d0e/dexlib2-2.5.2.jar",
+    "sha256": "5a5c8982d8bd7d6e3bb1a0713049e3c78b719ec32b20f6b619885cec30a0dd61"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/net.sf.jung/jung-io/2.1.1/b92f4014389aaceeef30b4c390b4824cf3555a9a/jung-io-2.1.1.jar",
+    "sha256": "05033ca56dd6fe2fb2fdc7ca7844d554484a3adf833f7a17cfc371263c31fa4d"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/net.sf.jung/jung-algorithms/2.1.1/632bd89a61a6c1ca7ed3505aca0765cff987096e/jung-algorithms-2.1.1.jar",
+    "sha256": "ed138e2f6b2b2f13af61a13f1788bce6f1de8858c42ee70a7d41e6283937a30a"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/net.sf.jung/jung-api/2.1.1/e47ee4efdfacce12f0af620747d9d0e44bf2eaa4/jung-api-2.1.1.jar",
+    "sha256": "6cb735963c36d5155d0de5f19a03485b9a26e67550e160b3dd89009a6f51694e"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/com.google.guava/guava/33.4.0-jre/3fcc0a259f724c7de54a6a55ea7e26d3d5c0cac/guava-33.4.0-jre.jar",
+    "sha256": "b918c98a7e44dbe94ebd9fe3e40cddaadb5a93e6a78eb6008b42df237241e538"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/com.google.errorprone/error_prone_annotations/2.36.0/227d4d4957ccc3dc5761bd897e3a0ee587e750a7/error_prone_annotations-2.36.0.jar",
+    "sha256": "77440e270b0bc9a249903c5a076c36a722c4886ca4f42675f2903a1c53ed61a5"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.eclipse.jetty.websocket/websocket-jetty-server/11.0.24/d7186c8db78613ff32b7640d8b4246b6f1d4b3a7/websocket-jetty-server-11.0.24.jar",
+    "sha256": "0558582725ac10d23887a096b76389c8d258ca54816fbcc81d9eb3df41ddc3fa"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.eclipse.jetty/jetty-webapp/11.0.24/66de68e45eb30de12147fa4997169ff04f2bc4de/jetty-webapp-11.0.24.jar",
+    "sha256": "31cb12ac71ea9c8ce58ea0d299f38fdf0eda6ee233a770ae1ea3ce8f74b954fe"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.eclipse.jetty.websocket/websocket-servlet/11.0.24/861280a99c68830f0a91a0d6416a800e38514859/websocket-servlet-11.0.24.jar",
+    "sha256": "a4fadaa9bf810f8f2f129a98277f7e4a6b50a2818dceb40402bc5d6e7e1e624f"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.eclipse.jetty/jetty-servlet/11.0.24/321a0376ead21685fa3edb69649cc3970262e2dd/jetty-servlet-11.0.24.jar",
+    "sha256": "178c8dc7e98515ba2874c87b360c1915fe774ec6e0011c651e639ea32719be63"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.eclipse.jetty/jetty-security/11.0.24/b10e8da0c2773b1f5c075b5873d4196077bc903b/jetty-security-11.0.24.jar",
+    "sha256": "07f556e34b048c819440b9e99fa6a9c1449e0d10e3c0d8628a446be5ed082b88"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.eclipse.jetty.websocket/websocket-core-server/11.0.24/22a9cf934ac41b30e8f1eefa7091dcdbf7a3822f/websocket-core-server-11.0.24.jar",
+    "sha256": "f010604c5bfeebf40b3de134b06ff7c043235c3285000f4874558c788e7d86a0"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.eclipse.jetty/jetty-server/11.0.24/688f5b139c37094b70c8d706a234afaaacd06fe6/jetty-server-11.0.24.jar",
+    "sha256": "1021ca69a4cb56bda466ca9bbb0fcaff3df31629a2ecf7240595f65aebaba34b"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/de.upb.cs.swt/axml/2.1.3/f0dff8ec1179fb893cdd7f8c52b21e047f5f3ed6/axml-2.1.3.jar",
+    "sha256": "b1b5db924bbbcd006365c58d821cc56bbef237cabf8f5e433f8903654691131d"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.eclipse.jetty.websocket/websocket-jetty-common/11.0.24/a12928d64f2dc6d5d32a7658f0f59aef9505ae49/websocket-jetty-common-11.0.24.jar",
+    "sha256": "8a3746f53fd14b2b8677103b8ab1534d9d8d6494c5f560cc9d0f641bc3b9fb51"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.eclipse.jetty.websocket/websocket-core-common/11.0.24/3ae76438bf66f2836e6c7cbe140c2a6eea9b9ed3/websocket-core-common-11.0.24.jar",
+    "sha256": "642ba8670f62e1336ec34659afa8bfc67aab67367384bc73200e5166ecdfa689"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.eclipse.jetty/jetty-http/11.0.24/eb6113b806eb606750e79fa0bbead5d95f0fc1ad/jetty-http-11.0.24.jar",
+    "sha256": "64e3686347f60fb1aa025013821547995a708e61a89967c0386ad3adc9fad11f"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.eclipse.jetty/jetty-io/11.0.24/51badc8b9409c4113c1f4b241d2f0c60ddd7080e/jetty-io-11.0.24.jar",
+    "sha256": "379a04193b4e666d7900478f602d12bd4e3d91abd3b5f64434d92927b04720f9"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.eclipse.jetty/jetty-xml/11.0.24/826f684bb30388dea18f568f36265f5f0008a978/jetty-xml-11.0.24.jar",
+    "sha256": "80e174e96d0620d9c27fd0a4d19a831278f1464c9c56bed9e437cc8a45255fd4"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.eclipse.jetty/jetty-util/11.0.24/cbc353bcc1a874f8909d65f1bc0018a976727243/jetty-util-11.0.24.jar",
+    "sha256": "1ec701f505056443de134d0e5464e298aa15400981210c10b668a070ffd97bfd"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.slf4j/slf4j-api/2.0.16/172931663a09a1fa515567af5fbef00897d3c04/slf4j-api-2.0.16.jar",
+    "sha256": "a12578dde1ba00bd9b816d388a0b879928d00bab3c83c240f7013bf4196c579a"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.antlr/ST4/4.3.4/bf68d049dd4e6e104055a79ac3bf9e6307d29258/ST4-4.3.4.jar",
+    "sha256": "f927ac384c46d749f8b5ec68972a53aed21e00313509299616edb73bfa15ff33"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.antlr/antlr-runtime/3.5.3/9011fb189c5ed6d99e5f3322514848d1ec1e1416/antlr-runtime-3.5.3.jar",
+    "sha256": "68bf9f5a33dfcb34033495c587e6236bef4e37aa6612919f5b1e843b90669fb9"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.abego.treelayout/org.abego.treelayout.core/1.0.3/457216e8e6578099ae63667bb1e4439235892028/org.abego.treelayout.core-1.0.3.jar",
+    "sha256": "fa5e31395c39c2e7d46aca0f81f72060931607b2fa41bd36038eb2cb6fb93326"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/com.ibm.icu/icu4j/72.1/bc9057df4b5efddf7f6d1880bf7f3399f4ce5633/icu4j-72.1.jar",
+    "sha256": "3df572b240a68d13b5cd778ad2393e885d26411434cd8f098ac5987ea2e64ce3"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/io.micrometer/micrometer-observation/1.13.4/2673c9b181ab2512002b23b7ad0f1dd02212696c/micrometer-observation-1.13.4.jar",
+    "sha256": "58642b0c0c965d1dc42bc49573657e948ea2a6c54d4902a6bc7e12a558d71f50"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/io.micrometer/micrometer-commons/1.13.4/edcf69518a4c382c48e19c7fb7d4aedfb115c0c3/micrometer-commons-1.13.4.jar",
+    "sha256": "7407cc52817cfb66814292de841a4495c5af5309b15be367565d4bc700a433c2"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.hdrhistogram/HdrHistogram/2.2.2/7959933ebcc0f05b2eaa5af0a0c8689fa257b15c/HdrHistogram-2.2.2.jar",
+    "sha256": "22d1d4316c4ec13a68b559e98c8256d69071593731da96136640f864fa14fad8"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.latencyutils/LatencyUtils/2.0.3/769c0b82cb2421c8256300e907298a9410a2a3d3/LatencyUtils-2.0.3.jar",
+    "sha256": "a32a9ffa06b2f4e01c5360f8f9df7bc5d9454a5d373cd8f361347fa5a57165ec"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/io.prometheus/prometheus-metrics-core/1.2.1/362330b5934a128e91e331f1497cd275fec1a81c/prometheus-metrics-core-1.2.1.jar",
+    "sha256": "47ae6ba7f38550637c9d6a0e83b7959cd974ace32b60beb948f91d2edb35461b"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/io.prometheus/prometheus-metrics-tracer-common/1.2.1/74cc4ac3226a3937d6e5c74c06454258e7901cec/prometheus-metrics-tracer-common-1.2.1.jar",
+    "sha256": "c55e5d5272518e9cb468b13f252f828565b976ec78b8470cd7c622dc201ca82d"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/io.prometheus/prometheus-metrics-exposition-formats/1.2.1/64190364467197c39bcc296ec80a99f6c979a7dc/prometheus-metrics-exposition-formats-1.2.1.jar",
+    "sha256": "c618f0210980d6272fefcd76b2964883380a828ba6fc399a9bf84253d5d39107"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.jgrapht/jgrapht-core/1.3.1/2a60359a72bea12c2336400408cebd0254b63be/jgrapht-core-1.3.1.jar",
+    "sha256": "71dc44221c43ae89e59e42d024cce9d1dfaef844afb544ca1cdbf96a4bdf2736"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/com.google.code.findbugs/jsr305/3.0.2/25ea2e8b0c338a877313bd4672d3fe056ea78f0d/jsr305-3.0.2.jar",
+    "sha256": "766ad2a0783f2687962c8ad74ceecc38a28b9f72a2d085ee438b7813e928d0c7"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.apache.commons/commons-lang3/3.14.0/1ed471194b02f2c6cb734a0cd6f6f107c673afae/commons-lang3-3.14.0.jar",
+    "sha256": "7b96bf3ee68949abb5bc465559ac270e0551596fa34523fddf890ec418dde13c"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/commons-io/commons-io/2.16.1/377d592e740dc77124e0901291dbfaa6810a200e/commons-io-2.16.1.jar",
+    "sha256": "f41f7baacd716896447ace9758621f62c1c6b0a91d89acee488da26fc477c84f"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/it.unimi.di/jsap/20210129/4d02d8c5caebc693863280774910928bb3fa1ead/jsap-20210129.jar",
+    "sha256": "211c7b820f702b851bbe702381d4d98eb839e7f253460e26bde02d98d7653535"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.apache.commons/commons-math3/3.6.1/e4ba98f1d4b3c80ec46392f25e094a6a2e58fcbf/commons-math3-3.6.1.jar",
+    "sha256": "1e56d7b058d28b65abd256b8458e3885b674c1d588fa43cd7d1cbb9c7ef2b308"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.eclipse.jetty.toolchain/jetty-jakarta-servlet-api/5.0.2/27fce6d666a203526236d33d00e202a4136230f/jetty-jakarta-servlet-api-5.0.2.jar",
+    "sha256": "efb20997729f32bfa6c8a8319037c353f7ad460d5d49f336bf232998ea2358db"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.eclipse.jetty.websocket/websocket-jetty-api/11.0.24/2e7355a7bbf8aefce69bc9669c30d2f03510d39c/websocket-jetty-api-11.0.24.jar",
+    "sha256": "c0b0cfcc912acf363200010d9b26fc20069f4ebe9a6fe2b925ea8fbbe5ec1ba5"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/io.prometheus/prometheus-metrics-model/1.2.1/99caac1a3f974de6bc9882fbf6a09ea055733c7b/prometheus-metrics-model-1.2.1.jar",
+    "sha256": "3520279e1fa7fbf0febd32b3a68863e389f32a152062e6627aff5a20c8408061"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/io.prometheus/prometheus-metrics-config/1.2.1/bcccb14176161671c4cb858b0ca50d680237fdbe/prometheus-metrics-config-1.2.1.jar",
+    "sha256": "b9fb02ef15e63d02aedea7fc57b3bdeae4dcfc91c905af60fffe66b8950f951f"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/io.prometheus/prometheus-metrics-shaded-protobuf/1.2.1/2b8ace486645dbaba1f3a694bd3a081f4d7a3aa5/prometheus-metrics-shaded-protobuf-1.2.1.jar",
+    "sha256": "e6060c7ef59fcf1c110677b01a96e4a08ab23d138700a6e2d0999163122750e1"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.jheaps/jheaps/0.10/4a85245d16284f555e94dd2a05b6de377f542e9a/jheaps-0.10.jar",
+    "sha256": "1c04ab9ed8bb649fe70baa9996dae58c987da87b91ee21b82db023d98b2af59f"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/com.google.guava/failureaccess/1.0.2/c4a06a64e650562f30b7bf9aaec1bfed43aca12b/failureaccess-1.0.2.jar",
+    "sha256": "8a8f81cf9b359e3f6dfa691a1e776985c061ef2f223c9b2c80753e1b458e8064"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/com.google.guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/b421526c5f297295adef1c886e5246c39d4ac629/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar",
+    "sha256": "b372a037d4230aa57fbeffdef30fd6123f9c0c2db85d0aced00c91b974f33f99"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.checkerframework/checker-qual/3.43.0/9425eee39e56b116d2b998b7c2cebcbd11a3c98b/checker-qual-3.43.0.jar",
+    "sha256": "3fbc2e98f05854c3df16df9abaa955b91b15b3ecac33623208ed6424640ef0f6"
+  },
+  {
+    "path": "/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/com.google.j2objc/j2objc-annotations/3.0.0/7399e65dd7e9ff3404f4535b2f017093bdb134c7/j2objc-annotations-3.0.0.jar",
+    "sha256": "88241573467ddca44ffd4d74aa04c2bbfd11bf7c17e0c342c94c9de7a70a7c64"
+  }
+]

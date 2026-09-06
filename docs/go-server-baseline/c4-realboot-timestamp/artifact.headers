@@ -1,0 +1,14 @@
+HTTP/2 200 
+date: Sun, 06 Sep 2026 20:29:12 GMT
+content-type: application/java-archive
+content-length: 25365592
+cf-ray: a3703974b808b2de-ICN
+cf-cache-status: MISS
+accept-ranges: bytes
+etag: "b7b25d2eedcea9926d7db6be3f59ac25"
+last-modified: Tue, 07 Apr 2020 21:57:42 GMT
+x-checksum-md5: b7b25d2eedcea9926d7db6be3f59ac25
+x-checksum-sha1: 75a8757ce56b039a4ce2480f790714309e42cef1
+server: cloudflare
+alt-svc: h3=":443"; ma=86400
+

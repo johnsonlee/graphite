@@ -45,12 +45,14 @@ Unicode verification adds 560 main helper results, all 65,536 Java/Kotlin Char v
 
 Additional tests assert manifest parsing, incomplete Boot evidence, helper scoring, strong direct evidence versus hierarchy reduction, runtime-edge preservation and DSL escaping/identifier collisions. Existing lower-layer tests cover namespace thresholds, external dependency records and main-method identity/reachability.
 
+A separate [real Spring Boot archive replay](../../../../docs/go-server-baseline/c4-realboot-timestamp/README.md) uses the official `timestamp-task:2.1.1.RELEASE` application, containing 52 nested JARs. Main's explicit application-package filter produces a 450-node, 37-edge graph; all 32 complete model/render outputs and both load-mode catalogs match. This verifies the selected application graph, not all dependency bytecode. The saved graph and replay harness allow independent verification without executing the application.
+
 Validation commands are `go test -race ./internal/analysis/c4` and `go vet ./internal/analysis/c4`; Linux/amd64 test compilation is also checked. These are bounded synthetic correctness fixtures. No performance claim or real-corpus performance comparison is implied.
 
 ## Remaining compatibility limits
 
 - Main's internal `C4WireCodec` legacy view-map encode/decode overload is not exposed; the server pipeline uses typed inference directly into the Structurizr mapper. The standalone `DecodeWorkspace` accepts normal Structurizr fields with string properties and reports JSON type errors; it does not reproduce every Gson coercion/default for malformed or non-string external workspace properties. The topology HTTP routes generate their own workspace, so this is outside their normal graph-to-output path.
 - Java 17 / Kotlin naming now uses shared `javastring` primitives and retains isolated surrogates as WTF-8 through model construction and rendering. The final HTTP encoder owns their `?` wire replacement. The bounded Unicode oracle does not establish full-corpus C4 parity or every malformed external-workspace input.
-- Manifest parsing and Boot classification have source-based tests; the complete persisted-store differential fixtures do not include an actual nested Spring Boot archive. Real-archive integration and full-corpus C4 parity remain additional validation work.
+- The real Boot archive replay covers one application-package selection. Full-dependency archive graphs and full-corpus C4 parity remain additional validation work.
 
 The verified fixtures show no remaining graph-to-workspace or renderer mismatch. They do not establish universal parity or performance on the production graph corpus.

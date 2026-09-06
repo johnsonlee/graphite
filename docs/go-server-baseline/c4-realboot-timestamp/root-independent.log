@@ -1,0 +1,45 @@
+{
+  "equal": true,
+  "passed_outputs": 32,
+  "total_outputs": 32,
+  "catalog": [
+    {
+      "mode": "MAPPED",
+      "equal": true,
+      "checks": {
+        "nodes": true,
+        "edges": true,
+        "methods": true,
+        "callSites": true,
+        "classOrigins": true,
+        "resources": true,
+        "manifest": true
+      },
+      "nodes": 450,
+      "edges": 37,
+      "methods": 9,
+      "callSites": 13,
+      "classOriginCount": 15445,
+      "resourceCount": 117
+    },
+    {
+      "mode": "EAGER",
+      "equal": true,
+      "checks": {
+        "nodes": true,
+        "edges": true,
+        "methods": true,
+        "callSites": true,
+        "classOrigins": true,
+        "resources": true,
+        "manifest": true
+      },
+      "nodes": 450,
+      "edges": 37,
+      "methods": 9,
+      "callSites": 13,
+      "classOriginCount": 15445,
+      "resourceCount": 117
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+Starting buildGraph pass 1
+Starting buildGraph pass 2
+Unsupported constant type: ClassConstant = class "Lorg/springframework/cloud/task/app/timestamp/TimestampTaskApplication;"
+Unsupported constant type: ClassConstant = class "Lorg/springframework/cloud/task/app/timestamp/TimestampTaskConfiguration$TimestampTask;"
+Starting graphBuilder.build()
+Finished graphBuilder.build()

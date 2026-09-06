@@ -4,4 +4,7 @@ docs/go-server-baseline/**/*.log -whitespace
 docs/go-server-baseline/**/*.patch -whitespace
 # Go build metadata includes a literal trailing tab on the module line.
 docs/go-server-baseline/**/binary-build-info.txt -whitespace
+# Raw Maven responses retain HTTP CRLF and directory-listing padding.
+docs/go-server-baseline/c4-realboot-timestamp/*.headers -text -whitespace
+docs/go-server-baseline/c4-realboot-timestamp/release-index.html -text -whitespace
 docs/go-server-baseline/** linguist-generated=true

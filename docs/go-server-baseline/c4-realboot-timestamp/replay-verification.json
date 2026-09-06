@@ -1,0 +1,8 @@
+{
+  "archive_extraction": "/tmp/graphite-realboot-c4-replay",
+  "native_build": "go build -o ../native-realboot ./cmd/realboot",
+  "native_command": "../native-realboot ../main/store ../native",
+  "comparison": "python3 compare.py /tmp/graphite-realboot-c4-replay",
+  "result": "32/32 outputs and both complete catalogs pass; comparison.json exactly matches archived result",
+  "no_jvm_required": true
+}

@@ -1,0 +1,308 @@
+{
+  "revision": "453b362c15ba8efeebde39e5e5e1118dc811333d",
+  "directory": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-realboot-root-6me4xj3y",
+  "result": {
+    "equal": true,
+    "passed_outputs": 32,
+    "total_outputs": 32,
+    "comparisons": [
+      {
+        "mode": "MAPPED",
+        "level": "all",
+        "format": "json",
+        "equal": true,
+        "main_sha256": "b0014f59b32d7aad1322f42afc0bbbf1aee86c569d3b40b70db15fe92ad0aca4",
+        "native_sha256": "c7a9155f77cda8e88ed5e1e84127b251053322dc08680bacf8f95ca434927091"
+      },
+      {
+        "mode": "MAPPED",
+        "level": "all",
+        "format": "mermaid",
+        "equal": true,
+        "main_sha256": "e704f0e419b02f7bfb406bb045d0f9e1387a67745e41ab1fa3b176316cbacd54",
+        "native_sha256": "e704f0e419b02f7bfb406bb045d0f9e1387a67745e41ab1fa3b176316cbacd54"
+      },
+      {
+        "mode": "MAPPED",
+        "level": "all",
+        "format": "plantuml",
+        "equal": true,
+        "main_sha256": "8a4f0b9327f52ec9ed789aaa0ad07a5d2b2e26f5d75295759221bb6f53e2b788",
+        "native_sha256": "8a4f0b9327f52ec9ed789aaa0ad07a5d2b2e26f5d75295759221bb6f53e2b788"
+      },
+      {
+        "mode": "MAPPED",
+        "level": "all",
+        "format": "dsl",
+        "equal": true,
+        "main_sha256": "1227478529c2366ebdfb4cc407b992431571a9874406cbb01947ad83b9419bd7",
+        "native_sha256": "1227478529c2366ebdfb4cc407b992431571a9874406cbb01947ad83b9419bd7"
+      },
+      {
+        "mode": "MAPPED",
+        "level": "context",
+        "format": "json",
+        "equal": true,
+        "main_sha256": "fe5c5c1aa2aa6edf6e0a97aeaed906be0bd82bd128a69e75d621ef65f1e3dc1f",
+        "native_sha256": "c535b21c42e11104fa5265ec6da2a557ec5ef7f046a2a29101b8ef5d0ffe78ab"
+      },
+      {
+        "mode": "MAPPED",
+        "level": "context",
+        "format": "mermaid",
+        "equal": true,
+        "main_sha256": "290fb193379fb04007024deec1e80dea8e7fbb994be972f9f8e58ea27514c969",
+        "native_sha256": "290fb193379fb04007024deec1e80dea8e7fbb994be972f9f8e58ea27514c969"
+      },
+      {
+        "mode": "MAPPED",
+        "level": "context",
+        "format": "plantuml",
+        "equal": true,
+        "main_sha256": "45c84c26f129bf597e86bad29200be68b04cb6d2d68ec514e45da30f6eea7996",
+        "native_sha256": "45c84c26f129bf597e86bad29200be68b04cb6d2d68ec514e45da30f6eea7996"
+      },
+      {
+        "mode": "MAPPED",
+        "level": "context",
+        "format": "dsl",
+        "equal": true,
+        "main_sha256": "bdacce012a28fbfd06736b7b806d25cce55f4045750aa2982810bd402c95fb4c",
+        "native_sha256": "bdacce012a28fbfd06736b7b806d25cce55f4045750aa2982810bd402c95fb4c"
+      },
+      {
+        "mode": "MAPPED",
+        "level": "container",
+        "format": "json",
+        "equal": true,
+        "main_sha256": "a8ea5db33cea8965d3c21a5734b8fb5d7cadb06f946f001fa26805f73d51a024",
+        "native_sha256": "07d73e484e46260ffe055bf965475b261eeb3d28b271406407fc4e2d87c0b9a7"
+      },
+      {
+        "mode": "MAPPED",
+        "level": "container",
+        "format": "mermaid",
+        "equal": true,
+        "main_sha256": "35411c1c3d43ee940081822c89e25a68ab1c68906824756a130cea7106164e7c",
+        "native_sha256": "35411c1c3d43ee940081822c89e25a68ab1c68906824756a130cea7106164e7c"
+      },
+      {
+        "mode": "MAPPED",
+        "level": "container",
+        "format": "plantuml",
+        "equal": true,
+        "main_sha256": "003c7da030053b8d77bd6e36f0402f700a4e0808f5a4be201208e462e3ef02f7",
+        "native_sha256": "003c7da030053b8d77bd6e36f0402f700a4e0808f5a4be201208e462e3ef02f7"
+      },
+      {
+        "mode": "MAPPED",
+        "level": "container",
+        "format": "dsl",
+        "equal": true,
+        "main_sha256": "e4480ae498ab6a66bf5b12942cc48a4255de8492c97324305ae49621b5aef031",
+        "native_sha256": "e4480ae498ab6a66bf5b12942cc48a4255de8492c97324305ae49621b5aef031"
+      },
+      {
+        "mode": "MAPPED",
+        "level": "component",
+        "format": "json",
+        "equal": true,
+        "main_sha256": "69b9ee2f95cbf7b7836d87134d12b8dafca7e05fa4b41199d9b29e454ce551ef",
+        "native_sha256": "092de5346c8c9871738b35452224309f013695242fa80e26bf717fa22e1c5e49"
+      },
+      {
+        "mode": "MAPPED",
+        "level": "component",
+        "format": "mermaid",
+        "equal": true,
+        "main_sha256": "ad6586f310d87461d57fd5c1bebe54ed34dca130032e2d1cccdde24c2d68210e",
+        "native_sha256": "ad6586f310d87461d57fd5c1bebe54ed34dca130032e2d1cccdde24c2d68210e"
+      },
+      {
+        "mode": "MAPPED",
+        "level": "component",
+        "format": "plantuml",
+        "equal": true,
+        "main_sha256": "77102bca49a0f57771df322f6b3e6f99857d196a74932bc01bcc00bab2ee80cb",
+        "native_sha256": "77102bca49a0f57771df322f6b3e6f99857d196a74932bc01bcc00bab2ee80cb"
+      },
+      {
+        "mode": "MAPPED",
+        "level": "component",
+        "format": "dsl",
+        "equal": true,
+        "main_sha256": "359c81ce59783e5afddcae30ca79f677a419e6dfd396d8ebe3d7af04d319ac29",
+        "native_sha256": "359c81ce59783e5afddcae30ca79f677a419e6dfd396d8ebe3d7af04d319ac29"
+      },
+      {
+        "mode": "EAGER",
+        "level": "all",
+        "format": "json",
+        "equal": true,
+        "main_sha256": "b0014f59b32d7aad1322f42afc0bbbf1aee86c569d3b40b70db15fe92ad0aca4",
+        "native_sha256": "c7a9155f77cda8e88ed5e1e84127b251053322dc08680bacf8f95ca434927091"
+      },
+      {
+        "mode": "EAGER",
+        "level": "all",
+        "format": "mermaid",
+        "equal": true,
+        "main_sha256": "e704f0e419b02f7bfb406bb045d0f9e1387a67745e41ab1fa3b176316cbacd54",
+        "native_sha256": "e704f0e419b02f7bfb406bb045d0f9e1387a67745e41ab1fa3b176316cbacd54"
+      },
+      {
+        "mode": "EAGER",
+        "level": "all",
+        "format": "plantuml",
+        "equal": true,
+        "main_sha256": "8a4f0b9327f52ec9ed789aaa0ad07a5d2b2e26f5d75295759221bb6f53e2b788",
+        "native_sha256": "8a4f0b9327f52ec9ed789aaa0ad07a5d2b2e26f5d75295759221bb6f53e2b788"
+      },
+      {
+        "mode": "EAGER",
+        "level": "all",
+        "format": "dsl",
+        "equal": true,
+        "main_sha256": "1227478529c2366ebdfb4cc407b992431571a9874406cbb01947ad83b9419bd7",
+        "native_sha256": "1227478529c2366ebdfb4cc407b992431571a9874406cbb01947ad83b9419bd7"
+      },
+      {
+        "mode": "EAGER",
+        "level": "context",
+        "format": "json",
+        "equal": true,
+        "main_sha256": "fe5c5c1aa2aa6edf6e0a97aeaed906be0bd82bd128a69e75d621ef65f1e3dc1f",
+        "native_sha256": "c535b21c42e11104fa5265ec6da2a557ec5ef7f046a2a29101b8ef5d0ffe78ab"
+      },
+      {
+        "mode": "EAGER",
+        "level": "context",
+        "format": "mermaid",
+        "equal": true,
+        "main_sha256": "290fb193379fb04007024deec1e80dea8e7fbb994be972f9f8e58ea27514c969",
+        "native_sha256": "290fb193379fb04007024deec1e80dea8e7fbb994be972f9f8e58ea27514c969"
+      },
+      {
+        "mode": "EAGER",
+        "level": "context",
+        "format": "plantuml",
+        "equal": true,
+        "main_sha256": "45c84c26f129bf597e86bad29200be68b04cb6d2d68ec514e45da30f6eea7996",
+        "native_sha256": "45c84c26f129bf597e86bad29200be68b04cb6d2d68ec514e45da30f6eea7996"
+      },
+      {
+        "mode": "EAGER",
+        "level": "context",
+        "format": "dsl",
+        "equal": true,
+        "main_sha256": "bdacce012a28fbfd06736b7b806d25cce55f4045750aa2982810bd402c95fb4c",
+        "native_sha256": "bdacce012a28fbfd06736b7b806d25cce55f4045750aa2982810bd402c95fb4c"
+      },
+      {
+        "mode": "EAGER",
+        "level": "container",
+        "format": "json",
+        "equal": true,
+        "main_sha256": "a8ea5db33cea8965d3c21a5734b8fb5d7cadb06f946f001fa26805f73d51a024",
+        "native_sha256": "07d73e484e46260ffe055bf965475b261eeb3d28b271406407fc4e2d87c0b9a7"
+      },
+      {
+        "mode": "EAGER",
+        "level": "container",
+        "format": "mermaid",
+        "equal": true,
+        "main_sha256": "35411c1c3d43ee940081822c89e25a68ab1c68906824756a130cea7106164e7c",
+        "native_sha256": "35411c1c3d43ee940081822c89e25a68ab1c68906824756a130cea7106164e7c"
+      },
+      {
+        "mode": "EAGER",
+        "level": "container",
+        "format": "plantuml",
+        "equal": true,
+        "main_sha256": "003c7da030053b8d77bd6e36f0402f700a4e0808f5a4be201208e462e3ef02f7",
+        "native_sha256": "003c7da030053b8d77bd6e36f0402f700a4e0808f5a4be201208e462e3ef02f7"
+      },
+      {
+        "mode": "EAGER",
+        "level": "container",
+        "format": "dsl",
+        "equal": true,
+        "main_sha256": "e4480ae498ab6a66bf5b12942cc48a4255de8492c97324305ae49621b5aef031",
+        "native_sha256": "e4480ae498ab6a66bf5b12942cc48a4255de8492c97324305ae49621b5aef031"
+      },
+      {
+        "mode": "EAGER",
+        "level": "component",
+        "format": "json",
+        "equal": true,
+        "main_sha256": "69b9ee2f95cbf7b7836d87134d12b8dafca7e05fa4b41199d9b29e454ce551ef",
+        "native_sha256": "092de5346c8c9871738b35452224309f013695242fa80e26bf717fa22e1c5e49"
+      },
+      {
+        "mode": "EAGER",
+        "level": "component",
+        "format": "mermaid",
+        "equal": true,
+        "main_sha256": "ad6586f310d87461d57fd5c1bebe54ed34dca130032e2d1cccdde24c2d68210e",
+        "native_sha256": "ad6586f310d87461d57fd5c1bebe54ed34dca130032e2d1cccdde24c2d68210e"
+      },
+      {
+        "mode": "EAGER",
+        "level": "component",
+        "format": "plantuml",
+        "equal": true,
+        "main_sha256": "77102bca49a0f57771df322f6b3e6f99857d196a74932bc01bcc00bab2ee80cb",
+        "native_sha256": "77102bca49a0f57771df322f6b3e6f99857d196a74932bc01bcc00bab2ee80cb"
+      },
+      {
+        "mode": "EAGER",
+        "level": "component",
+        "format": "dsl",
+        "equal": true,
+        "main_sha256": "359c81ce59783e5afddcae30ca79f677a419e6dfd396d8ebe3d7af04d319ac29",
+        "native_sha256": "359c81ce59783e5afddcae30ca79f677a419e6dfd396d8ebe3d7af04d319ac29"
+      }
+    ],
+    "catalog": [
+      {
+        "mode": "MAPPED",
+        "equal": true,
+        "checks": {
+          "nodes": true,
+          "edges": true,
+          "methods": true,
+          "callSites": true,
+          "classOrigins": true,
+          "resources": true,
+          "manifest": true
+        },
+        "nodes": 450,
+        "edges": 37,
+        "methods": 9,
+        "callSites": 13,
+        "classOriginCount": 15445,
+        "resourceCount": 117
+      },
+      {
+        "mode": "EAGER",
+        "equal": true,
+        "checks": {
+          "nodes": true,
+          "edges": true,
+          "methods": true,
+          "callSites": true,
+          "classOrigins": true,
+          "resources": true,
+          "manifest": true
+        },
+        "nodes": 450,
+        "edges": 37,
+        "methods": 9,
+        "callSites": 13,
+        "classOriginCount": 15445,
+        "resourceCount": 117
+      }
+    ]
+  },
+  "scope": "Current committed native production source plus archived harness; complete 32 outputs and catalog"
+}

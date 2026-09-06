@@ -1,0 +1,5 @@
+gradle.projectsEvaluated {
+ rootProject.tasks.register('realBootRuntimeClasspath') {
+  doLast { println('REALBOOT_CLASSPATH=' + gradle.rootProject.project(':query').configurations.runtimeClasspath.asPath) }
+ }
+}
