@@ -4480,3 +4480,27 @@ checks that a present term's hint moves off the shared leading trigrams and that
 lookup consumes less work; the view tests and detekt pass.
 
 **Conclusion:** keep for exact-head hosted validation after Attempt 137's run is read.
+
+### 2026-09-06 - Attempt 139: Decide raw probes by the predicate that matched last and keep the probed string ids
+
+**Hypothesis:** the dense rows and the first graph of the distinct-dense row run the bounded raw
+probe: `683` nodes are inspected for `200` matches and the four predicates of the disjunction are
+tried in query order, so a node whose only match is its callee name (where a term such as `get`
+lives) pays three misses first (`2,452` matcher calls for `683` nodes); the projection then reads
+every matched node record a second time, and the DISTINCT variant indexes its properties through
+boxed `List<Int>`s.
+
+**Change:** a probe tries the predicates in an order where the predicate that matched last moves
+one position towards the front, so most nodes are decided by their first check; a fresh probe
+keeps the four string ids it read for each matched node and the projection that follows uses them
+instead of reading the node records again (a cached probe still reads them); the DISTINCT probe
+keeps its property indexes in `IntArray`s.
+
+**Evidence (local, 64 fixtures, fresh JVM in benchmark order, five alternating runs, medians):**
+distinct-dense first execution CPU `13.4 -> 12.1 ms`, second execution `5.8 -> 5.1 ms`; `add`
+first execution `11.1 -> 8.3 ms`, second `8.2 -> 6.9 ms`; four-properties-dense `5.3 -> 5.8 ms`
+(within its `4.4..6.6 ms` spread, no gain) and the targeted rows unchanged. The webgraph tests
+and detekt pass.
+
+**Conclusion:** keep for exact-head hosted validation after Attempt 138's run is read; the dense
+projection row itself needs a different cut.
