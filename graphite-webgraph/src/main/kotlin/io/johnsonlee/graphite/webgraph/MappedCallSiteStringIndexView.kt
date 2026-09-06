@@ -293,8 +293,10 @@ internal class MappedCallSiteStringIndexView private constructor(
         }
 
         /**
-         * The plan's probe of [predicate] when it yields a necessary condition on raw string ids
-         * (see [acceptsCandidate]), or null when the plan learned nothing about it.
+         * The plan's probe of [predicate] when it yields a necessary condition on raw string ids:
+         * an absent term, the sorted ids of an exact term, or the anchor trigram's posting range in
+         * [trigramPostings]; null when the plan learned nothing about it. Raw prefix probes of
+         * dense plans reject most ids through that condition before decoding any string.
          */
         internal fun candidateProbe(predicate: StringPropertyPredicate): PredicateProbe? =
             when (val probe = probes[MappedPredicateKey(predicate.transform, predicate.mode, predicate.expected)]) {
@@ -302,18 +304,8 @@ internal class MappedCallSiteStringIndexView private constructor(
                 else -> null
             }
 
-        /**
-         * A necessary condition on a raw string id for the predicate behind [probe] that costs one
-         * mapped binary search and no string decode. Raw prefix probes of dense plans reject most
-         * ids through it before decoding any string. The check is a plan method rather than a
-         * function interface so a cold request loads neither an interface nor a lambda class for it.
-         */
-        internal fun acceptsCandidate(probe: PredicateProbe, stringId: Int): Boolean = when (probe) {
-            is PredicateProbe.Absent -> false
-            is PredicateProbe.Exact -> java.util.Arrays.binarySearch(probe.stringIds, stringId) >= 0
-            is PredicateProbe.Trigram -> trigramMember(probe.anchor, stringId)
-            else -> true
-        }
+        /** The persisted trigram postings, string id in the low word, sorted by trigram then id. */
+        internal fun trigramPostings(): LongBuffer = this@MappedCallSiteStringIndexView.trigramPostings
 
         private fun resolve(): Array<IntArray?> {
             rowsByProperty?.let { return it }
@@ -1005,24 +997,6 @@ internal class MappedCallSiteStringIndexView private constructor(
             if (propertyIndex < 0) null else stringTable.get(stringIds[propertyIndex])
         }
 
-    /** Membership of a string id in one trigram's postings, which are sorted by string id. */
-    private fun trigramMember(anchor: IntRange, stringId: Int): Boolean {
-        var low = anchor.first
-        var high = anchor.last
-        while (low <= high) {
-            val middle = (low + high).ushr(1)
-            val candidate = trigramPostings.get(middle).toInt()
-            if (candidate < stringId) {
-                low = middle + 1
-            } else if (candidate > stringId) {
-                high = middle - 1
-            } else {
-                return true
-            }
-        }
-        return false
-    }
-
     private fun trigramPostingRange(trigram: Int): IntRange? {
         trigramDirectory?.let { directory -> return directory.range(trigram) }
         var low = 0
@@ -1465,40 +1439,53 @@ internal class LeadingValueTrigrams(val column: Int, values: List<String>) {
 }
 
 /**
- * Heap directory of the distinct trigrams in the persisted postings: ascending trigram hashes,
- * the posting index where each run begins, and a direct-address table for the ASCII hash range
- * so a probe resolves a trigram with one array read. It is collected for free by the single
- * validation pass and replaces two binary searches over the mapped postings per probed trigram,
- * so a cold multi-graph request never faults posting pages in only to learn that a term is
- * absent. The arrays are charged to the shared index budget; a graph that cannot reserve them
- * searches the mapped postings directly.
+ * Heap directory of the distinct trigrams in the persisted postings: the posting index where each
+ * trigram's run begins in ascending hash order, a presence bit set over the ASCII hash range, the
+ * number of present hashes before each word of that bit set, and the few hashes above the range.
+ * A probe resolves a trigram with two array reads and a population count: the bit proves presence
+ * and its rank among the set bits is the trigram's position, so the directory keeps no sorted
+ * copy of the hashes below the range. It is collected for free by the single validation pass and
+ * replaces two binary searches over the mapped postings per probed trigram, so a cold multi-graph
+ * request never faults posting pages in only to learn that a term is absent. The arrays are
+ * charged to the shared index budget; a graph that cannot reserve them searches the mapped
+ * postings directly.
  */
 private class TrigramDirectory private constructor(
-    private val trigrams: IntArray,
     private val starts: IntArray,
     private val asciiBits: LongArray,
+    private val asciiRanks: IntArray,
+    private val tailTrigrams: IntArray,
     private val reservation: MappedCallSiteStringIndexMemoryBudget.Reservation
 ) : Closeable {
     @Volatile
     private var closed = false
 
+    private val asciiCount = starts.size - 1 - tailTrigrams.size
 
     fun range(trigram: Int): IntRange? {
-        if (!contains(trigram)) return null
-        val index = java.util.Arrays.binarySearch(trigrams, trigram)
+        val index = indexOf(trigram)
         if (index < 0) return null
         return starts[index] until starts[index + 1]
     }
 
     /**
-     * Presence test through a bit set over the ASCII hash range that stays cache-resident, so
+     * Presence test through the bit set for the ASCII hash range, which stays cache-resident, so
      * rejecting a value whose trigrams are not all indexed touches almost no memory.
      */
-    fun contains(trigram: Int): Boolean {
-        if (trigram < 0 || trigram >= (asciiBits.size shl BITSET_WORD_SHIFT)) {
-            return java.util.Arrays.binarySearch(trigrams, trigram) >= 0
+    fun contains(trigram: Int): Boolean = indexOf(trigram) >= 0
+
+    /** The position of [trigram] in ascending hash order, or -1 when the postings do not have it. */
+    private fun indexOf(trigram: Int): Int {
+        if (trigram < 0) return -1
+        if (trigram >= ASCII_TRIGRAM_HASH_LIMIT) {
+            val position = java.util.Arrays.binarySearch(tailTrigrams, trigram)
+            return if (position < 0) -1 else asciiCount + position
         }
-        return asciiBits[trigram ushr BITSET_WORD_SHIFT] and (1L shl (trigram and BITSET_WORD_MASK)) != 0L
+        val word = trigram ushr BITSET_WORD_SHIFT
+        val bits = asciiBits[word]
+        val bit = 1L shl (trigram and BITSET_WORD_MASK)
+        if (bits and bit == 0L) return -1
+        return asciiRanks[word] + java.lang.Long.bitCount(bits and (bit - 1))
     }
 
     override fun close() {
@@ -1509,21 +1496,30 @@ private class TrigramDirectory private constructor(
 
     companion object {
         fun create(trigrams: IntArrayList, starts: IntArrayList, postingCount: Int): TrigramDirectory? {
+            require(trigrams.isEmpty || trigrams.getInt(0) >= 0) { "Trigram hashes are non-negative" }
             val wordCount = (ASCII_TRIGRAM_HASH_LIMIT + BITSET_WORD_MASK) ushr BITSET_WORD_SHIFT
-            val bytes = (trigrams.size.toLong() * 2 + 1) * Int.SIZE_BYTES +
+            var asciiCount = 0
+            while (asciiCount < trigrams.size && trigrams.getInt(asciiCount) < ASCII_TRIGRAM_HASH_LIMIT) asciiCount++
+            val tailCount = trigrams.size - asciiCount
+            val bytes = (trigrams.size.toLong() + 1 + wordCount + tailCount) * Int.SIZE_BYTES +
                 wordCount.toLong() * Long.SIZE_BYTES + TRIGRAM_DIRECTORY_HEADER_BYTES
             val reservation = MappedCallSiteStringIndexMemoryBudget.tryReserve(bytes) ?: return null
             val ends = IntArray(starts.size + 1)
             starts.getElements(0, ends, 0, starts.size)
             ends[starts.size] = postingCount
-            val keys = trigrams.toIntArray()
             val bits = LongArray(wordCount)
-            keys.forEach { trigram ->
-                if (trigram in 0 until ASCII_TRIGRAM_HASH_LIMIT) {
-                    bits[trigram ushr BITSET_WORD_SHIFT] = bits[trigram ushr BITSET_WORD_SHIFT] or (1L shl (trigram and BITSET_WORD_MASK))
-                }
+            for (index in 0 until asciiCount) {
+                val trigram = trigrams.getInt(index)
+                bits[trigram ushr BITSET_WORD_SHIFT] = bits[trigram ushr BITSET_WORD_SHIFT] or (1L shl (trigram and BITSET_WORD_MASK))
             }
-            return TrigramDirectory(keys, ends, bits, reservation)
+            val ranks = IntArray(wordCount)
+            var rank = 0
+            for (word in 0 until wordCount) {
+                ranks[word] = rank
+                rank += java.lang.Long.bitCount(bits[word])
+            }
+            val tail = IntArray(tailCount) { offset -> trigrams.getInt(asciiCount + offset) }
+            return TrigramDirectory(ends, bits, ranks, tail, reservation)
         }
     }
 }
