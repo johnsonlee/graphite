@@ -1,0 +1,35 @@
+{
+  "checks": [
+    {
+      "command": "go test -race ./internal/store",
+      "outcome": "passed"
+    },
+    {
+      "command": "go vet ./internal/store",
+      "outcome": "passed"
+    },
+    {
+      "command": "GOOS=linux GOARCH=amd64 go test -c -o /tmp/graphite-store-compression-linux.test ./internal/store",
+      "outcome": "compiled; not executed on Linux"
+    }
+  ],
+  "realDefaultAdjacency": [
+    {
+      "graph": "fixture-hive-11",
+      "root": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-hive-11",
+      "arcs": 364570,
+      "nodeIdSpan": 14598292,
+      "expectedAndObservedOrderedEdgeSHA256": "edde4a59450ea946b8e1d110134ab47767f78375383cc38e2f2bd47ee96db4ae"
+    },
+    {
+      "graph": "fixture-android-12",
+      "root": "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-android-12",
+      "arcs": 477311,
+      "nodeIdSpan": 4925194,
+      "expectedAndObservedOrderedEdgeSHA256": "f30c9cb53d84ced1108f01b48db4e0ae5f06756c5d7ade6b82c9becb6ac53a68"
+    }
+  ],
+  "realCheckCommand": "GRAPHITE_TEST_GRAPH=<root> GRAPHITE_TEST_EDGE_SHA256=<expectedAndObservedOrderedEdgeSHA256> go test ./internal/store -run TestRealBVGraph -v",
+  "expectedHashSource": "Previously independently decoded JVM default-fixture hashes recorded in internal/store/README.md",
+  "notes": "Correctness-only runs; no performance conclusions. Other root HTTP replay may coexist on host."
+}

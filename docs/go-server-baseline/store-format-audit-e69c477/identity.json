@@ -1,0 +1,201 @@
+{
+  "nativeRevision": "e69c477562202b87fcafa5e4aeeeeb5a4452636c",
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "jvmJar": "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+  "jvmJarSHA256": "91c3a1d154ca96004c55df195d9f752e077cab3e33ca1570b2c88b872d9bc34d",
+  "tempDirectory": "/tmp/graphite-store-format-audit-e69c477",
+  "nativeBinarySHA256": "a06c26b31400fb389831a5e1674cdf864e9b0a99c8375af923eb86edb4921d65",
+  "sourceAndInputFiles": [
+    {
+      "path": "base/backward.graph",
+      "sha256": "7ced01dbd10e7d030e90b2357c1775a9d62e3fee564b09920c97b18fcf175e3e",
+      "bytes": 12
+    },
+    {
+      "path": "base/backward.offsets",
+      "sha256": "f4b0ea0238a3ea302d5171a665d550c52ba75c0b5d2485da69feee027032b884",
+      "bytes": 8
+    },
+    {
+      "path": "base/backward.properties",
+      "sha256": "a5bed05bdeaa5fc8eb6b690a5a2030c527b930bf4cebbd2f4c26c895002c7ad2",
+      "bytes": 701
+    },
+    {
+      "path": "base/forward.graph",
+      "sha256": "1b996b96ad39e6925efc82afa4642e25a74bfc1d48cfecee017dab035e70c1f8",
+      "bytes": 11
+    },
+    {
+      "path": "base/forward.offsets",
+      "sha256": "cb8c0dc7727ff5bfd64019a8772d8366e490a14c0ddacc9662d9febc0413a3c3",
+      "bytes": 8
+    },
+    {
+      "path": "base/forward.properties",
+      "sha256": "bf8eeffe155b36681979ddcd173f62c6961e4b6b076d2c29ccf2994d0d199be7",
+      "bytes": 699
+    },
+    {
+      "path": "base/graph.comparisons",
+      "sha256": "3ac260ffb8033e74fa019764e1f9fe42afbef288db92e4e4820e2fbaf0ae44d7",
+      "bytes": 24
+    },
+    {
+      "path": "base/graph.labels",
+      "sha256": "a526a5701da8b569a3ab0f8f6b37e3779b484d5967f18b58ce77d293deefdcfe",
+      "bytes": 15
+    },
+    {
+      "path": "base/graph.metadata",
+      "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb",
+      "bytes": 36
+    },
+    {
+      "path": "base/graph.nodedata",
+      "sha256": "72241e3877a1511ace09d919670b99729c730fc80a69927f6bd1a364c034134a",
+      "bytes": 80
+    },
+    {
+      "path": "base/graph.strings",
+      "sha256": "e1b9e02a4a94860809caef54b9132047783ffb35474114c70e679f0128b2899a",
+      "bytes": 373
+    },
+    {
+      "path": "current/forward.graph",
+      "sha256": "1b996b96ad39e6925efc82afa4642e25a74bfc1d48cfecee017dab035e70c1f8",
+      "bytes": 11
+    },
+    {
+      "path": "current/forward.offsets",
+      "sha256": "cb8c0dc7727ff5bfd64019a8772d8366e490a14c0ddacc9662d9febc0413a3c3",
+      "bytes": 8
+    },
+    {
+      "path": "current/forward.properties",
+      "sha256": "afb44bc7165f0877a12a728bdce3387b7fc2b73b80ce57ea2c472bb771687557",
+      "bytes": 699
+    },
+    {
+      "path": "current/graph.callsite-string-content.identity",
+      "sha256": "2ad1fb768d6fadc2e57335b3fc96d20987052a03d326c45028f25758ff3cdbf8",
+      "bytes": 32
+    },
+    {
+      "path": "current/graph.classoverview",
+      "sha256": "a0b3a40ac88969c64df5eedbb341337b49f7f5936acfce30cfe6515cb0b5ca2b",
+      "bytes": 16
+    },
+    {
+      "path": "current/graph.comparisons",
+      "sha256": "3ac260ffb8033e74fa019764e1f9fe42afbef288db92e4e4820e2fbaf0ae44d7",
+      "bytes": 24
+    },
+    {
+      "path": "current/graph.labelprefix",
+      "sha256": "e8415573f12185830dc2ac1923cf6949787f0f06506a01ca292fb383108f75a1",
+      "bytes": 36
+    },
+    {
+      "path": "current/graph.labels",
+      "sha256": "a526a5701da8b569a3ab0f8f6b37e3779b484d5967f18b58ce77d293deefdcfe",
+      "bytes": 15
+    },
+    {
+      "path": "current/graph.metadata",
+      "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb",
+      "bytes": 36
+    },
+    {
+      "path": "current/graph.nodedata",
+      "sha256": "72241e3877a1511ace09d919670b99729c730fc80a69927f6bd1a364c034134a",
+      "bytes": 80
+    },
+    {
+      "path": "current/graph.nodeindex",
+      "sha256": "e30e728fe2a8c32e3a900286a0fb3854d77d8e40f5ff5d0ff58cd0e34d5181b8",
+      "bytes": 112
+    },
+    {
+      "path": "current/graph.nodeoffsets",
+      "sha256": "019f27570284967722b994d80cca5d4a63245a377c6415aa27ed7bf69b356f88",
+      "bytes": 72
+    },
+    {
+      "path": "current/graph.resources",
+      "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17",
+      "bytes": 8
+    },
+    {
+      "path": "current/graph.strings",
+      "sha256": "ed577cf9d22c6ceee17380974508514193646d8c0a96f5e7c1dda4e027300e5e",
+      "bytes": 348
+    },
+    {
+      "path": "current/graph.strings.identity",
+      "sha256": "8cb9012517c817fead650287d61bdd9c68803b6bf9c64133dcab3e65b5a50cb9",
+      "bytes": 32
+    },
+    {
+      "path": "current/graph.typeindex",
+      "sha256": "be1c9baee9b32e2cf08b1da2fcb32c878b85ec5fcc561ec714aed108fecaabf3",
+      "bytes": 248
+    },
+    {
+      "path": "go/cmd/probe/main.go",
+      "sha256": "ad02deb89127c38516082260c03ae49c5ec8ef4552e7dbeb7209f6854af1a465",
+      "bytes": 1301
+    },
+    {
+      "path": "go/go.mod",
+      "sha256": "db52a30ce375c098871ce159f9485c310864d581ae35572b0f10346a7b888cdc",
+      "bytes": 63
+    },
+    {
+      "path": "go/internal/store/bvgraph.go",
+      "sha256": "3071c2349e35b91142bdb83a654a3ab4a7f11da39c78b0593383764a4da97ebd",
+      "bytes": 7200
+    },
+    {
+      "path": "go/internal/store/decode.go",
+      "sha256": "dc4947dbae04dc59124d4a6571872215b17ed534cd46b15539884e6091c6b2bb",
+      "bytes": 10342
+    },
+    {
+      "path": "go/internal/store/edges.go",
+      "sha256": "72b711add5f9902a3607bb14852bafc1ee6984a41971c3ec4b2eb41baaed5161",
+      "bytes": 2964
+    },
+    {
+      "path": "go/internal/store/mmap_other.go",
+      "sha256": "3d651ae17b183d14a561edd749a672ba5f90ff4df05f0abe21729cf337b339fc",
+      "bytes": 273
+    },
+    {
+      "path": "go/internal/store/mmap_unix.go",
+      "sha256": "167e0b9510b857e72da094151c51095593f6d3bfd0153c103f6198d25223c0f7",
+      "bytes": 362
+    },
+    {
+      "path": "go/internal/store/overview.go",
+      "sha256": "d58d0245e3851a1798476c24725fa4aade99cfb2d74df833bd4e81755d46eb06",
+      "bytes": 6059
+    },
+    {
+      "path": "go/internal/store/resources.go",
+      "sha256": "5b00d4751c0c12f1ccad2e749c4514b13d5a941389984250f7d070827ddc027d",
+      "bytes": 4679
+    },
+    {
+      "path": "go/internal/store/store.go",
+      "sha256": "68f9a0dcf46cd3da625e8a45454d89b2e2f7e16e04f4e876f4662ff139a7f77f",
+      "bytes": 7368
+    },
+    {
+      "path": "go/internal/store/strings.go",
+      "sha256": "537202c9cbceac7f39c2f2cf74233467879061b95faf6a3592a0cf5060a7d476",
+      "bytes": 6054
+    }
+  ],
+  "scope": "correctness only; small fixtures; coexists with separate root 64-graph HTTP replay; no measurements or performance claims"
+}

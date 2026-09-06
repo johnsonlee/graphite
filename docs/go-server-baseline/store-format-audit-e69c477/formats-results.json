@@ -1,0 +1,306 @@
+[
+  {
+    "case": "OUTDEGREES_DELTA",
+    "mode": "MAPPED",
+    "go": {
+      "load": "forward adjacency: unsupported non-default BVGraph compression flags \"OUTDEGREES_DELTA\""
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": 0
+    }
+  },
+  {
+    "case": "OUTDEGREES_DELTA",
+    "mode": "EAGER",
+    "go": {
+      "load": "forward adjacency: unsupported non-default BVGraph compression flags \"OUTDEGREES_DELTA\""
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": 0
+    }
+  },
+  {
+    "case": "RESIDUALS_GAMMA",
+    "mode": "MAPPED",
+    "go": {
+      "load": "forward adjacency: unsupported non-default BVGraph compression flags \"RESIDUALS_GAMMA\""
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": 0
+    }
+  },
+  {
+    "case": "RESIDUALS_GAMMA",
+    "mode": "EAGER",
+    "go": {
+      "load": "forward adjacency: unsupported non-default BVGraph compression flags \"RESIDUALS_GAMMA\""
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": 0
+    }
+  },
+  {
+    "case": "REFERENCES_GAMMA",
+    "mode": "MAPPED",
+    "go": {
+      "load": "forward adjacency: unsupported non-default BVGraph compression flags \"REFERENCES_GAMMA\""
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": 0
+    }
+  },
+  {
+    "case": "REFERENCES_GAMMA",
+    "mode": "EAGER",
+    "go": {
+      "load": "forward adjacency: unsupported non-default BVGraph compression flags \"REFERENCES_GAMMA\""
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": 0
+    }
+  },
+  {
+    "case": "OFFSETS_DELTA",
+    "mode": "MAPPED",
+    "go": {
+      "load": "forward adjacency: unsupported non-default BVGraph compression flags \"OFFSETS_DELTA\""
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": 0
+    }
+  },
+  {
+    "case": "OFFSETS_DELTA",
+    "mode": "EAGER",
+    "go": {
+      "load": "forward adjacency: unsupported non-default BVGraph compression flags \"OFFSETS_DELTA\""
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": 0
+    }
+  },
+  {
+    "case": "window0",
+    "mode": "MAPPED",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": 0,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": 0
+    }
+  },
+  {
+    "case": "window0",
+    "mode": "EAGER",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": 0,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": 0
+    }
+  },
+  {
+    "case": "utf8",
+    "mode": "MAPPED",
+    "go": {
+      "load": "graph.strings: unsupported serialized array [[B"
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": 0
+    }
+  },
+  {
+    "case": "utf8",
+    "mode": "EAGER",
+    "go": {
+      "load": "graph.strings: unsupported serialized array [[B"
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": 0
+    }
+  },
+  {
+    "case": "wrong-serialUID",
+    "mode": "MAPPED",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": 0,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "InvalidClassException: it.unimi.dsi.util.FrontCodedStringList; local class incompatible: stream classdesc serialVersionUID = 72057594037927937, local class serialVersionUID = 1"
+    }
+  },
+  {
+    "case": "wrong-serialUID",
+    "mode": "EAGER",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": 0,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "InvalidClassException: it.unimi.dsi.util.FrontCodedStringList; local class incompatible: stream classdesc serialVersionUID = 72057594037927937, local class serialVersionUID = 1"
+    }
+  },
+  {
+    "case": "trailing-serialization",
+    "mode": "MAPPED",
+    "go": {
+      "load": "graph.strings: trailing serialized string table bytes"
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": 0
+    }
+  },
+  {
+    "case": "trailing-serialization",
+    "mode": "EAGER",
+    "go": {
+      "load": "graph.strings: trailing serialized string table bytes"
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": 0
+    }
+  }
+]

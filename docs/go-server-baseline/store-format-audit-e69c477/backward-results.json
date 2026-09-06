@@ -1,0 +1,314 @@
+[
+  {
+    "case": "missing-backward.graph",
+    "mode": "MAPPED",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": null,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": null
+    }
+  },
+  {
+    "case": "missing-backward.graph",
+    "mode": "EAGER",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": null,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": null
+    }
+  },
+  {
+    "case": "corrupt-backward.graph",
+    "mode": "MAPPED",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": null,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": null
+    }
+  },
+  {
+    "case": "corrupt-backward.graph",
+    "mode": "EAGER",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": null,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": null
+    }
+  },
+  {
+    "case": "missing-backward.offsets",
+    "mode": "MAPPED",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": null,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": null
+    }
+  },
+  {
+    "case": "missing-backward.offsets",
+    "mode": "EAGER",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": null,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": null
+    }
+  },
+  {
+    "case": "corrupt-backward.offsets",
+    "mode": "MAPPED",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": null,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": null
+    }
+  },
+  {
+    "case": "corrupt-backward.offsets",
+    "mode": "EAGER",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": null,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": null
+    }
+  },
+  {
+    "case": "missing-backward.properties",
+    "mode": "MAPPED",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": null,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": null
+    }
+  },
+  {
+    "case": "missing-backward.properties",
+    "mode": "EAGER",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": null,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": null
+    }
+  },
+  {
+    "case": "corrupt-backward.properties",
+    "mode": "MAPPED",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": null,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": null
+    }
+  },
+  {
+    "case": "corrupt-backward.properties",
+    "mode": "EAGER",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": null,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": null
+    }
+  }
+]

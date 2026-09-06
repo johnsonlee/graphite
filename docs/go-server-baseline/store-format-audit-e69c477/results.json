@@ -1,0 +1,1030 @@
+[
+  {
+    "case": "pristine",
+    "mode": "MAPPED",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": null,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": null
+    }
+  },
+  {
+    "case": "pristine",
+    "mode": "EAGER",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": null,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": null
+    }
+  },
+  {
+    "case": "missing-graph.nodeindex",
+    "mode": "MAPPED",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": null,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": null
+    }
+  },
+  {
+    "case": "missing-graph.nodeindex",
+    "mode": "EAGER",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": null,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": null
+    }
+  },
+  {
+    "case": "corrupt-graph.nodeindex",
+    "mode": "MAPPED",
+    "go": {
+      "load": "graph.nodeindex: invalid GraphStore magic 0x42414400, expected 0x47524900"
+    },
+    "jvm": {
+      "load": "IllegalArgumentException: Invalid file magic: expected 0x47524900, got 0x42414400"
+    }
+  },
+  {
+    "case": "corrupt-graph.nodeindex",
+    "mode": "EAGER",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": null,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": null
+    }
+  },
+  {
+    "case": "missing-graph.nodeoffsets",
+    "mode": "MAPPED",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": null,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": null
+    }
+  },
+  {
+    "case": "missing-graph.nodeoffsets",
+    "mode": "EAGER",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": null,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": null
+    }
+  },
+  {
+    "case": "corrupt-graph.nodeoffsets",
+    "mode": "MAPPED",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": null,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": null
+    }
+  },
+  {
+    "case": "corrupt-graph.nodeoffsets",
+    "mode": "EAGER",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": null,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": null
+    }
+  },
+  {
+    "case": "missing-graph.typeindex",
+    "mode": "MAPPED",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": null,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": null
+    }
+  },
+  {
+    "case": "missing-graph.typeindex",
+    "mode": "EAGER",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": null,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": null
+    }
+  },
+  {
+    "case": "corrupt-graph.typeindex",
+    "mode": "MAPPED",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": null,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": null
+    }
+  },
+  {
+    "case": "corrupt-graph.typeindex",
+    "mode": "EAGER",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": null,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": null
+    }
+  },
+  {
+    "case": "missing-graph.labelprefix",
+    "mode": "MAPPED",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": null,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": null
+    }
+  },
+  {
+    "case": "missing-graph.labelprefix",
+    "mode": "EAGER",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": null,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": null
+    }
+  },
+  {
+    "case": "corrupt-graph.labelprefix",
+    "mode": "MAPPED",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": null,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": null
+    }
+  },
+  {
+    "case": "corrupt-graph.labelprefix",
+    "mode": "EAGER",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": null,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": null
+    }
+  },
+  {
+    "case": "missing-graph.strings.identity",
+    "mode": "MAPPED",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": null,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": null
+    }
+  },
+  {
+    "case": "missing-graph.strings.identity",
+    "mode": "EAGER",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": null,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": null
+    }
+  },
+  {
+    "case": "corrupt-graph.strings.identity",
+    "mode": "MAPPED",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": null,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": null
+    }
+  },
+  {
+    "case": "corrupt-graph.strings.identity",
+    "mode": "EAGER",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": null,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": null
+    }
+  },
+  {
+    "case": "missing-graph.classoverview",
+    "mode": "MAPPED",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": null,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": null
+    }
+  },
+  {
+    "case": "missing-graph.classoverview",
+    "mode": "EAGER",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": null,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": null
+    }
+  },
+  {
+    "case": "corrupt-graph.classoverview",
+    "mode": "MAPPED",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": "invalid GraphStore magic 0x42414400, expected 0x47524f00",
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": "IllegalArgumentException: Invalid file magic: expected 0x47524f00, got 0x42414400"
+    }
+  },
+  {
+    "case": "corrupt-graph.classoverview",
+    "mode": "EAGER",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": "invalid GraphStore magic 0x42414400, expected 0x47524f00",
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": "IllegalArgumentException: Invalid file magic: expected 0x47524f00, got 0x42414400"
+    }
+  },
+  {
+    "case": "missing-graph.resources",
+    "mode": "MAPPED",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": null,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": null
+    }
+  },
+  {
+    "case": "missing-graph.resources",
+    "mode": "EAGER",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": null,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": null
+    }
+  },
+  {
+    "case": "corrupt-graph.resources",
+    "mode": "MAPPED",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": null,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": "Invalid resource file magic: 0x42414421"
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": "IllegalArgumentException: Invalid resource file magic: 0x42414421",
+      "classoverview": null
+    }
+  },
+  {
+    "case": "corrupt-graph.resources",
+    "mode": "EAGER",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": null,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": "Invalid resource file magic: 0x42414421"
+    },
+    "jvm": {
+      "load": "IllegalArgumentException: Invalid resource file magic: 0x42414421"
+    }
+  },
+  {
+    "case": "missing-graph.comparisons",
+    "mode": "MAPPED",
+    "go": {
+      "load": "graph.comparisons: open /tmp/graphite-store-format-audit-e69c477/cases/missing-graph.comparisons/MAPPED/go/graph.comparisons: no such file or directory"
+    },
+    "jvm": {
+      "load": "FileNotFoundException: /tmp/graphite-store-format-audit-e69c477/cases/missing-graph.comparisons/MAPPED/jvm/graph.comparisons (No such file or directory)"
+    }
+  },
+  {
+    "case": "missing-graph.comparisons",
+    "mode": "EAGER",
+    "go": {
+      "load": "graph.comparisons: open /tmp/graphite-store-format-audit-e69c477/cases/missing-graph.comparisons/EAGER/go/graph.comparisons: no such file or directory"
+    },
+    "jvm": {
+      "load": "FileNotFoundException: /tmp/graphite-store-format-audit-e69c477/cases/missing-graph.comparisons/EAGER/jvm/graph.comparisons (No such file or directory)"
+    }
+  },
+  {
+    "case": "corrupt-graph.comparisons",
+    "mode": "MAPPED",
+    "go": {
+      "load": "graph.comparisons: invalid GraphStore magic 0x42414400, expected 0x47524300"
+    },
+    "jvm": {
+      "load": "IllegalArgumentException: Invalid file magic: expected 0x47524300, got 0x42414400"
+    }
+  },
+  {
+    "case": "corrupt-graph.comparisons",
+    "mode": "EAGER",
+    "go": {
+      "load": "graph.comparisons: invalid GraphStore magic 0x42414400, expected 0x47524300"
+    },
+    "jvm": {
+      "load": "IllegalArgumentException: Invalid file magic: expected 0x47524300, got 0x42414400"
+    }
+  },
+  {
+    "case": "missing-graph.metadata",
+    "mode": "MAPPED",
+    "go": {
+      "load": "graph.metadata: open /tmp/graphite-store-format-audit-e69c477/cases/missing-graph.metadata/MAPPED/go/graph.metadata: no such file or directory"
+    },
+    "jvm": {
+      "load": "FileNotFoundException: /tmp/graphite-store-format-audit-e69c477/cases/missing-graph.metadata/MAPPED/jvm/graph.metadata (No such file or directory)"
+    }
+  },
+  {
+    "case": "missing-graph.metadata",
+    "mode": "EAGER",
+    "go": {
+      "load": "graph.metadata: open /tmp/graphite-store-format-audit-e69c477/cases/missing-graph.metadata/EAGER/go/graph.metadata: no such file or directory"
+    },
+    "jvm": {
+      "load": "FileNotFoundException: /tmp/graphite-store-format-audit-e69c477/cases/missing-graph.metadata/EAGER/jvm/graph.metadata (No such file or directory)"
+    }
+  },
+  {
+    "case": "corrupt-graph.metadata",
+    "mode": "MAPPED",
+    "go": {
+      "load": "graph.metadata: invalid GraphStore magic 0x42414400, expected 0x47524d00"
+    },
+    "jvm": {
+      "load": "IllegalArgumentException: Invalid file magic: expected 0x47524d00, got 0x42414400"
+    }
+  },
+  {
+    "case": "corrupt-graph.metadata",
+    "mode": "EAGER",
+    "go": {
+      "load": "graph.metadata: invalid GraphStore magic 0x42414400, expected 0x47524d00"
+    },
+    "jvm": {
+      "load": "IllegalArgumentException: Invalid file magic: expected 0x47524d00, got 0x42414400"
+    }
+  },
+  {
+    "case": "missing-forward.offsets",
+    "mode": "MAPPED",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": null,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "FileNotFoundException: /tmp/graphite-store-format-audit-e69c477/cases/missing-forward.offsets/MAPPED/jvm/forward.offsets (No such file or directory)"
+    }
+  },
+  {
+    "case": "missing-forward.offsets",
+    "mode": "EAGER",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": null,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "FileNotFoundException: /tmp/graphite-store-format-audit-e69c477/cases/missing-forward.offsets/EAGER/jvm/forward.offsets (No such file or directory)"
+    }
+  },
+  {
+    "case": "corrupt-forward.offsets",
+    "mode": "MAPPED",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": null,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "EOFException: null"
+    }
+  },
+  {
+    "case": "corrupt-forward.offsets",
+    "mode": "EAGER",
+    "go": {
+      "classOrigins": 0,
+      "classoverview": null,
+      "decodedNodes": 8,
+      "incoming": 15,
+      "load": "ok",
+      "methods": 0,
+      "nodes": 8,
+      "outgoing": 15,
+      "resources": 0
+    },
+    "jvm": {
+      "load": "EOFException: null"
+    }
+  },
+  {
+    "case": "missing-graph.labels",
+    "mode": "MAPPED",
+    "go": {
+      "load": "forward adjacency: open /tmp/graphite-store-format-audit-e69c477/cases/missing-graph.labels/MAPPED/go/graph.labels: no such file or directory"
+    },
+    "jvm": {
+      "load": "NoSuchFileException: /tmp/graphite-store-format-audit-e69c477/cases/missing-graph.labels/MAPPED/jvm/graph.labels"
+    }
+  },
+  {
+    "case": "missing-graph.labels",
+    "mode": "EAGER",
+    "go": {
+      "load": "forward adjacency: open /tmp/graphite-store-format-audit-e69c477/cases/missing-graph.labels/EAGER/go/graph.labels: no such file or directory"
+    },
+    "jvm": {
+      "load": "NoSuchFileException: /tmp/graphite-store-format-audit-e69c477/cases/missing-graph.labels/EAGER/jvm/graph.labels"
+    }
+  },
+  {
+    "case": "corrupt-graph.labels",
+    "mode": "MAPPED",
+    "go": {
+      "load": "forward adjacency: label count 4 differs from arc count 15"
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": "IndexOutOfBoundsException: index: 8, size: 2",
+      "incoming": "IndexOutOfBoundsException: index: 8, size: 2",
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": null
+    }
+  },
+  {
+    "case": "corrupt-graph.labels",
+    "mode": "EAGER",
+    "go": {
+      "load": "forward adjacency: label count 4 differs from arc count 15"
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": "IndexOutOfBoundsException: index: 8, size: 2",
+      "incoming": "IndexOutOfBoundsException: index: 8, size: 2",
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": null
+    }
+  },
+  {
+    "case": "truncated-metadata-body",
+    "mode": "MAPPED",
+    "go": {
+      "load": "graph.metadata: truncated data: need 4 bytes, have 0"
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": "EOFException: null",
+      "resources": 0,
+      "classoverview": null
+    }
+  },
+  {
+    "case": "truncated-metadata-body",
+    "mode": "EAGER",
+    "go": {
+      "load": "graph.metadata: truncated data: need 4 bytes, have 0"
+    },
+    "jvm": {
+      "load": "EOFException: null"
+    }
+  },
+  {
+    "case": "named-default-flags",
+    "mode": "MAPPED",
+    "go": {
+      "load": "forward adjacency: unsupported non-default BVGraph compression flags \"OUTDEGREES_GAMMA\""
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": null
+    }
+  },
+  {
+    "case": "named-default-flags",
+    "mode": "EAGER",
+    "go": {
+      "load": "forward adjacency: unsupported non-default BVGraph compression flags \"OUTDEGREES_GAMMA\""
+    },
+    "jvm": {
+      "load": "ok",
+      "nodes": 8,
+      "methods": 0,
+      "decodedNodes": 8,
+      "outgoing": 15,
+      "incoming": 15,
+      "classOrigins": 0,
+      "resources": 0,
+      "classoverview": null
+    }
+  }
+]

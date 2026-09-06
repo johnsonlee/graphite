@@ -47,14 +47,17 @@ func (b *bitReader) unary() int {
 	n := 0
 	for b.err == nil && b.bit() == 0 {
 		n++
-		if n > 62 {
-			b.fail("BVGraph unary value exceeds 62")
-			break
-		}
 	}
 	return n
 }
-func (b *bitReader) gamma() int64 { n := b.unary(); return (int64(1)<<n | b.bits(n)) - 1 }
+func (b *bitReader) gamma() int64 {
+	n := b.unary()
+	if n > 62 {
+		b.fail("BVGraph gamma overflow")
+		return 0
+	}
+	return (int64(1)<<n | b.bits(n)) - 1
+}
 func (b *bitReader) zeta(k int) int64 {
 	h := b.unary()
 	if h*k+k-1 > 62 {
@@ -85,9 +88,8 @@ type BVGraph struct {
 // legitimately have no node record in GraphStore and no outgoing arcs.
 func (g *BVGraph) Successors(id int32) []int32 { return append([]int32(nil), g.successors[id]...) }
 
-// LoadBVGraph implements the default BVGraph version 0 compression used by
-// GraphStore.save: gamma degrees/blocks, unary references, gamma intervals,
-// zeta residuals. Non-default compression flags fail explicitly.
+// LoadBVGraph decodes BVGraph version 0 with its declared compression flags.
+// Adjacency is read sequentially; persisted offsets are not required.
 func LoadBVGraph(base string) (*BVGraph, error) {
 	properties, err := os.Open(base + ".properties")
 	if err != nil {
@@ -113,8 +115,9 @@ func LoadBVGraph(base string) (*BVGraph, error) {
 	if p["graphclass"] != "it.unimi.dsi.webgraph.BVGraph" || p["version"] != "0" {
 		return nil, fmt.Errorf("unsupported graph class/version %q/%q", p["graphclass"], p["version"])
 	}
-	if p["compressionflags"] != "" {
-		return nil, fmt.Errorf("unsupported non-default BVGraph compression flags %q", p["compressionflags"])
+	coding, err := parseCompressionFlags(p["compressionflags"])
+	if err != nil {
+		return nil, err
 	}
 	readNumber := func(key string) (int64, error) {
 		n, err := strconv.ParseInt(p[key], 10, 64)
@@ -139,11 +142,14 @@ func LoadBVGraph(base string) (*BVGraph, error) {
 	if err != nil {
 		return nil, err
 	}
+	if _, exists := p["zetak"]; !exists {
+		p["zetak"] = "3"
+	}
 	zeta, err := readNumber("zetak")
 	if err != nil {
 		return nil, err
 	}
-	if span > 1<<31-1 || window > 1024 || zeta < 1 || zeta > 31 {
+	if span > 1<<31-1 || window > 1024 || (coding.residual == codeZeta && (zeta < 1 || zeta > 31)) || (coding.residual == codeGolomb && zeta > 1<<31-1) {
 		return nil, fmt.Errorf("unsupported BVGraph bounds: nodes=%d window=%d zeta=%d", span, window, zeta)
 	}
 	data, err := os.ReadFile(base + ".graph")
@@ -158,7 +164,7 @@ func LoadBVGraph(base string) (*BVGraph, error) {
 	ring := make([][]int32, int(window)+1)
 	var decoded int64
 	for id := int64(0); id < span && b.err == nil; id++ {
-		degree := b.gamma()
+		degree := b.natural(coding.degree, int(zeta))
 		slot := int(id % int64(len(ring)))
 		if degree == 0 {
 			ring[slot] = nil
@@ -171,7 +177,7 @@ func LoadBVGraph(base string) (*BVGraph, error) {
 		targets := make([]int32, 0, int(degree))
 		ref := 0
 		if window > 0 {
-			ref = b.unary()
+			ref = int(b.natural(coding.reference, int(zeta)))
 		}
 		if int64(ref) > window || int64(ref) > id {
 			b.fail("invalid reference %d for node %d", ref, id)
@@ -179,14 +185,14 @@ func LoadBVGraph(base string) (*BVGraph, error) {
 		}
 		if ref > 0 {
 			source := ring[(int(id)-ref)%len(ring)]
-			blocks := b.gamma()
+			blocks := b.natural(coding.blockCount, int(zeta))
 			if blocks > int64(len(source))+1 {
 				b.fail("invalid copy block count %d", blocks)
 				break
 			}
 			position := 0
 			for i := int64(0); i < blocks && b.err == nil; i++ {
-				length := b.gamma()
+				length := b.natural(coding.block, int(zeta))
 				if i != 0 {
 					length++
 				}
@@ -239,9 +245,9 @@ func LoadBVGraph(base string) (*BVGraph, error) {
 		for i := int64(0); i < extra && b.err == nil; i++ {
 			var target int64
 			if i == 0 {
-				target = id + naturalToSigned(b.zeta(int(zeta)))
+				target = id + naturalToSigned(b.natural(coding.residual, int(zeta)))
 			} else {
-				target = previous + 1 + b.zeta(int(zeta))
+				target = previous + 1 + b.natural(coding.residual, int(zeta))
 			}
 			if target < 0 || target >= span {
 				b.fail("invalid residual target %d for node %d", target, id)
