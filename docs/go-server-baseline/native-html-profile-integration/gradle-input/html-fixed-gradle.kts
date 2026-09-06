@@ -124,7 +124,7 @@ val nativeTargets = providers.gradleProperty("graphite.nativeTargets")
 val nativePrebuilt = providers.gradleProperty("graphite.nativePrebuilt")
 val prepareNativeServer by tasks.registering(Exec::class) {
     inputs.files(rootProject.fileTree("graphite-server") {
-        include("**/*.go", "go.mod", "go.sum", "internal/web/assets/**", "internal/profiling/report.html", "internal/server/spec/**", "internal/javaregex/*.json", "internal/javaregex/*.json.gz", "cmd/graphite-server/*.txt")
+        include("**/*.go", "go.mod", "go.sum", "internal/web/assets/**", "internal/profiling/report.html", "cmd/graphite-server/*.txt")
         exclude("**/*_test.go", "**/testdata/**")
     })
     inputs.files(rootProject.fileTree("scripts/native") { include("*.go") })

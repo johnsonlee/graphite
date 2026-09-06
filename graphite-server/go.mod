@@ -2,6 +2,9 @@ module github.com/johnsonlee/graphite/graphite-server
 
 go 1.22
 
-require github.com/antlr4-go/antlr/v4 v4.13.1
+require (
+	github.com/antlr4-go/antlr/v4 v4.13.1
+	github.com/google/pprof v0.0.0-20230811205829-9131a7e9cc17
+)
 
 require golang.org/x/exp v0.0.0-20240506185415-9bf2ced13842 // indirect

@@ -1,0 +1,12 @@
+{
+  "go test -race ./...": 0,
+  "go vet ./...": 0,
+  "go build": 0,
+  "realBinaryChecks": 9,
+  "browser": "10 concrete interaction observations over loopback HTTP; direct file URL policy blocked",
+  "binary": "/tmp/graphite-native-html-profile-bbdfae2a-final",
+  "binarySHA256": "7741020d44e4ea640626152923de90043989fe5d17c0e96fbcb2fd53674fb50d",
+  "pprofVersion": "v0.0.0-20230811205829-9131a7e9cc17",
+  "performanceMeasurements": false,
+  "packagingScriptsChanged": false
+}

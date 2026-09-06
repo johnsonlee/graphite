@@ -1,0 +1,20 @@
+{
+  "passed": true,
+  "directiveCount": 8,
+  "resourceCount": 11,
+  "resources": [
+    "graphite-server/cmd/graphite-server/explore-usage.txt",
+    "graphite-server/cmd/graphite-server/serve-usage.txt",
+    "graphite-server/internal/javaregex/java17_advanced.json",
+    "graphite-server/internal/javaregex/java17_names.json.gz",
+    "graphite-server/internal/javaregex/java17_unicode.json",
+    "graphite-server/internal/profiling/report.html",
+    "graphite-server/internal/server/spec/openapi.json",
+    "graphite-server/internal/web/assets/app.js",
+    "graphite-server/internal/web/assets/index.html",
+    "graphite-server/internal/web/assets/style.css",
+    "graphite-server/internal/web/assets/ui-state.js"
+  ],
+  "allInActualGradleInputs": true,
+  "actualInputCount": 127
+}

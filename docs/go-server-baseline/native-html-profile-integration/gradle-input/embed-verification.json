@@ -1,0 +1,15 @@
+{
+  "passed": true,
+  "phases": 7,
+  "goEmbedDirectives": 8,
+  "allCurrentResourcesCovered": true,
+  "JSONOnlyChangedFiles": [
+    "graphite-server/internal/server/spec/openapi.json"
+  ],
+  "missingJSONReproduced": true,
+  "JSONChangeTriggersNativeAndBothJars": true,
+  "unchangedIsUpToDate": true,
+  "restoredBinaryMatchesOriginal": true,
+  "hostOnly": "darwin-arm64",
+  "performanceWorkload": false
+}

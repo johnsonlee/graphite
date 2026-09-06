@@ -1,0 +1,55 @@
+{
+  "base": "de0608f075174833a06f31eb3214b3ba9c4e0917",
+  "archive": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-profile-root-bh180zsf",
+  "files": {
+    "graphite-server/README.md": {
+      "sha256": "cf32de803233253d56425b5b32201c6526caeb7cd5a499669b92f752bf1691be",
+      "matchesFreeze": false
+    },
+    "graphite-server/cmd/graphite-server/main.go": {
+      "sha256": "6d23940b6ab17a71eb2f9acb7f6b7eb148be7f82ef67bd7356147c11c1945006",
+      "matchesFreeze": true
+    },
+    "graphite-server/cmd/graphite-server/profiling.go": {
+      "sha256": "a98075632a3112171694ee7a263ddc14a83dc946606b75096a370a58d5218487",
+      "matchesFreeze": true
+    },
+    "graphite-server/cmd/graphite-server/profiling_test.go": {
+      "sha256": "ca99894ddcb6c4d6886dd51b6199cacd7de723ddf244d1a05b1ffecd9e622fd9",
+      "matchesFreeze": true
+    },
+    "graphite-server/go.mod": {
+      "sha256": "f6e6d88bd6fd905ebf229be49fa18c72371e30b1cfb80c2d7e3d194160bdf0b0",
+      "matchesFreeze": true
+    },
+    "graphite-server/go.sum": {
+      "sha256": "4a99dfa3f7e66bbdcdd49652f52bac26ad71c5ebcd4c66df6509a6f6bd9d8152",
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/profiling/README.md": {
+      "sha256": "21dbb8dd0637954130246f7ea3b285464e0ed83226c2e945041bfc1a6cf03606",
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/profiling/report.go": {
+      "sha256": "56d8733c08cbc7973d053285c9d8db7677fca4e265f36ccc99312a9a8a1cfed2",
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/profiling/report.html": {
+      "sha256": "c3fda3af962c143f0517ad6cbc4badce3614e2275a01861b0309c3473efd2f61",
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/profiling/report_test.go": {
+      "sha256": "49c363f41f2b4701a60b5c04687bd1b06d7cc97741fabb144a6d9b76805572b1",
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/profiling/session.go": {
+      "sha256": "93515c63b31395cb38c43cb7c2bdcbb348774b21baf974d6eb4ecbcaf91a9179",
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/profiling/session_test.go": {
+      "sha256": "907bef8f5d9c513856c11ba5f0f3acbd53ff443d8111f080fba08d7395cf08eb",
+      "matchesFreeze": true
+    }
+  },
+  "note": "README alone retains root Gradle updates; 11 implementation/test files match frozen source."
+}

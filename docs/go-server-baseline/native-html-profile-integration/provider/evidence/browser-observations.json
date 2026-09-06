@@ -1,0 +1,97 @@
+{
+  "browser": "Chrome via CUA; iab unavailable",
+  "origin": "http://127.0.0.1:18876 (temporary loopback preview)",
+  "checks": [
+    {
+      "page": "example.html",
+      "action": "initial render",
+      "visible": [
+        "Sampled CPU 50.00 ms",
+        "Recording duration 2.000 s",
+        "Sampling period 10.00 ms",
+        "main.worker 30000000 ns, 60.00%",
+        "main.other 20000000 ns, 40.00%"
+      ]
+    },
+    {
+      "page": "example.html",
+      "action": "search main.worker",
+      "visible": [
+        "60.00% of visible CPU matched"
+      ]
+    },
+    {
+      "page": "example.html",
+      "action": "zoom main.worker",
+      "visible": [
+        "main.worker 30000000 ns, 100.00%",
+        "main.inline 30000000 ns, 100.00%",
+        "Back enabled"
+      ]
+    },
+    {
+      "page": "example.html",
+      "action": "Back then search main.",
+      "visible": [
+        "100.00% of visible CPU matched; overlapping frames not summed",
+        "Back disabled"
+      ]
+    },
+    {
+      "page": "empty.html",
+      "action": "load",
+      "visible": [
+        "0.00 ms",
+        "No CPU samples were recorded. Run work while profiling to capture stacks."
+      ]
+    },
+    {
+      "page": "fanout.html",
+      "action": "load 20000 sibling frames",
+      "visible": [
+        "All CPU samples 20000 ns",
+        "Next match disabled until search"
+      ]
+    },
+    {
+      "page": "fanout.html",
+      "action": "search branch-19999, Next match",
+      "visible": [
+        "branch-19999 1 ns",
+        "100.00% of visible CPU matched",
+        "Back enabled"
+      ]
+    },
+    {
+      "page": "example.html",
+      "action": "final source: zoom then Back",
+      "visible": [
+        "Viewing All CPU samples — 50.00 ms (50000000 ns; 100.00% of visible CPU)"
+      ]
+    },
+    {
+      "page": "example.html",
+      "action": "final source: zoom then Reset",
+      "visible": [
+        "All CPU samples",
+        "main.worker 60.00%",
+        "main.other 40.00%",
+        "Back disabled"
+      ]
+    },
+    {
+      "page": "example.html",
+      "action": "keyboard Tab from Reset through root frames, Enter on main.worker",
+      "visible": [
+        "Viewing main.worker — 30.00 ms (30000000 ns; 100.00% of visible CPU)"
+      ]
+    }
+  ],
+  "visualInspection": "CUA browser screenshot inspected; readable labels, correct parent/child widths and unclipped controls.",
+  "blockedCheck": {
+    "action": "direct file:// navigation to escape fixture",
+    "reason": "Browser URL policy blocked local file navigation and explicitly prohibited bypasses. No workaround was used. Direct file protocol, escape fixture and deep fixture were not browser-verified."
+  },
+  "securityAndPrecision": "HTML escaping/exact int64/deep render are covered by Go format tests; do not conflate these with the completed browser checks.",
+  "performanceMeasurement": false
+}

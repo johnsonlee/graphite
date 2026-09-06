@@ -1,0 +1,43 @@
+{
+  "baseCommit": "bbdfae2a07b629c40d1ef0db6d156bff500989c9",
+  "patchSHA256": "a57591f69291d97b192488d3c302eb0c6f73de791d446444cb3790f0b823e83b",
+  "files": {
+    "graphite-server/README.md": "ca00d88a35535f0fa3b619f99ac3633b0f239b63e3de18dd9ba037228cd56647",
+    "graphite-server/cmd/graphite-server/main.go": "6d23940b6ab17a71eb2f9acb7f6b7eb148be7f82ef67bd7356147c11c1945006",
+    "graphite-server/cmd/graphite-server/profiling.go": "a98075632a3112171694ee7a263ddc14a83dc946606b75096a370a58d5218487",
+    "graphite-server/cmd/graphite-server/profiling_test.go": "ca99894ddcb6c4d6886dd51b6199cacd7de723ddf244d1a05b1ffecd9e622fd9",
+    "graphite-server/go.mod": "f6e6d88bd6fd905ebf229be49fa18c72371e30b1cfb80c2d7e3d194160bdf0b0",
+    "graphite-server/go.sum": "4a99dfa3f7e66bbdcdd49652f52bac26ad71c5ebcd4c66df6509a6f6bd9d8152",
+    "graphite-server/internal/profiling/README.md": "21dbb8dd0637954130246f7ea3b285464e0ed83226c2e945041bfc1a6cf03606",
+    "graphite-server/internal/profiling/report.go": "56d8733c08cbc7973d053285c9d8db7677fca4e265f36ccc99312a9a8a1cfed2",
+    "graphite-server/internal/profiling/report.html": "c3fda3af962c143f0517ad6cbc4badce3614e2275a01861b0309c3473efd2f61",
+    "graphite-server/internal/profiling/report_test.go": "49c363f41f2b4701a60b5c04687bd1b06d7cc97741fabb144a6d9b76805572b1",
+    "graphite-server/internal/profiling/session.go": "93515c63b31395cb38c43cb7c2bdcbb348774b21baf974d6eb4ecbcaf91a9179",
+    "graphite-server/internal/profiling/session_test.go": "907bef8f5d9c513856c11ba5f0f3acbd53ff443d8111f080fba08d7395cf08eb"
+  },
+  "evidence": {
+    "README.md": "866fc924f82a3d418df4a135c7f351c8d1c9086f7efe840b89522027d67e5261",
+    "candidate.patch": "a57591f69291d97b192488d3c302eb0c6f73de791d446444cb3790f0b823e83b",
+    "evidence/binary-observations.json": "519a8a731104058331f581d32ef965ca7a356b5e400ce1fc5c7ccbaa794a2303",
+    "evidence/browser-observations.json": "a52f72afde151148cfb5e85a220851fe2f789c76d35694636950917012ab1c9b",
+    "evidence/deep.html": "ba6f4a3dd06382d06791e2372ab630ce2b243b63a584b2a8a333cfb64c338c8d",
+    "evidence/empty.html": "c42e08d9fc6897b1638e136dc3ba06c7976617403d37e6221d9848b6101794fc",
+    "evidence/enabled-server.html": "80bdf90af322ba742330a34e34c39fb0d5ca1e0a5243435857bd55ac4873db5a",
+    "evidence/escape.html": "34c072b941c3c3a7a8b521e09949e6e9c12f287115d7ed4835f10558d12ef488",
+    "evidence/example.html": "0b8476d666de36e299070fc9abeda742bc644d7217d4167a025c066e7a1582ea",
+    "evidence/fanout.html": "3dc0dbeca88f09faedab2305fb2fce96208b47820321381a5b1be1ceda3ec025",
+    "evidence/help-default.html": "757c4895703b97e669b88dcf5dce3368911ea91a5a2f4fc2644bab9bad17b40c",
+    "evidence/invalid-args.html": "6295f1034bfbe8b5b3f8d7874fafc07e6cafa935286f5d28451b6a769ce20909",
+    "race.log": "63c5846d01d4049e58c209873fbe466b5f7c353dc8395a6f46979ee07f21f680",
+    "verification.json": "e3843b5b95e481016264147ce96f2a8bb23650355ce8b8427a3af930b253831f",
+    "verify-binary.py": "1cd46e6b48e117cd0f3e75da1fb4a444c908e898ac1fd82e3a1a115c8f3153ef",
+    "vet.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "binary": "/tmp/graphite-native-html-profile-bbdfae2a-final",
+  "binarySHA256": "7741020d44e4ea640626152923de90043989fe5d17c0e96fbcb2fd53674fb50d",
+  "pprofProtoSHA256": "f1173db56bfb86a19f33a9b81b82cecc0e676f9ff4639dd260f49be94dbb6425",
+  "goVersion": "go version go1.22.0 darwin/arm64",
+  "policyLimitation": "Direct file URL browser check blocked, no bypass. CUA Chrome loopback HTTP interactions and Go format/security checks are separately documented.",
+  "performanceMeasurements": false,
+  "packagingScriptsModified": false
+}

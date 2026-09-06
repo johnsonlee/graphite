@@ -1,0 +1,434 @@
+Initialized native services in: /Users/johnsonlee/.gradle/native
+Initialized jansi services in: /Users/johnsonlee/.gradle/native
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.13/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Starting process 'Gradle build daemon'. Working directory: /Users/johnsonlee/.gradle/daemon/8.13 Command: /opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.prefs/java.util.prefs=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.prefs/java.util.prefs=ALL-UNNAMED --add-opens=java.base/java.nio.charset=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens=java.xml/javax.xml.namespace=ALL-UNNAMED -XX:+HeapDumpOnOutOfMemoryError -Xmx2048m -Dfile.encoding=UTF-8 -Duser.country=KR -Duser.language=en -Duser.variant -cp /Users/johnsonlee/.gradle/wrapper/dists/gradle-8.13-bin/5xuhj0ry160q40clulazy9h7d/gradle-8.13/lib/gradle-daemon-main-8.13.jar -javaagent:/Users/johnsonlee/.gradle/wrapper/dists/gradle-8.13-bin/5xuhj0ry160q40clulazy9h7d/gradle-8.13/lib/agents/gradle-instrumentation-agent-8.13.jar org.gradle.launcher.daemon.bootstrap.GradleDaemon 8.13
+Successfully started process 'Gradle build daemon'
+An attempt to start the daemon took 0.394 secs.
+The client will now receive all logging from the daemon (pid: 39089). The daemon log file: /Users/johnsonlee/.gradle/daemon/8.13/daemon-39089.out.log
+Daemon will be stopped at the end of the build 
+Using 2 worker leases.
+Received JVM installation metadata from '/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home': {JAVA_HOME=/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home, JAVA_VERSION=17.0.18, JAVA_VENDOR=Homebrew, RUNTIME_NAME=OpenJDK Runtime Environment, RUNTIME_VERSION=17.0.18+0, VM_NAME=OpenJDK 64-Bit Server VM, VM_VERSION=17.0.18+0, VM_VENDOR=Homebrew, OS_ARCH=aarch64}
+Watching the file system is configured to be enabled if available
+Now considering [/private/tmp/graphite-go-profile-gradle-input-22eff982-build] as hierarchies to watch
+File system watching is active
+Starting Build
+Settings evaluated using settings file '/private/tmp/graphite-go-profile-gradle-input-22eff982-build/settings.gradle.kts'.
+Using local directory build cache for the root build (location = /Users/johnsonlee/.gradle/caches/build-cache-1, remove unused entries = after 7 days).
+Projects loaded. Root project using build file '/private/tmp/graphite-go-profile-gradle-input-22eff982-build/build.gradle.kts'.
+Included projects: [root project 'graphite', project ':core', project ':cypher', project ':explore', project ':query', project ':sootup', project ':webgraph']
+
+> Configure project :
+Evaluating root project 'graphite' using build file '/private/tmp/graphite-go-profile-gradle-input-22eff982-build/build.gradle.kts'.
+Resolved plugin [id: 'org.jetbrains.kotlin.jvm', version: '2.0.21', apply: false]
+Resolved plugin [id: 'io.gitlab.arturbosch.detekt', version: '1.23.8', apply: false]
+Resolved plugin [id: 'io.johnsonlee.sonatype-publish-plugin', version: '2.0.1']
+Resolved plugin [id: 'me.champeau.jmh', version: '0.7.2', apply: false]
+[root project 'graphite'] Configuring `nexusPublishing` {nexusUrl=`https://ossrh-staging-api.central.sonatype.com/service/local/`, snapshotUrl=`https://central.sonatype.com/repository/maven-snapshots/`, packageGroup=`io.johnsonlee`} completed
+[root project 'graphite'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+[root project 'graphite'] Configuring `signing` completed
+Using Kotlin Gradle Plugin gradle85 variant
+kotlin scripting plugin: created the scripting discovery configuration: kotlinScriptDef
+kotlin scripting plugin: created the scripting discovery configuration: testKotlinScriptDef
+Using Kotlin Gradle Plugin gradle85 variant
+kotlin scripting plugin: created the scripting discovery configuration: kotlinScriptDef
+kotlin scripting plugin: created the scripting discovery configuration: testKotlinScriptDef
+Using Kotlin Gradle Plugin gradle85 variant
+kotlin scripting plugin: created the scripting discovery configuration: kotlinScriptDef
+kotlin scripting plugin: created the scripting discovery configuration: testKotlinScriptDef
+Using Kotlin Gradle Plugin gradle85 variant
+kotlin scripting plugin: created the scripting discovery configuration: kotlinScriptDef
+kotlin scripting plugin: created the scripting discovery configuration: testKotlinScriptDef
+Using Kotlin Gradle Plugin gradle85 variant
+kotlin scripting plugin: created the scripting discovery configuration: kotlinScriptDef
+kotlin scripting plugin: created the scripting discovery configuration: testKotlinScriptDef
+Using Kotlin Gradle Plugin gradle85 variant
+kotlin scripting plugin: created the scripting discovery configuration: kotlinScriptDef
+kotlin scripting plugin: created the scripting discovery configuration: testKotlinScriptDef
+[root project 'graphite'] Configuring sonatype repository {url=`https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/`} completed
+
+> Configure project :core
+Evaluating project ':core' using build file '/private/tmp/graphite-go-profile-gradle-input-22eff982-build/graphite-core/build.gradle.kts'.
+Resolved plugin [id: 'io.johnsonlee.sonatype-publish-plugin']
+Resolved plugin [id: 'org.jetbrains.kotlinx.kover', version: '0.9.1']
+Resolved plugin [id: 'me.champeau.jmh']
+[root project 'graphite'] Configuring `nexusPublishing` skipped: already configured
+[project ':core'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+[project ':core'] Configuring `signing` completed
+kotlin scripting plugin: created the scripting discovery configuration: jmhKotlinScriptDef
+[project ':core'] Configuring sonatype repository {url=`https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/`} completed
+[project ':core'] Configuring `dokka` completed
+
+> Configure project :cypher
+Evaluating project ':cypher' using build file '/private/tmp/graphite-go-profile-gradle-input-22eff982-build/graphite-cypher/build.gradle.kts'.
+Resolved plugin [id: 'io.johnsonlee.sonatype-publish-plugin']
+Resolved plugin [id: 'org.gradle.antlr']
+Resolved plugin [id: 'org.jetbrains.kotlinx.kover', version: '0.9.1']
+Resolved plugin [id: 'me.champeau.jmh']
+[root project 'graphite'] Configuring `nexusPublishing` skipped: already configured
+[project ':cypher'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+[project ':cypher'] Configuring `signing` completed
+kotlin scripting plugin: created the scripting discovery configuration: jmhKotlinScriptDef
+[project ':cypher'] Configuring sonatype repository {url=`https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/`} completed
+[project ':cypher'] Configuring `dokka` completed
+
+> Configure project :explore
+Evaluating project ':explore' using build file '/private/tmp/graphite-go-profile-gradle-input-22eff982-build/graphite-explore/build.gradle.kts'.
+Resolved plugin [id: 'org.gradle.application']
+Resolved plugin [id: 'com.gradleup.shadow', version: '8.3.0']
+Resolved plugin [id: 'org.jetbrains.kotlinx.kover', version: '0.9.1']
+Resolved plugin [id: 'me.champeau.jmh']
+kotlin scripting plugin: created the scripting discovery configuration: jmhKotlinScriptDef
+
+> Configure project :query
+Evaluating project ':query' using build file '/private/tmp/graphite-go-profile-gradle-input-22eff982-build/graphite-query/build.gradle.kts'.
+Resolved plugin [id: 'org.gradle.application']
+Resolved plugin [id: 'com.gradleup.shadow', version: '8.3.0']
+Resolved plugin [id: 'org.jetbrains.kotlinx.kover', version: '0.9.1']
+
+> Configure project :sootup
+Evaluating project ':sootup' using build file '/private/tmp/graphite-go-profile-gradle-input-22eff982-build/graphite-sootup/build.gradle.kts'.
+Resolved plugin [id: 'io.johnsonlee.sonatype-publish-plugin']
+Resolved plugin [id: 'org.jetbrains.kotlinx.kover', version: '0.9.1']
+Resolved plugin [id: 'me.champeau.jmh']
+[root project 'graphite'] Configuring `nexusPublishing` skipped: already configured
+[project ':sootup'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+[project ':sootup'] Configuring `signing` completed
+kotlin scripting plugin: created the scripting discovery configuration: jmhKotlinScriptDef
+[project ':sootup'] Configuring sonatype repository {url=`https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/`} completed
+[project ':sootup'] Configuring `dokka` completed
+
+> Configure project :webgraph
+Evaluating project ':webgraph' using build file '/private/tmp/graphite-go-profile-gradle-input-22eff982-build/graphite-webgraph/build.gradle.kts'.
+Resolved plugin [id: 'io.johnsonlee.sonatype-publish-plugin']
+Resolved plugin [id: 'org.jetbrains.kotlinx.kover', version: '0.9.1']
+Resolved plugin [id: 'me.champeau.jmh']
+[root project 'graphite'] Configuring `nexusPublishing` skipped: already configured
+[project ':webgraph'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+[project ':webgraph'] Configuring `signing` completed
+kotlin scripting plugin: created the scripting discovery configuration: jmhKotlinScriptDef
+[project ':webgraph'] Configuring sonatype repository {url=`https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/`} completed
+[project ':webgraph'] Configuring `dokka` completed
+All projects evaluated.
+Task path ':explore:shadowJar' matched project ':explore'
+Task name matched 'shadowJar'
+Task path ':query:shadowJar' matched project ':query'
+Task name matched 'shadowJar'
+Selected primary task 'shadowJar' from project :explore
+Selected primary task 'shadowJar' from project :query
+Tasks to be executed: [task ':core:checkKotlinGradlePluginConfigurationErrors', task ':core:compileKotlin', task ':core:compileJava', task ':core:processResources', task ':core:classes', task ':core:jar', task ':cypher:checkKotlinGradlePluginConfigurationErrors', task ':cypher:generateGrammarSource', task ':cypher:compileKotlin', task ':cypher:compileJava', task ':cypher:processResources', task ':cypher:classes', task ':cypher:jar', task ':explore:checkKotlinGradlePluginConfigurationErrors', task ':webgraph:checkKotlinGradlePluginConfigurationErrors', task ':webgraph:compileKotlin', task ':webgraph:compileJava', task ':webgraph:processResources', task ':webgraph:classes', task ':webgraph:jar', task ':explore:compileKotlin', task ':explore:compileJava', task ':explore:prepareNativeServer', task ':explore:processResources', task ':explore:classes', task ':explore:jar', task ':sootup:checkKotlinGradlePluginConfigurationErrors', task ':sootup:compileKotlin', task ':sootup:compileJava', task ':sootup:processResources', task ':sootup:classes', task ':sootup:jar', task ':explore:compileJmhKotlin', task ':explore:compileJmhJava', task ':query:checkKotlinGradlePluginConfigurationErrors', task ':query:compileKotlin', task ':query:compileJava', task ':query:processResources', task ':query:classes', task ':query:jar', task ':explore:compileTestKotlin', task ':explore:compileTestJava', task ':explore:shadowJar', task ':query:compileTestKotlin', task ':query:compileTestJava', task ':query:shadowJar']
+Tasks that were excluded: []
+Resolve mutations for :core:checkKotlinGradlePluginConfigurationErrors (Thread[Execution worker,5,main]) started.
+destroyer locations for task group 0 (Thread[included builds,5,main]) started.
+:core:checkKotlinGradlePluginConfigurationErrors (Thread[Execution worker,5,main]) started.
+
+> Task :core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+Skipping task ':core:checkKotlinGradlePluginConfigurationErrors' as task onlyIf 'errorDiagnostics are present' is false.
+Resolve mutations for :core:compileKotlin (Thread[Execution worker,5,main]) started.
+:core:compileKotlin (Thread[Execution worker,5,main]) started.
+
+> Task :core:compileKotlin UP-TO-DATE
+Build cache key for task ':core:compileKotlin' is 4761c3b76feaee13a0db6f8b659cc5a0
+Skipping task ':core:compileKotlin' as it is up-to-date.
+Resolve mutations for :core:compileJava (Thread[Execution worker,5,main]) started.
+:core:compileJava (Thread[Execution worker,5,main]) started.
+
+> Task :core:compileJava NO-SOURCE
+Skipping task ':core:compileJava' as it has no source files and no previous output files.
+Resolve mutations for :core:processResources (Thread[Execution worker,5,main]) started.
+:core:processResources (Thread[Execution worker,5,main]) started.
+
+> Task :core:processResources NO-SOURCE
+Skipping task ':core:processResources' as it has no source files and no previous output files.
+Resolve mutations for :core:classes (Thread[Execution worker,5,main]) started.
+:core:classes (Thread[Execution worker,5,main]) started.
+
+> Task :core:classes UP-TO-DATE
+Skipping task ':core:classes' as it has no actions.
+Resolve mutations for :core:jar (Thread[Execution worker,5,main]) started.
+:core:jar (Thread[Execution worker,5,main]) started.
+
+> Task :core:jar UP-TO-DATE
+Caching disabled for task ':core:jar' because:
+  Not worth caching
+Skipping task ':core:jar' as it is up-to-date.
+Resolve mutations for :cypher:checkKotlinGradlePluginConfigurationErrors (Thread[Execution worker,5,main]) started.
+:cypher:checkKotlinGradlePluginConfigurationErrors (Thread[Execution worker,5,main]) started.
+work action resolve core-profile-input-check.jar (project :core) (Thread[included builds,5,main]) started.
+
+> Task :cypher:checkKotlinGradlePluginConfigurationErrors SKIPPED
+Skipping task ':cypher:checkKotlinGradlePluginConfigurationErrors' as task onlyIf 'errorDiagnostics are present' is false.
+Resolve mutations for :cypher:generateGrammarSource (Thread[Execution worker,5,main]) started.
+:cypher:generateGrammarSource (Thread[Execution worker,5,main]) started.
+
+> Task :cypher:generateGrammarSource UP-TO-DATE
+Build cache key for task ':cypher:generateGrammarSource' is 5d4d542d3c28de75c17964df433e79de
+Skipping task ':cypher:generateGrammarSource' as it is up-to-date.
+Resolve mutations for :cypher:compileKotlin (Thread[Execution worker,5,main]) started.
+:cypher:compileKotlin (Thread[Execution worker,5,main]) started.
+
+> Task :cypher:compileKotlin UP-TO-DATE
+Build cache key for task ':cypher:compileKotlin' is 524fe908c66f07a2a40bb5a894d143ae
+Skipping task ':cypher:compileKotlin' as it is up-to-date.
+Resolve mutations for :cypher:compileJava (Thread[Execution worker,5,main]) started.
+:cypher:compileJava (Thread[Execution worker,5,main]) started.
+
+> Task :cypher:compileJava UP-TO-DATE
+Build cache key for task ':cypher:compileJava' is d546d73e0fb8cd63d66120b8ebde75e3
+Skipping task ':cypher:compileJava' as it is up-to-date.
+No compile result for :cypher:compileJava
+work action resolve main (project :cypher) (Thread[Execution worker,5,main]) started.
+work action resolve main (project :cypher) (Thread[Execution worker,5,main]) started.
+Resolve mutations for :cypher:processResources (Thread[Execution worker,5,main]) started.
+:cypher:processResources (Thread[Execution worker,5,main]) started.
+
+> Task :cypher:processResources NO-SOURCE
+Skipping task ':cypher:processResources' as it has no source files and no previous output files.
+Resolve mutations for :cypher:classes (Thread[Execution worker,5,main]) started.
+:cypher:classes (Thread[Execution worker,5,main]) started.
+
+> Task :cypher:classes UP-TO-DATE
+Skipping task ':cypher:classes' as it has no actions.
+Resolve mutations for :cypher:jar (Thread[Execution worker,5,main]) started.
+:cypher:jar (Thread[Execution worker,5,main]) started.
+
+> Task :cypher:jar UP-TO-DATE
+Caching disabled for task ':cypher:jar' because:
+  Not worth caching
+Skipping task ':cypher:jar' as it is up-to-date.
+Resolve mutations for :explore:checkKotlinGradlePluginConfigurationErrors (Thread[Execution worker,5,main]) started.
+work action resolve cypher-profile-input-check.jar (project :cypher) (Thread[included builds,5,main]) started.
+:explore:checkKotlinGradlePluginConfigurationErrors (Thread[Execution worker,5,main]) started.
+
+> Task :explore:checkKotlinGradlePluginConfigurationErrors SKIPPED
+Skipping task ':explore:checkKotlinGradlePluginConfigurationErrors' as task onlyIf 'errorDiagnostics are present' is false.
+Resolve mutations for :webgraph:checkKotlinGradlePluginConfigurationErrors (Thread[Execution worker,5,main]) started.
+:webgraph:checkKotlinGradlePluginConfigurationErrors (Thread[Execution worker,5,main]) started.
+
+> Task :webgraph:checkKotlinGradlePluginConfigurationErrors SKIPPED
+Skipping task ':webgraph:checkKotlinGradlePluginConfigurationErrors' as task onlyIf 'errorDiagnostics are present' is false.
+Resolve mutations for :webgraph:compileKotlin (Thread[Execution worker,5,main]) started.
+:webgraph:compileKotlin (Thread[Execution worker,5,main]) started.
+
+> Task :webgraph:compileKotlin UP-TO-DATE
+Build cache key for task ':webgraph:compileKotlin' is 05a66604abe06de74087f1d235ca786a
+Skipping task ':webgraph:compileKotlin' as it is up-to-date.
+Resolve mutations for :webgraph:compileJava (Thread[Execution worker,5,main]) started.
+:webgraph:compileJava (Thread[Execution worker,5,main]) started.
+
+> Task :webgraph:compileJava NO-SOURCE
+Skipping task ':webgraph:compileJava' as it has no source files and no previous output files.
+Resolve mutations for :webgraph:processResources (Thread[Execution worker,5,main]) started.
+:webgraph:processResources (Thread[Execution worker,5,main]) started.
+
+> Task :webgraph:processResources NO-SOURCE
+Skipping task ':webgraph:processResources' as it has no source files and no previous output files.
+Resolve mutations for :webgraph:classes (Thread[Execution worker,5,main]) started.
+:webgraph:classes (Thread[Execution worker,5,main]) started.
+
+> Task :webgraph:classes UP-TO-DATE
+Skipping task ':webgraph:classes' as it has no actions.
+Resolve mutations for :webgraph:jar (Thread[Execution worker,5,main]) started.
+:webgraph:jar (Thread[Execution worker,5,main]) started.
+
+> Task :webgraph:jar UP-TO-DATE
+Caching disabled for task ':webgraph:jar' because:
+  Not worth caching
+Skipping task ':webgraph:jar' as it is up-to-date.
+Resolve mutations for :explore:prepareNativeServer (Thread[included builds,5,main]) started.
+work action resolve webgraph-profile-input-check.jar (project :webgraph) (Thread[Execution worker,5,main]) started.
+Resolve mutations for :explore:compileKotlin (Thread[included builds,5,main]) started.
+:explore:compileKotlin (Thread[included builds,5,main]) started.
+
+> Task :explore:compileKotlin UP-TO-DATE
+Build cache key for task ':explore:compileKotlin' is 56b661e23a98772976a48545ae0b8809
+Skipping task ':explore:compileKotlin' as it is up-to-date.
+Resolve mutations for :explore:compileJava (Thread[Execution worker,5,main]) started.
+:explore:compileJava (Thread[Execution worker,5,main]) started.
+
+> Task :explore:compileJava NO-SOURCE
+Skipping task ':explore:compileJava' as it has no source files and no previous output files.
+:explore:prepareNativeServer (Thread[Execution worker,5,main]) started.
+
+> Task :explore:prepareNativeServer
+Caching disabled for task ':explore:prepareNativeServer' because:
+  Gradle would require more information to cache this task
+Task ':explore:prepareNativeServer' is not up-to-date because:
+  Input property '$1' file /private/tmp/graphite-go-profile-gradle-input-22eff982-build/graphite-server/internal/profiling/report.html has changed.
+Starting process 'command 'go''. Working directory: /private/tmp/graphite-go-profile-gradle-input-22eff982-build Command: go run scripts/native/build.go --output /private/tmp/graphite-go-profile-gradle-input-22eff982-build/graphite-explore/build/generated/native-resources/graphite-native --version profile-input-check --targets host
+Successfully started process 'command 'go''
+Building native server darwin-arm64 profile-input-check
+Resolve mutations for :explore:processResources (Thread[Execution worker,5,main]) started.
+:explore:processResources (Thread[Execution worker,5,main]) started.
+
+> Task :explore:processResources
+Caching disabled for task ':explore:processResources' because:
+  Not worth caching
+Task ':explore:processResources' is not up-to-date because:
+  Input property 'rootSpec$1' file /private/tmp/graphite-go-profile-gradle-input-22eff982-build/graphite-explore/build/generated/native-resources/graphite-native/SHA256SUMS has changed.
+  Input property 'rootSpec$1' file /private/tmp/graphite-go-profile-gradle-input-22eff982-build/graphite-explore/build/generated/native-resources/graphite-native/darwin-arm64/graphite-server has changed.
+Resolve mutations for :explore:classes (Thread[Execution worker,5,main]) started.
+:explore:classes (Thread[Execution worker,5,main]) started.
+
+> Task :explore:classes
+Skipping task ':explore:classes' as it has no actions.
+Resolve mutations for :explore:jar (Thread[Execution worker,5,main]) started.
+:explore:jar (Thread[Execution worker,5,main]) started.
+
+> Task :explore:jar
+Caching disabled for task ':explore:jar' because:
+  Not worth caching
+Task ':explore:jar' is not up-to-date because:
+  Input property 'rootSpec$1' file /private/tmp/graphite-go-profile-gradle-input-22eff982-build/graphite-explore/build/resources/main/graphite-native/SHA256SUMS has changed.
+  Input property 'rootSpec$1' file /private/tmp/graphite-go-profile-gradle-input-22eff982-build/graphite-explore/build/resources/main/graphite-native/darwin-arm64/graphite-server has changed.
+file or directory '/private/tmp/graphite-go-profile-gradle-input-22eff982-build/graphite-explore/build/classes/java/main', not found
+work action resolve explore-profile-input-check-slim.jar (project :explore) (Thread[Execution worker,5,main]) started.
+Resolve mutations for :sootup:checkKotlinGradlePluginConfigurationErrors (Thread[Execution worker,5,main]) started.
+:sootup:checkKotlinGradlePluginConfigurationErrors (Thread[Execution worker,5,main]) started.
+
+> Task :sootup:checkKotlinGradlePluginConfigurationErrors SKIPPED
+Skipping task ':sootup:checkKotlinGradlePluginConfigurationErrors' as task onlyIf 'errorDiagnostics are present' is false.
+Resolve mutations for :sootup:compileKotlin (Thread[Execution worker,5,main]) started.
+:sootup:compileKotlin (Thread[Execution worker,5,main]) started.
+
+> Task :sootup:compileKotlin UP-TO-DATE
+Build cache key for task ':sootup:compileKotlin' is 59b1fd9d13ec75e700fc9a48425b201c
+Skipping task ':sootup:compileKotlin' as it is up-to-date.
+Resolve mutations for :sootup:compileJava (Thread[Execution worker,5,main]) started.
+:sootup:compileJava (Thread[Execution worker,5,main]) started.
+
+> Task :sootup:compileJava NO-SOURCE
+Skipping task ':sootup:compileJava' as it has no source files and no previous output files.
+Resolve mutations for :sootup:processResources (Thread[Execution worker,5,main]) started.
+:sootup:processResources (Thread[Execution worker,5,main]) started.
+
+> Task :sootup:processResources NO-SOURCE
+Skipping task ':sootup:processResources' as it has no source files and no previous output files.
+Resolve mutations for :sootup:classes (Thread[Execution worker,5,main]) started.
+:sootup:classes (Thread[Execution worker,5,main]) started.
+
+> Task :sootup:classes UP-TO-DATE
+Skipping task ':sootup:classes' as it has no actions.
+Resolve mutations for :sootup:jar (Thread[Execution worker,5,main]) started.
+:sootup:jar (Thread[Execution worker,5,main]) started.
+
+> Task :sootup:jar UP-TO-DATE
+Caching disabled for task ':sootup:jar' because:
+  Not worth caching
+Skipping task ':sootup:jar' as it is up-to-date.
+work action resolve sootup-profile-input-check.jar (project :sootup) (Thread[Execution worker,5,main]) started.
+Resolve mutations for :explore:compileJmhKotlin (Thread[Execution worker,5,main]) started.
+:explore:compileJmhKotlin (Thread[Execution worker,5,main]) started.
+
+> Task :explore:compileJmhKotlin UP-TO-DATE
+Build cache key for BuildToolsApiClasspathEntrySnapshotTransform: /private/tmp/graphite-go-profile-gradle-input-22eff982-build/graphite-explore/build/resources/main is 57a149d064ea616e6c3248c499066372
+Stored cache entry for BuildToolsApiClasspathEntrySnapshotTransform: /private/tmp/graphite-go-profile-gradle-input-22eff982-build/graphite-explore/build/resources/main with cache key 57a149d064ea616e6c3248c499066372
+Build cache key for task ':explore:compileJmhKotlin' is b865dc8024e3254c0cd522eea976b8c0
+Skipping task ':explore:compileJmhKotlin' as it is up-to-date.
+Resolve mutations for :explore:compileJmhJava (Thread[Execution worker,5,main]) started.
+:explore:compileJmhJava (Thread[Execution worker,5,main]) started.
+
+> Task :explore:compileJmhJava NO-SOURCE
+Skipping task ':explore:compileJmhJava' as it has no source files and no previous output files.
+Resolve mutations for :query:checkKotlinGradlePluginConfigurationErrors (Thread[Execution worker,5,main]) started.
+:query:checkKotlinGradlePluginConfigurationErrors (Thread[Execution worker,5,main]) started.
+
+> Task :query:checkKotlinGradlePluginConfigurationErrors SKIPPED
+Skipping task ':query:checkKotlinGradlePluginConfigurationErrors' as task onlyIf 'errorDiagnostics are present' is false.
+Resolve mutations for :query:compileKotlin (Thread[Execution worker,5,main]) started.
+:query:compileKotlin (Thread[Execution worker,5,main]) started.
+
+> Task :query:compileKotlin UP-TO-DATE
+Build cache key for BuildToolsApiClasspathEntrySnapshotTransform: /private/tmp/graphite-go-profile-gradle-input-22eff982-build/graphite-explore/build/libs/explore-profile-input-check-slim.jar is c5f01e8d1cdeb6b0132e61f5305489fc
+Stored cache entry for BuildToolsApiClasspathEntrySnapshotTransform: /private/tmp/graphite-go-profile-gradle-input-22eff982-build/graphite-explore/build/libs/explore-profile-input-check-slim.jar with cache key c5f01e8d1cdeb6b0132e61f5305489fc
+Build cache key for task ':query:compileKotlin' is b1bd9c5ab7e7df3a1965a5b2bcbdabf3
+Skipping task ':query:compileKotlin' as it is up-to-date.
+Resolve mutations for :query:compileJava (Thread[Execution worker,5,main]) started.
+:query:compileJava (Thread[Execution worker,5,main]) started.
+
+> Task :query:compileJava NO-SOURCE
+Skipping task ':query:compileJava' as it has no source files and no previous output files.
+Resolve mutations for :query:processResources (Thread[Execution worker,5,main]) started.
+:query:processResources (Thread[Execution worker,5,main]) started.
+
+> Task :query:processResources NO-SOURCE
+Skipping task ':query:processResources' as it has no source files and no previous output files.
+Resolve mutations for :query:classes (Thread[Execution worker,5,main]) started.
+:query:classes (Thread[Execution worker,5,main]) started.
+
+> Task :query:classes UP-TO-DATE
+Skipping task ':query:classes' as it has no actions.
+Resolve mutations for :query:jar (Thread[Execution worker,5,main]) started.
+:query:jar (Thread[Execution worker,5,main]) started.
+
+> Task :query:jar UP-TO-DATE
+Caching disabled for task ':query:jar' because:
+  Not worth caching
+Skipping task ':query:jar' as it is up-to-date.
+work action resolve query-profile-input-check-slim.jar (project :query) (Thread[Execution worker,5,main]) started.
+Resolve mutations for :explore:compileTestKotlin (Thread[Execution worker,5,main]) started.
+:explore:compileTestKotlin (Thread[Execution worker,5,main]) started.
+
+> Task :explore:compileTestKotlin UP-TO-DATE
+Build cache key for task ':explore:compileTestKotlin' is 92d0f7d24c2ca3da65091702b80af2cb
+Skipping task ':explore:compileTestKotlin' as it is up-to-date.
+Resolve mutations for :explore:compileTestJava (Thread[Execution worker,5,main]) started.
+:explore:compileTestJava (Thread[Execution worker,5,main]) started.
+
+> Task :explore:compileTestJava NO-SOURCE
+Skipping task ':explore:compileTestJava' as it has no source files and no previous output files.
+Resolve mutations for :explore:shadowJar (Thread[Execution worker,5,main]) started.
+:explore:shadowJar (Thread[Execution worker,5,main]) started.
+
+> Task :explore:shadowJar
+Custom actions are attached to task ':explore:shadowJar'.
+Build cache key for task ':explore:shadowJar' is 98282a81d602fde042a5d4c1b29dd328
+Task ':explore:shadowJar' is not up-to-date because:
+  Input property 'rootSpec$1' file /private/tmp/graphite-go-profile-gradle-input-22eff982-build/graphite-explore/build/resources/main/graphite-native/SHA256SUMS has changed.
+  Input property 'rootSpec$1' file /private/tmp/graphite-go-profile-gradle-input-22eff982-build/graphite-explore/build/resources/main/graphite-native/darwin-arm64/graphite-server has changed.
+file or directory '/private/tmp/graphite-go-profile-gradle-input-22eff982-build/graphite-explore/build/classes/java/main', not found
+file or directory '/private/tmp/graphite-go-profile-gradle-input-22eff982-build/graphite-explore/build/classes/java/main', not found
+*******************
+GRADLE SHADOW STATS
+
+Total Jars: 65 (includes project)
+Total Time: 2.252s [2252ms]
+Average Time/Jar: 0.0346461538462s [34.6461538462ms]
+*******************
+Stored cache entry for task ':explore:shadowJar' with cache key 98282a81d602fde042a5d4c1b29dd328
+Resolve mutations for :query:compileTestKotlin (Thread[Execution worker,5,main]) started.
+:query:compileTestKotlin (Thread[Execution worker,5,main]) started.
+
+> Task :query:compileTestKotlin UP-TO-DATE
+Build cache key for task ':query:compileTestKotlin' is 58cc82e9d3988f4571c866c2282618b0
+Skipping task ':query:compileTestKotlin' as it is up-to-date.
+Resolve mutations for :query:compileTestJava (Thread[Execution worker,5,main]) started.
+:query:compileTestJava (Thread[Execution worker,5,main]) started.
+
+> Task :query:compileTestJava NO-SOURCE
+Skipping task ':query:compileTestJava' as it has no source files and no previous output files.
+Resolve mutations for :query:shadowJar (Thread[Execution worker,5,main]) started.
+:query:shadowJar (Thread[Execution worker,5,main]) started.
+
+> Task :query:shadowJar
+Custom actions are attached to task ':query:shadowJar'.
+Build cache key for task ':query:shadowJar' is af1b1b2cda66261f4875b25216ad96e8
+Task ':query:shadowJar' is not up-to-date because:
+  Input property 'configurations' file /private/tmp/graphite-go-profile-gradle-input-22eff982-build/graphite-explore/build/libs/explore-profile-input-check-slim.jar has changed.
+  Input property 'includedDependencies' file /private/tmp/graphite-go-profile-gradle-input-22eff982-build/graphite-explore/build/libs/explore-profile-input-check-slim.jar has changed.
+  Input property 'toMinimize' file /private/tmp/graphite-go-profile-gradle-input-22eff982-build/graphite-explore/build/libs/explore-profile-input-check-slim.jar has changed.
+file or directory '/private/tmp/graphite-go-profile-gradle-input-22eff982-build/graphite-query/build/classes/java/main', not found
+file or directory '/private/tmp/graphite-go-profile-gradle-input-22eff982-build/graphite-query/build/resources/main', not found
+file or directory '/private/tmp/graphite-go-profile-gradle-input-22eff982-build/graphite-query/build/classes/java/main', not found
+file or directory '/private/tmp/graphite-go-profile-gradle-input-22eff982-build/graphite-query/build/resources/main', not found
+*******************
+GRADLE SHADOW STATS
+
+Total Jars: 84 (includes project)
+Total Time: 3.281s [3281ms]
+Average Time/Jar: 0.0390595238095s [39.0595238095ms]
+*******************
+Stored cache entry for task ':query:shadowJar' with cache key af1b1b2cda66261f4875b25216ad96e8
+
+BUILD SUCCESSFUL in 17s
+21 actionable tasks: 5 executed, 16 up-to-date
+Watched directory hierarchies: [/private/tmp/graphite-go-profile-gradle-input-22eff982-build]

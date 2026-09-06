@@ -1,0 +1,15 @@
+{
+  "baseCommit": "22eff9820fb05d081093f2ad08d62b895c143446",
+  "rootSnapshot": {
+    "graphite-explore/build.gradle.kts": "1b35e97bcc3355dcb13bb6a22e41bab7f7dd52c248be99c91342952ae1984b39",
+    "scripts/native/build.go": "87436aeca054994d091ecde372b88d823772bbf6a7b9887672bfe43aa33f7394",
+    "scripts/native/build_test.go": "228c68e57c86f966e8bc3bd7a2a128647acfc6e190ab2377ff4d9d5fca7d984c",
+    "scripts/native/README.md": "a1bbf774ca93512e6906350bbdae934fca4814658e2b842d81738e8541134e42",
+    "scripts/native/smoke.py": "5a5d9a0a5f21b299bcea3cd8befd80f1045c23ccadfb6a52f52b522ed0920fa9"
+  },
+  "profilingPatch": "/tmp/graphite-go-native-html-profile-bbdfae2a/native-profile-freeze/candidate.patch",
+  "profilingPatchSHA256": "a57591f69291d97b192488d3c302eb0c6f73de791d446444cb3790f0b823e83b",
+  "scope": "Effective base only; these snapshots are not the one-line Gradle input fix.",
+  "buildCheckout": "/tmp/graphite-go-profile-gradle-input-22eff982-build",
+  "buildCheckoutReason": "Publishing plugin cannot locate linked-worktree repository. Ordinary local shared clone of the same pinned commit receives byte-identical scoped effective-base source files; no new commit."
+}

@@ -1,0 +1,13 @@
+{
+  "passed": true,
+  "buildRuns": 9,
+  "htmlOnlyChangedFiles": [
+    "graphite-server/internal/profiling/report.html"
+  ],
+  "unfixedMissedHTMLChange": true,
+  "fixedHTMLTriggeredPrepareAndBothJars": true,
+  "noChangeUpToDate": true,
+  "restoredTemplateBinaryIdenticalToInitial": true,
+  "hostOnly": "darwin-arm64",
+  "performanceWorkload": false
+}

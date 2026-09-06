@@ -1,0 +1,47 @@
+{
+  "runs": [
+    {
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./..."
+      ],
+      "exitCode": 0,
+      "log": "race.log"
+    },
+    {
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "exitCode": 0,
+      "log": "vet.log"
+    },
+    {
+      "command": [
+        "go",
+        "build",
+        "-o",
+        "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-profile-root-bh180zsf/graphite-profile-server",
+        "./cmd/graphite-server"
+      ],
+      "exitCode": 0,
+      "log": "build.log"
+    },
+    {
+      "command": [
+        "python3",
+        "-W",
+        "error::ResourceWarning",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-html-profile-integration/verify-binary.py",
+        "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-profile-root-bh180zsf/graphite-profile-server"
+      ],
+      "exitCode": 0,
+      "log": "binary-check.log"
+    }
+  ],
+  "binarySHA256": "1906ad6987fa1746a5bf4abf2924c35bc4033a813540503137cae49465a35e51",
+  "enabledDisabledCompleteResponsesEqual": true
+}

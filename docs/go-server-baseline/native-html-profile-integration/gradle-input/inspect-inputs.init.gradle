@@ -1,0 +1,10 @@
+gradle.projectsEvaluated {
+    def project = gradle.rootProject.project(':explore')
+    project.tasks.register('inspectNativeEmbedInputs') {
+        doLast {
+            def inputs = project.tasks.named('prepareNativeServer').get().inputs.files.files
+            def paths = inputs.collect { gradle.rootProject.relativePath(it) }.sort()
+            new File(System.getProperty('graphite.inputAuditOutput')).text = paths.join('\n') + '\n'
+        }
+    }
+}

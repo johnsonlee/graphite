@@ -1,0 +1,149 @@
+{
+  "staticInputRules": [
+    "**/*.go",
+    "go.mod",
+    "go.sum",
+    "internal/web/assets/**",
+    "internal/profiling/report.html",
+    "internal/server/spec/**",
+    "internal/javaregex/*.json",
+    "internal/javaregex/*.json.gz",
+    "cmd/graphite-server/*.txt"
+  ],
+  "declarations": [
+    {
+      "file": "graphite-server/cmd/graphite-server/cli.go",
+      "line": 17,
+      "pattern": "serve-usage.txt",
+      "resources": [
+        {
+          "path": "cmd/graphite-server/serve-usage.txt",
+          "sha256": "e58e2a59ec151a7a7710ff11737b883db28983e2e337949c2364ec06561f733b",
+          "inputRules": [
+            "cmd/graphite-server/*.txt"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "graphite-server/cmd/graphite-server/cli.go",
+      "line": 20,
+      "pattern": "explore-usage.txt",
+      "resources": [
+        {
+          "path": "cmd/graphite-server/explore-usage.txt",
+          "sha256": "ce35b0f4ab8bdf87997d3198e8a5b6fe3f3e3584d7f389d1b2a255a3f446de12",
+          "inputRules": [
+            "cmd/graphite-server/*.txt"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "graphite-server/internal/javaregex/advanced.go",
+      "line": 15,
+      "pattern": "java17_advanced.json",
+      "resources": [
+        {
+          "path": "internal/javaregex/java17_advanced.json",
+          "sha256": "cb01db0c7fd6998a5c3ccc56849f78936913e5473734fc0545c1ee34ce65167a",
+          "inputRules": [
+            "internal/javaregex/*.json"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "graphite-server/internal/javaregex/advanced.go",
+      "line": 18,
+      "pattern": "java17_names.json.gz",
+      "resources": [
+        {
+          "path": "internal/javaregex/java17_names.json.gz",
+          "sha256": "ce3a06669d9af7f75fc95d58956fb125faaefd341c2f0a0f33c0d12785ed95d8",
+          "inputRules": [
+            "internal/javaregex/*.json.gz"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "graphite-server/internal/javaregex/unicode.go",
+      "line": 11,
+      "pattern": "java17_unicode.json",
+      "resources": [
+        {
+          "path": "internal/javaregex/java17_unicode.json",
+          "sha256": "f4b80b142388de42cf63d0c8c03cb22e510775e38f4ceef969085981b956c36b",
+          "inputRules": [
+            "internal/javaregex/*.json"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "graphite-server/internal/profiling/report.go",
+      "line": 35,
+      "pattern": "report.html",
+      "resources": [
+        {
+          "path": "internal/profiling/report.html",
+          "sha256": "c3fda3af962c143f0517ad6cbc4badce3614e2275a01861b0309c3473efd2f61",
+          "inputRules": [
+            "internal/profiling/report.html"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "graphite-server/internal/server/spec.go",
+      "line": 13,
+      "pattern": "spec/openapi.json",
+      "resources": [
+        {
+          "path": "internal/server/spec/openapi.json",
+          "sha256": "c1f77e65250a448cd7198462932c87c5796ad4d84ede65bf732a3de5ef616675",
+          "inputRules": [
+            "internal/server/spec/**"
+          ]
+        }
+      ]
+    },
+    {
+      "file": "graphite-server/internal/web/assets.go",
+      "line": 11,
+      "pattern": "assets/*",
+      "resources": [
+        {
+          "path": "internal/web/assets/index.html",
+          "sha256": "cde253d3a96ba6fa9562bacdd43373fc1b6a73f73feddacb637a8a2421d61057",
+          "inputRules": [
+            "internal/web/assets/**"
+          ]
+        },
+        {
+          "path": "internal/web/assets/style.css",
+          "sha256": "fc3c32e70df3f3fe3864eea6b431a36a8d837adbe505f715fbc8f9aaf452abcd",
+          "inputRules": [
+            "internal/web/assets/**"
+          ]
+        },
+        {
+          "path": "internal/web/assets/ui-state.js",
+          "sha256": "9f84675e7e61e7fe47d13a21e7a8c34bec7e866ff050f6d32ce8f6f9a5b1781c",
+          "inputRules": [
+            "internal/web/assets/**"
+          ]
+        },
+        {
+          "path": "internal/web/assets/app.js",
+          "sha256": "46f17018780bb99d69122edfd9ab26419c4013fa96c3ea6404c80ef43da1a8cb",
+          "inputRules": [
+            "internal/web/assets/**"
+          ]
+        }
+      ]
+    }
+  ],
+  "allResolvedResourcesCovered": true
+}

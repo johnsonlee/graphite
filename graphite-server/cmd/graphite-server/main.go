@@ -167,8 +167,9 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 
 func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer stop()
-	if code := execute(ctx, os.Args[1:], os.Stdout, os.Stderr); code != 0 {
+	code := executeProfiled(ctx, os.Args[1:], os.Stdout, os.Stderr, os.Getenv)
+	stop()
+	if code != 0 {
 		os.Exit(code)
 	}
 }

@@ -1,0 +1,1 @@
+Initial both-JAR Gradle invocation passed. The verifier initially looked for graphite-query.jar; actual query archiveBaseName is graphite, so the artifact is graphite-query/build/libs/graphite.jar. Only the evidence driver path was corrected. The full phase sequence is rerun and assertions are required; no build source was changed for this correction.

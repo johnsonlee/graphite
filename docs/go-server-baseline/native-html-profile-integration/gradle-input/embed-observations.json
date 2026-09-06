@@ -1,0 +1,242 @@
+[
+  {
+    "name": "12-htmlfix-json-only-untracked",
+    "command": [
+      "./gradlew",
+      "--no-daemon",
+      "--max-workers=2",
+      ":explore:shadowJar",
+      ":query:shadowJar",
+      "-Pgraphite.nativeTargets=host",
+      "-Pversion=profile-input-check",
+      "--console=plain",
+      "--info"
+    ],
+    "exitCode": 0,
+    "tasks": {
+      ":explore:prepareNativeServer": "UP-TO-DATE",
+      ":explore:processResources": "UP-TO-DATE",
+      ":explore:shadowJar": "UP-TO-DATE",
+      ":query:shadowJar": "UP-TO-DATE"
+    },
+    "htmlSHA256": "c3fda3af962c143f0517ad6cbc4badce3614e2275a01861b0309c3473efd2f61",
+    "binarySHA256": "a228e94f4eeb735ec198478a43e4cdc8f73a413410711a4bf32aab764189e050",
+    "jars": {
+      "explore": {
+        "sha256": "76f7863eede86d81ce6bcf0ff8584c631ad2258a05abcf2ce137876c58ac67ab",
+        "nativeEntry": "graphite-native/darwin-arm64/graphite-server",
+        "nativeEntrySHA256": "a228e94f4eeb735ec198478a43e4cdc8f73a413410711a4bf32aab764189e050"
+      },
+      "query": {
+        "sha256": "90c3761f5c1597da38e41c74a94d6bb64ca8216931a6a7685ed88480ac75ffee",
+        "nativeEntry": "graphite-native/darwin-arm64/graphite-server",
+        "nativeEntrySHA256": "a228e94f4eeb735ec198478a43e4cdc8f73a413410711a4bf32aab764189e050"
+      }
+    }
+  },
+  {
+    "name": "13-all-embed-inputs-original",
+    "command": [
+      "./gradlew",
+      "--no-daemon",
+      "--max-workers=2",
+      ":explore:shadowJar",
+      ":query:shadowJar",
+      "-Pgraphite.nativeTargets=host",
+      "-Pversion=profile-input-check",
+      "--console=plain"
+    ],
+    "exitCode": 0,
+    "tasks": {
+      ":explore:prepareNativeServer": "EXECUTED",
+      ":explore:processResources": "UP-TO-DATE",
+      ":explore:shadowJar": "UP-TO-DATE",
+      ":query:shadowJar": "UP-TO-DATE"
+    },
+    "htmlSHA256": "c3fda3af962c143f0517ad6cbc4badce3614e2275a01861b0309c3473efd2f61",
+    "binarySHA256": "a228e94f4eeb735ec198478a43e4cdc8f73a413410711a4bf32aab764189e050",
+    "jars": {
+      "explore": {
+        "sha256": "76f7863eede86d81ce6bcf0ff8584c631ad2258a05abcf2ce137876c58ac67ab",
+        "nativeEntry": "graphite-native/darwin-arm64/graphite-server",
+        "nativeEntrySHA256": "a228e94f4eeb735ec198478a43e4cdc8f73a413410711a4bf32aab764189e050"
+      },
+      "query": {
+        "sha256": "90c3761f5c1597da38e41c74a94d6bb64ca8216931a6a7685ed88480ac75ffee",
+        "nativeEntry": "graphite-native/darwin-arm64/graphite-server",
+        "nativeEntrySHA256": "a228e94f4eeb735ec198478a43e4cdc8f73a413410711a4bf32aab764189e050"
+      }
+    }
+  },
+  {
+    "name": "14-all-embed-inputs-no-change",
+    "command": [
+      "./gradlew",
+      "--no-daemon",
+      "--max-workers=2",
+      ":explore:shadowJar",
+      ":query:shadowJar",
+      "-Pgraphite.nativeTargets=host",
+      "-Pversion=profile-input-check",
+      "--console=plain"
+    ],
+    "exitCode": 0,
+    "tasks": {
+      ":explore:prepareNativeServer": "UP-TO-DATE",
+      ":explore:processResources": "UP-TO-DATE",
+      ":explore:shadowJar": "UP-TO-DATE",
+      ":query:shadowJar": "UP-TO-DATE"
+    },
+    "htmlSHA256": "c3fda3af962c143f0517ad6cbc4badce3614e2275a01861b0309c3473efd2f61",
+    "binarySHA256": "a228e94f4eeb735ec198478a43e4cdc8f73a413410711a4bf32aab764189e050",
+    "jars": {
+      "explore": {
+        "sha256": "76f7863eede86d81ce6bcf0ff8584c631ad2258a05abcf2ce137876c58ac67ab",
+        "nativeEntry": "graphite-native/darwin-arm64/graphite-server",
+        "nativeEntrySHA256": "a228e94f4eeb735ec198478a43e4cdc8f73a413410711a4bf32aab764189e050"
+      },
+      "query": {
+        "sha256": "90c3761f5c1597da38e41c74a94d6bb64ca8216931a6a7685ed88480ac75ffee",
+        "nativeEntry": "graphite-native/darwin-arm64/graphite-server",
+        "nativeEntrySHA256": "a228e94f4eeb735ec198478a43e4cdc8f73a413410711a4bf32aab764189e050"
+      }
+    }
+  },
+  {
+    "name": "15-all-embed-inputs-json-only",
+    "command": [
+      "./gradlew",
+      "--no-daemon",
+      "--max-workers=2",
+      ":explore:shadowJar",
+      ":query:shadowJar",
+      "-Pgraphite.nativeTargets=host",
+      "-Pversion=profile-input-check",
+      "--console=plain",
+      "--info"
+    ],
+    "exitCode": 0,
+    "tasks": {
+      ":explore:prepareNativeServer": "EXECUTED",
+      ":explore:processResources": "EXECUTED",
+      ":explore:shadowJar": "EXECUTED",
+      ":query:shadowJar": "EXECUTED"
+    },
+    "htmlSHA256": "c3fda3af962c143f0517ad6cbc4badce3614e2275a01861b0309c3473efd2f61",
+    "binarySHA256": "f5060d42ebc6342b00a99bea4db97983cd310bd9b07b950f9330864223b1ae6c",
+    "jars": {
+      "explore": {
+        "sha256": "17cd79731ec4d0c75e6432cd9605c16d3f5722d068a4d3c211086c7fe3eeea32",
+        "nativeEntry": "graphite-native/darwin-arm64/graphite-server",
+        "nativeEntrySHA256": "f5060d42ebc6342b00a99bea4db97983cd310bd9b07b950f9330864223b1ae6c"
+      },
+      "query": {
+        "sha256": "dd16c083052fd2942134d5d0762c670ffbec795e4bcad2240381459cae12fbcd",
+        "nativeEntry": "graphite-native/darwin-arm64/graphite-server",
+        "nativeEntrySHA256": "f5060d42ebc6342b00a99bea4db97983cd310bd9b07b950f9330864223b1ae6c"
+      }
+    }
+  },
+  {
+    "name": "16-all-embed-inputs-modified-no-change",
+    "command": [
+      "./gradlew",
+      "--no-daemon",
+      "--max-workers=2",
+      ":explore:shadowJar",
+      ":query:shadowJar",
+      "-Pgraphite.nativeTargets=host",
+      "-Pversion=profile-input-check",
+      "--console=plain"
+    ],
+    "exitCode": 0,
+    "tasks": {
+      ":explore:prepareNativeServer": "UP-TO-DATE",
+      ":explore:processResources": "UP-TO-DATE",
+      ":explore:shadowJar": "UP-TO-DATE",
+      ":query:shadowJar": "UP-TO-DATE"
+    },
+    "htmlSHA256": "c3fda3af962c143f0517ad6cbc4badce3614e2275a01861b0309c3473efd2f61",
+    "binarySHA256": "f5060d42ebc6342b00a99bea4db97983cd310bd9b07b950f9330864223b1ae6c",
+    "jars": {
+      "explore": {
+        "sha256": "17cd79731ec4d0c75e6432cd9605c16d3f5722d068a4d3c211086c7fe3eeea32",
+        "nativeEntry": "graphite-native/darwin-arm64/graphite-server",
+        "nativeEntrySHA256": "f5060d42ebc6342b00a99bea4db97983cd310bd9b07b950f9330864223b1ae6c"
+      },
+      "query": {
+        "sha256": "dd16c083052fd2942134d5d0762c670ffbec795e4bcad2240381459cae12fbcd",
+        "nativeEntry": "graphite-native/darwin-arm64/graphite-server",
+        "nativeEntrySHA256": "f5060d42ebc6342b00a99bea4db97983cd310bd9b07b950f9330864223b1ae6c"
+      }
+    }
+  },
+  {
+    "name": "17-all-embed-inputs-restored",
+    "command": [
+      "./gradlew",
+      "--no-daemon",
+      "--max-workers=2",
+      ":explore:shadowJar",
+      ":query:shadowJar",
+      "-Pgraphite.nativeTargets=host",
+      "-Pversion=profile-input-check",
+      "--console=plain"
+    ],
+    "exitCode": 0,
+    "tasks": {
+      ":explore:prepareNativeServer": "EXECUTED",
+      ":explore:processResources": "EXECUTED",
+      ":explore:shadowJar": "FROM-CACHE",
+      ":query:shadowJar": "FROM-CACHE"
+    },
+    "htmlSHA256": "c3fda3af962c143f0517ad6cbc4badce3614e2275a01861b0309c3473efd2f61",
+    "binarySHA256": "a228e94f4eeb735ec198478a43e4cdc8f73a413410711a4bf32aab764189e050",
+    "jars": {
+      "explore": {
+        "sha256": "76f7863eede86d81ce6bcf0ff8584c631ad2258a05abcf2ce137876c58ac67ab",
+        "nativeEntry": "graphite-native/darwin-arm64/graphite-server",
+        "nativeEntrySHA256": "a228e94f4eeb735ec198478a43e4cdc8f73a413410711a4bf32aab764189e050"
+      },
+      "query": {
+        "sha256": "90c3761f5c1597da38e41c74a94d6bb64ca8216931a6a7685ed88480ac75ffee",
+        "nativeEntry": "graphite-native/darwin-arm64/graphite-server",
+        "nativeEntrySHA256": "a228e94f4eeb735ec198478a43e4cdc8f73a413410711a4bf32aab764189e050"
+      }
+    }
+  },
+  {
+    "name": "18-all-embed-inputs-restored-no-change",
+    "command": [
+      "./gradlew",
+      "--no-daemon",
+      "--max-workers=2",
+      ":explore:shadowJar",
+      ":query:shadowJar",
+      "-Pgraphite.nativeTargets=host",
+      "-Pversion=profile-input-check",
+      "--console=plain"
+    ],
+    "exitCode": 0,
+    "tasks": {
+      ":explore:prepareNativeServer": "UP-TO-DATE",
+      ":explore:processResources": "UP-TO-DATE",
+      ":explore:shadowJar": "UP-TO-DATE",
+      ":query:shadowJar": "UP-TO-DATE"
+    },
+    "htmlSHA256": "c3fda3af962c143f0517ad6cbc4badce3614e2275a01861b0309c3473efd2f61",
+    "binarySHA256": "a228e94f4eeb735ec198478a43e4cdc8f73a413410711a4bf32aab764189e050",
+    "jars": {
+      "explore": {
+        "sha256": "76f7863eede86d81ce6bcf0ff8584c631ad2258a05abcf2ce137876c58ac67ab",
+        "nativeEntry": "graphite-native/darwin-arm64/graphite-server",
+        "nativeEntrySHA256": "a228e94f4eeb735ec198478a43e4cdc8f73a413410711a4bf32aab764189e050"
+      },
+      "query": {
+        "sha256": "90c3761f5c1597da38e41c74a94d6bb64ca8216931a6a7685ed88480ac75ffee",
+        "nativeEntry": "graphite-native/darwin-arm64/graphite-server",
+        "nativeEntrySHA256": "a228e94f4eeb735ec198478a43e4cdc8f73a413410711a4bf32aab764189e050"
+      }
+    }
+  }
+]

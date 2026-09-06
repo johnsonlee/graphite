@@ -72,6 +72,12 @@ observability difference. GC pause counts use cumulative bucket counters because
 Go does not provide their exact sum. Release artifacts may set their version with
 `-ldflags '-X main.version=...'`; unversioned binaries report `unknown`.
 
+## Native CPU profiling
+
+Set `GRAPHITE_NATIVE_CPU_PROFILE=1` to record CPU samples from startup through
+normal or signaled shutdown. `GRAPHITE_PROFILE` selects the standalone HTML output
+(default `profile.html`). See [profiling usage and report semantics](internal/profiling/README.md).
+
 ## Evidence and reproduction
 
 - [Store format and JVM parity](internal/store/README.md)

@@ -1,0 +1,872 @@
+diff --git a/graphite-server/README.md b/graphite-server/README.md
+index abeedc91..bbd02389 100644
+--- a/graphite-server/README.md
++++ b/graphite-server/README.md
+@@ -71,6 +71,12 @@ observability difference. GC pause counts use cumulative bucket counters because
+ Go does not provide their exact sum. Release artifacts may set their version with
+ `-ldflags '-X main.version=...'`; unversioned binaries report `unknown`.
+ 
++## Native CPU profiling
++
++Set `GRAPHITE_NATIVE_CPU_PROFILE=1` to record CPU samples from startup through
++normal or signaled shutdown. `GRAPHITE_PROFILE` selects the standalone HTML output
++(default `profile.html`). See [profiling usage and report semantics](internal/profiling/README.md).
++
+ ## Evidence and reproduction
+ 
+ - [Store format and JVM parity](internal/store/README.md)
+diff --git a/graphite-server/cmd/graphite-server/main.go b/graphite-server/cmd/graphite-server/main.go
+index 18dc5ade..18cec305 100644
+--- a/graphite-server/cmd/graphite-server/main.go
++++ b/graphite-server/cmd/graphite-server/main.go
+@@ -167,8 +167,9 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
+ 
+ func main() {
+ 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+-	defer stop()
+-	if code := execute(ctx, os.Args[1:], os.Stdout, os.Stderr); code != 0 {
++	code := executeProfiled(ctx, os.Args[1:], os.Stdout, os.Stderr, os.Getenv)
++	stop()
++	if code != 0 {
+ 		os.Exit(code)
+ 	}
+ }
+diff --git a/graphite-server/cmd/graphite-server/profiling.go b/graphite-server/cmd/graphite-server/profiling.go
+new file mode 100644
+index 00000000..6c51f270
+--- /dev/null
++++ b/graphite-server/cmd/graphite-server/profiling.go
+@@ -0,0 +1,32 @@
++package main
++
++import (
++	"context"
++	"fmt"
++	"github.com/johnsonlee/graphite/graphite-server/internal/profiling"
++	"io"
++)
++
++// Profile startup/help/parser work too. Stop runs before main considers os.Exit,
++// including after a handled termination signal has made execute return.
++func executeProfiled(ctx context.Context, args []string, stdout, stderr io.Writer, getenv func(string) string) (code int) {
++	if getenv("GRAPHITE_NATIVE_CPU_PROFILE") != "1" {
++		return execute(ctx, args, stdout, stderr)
++	}
++	path := getenv("GRAPHITE_PROFILE")
++	if path == "" {
++		path = "profile.html"
++	}
++	session, err := profiling.Start(path)
++	if err != nil {
++		fmt.Fprintln(stderr, "Error:", err)
++		return 1
++	}
++	defer func() {
++		if err := session.Stop(); err != nil {
++			fmt.Fprintln(stderr, "Error:", err)
++			code = 1
++		}
++	}()
++	return execute(ctx, args, stdout, stderr)
++}
+diff --git a/graphite-server/cmd/graphite-server/profiling_test.go b/graphite-server/cmd/graphite-server/profiling_test.go
+new file mode 100644
+index 00000000..710f81e0
+--- /dev/null
++++ b/graphite-server/cmd/graphite-server/profiling_test.go
+@@ -0,0 +1,56 @@
++package main
++
++import (
++	"bytes"
++	"context"
++	"os"
++	"path/filepath"
++	"strings"
++	"testing"
++)
++
++func TestProfilingDisabledPreservesCLI(t *testing.T) {
++	for _, enabled := range []string{"", "0", "true", "01"} {
++		t.Run(enabled, func(t *testing.T) {
++			var stdout, stderr, wantout, wanterr bytes.Buffer
++			args := []string{"--help"}
++			want := execute(context.Background(), args, &wantout, &wanterr)
++			got := executeProfiled(context.Background(), args, &stdout, &stderr, func(k string) string {
++				if k == "GRAPHITE_NATIVE_CPU_PROFILE" {
++					return enabled
++				}
++				return "/does-not-exist/report.html"
++			})
++			if got != want || stdout.String() != wantout.String() || stderr.String() != wanterr.String() {
++				t.Fatalf("CLI changed: %d %q %q", got, stdout.String(), stderr.String())
++			}
++		})
++	}
++}
++func TestProfilingHelpAndOutputFailure(t *testing.T) {
++	for _, invalid := range []bool{false, true} {
++		t.Run(map[bool]string{false: "help", true: "invalid-output"}[invalid], func(t *testing.T) {
++			path := filepath.Join(t.TempDir(), "profile.html")
++			if invalid {
++				path = filepath.Join(path, "missing", "profile.html")
++			}
++			var stdout, stderr bytes.Buffer
++			code := executeProfiled(context.Background(), []string{"--help"}, &stdout, &stderr, func(k string) string {
++				if k == "GRAPHITE_NATIVE_CPU_PROFILE" {
++					return "1"
++				}
++				return path
++			})
++			if invalid {
++				if code == 0 || !strings.Contains(stderr.String(), "start CPU profile") {
++					t.Fatalf("%d/%s", code, stderr.String())
++				}
++				return
++			}
++			data, err := os.ReadFile(path)
++			if code != 0 || err != nil || !bytes.Contains(data, []byte("profile-data")) {
++				t.Fatalf("help profile %d/%v/%s", code, err, stderr.String())
++			}
++		})
++	}
++}
+diff --git a/graphite-server/go.mod b/graphite-server/go.mod
+index 79781ee1..36ea1a50 100644
+--- a/graphite-server/go.mod
++++ b/graphite-server/go.mod
+@@ -2,6 +2,9 @@ module github.com/johnsonlee/graphite/graphite-server
+ 
+ go 1.22
+ 
+-require github.com/antlr4-go/antlr/v4 v4.13.1
++require (
++	github.com/antlr4-go/antlr/v4 v4.13.1
++	github.com/google/pprof v0.0.0-20230811205829-9131a7e9cc17
++)
+ 
+ require golang.org/x/exp v0.0.0-20240506185415-9bf2ced13842 // indirect
+diff --git a/graphite-server/go.sum b/graphite-server/go.sum
+index a4312cda..40867272 100644
+--- a/graphite-server/go.sum
++++ b/graphite-server/go.sum
+@@ -1,4 +1,6 @@
+ github.com/antlr4-go/antlr/v4 v4.13.1 h1:SqQKkuVZ+zWkMMNkjy5FZe5mr5WURWnlpmOuzYWrPrQ=
+ github.com/antlr4-go/antlr/v4 v4.13.1/go.mod h1:GKmUxMtwp6ZgGwZSva4eWPC5mS6vUAmOABFgjdkM7Nw=
++github.com/google/pprof v0.0.0-20230811205829-9131a7e9cc17 h1:0h35ESZ02+hN/MFZb7XZOXg+Rl9+Rk8fBIf5YLws9gA=
++github.com/google/pprof v0.0.0-20230811205829-9131a7e9cc17/go.mod h1:Jh3hGz2jkYak8qXPD19ryItVnUgpgeqzdkY/D0EaeuA=
+ golang.org/x/exp v0.0.0-20240506185415-9bf2ced13842 h1:vr/HnozRka3pE4EsMEg1lgkXJkTFJCVUX+S/ZT6wYzM=
+ golang.org/x/exp v0.0.0-20240506185415-9bf2ced13842/go.mod h1:XtvwrStGgqGPLc4cjQfWqZHG1YFdYs6swckp8vpsjnc=
+diff --git a/graphite-server/internal/profiling/README.md b/graphite-server/internal/profiling/README.md
+new file mode 100644
+index 00000000..e9fd6499
+--- /dev/null
++++ b/graphite-server/internal/profiling/README.md
+@@ -0,0 +1,33 @@
++# Native CPU profiling
++
++The native binary can record CPU samples and write a self-contained HTML flame graph:
++
++```sh
++GRAPHITE_NATIVE_CPU_PROFILE=1 GRAPHITE_PROFILE=profile.html \
++  ./graphite-server --data /path/to/catalog --port 8080
++```
++
++Run the work to inspect, then stop the server with Ctrl-C or SIGTERM. Recording starts before argument parsing and graph startup. The runtime's samples are stopped/flushed and the HTML report is completed before the process exits. Help and invalid arguments also finish recording when enabled; short runs can legitimately contain no CPU samples.
++
++Only the exact value `GRAPHITE_NATIVE_CPU_PROFILE=1` enables recording. `GRAPHITE_PROFILE` selects the output path and defaults to `profile.html` when empty. Setting only `GRAPHITE_PROFILE` does not enable the native profiler. Disabled execution follows the existing CLI path. The release wrapper owns routing: native serve uses this facility; JVM build/query retain async-profiler. This package does not implement JVM profiler options, sampling intervals, or profiler-agent configuration.
++
++The output directory must already exist. The compressed profile and pending HTML are private temporary files in that directory. An existing report is replaced by a same-directory atomic rename only after parsing/rendering and closing the new report succeed. Temporary files are removed on normal success/failure. Start, parse, render, close and save errors are reported on stderr with a nonzero exit status. SIGKILL and abrupt process termination cannot run the flush/cleanup handler.
++
++The HTML embeds data, CSS and JavaScript. It needs no pprof executable, Graphviz, Java process, server, CDN or downloaded asset for inspection. A modern browser with BigInt support can open it. Frame widths show inclusive sampled CPU time; overlapping parent/child values are not additive and do not represent request latency. Click or keyboard-activate a frame to zoom, use Back/Reset to return, and search functions/files. Next match can reveal a matching stack that was too narrow to draw. Search coverage counts each matching sample path once even when both parent and child match.
++
++CPU values use the profile's `cpu/nanoseconds` sample type, independent of the position of its `samples/count` field. The period is displayed as time only when its type is also `cpu/nanoseconds`. Exact signed-int64 nanoseconds are embedded as decimal strings and processed with BigInt, avoiding JavaScript Number rounding. Layout ratios use floating point only for pixel geometry. Negative CPU values, overflowing totals and invalid profile metadata are rejected. Empty profiles render an explicit empty state. pprof locations and inlined lines are both leaf-first; reversing both creates outer-to-inner stacks, following the pinned pprof `proto/profile.proto` specification.
++
++Native server code currently adds no pprof query labels. If labels are present, samples are aggregated across labels and the report states this; label names/values are not retained. Function and file names use JSON HTML escaping and DOM textContent, preventing names from becoming executable markup. The total/data tree is retained in full. Drawing is limited to 8,000 frames and 200 levels per view, with subpixel frames omitted; zoom and Next match expose the remaining data. This bounds DOM work without altering recorded totals. Very large recordings still require memory for the full sampled call tree and its embedded JSON.
++
++## Verification
++
++`go test ./internal/profiling ./cmd/graphite-server` checks exact stack order/totals, metadata, integer precision, escaping, empty/error/overflow cases, twenty-thousand-way fanout, private temporaries, atomic replacement, actual nonempty runtime CPU stacks, concurrent Stop and CLI opt-in behavior. The real CPU exercise checks sampling correctness only; it is not a benchmark and has no throughput/latency assertion. Full-module `go test -race ./...` and `go vet ./...` are required.
++
++For optional browser fixtures:
++
++```sh
++GRAPHITE_PROFILE_UI_FIXTURES=/tmp/profile-ui \
++  go test ./internal/profiling -run TestProfileBrowserFixtures -count=1
++```
++
++These generated synthetic profiles verify only format and interaction behavior. The task's independent Chrome CUA checks used a loopback HTTP preview and covered search percentages, zoom/back, current-view detail reset, empty data and Next match on a 20,000-branch profile. Direct `file://` navigation was blocked by the browser tool's URL policy and was not bypassed or claimed as verified; no external resources are needed by the generated artifact.
+diff --git a/graphite-server/internal/profiling/report.go b/graphite-server/internal/profiling/report.go
+new file mode 100644
+index 00000000..ffcdfafa
+--- /dev/null
++++ b/graphite-server/internal/profiling/report.go
+@@ -0,0 +1,156 @@
++package profiling
++
++import (
++	_ "embed"
++	"encoding/json"
++	"fmt"
++	"html/template"
++	"io"
++	"math"
++	"sort"
++
++	profile "github.com/google/pprof/profile"
++)
++
++type frameKey struct {
++	Name string `json:"name"`
++	File string `json:"file,omitempty"`
++	Line int64  `json:"line,omitempty"`
++}
++
++type frame struct {
++	frameKey
++	Value    int64    `json:"value,string"`
++	Children []*frame `json:"children,omitempty"`
++	byKey    map[frameKey]*frame
++}
++
++type report struct {
++	Root             *frame `json:"root"`
++	DurationNanos    int64  `json:"durationNanos,string"`
++	PeriodNanos      int64  `json:"periodNanos,string"`
++	LabelsAggregated bool   `json:"labelsAggregated"`
++}
++
++//go:embed report.html
++var reportHTML string
++
++var page = template.Must(template.New("cpu-profile").Parse(reportHTML))
++
++// Render emits HTML with embedded data and controls, requiring no Go tools,
++// Graphviz, JavaScript downloads, or network connection to inspect the result.
++func Render(w io.Writer, p *profile.Profile) error {
++	r, err := buildReport(p)
++	if err != nil {
++		return err
++	}
++	data, err := json.Marshal(r)
++	if err != nil {
++		return err
++	}
++	// json.Marshal escapes HTML-sensitive characters and script terminators.
++	// Function/file names are subsequently displayed using DOM textContent.
++	return page.Execute(w, template.JS(data))
++}
++
++func buildReport(p *profile.Profile) (*report, error) {
++	if p == nil {
++		return nil, fmt.Errorf("invalid CPU profile: nil profile")
++	}
++	if err := p.CheckValid(); err != nil {
++		return nil, fmt.Errorf("invalid CPU profile: %w", err)
++	}
++	cpu := -1
++	for i, kind := range p.SampleType {
++		if kind == nil {
++			return nil, fmt.Errorf("invalid CPU profile: nil sample type")
++		}
++		if kind.Type == "cpu" && kind.Unit == "nanoseconds" {
++			cpu = i
++			break
++		}
++	}
++	if cpu < 0 {
++		return nil, fmt.Errorf("profile has no CPU nanosecond samples")
++	}
++	if p.DurationNanos < 0 || p.Period < 0 {
++		return nil, fmt.Errorf("invalid CPU profile duration or period")
++	}
++	r := &report{Root: &frame{frameKey: frameKey{Name: "All CPU samples"}}, DurationNanos: p.DurationNanos}
++	if p.PeriodType != nil && p.PeriodType.Type == "cpu" && p.PeriodType.Unit == "nanoseconds" {
++		r.PeriodNanos = p.Period
++	}
++	for _, sample := range p.Sample {
++		if len(sample.Label) > 0 || len(sample.NumLabel) > 0 {
++			r.LabelsAggregated = true
++		}
++		value := sample.Value[cpu]
++		if value < 0 || r.Root.Value > math.MaxInt64-value {
++			return nil, fmt.Errorf("invalid CPU sample total")
++		}
++		if value == 0 {
++			continue
++		}
++		current := r.Root
++		current.Value += value
++		appendFrame := func(key frameKey) {
++			if current.byKey == nil {
++				current.byKey = make(map[frameKey]*frame)
++			}
++			next := current.byKey[key]
++			if next == nil {
++				next = &frame{frameKey: key}
++				current.byKey[key] = next
++				current.Children = append(current.Children, next)
++			}
++			next.Value += value
++			current = next
++		}
++		// Locations and each location's inlined frames are innermost first.
++		for i := len(sample.Location) - 1; i >= 0; i-- {
++			location := sample.Location[i]
++			if len(location.Line) == 0 {
++				key := frameKey{Name: fmt.Sprintf("[0x%x]", location.Address)}
++				if location.Mapping != nil {
++					key.File = location.Mapping.File
++				}
++				appendFrame(key)
++			}
++			for j := len(location.Line) - 1; j >= 0; j-- {
++				line := location.Line[j]
++				key := frameKey{Name: "[unknown]", Line: line.Line}
++				if line.Function != nil {
++					key.Name, key.File = line.Function.Name, line.Function.Filename
++					if key.Name == "" {
++						key.Name = line.Function.SystemName
++					}
++					if key.Name == "" {
++						key.Name = "[unknown]"
++					}
++				}
++				appendFrame(key)
++			}
++		}
++	}
++	pending := []*frame{r.Root}
++	for len(pending) > 0 {
++		parent := pending[len(pending)-1]
++		pending = pending[:len(pending)-1]
++		sort.Slice(parent.Children, func(i, j int) bool {
++			a, b := parent.Children[i], parent.Children[j]
++			if a.Value != b.Value {
++				return a.Value > b.Value
++			}
++			if a.Name != b.Name {
++				return a.Name < b.Name
++			}
++			if a.File != b.File {
++				return a.File < b.File
++			}
++			return a.Line < b.Line
++		})
++		parent.byKey = nil
++		pending = append(pending, parent.Children...)
++	}
++	return r, nil
++}
+diff --git a/graphite-server/internal/profiling/report.html b/graphite-server/internal/profiling/report.html
+new file mode 100644
+index 00000000..ed7fe649
+--- /dev/null
++++ b/graphite-server/internal/profiling/report.html
+@@ -0,0 +1,63 @@
++<!doctype html>
++<html lang="en">
++<meta charset="utf-8">
++<meta name="viewport" content="width=device-width, initial-scale=1">
++<title>Graphite CPU profile</title>
++<style>
++:root{font:15px/1.5 system-ui,sans-serif;color:#17283d;background:#f5f7fa}*{box-sizing:border-box}body{margin:0;padding:32px;max-width:1600px;margin-inline:auto}h1{font-size:28px;letter-spacing:-.7px;margin:0}p{margin:6px 0;color:#526178}.stats{display:flex;gap:32px;margin:24px 0}.stats strong{display:block;font-size:22px;color:#17283d}.stats span{font-size:12px;text-transform:uppercase;letter-spacing:.6px}.panel{background:white;border:1px solid #dae1ea;border-radius:10px;padding:16px}.toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px}input,button{font:inherit;border:1px solid #becad9;border-radius:5px;padding:7px 10px;background:white;color:inherit}input{width:min(100%,360px)}button{cursor:pointer}button:disabled{opacity:.45;cursor:default}#match{margin-left:auto;color:#526178}#chart{width:100%;overflow:auto;max-height:75vh}svg{display:block;width:100%;min-width:500px}svg text{font:12px system-ui,sans-serif;fill:#241909;pointer-events:none}svg g[role=button]{cursor:pointer}svg g:focus rect{stroke:#173a67;stroke-width:2}#detail{min-height:48px;border-top:1px solid #e5e9ef;margin-top:14px;padding-top:12px;overflow-wrap:anywhere;font-family:ui-monospace,monospace;font-size:12px}#empty{padding:48px 12px;text-align:center}footer{font-size:12px;color:#526178;margin-top:18px}@media(max-width:600px){body{padding:16px}.stats{gap:16px;flex-wrap:wrap}h1{font-size:24px}}
++</style>
++<h1>Graphite CPU profile</h1>
++<p>Click a frame to zoom. Search highlights matching functions. This report works offline.</p>
++<div class="stats"><div><span>Sampled CPU</span><strong id="cpu"></strong></div><div><span>Recording duration</span><strong id="duration"></strong></div><div><span>Sampling period</span><strong id="period"></strong></div></div>
++<div class="panel">
++<div class="toolbar"><label for="search">Find function</label><input id="search" type="search" placeholder="Function or file name"><button id="next" disabled>Next match</button><button id="back" disabled>Back</button><button id="reset">Reset zoom</button><span id="match" aria-live="polite"></span></div>
++<div id="chart"></div><div id="empty" hidden>No CPU samples were recorded. Run work while profiling to capture stacks.</div>
++<p id="limit" hidden></p><p id="labels" hidden>Samples are combined across profiling labels.</p>
++<div id="detail" aria-live="polite">Frame widths show sampled CPU time, not elapsed request latency.</div>
++</div>
++<footer>Native Go runtime CPU samples. Frames narrower than one pixel are hidden; zoom or use Next match to inspect them. Parent frames include their children's CPU time; overlapping inclusive values must not be added.</footer>
++<script id="profile-data" type="application/json">{{.}}</script>
++<script>
++ 'use strict';
++const report=JSON.parse(document.getElementById('profile-data').textContent),root=report.root;
++const chart=document.getElementById('chart'),detail=document.getElementById('detail'),search=document.getElementById('search'),back=document.getElementById('back'),next=document.getElementById('next');
++const ns='http://www.w3.org/2000/svg',history=[],all=[],pending=[root];let focus=root,found=[],foundAt=-1;
++// Integer nanoseconds remain exact even beyond JavaScript's safe Number range.
++while(pending.length){const node=pending.pop();node.cpu=BigInt(node.value);all.push(node);for(let i=(node.children||[]).length-1;i>=0;i--)pending.push(node.children[i]);}
++function duration(value){const n=BigInt(value),seconds=n>=1000000000n,unit=seconds?1000000000n:1000000n,places=seconds?3:2,scale=seconds?1000n:100n;return (n/unit).toString()+'.'+((n%unit)*scale/unit).toString().padStart(places,'0')+(seconds?' s':' ms');}
++const percentage=(n,total)=>total===0n?'0.00':(n*10000n/total/100n).toString()+'.'+(n*10000n/total%100n).toString().padStart(2,'0');
++document.getElementById('cpu').textContent=duration(root.cpu);document.getElementById('duration').textContent=duration(report.durationNanos);document.getElementById('period').textContent=report.periodNanos==='0'?'Not specified':duration(report.periodNanos);
++document.getElementById('labels').hidden=!report.labelsAggregated;
++function color(name){let hash=0;for(const c of name)hash=(hash*31+c.charCodeAt(0))|0;return `hsl(${24+Math.abs(hash%25)} 86% ${66+Math.abs(hash%12)}%)`;}
++function render(){
++ chart.replaceChildren();back.disabled=history.length===0;
++ detail.textContent='Viewing '+focus.name+' — '+duration(focus.cpu)+' ('+focus.value+' ns; 100.00% of visible CPU)';
++ document.getElementById('empty').hidden=root.cpu!==0n;
++ const term=search.value.toLowerCase(),matches=n=>term&&(n.name+' '+(n.file||'')).toLowerCase().includes(term);
++ found=term?all.filter(matches):[];next.disabled=found.length===0;
++ if(!focus.cpu){document.getElementById('match').textContent='';return;}
++ let matched=0n,maxDepth=1;const scan=[{node:focus,depth:1,covered:false}];
++ while(scan.length){const {node,depth,covered}=scan.pop(),hit=matches(node);maxDepth=Math.max(maxDepth,depth);if(hit&&!covered)matched+=node.cpu;for(const child of node.children||[])scan.push({node:child,depth:depth+1,covered:covered||hit});}
++ document.getElementById('match').textContent=term?percentage(matched,focus.cpu)+'% of visible CPU matched':'';
++ const width=Math.max(500,chart.clientWidth),levels=Math.min(200,maxDepth),height=levels*26,svg=document.createElementNS(ns,'svg');
++ svg.setAttribute('viewBox',`0 0 ${width} ${height}`);svg.setAttribute('height',height);svg.setAttribute('role','group');svg.setAttribute('aria-label','CPU stack flame graph');
++ const frames=[{node:focus,x:0,w:width,d:0}];let drawn=0,limited=maxDepth>levels;
++ while(frames.length){
++  const {node,x,w,d}=frames.pop();if(w<1||d>=levels)continue;if(drawn===8000){limited=true;break;}drawn++;
++  const g=document.createElementNS(ns,'g'),rect=document.createElementNS(ns,'rect'),title=document.createElementNS(ns,'title'),y=height-(d+1)*26;
++  const location=node.file?node.file+(node.line?':'+node.line:''):'';
++  const description=node.name+' — '+duration(node.cpu)+' ('+node.value+' ns; '+percentage(node.cpu,focus.cpu)+'% of visible CPU)'+(location?' — '+location:'');
++  rect.setAttribute('x',x);rect.setAttribute('y',y);rect.setAttribute('width',Math.max(0,w-.5));rect.setAttribute('height',24);rect.setAttribute('fill',matches(node)?'#b47bdf':color(node.name));
++  title.textContent=description;g.append(rect,title);g.setAttribute('role','button');g.setAttribute('tabindex','0');g.setAttribute('aria-label',description);
++  if(w>20){const text=document.createElementNS(ns,'text');text.setAttribute('x',x+4);text.setAttribute('y',y+17);const chars=Math.max(0,Math.floor((w-8)/7));text.textContent=node.name.length>chars?node.name.slice(0,Math.max(0,chars-1))+'…':node.name;g.append(text);}
++  const zoom=()=>{if(node!==focus){history.push(focus);focus=node;render();}else{detail.textContent=description;}};
++  g.addEventListener('click',zoom);g.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();zoom();}});g.addEventListener('mouseenter',()=>detail.textContent=description);g.addEventListener('focus',()=>detail.textContent=description);svg.append(g);
++  let offset=x;const children=[];for(const child of node.children||[]){const cw=w*Number(child.cpu)/Number(node.cpu);children.push({node:child,x:offset,w:cw,d:d+1});offset+=cw;}for(let i=children.length-1;i>=0;i--)frames.push(children[i]);
++ }
++ const notice=document.getElementById('limit');notice.hidden=!limited;notice.textContent='Display limited to 8,000 frames or 200 levels. Zoom into a parent or use Next match to inspect more. All stacks remain embedded.';
++ chart.append(svg);chart.scrollTop=chart.scrollHeight;
++}
++search.addEventListener('input',()=>{foundAt=-1;render();});next.addEventListener('click',()=>{if(found.length){foundAt=(foundAt+1)%found.length;history.push(focus);focus=found[foundAt];render();}});
++back.addEventListener('click',()=>{if(history.length){focus=history.pop();render();}});document.getElementById('reset').addEventListener('click',()=>{history.length=0;focus=root;render();});window.addEventListener('resize',render);render();
++</script>
++</html>
+diff --git a/graphite-server/internal/profiling/report_test.go b/graphite-server/internal/profiling/report_test.go
+new file mode 100644
+index 00000000..3bbd4a9b
+--- /dev/null
++++ b/graphite-server/internal/profiling/report_test.go
+@@ -0,0 +1,240 @@
++package profiling
++
++import (
++	"bytes"
++	"encoding/json"
++	"errors"
++	"fmt"
++	"math"
++	"os"
++	"path/filepath"
++	"strings"
++	"testing"
++
++	profile "github.com/google/pprof/profile"
++)
++
++func sampleProfile() *profile.Profile {
++	functions := []*profile.Function{{ID: 1, Name: "main.root", Filename: "main.go"}, {ID: 2, Name: "main.worker", Filename: "work.go"}, {ID: 3, Name: "main.inline", Filename: "inline.go"}, {ID: 4, Name: "main.other", Filename: "other.go"}}
++	locations := []*profile.Location{{ID: 1, Line: []profile.Line{{Function: functions[0], Line: 1}}}, {ID: 2, Line: []profile.Line{{Function: functions[2], Line: 9}, {Function: functions[1], Line: 20}}}, {ID: 3, Line: []profile.Line{{Function: functions[3], Line: 30}}}}
++	return &profile.Profile{SampleType: []*profile.ValueType{{Type: "samples", Unit: "count"}, {Type: "cpu", Unit: "nanoseconds"}}, PeriodType: &profile.ValueType{Type: "cpu", Unit: "nanoseconds"}, Period: 10_000_000, DurationNanos: 2_000_000_000, Function: functions, Location: locations, Sample: []*profile.Sample{{Location: []*profile.Location{locations[1], locations[0]}, Value: []int64{3, 30_000_000}}, {Location: []*profile.Location{locations[2], locations[0]}, Value: []int64{2, 20_000_000}}}}
++}
++func TestReportInlineOrderAndCPUUnits(t *testing.T) {
++	p := sampleProfile()
++	r, err := buildReport(p)
++	if err != nil {
++		t.Fatal(err)
++	}
++	if r.Root.Value != 50_000_000 || r.DurationNanos != 2_000_000_000 || r.PeriodNanos != 10_000_000 {
++		t.Fatalf("totals %+v", r)
++	}
++	root := r.Root.Children[0]
++	if root.Name != "main.root" || root.Value != 50_000_000 {
++		t.Fatalf("root %+v", root)
++	}
++	worker := root.Children[0]
++	if worker.Name != "main.worker" || worker.Value != 30_000_000 || worker.Line != 20 {
++		t.Fatalf("worker %+v", worker)
++	}
++	inline := worker.Children[0]
++	if inline.Name != "main.inline" || inline.Value != 30_000_000 || inline.Line != 9 {
++		t.Fatalf("inline %+v", inline)
++	}
++	if root.Children[1].Name != "main.other" || root.Children[1].Value != 20_000_000 {
++		t.Fatalf("other %+v", root.Children[1])
++	}
++	p.PeriodType = &profile.ValueType{Type: "samples", Unit: "count"}
++	r, err = buildReport(p)
++	if err != nil || r.PeriodNanos != 0 {
++		t.Fatalf("non-CPU period mislabeled: %+v %v", r, err)
++	}
++}
++func TestReportInvalidEmptyAndOverflow(t *testing.T) {
++	for _, c := range []struct {
++		name    string
++		mutate  func(*profile.Profile)
++		message string
++	}{
++		{"nil type", func(p *profile.Profile) { p.SampleType[0] = nil }, "nil sample type"},
++		{"unit", func(p *profile.Profile) { p.SampleType[1].Unit = "cycles" }, "no CPU nanosecond"},
++		{"negative", func(p *profile.Profile) { p.Sample[0].Value[1] = -1 }, "invalid CPU sample total"},
++		{"overflow", func(p *profile.Profile) { p.Sample[0].Value[1] = math.MaxInt64 }, "invalid CPU sample total"},
++		{"duration", func(p *profile.Profile) { p.DurationNanos = -1 }, "duration or period"},
++		{"period", func(p *profile.Profile) { p.Period = -1 }, "duration or period"},
++		{"bad values", func(p *profile.Profile) { p.Sample[0].Value = nil }, "invalid CPU profile"},
++	} {
++		t.Run(c.name, func(t *testing.T) {
++			p := sampleProfile()
++			c.mutate(p)
++			if _, err := buildReport(p); err == nil || !strings.Contains(err.Error(), c.message) {
++				t.Fatalf("error %v want %s", err, c.message)
++			}
++		})
++	}
++	if _, err := buildReport(nil); err == nil {
++		t.Fatal("nil accepted")
++	}
++	p := sampleProfile()
++	p.Sample = nil
++	r, err := buildReport(p)
++	if err != nil || r.Root.Value != 0 || len(r.Root.Children) != 0 {
++		t.Fatal(r, err)
++	}
++}
++func embeddedReport(t *testing.T, data []byte) *report {
++	t.Helper()
++	start := bytes.Index(data, []byte(`<script id="profile-data" type="application/json">`))
++	if start < 0 {
++		t.Fatal("no embedded profile")
++	}
++	start += len(`<script id="profile-data" type="application/json">`)
++	end := bytes.Index(data[start:], []byte("</script>"))
++	if end < 0 {
++		t.Fatal("unterminated data")
++	}
++	var result report
++	if err := json.Unmarshal(data[start:start+end], &result); err != nil {
++		t.Fatal(err)
++	}
++	return &result
++}
++func TestReportEscapingExactIntegersAndLabels(t *testing.T) {
++	p := sampleProfile()
++	payload := `</script><script>globalThis.INJECTED=1</script><img src=x onerror=alert(1)>`
++	p.Function[2].Name = payload
++	p.Function[2].Filename = payload
++	p.Sample = p.Sample[:1]
++	p.Sample[0].Value[1] = 9007199254740993
++	p.Sample[0].Label = map[string][]string{"request": {"private label"}}
++	var buf bytes.Buffer
++	if err := Render(&buf, p); err != nil {
++		t.Fatal(err)
++	}
++	if bytes.Contains(buf.Bytes(), []byte(payload)) || bytes.Contains(buf.Bytes(), []byte("private label")) {
++		t.Fatal("unsafe input or ignored label value leaked into HTML")
++	}
++	r := embeddedReport(t, buf.Bytes())
++	if r.Root.Value != 9007199254740993 || !r.LabelsAggregated || r.Root.Children[0].Children[0].Children[0].Name != payload {
++		t.Fatalf("data lost: %+v", r)
++	}
++	if !bytes.Contains(buf.Bytes(), []byte(`"value":"9007199254740993"`)) {
++		t.Fatal("CPU precision is exposed to JS Number rounding")
++	}
++}
++
++type failedWriter struct{ err error }
++
++func (w failedWriter) Write([]byte) (int, error) { return 0, w.err }
++func TestReportWriterFailure(t *testing.T) {
++	err := errors.New("write failed")
++	if got := Render(failedWriter{err}, sampleProfile()); !errors.Is(got, err) {
++		t.Fatal(got)
++	}
++}
++func TestReportAtomicReplacement(t *testing.T) {
++	dir := t.TempDir()
++	path := filepath.Join(dir, "report.html")
++	old := []byte("previous complete report")
++	if err := os.WriteFile(path, old, 0600); err != nil {
++		t.Fatal(err)
++	}
++	invalid := sampleProfile()
++	invalid.Sample[0].Value[1] = -1
++	if err := writeReport(path, invalid); err == nil {
++		t.Fatal("invalid profile replaced report")
++	}
++	got, _ := os.ReadFile(path)
++	if !bytes.Equal(got, old) {
++		t.Fatal("old report changed")
++	}
++	if err := writeReport(path, sampleProfile()); err != nil {
++		t.Fatal(err)
++	}
++	got, _ = os.ReadFile(path)
++	if r := embeddedReport(t, got); r.Root.Value != 50_000_000 {
++		t.Fatal(r.Root.Value)
++	}
++	target := filepath.Join(dir, "existing-directory")
++	os.Mkdir(target, 0700)
++	if err := writeReport(target, sampleProfile()); err == nil {
++		t.Fatal("directory replacement succeeded")
++	}
++	matches, _ := filepath.Glob(filepath.Join(dir, ".graphite-cpu-*"))
++	if len(matches) != 0 {
++		t.Fatal("private temps remain", matches)
++	}
++}
++func TestReportLargeFanout(t *testing.T) {
++	p := sampleProfile()
++	p.Sample = nil
++	p.Location = nil
++	p.Function = nil
++	for i := 1; i <= 20000; i++ {
++		f := &profile.Function{ID: uint64(i), Name: fmt.Sprintf("branch-%05d", i)}
++		l := &profile.Location{ID: uint64(i), Line: []profile.Line{{Function: f}}}
++		p.Function = append(p.Function, f)
++		p.Location = append(p.Location, l)
++		p.Sample = append(p.Sample, &profile.Sample{Location: []*profile.Location{l}, Value: []int64{1, 1}})
++	}
++	var buf bytes.Buffer
++	if err := Render(&buf, p); err != nil {
++		t.Fatal(err)
++	}
++	r := embeddedReport(t, buf.Bytes())
++	if r.Root.Value != 20000 || len(r.Root.Children) != 20000 {
++		t.Fatal("fanout truncated")
++	}
++}
++
++// Optional fixture export for independent real-browser interaction checks. These
++// synthetic profiles test report format and controls, never performance.
++func TestProfileBrowserFixtures(t *testing.T) {
++	dir := os.Getenv("GRAPHITE_PROFILE_UI_FIXTURES")
++	if dir == "" {
++		t.Skip("browser fixture export not requested")
++	}
++	if err := os.MkdirAll(dir, 0700); err != nil {
++		t.Fatal(err)
++	}
++	write := func(name string, p *profile.Profile) {
++		t.Helper()
++		if err := writeReport(filepath.Join(dir, name), p); err != nil {
++			t.Fatal(err)
++		}
++	}
++	write("example.html", sampleProfile())
++	empty := sampleProfile()
++	empty.Sample = nil
++	write("empty.html", empty)
++	escaped := sampleProfile()
++	escaped.Sample = escaped.Sample[:1]
++	escaped.Sample[0].Value[1] = 9007199254740993
++	escaped.Function[2].Name = `</script><img src=x onerror="globalThis.INJECTED=1">`
++	write("escape.html", escaped)
++	many := sampleProfile()
++	many.Function = nil
++	many.Location = nil
++	many.Sample = nil
++	for i := 1; i <= 20000; i++ {
++		f := &profile.Function{ID: uint64(i), Name: fmt.Sprintf("branch-%05d", i)}
++		l := &profile.Location{ID: uint64(i), Line: []profile.Line{{Function: f}}}
++		many.Function = append(many.Function, f)
++		many.Location = append(many.Location, l)
++		many.Sample = append(many.Sample, &profile.Sample{Location: []*profile.Location{l}, Value: []int64{1, 1}})
++	}
++	write("fanout.html", many)
++	deep := sampleProfile()
++	deep.Function = nil
++	deep.Location = nil
++	deep.Sample = nil
++	stack := []*profile.Location{}
++	for i := 1; i <= 205; i++ {
++		f := &profile.Function{ID: uint64(i), Name: fmt.Sprintf("deep-%03d", i)}
++		l := &profile.Location{ID: uint64(i), Line: []profile.Line{{Function: f}}}
++		deep.Function = append(deep.Function, f)
++		deep.Location = append(deep.Location, l)
++		stack = append(stack, l)
++	}
++	deep.Sample = []*profile.Sample{{Location: stack, Value: []int64{1, 1}}}
++	write("deep.html", deep)
++}
+diff --git a/graphite-server/internal/profiling/session.go b/graphite-server/internal/profiling/session.go
+new file mode 100644
+index 00000000..9addba79
+--- /dev/null
++++ b/graphite-server/internal/profiling/session.go
+@@ -0,0 +1,78 @@
++// Package profiling records native CPU samples and writes a standalone HTML report.
++package profiling
++
++import (
++	"fmt"
++	"os"
++	"path/filepath"
++	"runtime/pprof"
++	"sync"
++
++	profile "github.com/google/pprof/profile"
++)
++
++type Session struct {
++	path string
++	raw  *os.File
++	once sync.Once
++	err  error
++}
++
++// Start leaves an existing report untouched until a new complete report is ready.
++// The temporary compressed profile is private and removed after Stop.
++func Start(path string) (*Session, error) {
++	raw, err := os.CreateTemp(filepath.Dir(path), ".graphite-cpu-*.pprof")
++	if err != nil {
++		return nil, fmt.Errorf("start CPU profile: %w", err)
++	}
++	if err = pprof.StartCPUProfile(raw); err != nil {
++		raw.Close()
++		os.Remove(raw.Name())
++		return nil, fmt.Errorf("start CPU profile: %w", err)
++	}
++	return &Session{path: path, raw: raw}, nil
++}
++
++// Stop flushes the runtime's samples before parsing them. It is safe to call more
++// than once; all callers receive the same final write result.
++func (s *Session) Stop() error {
++	s.once.Do(func() {
++		pprof.StopCPUProfile()
++		defer os.Remove(s.raw.Name())
++		defer s.raw.Close()
++		if _, err := s.raw.Seek(0, 0); err != nil {
++			s.err = fmt.Errorf("seek CPU profile: %w", err)
++			return
++		}
++		p, err := profile.Parse(s.raw)
++		if err != nil {
++			s.err = fmt.Errorf("read CPU profile: %w", err)
++			return
++		}
++		if err = s.raw.Close(); err != nil {
++			s.err = fmt.Errorf("close CPU profile: %w", err)
++			return
++		}
++		s.err = writeReport(s.path, p)
++	})
++	return s.err
++}
++
++func writeReport(path string, p *profile.Profile) error {
++	f, err := os.CreateTemp(filepath.Dir(path), ".graphite-cpu-*.html")
++	if err != nil {
++		return fmt.Errorf("create CPU report: %w", err)
++	}
++	defer os.Remove(f.Name())
++	if err = Render(f, p); err != nil {
++		f.Close()
++		return err
++	}
++	if err = f.Close(); err != nil {
++		return fmt.Errorf("close CPU report: %w", err)
++	}
++	if err = os.Rename(f.Name(), path); err != nil {
++		return fmt.Errorf("save CPU report: %w", err)
++	}
++	return nil
++}
+diff --git a/graphite-server/internal/profiling/session_test.go b/graphite-server/internal/profiling/session_test.go
+new file mode 100644
+index 00000000..ef6dc291
+--- /dev/null
++++ b/graphite-server/internal/profiling/session_test.go
+@@ -0,0 +1,107 @@
++package profiling
++
++import (
++	"crypto/sha256"
++	"os"
++	"path/filepath"
++	"strings"
++	"sync"
++	"testing"
++	"time"
++)
++
++var profileSink byte
++
++//go:noinline
++func profileCPUWork() {
++	// Correctness only: keep the CPU active long enough to collect runtime samples.
++	// No throughput, elapsed-time comparison, or performance assertion is made.
++	deadline := time.Now().Add(300 * time.Millisecond)
++	var input [4096]byte
++	for time.Now().Before(deadline) {
++		sum := sha256.Sum256(input[:])
++		input[0] = sum[0]
++	}
++	profileSink = input[0]
++}
++func TestSessionRealCPUAndConcurrentStop(t *testing.T) {
++	dir := t.TempDir()
++	path := filepath.Join(dir, "report.html")
++	old := []byte("old report")
++	os.WriteFile(path, old, 0600)
++	s, err := Start(path)
++	if err != nil {
++		t.Fatal(err)
++	}
++	defer s.Stop()
++	info, err := os.Stat(s.raw.Name())
++	if err != nil || info.Mode().Perm() != 0600 {
++		t.Fatal("temporary profile is not private", info, err)
++	}
++	current, _ := os.ReadFile(path)
++	if string(current) != string(old) {
++		t.Fatal("old output changed before successful Stop")
++	}
++	profileCPUWork()
++	var group sync.WaitGroup
++	for i := 0; i < 4; i++ {
++		group.Add(1)
++		go func() {
++			defer group.Done()
++			if err := s.Stop(); err != nil {
++				t.Error(err)
++			}
++		}()
++	}
++	group.Wait()
++	raw, err := os.ReadFile(path)
++	if err != nil {
++		t.Fatal(err)
++	}
++	r := embeddedReport(t, raw)
++	if r.Root.Value <= 0 {
++		t.Fatal("real CPU workload produced no samples")
++	}
++	found := false
++	nodes := []*frame{r.Root}
++	for len(nodes) > 0 {
++		n := nodes[len(nodes)-1]
++		nodes = nodes[:len(nodes)-1]
++		if strings.Contains(n.Name, "profileCPUWork") {
++			found = true
++		}
++		nodes = append(nodes, n.Children...)
++	}
++	if !found {
++		t.Fatal("sampled workload stack missing")
++	}
++	matches, _ := filepath.Glob(filepath.Join(dir, ".graphite-cpu-*"))
++	if len(matches) != 0 {
++		t.Fatal("private temporary files remain", matches)
++	}
++}
++func TestSessionStartAndStopFailures(t *testing.T) {
++	dir := t.TempDir()
++	if _, err := Start(filepath.Join(dir, "missing", "report.html")); err == nil {
++		t.Fatal("missing parent accepted")
++	}
++	path := filepath.Join(dir, "directory")
++	if err := os.Mkdir(path, 0700); err != nil {
++		t.Fatal(err)
++	}
++	s, err := Start(path)
++	if err != nil {
++		t.Fatal(err)
++	}
++	first := s.Stop()
++	if first == nil || s.Stop() != first {
++		t.Fatal("failed Stop not retained", first)
++	}
++	if info, err := os.Stat(path); err != nil || !info.IsDir() {
++		t.Fatal("existing output directory changed", err)
++	}
++	matches, _ := filepath.Glob(filepath.Join(dir, ".graphite-cpu-*"))
++	if len(matches) != 0 {
++		t.Fatal(matches)
++	}
++}
