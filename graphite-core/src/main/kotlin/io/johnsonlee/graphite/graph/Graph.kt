@@ -212,17 +212,13 @@ data class StringPropertyDistinctRow(
  * an absent value with a single dictionary lookup instead of one lookup per tuple per source.
  */
 class StringPropertyTupleSet(tuples: Collection<List<String?>>) : AbstractSet<List<String?>>() {
-    private companion object {
-        private const val SCRATCH_SLOTS = 4
-    }
-
     private val ordered: List<List<String?>> = LinkedHashSet(tuples).toList()
     private val members: Set<List<String?>> = ordered.toHashSet()
     private val groupings = arrayOfNulls<Map<String?, List<List<String?>>>>(
         ordered.firstOrNull()?.size ?: 0
     )
     private val sortedValueLists = arrayOfNulls<List<String>>(ordered.firstOrNull()?.size ?: 0)
-    private val scratch = arrayOfNulls<Any>(SCRATCH_SLOTS)
+    private val scratch = arrayOfNulls<Any>(TUPLE_SET_SCRATCH_SLOTS)
 
     override val size: Int
         get() = ordered.size
@@ -260,6 +256,9 @@ class StringPropertyTupleSet(tuples: Collection<List<String?>>) : AbstractSet<Li
         }
     }
 }
+
+/** Request-scoped scratch slots a [StringPropertyTupleSet] carries for the storage backends. */
+private const val TUPLE_SET_SCRATCH_SLOTS = 4
 
 /**
  * Optional storage capability for DISTINCT string-property projections. When [selectedValues] is

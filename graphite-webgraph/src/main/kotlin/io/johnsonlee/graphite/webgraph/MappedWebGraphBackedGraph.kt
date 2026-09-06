@@ -371,9 +371,10 @@ internal class MappedWebGraphBackedGraph(
             val projectedPropertyIndexes = projectedProperties.map(::callSiteStringPropertyIndex).toIntArray()
             if (selectedValues != null) {
                 callSiteMappedViewLookupCount.incrementAndGet()
-                return view.selectedTupleHits(predicates, projectedPropertyIndexes, selectedValues, workConsumer)
-                    .sortedBy(StringPropertyDistinctRow::encounterOrder)
-                    .take(minOf(limit, selectedValues.size))
+                return hitsInEncounterOrder(
+                    view.selectedTupleHits(predicates, projectedPropertyIndexes, selectedValues, workConsumer),
+                    minOf(limit, selectedValues.size)
+                )
             }
             if (view.rejectsAllPredicates(predicates, workConsumer)) {
                 callSiteMappedViewLookupCount.incrementAndGet()
@@ -1856,6 +1857,22 @@ private class RawCallSiteProbe(val nodeIds: IntArray, val stringIds: IntArray?)
  * names), so the predicate that matched last moves one position towards the front and most nodes
  * are decided by their first check instead of by every predicate in query order.
  */
+/**
+ * The first [limit] of [hits] by encounter order, stable for equal orders. The provenance pass
+ * yields a handful of hits per graph, so an insertion sort orders them without loading the
+ * comparator and sort classes a first execution would otherwise pay for.
+ */
+private fun hitsInEncounterOrder(hits: List<StringPropertyDistinctRow>, limit: Int): List<StringPropertyDistinctRow> {
+    if (hits.size <= 1) return hits
+    val ordered = ArrayList<StringPropertyDistinctRow>(hits.size)
+    for (hit in hits) {
+        var position = ordered.size
+        while (position > 0 && ordered[position - 1].encounterOrder > hit.encounterOrder) position--
+        ordered.add(position, hit)
+    }
+    return if (ordered.size <= limit) ordered else ArrayList(ordered.subList(0, limit))
+}
+
 private class RawPredicateOrder(size: Int) {
     private val order = IntArray(size) { it }
 

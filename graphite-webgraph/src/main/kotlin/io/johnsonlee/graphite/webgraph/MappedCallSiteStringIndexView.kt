@@ -1334,10 +1334,7 @@ internal class TupleLookupSetup(
 
     // Caller classes are the most graph-specific tuple component, so an absent caller class
     // rejects a foreign tuple after a single dictionary lookup shared by all of its call sites.
-    val lookupOrder: IntArray = projectedPropertyIndexes.indices
-        .filter { index -> projectedPropertyIndexes[index] >= 0 }
-        .sortedBy { index -> TUPLE_LOOKUP_PREFERENCE.indexOf(projectedPropertyIndexes[index]) }
-        .toIntArray()
+    val lookupOrder: IntArray = lookupOrder(projectedPropertyIndexes)
     val projectedPredicates = ArrayList<StringPropertyPredicate>()
     val residualPredicates = ArrayList<StringPropertyPredicate>()
 
@@ -1354,6 +1351,21 @@ internal class TupleLookupSetup(
 }
 
 /**
+ * Projected column indexes in [TUPLE_LOOKUP_PREFERENCE] order, skipping columns no CallSite
+ * property serves; a plain loop so a first execution loads no comparator or sort classes.
+ */
+private fun lookupOrder(projectedPropertyIndexes: IntArray): IntArray {
+    val order = IntArray(projectedPropertyIndexes.size)
+    var size = 0
+    for (preferred in TUPLE_LOOKUP_PREFERENCE) {
+        for (index in projectedPropertyIndexes.indices) {
+            if (projectedPropertyIndexes[index] == preferred) order[size++] = index
+        }
+    }
+    return order.copyOf(size)
+}
+
+/**
  * The distinct lowercase trigram hashes of every sorted leading value of a cross-graph DISTINCT
  * request, computed once for the leading [column] and shared by every graph view through the
  * selected tuples' scratch slot; a value shorter than a trigram has no hashes and is never
@@ -1365,15 +1377,11 @@ internal class LeadingValueTrigrams(val column: Int, values: List<String>) {
     val absentHints = IntArray(values.size)
 
     private fun distinctTrigramHashes(value: String): IntArray {
-        if (value.length < TRIGRAM_LENGTH) return EMPTY_TRIGRAMS
+        if (value.length < TRIGRAM_LENGTH) return EMPTY_INTS
         val lowercase = value.lowercase()
         val distinct = LinkedHashSet<Int>()
         for (position in lowercase.length - TRIGRAM_LENGTH downTo 0) distinct += mappedTrigramHash(lowercase, position)
         return distinct.toIntArray()
-    }
-
-    private companion object {
-        private val EMPTY_TRIGRAMS = IntArray(0)
     }
 }
 

@@ -4631,3 +4631,25 @@ case-insensitive targeted `0.84 -> 0.67 ms` and its second execution `0.84 -> 0.
 dense and DISTINCT-dense rows, which decide on their first graph, are unchanged within noise.
 
 **Conclusion:** keep for exact-head hosted validation.
+
+### 2026-09-06 - Attempt 146: Order tuple lookups and hits without comparator and sort classes
+
+**Hypothesis:** class loading attributed per replayed query shows the distinct-dense row loading
+`18` classes on its first execution, eight of them for two `sortedBy` calls (an inlined
+comparator class each, the four `kotlin.comparisons` facade classes and `TimSort`) and the
+private companions of the tuple set and the leading-value trigrams. The provenance pass sorts
+a handful of hits per graph and orders four projected columns by a fixed preference, so the
+sort machinery is loaded and initialised for work a loop does in a few bytecodes.
+
+**Change:** the lookup order is built by a loop over the preference array, the hits of a graph
+are ordered by an insertion sort in encounter order, and the two constants that lived in
+private companions are top-level.
+
+**Evidence (local, 64 fixtures, fresh JVM in benchmark order, ten alternating runs):**
+distinct-dense first execution CPU median `11.48 -> 9.86 ms` (mean `11.75 -> 10.28 ms`, wall
+median `12.85 -> 11.91 ms`), four-properties-targeted `7.28 -> 6.95 ms`, class-pair-targeted
+`3.23 -> 3.00 ms`; the dense rows, the second DISTINCT execution and the wrapped targeted row
+are unchanged within noise. Five rounds had left the change inside the noise band; ten resolve
+it.
+
+**Conclusion:** keep for exact-head hosted validation.

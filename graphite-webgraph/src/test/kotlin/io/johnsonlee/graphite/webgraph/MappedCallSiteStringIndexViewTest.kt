@@ -500,6 +500,38 @@ class MappedCallSiteStringIndexViewTest {
     }
 
     @Test
+    fun `selected tuple hits come back in encounter order and stop at the limit`() =
+        withPersistedGraph(prepareIndex = true) { _, _, graph ->
+            // Nodes 0, 5 and 10 share callee class lib.Dependency0; their tuples are selected in
+            // reverse encounter order so the hits have to be reordered.
+            val predicates = listOf(predicate("callee_class", StringMatchMode.EQUALS, "lib.Dependency0"))
+            val tuples = listOf(
+                listOf("app.pkg10.Caller10", "run10"),
+                listOf("app.pkg5.Caller5", "run5"),
+                listOf("app.pkg0.Caller0", "run0")
+            )
+            val ordered = graph.distinctStringPropertyDisjunction(
+                CallSiteNode::class.java,
+                predicates,
+                listOf("caller_class", "caller_name"),
+                limit = 5,
+                selectedValues = StringPropertyTupleSet(tuples),
+                workConsumer = null
+            )
+            assertEquals(tuples.reversed(), ordered?.map { row -> row.values })
+            assertEquals(ordered?.map { row -> row.encounterOrder }, ordered?.map { row -> row.encounterOrder }?.sorted())
+            val limited = graph.distinctStringPropertyDisjunction(
+                CallSiteNode::class.java,
+                predicates,
+                listOf("caller_class", "caller_name"),
+                limit = 2,
+                selectedValues = StringPropertyTupleSet(tuples),
+                workConsumer = null
+            )
+            assertEquals(tuples.reversed().take(2), limited?.map { row -> row.values })
+        }
+
+    @Test
     fun `a graph the presence bits prove foreign answers before a plan or cached rows are built`() =
         withPersistedGraph(prepareIndex = true) { _, _, graph ->
             var work = 0L
