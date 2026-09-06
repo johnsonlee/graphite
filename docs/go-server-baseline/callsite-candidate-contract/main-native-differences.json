@@ -1,0 +1,710 @@
+{
+  "total": 56,
+  "different": 4,
+  "cases": [
+    {
+      "name": "projection-error-global-limit",
+      "cross": false,
+      "main": {
+        "name": "projection-error-global-limit",
+        "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS name LIMIT 0",
+        "cross": false,
+        "empty": false,
+        "columns": [
+          "name"
+        ],
+        "rows": []
+      },
+      "native": {
+        "cross": false,
+        "empty": false,
+        "error": "ClassCastException",
+        "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+        "name": "projection-error-global-limit",
+        "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS name LIMIT 0"
+      }
+    },
+    {
+      "name": "projection-error-global-limit",
+      "cross": true,
+      "main": {
+        "name": "projection-error-global-limit",
+        "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS name LIMIT 0",
+        "cross": true,
+        "empty": false,
+        "columns": [
+          "name"
+        ],
+        "rows": []
+      },
+      "native": {
+        "cross": true,
+        "empty": false,
+        "error": "ClassCastException",
+        "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+        "name": "projection-error-global-limit",
+        "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS name LIMIT 0"
+      }
+    },
+    {
+      "name": "untyped-label-fallback",
+      "cross": false,
+      "main": {
+        "name": "untyped-label-fallback",
+        "query": "MATCH (v) WHERE toLower(toString(coalesce(v.callee_name,''))) CONTAINS '' RETURN id(v) AS id",
+        "cross": false,
+        "empty": false,
+        "columns": [
+          "id"
+        ],
+        "rows": [
+          {
+            "id": 14
+          },
+          {
+            "id": 22
+          },
+          {
+            "id": 8
+          },
+          {
+            "id": 24
+          },
+          {
+            "id": 2
+          },
+          {
+            "id": 16
+          },
+          {
+            "id": 12
+          },
+          {
+            "id": 6
+          },
+          {
+            "id": 26
+          },
+          {
+            "id": 18
+          },
+          {
+            "id": 28
+          },
+          {
+            "id": 0
+          },
+          {
+            "id": 20
+          },
+          {
+            "id": 10
+          },
+          {
+            "id": 4
+          },
+          {
+            "id": 30
+          }
+        ]
+      },
+      "native": {
+        "columns": [
+          "id"
+        ],
+        "cross": false,
+        "empty": false,
+        "name": "untyped-label-fallback",
+        "query": "MATCH (v) WHERE toLower(toString(coalesce(v.callee_name,''))) CONTAINS '' RETURN id(v) AS id",
+        "rows": [
+          {
+            "id": 0
+          },
+          {
+            "id": 2
+          },
+          {
+            "id": 4
+          },
+          {
+            "id": 6
+          },
+          {
+            "id": 8
+          },
+          {
+            "id": 10
+          },
+          {
+            "id": 12
+          },
+          {
+            "id": 14
+          },
+          {
+            "id": 16
+          },
+          {
+            "id": 18
+          },
+          {
+            "id": 20
+          },
+          {
+            "id": 22
+          },
+          {
+            "id": 24
+          },
+          {
+            "id": 26
+          },
+          {
+            "id": 28
+          },
+          {
+            "id": 30
+          }
+        ]
+      }
+    },
+    {
+      "name": "untyped-label-fallback",
+      "cross": true,
+      "main": {
+        "name": "untyped-label-fallback",
+        "query": "MATCH (v) WHERE toLower(toString(coalesce(v.callee_name,''))) CONTAINS '' RETURN id(v) AS id",
+        "cross": true,
+        "empty": false,
+        "columns": [
+          "id"
+        ],
+        "rows": [
+          {
+            "id": 14,
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            }
+          },
+          {
+            "id": 22,
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            }
+          },
+          {
+            "id": 8,
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            }
+          },
+          {
+            "id": 24,
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            }
+          },
+          {
+            "id": 2,
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            }
+          },
+          {
+            "id": 16,
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            }
+          },
+          {
+            "id": 12,
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            }
+          },
+          {
+            "id": 6,
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            }
+          },
+          {
+            "id": 26,
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            }
+          },
+          {
+            "id": 18,
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            }
+          },
+          {
+            "id": 28,
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            }
+          },
+          {
+            "id": 0,
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            }
+          },
+          {
+            "id": 20,
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            }
+          },
+          {
+            "id": 10,
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            }
+          },
+          {
+            "id": 4,
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            }
+          },
+          {
+            "id": 30,
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            }
+          },
+          {
+            "id": 14,
+            "$metadata": {
+              "graphIds": [
+                "b"
+              ]
+            }
+          },
+          {
+            "id": 22,
+            "$metadata": {
+              "graphIds": [
+                "b"
+              ]
+            }
+          },
+          {
+            "id": 8,
+            "$metadata": {
+              "graphIds": [
+                "b"
+              ]
+            }
+          },
+          {
+            "id": 24,
+            "$metadata": {
+              "graphIds": [
+                "b"
+              ]
+            }
+          },
+          {
+            "id": 2,
+            "$metadata": {
+              "graphIds": [
+                "b"
+              ]
+            }
+          },
+          {
+            "id": 16,
+            "$metadata": {
+              "graphIds": [
+                "b"
+              ]
+            }
+          },
+          {
+            "id": 12,
+            "$metadata": {
+              "graphIds": [
+                "b"
+              ]
+            }
+          },
+          {
+            "id": 6,
+            "$metadata": {
+              "graphIds": [
+                "b"
+              ]
+            }
+          },
+          {
+            "id": 26,
+            "$metadata": {
+              "graphIds": [
+                "b"
+              ]
+            }
+          },
+          {
+            "id": 18,
+            "$metadata": {
+              "graphIds": [
+                "b"
+              ]
+            }
+          },
+          {
+            "id": 28,
+            "$metadata": {
+              "graphIds": [
+                "b"
+              ]
+            }
+          },
+          {
+            "id": 0,
+            "$metadata": {
+              "graphIds": [
+                "b"
+              ]
+            }
+          },
+          {
+            "id": 20,
+            "$metadata": {
+              "graphIds": [
+                "b"
+              ]
+            }
+          },
+          {
+            "id": 10,
+            "$metadata": {
+              "graphIds": [
+                "b"
+              ]
+            }
+          },
+          {
+            "id": 4,
+            "$metadata": {
+              "graphIds": [
+                "b"
+              ]
+            }
+          },
+          {
+            "id": 30,
+            "$metadata": {
+              "graphIds": [
+                "b"
+              ]
+            }
+          }
+        ]
+      },
+      "native": {
+        "columns": [
+          "id"
+        ],
+        "cross": true,
+        "empty": false,
+        "name": "untyped-label-fallback",
+        "query": "MATCH (v) WHERE toLower(toString(coalesce(v.callee_name,''))) CONTAINS '' RETURN id(v) AS id",
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            },
+            "id": 0
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            },
+            "id": 2
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            },
+            "id": 4
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            },
+            "id": 6
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            },
+            "id": 8
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            },
+            "id": 10
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            },
+            "id": 12
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            },
+            "id": 14
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            },
+            "id": 16
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            },
+            "id": 18
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            },
+            "id": 20
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            },
+            "id": 22
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            },
+            "id": 24
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            },
+            "id": 26
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            },
+            "id": 28
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            },
+            "id": 30
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "b"
+              ]
+            },
+            "id": 0
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "b"
+              ]
+            },
+            "id": 2
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "b"
+              ]
+            },
+            "id": 4
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "b"
+              ]
+            },
+            "id": 6
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "b"
+              ]
+            },
+            "id": 8
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "b"
+              ]
+            },
+            "id": 10
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "b"
+              ]
+            },
+            "id": 12
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "b"
+              ]
+            },
+            "id": 14
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "b"
+              ]
+            },
+            "id": 16
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "b"
+              ]
+            },
+            "id": 18
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "b"
+              ]
+            },
+            "id": 20
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "b"
+              ]
+            },
+            "id": 22
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "b"
+              ]
+            },
+            "id": 24
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "b"
+              ]
+            },
+            "id": 26
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "b"
+              ]
+            },
+            "id": 28
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "b"
+              ]
+            },
+            "id": 30
+          }
+        ]
+      }
+    }
+  ]
+}

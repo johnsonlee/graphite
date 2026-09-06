@@ -1,0 +1,30 @@
+{
+  "head": "dfe6c4203fe39d997950c260d94a1df5445c94cd",
+  "copy": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-candidate-contract-native-0mf717_5/graphite-server",
+  "files": [
+    {
+      "path": "internal/query/engine.go",
+      "sha256": "2407d928abc0f66b20a55e83ef534ffe3e0ccd5e332184d692dcd7996baddb7f"
+    },
+    {
+      "path": "internal/query/eval.go",
+      "sha256": "dbe4b520c83a4dad243c7cfcdf2d72c50df0cfeeb21d5c3d1f11d8630f714201"
+    },
+    {
+      "path": "internal/query/scan.go",
+      "sha256": "cc0f9f3da31ada08c05e369bf29c4f6294ca757d0a09579a3824bc4b30733c99"
+    },
+    {
+      "path": "internal/query/traversal.go",
+      "sha256": "6bb33da86a9932a92fe110aec86d820ac8f630a08635d82f2ca5e1a733363ca9"
+    },
+    {
+      "path": "internal/query/properties.go",
+      "sha256": "63bb363cbbc66149f0cebb8b8bf12d8dc0f80f33230016bd5afad9f2aeec5076"
+    },
+    {
+      "path": "internal/query/functions.go",
+      "sha256": "796fe8140b5f5c8b64f1d240c39120ef07fb0240c217f627cd0e18c658107096"
+    }
+  ]
+}

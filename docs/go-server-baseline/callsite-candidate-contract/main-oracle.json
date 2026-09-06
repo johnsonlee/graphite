@@ -1,0 +1,1082 @@
+[
+  {
+    "name": "four-fields-or-alias",
+    "query": "MATCH (site:CallSite) WHERE site.caller_class \u003d \u0027Example\u0027 OR site.caller_name STARTS WITH \u0027ru\u0027 OR site.callee_class ENDS WITH \u0027ple\u0027 OR site.callee_name CONTAINS \u0027all\u0027 RETURN id(site) AS id,site.callee_name AS name",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "id",
+      "name"
+    ],
+    "rows": [
+      {
+        "id": 24,
+        "name": "callee"
+      }
+    ]
+  },
+  {
+    "name": "four-fields-or-alias",
+    "query": "MATCH (site:CallSite) WHERE site.caller_class \u003d \u0027Example\u0027 OR site.caller_name STARTS WITH \u0027ru\u0027 OR site.callee_class ENDS WITH \u0027ple\u0027 OR site.callee_name CONTAINS \u0027all\u0027 RETURN id(site) AS id,site.callee_name AS name",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "id",
+      "name"
+    ],
+    "rows": [
+      {
+        "id": 24,
+        "name": "callee",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 24,
+        "name": "callee",
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "parameter-string",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS $term RETURN id(v) AS id",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 24
+      }
+    ]
+  },
+  {
+    "name": "parameter-string",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS $term RETURN id(v) AS id",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 24,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 24,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "parameter-null",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS $term RETURN id(v) AS id",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-null",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS $term RETURN id(v) AS id",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-number",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS $term RETURN id(v) AS id",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-number",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS $term RETURN id(v) AS id",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-missing",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS $term RETURN id(v) AS id",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-missing",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS $term RETURN id(v) AS id",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": []
+  },
+  {
+    "name": "nested-wrapper",
+    "query": "MATCH (v:CallSiteNode) WHERE toLower(toString(coalesce(v.callee_name,\u0027\u0027))) CONTAINS \u0027cal\u0027 RETURN v.callee_name AS name",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "name"
+    ],
+    "rows": [
+      {
+        "name": "callee"
+      }
+    ]
+  },
+  {
+    "name": "nested-wrapper",
+    "query": "MATCH (v:CallSiteNode) WHERE toLower(toString(coalesce(v.callee_name,\u0027\u0027))) CONTAINS \u0027cal\u0027 RETURN v.callee_name AS name",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "name"
+    ],
+    "rows": [
+      {
+        "name": "callee",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "name": "callee",
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "wrapper-empty-needle",
+    "query": "MATCH (v:CallSiteNode) WHERE toLower(toString(coalesce(v.callee_name,\u0027\u0027))) CONTAINS \u0027\u0027 RETURN id(v) AS id",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 24
+      }
+    ]
+  },
+  {
+    "name": "wrapper-empty-needle",
+    "query": "MATCH (v:CallSiteNode) WHERE toLower(toString(coalesce(v.callee_name,\u0027\u0027))) CONTAINS \u0027\u0027 RETURN id(v) AS id",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 24,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 24,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "lower-right-not-normalized",
+    "query": "MATCH (v:CallSiteNode) WHERE toLower(v.callee_name) CONTAINS \u0027CAL\u0027 RETURN id(v) AS id",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": []
+  },
+  {
+    "name": "lower-right-not-normalized",
+    "query": "MATCH (v:CallSiteNode) WHERE toLower(v.callee_name) CONTAINS \u0027CAL\u0027 RETURN id(v) AS id",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": []
+  },
+  {
+    "name": "coalesce-eager-error",
+    "query": "MATCH (v:CallSiteNode) WHERE coalesce(v.callee_name,1/0) CONTAINS \u0027never\u0027 RETURN id(v) AS id",
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "coalesce-eager-error",
+    "query": "MATCH (v:CallSiteNode) WHERE coalesce(v.callee_name,1/0) CONTAINS \u0027never\u0027 RETURN id(v) AS id",
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "toString-extra-eager",
+    "query": "MATCH (v:CallSiteNode) WHERE toString(v.callee_name,1/0) CONTAINS \u0027never\u0027 RETURN id(v) AS id",
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "toString-extra-eager",
+    "query": "MATCH (v:CallSiteNode) WHERE toString(v.callee_name,1/0) CONTAINS \u0027never\u0027 RETURN id(v) AS id",
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "toLower-extra-eager",
+    "query": "MATCH (v:CallSiteNode) WHERE toLower(v.callee_name,1/0) CONTAINS \u0027never\u0027 RETURN id(v) AS id",
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "toLower-extra-eager",
+    "query": "MATCH (v:CallSiteNode) WHERE toLower(v.callee_name,1/0) CONTAINS \u0027never\u0027 RETURN id(v) AS id",
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "or-hit-does-not-hide-error",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 OR v.caller_name CONTAINS substring(\u0027x\u0027,\u0027bad\u0027) RETURN id(v) AS id",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "or-hit-does-not-hide-error",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 OR v.caller_name CONTAINS substring(\u0027x\u0027,\u0027bad\u0027) RETURN id(v) AS id",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "or-miss-does-not-hide-error",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027never\u0027 OR v.caller_name CONTAINS substring(\u0027x\u0027,\u0027bad\u0027) RETURN id(v) AS id",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "or-miss-does-not-hide-error",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027never\u0027 OR v.caller_name CONTAINS substring(\u0027x\u0027,\u0027bad\u0027) RETURN id(v) AS id",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "empty-graph-eager-operand",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS (1/0) RETURN id(v) AS id",
+    "cross": false,
+    "empty": true,
+    "columns": [
+      "id"
+    ],
+    "rows": []
+  },
+  {
+    "name": "empty-graph-eager-operand",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS (1/0) RETURN id(v) AS id",
+    "cross": true,
+    "empty": true,
+    "columns": [
+      "id"
+    ],
+    "rows": []
+  },
+  {
+    "name": "empty-graph-eager-wrapper",
+    "query": "MATCH (v:CallSiteNode) WHERE coalesce(v.callee_name,1/0) CONTAINS \u0027x\u0027 RETURN id(v) AS id",
+    "cross": false,
+    "empty": true,
+    "columns": [
+      "id"
+    ],
+    "rows": []
+  },
+  {
+    "name": "empty-graph-eager-wrapper",
+    "query": "MATCH (v:CallSiteNode) WHERE coalesce(v.callee_name,1/0) CONTAINS \u0027x\u0027 RETURN id(v) AS id",
+    "cross": true,
+    "empty": true,
+    "columns": [
+      "id"
+    ],
+    "rows": []
+  },
+  {
+    "name": "inline-error-before-where",
+    "query": "MATCH (v:CallSiteNode {callee_name:1/0}) WHERE v.callee_name CONTAINS \u0027never\u0027 RETURN id(v) AS id",
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "inline-error-before-where",
+    "query": "MATCH (v:CallSiteNode {callee_name:1/0}) WHERE v.callee_name CONTAINS \u0027never\u0027 RETURN id(v) AS id",
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "inline-false-skips-error",
+    "query": "MATCH (v:CallSiteNode {callee_name:\u0027nope\u0027,caller_name:1/0}) WHERE v.callee_name CONTAINS \u0027never\u0027 RETURN id(v) AS id",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": []
+  },
+  {
+    "name": "inline-false-skips-error",
+    "query": "MATCH (v:CallSiteNode {callee_name:\u0027nope\u0027,caller_name:1/0}) WHERE v.callee_name CONTAINS \u0027never\u0027 RETURN id(v) AS id",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": []
+  },
+  {
+    "name": "row-dependent-right",
+    "query": "UNWIND [\u0027cal\u0027,\u0027never\u0027] AS term MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS term RETURN term,id(v) AS id",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "term",
+      "id"
+    ],
+    "rows": [
+      {
+        "term": "cal",
+        "id": 24
+      }
+    ]
+  },
+  {
+    "name": "row-dependent-right",
+    "query": "UNWIND [\u0027cal\u0027,\u0027never\u0027] AS term MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS term RETURN term,id(v) AS id",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "term",
+      "id"
+    ],
+    "rows": [
+      {
+        "term": "cal",
+        "id": 24,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "term": "cal",
+        "id": 24,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "bound-nonnode",
+    "query": "WITH {callee_name:\u0027cal\u0027} AS v MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN v",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "v"
+    ],
+    "rows": []
+  },
+  {
+    "name": "bound-nonnode",
+    "query": "WITH {callee_name:\u0027cal\u0027} AS v MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN v",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "v"
+    ],
+    "rows": []
+  },
+  {
+    "name": "bound-node",
+    "query": "MATCH (v:CallSiteNode) WITH v MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN id(v) AS id",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 24
+      }
+    ]
+  },
+  {
+    "name": "bound-node",
+    "query": "MATCH (v:CallSiteNode) WITH v MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN id(v) AS id",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 24,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 24,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "optional-zero",
+    "query": "OPTIONAL MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027never\u0027 RETURN v",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "v"
+    ],
+    "rows": [
+      {
+        "v": null
+      }
+    ]
+  },
+  {
+    "name": "optional-zero",
+    "query": "OPTIONAL MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027never\u0027 RETURN v",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "v"
+    ],
+    "rows": [
+      {
+        "v": null,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "optional-old-binding",
+    "query": "MATCH (v:CallSiteNode) OPTIONAL MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027never\u0027 RETURN id(v) AS id",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 24
+      }
+    ]
+  },
+  {
+    "name": "optional-old-binding",
+    "query": "MATCH (v:CallSiteNode) OPTIONAL MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027never\u0027 RETURN id(v) AS id",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 24,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 24,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "or-dedup-count",
+    "query": "MATCH (v:CallSiteNode) WHERE v.caller_class CONTAINS \u0027Ex\u0027 OR v.callee_name CONTAINS \u0027cal\u0027 RETURN count(v) AS count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "count"
+    ],
+    "rows": [
+      {
+        "count": 1
+      }
+    ]
+  },
+  {
+    "name": "or-dedup-count",
+    "query": "MATCH (v:CallSiteNode) WHERE v.caller_class CONTAINS \u0027Ex\u0027 OR v.callee_name CONTAINS \u0027cal\u0027 RETURN count(v) AS count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "count"
+    ],
+    "rows": [
+      {
+        "count": 2,
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "global-distinct-provenance",
+    "query": "MATCH (v:CallSiteNode) WHERE v.caller_class CONTAINS \u0027Ex\u0027 OR v.callee_name CONTAINS \u0027cal\u0027 RETURN DISTINCT v.callee_name AS name ORDER BY name DESC LIMIT 1",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "name"
+    ],
+    "rows": [
+      {
+        "name": "callee"
+      }
+    ]
+  },
+  {
+    "name": "global-distinct-provenance",
+    "query": "MATCH (v:CallSiteNode) WHERE v.caller_class CONTAINS \u0027Ex\u0027 OR v.callee_name CONTAINS \u0027cal\u0027 RETURN DISTINCT v.callee_name AS name ORDER BY name DESC LIMIT 1",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "name"
+    ],
+    "rows": [
+      {
+        "name": "callee",
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "projection-error-global-limit",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN substring(v.callee_name,\u0027bad\u0027) AS name LIMIT 0",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "name"
+    ],
+    "rows": []
+  },
+  {
+    "name": "projection-error-global-limit",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027cal\u0027 RETURN substring(v.callee_name,\u0027bad\u0027) AS name LIMIT 0",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "name"
+    ],
+    "rows": []
+  },
+  {
+    "name": "untyped-label-fallback",
+    "query": "MATCH (v) WHERE toLower(toString(coalesce(v.callee_name,\u0027\u0027))) CONTAINS \u0027\u0027 RETURN id(v) AS id",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 14
+      },
+      {
+        "id": 22
+      },
+      {
+        "id": 8
+      },
+      {
+        "id": 24
+      },
+      {
+        "id": 2
+      },
+      {
+        "id": 16
+      },
+      {
+        "id": 12
+      },
+      {
+        "id": 6
+      },
+      {
+        "id": 26
+      },
+      {
+        "id": 18
+      },
+      {
+        "id": 28
+      },
+      {
+        "id": 0
+      },
+      {
+        "id": 20
+      },
+      {
+        "id": 10
+      },
+      {
+        "id": 4
+      },
+      {
+        "id": 30
+      }
+    ]
+  },
+  {
+    "name": "untyped-label-fallback",
+    "query": "MATCH (v) WHERE toLower(toString(coalesce(v.callee_name,\u0027\u0027))) CONTAINS \u0027\u0027 RETURN id(v) AS id",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 14,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 22,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 8,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 24,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 2,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 16,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 12,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 6,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 26,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 18,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 28,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 0,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 20,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 10,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 4,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 30,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 14,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 22,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 8,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 24,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 2,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 16,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 12,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 6,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 26,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 18,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 28,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 0,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 20,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 10,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 4,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 30,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "unsupported-signature",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_signature CONTAINS \u0027callee\u0027 RETURN id(v) AS id",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 24
+      }
+    ]
+  },
+  {
+    "name": "unsupported-signature",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_signature CONTAINS \u0027callee\u0027 RETURN id(v) AS id",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 24,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 24,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "incomplete-or-true",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027never\u0027 OR true RETURN id(v) AS id",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 24
+      }
+    ]
+  },
+  {
+    "name": "incomplete-or-true",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS \u0027never\u0027 OR true RETURN id(v) AS id",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 24,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 24,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  }
+]

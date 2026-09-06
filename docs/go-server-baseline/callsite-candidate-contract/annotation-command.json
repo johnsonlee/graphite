@@ -1,0 +1,11 @@
+{
+  "command": [
+    "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+    "-Xmx128m",
+    "-cp",
+    "/tmp/graphite-planner-contract-classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+    "AnnotationOracle",
+    "docs/go-server-baseline/callsite-candidate-contract/annotation-main-oracle.json"
+  ],
+  "exitCode": 0
+}

@@ -1,0 +1,93 @@
+{
+  "capturedAtUtc": "2026-09-06T21:10:53.684706+00:00",
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "java": "17.0.18",
+  "jar": {
+    "path": "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+    "sha256": "91c3a1d154ca96004c55df195d9f752e077cab3e33ca1570b2c88b872d9bc34d"
+  },
+  "primaryCases": 28,
+  "primaryObservations": 56,
+  "nativeEqual": 52,
+  "nativeDifferent": 4,
+  "annotationScenarios": 2,
+  "annotationMainObservations": 4,
+  "productionModified": false,
+  "performanceRun": false,
+  "sourceFiles": [
+    {
+      "path": "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/QueryPipeline.kt",
+      "sha256": "9522dff099e2843f32115ae52f01adfb29c14d147dd3b9919daf907181c4f4ae"
+    },
+    {
+      "path": "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/NodePropertyAccessor.kt",
+      "sha256": "d5b7d2cb6b3052bdd2b22fec06c3ed4bbccf19c3454723d5a92a3289a99a1ae5"
+    },
+    {
+      "path": "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/ExpressionEvaluator.kt",
+      "sha256": "b4c1bb76cde0be2bcc7b3485e4ac92fd28e0555839cb7d0954748436868510c8"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "AnnotationOracle.java",
+      "sha256": "d39f3b33d7bc4dcf49e8911127059966897a86bebdd14f43a99a9a30b55fde7e"
+    },
+    {
+      "path": "PlannerOracle.java",
+      "sha256": "8ec40966ac5c770ef3026fc56cb08b35d7ef4ef22e022621fb5b05dd56ae5093"
+    },
+    {
+      "path": "README.md",
+      "sha256": "4798cf4ac0041e0bf1a2854b89ef3975f14c1b9d757ea29f0e662d97456e0331"
+    },
+    {
+      "path": "annotation-command.json",
+      "sha256": "abc549c788e3a32cc9c5ba71e59a66ce94c81938ac409a21dafc214bbe3679b1"
+    },
+    {
+      "path": "annotation-main-oracle.json",
+      "sha256": "d4fcee2d2cd3bdb20c0223e776b93555bdee0b6aa8133656940db2ababf54dbb"
+    },
+    {
+      "path": "annotation-main.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "cases.json",
+      "sha256": "645db9df4274a3023016b47b0dabeb6e91a049dadde7e92cd69a907bdd599c33"
+    },
+    {
+      "path": "main-command.json",
+      "sha256": "f9b5f73da0f8cf0c9d4351e19b9970fa419ad3a95ea375615e6bbee97090b77a"
+    },
+    {
+      "path": "main-native-differences.json",
+      "sha256": "a880dad9998f253e256d39fe45b67feed923325370d300583cd797622c9449fa"
+    },
+    {
+      "path": "main-oracle.json",
+      "sha256": "370c3cee9fc62f1901fb3db9a1cdb976ffcb1b27cd4112d32a9b6b336afe9716"
+    },
+    {
+      "path": "main.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "native-observations.json",
+      "sha256": "a08c71939afd7e1c661a55fc6724ae2485b43d3a88ba190bca1fd2a4a4dc6271"
+    },
+    {
+      "path": "native-snapshot.json",
+      "sha256": "7e1937a1e2f6c1dd8c5a50bb03f221da6bd79c4742006c3a80249e92c14e0040"
+    },
+    {
+      "path": "native.log",
+      "sha256": "7ac45aa4a1d9f80e3f4468d9c57109c659d2937d3921581818281a0451b0f26c"
+    },
+    {
+      "path": "native_probe_test.go",
+      "sha256": "111fb0f8d803c2faa055b1a34808f05015884b1bfe5691b5afe9f9621487878a"
+    }
+  ]
+}

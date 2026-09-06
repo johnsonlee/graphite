@@ -1,0 +1,86 @@
+[
+  {
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS \u0027Exam\u0027 RETURN id(n) AS id,n.caller_class AS caller",
+    "cross": false,
+    "columns": [
+      "id",
+      "caller"
+    ],
+    "rows": [
+      {
+        "id": 101,
+        "caller": "Example"
+      }
+    ]
+  },
+  {
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS \u0027Exam\u0027 RETURN id(n) AS id,n.caller_class AS caller",
+    "cross": true,
+    "columns": [
+      "id",
+      "caller"
+    ],
+    "rows": [
+      {
+        "id": 101,
+        "caller": "Example",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 101,
+        "caller": "Example",
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,\u0027\u0027))) CONTAINS \u0027exam\u0027 RETURN id(n) AS id,n.caller_class AS caller",
+    "cross": false,
+    "columns": [
+      "id",
+      "caller"
+    ],
+    "rows": [
+      {
+        "id": 101,
+        "caller": "Example"
+      }
+    ]
+  },
+  {
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,\u0027\u0027))) CONTAINS \u0027exam\u0027 RETURN id(n) AS id,n.caller_class AS caller",
+    "cross": true,
+    "columns": [
+      "id",
+      "caller"
+    ],
+    "rows": [
+      {
+        "id": 101,
+        "caller": "Example",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 101,
+        "caller": "Example",
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  }
+]

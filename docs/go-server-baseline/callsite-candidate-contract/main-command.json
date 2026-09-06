@@ -1,0 +1,13 @@
+{
+  "command": [
+    "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+    "-Xmx256m",
+    "-cp",
+    "/tmp/graphite-planner-contract-classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+    "PlannerOracle",
+    "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-candidate-contract-sgp_7nnp/fixture",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/callsite-candidate-contract/cases.json",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/callsite-candidate-contract/main-oracle.json"
+  ],
+  "exitCode": 0
+}

@@ -1,0 +1,125 @@
+[
+  {
+    "name": "four-fields-or-alias",
+    "query": "MATCH (site:CallSite) WHERE site.caller_class = 'Example' OR site.caller_name STARTS WITH 'ru' OR site.callee_class ENDS WITH 'ple' OR site.callee_name CONTAINS 'all' RETURN id(site) AS id,site.callee_name AS name"
+  },
+  {
+    "name": "parameter-string",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS $term RETURN id(v) AS id",
+    "params": {
+      "term": "cal"
+    }
+  },
+  {
+    "name": "parameter-null",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS $term RETURN id(v) AS id",
+    "params": {
+      "term": null
+    }
+  },
+  {
+    "name": "parameter-number",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS $term RETURN id(v) AS id",
+    "params": {
+      "term": 12
+    }
+  },
+  {
+    "name": "parameter-missing",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS $term RETURN id(v) AS id"
+  },
+  {
+    "name": "nested-wrapper",
+    "query": "MATCH (v:CallSiteNode) WHERE toLower(toString(coalesce(v.callee_name,''))) CONTAINS 'cal' RETURN v.callee_name AS name"
+  },
+  {
+    "name": "wrapper-empty-needle",
+    "query": "MATCH (v:CallSiteNode) WHERE toLower(toString(coalesce(v.callee_name,''))) CONTAINS '' RETURN id(v) AS id"
+  },
+  {
+    "name": "lower-right-not-normalized",
+    "query": "MATCH (v:CallSiteNode) WHERE toLower(v.callee_name) CONTAINS 'CAL' RETURN id(v) AS id"
+  },
+  {
+    "name": "coalesce-eager-error",
+    "query": "MATCH (v:CallSiteNode) WHERE coalesce(v.callee_name,1/0) CONTAINS 'never' RETURN id(v) AS id"
+  },
+  {
+    "name": "toString-extra-eager",
+    "query": "MATCH (v:CallSiteNode) WHERE toString(v.callee_name,1/0) CONTAINS 'never' RETURN id(v) AS id"
+  },
+  {
+    "name": "toLower-extra-eager",
+    "query": "MATCH (v:CallSiteNode) WHERE toLower(v.callee_name,1/0) CONTAINS 'never' RETURN id(v) AS id"
+  },
+  {
+    "name": "or-hit-does-not-hide-error",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' OR v.caller_name CONTAINS substring('x','bad') RETURN id(v) AS id"
+  },
+  {
+    "name": "or-miss-does-not-hide-error",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'never' OR v.caller_name CONTAINS substring('x','bad') RETURN id(v) AS id"
+  },
+  {
+    "name": "empty-graph-eager-operand",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS (1/0) RETURN id(v) AS id",
+    "empty": true
+  },
+  {
+    "name": "empty-graph-eager-wrapper",
+    "query": "MATCH (v:CallSiteNode) WHERE coalesce(v.callee_name,1/0) CONTAINS 'x' RETURN id(v) AS id",
+    "empty": true
+  },
+  {
+    "name": "inline-error-before-where",
+    "query": "MATCH (v:CallSiteNode {callee_name:1/0}) WHERE v.callee_name CONTAINS 'never' RETURN id(v) AS id"
+  },
+  {
+    "name": "inline-false-skips-error",
+    "query": "MATCH (v:CallSiteNode {callee_name:'nope',caller_name:1/0}) WHERE v.callee_name CONTAINS 'never' RETURN id(v) AS id"
+  },
+  {
+    "name": "row-dependent-right",
+    "query": "UNWIND ['cal','never'] AS term MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS term RETURN term,id(v) AS id"
+  },
+  {
+    "name": "bound-nonnode",
+    "query": "WITH {callee_name:'cal'} AS v MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN v"
+  },
+  {
+    "name": "bound-node",
+    "query": "MATCH (v:CallSiteNode) WITH v MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN id(v) AS id"
+  },
+  {
+    "name": "optional-zero",
+    "query": "OPTIONAL MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'never' RETURN v"
+  },
+  {
+    "name": "optional-old-binding",
+    "query": "MATCH (v:CallSiteNode) OPTIONAL MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'never' RETURN id(v) AS id"
+  },
+  {
+    "name": "or-dedup-count",
+    "query": "MATCH (v:CallSiteNode) WHERE v.caller_class CONTAINS 'Ex' OR v.callee_name CONTAINS 'cal' RETURN count(v) AS count"
+  },
+  {
+    "name": "global-distinct-provenance",
+    "query": "MATCH (v:CallSiteNode) WHERE v.caller_class CONTAINS 'Ex' OR v.callee_name CONTAINS 'cal' RETURN DISTINCT v.callee_name AS name ORDER BY name DESC LIMIT 1"
+  },
+  {
+    "name": "projection-error-global-limit",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'cal' RETURN substring(v.callee_name,'bad') AS name LIMIT 0"
+  },
+  {
+    "name": "untyped-label-fallback",
+    "query": "MATCH (v) WHERE toLower(toString(coalesce(v.callee_name,''))) CONTAINS '' RETURN id(v) AS id"
+  },
+  {
+    "name": "unsupported-signature",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_signature CONTAINS 'callee' RETURN id(v) AS id"
+  },
+  {
+    "name": "incomplete-or-true",
+    "query": "MATCH (v:CallSiteNode) WHERE v.callee_name CONTAINS 'never' OR true RETURN id(v) AS id"
+  }
+]
