@@ -4544,3 +4544,27 @@ unchanged within noise.
 
 **Conclusion:** keep for exact-head hosted validation; the dense rows' remaining cost is the
 probe's setup and first use (`1.8 ms` of a `3.5 ms` probe) and the node record reads.
+
+### 2026-09-06 - Attempt 142: Decode strings through the char-coded list without the fastutil bounds helper
+
+**Hypothesis:** class loading attributed per replayed query (JVM uptime markers around each
+execution, `-Xlog:class+load`) shows the targeted row loading `21` classes, seven of them
+`it.unimi.dsi.fastutil.chars.CharArrays` and the nested classes its verification pulls in: every
+decode through `FrontCodedStringList.get` runs the helper's offset check, and the allocating
+getter wraps its array through a zero-capacity `MutableString` that reads the helper's empty
+array. The helper is a very large class, so the first decode of a fresh JVM (the targeted row's
+verification) costs `2.6..3.5 ms` in a microbenchmark against `0.03 ms` without it, and every
+later decode still enters the check on interpreted code.
+
+**Change:** the string table reaches the list's char-coded backing list once at load (a protected
+field, read reflectively with a fallback to the list's own decode) and decodes through its array
+getter: a `String` is built from the array directly, and a reusable buffer receives a copy.
+
+**Evidence (local, 64 fixtures, fresh JVM in benchmark order, five alternating runs, medians):**
+four-properties-targeted first execution CPU `9.31 -> 7.48 ms` (wall `10.07 -> 8.23 ms`);
+distinct-dense first execution CPU `12.79 -> 10.46 ms` (wall `13.51 -> 11.60 ms`), second
+`5.76 -> 5.19 ms`; `add` first `9.96 -> 9.10 ms`, second `7.34 -> 6.67 ms`; four-properties-dense
+unchanged (`4.75 -> 4.83 ms`). The replay loads no `CharArrays` class at all and the targeted
+row's class count drops `21 -> 14`.
+
+**Conclusion:** keep for exact-head hosted validation.

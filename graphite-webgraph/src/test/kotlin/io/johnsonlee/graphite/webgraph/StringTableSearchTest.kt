@@ -1,5 +1,6 @@
 package io.johnsonlee.graphite.webgraph
 
+import it.unimi.dsi.lang.MutableString
 import java.nio.file.Files
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -39,6 +40,19 @@ class StringTableSearchTest {
         assertEquals(sorted.indexOf("example.pkg0.Class0"), table.lowerBound("b"))
         assertFalse(table.startsWithAt(-1, "a"))
         assertFalse(table.startsWithAt(sorted.size, "a"))
+    }
+
+    @Test
+    fun `decodes every string directly and into a reused buffer`() = withSortedTable(strings) { table ->
+        val sorted = strings.sorted()
+        val buffer = MutableString()
+        // The reused buffer shrinks and grows across neighbouring strings of different lengths.
+        for (index in sorted.indices.reversed()) {
+            assertEquals(sorted[index], table.get(index))
+            table.get(index, buffer)
+            assertEquals(sorted[index], buffer.toString())
+        }
+        assertEquals(sorted.size, table.size())
     }
 
     @Test

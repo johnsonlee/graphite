@@ -1,6 +1,7 @@
 package io.johnsonlee.graphite.webgraph
 
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
+import it.unimi.dsi.fastutil.chars.CharArrayFrontCodedList
 import it.unimi.dsi.fastutil.io.BinIO
 import it.unimi.dsi.lang.MutableString
 import it.unimi.dsi.util.FrontCodedStringList
@@ -29,6 +30,14 @@ internal class StringTable private constructor(
     @Volatile
     private var persistedContentIdentity: ByteArray? = contentIdentity?.copyOf()
     private val contentIdentityLock = Any()
+
+    /**
+     * The char-coded list behind [list], reached directly for decoding. The list's own decode
+     * checks its target through a fastutil array helper whose class (and the six nested classes
+     * its verification pulls in) is large enough to cost a first request over a millisecond to
+     * load, while the direct array getter decodes without it.
+     */
+    private val directCharList: CharArrayFrontCodedList? = directCharList(list)
 
     /**
      * Returns the index of [s] in the string table, or -1 if not found.
@@ -128,10 +137,18 @@ internal class StringTable private constructor(
     /**
      * Returns the string at the given [index].
      */
-    fun get(index: Int): String = list.get(index).toString()
+    fun get(index: Int): String {
+        val direct = directCharList ?: return list.get(index).toString()
+        return String(direct.getArray(index))
+    }
 
     /** Decodes into a reusable buffer for allocation-sensitive table scans. */
-    internal fun get(index: Int, target: MutableString) = list.get(index, target)
+    internal fun get(index: Int, target: MutableString) {
+        val direct = directCharList ?: return list.get(index, target)
+        val chars = direct.getArray(index)
+        target.length(chars.size)
+        System.arraycopy(chars, 0, target.array(), 0, chars.size)
+    }
 
     /**
      * Returns the number of strings in the table.
@@ -152,6 +169,15 @@ internal class StringTable private constructor(
     companion object {
 
         private const val FILE_NAME = "graph.strings"
+        private val CHAR_LIST_FIELD = runCatching {
+            FrontCodedStringList::class.java.getDeclaredField("charFrontCodedList").apply { isAccessible = true }
+        }.getOrNull()
+
+        /** The char-coded list of a non-UTF-8 [list], or null when the field is unreachable. */
+        private fun directCharList(list: FrontCodedStringList): CharArrayFrontCodedList? =
+            CHAR_LIST_FIELD?.takeUnless { list.utf8() }?.let { field ->
+                runCatching { field.get(list) as? CharArrayFrontCodedList }.getOrNull()
+            }
         internal const val CONTENT_IDENTITY_FILE_NAME = "graph.strings.identity"
         private const val CONTENT_IDENTITY_BYTES = 32
 
