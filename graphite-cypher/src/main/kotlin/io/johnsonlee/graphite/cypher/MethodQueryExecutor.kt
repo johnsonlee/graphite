@@ -28,18 +28,18 @@ private fun <T> runMethodGraphTasks(tasks: List<(() -> Unit) -> T>): List<T> {
     // lane while retaining its current lane (or an index monitor held by its caller).
     if (GraphTaskContext.current?.role?.let { it != GraphTaskRole.REQUEST } == true) return tasks.map { it(cancellation::check) }
     val group = GraphTaskScheduler.shared.newRootGroup<T>()
-    val handles = tasks.map { task ->
-        group.submit(Callable {
-            try {
-                cancellation.check()
-                task(cancellation::check)
-            } catch (error: Throwable) {
-                cancellation.fail(error)
-                throw error
-            }
-        })
-    }
     return try {
+        val handles = tasks.map { task ->
+            group.submit(Callable {
+                try {
+                    cancellation.check()
+                    task(cancellation::check)
+                } catch (error: Throwable) {
+                    cancellation.fail(error)
+                    throw error
+                }
+            })
+        }
         handles.map { it.get() }
     } catch (_: InterruptedException) {
         cancellation.fail(CypherQueryCancelledException())

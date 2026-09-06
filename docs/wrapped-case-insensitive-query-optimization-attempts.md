@@ -5656,3 +5656,12 @@ This third same-direction failed candidate is retained in isolated history, not 
 into PR or used to abandon shared scheduling. CandidateCI not started;10x unmet.
 Parentf8e25ff6; frozen-main4e328b01; same real64 fixture and original34 query order.
 [Report and full evidence](profiling/attempt144/README.md).
+
+
+### 2026-09-06 - Attempt 145: Method 部分任务提交失败也等待已启动 callback 退出
+
+沿共享调度方向修复一个确定性正确性缺口：仅将 `runMethodGraphTasks` 原有提交 block 移入已有 try，使第二项提交因父取消失败时，也执行原 `cancelAndJoin(false)` 和 finally close。父提交为 `a38ba09b352d3944c20f97c76e82e05447fde9f9`；本次修复在隔离实验 clone 中单独提交。相同 Java17/P4 回归测试在原实现出现“helper 早于运行 callback 退出”的预期失败，修复后通过，保留原取消异常、无中断及真实退出断言。
+
+保存的四模块测试共 2106 项全通过：core454、cypher1236、webgraph195、explore221；core test 与 core/webgraph/explore detekt 复用 Gradle 缓存，其余相关测试、cypher detekt、两 JMH 打包和 Webgraph 排除 test-output 检查本次执行。真实 Method 控制通过 4/17/36 服务图 ×11 场景共33组合，四个真实 corpus 循环复用，实际64个输入文件前后哈希一致；v3单次控制的36条完整值、顺序和来源通过独立核对。Method root order 归一化及未知 graph ID 过滤的现有校验限制原样记录。Webgraph/Explore JAR分别为 `ac573ed7…29200c`、`7d19b57f…621617`。
+
+本次完成正确性修复验证，没有基线性能配对、候选 CI 或接受结论，不把144的性能数据算作145结果；合成fixture未用于性能证明。完整证据由根工作区的 `docs/profiling/attempt145/README.md` 保存。
