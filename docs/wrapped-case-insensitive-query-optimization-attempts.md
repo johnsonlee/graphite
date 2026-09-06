@@ -5020,3 +5020,31 @@ jar-order band (four-properties-targeted `5.72 -> 6.46 / 6.29 -> 6.41 ms` wall a
 `5.72`-`6.29` spread of the base itself between orders).
 
 **Conclusion:** kept. First applied as 9bbfc11, reverted in c49649e when that head failed cypher-capacity-gate (+16.6% / +5.3% process CPU) and the 36-graph method-compatibility contains row (+50.8% wall), neither on its diff path; re-applied unchanged on top of Attempt 158.
+
+### 2026-09-06 - Attempt 159: Fold the direct projection cache key and row layout into the cache object
+
+**Hypothesis:** after Attempt 158 the first targeted projection row of a cold process loads five
+classes on the request thread, two of which exist only as code structure: the result cache's
+key class and the row layout class. Keying the cache by a string (graph id, projection identity
+hash, columns) with the projection identity verified on every hit, holding each entry in an
+array, and computing the layout as a name array plus a cell index array from functions on the
+cache object would load three classes instead of five.
+
+**Change (not kept):** `DirectProjectionResultCache.Key` replaced by string-keyed
+`Array<Any?>` entries with explicit eviction of a same-hash stale generation;
+`DirectProjectionRowLayout` replaced by `DirectProjectionResultCache.layout(columns, metadataKey)`
+returning `Pair<Array<String>, IntArray>` and `row(layout, values, metadata, graphIds)`. Cypher
+tests and detekt passed; the row loaded three classes instead of five in every run.
+
+**Evidence (local, 64 fixtures, three samples of eight, six and ten runs in each order on a
+freshly restarted host whose absolute times were about twice the earlier session's):**
+four-properties-targeted wall `9.81 -> 10.20 / 10.64 -> 10.72 ms` on the ten-run sample
+(`10.71 -> 10.49 / 10.26 -> 9.81 ms` on the six-run sample), class-pair-targeted
+`5.53 -> 6.44 / 5.22 -> 5.95 ms` and distinct-dense first execution `10.96 -> 13.45 /
+12.14 -> 14.88 ms`, both slower in all six comparisons across the three samples; the `add`
+first execution CPU `15.58 -> 17.82 / 15.78 -> 18.32 ms`.
+
+**Conclusion:** rejected. Two fewer class loads did not show up on the targeted row, and the rows
+that build many public rows (class-pair, the DISTINCT provenance rows) measured consistently
+slower with the object-function layout, so the change was dropped and the patch kept outside the
+tree for a later re-measurement on a quieter host.
