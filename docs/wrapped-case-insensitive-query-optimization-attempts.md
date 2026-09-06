@@ -4267,6 +4267,29 @@ pool is never consulted for CallSite projections.
   index budget, so a request retains no heap for it; the same run's method-compatibility aggregate
   shards flagged process CPU time on Method-label count/order scenarios that this change does not
   touch, with the base itself measuring `3.21 s` CPU on one of those single-shot runs.
+- The same hosted run failed the 10x global-wide gate at `3.64x / 14.05x / 5.76x` (base P95
+  `116.9 / 357.5 / 140.7 ms`, candidate `32.1 / 25.4 / 24.4 ms`). The gate's P95 is the second-largest
+  of 34 cold single-shot latencies, and the candidate's second-largest is the first row-producing
+  query of the replay (`four-properties-targeted`, the second query) or the wrapped distinct dense
+  query. Under `-Xint` the first execution of the targeted shape costs `35 ms` against `2.6 ms`
+  for every later execution, about 30 classes load inside that window, and the base pays the same
+  `26 ms` for the identical shape on the runner: the second query's cost is dominated by JVM
+  first-execution work that both revisions pay, so a 10x ratio against a `117 ms` base P95 would
+  need the candidate below the cold-JVM floor.
+- Cold-path work was cut where it is real: the trigram probe now checks every trigram of a term
+  against the directory's presence bits before any mapped binary search, the term's trigram hashes
+  are computed once per request and shared by all graph views together with the position that
+  proved the previous graph absent, the raw DISTINCT prefix deduplicates on raw string-id tuples
+  before decoding, and dense-plan raw probes reject string ids through the anchor trigram's
+  postings before decoding a string. Locally the first cold targeted query dropped from `35 ms` to
+  `21 ms`, steady uncached targeted queries from `1.7 ms` to `1.1 ms`, and steady distinct-dense
+  from `4.4 ms` to `3.5 ms`. Searching the property directory through the dictionary's block heads
+  was tried for selected-tuple hits and reverted: it doubled the distinct-dense cost.
+- Local JMH state comparison (main → candidate, 64 graphs): cold P95 `147..213 ms → 22 ms`
+  (`6.7x..9.7x`), `warm` P95 `34.6 ms → 4.4 ms` (`7.9x`), `warm` with two warm-up replays
+  `12.4 ms → 3.1 ms` (`4.0x`). Repeated identical replays let the base's retained heap index and
+  result caches absorb its scans, so no state of this workload separates the revisions by 10x;
+  the candidate's tail in every state is the per-query cross-graph floor of the harness.
 - Focused WebGraph, Cypher, and core tests cover the planner probe kinds, selected-tuple provenance,
   legacy build-and-persist, the block-aware string-table search, and the tuple set grouping; the
   gate comparator's 87 node tests cover the serial worker contract, the mapped-view lifecycle, and

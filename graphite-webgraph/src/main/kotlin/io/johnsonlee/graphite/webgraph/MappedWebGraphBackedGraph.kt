@@ -386,7 +386,8 @@ internal class MappedWebGraphBackedGraph(
                         limit,
                         selectedValues = null,
                         workConsumer,
-                        maxInspected = rawProbeNodeBudget(limit, DENSE_RAW_PROBE_FACTOR)
+                        maxInspected = rawProbeNodeBudget(limit, DENSE_RAW_PROBE_FACTOR),
+                        plan = plan
                     )?.let { return it }
                 }
                 view.distinctRows(plan, projectedPropertyIndexes, limit, workConsumer)?.let { return it }
@@ -409,7 +410,8 @@ internal class MappedWebGraphBackedGraph(
         limit: Int,
         selectedValues: Set<List<String?>>?,
         workConsumer: GraphWorkConsumer?,
-        maxInspected: Int = Int.MAX_VALUE
+        maxInspected: Int = Int.MAX_VALUE,
+        plan: MappedCallSiteStringIndexView.MatchPlan? = null
     ): List<StringPropertyDistinctRow>? {
         if (limit <= 0 || selectedValues?.isEmpty() == true) return emptyList()
         val predicatePropertyIndexes = predicates.map { predicate ->
@@ -419,10 +421,16 @@ internal class MappedWebGraphBackedGraph(
         val sharedMatchers = mutableMapOf<StringPredicateKey, BoundedStringMatcher>()
         val matchers = predicates.map { predicate ->
             val key = StringPredicateKey(predicate.transform, predicate.mode, predicate.expected)
-            sharedMatchers.getOrPut(key) { BoundedStringMatcher(stringTable, key) }
+            sharedMatchers.getOrPut(key) {
+                BoundedStringMatcher(stringTable, key, candidateFilter = plan?.candidateFilter(predicate))
+            }
         }
         val rows = mutableListOf<StringPropertyDistinctRow>()
         val seenValues = HashSet<List<String?>>()
+        // The string table is sorted and deduplicated, so equal projected tuples share their
+        // raw string ids: deduplicating on ids decodes only the tuples that become rows.
+        val seenStringIds = HashSet<RawStringIdTuple>()
+        val projectedIds = IntArray(projectedPropertyIndexes.size)
         val targetSize = minOf(limit, selectedValues?.size ?: limit)
         val accounting = BufferedGraphWorkConsumer(workConsumer)
         val stringIds = IntArray(CALL_SITE_STRING_PROPERTY_COUNT)
@@ -456,6 +464,12 @@ internal class MappedWebGraphBackedGraph(
                     }
                 }
                 if (!matched) continue
+                if (selectedValues == null) {
+                    projectedPropertyIndexes.forEachIndexed { index, propertyIndex ->
+                        projectedIds[index] = if (propertyIndex < 0) -1 else stringIds[propertyIndex]
+                    }
+                    if (!seenStringIds.add(RawStringIdTuple(projectedIds.copyOf()))) continue
+                }
                 val values = projectedPropertyIndexes.map { propertyIndex ->
                     if (propertyIndex < 0) null else stringTable.get(stringIds[propertyIndex])
                 }
@@ -515,7 +529,8 @@ internal class MappedWebGraphBackedGraph(
                         predicates,
                         limit,
                         workConsumer,
-                        maxInspected = rawProbeNodeBudget(limit, DENSE_RAW_PROBE_FACTOR)
+                        maxInspected = rawProbeNodeBudget(limit, DENSE_RAW_PROBE_FACTOR),
+                        plan = plan
                     )?.let { nodeIds ->
                         return rememberProjectedRows(rowsKey, projectRawCallSiteRows(nodeIds, projectedPropertyIndexes))
                     }
@@ -563,7 +578,8 @@ internal class MappedWebGraphBackedGraph(
         predicates: List<StringPropertyPredicate>,
         limit: Int,
         workConsumer: GraphWorkConsumer?,
-        maxInspected: Int = rawProbeNodeBudget(limit, RAW_PROJECTION_PROBE_FACTOR)
+        maxInspected: Int = rawProbeNodeBudget(limit, RAW_PROJECTION_PROBE_FACTOR),
+        plan: MappedCallSiteStringIndexView.MatchPlan? = null
     ): IntArray? {
         if (limit <= 0) return IntArray(0)
         val cacheKey = RawProjectionMatchKey(predicates.toList(), limit)
@@ -582,7 +598,8 @@ internal class MappedWebGraphBackedGraph(
                 BoundedStringMatcher(
                     stringTable,
                     StringPredicateKey(predicate.transform, predicate.mode, predicate.expected),
-                    RAW_PROJECTION_STRING_MATCH_CACHE_CAPACITY
+                    RAW_PROJECTION_STRING_MATCH_CACHE_CAPACITY,
+                    plan?.candidateFilter(predicate)
                 )
             }
         }
@@ -704,7 +721,8 @@ internal class MappedWebGraphBackedGraph(
                             predicates,
                             limit,
                             workConsumer,
-                            maxInspected = rawProbeNodeBudget(limit, DENSE_RAW_PROBE_FACTOR)
+                            maxInspected = rawProbeNodeBudget(limit, DENSE_RAW_PROBE_FACTOR),
+                            plan = plan
                         )?.let { nodeIds ->
                             return nodeIds.asSequence().mapNotNull { nodeId -> node(NodeId(nodeId)) as? T }
                         }
@@ -1882,7 +1900,8 @@ private class RawProjectionCache<K : Any, V : Any>(private val maxBytes: Long = 
 private class BoundedStringMatcher(
     private val stringTable: StringTable,
     private val predicate: StringPredicateKey,
-    cacheCapacity: Int = LOCAL_STRING_MATCH_CACHE_CAPACITY
+    cacheCapacity: Int = LOCAL_STRING_MATCH_CACHE_CAPACITY,
+    private val candidateFilter: StringIdFilter? = null
 ) {
     private val stringCount = stringTable.size()
     private val capacity = cacheCapacity.coerceAtLeast(1).takeHighestOneBit()
@@ -1895,6 +1914,10 @@ private class BoundedStringMatcher(
         val state = state(stringId)
         if (state == RAW_STRING_MATCH) return true
         if (state == RAW_STRING_MISS) return false
+        if (candidateFilter != null && !candidateFilter.accepts(stringId)) {
+            put(stringId, RAW_STRING_MISS)
+            return false
+        }
         stringTable.get(stringId, actual)
         val matched = if (predicate.mode == StringMatchMode.CONTAINS) {
             reusableContains(actual, predicate.transform, predicate.expected)
@@ -2315,6 +2338,12 @@ internal fun consumeGraphWork(consumer: GraphWorkConsumer?, workUnits: Long) {
     } else {
         repeat(workUnits.coerceAtMost(Int.MAX_VALUE.toLong()).toInt()) { consumer.consume() }
     }
+}
+
+/** Projected raw string ids of one CallSite, hashed by content for id-level DISTINCT. */
+private class RawStringIdTuple(private val ids: IntArray) {
+    override fun equals(other: Any?): Boolean = other is RawStringIdTuple && ids.contentEquals(other.ids)
+    override fun hashCode(): Int = ids.contentHashCode()
 }
 
 internal class BufferedGraphWorkConsumer(private val delegate: GraphWorkConsumer?) {

@@ -134,21 +134,27 @@ internal class MappedCallSiteStringIndexView private constructor(
             if (range.isEmpty()) return PredicateProbe.Absent
             return PredicateProbe.Exact(IntArray(range.last - range.first + 1) { offset -> range.first + offset })
         }
-        if (!predicate.canUseTrigramPostings()) return PredicateProbe.Scan
-        val expected = predicate.expected.lowercase()
-        val positions = when (predicate.mode) {
-            StringMatchMode.STARTS_WITH -> 0..0
-            StringMatchMode.ENDS_WITH -> expected.length - TRIGRAM_LENGTH..expected.length - TRIGRAM_LENGTH
-            else -> 0..expected.length - TRIGRAM_LENGTH
-        }
+        val term = TrigramTerm.of(predicate) ?: return PredicateProbe.Scan
+        val trigrams = term.trigrams
         var anchor: IntRange? = null
         var anchorSize = Int.MAX_VALUE
-        val seen = HashSet<Int>()
         val accounting = BufferedGraphWorkConsumer(workConsumer)
         try {
-            for (position in positions) {
-                val trigram = mappedTrigramHash(expected, position)
-                if (!seen.add(trigram)) continue
+            trigramDirectory?.let { directory ->
+                // A term is usually foreign to most graphs of a cross-graph request: one pass over
+                // the cache-resident presence bits rejects it before any mapped binary search,
+                // starting from the trigram that proved the previous graph absent.
+                val start = term.absentHint
+                for (offset in trigrams.indices) {
+                    val index = (start + offset) % trigrams.size
+                    accounting.consume()
+                    if (!directory.contains(trigrams[index])) {
+                        term.absentHint = index
+                        return PredicateProbe.Absent
+                    }
+                }
+            }
+            for (trigram in trigrams) {
                 accounting.consume()
                 val span = trigramPostingRange(trigram) ?: return PredicateProbe.Absent
                 val size = span.last - span.first + 1
@@ -225,6 +231,21 @@ internal class MappedCallSiteStringIndexView private constructor(
             }
             return false
         }
+
+        /**
+         * A necessary condition on raw string ids for [predicate] that costs one mapped binary
+         * search and no string decode, or null when the plan learned nothing about it. Raw
+         * prefix probes of dense plans reject most ids through it before decoding any string.
+         */
+        internal fun candidateFilter(predicate: StringPropertyPredicate): StringIdFilter? =
+            when (val probe = probes[MappedPredicateKey(predicate.transform, predicate.mode, predicate.expected)]) {
+                is PredicateProbe.Absent -> StringIdFilter { false }
+                is PredicateProbe.Exact -> StringIdFilter { stringId ->
+                    java.util.Arrays.binarySearch(probe.stringIds, stringId) >= 0
+                }
+                is PredicateProbe.Trigram -> trigramMembership(probe.anchor)
+                else -> null
+            }
 
         private fun resolve(): Array<IntArray?> {
             rowsByProperty?.let { return it }
@@ -633,7 +654,7 @@ internal class MappedCallSiteStringIndexView private constructor(
                 accounting.consume()
                 val middle = (low + high).ushr(1)
                 stringTable.get(directory.get(middle), decoded)
-                val comparison = decoded.toString().compareTo(value)
+                val comparison = decoded.compareTo(value)
                 when {
                     comparison < 0 -> low = middle + 1
                     comparison > 0 -> high = middle - 1
@@ -756,6 +777,26 @@ internal class MappedCallSiteStringIndexView private constructor(
             val propertyIndex = projectedPropertyIndexes[index]
             if (propertyIndex < 0) null else stringTable.get(stringIds[propertyIndex])
         }
+
+    /** Membership of a string id in one trigram's postings, which are sorted by string id. */
+    private fun trigramMembership(anchor: IntRange): StringIdFilter = StringIdFilter { stringId ->
+        var low = anchor.first
+        var high = anchor.last
+        var found = false
+        while (low <= high) {
+            val middle = (low + high).ushr(1)
+            val candidate = trigramPostings.get(middle).toInt()
+            when {
+                candidate < stringId -> low = middle + 1
+                candidate > stringId -> high = middle - 1
+                else -> {
+                    found = true
+                    break
+                }
+            }
+        }
+        found
+    }
 
     private fun trigramPostingRange(trigram: Int): IntRange? {
         trigramDirectory?.let { directory -> return directory.range(trigram) }
@@ -1098,6 +1139,43 @@ private class ViewLoadScratch {
  * absent. The arrays are charged to the shared index budget; a graph that cannot reserve them
  * searches the mapped postings directly.
  */
+/** A cheap test on raw string ids; false proves the id cannot satisfy a predicate. */
+internal fun interface StringIdFilter {
+    fun accepts(stringId: Int): Boolean
+}
+
+/**
+ * The distinct lowercase trigram hashes of one predicate term in probe order, computed once per
+ * term and shared by every graph view of a request. [absentHint] remembers the trigram that last
+ * proved a graph absent so the next graph's presence pass usually stops at its first check.
+ */
+internal class TrigramTerm private constructor(val trigrams: IntArray) {
+    @Volatile
+    var absentHint: Int = 0
+
+    companion object {
+        private val terms = java.util.concurrent.ConcurrentHashMap<MappedPredicateKey, TrigramTerm>()
+
+        /** Trigrams of [predicate], or null when the predicate cannot use trigram postings. */
+        fun of(predicate: StringPropertyPredicate): TrigramTerm? {
+            if (!predicate.canUseTrigramPostings()) return null
+            val key = MappedPredicateKey(predicate.transform, predicate.mode, predicate.expected)
+            terms[key]?.let { return it }
+            val expected = predicate.expected.lowercase()
+            val positions = when (predicate.mode) {
+                StringMatchMode.STARTS_WITH -> 0..0
+                StringMatchMode.ENDS_WITH -> expected.length - TRIGRAM_LENGTH..expected.length - TRIGRAM_LENGTH
+                else -> 0..expected.length - TRIGRAM_LENGTH
+            }
+            val distinct = LinkedHashSet<Int>()
+            for (position in positions) distinct += mappedTrigramHash(expected, position)
+            val term = TrigramTerm(distinct.toIntArray())
+            if (terms.size >= MAX_CACHED_TRIGRAM_TERMS) terms.clear()
+            return terms.putIfAbsent(key, term) ?: term
+        }
+    }
+}
+
 /**
  * Sorted trigram keys, their posting run starts, and an ASCII presence bit set kept in direct
  * (off-heap) buffers: the directory is derived index state like the mapped postings themselves, so
@@ -1508,6 +1586,7 @@ private const val INITIAL_DIRECTORY_CAPACITY = 1 shl 15
 private const val MAX_POOLED_LOAD_SCRATCH = 4
 private const val DIRECTORY_SCAN_RATIO = 8
 private const val SMALL_TRIGRAM_SPAN = 32
+private const val MAX_CACHED_TRIGRAM_TERMS = 256
 private const val DENSE_TRIGRAM_SPAN = 1_024
 private val TUPLE_LOOKUP_PREFERENCE = intArrayOf(
     CALLER_CLASS_PROPERTY_INDEX,
