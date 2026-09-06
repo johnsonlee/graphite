@@ -12,6 +12,14 @@ go test -race ./...
 go vet ./...
 ```
 
+The unified JAR's `serve` command and the standalone Explore JAR now launch this
+native executable; JVM build and offline query remain available. Until native
+resource assembly is integrated into distribution builds, set
+`GRAPHITE_SERVER_BINARY=/absolute/path/to/graphite-server` when launching a JAR.
+An absent native binary fails explicitly. See the
+[launcher verification](../docs/go-server-baseline/native-cli-bridge-integration/README.md)
+for argument, process, resource and remaining packaging boundaries.
+
 The parser is generated from the existing repository ANTLR grammars. See
 `internal/cypher/generate.sh` for pinned reproducible generation. Generation uses
 Java; the compiled server, lexer, parser and executor run natively in Go.

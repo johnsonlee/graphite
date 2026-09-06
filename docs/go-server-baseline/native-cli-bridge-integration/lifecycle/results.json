@@ -1,0 +1,282 @@
+[
+  {
+    "name": "unified-argv-stdio-exit",
+    "command": [
+      "java",
+      "-Dfile.encoding=UTF-8",
+      "-Xmx128m",
+      "-XX:ActiveProcessorCount=2",
+      "-jar",
+      "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-cli-bridge-root-7dxhhnx9/graphite-query/build/libs/graphite.jar",
+      "serve",
+      "--data",
+      "space path;$(literal)",
+      "--graph",
+      "app:path with spaces"
+    ],
+    "exitCode": 37,
+    "child": {
+      "args": [
+        "serve",
+        "--data",
+        "space path;$(literal)",
+        "--graph",
+        "app:path with spaces"
+      ],
+      "cwd": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite bridge space omx6ld68",
+      "environment": "value with spaces;$(literal)",
+      "executable": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-cli-bridge-integration/lifecycle/child",
+      "pid": 87166,
+      "stdin": "stdin payload\n"
+    },
+    "stdout": "native child stdout\n",
+    "stderr": "native child stderr\n"
+  },
+  {
+    "name": "unified-embedded-resource",
+    "exitCode": 37,
+    "child": {
+      "args": [
+        "serve",
+        "--data",
+        "space path;$(literal)",
+        "--graph",
+        "app:path with spaces"
+      ],
+      "cwd": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite bridge space omx6ld68",
+      "environment": "value with spaces;$(literal)",
+      "executable": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native-14617177733692432131/graphite-server",
+      "pid": 87168,
+      "stdin": "embedded stdin\n"
+    },
+    "extractedDirectoryRemoved": true,
+    "stdout": "native child stdout\n",
+    "stderr": "native child stderr\n"
+  },
+  {
+    "name": "unified-corrupt-embedded-resource",
+    "exitCode": 1,
+    "childStarted": false,
+    "stdout": "",
+    "stderr": "Error: Native server checksum mismatch for darwin-arm64\n"
+  },
+  {
+    "name": "unified-missing-resource",
+    "exitCode": 1,
+    "stdout": "",
+    "stderr": "Error: Native server resources are missing; install a complete Graphite distribution or set GRAPHITE_SERVER_BINARY\n"
+  },
+  {
+    "name": "unified-parent-SIGTERM-signal",
+    "exitCode": 143,
+    "childSignal": "terminated",
+    "childGone": true,
+    "stdout": "native child stdout\n",
+    "stderr": "native child stderr\n"
+  },
+  {
+    "name": "unified-group-SIGINT-signal",
+    "exitCode": 130,
+    "childSignal": "interrupt",
+    "childGone": true,
+    "stdout": "native child stdout\n",
+    "stderr": "native child stderr\n"
+  },
+  {
+    "name": "unified-group-SIGTERM-signal",
+    "exitCode": 143,
+    "childSignal": "terminated",
+    "childGone": true,
+    "stdout": "native child stdout\n",
+    "stderr": "native child stderr\n"
+  },
+  {
+    "name": "unified-parent-SIGTERM-ignore",
+    "exitCode": 143,
+    "childSignal": "terminated",
+    "childGone": true,
+    "stdout": "native child stdout\n",
+    "stderr": "native child stderr\n"
+  },
+  {
+    "name": "unified-native-http",
+    "catalog": {
+      "count": 1,
+      "data": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-cli-bridge-root-7dxhhnx9/graphite-server/internal/store/testdata/callsite-index",
+      "graphs": [
+        {
+          "id": "tiny",
+          "path": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-cli-bridge-root-7dxhhnx9/graphite-server/internal/store/testdata/callsite-index/store",
+          "loadMode": "MAPPED",
+          "loadedAt": "2026-09-06T22:17:42.807018Z",
+          "nodes": 4,
+          "edges": 0,
+          "methods": 0,
+          "callSites": 4
+        }
+      ],
+      "loadMode": "MAPPED",
+      "totals": {
+        "nodes": 4,
+        "edges": 0,
+        "methods": 0,
+        "callSites": 4
+      }
+    },
+    "uiSHA256": "cde253d3a96ba6fa9562bacdd43373fc1b6a73f73feddacb637a8a2421d61057",
+    "exitCode": 143,
+    "command": [
+      "java",
+      "-Dfile.encoding=UTF-8",
+      "-Xmx128m",
+      "-XX:ActiveProcessorCount=2",
+      "-jar",
+      "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-cli-bridge-root-7dxhhnx9/graphite-query/build/libs/graphite.jar",
+      "serve",
+      "--id",
+      "tiny",
+      "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-cli-bridge-root-7dxhhnx9/graphite-server/internal/store/testdata/callsite-index/store",
+      "--port",
+      "0"
+    ]
+  },
+  {
+    "name": "explore-argv-stdio-exit",
+    "command": [
+      "java",
+      "-Dfile.encoding=UTF-8",
+      "-Xmx128m",
+      "-XX:ActiveProcessorCount=2",
+      "-jar",
+      "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-cli-bridge-root-7dxhhnx9/graphite-explore/build/libs/graphite-explore.jar",
+      "--data",
+      "space path;$(literal)",
+      "--graph",
+      "app:path with spaces"
+    ],
+    "exitCode": 37,
+    "child": {
+      "args": [
+        "serve",
+        "--data",
+        "space path;$(literal)",
+        "--graph",
+        "app:path with spaces"
+      ],
+      "cwd": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite bridge space hlvmm60c",
+      "environment": "value with spaces;$(literal)",
+      "executable": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-cli-bridge-integration/lifecycle/child",
+      "pid": 87208,
+      "stdin": "stdin payload\n"
+    },
+    "stdout": "native child stdout\n",
+    "stderr": "native child stderr\n"
+  },
+  {
+    "name": "explore-embedded-resource",
+    "exitCode": 37,
+    "child": {
+      "args": [
+        "serve",
+        "--data",
+        "space path;$(literal)",
+        "--graph",
+        "app:path with spaces"
+      ],
+      "cwd": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite bridge space hlvmm60c",
+      "environment": "value with spaces;$(literal)",
+      "executable": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-native-792117541652573571/graphite-server",
+      "pid": 87210,
+      "stdin": "embedded stdin\n"
+    },
+    "extractedDirectoryRemoved": true,
+    "stdout": "native child stdout\n",
+    "stderr": "native child stderr\n"
+  },
+  {
+    "name": "explore-corrupt-embedded-resource",
+    "exitCode": 1,
+    "childStarted": false,
+    "stdout": "",
+    "stderr": "Error: Native server checksum mismatch for darwin-arm64\n"
+  },
+  {
+    "name": "explore-missing-resource",
+    "exitCode": 1,
+    "stdout": "",
+    "stderr": "Error: Native server resources are missing; install a complete Graphite distribution or set GRAPHITE_SERVER_BINARY\n"
+  },
+  {
+    "name": "explore-parent-SIGTERM-signal",
+    "exitCode": 143,
+    "childSignal": "terminated",
+    "childGone": true,
+    "stdout": "native child stdout\n",
+    "stderr": "native child stderr\n"
+  },
+  {
+    "name": "explore-group-SIGINT-signal",
+    "exitCode": 130,
+    "childSignal": "interrupt",
+    "childGone": true,
+    "stdout": "native child stdout\n",
+    "stderr": "native child stderr\n"
+  },
+  {
+    "name": "explore-group-SIGTERM-signal",
+    "exitCode": 143,
+    "childSignal": "terminated",
+    "childGone": true,
+    "stdout": "native child stdout\n",
+    "stderr": "native child stderr\n"
+  },
+  {
+    "name": "explore-parent-SIGTERM-ignore",
+    "exitCode": 143,
+    "childSignal": "terminated",
+    "childGone": true,
+    "stdout": "native child stdout\n",
+    "stderr": "native child stderr\n"
+  },
+  {
+    "name": "explore-native-http",
+    "catalog": {
+      "count": 1,
+      "data": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-cli-bridge-root-7dxhhnx9/graphite-server/internal/store/testdata/callsite-index",
+      "graphs": [
+        {
+          "id": "tiny",
+          "path": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-cli-bridge-root-7dxhhnx9/graphite-server/internal/store/testdata/callsite-index/store",
+          "loadMode": "MAPPED",
+          "loadedAt": "2026-09-06T22:17:49.238598Z",
+          "nodes": 4,
+          "edges": 0,
+          "methods": 0,
+          "callSites": 4
+        }
+      ],
+      "loadMode": "MAPPED",
+      "totals": {
+        "nodes": 4,
+        "edges": 0,
+        "methods": 0,
+        "callSites": 4
+      }
+    },
+    "uiSHA256": "cde253d3a96ba6fa9562bacdd43373fc1b6a73f73feddacb637a8a2421d61057",
+    "exitCode": 143,
+    "command": [
+      "java",
+      "-Dfile.encoding=UTF-8",
+      "-Xmx128m",
+      "-XX:ActiveProcessorCount=2",
+      "-jar",
+      "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-cli-bridge-root-7dxhhnx9/graphite-explore/build/libs/graphite-explore.jar",
+      "--id",
+      "tiny",
+      "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-cli-bridge-root-7dxhhnx9/graphite-server/internal/store/testdata/callsite-index/store",
+      "--port",
+      "0"
+    ]
+  }
+]

@@ -12,7 +12,7 @@ import java.util.concurrent.Callable
     subcommands = [
         BuildCommand::class,
         QueryCommand::class,
-        ServeCommand::class
+        NativeServeCommand::class
     ]
 )
 class GraphiteCommand : Callable<Int> {

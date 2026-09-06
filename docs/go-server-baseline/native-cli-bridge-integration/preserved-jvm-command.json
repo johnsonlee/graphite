@@ -1,0 +1,12 @@
+{
+  "command": [
+    "./gradlew",
+    ":query:test",
+    "--tests",
+    "io.johnsonlee.graphite.cli.GraphiteCommandTest",
+    "--no-daemon",
+    "-Dorg.gradle.jvmargs=-Xmx2g",
+    "-Pversion=3.0.0-audit"
+  ],
+  "exitCode": 0
+}

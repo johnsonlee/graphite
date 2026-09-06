@@ -1,0 +1,183 @@
+{
+  "base": "4182478ee0575c3a359a47a152ed99edb4a4ede7",
+  "archive": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-cli-bridge-root-7dxhhnx9",
+  "preparation": "git archive + exact changed files; git init, no commit; explicit version to avoid publishing plugin worktree resolver",
+  "files": {
+    "docs/go-server-baseline/native-cli-bridge/README.md": {
+      "sha256": "21e5eac6f71f8623ad883683f7655daa8929a93156704ea4c682df7a8e1be121",
+      "bytes": 8162,
+      "matchesFreeze": true
+    },
+    "docs/go-server-baseline/native-cli-bridge/initial-detekt-failure.log": {
+      "sha256": "51923d390adf7df71000d228f07bec804ef59dbf5c3444ee651e510b1c6e7cc9",
+      "bytes": 2406,
+      "matchesFreeze": true
+    },
+    "docs/go-server-baseline/native-cli-bridge/initial-harness-failures.txt": {
+      "sha256": "577e51f4e0ddb8b7bfc4d4af7582c58665f171e672c576c34a5ee85d4336129b",
+      "bytes": 456,
+      "matchesFreeze": true
+    },
+    "docs/go-server-baseline/native-cli-bridge/initial-harness-schema-failure.json": {
+      "sha256": "8ef23c8547df17043b1b5cb3d802b451d8d5eb2fb6dc2fccbe7549441f11159a",
+      "bytes": 71,
+      "matchesFreeze": true
+    },
+    "docs/go-server-baseline/native-cli-bridge/initial-worktree-gradle-failure.log": {
+      "sha256": "c35a63b19f3882c77232f844c5da20cd7a1f82893e0a6ff997921f5b08470bf0",
+      "bytes": 1108,
+      "matchesFreeze": true
+    },
+    "docs/go-server-baseline/native-cli-bridge/intermediate-detekt-failure.log": {
+      "sha256": "c6b3ec8409ac666a9ac5e227213fc88fb59e4e2f460fa7de5bfaf5182bc76f08",
+      "bytes": 3002,
+      "matchesFreeze": true
+    },
+    "docs/go-server-baseline/native-cli-bridge/jvm-final-tests-lint-build.log": {
+      "sha256": "e168f782405a096fba7bfadafaf738a14d3e60036c5e0e818623aec6ee4eb1f6",
+      "bytes": 3588,
+      "matchesFreeze": true
+    },
+    "docs/go-server-baseline/native-cli-bridge/lifecycle-identity.json": {
+      "sha256": "22c4953289c561d28d27fe9f481bfe035216faebcb642471e46abed4fb3ceed9",
+      "bytes": 927,
+      "matchesFreeze": true
+    },
+    "docs/go-server-baseline/native-cli-bridge/lifecycle-results.json": {
+      "sha256": "ed9e3689cc57341c06351bc429bd7a234b51ba3e5fa39ff31568e2f751902dea",
+      "bytes": 8228,
+      "matchesFreeze": true
+    },
+    "docs/go-server-baseline/native-cli-bridge/manifest.json": {
+      "sha256": "ed603f769f15d36c60ed19ae51eef7d5aa754c7bdf2d0646b587b0413a66b806",
+      "bytes": 1811,
+      "matchesFreeze": true
+    },
+    "docs/go-server-baseline/native-cli-bridge/native-final-validation.json": {
+      "sha256": "a901ccdfa293d5b0c52e1e459dbba4f6c83d23bb66636e818c643de6dce71e6f",
+      "bytes": 199,
+      "matchesFreeze": true
+    },
+    "docs/go-server-baseline/native-cli-bridge/native-final-validation.log": {
+      "sha256": "4cd26128d8ebdd85dbab3acc41039edc3011a54795272e2a2e2697390c10ccd0",
+      "bytes": 1094,
+      "matchesFreeze": true
+    },
+    "docs/go-server-baseline/native-cli-bridge/source-identity.json": {
+      "sha256": "68d66f7a95d029ebaea87a39e8e5c30598889f772972644cc14a7179bfe3f182",
+      "bytes": 3218,
+      "matchesFreeze": true
+    },
+    "docs/go-server-baseline/native-cli-bridge/unified-cli-existing-tests.log": {
+      "sha256": "9bf7684923aff49852329873d5a378fa4f73fa7295d40b4ea09169efa82a91f3",
+      "bytes": 3749,
+      "matchesFreeze": true
+    },
+    "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/ExploreMain.kt": {
+      "sha256": "48eac98b4f80962266b14fa8cc6a599b9eca4d52a5c6629fc64dfb680b0e3a0b",
+      "bytes": 255,
+      "matchesFreeze": true
+    },
+    "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/NativeServerLauncher.kt": {
+      "sha256": "7f6640a63db34689dd6dd15b3a2f86a52e3f0c760bc844f6b49dcca85ee288de",
+      "bytes": 8155,
+      "matchesFreeze": false
+    },
+    "graphite-explore/src/test/kotlin/io/johnsonlee/graphite/cli/NativeServerLauncherTest.kt": {
+      "sha256": "51bb6b1bb8ed8c58180b64f5be9b8965f2a90c5ee5991e6caa79063bf980a6ad",
+      "bytes": 6698,
+      "matchesFreeze": false
+    },
+    "graphite-explore/src/test/native-launcher/child.go": {
+      "sha256": "c2e4eaed452846d30f68ae03be2f9c64c15030ce3ccddf49036bd0ae2ac672ab",
+      "bytes": 993,
+      "matchesFreeze": true
+    },
+    "graphite-explore/src/test/native-launcher/verify.py": {
+      "sha256": "0df4dabc181c198432975d6e78a386b6c18d0bd5387d99b72942d5026e5caf7a",
+      "bytes": 7984,
+      "matchesFreeze": true
+    },
+    "graphite-query/src/main/kotlin/io/johnsonlee/graphite/cli/GraphiteCommand.kt": {
+      "sha256": "a200489f484087f9b6bc06beb15adffbacb402595e29f116574cc22712bb2227",
+      "bytes": 575,
+      "matchesFreeze": true
+    },
+    "graphite-server/cmd/graphite-server/argfiles.go": {
+      "sha256": "d23a7a39de1019559294312bf3f6a17028df8c0fea0d27b21ae8881f8999c435",
+      "bytes": 3242,
+      "matchesFreeze": true
+    },
+    "graphite-server/cmd/graphite-server/cli.go": {
+      "sha256": "a6448d7eb8e54b111d288f6f8b606bb7ed49be31325cb2f12e31252119ce48e9",
+      "bytes": 7888,
+      "matchesFreeze": true
+    },
+    "graphite-server/cmd/graphite-server/cli_test.go": {
+      "sha256": "21f330cbef5eb7dc4b6d0a2749806528729bd5a089ecf9ec7ab006fc7dbd1e13",
+      "bytes": 2291,
+      "matchesFreeze": true
+    },
+    "graphite-server/cmd/graphite-server/explore-usage.txt": {
+      "sha256": "ce35b0f4ab8bdf87997d3198e8a5b6fe3f3e3584d7f389d1b2a255a3f446de12",
+      "bytes": 2104,
+      "matchesFreeze": true
+    },
+    "graphite-server/cmd/graphite-server/main.go": {
+      "sha256": "f7667afb45a99a9bb7a97c85255bbf1225cdedc247751383b858c443b52aae12",
+      "bytes": 5124,
+      "matchesFreeze": true
+    },
+    "graphite-server/cmd/graphite-server/main_test.go": {
+      "sha256": "d82b36e54742d13c0170e4284bf29d5cffa27488c30c01cc1a39701777a78a15",
+      "bytes": 1645,
+      "matchesFreeze": true
+    },
+    "graphite-server/cmd/graphite-server/serve-usage.txt": {
+      "sha256": "e58e2a59ec151a7a7710ff11737b883db28983e2e337949c2364ec06561f733b",
+      "bytes": 2063,
+      "matchesFreeze": true
+    },
+    "graphite-server/cmd/graphite-server/testdata/cli/bad-number.args": {
+      "sha256": "130fd6af4bc88e0774d42f82904bcbb8a7aed14785fcac69bb60b9b8385b5f89",
+      "bytes": 17,
+      "matchesFreeze": true
+    },
+    "graphite-server/cmd/graphite-server/testdata/cli/capture.py": {
+      "sha256": "f4d225a4f3c67197e9b3b3c52fa846bb6fcca458c4c4ca8852de57b01e3e7409",
+      "bytes": 2454,
+      "matchesFreeze": true
+    },
+    "graphite-server/cmd/graphite-server/testdata/cli/help.args": {
+      "sha256": "4a30b2e2beae76b4d766ca7f3e88b81e695a2587ea1ad9ff1ba7abd0125c5f1c",
+      "bytes": 73,
+      "matchesFreeze": true
+    },
+    "graphite-server/cmd/graphite-server/testdata/cli/main.json": {
+      "sha256": "223b0a2357289b371bdf7b4d658ead37b0c0109d4705b2e0bf5ab4e4fecb403e",
+      "bytes": 242337,
+      "matchesFreeze": true
+    },
+    "graphite-server/cmd/graphite-server/testdata/cli/nested.args": {
+      "sha256": "76b3e6deb10c8c73566518585e21fc721570b85214af6c8ade5848efcd237c24",
+      "bytes": 50,
+      "matchesFreeze": true
+    },
+    "graphite-server/cmd/graphite-server/testdata/cli/quoted.args": {
+      "sha256": "7af18a6ea06c07e8889772cd79a0b78947e826404cd8dc6262770631be3eb34d",
+      "bytes": 24,
+      "matchesFreeze": true
+    },
+    "graphite-server/cmd/graphite-server/testdata/cli/separate.args": {
+      "sha256": "fa9f54487877a092ce6fabbbb408543a0c2e652229fc268369281908f8ef3793",
+      "bytes": 13,
+      "matchesFreeze": true
+    },
+    "graphite-server/cmd/graphite-server/testdata/cli/unclosed.args": {
+      "sha256": "081bce644c65afe462fb025745860f6aee8391b04db587292f47689f7d85e1f2",
+      "bytes": 28,
+      "matchesFreeze": true
+    }
+  },
+  "extraCorrection": "Re-escape all leading @ in JVM-expanded tokens before native parser; two command-class real child tests."
+}

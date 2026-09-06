@@ -1,0 +1,6 @@
+{
+  "originalPath": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-cli-bridge-integration/lifecycle/child",
+  "preservedPath": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-cli-bridge-root-7dxhhnx9/lifecycle-child-preserved",
+  "sha256": "272f8c9b908d6a28ee157aade976b61622fad479fd9bd0cac1fa02ff2af97b6a",
+  "reason": "Preserve compiled probe outside source tree; original build/result receipts remain unchanged."
+}

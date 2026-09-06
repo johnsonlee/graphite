@@ -1,0 +1,11 @@
+{
+  "command": [
+    "python3",
+    "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-cli-bridge-root-7dxhhnx9/graphite-explore/src/test/native-launcher/verify.py",
+    "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-cli-bridge-root-7dxhhnx9",
+    "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-cli-bridge-root-7dxhhnx9",
+    "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-cli-bridge-root-7dxhhnx9/native-server",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-cli-bridge-integration/lifecycle"
+  ],
+  "exitCode": 0
+}

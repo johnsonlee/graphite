@@ -29,76 +29,19 @@ func (g *graphSpecs) String() string         { return strings.Join(*g, ",") }
 func (g *graphSpecs) Set(value string) error { *g = append(*g, value); return nil }
 
 type config struct {
-	data, id, loadMode, topology string
-	port, maxConcurrent          int
-	timeoutMillis, workBudget    int64
-	metrics                      bool
-	graphs                       graphSpecs
-	positional                   string
+	data, id, loadMode, topology  string
+	port, maxConcurrent           int
+	timeoutMillis, workBudget     int64
+	metrics                       bool
+	graphs                        graphSpecs
+	positional                    string
+	hasData, hasID, hasPositional bool
 }
 
 func parseConfig(args []string, output io.Writer) (config, error) {
-	var c config
-	f := flag.NewFlagSet("graphite-server", flag.ContinueOnError)
-	f.SetOutput(output)
-	var showVersion bool
-	f.BoolVar(&showVersion, "version", false, "Print version information")
-	f.BoolVar(&showVersion, "V", false, "Print version information")
-	f.StringVar(&c.data, "data", "", "Data directory for relative graph paths")
-	f.StringVar(&c.id, "id", "", "Graph id for positional graph directory")
-	f.StringVar(&c.loadMode, "load-mode", "MAPPED", "Graph load mode: AUTO, EAGER, MAPPED")
-	f.StringVar(&c.topology, "topology", "", "Topology query file or directory")
-	f.IntVar(&c.port, "port", 8080, "HTTP port")
-	f.IntVar(&c.port, "p", 8080, "HTTP port")
-	f.IntVar(&c.maxConcurrent, "max-concurrent-cypher", 4, "Maximum executing Cypher queries")
-	f.Int64Var(&c.timeoutMillis, "cypher-max-timeout-ms", 60000, "Maximum Cypher timeout in milliseconds")
-	f.Int64Var(&c.workBudget, "cypher-work-budget", 1000000, "Deprecated and ignored")
-	f.BoolVar(&c.metrics, "metrics", false, "Expose Prometheus metrics")
-	f.Var(&c.graphs, "graph", "Initial id:path mapping (repeatable)")
-	if len(args) > 0 && args[0] == "serve" {
-		args = args[1:]
-	}
-	// Picocli accepts options before and after the positional graph directory.
-	var options, positionals []string
-	for i := 0; i < len(args); i++ {
-		a := args[i]
-		if a == "--" {
-			positionals = append(positionals, args[i+1:]...)
-			break
-		}
-		if strings.HasPrefix(a, "-") {
-			options = append(options, a)
-			name := strings.TrimLeft(strings.SplitN(a, "=", 2)[0], "-")
-			opt := f.Lookup(name)
-			isBoolean := false
-			if opt != nil {
-				if value, ok := opt.Value.(interface{ IsBoolFlag() bool }); ok {
-					isBoolean = value.IsBoolFlag()
-				}
-			}
-			if opt != nil && !strings.Contains(a, "=") && !isBoolean {
-				if i+1 >= len(args) {
-					return c, fmt.Errorf("flag needs an argument: %s", a)
-				}
-				i++
-				options = append(options, args[i])
-			}
-		} else {
-			positionals = append(positionals, a)
-		}
-	}
-	if err := f.Parse(options); err != nil {
+	c, err := parseServeOptions(args, output)
+	if err != nil {
 		return c, err
-	}
-	if showVersion {
-		fmt.Fprintln(output, "graphite "+version)
-		return c, flag.ErrHelp
-	}
-	if len(positionals) > 1 {
-		return c, errors.New("Expected at most one saved graph directory")
-	}
-	if len(positionals) == 1 {
-		c.positional = positionals[0]
 	}
 	if c.maxConcurrent <= 0 || c.timeoutMillis <= 0 {
 		return c, errors.New("Cypher concurrency and maximum timeout must be positive")
@@ -106,18 +49,21 @@ func parseConfig(args []string, output io.Writer) (config, error) {
 	if c.port < 0 || c.port > 65535 {
 		return c, errors.New("HTTP port must be between 0 and 65535")
 	}
-	if c.positional == "" && len(c.graphs) == 0 && c.data == "" {
+	if !c.hasPositional && len(c.graphs) == 0 && !c.hasData {
 		return c, errors.New("--data is required when starting without an initial graph")
 	}
-	if c.positional != "" && c.id == "" {
+	if c.hasPositional && !c.hasID {
 		return c, errors.New("--id is required when a positional graph directory is provided")
 	}
 	if err := server.ValidateLoadMode(c.loadMode); err != nil {
 		return c, err
 	}
+	if c.hasPositional && c.positional == "" {
+		c.positional = "."
+	}
 	if c.data == "" {
 		c.data = "."
-		if c.positional != "" {
+		if c.hasPositional && !c.hasData {
 			absolute, err := filepath.Abs(c.positional)
 			if err != nil {
 				return c, err
@@ -128,8 +74,8 @@ func parseConfig(args []string, output io.Writer) (config, error) {
 	return c, nil
 }
 
-func run(ctx context.Context, args []string, stderr io.Writer) error {
-	c, err := parseConfig(args, stderr)
+func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
+	c, err := parseConfig(args, stdout)
 	if err != nil {
 		return err
 	}
@@ -222,11 +168,26 @@ func run(ctx context.Context, args []string, stderr io.Writer) error {
 func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
-	if err := run(ctx, os.Args[1:], os.Stderr); err != nil {
-		if errors.Is(err, flag.ErrHelp) {
-			return
-		}
-		fmt.Fprintln(os.Stderr, "Error:", err)
-		os.Exit(1)
+	if code := execute(ctx, os.Args[1:], os.Stdout, os.Stderr); code != 0 {
+		os.Exit(code)
 	}
+}
+
+func execute(ctx context.Context, args []string, stdout, stderr io.Writer) int {
+	if err := run(ctx, args, stdout, stderr); err != nil {
+		if errors.Is(err, flag.ErrHelp) {
+			return 0
+		}
+		var parseError *cliParseError
+		if errors.As(err, &parseError) {
+			fmt.Fprintln(stderr, parseError.message)
+			if parseError.usage {
+				fmt.Fprint(stderr, serveUsage(args))
+			}
+			return 2
+		}
+		fmt.Fprintln(stderr, "Error:", err)
+		return 1
+	}
+	return 0
 }

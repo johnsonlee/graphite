@@ -1,0 +1,7 @@
+{
+  "cases": 12,
+  "required": 12,
+  "allPassed": true,
+  "nativeSHA256": "8ce0ee416102ab874b5dce55ee9c9fb632811683517e2ea17622f76cfd5d517e",
+  "purpose": "Functional main/JAR/native argument parsing only; no performance."
+}

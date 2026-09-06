@@ -1,0 +1,2 @@
+Initial verifier reached unified native HTTP, then asserted wrong catalog key nodeCount instead of stats.nodes; Python KeyError nodeCount. Finally terminated parent. Corrected verifier schema before repeat; not a server failure.
+Second verifier used nested stats.nodes; descriptor embeds Stats, so wire field is nodes. Corrected after inspecting registry.go. Second KeyError stats retained as harness-schema-failure.json. Neither attempt reported success.

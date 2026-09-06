@@ -1,0 +1,19 @@
+{
+  "repo": "/private/tmp/graphite-go-cli-bridge-1c235916",
+  "buildSnapshot": "/private/tmp/graphite-cli-bridge-build-1c235916",
+  "jars": {
+    "/private/tmp/graphite-cli-bridge-build-1c235916/graphite-query/build/libs/graphite.jar": "2046190c1acb74887275a714676365f766f97215eaf506dcdb52adae7523c2a2",
+    "/private/tmp/graphite-cli-bridge-build-1c235916/graphite-explore/build/libs/graphite-explore.jar": "4823a74932b7f9754657fccd0cff34c610c65b14d31abcf58a939ef693a00198"
+  },
+  "native": "/private/tmp/graphite-native-cli-bridge-server",
+  "nativeSHA256": "76a4b0a5f2874ddd149e354ac4ae43b4d218b36edf7960ed82156d3a6f9804e7",
+  "helperCommand": [
+    "go",
+    "build",
+    "-o",
+    "/private/tmp/graphite-cli-bridge-lifecycle-freeze-evidence/child",
+    "/private/tmp/graphite-go-cli-bridge-1c235916/graphite-explore/src/test/native-launcher/child.go"
+  ],
+  "checks": 18,
+  "purpose": "CLI/JAR/process correctness only"
+}

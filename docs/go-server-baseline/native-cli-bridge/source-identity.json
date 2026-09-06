@@ -1,0 +1,33 @@
+{
+  "baseRevision": "1c235916a930a9dd65ce2a68dfaee854a40e9d05",
+  "pinnedMainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "pinnedMainJars": {
+    "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar": "91c3a1d154ca96004c55df195d9f752e077cab3e33ca1570b2c88b872d9bc34d",
+    "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-query/build/libs/query-1.0.0-SNAPSHOT-slim.jar": "4c2563c481f773967c2b7829317445ba6be366afc133db4cf18f70873a9deaa7"
+  },
+  "cliOracleCases": 146,
+  "sourceSHA256": {
+    "graphite-server/cmd/graphite-server/main.go": "f7667afb45a99a9bb7a97c85255bbf1225cdedc247751383b858c443b52aae12",
+    "graphite-server/cmd/graphite-server/cli.go": "a6448d7eb8e54b111d288f6f8b606bb7ed49be31325cb2f12e31252119ce48e9",
+    "graphite-server/cmd/graphite-server/argfiles.go": "d23a7a39de1019559294312bf3f6a17028df8c0fea0d27b21ae8881f8999c435",
+    "graphite-server/cmd/graphite-server/main_test.go": "d82b36e54742d13c0170e4284bf29d5cffa27488c30c01cc1a39701777a78a15",
+    "graphite-server/cmd/graphite-server/cli_test.go": "21f330cbef5eb7dc4b6d0a2749806528729bd5a089ecf9ec7ab006fc7dbd1e13",
+    "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/NativeServerLauncher.kt": "3cf7ef08bc13fe55b91aefe831078cec49d42987f019f331c4883ed06443eaf7",
+    "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/ExploreMain.kt": "48eac98b4f80962266b14fa8cc6a599b9eca4d52a5c6629fc64dfb680b0e3a0b",
+    "graphite-query/src/main/kotlin/io/johnsonlee/graphite/cli/GraphiteCommand.kt": "a200489f484087f9b6bc06beb15adffbacb402595e29f116574cc22712bb2227",
+    "graphite-explore/src/test/kotlin/io/johnsonlee/graphite/cli/NativeServerLauncherTest.kt": "f36cace3174a333a8fc302929a873ba8db572135daddc8ea5b6d0b76b170e9fb",
+    "graphite-explore/src/test/native-launcher/child.go": "c2e4eaed452846d30f68ae03be2f9c64c15030ce3ccddf49036bd0ae2ac672ab",
+    "graphite-explore/src/test/native-launcher/verify.py": "0df4dabc181c198432975d6e78a386b6c18d0bd5387d99b72942d5026e5caf7a"
+  },
+  "nativeBuildCommand": "CGO_ENABLED=0 go build -trimpath -ldflags '-X main.version=3.0.0-audit' -o /tmp/graphite-native-cli-bridge-server ./cmd/graphite-server",
+  "nativeBuildCwd": "/private/tmp/graphite-go-cli-bridge-1c235916/graphite-server",
+  "jvmBuildSnapshot": "/tmp/graphite-cli-bridge-build-1c235916",
+  "jvmSnapshotPreparation": "git archive 1c235916 + byte-for-byte copies of changed source/test files; git init only, no commit; version supplied explicitly",
+  "jvmCommands": [
+    "./gradlew :explore:test --tests io.johnsonlee.graphite.cli.NativeServerLauncherTest :explore:detekt :query:detekt :query:shadowJar :explore:shadowJar --no-daemon -Dorg.gradle.jvmargs=-Xmx2g -Pversion=3.0.0-audit",
+    "./gradlew :query:test --tests io.johnsonlee.graphite.cli.GraphiteCommandTest --no-daemon -Dorg.gradle.jvmargs=-Xmx2g -Pversion=3.0.0-audit"
+  ],
+  "go": "go version go1.22.0 darwin/arm64",
+  "java": "openjdk version \"17.0.18\" 2026-01-20\nOpenJDK Runtime Environment Homebrew (build 17.0.18+0)\nOpenJDK 64-Bit Server VM Homebrew (build 17.0.18+0, mixed mode, sharing)\n",
+  "scope": "CLI/JAR/process correctness only. No publication, remote CI or performance run."
+}

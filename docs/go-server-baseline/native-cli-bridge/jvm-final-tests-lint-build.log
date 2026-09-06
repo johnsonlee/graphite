@@ -1,0 +1,83 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.13/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+
+> Configure project :
+[root project 'graphite'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+
+> Configure project :core
+[project ':core'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+
+> Configure project :cypher
+[project ':cypher'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+
+> Configure project :sootup
+[project ':sootup'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+
+> Configure project :webgraph
+[project ':webgraph'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+
+> Task :core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :core:compileKotlin UP-TO-DATE
+> Task :core:compileJava NO-SOURCE
+> Task :core:processResources NO-SOURCE
+> Task :core:classes UP-TO-DATE
+> Task :core:jar UP-TO-DATE
+> Task :cypher:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :cypher:generateGrammarSource UP-TO-DATE
+> Task :cypher:compileKotlin UP-TO-DATE
+> Task :cypher:compileJava UP-TO-DATE
+> Task :explore:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :webgraph:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :webgraph:compileKotlin UP-TO-DATE
+> Task :webgraph:compileJava NO-SOURCE
+> Task :webgraph:processResources NO-SOURCE
+> Task :webgraph:classes UP-TO-DATE
+> Task :webgraph:jar UP-TO-DATE
+> Task :explore:processResources UP-TO-DATE
+> Task :cypher:processResources NO-SOURCE
+> Task :cypher:classes UP-TO-DATE
+> Task :cypher:jar UP-TO-DATE
+> Task :sootup:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :sootup:compileKotlin UP-TO-DATE
+> Task :sootup:compileJava NO-SOURCE
+> Task :sootup:processResources NO-SOURCE
+> Task :sootup:classes UP-TO-DATE
+> Task :sootup:jar UP-TO-DATE
+> Task :query:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :query:processResources NO-SOURCE
+> Task :explore:koverFindJar UP-TO-DATE
+> Task :explore:processTestResources NO-SOURCE
+> Task :explore:compileKotlin
+> Task :explore:detekt
+> Task :explore:compileJava NO-SOURCE
+> Task :explore:classes UP-TO-DATE
+> Task :explore:jar
+> Task :explore:compileJmhKotlin
+> Task :explore:compileJmhJava NO-SOURCE
+> Task :query:compileKotlin
+> Task :query:detekt
+> Task :query:compileJava NO-SOURCE
+> Task :query:classes UP-TO-DATE
+> Task :query:jar UP-TO-DATE
+> Task :query:compileTestKotlin
+> Task :query:compileTestJava NO-SOURCE
+> Task :explore:compileTestKotlin
+> Task :query:shadowJar
+> Task :explore:compileTestJava NO-SOURCE
+> Task :explore:shadowJar
+> Task :explore:testClasses UP-TO-DATE
+
+> Task :explore:test
+
+NativeServerLauncherTest > actual child receives whitespace and metacharacters without shell expansion and retains status PASSED
+
+NativeServerLauncherTest > both public command classes dispatch parsed arguments to actual native child PASSED
+
+NativeServerLauncherTest > selects supported artifact aliases and fails explicitly elsewhere PASSED
+
+NativeServerLauncherTest > missing corrupt duplicate and oversized manifest resources never fall back PASSED
+
+NativeServerLauncherTest > extracts only checksum-verified resource into private executable then removes it PASSED
+
+BUILD SUCCESSFUL in 18s
+24 actionable tasks: 11 executed, 13 up-to-date

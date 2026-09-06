@@ -1,0 +1,59 @@
+{
+  "runs": [
+    {
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./..."
+      ],
+      "cwd": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-cli-bridge-root-7dxhhnx9/graphite-server",
+      "log": "go-race.log",
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "cwd": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-cli-bridge-root-7dxhhnx9/graphite-server",
+      "log": "go-vet.log",
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "go",
+        "build",
+        "-trimpath",
+        "-ldflags",
+        "-X main.version=3.0.0-audit",
+        "-o",
+        "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-cli-bridge-root-7dxhhnx9/native-server",
+        "./cmd/graphite-server"
+      ],
+      "cwd": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-cli-bridge-root-7dxhhnx9/graphite-server",
+      "log": "native-build.log",
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "./gradlew",
+        ":explore:test",
+        "--tests",
+        "io.johnsonlee.graphite.cli.NativeServerLauncherTest",
+        ":explore:detekt",
+        ":query:detekt",
+        ":query:shadowJar",
+        ":explore:shadowJar",
+        "--no-daemon",
+        "-Dorg.gradle.jvmargs=-Xmx2g",
+        "-Pversion=3.0.0-audit"
+      ],
+      "cwd": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-cli-bridge-root-7dxhhnx9",
+      "log": "jvm-build-test.log",
+      "exitCode": 0
+    }
+  ],
+  "finishedAtUTC": "2026-09-06T22:16:47.305424+00:00"
+}

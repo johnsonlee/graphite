@@ -1,0 +1,405 @@
+[
+  {
+    "name": "main",
+    "case": "escaped",
+    "command": [
+      "java",
+      "-Dfile.encoding=UTF-8",
+      "-Xmx128m",
+      "-XX:ActiveProcessorCount=2",
+      "-jar",
+      "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "--data",
+      "@@literal",
+      "--port",
+      "0"
+    ],
+    "jarSHA256": "91c3a1d154ca96004c55df195d9f752e077cab3e33ca1570b2c88b872d9bc34d",
+    "catalog": {
+      "data": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite literal at 7_cnr5l_/@literal",
+      "loadMode": "MAPPED",
+      "count": 0,
+      "totals": {
+        "nodes": 0,
+        "edges": 0,
+        "methods": 0,
+        "callSites": 0
+      },
+      "graphs": []
+    },
+    "expectedData": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite literal at 7_cnr5l_/@literal",
+    "exitBeforeCleanup": null,
+    "stdout": "",
+    "stderr": "Web UI: http://localhost:64541\nData: /private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite literal at 7_cnr5l_/@literal\nLoaded graphs: \nTopology: 0 graphs, 0 relations\nCypher limits: 4 concurrent, 60000ms maximum timeout\nPress Ctrl+C to stop\n",
+    "exitAfterCleanup": 143
+  },
+  {
+    "name": "main",
+    "case": "double-literal",
+    "command": [
+      "java",
+      "-Dfile.encoding=UTF-8",
+      "-Xmx128m",
+      "-XX:ActiveProcessorCount=2",
+      "-jar",
+      "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "--data",
+      "@@@literal",
+      "--port",
+      "0"
+    ],
+    "jarSHA256": "91c3a1d154ca96004c55df195d9f752e077cab3e33ca1570b2c88b872d9bc34d",
+    "catalog": {
+      "data": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite literal at hfp4v8bm/@@literal",
+      "loadMode": "MAPPED",
+      "count": 0,
+      "totals": {
+        "nodes": 0,
+        "edges": 0,
+        "methods": 0,
+        "callSites": 0
+      },
+      "graphs": []
+    },
+    "expectedData": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite literal at hfp4v8bm/@@literal",
+    "exitBeforeCleanup": null,
+    "stdout": "",
+    "stderr": "Web UI: http://localhost:64543\nData: /private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite literal at hfp4v8bm/@@literal\nLoaded graphs: \nTopology: 0 graphs, 0 relations\nCypher limits: 4 concurrent, 60000ms maximum timeout\nPress Ctrl+C to stop\n",
+    "exitAfterCleanup": 143
+  },
+  {
+    "name": "main",
+    "case": "single-at",
+    "command": [
+      "java",
+      "-Dfile.encoding=UTF-8",
+      "-Xmx128m",
+      "-XX:ActiveProcessorCount=2",
+      "-jar",
+      "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "--data",
+      "@",
+      "--port",
+      "0"
+    ],
+    "jarSHA256": "91c3a1d154ca96004c55df195d9f752e077cab3e33ca1570b2c88b872d9bc34d",
+    "catalog": {
+      "data": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite literal at 5_aarsws/@",
+      "loadMode": "MAPPED",
+      "count": 0,
+      "totals": {
+        "nodes": 0,
+        "edges": 0,
+        "methods": 0,
+        "callSites": 0
+      },
+      "graphs": []
+    },
+    "expectedData": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite literal at 5_aarsws/@",
+    "exitBeforeCleanup": null,
+    "stdout": "",
+    "stderr": "Web UI: http://localhost:64546\nData: /private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite literal at 5_aarsws/@\nLoaded graphs: \nTopology: 0 graphs, 0 relations\nCypher limits: 4 concurrent, 60000ms maximum timeout\nPress Ctrl+C to stop\n",
+    "exitAfterCleanup": 143
+  },
+  {
+    "name": "main",
+    "case": "nested",
+    "command": [
+      "java",
+      "-Dfile.encoding=UTF-8",
+      "-Xmx128m",
+      "-XX:ActiveProcessorCount=2",
+      "-jar",
+      "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "@args"
+    ],
+    "jarSHA256": "91c3a1d154ca96004c55df195d9f752e077cab3e33ca1570b2c88b872d9bc34d",
+    "catalog": {
+      "data": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite literal at 565ywwvy/@literal",
+      "loadMode": "MAPPED",
+      "count": 0,
+      "totals": {
+        "nodes": 0,
+        "edges": 0,
+        "methods": 0,
+        "callSites": 0
+      },
+      "graphs": []
+    },
+    "expectedData": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite literal at 565ywwvy/@literal",
+    "exitBeforeCleanup": null,
+    "stdout": "",
+    "stderr": "Web UI: http://localhost:64548\nData: /private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite literal at 565ywwvy/@literal\nLoaded graphs: \nTopology: 0 graphs, 0 relations\nCypher limits: 4 concurrent, 60000ms maximum timeout\nPress Ctrl+C to stop\n",
+    "exitAfterCleanup": 143
+  },
+  {
+    "name": "native-explore",
+    "case": "escaped",
+    "command": [
+      "java",
+      "-Dfile.encoding=UTF-8",
+      "-Xmx128m",
+      "-XX:ActiveProcessorCount=2",
+      "-jar",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-cli-bridge-root-7dxhhnx9/graphite-explore/build/libs/graphite-explore.jar",
+      "--data",
+      "@@literal",
+      "--port",
+      "0"
+    ],
+    "jarSHA256": "d78d1c41e6d956aacddb87cfe1532798ec6c71e3ddeb9881ba51a86911a8cda1",
+    "catalog": {
+      "count": 0,
+      "data": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite literal at nxv3hyip/@literal",
+      "graphs": [],
+      "loadMode": "MAPPED",
+      "totals": {
+        "nodes": 0,
+        "edges": 0,
+        "methods": 0,
+        "callSites": 0
+      }
+    },
+    "expectedData": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite literal at nxv3hyip/@literal",
+    "exitBeforeCleanup": null,
+    "stdout": "",
+    "stderr": "Graphite Go server (in development): http://localhost:64552\n",
+    "exitAfterCleanup": 143
+  },
+  {
+    "name": "native-explore",
+    "case": "double-literal",
+    "command": [
+      "java",
+      "-Dfile.encoding=UTF-8",
+      "-Xmx128m",
+      "-XX:ActiveProcessorCount=2",
+      "-jar",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-cli-bridge-root-7dxhhnx9/graphite-explore/build/libs/graphite-explore.jar",
+      "--data",
+      "@@@literal",
+      "--port",
+      "0"
+    ],
+    "jarSHA256": "d78d1c41e6d956aacddb87cfe1532798ec6c71e3ddeb9881ba51a86911a8cda1",
+    "catalog": {
+      "count": 0,
+      "data": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite literal at qz85bpeh/@@literal",
+      "graphs": [],
+      "loadMode": "MAPPED",
+      "totals": {
+        "nodes": 0,
+        "edges": 0,
+        "methods": 0,
+        "callSites": 0
+      }
+    },
+    "expectedData": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite literal at qz85bpeh/@@literal",
+    "exitBeforeCleanup": null,
+    "stdout": "",
+    "stderr": "Graphite Go server (in development): http://localhost:64556\n",
+    "exitAfterCleanup": 143
+  },
+  {
+    "name": "native-explore",
+    "case": "single-at",
+    "command": [
+      "java",
+      "-Dfile.encoding=UTF-8",
+      "-Xmx128m",
+      "-XX:ActiveProcessorCount=2",
+      "-jar",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-cli-bridge-root-7dxhhnx9/graphite-explore/build/libs/graphite-explore.jar",
+      "--data",
+      "@",
+      "--port",
+      "0"
+    ],
+    "jarSHA256": "d78d1c41e6d956aacddb87cfe1532798ec6c71e3ddeb9881ba51a86911a8cda1",
+    "catalog": {
+      "count": 0,
+      "data": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite literal at fm2fcdu_/@",
+      "graphs": [],
+      "loadMode": "MAPPED",
+      "totals": {
+        "nodes": 0,
+        "edges": 0,
+        "methods": 0,
+        "callSites": 0
+      }
+    },
+    "expectedData": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite literal at fm2fcdu_/@",
+    "exitBeforeCleanup": null,
+    "stdout": "",
+    "stderr": "Graphite Go server (in development): http://localhost:64560\n",
+    "exitAfterCleanup": 143
+  },
+  {
+    "name": "native-explore",
+    "case": "nested",
+    "command": [
+      "java",
+      "-Dfile.encoding=UTF-8",
+      "-Xmx128m",
+      "-XX:ActiveProcessorCount=2",
+      "-jar",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-cli-bridge-root-7dxhhnx9/graphite-explore/build/libs/graphite-explore.jar",
+      "@args"
+    ],
+    "jarSHA256": "d78d1c41e6d956aacddb87cfe1532798ec6c71e3ddeb9881ba51a86911a8cda1",
+    "catalog": {
+      "count": 0,
+      "data": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite literal at r5r4eb_y/@literal",
+      "graphs": [],
+      "loadMode": "MAPPED",
+      "totals": {
+        "nodes": 0,
+        "edges": 0,
+        "methods": 0,
+        "callSites": 0
+      }
+    },
+    "expectedData": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite literal at r5r4eb_y/@literal",
+    "exitBeforeCleanup": null,
+    "stdout": "",
+    "stderr": "Graphite Go server (in development): http://localhost:64564\n",
+    "exitAfterCleanup": 143
+  },
+  {
+    "name": "native-unified",
+    "case": "escaped",
+    "command": [
+      "java",
+      "-Dfile.encoding=UTF-8",
+      "-Xmx128m",
+      "-XX:ActiveProcessorCount=2",
+      "-jar",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-cli-bridge-root-7dxhhnx9/graphite-query/build/libs/graphite.jar",
+      "serve",
+      "--data",
+      "@@literal",
+      "--port",
+      "0"
+    ],
+    "jarSHA256": "2dcce26441a17e39931d57c413fe2f6534629008343266cdd6b10ede3eb33a05",
+    "catalog": {
+      "count": 0,
+      "data": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite literal at noj32jc0/@literal",
+      "graphs": [],
+      "loadMode": "MAPPED",
+      "totals": {
+        "nodes": 0,
+        "edges": 0,
+        "methods": 0,
+        "callSites": 0
+      }
+    },
+    "expectedData": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite literal at noj32jc0/@literal",
+    "exitBeforeCleanup": null,
+    "stdout": "",
+    "stderr": "Graphite Go server (in development): http://localhost:64568\n",
+    "exitAfterCleanup": 143
+  },
+  {
+    "name": "native-unified",
+    "case": "double-literal",
+    "command": [
+      "java",
+      "-Dfile.encoding=UTF-8",
+      "-Xmx128m",
+      "-XX:ActiveProcessorCount=2",
+      "-jar",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-cli-bridge-root-7dxhhnx9/graphite-query/build/libs/graphite.jar",
+      "serve",
+      "--data",
+      "@@@literal",
+      "--port",
+      "0"
+    ],
+    "jarSHA256": "2dcce26441a17e39931d57c413fe2f6534629008343266cdd6b10ede3eb33a05",
+    "catalog": {
+      "count": 0,
+      "data": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite literal at st5jg5oy/@@literal",
+      "graphs": [],
+      "loadMode": "MAPPED",
+      "totals": {
+        "nodes": 0,
+        "edges": 0,
+        "methods": 0,
+        "callSites": 0
+      }
+    },
+    "expectedData": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite literal at st5jg5oy/@@literal",
+    "exitBeforeCleanup": null,
+    "stdout": "",
+    "stderr": "Graphite Go server (in development): http://localhost:64572\n",
+    "exitAfterCleanup": 143
+  },
+  {
+    "name": "native-unified",
+    "case": "single-at",
+    "command": [
+      "java",
+      "-Dfile.encoding=UTF-8",
+      "-Xmx128m",
+      "-XX:ActiveProcessorCount=2",
+      "-jar",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-cli-bridge-root-7dxhhnx9/graphite-query/build/libs/graphite.jar",
+      "serve",
+      "--data",
+      "@",
+      "--port",
+      "0"
+    ],
+    "jarSHA256": "2dcce26441a17e39931d57c413fe2f6534629008343266cdd6b10ede3eb33a05",
+    "catalog": {
+      "count": 0,
+      "data": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite literal at 65ewfgwx/@",
+      "graphs": [],
+      "loadMode": "MAPPED",
+      "totals": {
+        "nodes": 0,
+        "edges": 0,
+        "methods": 0,
+        "callSites": 0
+      }
+    },
+    "expectedData": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite literal at 65ewfgwx/@",
+    "exitBeforeCleanup": null,
+    "stdout": "",
+    "stderr": "Graphite Go server (in development): http://localhost:64576\n",
+    "exitAfterCleanup": 143
+  },
+  {
+    "name": "native-unified",
+    "case": "nested",
+    "command": [
+      "java",
+      "-Dfile.encoding=UTF-8",
+      "-Xmx128m",
+      "-XX:ActiveProcessorCount=2",
+      "-jar",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-cli-bridge-root-7dxhhnx9/graphite-query/build/libs/graphite.jar",
+      "serve",
+      "@args"
+    ],
+    "jarSHA256": "2dcce26441a17e39931d57c413fe2f6534629008343266cdd6b10ede3eb33a05",
+    "catalog": {
+      "count": 0,
+      "data": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite literal at z8ni0yky/@literal",
+      "graphs": [],
+      "loadMode": "MAPPED",
+      "totals": {
+        "nodes": 0,
+        "edges": 0,
+        "methods": 0,
+        "callSites": 0
+      }
+    },
+    "expectedData": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite literal at z8ni0yky/@literal",
+    "exitBeforeCleanup": null,
+    "stdout": "",
+    "stderr": "Graphite Go server (in development): http://localhost:64580\n",
+    "exitAfterCleanup": 143
+  }
+]

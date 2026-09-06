@@ -1,0 +1,32 @@
+Usage: graphite serve [-hV] [--metrics]
+                      [--cypher-max-timeout-ms=<cypherMaxTimeoutMillis>]
+                      [--cypher-work-budget=<cypherWorkBudget>] [--data=<data>]
+                      [--id=<graphId>] [--load-mode=<loadMode>]
+                      [--max-concurrent-cypher=<maxConcurrentCypher>]
+                      [-p=<port>] [--topology=<topology>]
+                      [--graph=<graphSpecs>]... [<graphDir>]
+Serve one or more saved Graphite webgraphs over HTTP
+      [<graphDir>]           Optional saved graph directory for single-graph
+                               startup
+      --cypher-max-timeout-ms=<cypherMaxTimeoutMillis>
+                             Maximum Cypher request timeout in milliseconds
+      --cypher-work-budget=<cypherWorkBudget>
+                             Deprecated and ignored; Cypher execution is
+                               limited by timeout instead
+      --data=<data>          Data directory used to resolve relative graph
+                               paths and allow empty startup
+      --graph=<graphSpecs>   Initial graph mapping id:path. Repeat for multiple
+                               graphs.
+  -h, --help                 Show this help message and exit.
+      --id=<graphId>         Required graph id for the optional positional graph
+      --load-mode=<loadMode> Graph load mode: EAGER, MAPPED, AUTO. Defaults to
+                               MAPPED for multi-graph heap stability.
+      --max-concurrent-cypher=<maxConcurrentCypher>
+                             Maximum number of Cypher queries executing at once
+      --metrics              Expose Prometheus performance metrics at /metrics
+  -p, --port=<port>          HTTP port
+      --topology=<topology>  Cypher file or directory used at startup to derive
+                               graph-to-graph calls. Queries return source,
+                               target, and optional protocol, operation,
+                               weight, evidence.
+  -V, --version              Print version information and exit.

@@ -1,0 +1,69 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.13/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+
+> Configure project :
+[root project 'graphite'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+
+> Configure project :core
+[project ':core'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+
+> Configure project :cypher
+[project ':cypher'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+
+> Configure project :sootup
+[project ':sootup'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+
+> Configure project :webgraph
+[project ':webgraph'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+
+> Task :core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :core:compileKotlin UP-TO-DATE
+> Task :core:compileJava NO-SOURCE
+> Task :core:processResources NO-SOURCE
+> Task :core:classes UP-TO-DATE
+> Task :core:jar UP-TO-DATE
+> Task :cypher:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :cypher:generateGrammarSource UP-TO-DATE
+> Task :cypher:compileKotlin UP-TO-DATE
+> Task :cypher:compileJava UP-TO-DATE
+> Task :explore:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :webgraph:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :webgraph:compileKotlin UP-TO-DATE
+> Task :webgraph:compileJava NO-SOURCE
+> Task :webgraph:processResources NO-SOURCE
+> Task :webgraph:classes UP-TO-DATE
+> Task :webgraph:jar UP-TO-DATE
+> Task :explore:processResources UP-TO-DATE
+> Task :cypher:processResources NO-SOURCE
+> Task :cypher:classes UP-TO-DATE
+> Task :cypher:jar UP-TO-DATE
+> Task :sootup:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :sootup:compileKotlin UP-TO-DATE
+> Task :sootup:compileJava NO-SOURCE
+> Task :sootup:processResources NO-SOURCE
+> Task :sootup:classes UP-TO-DATE
+> Task :sootup:jar UP-TO-DATE
+> Task :query:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :query:processResources NO-SOURCE
+> Task :explore:koverFindJar UP-TO-DATE
+> Task :explore:processTestResources NO-SOURCE
+> Task :explore:compileKotlin
+
+> Task :explore:detekt FAILED
+/private/tmp/graphite-cli-bridge-build-1c235916/graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/NativeServerLauncher.kt:84:17: Function extract is nested too deeply. [NestedBlockDepth]
+
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':explore:detekt'.
+> Analysis failed with 1 weighted issues.
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 6s
+14 actionable tasks: 2 executed, 12 up-to-date

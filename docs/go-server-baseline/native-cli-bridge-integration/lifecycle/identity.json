@@ -1,0 +1,19 @@
+{
+  "repo": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-cli-bridge-root-7dxhhnx9",
+  "buildSnapshot": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-cli-bridge-root-7dxhhnx9",
+  "jars": {
+    "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-cli-bridge-root-7dxhhnx9/graphite-query/build/libs/graphite.jar": "2dcce26441a17e39931d57c413fe2f6534629008343266cdd6b10ede3eb33a05",
+    "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-cli-bridge-root-7dxhhnx9/graphite-explore/build/libs/graphite-explore.jar": "d78d1c41e6d956aacddb87cfe1532798ec6c71e3ddeb9881ba51a86911a8cda1"
+  },
+  "native": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-cli-bridge-root-7dxhhnx9/native-server",
+  "nativeSHA256": "8ce0ee416102ab874b5dce55ee9c9fb632811683517e2ea17622f76cfd5d517e",
+  "helperCommand": [
+    "go",
+    "build",
+    "-o",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-cli-bridge-integration/lifecycle/child",
+    "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-cli-bridge-root-7dxhhnx9/graphite-explore/src/test/native-launcher/child.go"
+  ],
+  "checks": 18,
+  "purpose": "CLI/JAR/process correctness only"
+}

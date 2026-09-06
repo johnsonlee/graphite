@@ -1,0 +1,55 @@
+[
+  {
+    "name": "main",
+    "command": [
+      "java",
+      "-Dfile.encoding=UTF-8",
+      "-Xmx128m",
+      "-XX:ActiveProcessorCount=2",
+      "-jar",
+      "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "--data",
+      "@@literal",
+      "--port",
+      "0"
+    ],
+    "catalog": {
+      "data": "/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-double-atfile-ym0e3g90/@literal",
+      "loadMode": "MAPPED",
+      "count": 0,
+      "totals": {
+        "nodes": 0,
+        "edges": 0,
+        "methods": 0,
+        "callSites": 0
+      },
+      "graphs": []
+    },
+    "exitBeforeCleanup": null,
+    "literalDirectoryCreated": true,
+    "stdout": "",
+    "stderr": "Web UI: http://localhost:64430\nData: /private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-double-atfile-ym0e3g90/@literal\nLoaded graphs: \nTopology: 0 graphs, 0 relations\nCypher limits: 4 concurrent, 60000ms maximum timeout\nPress Ctrl+C to stop\n",
+    "exitAfterCleanup": 143
+  },
+  {
+    "name": "bridge-frozen",
+    "command": [
+      "java",
+      "-Dfile.encoding=UTF-8",
+      "-Xmx128m",
+      "-XX:ActiveProcessorCount=2",
+      "-jar",
+      "/tmp/graphite-cli-bridge-build-1c235916/graphite-explore/build/libs/graphite-explore.jar",
+      "--data",
+      "@@literal",
+      "--port",
+      "0"
+    ],
+    "catalog": null,
+    "exitBeforeCleanup": 2,
+    "literalDirectoryCreated": false,
+    "stdout": "",
+    "stderr": "Expected parameter for option '--data' but found '--help'\nUsage: graphite serve [-hV] [--metrics]\n                      [--cypher-max-timeout-ms=<cypherMaxTimeoutMillis>]\n                      [--cypher-work-budget=<cypherWorkBudget>] [--data=<data>]\n                      [--id=<graphId>] [--load-mode=<loadMode>]\n                      [--max-concurrent-cypher=<maxConcurrentCypher>]\n                      [-p=<port>] [--topology=<topology>]\n                      [--graph=<graphSpecs>]... [<graphDir>]\nServe one or more saved Graphite webgraphs over HTTP\n      [<graphDir>]           Optional saved graph directory for single-graph\n                               startup\n      --cypher-max-timeout-ms=<cypherMaxTimeoutMillis>\n                             Maximum Cypher request timeout in milliseconds\n      --cypher-work-budget=<cypherWorkBudget>\n                             Deprecated and ignored; Cypher execution is\n                               limited by timeout instead\n      --data=<data>          Data directory used to resolve relative graph\n                               paths and allow empty startup\n      --graph=<graphSpecs>   Initial graph mapping id:path. Repeat for multiple\n                               graphs.\n  -h, --help                 Show this help message and exit.\n      --id=<graphId>         Required graph id for the optional positional graph\n      --load-mode=<loadMode> Graph load mode: EAGER, MAPPED, AUTO. Defaults to\n                               MAPPED for multi-graph heap stability.\n      --max-concurrent-cypher=<maxConcurrentCypher>\n                             Maximum number of Cypher queries executing at once\n      --metrics              Expose Prometheus performance metrics at /metrics\n  -p, --port=<port>          HTTP port\n      --topology=<topology>  Cypher file or directory used at startup to derive\n                               graph-to-graph calls. Queries return source,\n                               target, and optional protocol, operation,\n                               weight, evidence.\n  -V, --version              Print version information and exit.\n",
+    "exitAfterCleanup": 2
+  }
+]

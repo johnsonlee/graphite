@@ -1,0 +1,54 @@
+{
+  "README.md": {
+    "bytes": 8162,
+    "SHA256": "21e5eac6f71f8623ad883683f7655daa8929a93156704ea4c682df7a8e1be121"
+  },
+  "initial-detekt-failure.log": {
+    "bytes": 2406,
+    "SHA256": "51923d390adf7df71000d228f07bec804ef59dbf5c3444ee651e510b1c6e7cc9"
+  },
+  "initial-harness-failures.txt": {
+    "bytes": 456,
+    "SHA256": "577e51f4e0ddb8b7bfc4d4af7582c58665f171e672c576c34a5ee85d4336129b"
+  },
+  "initial-harness-schema-failure.json": {
+    "bytes": 71,
+    "SHA256": "8ef23c8547df17043b1b5cb3d802b451d8d5eb2fb6dc2fccbe7549441f11159a"
+  },
+  "initial-worktree-gradle-failure.log": {
+    "bytes": 1108,
+    "SHA256": "c35a63b19f3882c77232f844c5da20cd7a1f82893e0a6ff997921f5b08470bf0"
+  },
+  "intermediate-detekt-failure.log": {
+    "bytes": 3002,
+    "SHA256": "c6b3ec8409ac666a9ac5e227213fc88fb59e4e2f460fa7de5bfaf5182bc76f08"
+  },
+  "jvm-final-tests-lint-build.log": {
+    "bytes": 3588,
+    "SHA256": "e168f782405a096fba7bfadafaf738a14d3e60036c5e0e818623aec6ee4eb1f6"
+  },
+  "lifecycle-identity.json": {
+    "bytes": 927,
+    "SHA256": "22c4953289c561d28d27fe9f481bfe035216faebcb642471e46abed4fb3ceed9"
+  },
+  "lifecycle-results.json": {
+    "bytes": 8228,
+    "SHA256": "ed9e3689cc57341c06351bc429bd7a234b51ba3e5fa39ff31568e2f751902dea"
+  },
+  "native-final-validation.json": {
+    "bytes": 199,
+    "SHA256": "a901ccdfa293d5b0c52e1e459dbba4f6c83d23bb66636e818c643de6dce71e6f"
+  },
+  "native-final-validation.log": {
+    "bytes": 1094,
+    "SHA256": "4cd26128d8ebdd85dbab3acc41039edc3011a54795272e2a2e2697390c10ccd0"
+  },
+  "source-identity.json": {
+    "bytes": 3218,
+    "SHA256": "68d66f7a95d029ebaea87a39e8e5c30598889f772972644cc14a7179bfe3f182"
+  },
+  "unified-cli-existing-tests.log": {
+    "bytes": 3749,
+    "SHA256": "9bf7684923aff49852329873d5a378fa4f73fa7295d40b4ea09169efa82a91f3"
+  }
+}

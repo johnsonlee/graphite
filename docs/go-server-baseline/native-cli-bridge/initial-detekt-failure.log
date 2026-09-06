@@ -1,0 +1,39 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.13/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+
+> Configure project :
+[root project 'graphite'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+
+> Configure project :core
+[project ':core'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+
+> Configure project :cypher
+[project ':cypher'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+
+> Configure project :sootup
+[project ':sootup'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+
+> Configure project :webgraph
+[project ':webgraph'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+
+> Task :explore:detekt FAILED
+/private/tmp/graphite-cli-bridge-build-1c235916/graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/NativeServerLauncher.kt:54:18: Function resolve is nested too deeply. [NestedBlockDepth]
+/private/tmp/graphite-cli-bridge-build-1c235916/graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/NativeServerLauncher.kt:103:22: The caught exception is too generic. Prefer catching specific exceptions to the case that is currently handled. [TooGenericExceptionCaught]
+/private/tmp/graphite-cli-bridge-build-1c235916/graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/NativeServerLauncher.kt:164:14: The caught exception is too generic. Prefer catching specific exceptions to the case that is currently handled. [TooGenericExceptionCaught]
+/private/tmp/graphite-cli-bridge-build-1c235916/graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/NativeServerLauncher.kt:42:24: This expression contains a magic number. Consider defining it to a well named constant. [MagicNumber]
+
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':explore:detekt'.
+> Analysis failed with 4 weighted issues.
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 6s
+1 actionable task: 1 executed
