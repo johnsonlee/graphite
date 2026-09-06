@@ -20,7 +20,7 @@ func execute(t *testing.T, source string, params map[string]any) Result {
 }
 func assertResult(t *testing.T, result Result, columns []string, rows []map[string]any) {
 	t.Helper()
-	want := Result{columns, rows}
+	want := Result{Columns: columns, Rows: rows}
 	if !reflect.DeepEqual(result, want) {
 		t.Fatalf("got %#v\nwant %#v", result, want)
 	}

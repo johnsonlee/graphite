@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"sort"
 	"strings"
 	"unicode/utf16"
 	"unicode/utf8"
@@ -52,4 +53,68 @@ func encodeCypherResponse(value any) ([]byte, error) {
 		return nil, &gsonSerializationError{err}
 	}
 	return body, nil
+}
+
+// Write Java map members individually: distinct UTF16 names may have identical
+// final UTF8 spelling. A Go map keyed by that spelling would discard values.
+type gsonOutputObject struct {
+	keys   []string
+	values map[string]any
+}
+
+func (object gsonOutputObject) MarshalJSON() ([]byte, error) {
+	var out strings.Builder
+	out.WriteByte('{')
+	first := true
+	seen := map[string]bool{}
+	for _, key := range object.keys {
+		if seen[key] {
+			continue
+		}
+		seen[key] = true
+		value := omitNullFields(object.values[key])
+		if value == nil {
+			continue
+		}
+		encoded, err := json.Marshal(value)
+		if err != nil {
+			return nil, err
+		}
+		name, err := json.Marshal(gsonWireString(key))
+		if err != nil {
+			return nil, err
+		}
+		if !first {
+			out.WriteByte(',')
+		}
+		first = false
+		out.Write(name)
+		out.WriteByte(':')
+		out.Write(encoded)
+	}
+	out.WriteByte('}')
+	return []byte(out.String()), nil
+}
+
+// Plain Go maps carry no insertion order. Preserve all entries in a stable
+// fallback order; query objects with observable Java order use OutputObject.
+func gsonWireMap(values map[string]any) any {
+	converted := make(map[string]any, len(values))
+	collision := false
+	for key, value := range values {
+		wire := gsonWireString(key)
+		if _, present := converted[wire]; present {
+			collision = true
+		}
+		converted[wire] = value
+	}
+	if !collision {
+		return converted
+	}
+	keys := make([]string, 0, len(values))
+	for key := range values {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	return gsonOutputObject{keys, values}
 }

@@ -221,7 +221,7 @@ func (s *Server) crossCypher(w http.ResponseWriter, r *http.Request) {
 		} else {
 			var result query.Result
 			result, err = query.ExecuteCross(ctx, graphs, text, nil, limit)
-			response = map[string]any{"columns": result.Columns, "rows": result.Rows, "rowCount": len(result.Rows), "graphCount": len(graphs)}
+			response = map[string]any{"columns": result.Columns, "rows": result.ResponseRows(), "rowCount": len(result.Rows), "graphCount": len(graphs)}
 			if explicit {
 				response["mode"] = mode
 				response["graphs"] = ids
@@ -246,7 +246,7 @@ func (s *Server) crossCypher(w http.ResponseWriter, r *http.Request) {
 }
 
 func fanout(ctx context.Context, graphs []query.Graph, text string, limit, perGraph int, includeRows bool) (map[string]any, error) {
-	rows := []map[string]any{}
+	rows := []any{}
 	columns := []string{"graphId"}
 	seen := map[string]bool{"graphId": true}
 	results := []map[string]any{}
@@ -261,21 +261,21 @@ func fanout(ctx context.Context, graphs []query.Graph, text string, limit, perGr
 		if err != nil {
 			return nil, err
 		}
-		for _, c := range result.Columns {
+		for _, c := range result.ColumnKeys() {
 			if !seen[c] {
 				columns = append(columns, c)
 				seen[c] = true
 			}
 		}
-		for _, row := range result.Rows {
+		for index, row := range result.Rows {
 			row["graphId"] = graph.ID
-			rows = append(rows, row)
+			rows = append(rows, result.ResponseRow(index))
 		}
 		remaining -= len(result.Rows)
 		truncated = truncated || remaining <= 0
 		entry := map[string]any{"graphId": graph.ID, "columns": result.Columns, "rowCount": len(result.Rows)}
 		if includeRows {
-			entry["rows"] = result.Rows
+			entry["rows"] = result.ResponseRows()
 		}
 		results = append(results, entry)
 	}

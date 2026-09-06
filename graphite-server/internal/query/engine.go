@@ -9,11 +9,14 @@ import (
 	"github.com/johnsonlee/graphite/graphite-server/internal/store"
 	"sort"
 	"strings"
+	"unicode/utf8"
 )
 
 type Result struct {
-	Columns []string         `json:"columns"`
-	Rows    []map[string]any `json:"rows"`
+	Columns    []string         `json:"columns"`
+	Rows       []map[string]any `json:"rows"`
+	rawColumns []string
+	rawRowKeys [][]string
 }
 
 // Execute evaluates a single-store query. A negative limit means unlimited;
@@ -68,7 +71,8 @@ func executeSources(ctx context.Context, graph *store.Store, graphs []Graph, cro
 	}
 	validate(ast)
 	e := evaluator{ctx: ctx, parameters: parameters, graphs: graphs, cross: cross, regexes: &regexLRU{entries: map[string]compiledRegex{}}}
-	if needsRowOrder(ast) {
+	javaSource := !utf8.ValidString(source) || (strings.Contains(source, `\u`) && needsJavaOutputOrder(ast))
+	if needsRowOrder(ast) || javaSource {
 		e.rowOrders = map[string]rowOrder{}
 	}
 	result = Result{Columns: []string{}, Rows: []map[string]any{}}
@@ -86,15 +90,47 @@ func executeSources(ctx context.Context, graph *store.Store, graphs []Graph, cro
 	if limit >= 0 && len(result.Rows) > limit {
 		result.Rows = result.Rows[:limit]
 	}
-	for _, row := range result.Rows {
+	if hasNonUTF8Keys(result.Columns) {
+		result.rawColumns = append([]string(nil), result.Columns...)
+	}
+	for index, row := range result.Rows {
 		ids := provenance(row)
 		delete(row, provenanceKey)
-		for k, v := range row {
-			wireKey := javaWireString(k)
-			if wireKey != k {
-				delete(row, k)
+		var keys []string
+		if javaSource {
+			keys = e.rowKeys(row)
+		}
+		if wireKeyCollision(keys) {
+			if result.rawRowKeys == nil {
+				result.rawRowKeys = make([][]string, len(result.Rows))
 			}
-			row[wireKey] = e.materialize(v)
+			result.rawRowKeys[index] = keys
+			for k, v := range row {
+				row[k] = e.materialize(v)
+			}
+		} else {
+			// Write renamed keys into a fresh map rather than mutating a map while
+			// iterating over it (new entries may otherwise be visited again).
+			var renamed map[string]any
+			if javaSource {
+				for k := range row {
+					if !utf8.ValidString(k) {
+						renamed = make(map[string]any, len(row))
+						break
+					}
+				}
+			}
+			for k, v := range row {
+				if renamed != nil {
+					renamed[javaWireString(k)] = e.materialize(v)
+				} else {
+					row[k] = e.materialize(v)
+				}
+			}
+			if renamed != nil {
+				row = renamed
+				result.Rows[index] = row
+			}
 		}
 		if cross {
 			if _, present := row["$metadata"]; len(ids) > 0 || !present {

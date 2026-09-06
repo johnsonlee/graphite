@@ -68,7 +68,7 @@ func (s *Server) cypher(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			return nil, err
 		}
-		response := map[string]any{"columns": result.Columns, "rows": result.Rows, "rowCount": len(result.Rows)}
+		response := map[string]any{"columns": result.Columns, "rows": result.ResponseRows(), "rowCount": len(result.Rows)}
 		if err := ctx.Err(); err != nil {
 			return nil, err
 		}

@@ -9,7 +9,9 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 
+	"github.com/johnsonlee/graphite/graphite-server/internal/query"
 	"github.com/johnsonlee/graphite/graphite-server/internal/store"
 	"github.com/johnsonlee/graphite/graphite-server/internal/web"
 )
@@ -99,6 +101,8 @@ func omitNullFields(value any) any {
 		return nil
 	}
 	switch n := value.(type) {
+	case query.OutputObject:
+		return gsonOutputObject{n.Keys, n.Values}
 	case string:
 		return gsonWireString(n)
 	case float64:
@@ -115,12 +119,18 @@ func omitNullFields(value any) any {
 	}
 	if rv.Kind() == reflect.Map && rv.Type().Key().Kind() == reflect.String {
 		out := make(map[string]any, rv.Len())
+		invalid := false
 		iter := rv.MapRange()
 		for iter.Next() {
 			v := omitNullFields(iter.Value().Interface())
 			if v != nil {
-				out[gsonWireString(iter.Key().String())] = v
+				key := iter.Key().String()
+				out[key] = v
+				invalid = invalid || !utf8.ValidString(key)
 			}
+		}
+		if invalid {
+			return gsonWireMap(out)
 		}
 		return out
 	}

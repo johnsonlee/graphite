@@ -1,0 +1,240 @@
+{
+  "recordedAtUTC": "2026-09-06T20:16:01.785750+00:00",
+  "purpose": "Duplicate-preserving surrogate-key HTTP correctness; no performance claim",
+  "baselineRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "javaVersion": "17.0.18",
+  "gsonVersion": "2.11.0",
+  "nativeWorkingTreeHEAD": "7c37f8824be1c6ad7805771cf1643df7f6ba4c6a",
+  "uncommittedSource": true,
+  "httpOracle": {
+    "passed": 72,
+    "total": 72,
+    "mainStatuses": {
+      "200": 68,
+      "500": 4
+    },
+    "nativeRawResponses": 72
+  },
+  "priorRegressionCases": {
+    "validJSON": 213,
+    "malformedJSON": 288,
+    "nonfiniteHTTP": 30,
+    "directGson": 134
+  },
+  "checks": [
+    {
+      "command": "go test -race ./internal/query ./internal/server -count=1",
+      "exitCode": 0
+    },
+    {
+      "command": "go vet ./internal/query ./internal/server",
+      "exitCode": 0
+    },
+    {
+      "command": "go test -json ./internal/server -run 'TestHTTPSurrogate' -count=1",
+      "exitCode": 0
+    }
+  ],
+  "sourceManifest": [
+    {
+      "path": "graphite-server/internal/query/engine.go",
+      "bytes": 13484,
+      "sha256": "1fb43f9284c559a73f419679856934d21d4f325be9e1212e4036819aea46010b"
+    },
+    {
+      "path": "graphite-server/internal/query/engine_test.go",
+      "bytes": 6833,
+      "sha256": "5eaae3687092b2210e979436c67f39e34d96dd4e21011a09b2970db1b39e221e"
+    },
+    {
+      "path": "graphite-server/internal/query/materialize.go",
+      "bytes": 3974,
+      "sha256": "340d69524aa325b1fedc7a021ca24f2752a4e03572816a6b9cfe481d7a87a1f3"
+    },
+    {
+      "path": "graphite-server/internal/query/output_object.go",
+      "bytes": 2824,
+      "sha256": "e1a9cc04e0c91d3355cd874d2df87682578986cf7a283cb6ba1c3851ebb4c994"
+    },
+    {
+      "path": "graphite-server/internal/query/output_object_test.go",
+      "bytes": 1744,
+      "sha256": "e5efe4861095516a0d11a01372cce1b913f6ef56f6a611fe03da6c3bdc03ed94"
+    },
+    {
+      "path": "graphite-server/internal/server/http.go",
+      "bytes": 10396,
+      "sha256": "f569ec3cb9dd0caa80d2ec2caa9f4269b222fcce0516033bbf17d38659deecb2"
+    },
+    {
+      "path": "graphite-server/internal/server/cypher.go",
+      "bytes": 2918,
+      "sha256": "7b7e1f9db87eb310070063c2c7cb29fdcc7e139f787d56240c5b76d86ffb1ef4"
+    },
+    {
+      "path": "graphite-server/internal/server/cross.go",
+      "bytes": 7367,
+      "sha256": "5965f85a3a08b0b8fe4a5e8b3cc111b1ac1d19f3734c57a325e217e85ea0a7cb"
+    },
+    {
+      "path": "graphite-server/internal/server/gson_json_wire.go",
+      "bytes": 3133,
+      "sha256": "4d5b3ce3dff7cedc70d9cc5abc0124915446a83c4767df8a27ae3ecc298ab55f"
+    },
+    {
+      "path": "graphite-server/internal/server/gson_mapkeys_test.go",
+      "bytes": 3763,
+      "sha256": "1115307789f63f8c049e361af5d226ba540e9efd9cf16244b55ebafa4b6f1e2c"
+    },
+    {
+      "path": "graphite-server/internal/server/testdata/http-surrogate-union-main.json",
+      "bytes": 17594,
+      "sha256": "7de030df672659bb3a7905c08b4fc1e01d1baf755af5e63ffce0843bfb63d3a9"
+    },
+    {
+      "path": "graphite-server/internal/server/testdata/http-surrogate-escaped-main.json",
+      "bytes": 7142,
+      "sha256": "5765b80e7070e89cecfc7a5c7ffe082e20e78442541c4dc9265643776334bdb8"
+    },
+    {
+      "path": "graphite-server/internal/server/testdata/http-surrogate-mapkeys-main.json",
+      "bytes": 31178,
+      "sha256": "ad7bf17c10ae67d0e50b43e5a37e0ea0376eb242f151239b0c85d8eea5bee8f5"
+    }
+  ],
+  "evidenceManifest": [
+    {
+      "path": "docs/go-server-baseline/http-surrogate-mapkeys-main/README.md",
+      "bytes": 3696,
+      "sha256": "91d9d599ae45073a03ea31d36c0df65623964b6e51d3bd8435b90bc5fff71b59"
+    },
+    {
+      "path": "docs/go-server-baseline/http-surrogate-mapkeys-main/capture-escaped.py",
+      "bytes": 2783,
+      "sha256": "96151c6f23fb8df881c5aecb9c2e1953caae872714e9b0c7f352e91544f66ea6"
+    },
+    {
+      "path": "docs/go-server-baseline/http-surrogate-mapkeys-main/capture-union.py",
+      "bytes": 3011,
+      "sha256": "f9d673b70bca27b27862de7372dd0f76b0ede66c36fbf94fa6ac01601311bf3c"
+    },
+    {
+      "path": "docs/go-server-baseline/http-surrogate-mapkeys-main/capture.log",
+      "bytes": 16404,
+      "sha256": "9853786e49a62b6ca0171642b080df781acd73856c2bf10223cafe4da60f978b"
+    },
+    {
+      "path": "docs/go-server-baseline/http-surrogate-mapkeys-main/capture.py",
+      "bytes": 3186,
+      "sha256": "3eedce1f8770d0033906972815502f1d1861c2b9225aaf588f5bdbb6f1d5c918"
+    },
+    {
+      "path": "docs/go-server-baseline/http-surrogate-mapkeys-main/cases.json",
+      "bytes": 9638,
+      "sha256": "27633e5c7e3448eca9fb6c462fe4723303890551331eb8456872ddba18e4d5d7"
+    },
+    {
+      "path": "docs/go-server-baseline/http-surrogate-mapkeys-main/escaped/capture.log",
+      "bytes": 4070,
+      "sha256": "c2d83fc841b667b6a5a522cd45dd71f3e422a9bd86abfc9645da21650dd91c33"
+    },
+    {
+      "path": "docs/go-server-baseline/http-surrogate-mapkeys-main/escaped/cases.json",
+      "bytes": 1894,
+      "sha256": "50214cbde43c0e33f4a371d59142bdc021ba96d0bd7759646668058ccf5c6ef2"
+    },
+    {
+      "path": "docs/go-server-baseline/http-surrogate-mapkeys-main/escaped/main-command.json",
+      "bytes": 452,
+      "sha256": "50563e29d052b9bf43f85b572b09624a1921759e44299df2351f72fef7258ccb"
+    },
+    {
+      "path": "docs/go-server-baseline/http-surrogate-mapkeys-main/escaped/main-server.log",
+      "bytes": 378,
+      "sha256": "51c49d743001534a729fd3ee3b0ebacf39270708ff530ac3cbe26c97d8a98a58"
+    },
+    {
+      "path": "docs/go-server-baseline/http-surrogate-mapkeys-main/escaped/metadata.json",
+      "bytes": 280,
+      "sha256": "fb91820392d1f60317f753d99a27e818cfe48c6ac7eda37a71688e9f4accc984"
+    },
+    {
+      "path": "docs/go-server-baseline/http-surrogate-mapkeys-main/escaped/observations.json",
+      "bytes": 16475,
+      "sha256": "5c6f9f1c13be802a790a9e23be07c32857584a774bf02e81510dce8e927f45bb"
+    },
+    {
+      "path": "docs/go-server-baseline/http-surrogate-mapkeys-main/main-command.json",
+      "bytes": 452,
+      "sha256": "a923502ad6967b7a5480cbd06b7edbb40443d19927dc60959d6f56ef5518dd04"
+    },
+    {
+      "path": "docs/go-server-baseline/http-surrogate-mapkeys-main/main-server.log",
+      "bytes": 378,
+      "sha256": "54400c337139597b5d10f0db79238e6d4d8081cf083282362222964f4ad9267b"
+    },
+    {
+      "path": "docs/go-server-baseline/http-surrogate-mapkeys-main/metadata.json",
+      "bytes": 281,
+      "sha256": "0dc5798182d580aca8814ab541b83fad9b39bb7c5bd8419f003a32db31897996"
+    },
+    {
+      "path": "docs/go-server-baseline/http-surrogate-mapkeys-main/native-race.log",
+      "bytes": 149,
+      "sha256": "fa47cff7b5c0b1ca49b480061ee6b0fb646d46100f0317c6d6fb2d913941892f"
+    },
+    {
+      "path": "docs/go-server-baseline/http-surrogate-mapkeys-main/native-replay.jsonl",
+      "bytes": 106146,
+      "sha256": "e8f7c2df90f2b35bb1a7b42c51e5a7cbb83d4a2a0f183e2983ebae126193e465"
+    },
+    {
+      "path": "docs/go-server-baseline/http-surrogate-mapkeys-main/native-vet.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/go-server-baseline/http-surrogate-mapkeys-main/observations.json",
+      "bytes": 73875,
+      "sha256": "ab9d49f6f10e4294c09d49662b18b0c63c7f45b7020ad450dd77a5c09fc89623"
+    },
+    {
+      "path": "docs/go-server-baseline/http-surrogate-mapkeys-main/union/capture.log",
+      "bytes": 8885,
+      "sha256": "6e90836d7cdac672df256ec49065050e25a18633d987770b941a6a7075690df6"
+    },
+    {
+      "path": "docs/go-server-baseline/http-surrogate-mapkeys-main/union/cases.json",
+      "bytes": 5866,
+      "sha256": "1b2f13d0be39fff3de71d82cc1e6403e161c45a954d4305edcc516956338f781"
+    },
+    {
+      "path": "docs/go-server-baseline/http-surrogate-mapkeys-main/union/main-command.json",
+      "bytes": 452,
+      "sha256": "df6aea49fd1c0c7650db26d004f3b1b9376c2d0df9eae6f3c9a4f1a1502873b0"
+    },
+    {
+      "path": "docs/go-server-baseline/http-surrogate-mapkeys-main/union/main-server.log",
+      "bytes": 378,
+      "sha256": "6dae134ca65eaaab4ed118d7f8943952777be27c0be8693167c95084caa28079"
+    },
+    {
+      "path": "docs/go-server-baseline/http-surrogate-mapkeys-main/union/metadata.json",
+      "bytes": 281,
+      "sha256": "0f03949183a57d121e61568b5b848b9b848ec3ed4c808f061ef4c38f59167649"
+    },
+    {
+      "path": "docs/go-server-baseline/http-surrogate-mapkeys-main/union/observations.json",
+      "bytes": 40987,
+      "sha256": "4d8717e86e6c9a5e48d29002898852650312d9ff66da4b92d0aab7d27496982c"
+    }
+  ],
+  "limitations": [
+    "Finite correctness cases do not establish complete equivalence.",
+    "Bare Go maps have no source insertion order; fallback preserves members deterministically but cannot reconstruct lost caller order.",
+    "Annotation collision ordering has source-based unit coverage, not a separately persisted surrogate annotation HTTP oracle."
+  ],
+  "dedicatedServersStopped": true,
+  "performanceRuns": 0,
+  "previousGsonVerificationModified": false
+}

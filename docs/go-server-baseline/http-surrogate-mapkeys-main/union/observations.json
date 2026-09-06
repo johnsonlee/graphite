@@ -1,0 +1,1280 @@
+[
+  {
+    "case": {
+      "name": "root-0",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "RETURN 1 AS `\ud800`,2 AS `?` UNION ALL RETURN 3 AS `?`,4 AS `\ud800`",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:10:48 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "277"
+        ]
+      ],
+      "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIj8iLAogICAgIj8iCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIj8iOiAxLAogICAgICAiPyI6IDIsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogW10KICAgICAgfQogICAgfSwKICAgIHsKICAgICAgIj8iOiAzLAogICAgICAiPyI6IDQsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogW10KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMiwKICAiZ3JhcGhDb3VudCI6IDEKfQ==",
+      "bodyUTF8": "{\n  \"columns\": [\n    \"?\",\n    \"?\"\n  ],\n  \"rows\": [\n    {\n      \"?\": 1,\n      \"?\": 2,\n      \"$metadata\": {\n        \"graphIds\": []\n      }\n    },\n    {\n      \"?\": 3,\n      \"?\": 4,\n      \"$metadata\": {\n        \"graphIds\": []\n      }\n    }\n  ],\n  \"rowCount\": 2,\n  \"graphCount\": 1\n}",
+      "json": {
+        "columns": [
+          "?",
+          "?"
+        ],
+        "rows": [
+          {
+            "?": 2,
+            "$metadata": {
+              "graphIds": []
+            }
+          },
+          {
+            "?": 4,
+            "$metadata": {
+              "graphIds": []
+            }
+          }
+        ],
+        "rowCount": 2,
+        "graphCount": 1
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "root-1",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "RETURN 1 AS a UNION ALL RETURN 2 AS `\ud800`,3 AS `?`",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:10:48 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "254"
+        ]
+      ],
+      "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgImEiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgImEiOiAxLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0sCiAgICB7CiAgICAgICI/IjogMiwKICAgICAgIj8iOiAzLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDIsCiAgImdyYXBoQ291bnQiOiAxCn0=",
+      "bodyUTF8": "{\n  \"columns\": [\n    \"a\"\n  ],\n  \"rows\": [\n    {\n      \"a\": 1,\n      \"$metadata\": {\n        \"graphIds\": []\n      }\n    },\n    {\n      \"?\": 2,\n      \"?\": 3,\n      \"$metadata\": {\n        \"graphIds\": []\n      }\n    }\n  ],\n  \"rowCount\": 2,\n  \"graphCount\": 1\n}",
+      "json": {
+        "columns": [
+          "a"
+        ],
+        "rows": [
+          {
+            "a": 1,
+            "$metadata": {
+              "graphIds": []
+            }
+          },
+          {
+            "?": 3,
+            "$metadata": {
+              "graphIds": []
+            }
+          }
+        ],
+        "rowCount": 2,
+        "graphCount": 1
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "root-2",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "WITH 1 AS `\ud800`,2 AS `?` RETURN *",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:10:48 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "184"
+        ]
+      ],
+      "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIj8iLAogICAgIj8iCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIj8iOiAxLAogICAgICAiPyI6IDIsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogW10KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAiZ3JhcGhDb3VudCI6IDEKfQ==",
+      "bodyUTF8": "{\n  \"columns\": [\n    \"?\",\n    \"?\"\n  ],\n  \"rows\": [\n    {\n      \"?\": 1,\n      \"?\": 2,\n      \"$metadata\": {\n        \"graphIds\": []\n      }\n    }\n  ],\n  \"rowCount\": 1,\n  \"graphCount\": 1\n}",
+      "json": {
+        "columns": [
+          "?",
+          "?"
+        ],
+        "rows": [
+          {
+            "?": 2,
+            "$metadata": {
+              "graphIds": []
+            }
+          }
+        ],
+        "rowCount": 1,
+        "graphCount": 1
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "root-3",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "WITH 1 AS `\ud800`,2 AS `?` RETURN collect() AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:10:48 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "224"
+        ]
+      ],
+      "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiBbCiAgICAgICAgewogICAgICAgICAgIj8iOiAxLAogICAgICAgICAgIj8iOiAyCiAgICAgICAgfQogICAgICBdLAogICAgICAiJG1ldGFkYXRhIjogewogICAgICAgICJncmFwaElkcyI6IFtdCiAgICAgIH0KICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEsCiAgImdyYXBoQ291bnQiOiAxCn0=",
+      "bodyUTF8": "{\n  \"columns\": [\n    \"x\"\n  ],\n  \"rows\": [\n    {\n      \"x\": [\n        {\n          \"?\": 1,\n          \"?\": 2\n        }\n      ],\n      \"$metadata\": {\n        \"graphIds\": []\n      }\n    }\n  ],\n  \"rowCount\": 1,\n  \"graphCount\": 1\n}",
+      "json": {
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": [
+              {
+                "?": 2
+              }
+            ],
+            "$metadata": {
+              "graphIds": []
+            }
+          }
+        ],
+        "rowCount": 1,
+        "graphCount": 1
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "root-4",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "RETURN null AS `\ud800`,2 AS `\ud801`,3 AS `?`",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:10:48 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "193"
+        ]
+      ],
+      "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIj8iLAogICAgIj8iLAogICAgIj8iCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIj8iOiAyLAogICAgICAiPyI6IDMsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogW10KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAiZ3JhcGhDb3VudCI6IDEKfQ==",
+      "bodyUTF8": "{\n  \"columns\": [\n    \"?\",\n    \"?\",\n    \"?\"\n  ],\n  \"rows\": [\n    {\n      \"?\": 2,\n      \"?\": 3,\n      \"$metadata\": {\n        \"graphIds\": []\n      }\n    }\n  ],\n  \"rowCount\": 1,\n  \"graphCount\": 1\n}",
+      "json": {
+        "columns": [
+          "?",
+          "?",
+          "?"
+        ],
+        "rows": [
+          {
+            "?": 3,
+            "$metadata": {
+              "graphIds": []
+            }
+          }
+        ],
+        "rowCount": 1,
+        "graphCount": 1
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "root-5",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "RETURN {`\ud800`:sqrt(-1),`?`:2} AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 500,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:10:48 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "145"
+        ]
+      ],
+      "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ==",
+      "bodyUTF8": "{\n    \"title\": \"Server Error\",\n    \"status\": 500,\n    \"type\": \"https://javalin.io/documentation#internalservererrorresponse\",\n    \"details\": {}\n}",
+      "json": {
+        "title": "Server Error",
+        "status": 500,
+        "type": "https://javalin.io/documentation#internalservererrorresponse",
+        "details": {}
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "scoped-0",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher",
+      "body": {
+        "query": "RETURN 1 AS `\ud800`,2 AS `?` UNION ALL RETURN 3 AS `?`,4 AS `\ud800`",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:10:48 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "152"
+        ]
+      ],
+      "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIj8iLAogICAgIj8iCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIj8iOiAxLAogICAgICAiPyI6IDIKICAgIH0sCiAgICB7CiAgICAgICI/IjogMywKICAgICAgIj8iOiA0CiAgICB9CiAgXSwKICAicm93Q291bnQiOiAyCn0=",
+      "bodyUTF8": "{\n  \"columns\": [\n    \"?\",\n    \"?\"\n  ],\n  \"rows\": [\n    {\n      \"?\": 1,\n      \"?\": 2\n    },\n    {\n      \"?\": 3,\n      \"?\": 4\n    }\n  ],\n  \"rowCount\": 2\n}",
+      "json": {
+        "columns": [
+          "?",
+          "?"
+        ],
+        "rows": [
+          {
+            "?": 2
+          },
+          {
+            "?": 4
+          }
+        ],
+        "rowCount": 2
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "scoped-1",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher",
+      "body": {
+        "query": "RETURN 1 AS a UNION ALL RETURN 2 AS `\ud800`,3 AS `?`",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:10:48 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "129"
+        ]
+      ],
+      "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgImEiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgImEiOiAxCiAgICB9LAogICAgewogICAgICAiPyI6IDIsCiAgICAgICI/IjogMwogICAgfQogIF0sCiAgInJvd0NvdW50IjogMgp9",
+      "bodyUTF8": "{\n  \"columns\": [\n    \"a\"\n  ],\n  \"rows\": [\n    {\n      \"a\": 1\n    },\n    {\n      \"?\": 2,\n      \"?\": 3\n    }\n  ],\n  \"rowCount\": 2\n}",
+      "json": {
+        "columns": [
+          "a"
+        ],
+        "rows": [
+          {
+            "a": 1
+          },
+          {
+            "?": 3
+          }
+        ],
+        "rowCount": 2
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "scoped-2",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher",
+      "body": {
+        "query": "WITH 1 AS `\ud800`,2 AS `?` RETURN *",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:10:48 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "112"
+        ]
+      ],
+      "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIj8iLAogICAgIj8iCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIj8iOiAxLAogICAgICAiPyI6IDIKICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEKfQ==",
+      "bodyUTF8": "{\n  \"columns\": [\n    \"?\",\n    \"?\"\n  ],\n  \"rows\": [\n    {\n      \"?\": 1,\n      \"?\": 2\n    }\n  ],\n  \"rowCount\": 1\n}",
+      "json": {
+        "columns": [
+          "?",
+          "?"
+        ],
+        "rows": [
+          {
+            "?": 2
+          }
+        ],
+        "rowCount": 1
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "scoped-3",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher",
+      "body": {
+        "query": "WITH 1 AS `\ud800`,2 AS `?` RETURN collect() AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:10:48 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "152"
+        ]
+      ],
+      "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIngiOiBbCiAgICAgICAgewogICAgICAgICAgIj8iOiAxLAogICAgICAgICAgIj8iOiAyCiAgICAgICAgfQogICAgICBdCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxCn0=",
+      "bodyUTF8": "{\n  \"columns\": [\n    \"x\"\n  ],\n  \"rows\": [\n    {\n      \"x\": [\n        {\n          \"?\": 1,\n          \"?\": 2\n        }\n      ]\n    }\n  ],\n  \"rowCount\": 1\n}",
+      "json": {
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": [
+              {
+                "?": 2
+              }
+            ]
+          }
+        ],
+        "rowCount": 1
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "scoped-4",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher",
+      "body": {
+        "query": "RETURN null AS `\ud800`,2 AS `\ud801`,3 AS `?`",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:10:48 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "121"
+        ]
+      ],
+      "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgIj8iLAogICAgIj8iLAogICAgIj8iCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgIj8iOiAyLAogICAgICAiPyI6IDMKICAgIH0KICBdLAogICJyb3dDb3VudCI6IDEKfQ==",
+      "bodyUTF8": "{\n  \"columns\": [\n    \"?\",\n    \"?\",\n    \"?\"\n  ],\n  \"rows\": [\n    {\n      \"?\": 2,\n      \"?\": 3\n    }\n  ],\n  \"rowCount\": 1\n}",
+      "json": {
+        "columns": [
+          "?",
+          "?",
+          "?"
+        ],
+        "rows": [
+          {
+            "?": 3
+          }
+        ],
+        "rowCount": 1
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "scoped-5",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher",
+      "body": {
+        "query": "RETURN {`\ud800`:sqrt(-1),`?`:2} AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 500,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:10:48 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "145"
+        ]
+      ],
+      "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ==",
+      "bodyUTF8": "{\n    \"title\": \"Server Error\",\n    \"status\": 500,\n    \"type\": \"https://javalin.io/documentation#internalservererrorresponse\",\n    \"details\": {}\n}",
+      "json": {
+        "title": "Server Error",
+        "status": 500,
+        "type": "https://javalin.io/documentation#internalservererrorresponse",
+        "details": {}
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "selected-0",
+      "method": "POST",
+      "path": "/api/cypher/graphs",
+      "body": {
+        "query": "RETURN 1 AS `\ud800`,2 AS `?` UNION ALL RETURN 3 AS `?`,4 AS `\ud800`",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:10:48 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "346"
+        ]
+      ],
+      "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAiPyIsCiAgICAiPyIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAiPyI6IDEsCiAgICAgICI/IjogMiwKICAgICAgIiRtZXRhZGF0YSI6IHsKICAgICAgICAiZ3JhcGhJZHMiOiBbXQogICAgICB9CiAgICB9LAogICAgewogICAgICAiPyI6IDMsCiAgICAgICI/IjogNCwKICAgICAgIiRtZXRhZGF0YSI6IHsKICAgICAgICAiZ3JhcGhJZHMiOiBbXQogICAgICB9CiAgICB9CiAgXSwKICAicm93Q291bnQiOiAyLAogICJsaW1pdCI6IDEwMDAKfQ==",
+      "bodyUTF8": "{\n  \"mode\": \"cross-graph\",\n  \"graphs\": [\n    \"a\"\n  ],\n  \"graphCount\": 1,\n  \"columns\": [\n    \"?\",\n    \"?\"\n  ],\n  \"rows\": [\n    {\n      \"?\": 1,\n      \"?\": 2,\n      \"$metadata\": {\n        \"graphIds\": []\n      }\n    },\n    {\n      \"?\": 3,\n      \"?\": 4,\n      \"$metadata\": {\n        \"graphIds\": []\n      }\n    }\n  ],\n  \"rowCount\": 2,\n  \"limit\": 1000\n}",
+      "json": {
+        "mode": "cross-graph",
+        "graphs": [
+          "a"
+        ],
+        "graphCount": 1,
+        "columns": [
+          "?",
+          "?"
+        ],
+        "rows": [
+          {
+            "?": 2,
+            "$metadata": {
+              "graphIds": []
+            }
+          },
+          {
+            "?": 4,
+            "$metadata": {
+              "graphIds": []
+            }
+          }
+        ],
+        "rowCount": 2,
+        "limit": 1000
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "selected-1",
+      "method": "POST",
+      "path": "/api/cypher/graphs",
+      "body": {
+        "query": "RETURN 1 AS a UNION ALL RETURN 2 AS `\ud800`,3 AS `?`",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:10:48 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "323"
+        ]
+      ],
+      "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAiYSIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAiYSI6IDEsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogW10KICAgICAgfQogICAgfSwKICAgIHsKICAgICAgIj8iOiAyLAogICAgICAiPyI6IDMsCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogW10KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMiwKICAibGltaXQiOiAxMDAwCn0=",
+      "bodyUTF8": "{\n  \"mode\": \"cross-graph\",\n  \"graphs\": [\n    \"a\"\n  ],\n  \"graphCount\": 1,\n  \"columns\": [\n    \"a\"\n  ],\n  \"rows\": [\n    {\n      \"a\": 1,\n      \"$metadata\": {\n        \"graphIds\": []\n      }\n    },\n    {\n      \"?\": 2,\n      \"?\": 3,\n      \"$metadata\": {\n        \"graphIds\": []\n      }\n    }\n  ],\n  \"rowCount\": 2,\n  \"limit\": 1000\n}",
+      "json": {
+        "mode": "cross-graph",
+        "graphs": [
+          "a"
+        ],
+        "graphCount": 1,
+        "columns": [
+          "a"
+        ],
+        "rows": [
+          {
+            "a": 1,
+            "$metadata": {
+              "graphIds": []
+            }
+          },
+          {
+            "?": 3,
+            "$metadata": {
+              "graphIds": []
+            }
+          }
+        ],
+        "rowCount": 2,
+        "limit": 1000
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "selected-2",
+      "method": "POST",
+      "path": "/api/cypher/graphs",
+      "body": {
+        "query": "WITH 1 AS `\ud800`,2 AS `?` RETURN *",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:10:48 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "253"
+        ]
+      ],
+      "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAiPyIsCiAgICAiPyIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAiPyI6IDEsCiAgICAgICI/IjogMiwKICAgICAgIiRtZXRhZGF0YSI6IHsKICAgICAgICAiZ3JhcGhJZHMiOiBbXQogICAgICB9CiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxLAogICJsaW1pdCI6IDEwMDAKfQ==",
+      "bodyUTF8": "{\n  \"mode\": \"cross-graph\",\n  \"graphs\": [\n    \"a\"\n  ],\n  \"graphCount\": 1,\n  \"columns\": [\n    \"?\",\n    \"?\"\n  ],\n  \"rows\": [\n    {\n      \"?\": 1,\n      \"?\": 2,\n      \"$metadata\": {\n        \"graphIds\": []\n      }\n    }\n  ],\n  \"rowCount\": 1,\n  \"limit\": 1000\n}",
+      "json": {
+        "mode": "cross-graph",
+        "graphs": [
+          "a"
+        ],
+        "graphCount": 1,
+        "columns": [
+          "?",
+          "?"
+        ],
+        "rows": [
+          {
+            "?": 2,
+            "$metadata": {
+              "graphIds": []
+            }
+          }
+        ],
+        "rowCount": 1,
+        "limit": 1000
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "selected-3",
+      "method": "POST",
+      "path": "/api/cypher/graphs",
+      "body": {
+        "query": "WITH 1 AS `\ud800`,2 AS `?` RETURN collect() AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:10:48 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "293"
+        ]
+      ],
+      "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAieCIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAieCI6IFsKICAgICAgICB7CiAgICAgICAgICAiPyI6IDEsCiAgICAgICAgICAiPyI6IDIKICAgICAgICB9CiAgICAgIF0sCiAgICAgICIkbWV0YWRhdGEiOiB7CiAgICAgICAgImdyYXBoSWRzIjogW10KICAgICAgfQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAibGltaXQiOiAxMDAwCn0=",
+      "bodyUTF8": "{\n  \"mode\": \"cross-graph\",\n  \"graphs\": [\n    \"a\"\n  ],\n  \"graphCount\": 1,\n  \"columns\": [\n    \"x\"\n  ],\n  \"rows\": [\n    {\n      \"x\": [\n        {\n          \"?\": 1,\n          \"?\": 2\n        }\n      ],\n      \"$metadata\": {\n        \"graphIds\": []\n      }\n    }\n  ],\n  \"rowCount\": 1,\n  \"limit\": 1000\n}",
+      "json": {
+        "mode": "cross-graph",
+        "graphs": [
+          "a"
+        ],
+        "graphCount": 1,
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": [
+              {
+                "?": 2
+              }
+            ],
+            "$metadata": {
+              "graphIds": []
+            }
+          }
+        ],
+        "rowCount": 1,
+        "limit": 1000
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "selected-4",
+      "method": "POST",
+      "path": "/api/cypher/graphs",
+      "body": {
+        "query": "RETURN null AS `\ud800`,2 AS `\ud801`,3 AS `?`",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:10:48 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "262"
+        ]
+      ],
+      "bodyBase64": "ewogICJtb2RlIjogImNyb3NzLWdyYXBoIiwKICAiZ3JhcGhzIjogWwogICAgImEiCiAgXSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgImNvbHVtbnMiOiBbCiAgICAiPyIsCiAgICAiPyIsCiAgICAiPyIKICBdLAogICJyb3dzIjogWwogICAgewogICAgICAiPyI6IDIsCiAgICAgICI/IjogMywKICAgICAgIiRtZXRhZGF0YSI6IHsKICAgICAgICAiZ3JhcGhJZHMiOiBbXQogICAgICB9CiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxLAogICJsaW1pdCI6IDEwMDAKfQ==",
+      "bodyUTF8": "{\n  \"mode\": \"cross-graph\",\n  \"graphs\": [\n    \"a\"\n  ],\n  \"graphCount\": 1,\n  \"columns\": [\n    \"?\",\n    \"?\",\n    \"?\"\n  ],\n  \"rows\": [\n    {\n      \"?\": 2,\n      \"?\": 3,\n      \"$metadata\": {\n        \"graphIds\": []\n      }\n    }\n  ],\n  \"rowCount\": 1,\n  \"limit\": 1000\n}",
+      "json": {
+        "mode": "cross-graph",
+        "graphs": [
+          "a"
+        ],
+        "graphCount": 1,
+        "columns": [
+          "?",
+          "?",
+          "?"
+        ],
+        "rows": [
+          {
+            "?": 3,
+            "$metadata": {
+              "graphIds": []
+            }
+          }
+        ],
+        "rowCount": 1,
+        "limit": 1000
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "selected-5",
+      "method": "POST",
+      "path": "/api/cypher/graphs",
+      "body": {
+        "query": "RETURN {`\ud800`:sqrt(-1),`?`:2} AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 500,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:10:48 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "145"
+        ]
+      ],
+      "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ==",
+      "bodyUTF8": "{\n    \"title\": \"Server Error\",\n    \"status\": 500,\n    \"type\": \"https://javalin.io/documentation#internalservererrorresponse\",\n    \"details\": {}\n}",
+      "json": {
+        "title": "Server Error",
+        "status": 500,
+        "type": "https://javalin.io/documentation#internalservererrorresponse",
+        "details": {}
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "fanout-0",
+      "method": "POST",
+      "path": "/api/cypher/graphs?mode=fanout&includeGraphRows=true",
+      "body": {
+        "query": "RETURN 1 AS `\ud800`,2 AS `?` UNION ALL RETURN 3 AS `?`,4 AS `\ud800`",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:10:48 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "654"
+        ]
+      ],
+      "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgImdyYXBoSWQiLAogICAgIj8iLAogICAgIj8iCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgImdyYXBoSWQiOiAiYSIsCiAgICAgICI/IjogMSwKICAgICAgIj8iOiAyCiAgICB9LAogICAgewogICAgICAiZ3JhcGhJZCI6ICJhIiwKICAgICAgIj8iOiAzLAogICAgICAiPyI6IDQKICAgIH0KICBdLAogICJyb3dDb3VudCI6IDIsCiAgImdyYXBoQ291bnQiOiAxLAogICJxdWVyaWVkR3JhcGhDb3VudCI6IDEsCiAgInBlckdyYXBoTGltaXQiOiAxMDAwLAogICJsaW1pdCI6IDEwMDAsCiAgInRydW5jYXRlZCI6IGZhbHNlLAogICJncmFwaHMiOiBbCiAgICB7CiAgICAgICJncmFwaElkIjogImEiLAogICAgICAiY29sdW1ucyI6IFsKICAgICAgICAiPyIsCiAgICAgICAgIj8iCiAgICAgIF0sCiAgICAgICJyb3dDb3VudCI6IDIsCiAgICAgICJyb3dzIjogWwogICAgICAgIHsKICAgICAgICAgICJncmFwaElkIjogImEiLAogICAgICAgICAgIj8iOiAxLAogICAgICAgICAgIj8iOiAyCiAgICAgICAgfSwKICAgICAgICB7CiAgICAgICAgICAiZ3JhcGhJZCI6ICJhIiwKICAgICAgICAgICI/IjogMywKICAgICAgICAgICI/IjogNAogICAgICAgIH0KICAgICAgXQogICAgfQogIF0sCiAgIm1vZGUiOiAiZmFub3V0Igp9",
+      "bodyUTF8": "{\n  \"columns\": [\n    \"graphId\",\n    \"?\",\n    \"?\"\n  ],\n  \"rows\": [\n    {\n      \"graphId\": \"a\",\n      \"?\": 1,\n      \"?\": 2\n    },\n    {\n      \"graphId\": \"a\",\n      \"?\": 3,\n      \"?\": 4\n    }\n  ],\n  \"rowCount\": 2,\n  \"graphCount\": 1,\n  \"queriedGraphCount\": 1,\n  \"perGraphLimit\": 1000,\n  \"limit\": 1000,\n  \"truncated\": false,\n  \"graphs\": [\n    {\n      \"graphId\": \"a\",\n      \"columns\": [\n        \"?\",\n        \"?\"\n      ],\n      \"rowCount\": 2,\n      \"rows\": [\n        {\n          \"graphId\": \"a\",\n          \"?\": 1,\n          \"?\": 2\n        },\n        {\n          \"graphId\": \"a\",\n          \"?\": 3,\n          \"?\": 4\n        }\n      ]\n    }\n  ],\n  \"mode\": \"fanout\"\n}",
+      "json": {
+        "columns": [
+          "graphId",
+          "?",
+          "?"
+        ],
+        "rows": [
+          {
+            "graphId": "a",
+            "?": 2
+          },
+          {
+            "graphId": "a",
+            "?": 4
+          }
+        ],
+        "rowCount": 2,
+        "graphCount": 1,
+        "queriedGraphCount": 1,
+        "perGraphLimit": 1000,
+        "limit": 1000,
+        "truncated": false,
+        "graphs": [
+          {
+            "graphId": "a",
+            "columns": [
+              "?",
+              "?"
+            ],
+            "rowCount": 2,
+            "rows": [
+              {
+                "graphId": "a",
+                "?": 2
+              },
+              {
+                "graphId": "a",
+                "?": 4
+              }
+            ]
+          }
+        ],
+        "mode": "fanout"
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "fanout-1",
+      "method": "POST",
+      "path": "/api/cypher/graphs?mode=fanout&includeGraphRows=true",
+      "body": {
+        "query": "RETURN 1 AS a UNION ALL RETURN 2 AS `\ud800`,3 AS `?`",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:10:48 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "600"
+        ]
+      ],
+      "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgImdyYXBoSWQiLAogICAgImEiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgImdyYXBoSWQiOiAiYSIsCiAgICAgICJhIjogMQogICAgfSwKICAgIHsKICAgICAgImdyYXBoSWQiOiAiYSIsCiAgICAgICI/IjogMiwKICAgICAgIj8iOiAzCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAyLAogICJncmFwaENvdW50IjogMSwKICAicXVlcmllZEdyYXBoQ291bnQiOiAxLAogICJwZXJHcmFwaExpbWl0IjogMTAwMCwKICAibGltaXQiOiAxMDAwLAogICJ0cnVuY2F0ZWQiOiBmYWxzZSwKICAiZ3JhcGhzIjogWwogICAgewogICAgICAiZ3JhcGhJZCI6ICJhIiwKICAgICAgImNvbHVtbnMiOiBbCiAgICAgICAgImEiCiAgICAgIF0sCiAgICAgICJyb3dDb3VudCI6IDIsCiAgICAgICJyb3dzIjogWwogICAgICAgIHsKICAgICAgICAgICJncmFwaElkIjogImEiLAogICAgICAgICAgImEiOiAxCiAgICAgICAgfSwKICAgICAgICB7CiAgICAgICAgICAiZ3JhcGhJZCI6ICJhIiwKICAgICAgICAgICI/IjogMiwKICAgICAgICAgICI/IjogMwogICAgICAgIH0KICAgICAgXQogICAgfQogIF0sCiAgIm1vZGUiOiAiZmFub3V0Igp9",
+      "bodyUTF8": "{\n  \"columns\": [\n    \"graphId\",\n    \"a\"\n  ],\n  \"rows\": [\n    {\n      \"graphId\": \"a\",\n      \"a\": 1\n    },\n    {\n      \"graphId\": \"a\",\n      \"?\": 2,\n      \"?\": 3\n    }\n  ],\n  \"rowCount\": 2,\n  \"graphCount\": 1,\n  \"queriedGraphCount\": 1,\n  \"perGraphLimit\": 1000,\n  \"limit\": 1000,\n  \"truncated\": false,\n  \"graphs\": [\n    {\n      \"graphId\": \"a\",\n      \"columns\": [\n        \"a\"\n      ],\n      \"rowCount\": 2,\n      \"rows\": [\n        {\n          \"graphId\": \"a\",\n          \"a\": 1\n        },\n        {\n          \"graphId\": \"a\",\n          \"?\": 2,\n          \"?\": 3\n        }\n      ]\n    }\n  ],\n  \"mode\": \"fanout\"\n}",
+      "json": {
+        "columns": [
+          "graphId",
+          "a"
+        ],
+        "rows": [
+          {
+            "graphId": "a",
+            "a": 1
+          },
+          {
+            "graphId": "a",
+            "?": 3
+          }
+        ],
+        "rowCount": 2,
+        "graphCount": 1,
+        "queriedGraphCount": 1,
+        "perGraphLimit": 1000,
+        "limit": 1000,
+        "truncated": false,
+        "graphs": [
+          {
+            "graphId": "a",
+            "columns": [
+              "a"
+            ],
+            "rowCount": 2,
+            "rows": [
+              {
+                "graphId": "a",
+                "a": 1
+              },
+              {
+                "graphId": "a",
+                "?": 3
+              }
+            ]
+          }
+        ],
+        "mode": "fanout"
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "fanout-2",
+      "method": "POST",
+      "path": "/api/cypher/graphs?mode=fanout&includeGraphRows=true",
+      "body": {
+        "query": "WITH 1 AS `\ud800`,2 AS `?` RETURN *",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:10:48 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "510"
+        ]
+      ],
+      "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgImdyYXBoSWQiLAogICAgIj8iLAogICAgIj8iCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgImdyYXBoSWQiOiAiYSIsCiAgICAgICI/IjogMSwKICAgICAgIj8iOiAyCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxLAogICJncmFwaENvdW50IjogMSwKICAicXVlcmllZEdyYXBoQ291bnQiOiAxLAogICJwZXJHcmFwaExpbWl0IjogMTAwMCwKICAibGltaXQiOiAxMDAwLAogICJ0cnVuY2F0ZWQiOiBmYWxzZSwKICAiZ3JhcGhzIjogWwogICAgewogICAgICAiZ3JhcGhJZCI6ICJhIiwKICAgICAgImNvbHVtbnMiOiBbCiAgICAgICAgIj8iLAogICAgICAgICI/IgogICAgICBdLAogICAgICAicm93Q291bnQiOiAxLAogICAgICAicm93cyI6IFsKICAgICAgICB7CiAgICAgICAgICAiZ3JhcGhJZCI6ICJhIiwKICAgICAgICAgICI/IjogMSwKICAgICAgICAgICI/IjogMgogICAgICAgIH0KICAgICAgXQogICAgfQogIF0sCiAgIm1vZGUiOiAiZmFub3V0Igp9",
+      "bodyUTF8": "{\n  \"columns\": [\n    \"graphId\",\n    \"?\",\n    \"?\"\n  ],\n  \"rows\": [\n    {\n      \"graphId\": \"a\",\n      \"?\": 1,\n      \"?\": 2\n    }\n  ],\n  \"rowCount\": 1,\n  \"graphCount\": 1,\n  \"queriedGraphCount\": 1,\n  \"perGraphLimit\": 1000,\n  \"limit\": 1000,\n  \"truncated\": false,\n  \"graphs\": [\n    {\n      \"graphId\": \"a\",\n      \"columns\": [\n        \"?\",\n        \"?\"\n      ],\n      \"rowCount\": 1,\n      \"rows\": [\n        {\n          \"graphId\": \"a\",\n          \"?\": 1,\n          \"?\": 2\n        }\n      ]\n    }\n  ],\n  \"mode\": \"fanout\"\n}",
+      "json": {
+        "columns": [
+          "graphId",
+          "?",
+          "?"
+        ],
+        "rows": [
+          {
+            "graphId": "a",
+            "?": 2
+          }
+        ],
+        "rowCount": 1,
+        "graphCount": 1,
+        "queriedGraphCount": 1,
+        "perGraphLimit": 1000,
+        "limit": 1000,
+        "truncated": false,
+        "graphs": [
+          {
+            "graphId": "a",
+            "columns": [
+              "?",
+              "?"
+            ],
+            "rowCount": 1,
+            "rows": [
+              {
+                "graphId": "a",
+                "?": 2
+              }
+            ]
+          }
+        ],
+        "mode": "fanout"
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "fanout-3",
+      "method": "POST",
+      "path": "/api/cypher/graphs?mode=fanout&includeGraphRows=true",
+      "body": {
+        "query": "WITH 1 AS `\ud800`,2 AS `?` RETURN collect() AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:10:48 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "602"
+        ]
+      ],
+      "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgImdyYXBoSWQiLAogICAgIngiCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgImdyYXBoSWQiOiAiYSIsCiAgICAgICJ4IjogWwogICAgICAgIHsKICAgICAgICAgICI/IjogMSwKICAgICAgICAgICI/IjogMgogICAgICAgIH0KICAgICAgXQogICAgfQogIF0sCiAgInJvd0NvdW50IjogMSwKICAiZ3JhcGhDb3VudCI6IDEsCiAgInF1ZXJpZWRHcmFwaENvdW50IjogMSwKICAicGVyR3JhcGhMaW1pdCI6IDEwMDAsCiAgImxpbWl0IjogMTAwMCwKICAidHJ1bmNhdGVkIjogZmFsc2UsCiAgImdyYXBocyI6IFsKICAgIHsKICAgICAgImdyYXBoSWQiOiAiYSIsCiAgICAgICJjb2x1bW5zIjogWwogICAgICAgICJ4IgogICAgICBdLAogICAgICAicm93Q291bnQiOiAxLAogICAgICAicm93cyI6IFsKICAgICAgICB7CiAgICAgICAgICAiZ3JhcGhJZCI6ICJhIiwKICAgICAgICAgICJ4IjogWwogICAgICAgICAgICB7CiAgICAgICAgICAgICAgIj8iOiAxLAogICAgICAgICAgICAgICI/IjogMgogICAgICAgICAgICB9CiAgICAgICAgICBdCiAgICAgICAgfQogICAgICBdCiAgICB9CiAgXSwKICAibW9kZSI6ICJmYW5vdXQiCn0=",
+      "bodyUTF8": "{\n  \"columns\": [\n    \"graphId\",\n    \"x\"\n  ],\n  \"rows\": [\n    {\n      \"graphId\": \"a\",\n      \"x\": [\n        {\n          \"?\": 1,\n          \"?\": 2\n        }\n      ]\n    }\n  ],\n  \"rowCount\": 1,\n  \"graphCount\": 1,\n  \"queriedGraphCount\": 1,\n  \"perGraphLimit\": 1000,\n  \"limit\": 1000,\n  \"truncated\": false,\n  \"graphs\": [\n    {\n      \"graphId\": \"a\",\n      \"columns\": [\n        \"x\"\n      ],\n      \"rowCount\": 1,\n      \"rows\": [\n        {\n          \"graphId\": \"a\",\n          \"x\": [\n            {\n              \"?\": 1,\n              \"?\": 2\n            }\n          ]\n        }\n      ]\n    }\n  ],\n  \"mode\": \"fanout\"\n}",
+      "json": {
+        "columns": [
+          "graphId",
+          "x"
+        ],
+        "rows": [
+          {
+            "graphId": "a",
+            "x": [
+              {
+                "?": 2
+              }
+            ]
+          }
+        ],
+        "rowCount": 1,
+        "graphCount": 1,
+        "queriedGraphCount": 1,
+        "perGraphLimit": 1000,
+        "limit": 1000,
+        "truncated": false,
+        "graphs": [
+          {
+            "graphId": "a",
+            "columns": [
+              "x"
+            ],
+            "rowCount": 1,
+            "rows": [
+              {
+                "graphId": "a",
+                "x": [
+                  {
+                    "?": 2
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "mode": "fanout"
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "fanout-4",
+      "method": "POST",
+      "path": "/api/cypher/graphs?mode=fanout&includeGraphRows=true",
+      "body": {
+        "query": "RETURN null AS `\ud800`,2 AS `\ud801`,3 AS `?`",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 200,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:10:48 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "532"
+        ]
+      ],
+      "bodyBase64": "ewogICJjb2x1bW5zIjogWwogICAgImdyYXBoSWQiLAogICAgIj8iLAogICAgIj8iLAogICAgIj8iCiAgXSwKICAicm93cyI6IFsKICAgIHsKICAgICAgImdyYXBoSWQiOiAiYSIsCiAgICAgICI/IjogMiwKICAgICAgIj8iOiAzCiAgICB9CiAgXSwKICAicm93Q291bnQiOiAxLAogICJncmFwaENvdW50IjogMSwKICAicXVlcmllZEdyYXBoQ291bnQiOiAxLAogICJwZXJHcmFwaExpbWl0IjogMTAwMCwKICAibGltaXQiOiAxMDAwLAogICJ0cnVuY2F0ZWQiOiBmYWxzZSwKICAiZ3JhcGhzIjogWwogICAgewogICAgICAiZ3JhcGhJZCI6ICJhIiwKICAgICAgImNvbHVtbnMiOiBbCiAgICAgICAgIj8iLAogICAgICAgICI/IiwKICAgICAgICAiPyIKICAgICAgXSwKICAgICAgInJvd0NvdW50IjogMSwKICAgICAgInJvd3MiOiBbCiAgICAgICAgewogICAgICAgICAgImdyYXBoSWQiOiAiYSIsCiAgICAgICAgICAiPyI6IDIsCiAgICAgICAgICAiPyI6IDMKICAgICAgICB9CiAgICAgIF0KICAgIH0KICBdLAogICJtb2RlIjogImZhbm91dCIKfQ==",
+      "bodyUTF8": "{\n  \"columns\": [\n    \"graphId\",\n    \"?\",\n    \"?\",\n    \"?\"\n  ],\n  \"rows\": [\n    {\n      \"graphId\": \"a\",\n      \"?\": 2,\n      \"?\": 3\n    }\n  ],\n  \"rowCount\": 1,\n  \"graphCount\": 1,\n  \"queriedGraphCount\": 1,\n  \"perGraphLimit\": 1000,\n  \"limit\": 1000,\n  \"truncated\": false,\n  \"graphs\": [\n    {\n      \"graphId\": \"a\",\n      \"columns\": [\n        \"?\",\n        \"?\",\n        \"?\"\n      ],\n      \"rowCount\": 1,\n      \"rows\": [\n        {\n          \"graphId\": \"a\",\n          \"?\": 2,\n          \"?\": 3\n        }\n      ]\n    }\n  ],\n  \"mode\": \"fanout\"\n}",
+      "json": {
+        "columns": [
+          "graphId",
+          "?",
+          "?",
+          "?"
+        ],
+        "rows": [
+          {
+            "graphId": "a",
+            "?": 3
+          }
+        ],
+        "rowCount": 1,
+        "graphCount": 1,
+        "queriedGraphCount": 1,
+        "perGraphLimit": 1000,
+        "limit": 1000,
+        "truncated": false,
+        "graphs": [
+          {
+            "graphId": "a",
+            "columns": [
+              "?",
+              "?",
+              "?"
+            ],
+            "rowCount": 1,
+            "rows": [
+              {
+                "graphId": "a",
+                "?": 3
+              }
+            ]
+          }
+        ],
+        "mode": "fanout"
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "fanout-5",
+      "method": "POST",
+      "path": "/api/cypher/graphs?mode=fanout&includeGraphRows=true",
+      "body": {
+        "query": "RETURN {`\ud800`:sqrt(-1),`?`:2} AS x",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    "response": {
+      "status": 500,
+      "headers": [
+        [
+          "Date",
+          "Sun, 06 Sep 2026 20:10:48 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json"
+        ],
+        [
+          "Content-Length",
+          "145"
+        ]
+      ],
+      "bodyBase64": "ewogICAgInRpdGxlIjogIlNlcnZlciBFcnJvciIsCiAgICAic3RhdHVzIjogNTAwLAogICAgInR5cGUiOiAiaHR0cHM6Ly9qYXZhbGluLmlvL2RvY3VtZW50YXRpb24jaW50ZXJuYWxzZXJ2ZXJlcnJvcnJlc3BvbnNlIiwKICAgICJkZXRhaWxzIjoge30KfQ==",
+      "bodyUTF8": "{\n    \"title\": \"Server Error\",\n    \"status\": 500,\n    \"type\": \"https://javalin.io/documentation#internalservererrorresponse\",\n    \"details\": {}\n}",
+      "json": {
+        "title": "Server Error",
+        "status": 500,
+        "type": "https://javalin.io/documentation#internalservererrorresponse",
+        "details": {}
+      }
+    }
+  }
+]

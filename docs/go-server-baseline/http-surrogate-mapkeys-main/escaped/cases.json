@@ -1,0 +1,92 @@
+{
+  "cases": [
+    {
+      "name": "root-0",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "RETURN '\\uD800','\\uD801','?'",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    {
+      "name": "root-1",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "RETURN size('\\uD800'),size('\\uD801'),size('?')",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    {
+      "name": "scoped-0",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher",
+      "body": {
+        "query": "RETURN '\\uD800','\\uD801','?'",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    {
+      "name": "scoped-1",
+      "method": "POST",
+      "path": "/api/graphs/a/cypher",
+      "body": {
+        "query": "RETURN size('\\uD800'),size('\\uD801'),size('?')",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    {
+      "name": "selected-0",
+      "method": "POST",
+      "path": "/api/cypher/graphs",
+      "body": {
+        "query": "RETURN '\\uD800','\\uD801','?'",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    {
+      "name": "selected-1",
+      "method": "POST",
+      "path": "/api/cypher/graphs",
+      "body": {
+        "query": "RETURN size('\\uD800'),size('\\uD801'),size('?')",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    {
+      "name": "fanout-0",
+      "method": "POST",
+      "path": "/api/cypher/graphs?mode=fanout&includeGraphRows=true",
+      "body": {
+        "query": "RETURN '\\uD800','\\uD801','?'",
+        "graphs": [
+          "a"
+        ]
+      }
+    },
+    {
+      "name": "fanout-1",
+      "method": "POST",
+      "path": "/api/cypher/graphs?mode=fanout&includeGraphRows=true",
+      "body": {
+        "query": "RETURN size('\\uD800'),size('\\uD801'),size('?')",
+        "graphs": [
+          "a"
+        ]
+      }
+    }
+  ]
+}
