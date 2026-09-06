@@ -4653,3 +4653,41 @@ are unchanged within noise. Five rounds had left the change inside the noise ban
 it.
 
 **Conclusion:** keep for exact-head hosted validation.
+
+### 2026-09-06 - Attempt 147: Trim per-request and per-graph interpreted steps of the provenance path (rejected)
+
+**Hypothesis:** after Attempt 146 the provenance pass still runs a few interpreted steps per graph
+or per request that a loop would do in fewer bytecodes: the projected index array was built
+through a boxed list, the shared setup compared its projection through the JDK's vectorized
+array equality, the first graph's DISTINCT scan hashed every decoded tuple into a set although
+its string ids had already deduplicated them, and the tuple set built a second hash set for
+membership next to its insertion-ordered one.
+
+**Change (not kept):** a plain `IntArray` construction, a loop comparison, no decoded-value set
+on the id-deduplicated path, and the insertion-ordered set reused for membership.
+
+**Evidence (local, 64 fixtures, fresh JVM in benchmark order, ten alternating runs):**
+distinct-dense first execution CPU median `10.17 -> 10.33 ms` (mean `10.20 -> 10.06 ms`),
+second `5.77 -> 5.67 ms`; `add` `9.31 -> 9.64 ms`; four-properties-targeted `6.92 -> 7.33 ms`.
+Nothing outside the noise band in either direction.
+
+**Conclusion:** reverted; the per-graph cost that remains is not in these steps.
+
+### 2026-09-06 - Attempt 148: Snap directory-search probes to short front-coded chains (rejected)
+
+**Hypothesis:** every bisection step of a tuple lookup decodes one directory string, and a
+front-coded string costs up to eight dependent decodes depending on its position inside its
+block. Choosing, among the rows within three positions of the middle, the one whose string id
+sits earliest in its block would keep the halving almost intact while making each probe decode
+fewer predecessors.
+
+**Change (not kept):** the bisection phase probed the cheapest row near the middle once the
+remaining span exceeded six rows.
+
+**Evidence (local, 64 fixtures, fresh JVM in benchmark order, ten alternating runs):**
+distinct-dense first execution wall median `11.24 -> 12.09 ms` (CPU median `10.18 -> 11.20 ms`),
+`add` `10.23 -> 10.65 ms`, four-properties-targeted `7.97 -> 8.10 ms`; the second executions and
+the wrapped targeted row are unchanged within noise.
+
+**Conclusion:** reverted; the extra modulo and comparisons per step cost more than the decodes
+they save, and the search takes more steps when it drifts from the middle.
