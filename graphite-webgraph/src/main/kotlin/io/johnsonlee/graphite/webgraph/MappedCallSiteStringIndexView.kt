@@ -709,15 +709,11 @@ internal class MappedCallSiteStringIndexView private constructor(
                 val leadingColumn = lookup.lookupOrder[0]
                 val grouped = selectedValues.groupedBy(leadingColumn)
                 val leadingValues = selectedValues.sortedValues(leadingColumn)
-                val leadingTrigrams = (selectedValues.scratch(LEADING_VALUE_TRIGRAMS_SLOT) as? LeadingValueTrigrams)
-                    ?.takeIf { shared -> shared.column == leadingColumn }
-                    ?: LeadingValueTrigrams(leadingColumn, leadingValues).also { created ->
-                        selectedValues.scratch(LEADING_VALUE_TRIGRAMS_SLOT, created)
-                    }
+                setup.leadingValues(leadingColumn, leadingValues)
                 for (index in leadingValues.indices) {
                     if ((index and TUPLE_INTERRUPTION_POLL_MASK) == 0) checkViewInterrupted()
                     val value = leadingValues[index]
-                    if (!lookup.leadingValuePresent(value, leadingTrigrams, index, accounting)) continue
+                    if (!lookup.leadingValuePresent(value, index, accounting)) continue
                     for (values in grouped[value] ?: continue) {
                         val order = lookup.hit(values, accounting)
                         if (order >= 0L) hits += StringPropertyDistinctRow(order, values)
@@ -738,6 +734,7 @@ internal class MappedCallSiteStringIndexView private constructor(
 
     /** Per-request state of [selectedTupleHits]: predicate split, lookup order, and dictionary caches. */
     private inner class TupleLookup(
+        private val setup: TupleLookupSetup,
         private val projectedPropertyIndexes: IntArray,
         val lookupOrder: IntArray,
         private val projectedPredicates: List<StringPropertyPredicate>,
@@ -748,8 +745,15 @@ internal class MappedCallSiteStringIndexView private constructor(
         private val stringIds = IntArray(CALL_SITE_STRING_PROPERTY_COUNT)
         private val rowCaches = arrayOfNulls<HashMap<String, Int>>(CALL_SITE_STRING_PROPERTY_COUNT)
         private val decoded = MutableString()
-        /** Directory position reached by the ascending leading-value walk of [selectedTupleHits]. */
-        private var leadingCursor = 0
+
+        /**
+         * The directory search a graph without load-time tables falls back to, created on first
+         * use so a graph with tables never loads its class.
+         */
+        private var directorySearch: TupleDirectorySearch? = null
+
+        private fun directorySearch(): TupleDirectorySearch =
+            directorySearch ?: TupleDirectorySearch(setup).also { directorySearch = it }
 
         /**
          * Directory row of [value] in [propertyIndex], or -1 when no CallSite carries it there.
@@ -765,10 +769,8 @@ internal class MappedCallSiteStringIndexView private constructor(
             val hashes = directoryHashes
             val row = if (hashes != null) {
                 hashes.row(propertyIndex, value, stringTable, decoded)
-            } else if (mayContain(value)) {
-                maxOf(-1, searchDirectory(propertyIndex, value, accounting, 0))
             } else {
-                -1
+                directorySearch().row(propertyIndex, value, accounting)
             }
             rowCache[value] = row
             return row
@@ -779,19 +781,14 @@ internal class MappedCallSiteStringIndexView private constructor(
          * value, searched from the row reached by the previous value. Misses move the cursor to the
          * insertion point.
          */
-        private fun leadingDirectoryRow(
-            value: String,
-            trigrams: LeadingValueTrigrams,
-            index: Int,
-            accounting: BufferedGraphWorkConsumer
-        ): Int {
+        private fun leadingDirectoryRow(value: String, index: Int, accounting: BufferedGraphWorkConsumer): Int {
             val propertyIndex = projectedPropertyIndexes[lookupOrder[0]]
             accounting.consume()
             val hashes = directoryHashes
             val found = if (hashes != null) {
                 hashes.row(propertyIndex, value, stringTable, decoded)
             } else {
-                leadingSearchRow(propertyIndex, value, trigrams, index, accounting)
+                directorySearch().leadingRow(propertyIndex, value, index, accounting)
             }
             if (found < 0) return -1
             // Each sorted leading value is visited once per graph, so only a hit is worth caching:
@@ -801,107 +798,9 @@ internal class MappedCallSiteStringIndexView private constructor(
             return found
         }
 
-        /**
-         * Directory search of the [index]th sorted leading value from the row reached by the
-         * previous value, for a graph without load-time tables; a miss moves the cursor to the
-         * insertion point.
-         */
-        private fun leadingSearchRow(
-            propertyIndex: Int,
-            value: String,
-            trigrams: LeadingValueTrigrams,
-            index: Int,
-            accounting: BufferedGraphWorkConsumer
-        ): Int {
-            if (!mayContain(trigrams, index)) return -1
-            val found = searchDirectory(propertyIndex, value, accounting, leadingCursor)
-            leadingCursor = if (found < 0) -(found + 1) else found
-            return found
-        }
-
-        /**
-         * Presence check of the [index]th leading value through its request-shared trigram hashes,
-         * starting from the trigram that proved the previous graph absent.
-         */
-        private fun mayContain(trigrams: LeadingValueTrigrams, index: Int): Boolean {
-            val directory = trigramDirectory ?: return true
-            val hashes = trigrams.hashes[index]
-            if (hashes.isEmpty()) return true
-            val start = trigrams.absentHints[index]
-            for (offset in hashes.indices) {
-                val position = (start + offset) % hashes.size
-                if (!directory.contains(hashes[position])) {
-                    trigrams.absentHints[index] = position
-                    return false
-                }
-            }
-            return true
-        }
-
-        private fun mayContain(value: String): Boolean {
-            val directory = trigramDirectory ?: return true
-            if (value.length < TRIGRAM_LENGTH) return true
-            val lowercase = value.lowercase()
-            for (position in lowercase.length - TRIGRAM_LENGTH downTo 0) {
-                if (!directory.contains(mappedTrigramHash(lowercase, position))) return false
-            }
-            return true
-        }
-
-        /**
-         * Row of [value] in the property directory, or `-(insertion point + 1)` when absent. The
-         * search gallops from [fromRow] first, so an ascending sequence of values costs a number of
-         * decodes proportional to the log of the distance between hits rather than of the directory.
-         */
-        private fun searchDirectory(
-            propertyIndex: Int,
-            value: String,
-            accounting: BufferedGraphWorkConsumer,
-            fromRow: Int
-        ): Int {
-            val directory = propertyStringIds[propertyIndex]
-            val size = directory.limit()
-            var low = fromRow.coerceIn(0, size)
-            var high = size - 1
-            if (fromRow > 0) {
-                var step = 1
-                var probe = low
-                while (probe < size) {
-                    accounting.consume()
-                    stringTable.get(directory.get(probe), decoded)
-                    val comparison = decoded.compareTo(value)
-                    if (comparison == 0) return probe
-                    if (comparison > 0) {
-                        high = probe - 1
-                        break
-                    }
-                    low = probe + 1
-                    probe += step
-                    step = step shl 1
-                }
-                if (probe >= size) high = size - 1
-            }
-            while (low <= high) {
-                accounting.consume()
-                val middle = (low + high).ushr(1)
-                stringTable.get(directory.get(middle), decoded)
-                val comparison = decoded.compareTo(value)
-                when {
-                    comparison < 0 -> low = middle + 1
-                    comparison > 0 -> high = middle - 1
-                    else -> return middle
-                }
-            }
-            return -(low + 1)
-        }
-
         /** True when [value], the [index]th sorted leading value, is used by the leading lookup property. */
-        fun leadingValuePresent(
-            value: String,
-            trigrams: LeadingValueTrigrams,
-            index: Int,
-            accounting: BufferedGraphWorkConsumer
-        ): Boolean = leadingDirectoryRow(value, trigrams, index, accounting) >= 0
+        fun leadingValuePresent(value: String, index: Int, accounting: BufferedGraphWorkConsumer): Boolean =
+            leadingDirectoryRow(value, index, accounting) >= 0
 
         /** Encounter order of the first node carrying [values], or -1 when the graph has none. */
         @Suppress("ReturnCount")
@@ -978,6 +877,113 @@ internal class MappedCallSiteStringIndexView private constructor(
         }
     }
 
+    /**
+     * The directory search of a graph without load-time tables: every string used by a CallSite
+     * property has all of its lowercase trigrams indexed, so a value with an absent trigram is
+     * rejected from the cache-resident bit set before any string is decoded, and the remaining
+     * values binary search the property's own sorted directory. The sorted leading values gallop
+     * from the row the previous value reached.
+     */
+    private inner class TupleDirectorySearch(private val setup: TupleLookupSetup) {
+        private val decoded = MutableString()
+
+        /** Directory position reached by the ascending leading-value walk of [selectedTupleHits]. */
+        private var leadingCursor = 0
+
+        /** Directory row of [value] in [propertyIndex], or -1 when no CallSite carries it there. */
+        fun row(propertyIndex: Int, value: String, accounting: BufferedGraphWorkConsumer): Int =
+            if (mayContain(value)) maxOf(-1, searchDirectory(propertyIndex, value, accounting, 0)) else -1
+
+        /**
+         * Directory row of the [index]th sorted leading value, searched from the row reached by the
+         * previous value; a miss moves the cursor to the insertion point.
+         */
+        fun leadingRow(propertyIndex: Int, value: String, index: Int, accounting: BufferedGraphWorkConsumer): Int {
+            if (!mayContainLeading(index)) return -1
+            val found = searchDirectory(propertyIndex, value, accounting, leadingCursor)
+            leadingCursor = if (found < 0) -(found + 1) else found
+            return found
+        }
+
+        /**
+         * Presence check of the [index]th leading value through its request-shared trigram hashes,
+         * starting from the trigram that proved the previous graph absent.
+         */
+        private fun mayContainLeading(index: Int): Boolean {
+            val directory = trigramDirectory ?: return true
+            val hashes = setup.leadingTrigramHashes(index)
+            if (hashes.isEmpty()) return true
+            val start = setup.leadingAbsentHint(index)
+            for (offset in hashes.indices) {
+                val position = (start + offset) % hashes.size
+                if (!directory.contains(hashes[position])) {
+                    setup.rememberLeadingAbsent(index, position)
+                    return false
+                }
+            }
+            return true
+        }
+
+        private fun mayContain(value: String): Boolean {
+            val directory = trigramDirectory ?: return true
+            if (value.length < TRIGRAM_LENGTH) return true
+            val lowercase = value.lowercase()
+            for (position in lowercase.length - TRIGRAM_LENGTH downTo 0) {
+                if (!directory.contains(mappedTrigramHash(lowercase, position))) return false
+            }
+            return true
+        }
+
+        /**
+         * Row of [value] in the property directory, or `-(insertion point + 1)` when absent. The
+         * search gallops from [fromRow] first, so an ascending sequence of values costs a number of
+         * decodes proportional to the log of the distance between hits rather than of the directory.
+         */
+        private fun searchDirectory(
+            propertyIndex: Int,
+            value: String,
+            accounting: BufferedGraphWorkConsumer,
+            fromRow: Int
+        ): Int {
+            val directory = propertyStringIds[propertyIndex]
+            val size = directory.limit()
+            var low = fromRow.coerceIn(0, size)
+            var high = size - 1
+            if (fromRow > 0) {
+                var step = 1
+                var probe = low
+                while (probe < size) {
+                    accounting.consume()
+                    stringTable.get(directory.get(probe), decoded)
+                    val comparison = decoded.compareTo(value)
+                    if (comparison == 0) return probe
+                    if (comparison > 0) {
+                        high = probe - 1
+                        break
+                    }
+                    low = probe + 1
+                    probe += step
+                    step = step shl 1
+                }
+                if (probe >= size) high = size - 1
+            }
+            while (low <= high) {
+                accounting.consume()
+                val middle = (low + high).ushr(1)
+                stringTable.get(directory.get(middle), decoded)
+                val comparison = decoded.compareTo(value)
+                if (comparison < 0) {
+                    low = middle + 1
+                } else if (comparison > 0) {
+                    high = middle - 1
+                } else {
+                    return middle
+                }
+            }
+            return -(low + 1)
+        }
+    }
+
     private fun tupleLookup(
         setup: TupleLookupSetup,
         projectedPropertyIndexes: IntArray,
@@ -988,7 +994,7 @@ internal class MappedCallSiteStringIndexView private constructor(
         } else {
             matchPlan(setup.residualPredicates, workConsumer) ?: return null
         }
-        return TupleLookup(projectedPropertyIndexes, setup.lookupOrder, setup.projectedPredicates, residualPlan, workConsumer)
+        return TupleLookup(setup, projectedPropertyIndexes, setup.lookupOrder, setup.projectedPredicates, residualPlan, workConsumer)
     }
 
     private fun projectValues(stringIds: IntArray, projectedPropertyIndexes: IntArray): List<String?> =
@@ -1391,6 +1397,35 @@ internal class TupleLookupSetup(
     val projectedPredicates = ArrayList<StringPropertyPredicate>()
     val residualPredicates = ArrayList<StringPropertyPredicate>()
 
+    private var leadingColumn = -1
+    private var leadingValues: List<String> = emptyList()
+    private var leadingHashes: Array<IntArray?> = NO_LEADING_HASHES
+    private var leadingAbsentHints: IntArray = EMPTY_INTS
+
+    /**
+     * Registers the sorted leading values of [column] that every graph of the request visits.
+     * Their trigram hashes are computed lazily, per value, by the first graph that has to search
+     * a directory for the value; graphs with load-time tables never need them.
+     */
+    fun leadingValues(column: Int, values: List<String>) {
+        if (column == leadingColumn && values === leadingValues) return
+        leadingColumn = column
+        leadingValues = values
+        leadingHashes = arrayOfNulls(values.size)
+        leadingAbsentHints = IntArray(values.size)
+    }
+
+    /** Distinct lowercase trigram hashes of the [index]th leading value, in probe order. */
+    fun leadingTrigramHashes(index: Int): IntArray =
+        leadingHashes[index] ?: distinctTrigramHashes(leadingValues[index]).also { leadingHashes[index] = it }
+
+    /** The trigram that last proved the [index]th leading value absent, so the next graph starts there. */
+    fun leadingAbsentHint(index: Int): Int = leadingAbsentHints[index]
+
+    fun rememberLeadingAbsent(index: Int, position: Int) {
+        leadingAbsentHints[index] = position
+    }
+
     init {
         predicates.forEach { predicate ->
             val propertyIndex = callSiteStringPropertyIndex(predicate.property)
@@ -1418,24 +1453,13 @@ private fun lookupOrder(projectedPropertyIndexes: IntArray): IntArray {
     return order.copyOf(size)
 }
 
-/**
- * The distinct lowercase trigram hashes of every sorted leading value of a cross-graph DISTINCT
- * request, computed once for the leading [column] and shared by every graph view through the
- * selected tuples' scratch slot; a value shorter than a trigram has no hashes and is never
- * rejected. [absentHints] remembers per value the trigram that last proved a graph absent so the
- * next graph's presence pass usually stops at its first check.
- */
-internal class LeadingValueTrigrams(val column: Int, values: List<String>) {
-    val hashes: Array<IntArray> = Array(values.size) { index -> distinctTrigramHashes(values[index]) }
-    val absentHints = IntArray(values.size)
-
-    private fun distinctTrigramHashes(value: String): IntArray {
-        if (value.length < TRIGRAM_LENGTH) return EMPTY_INTS
-        val lowercase = value.lowercase()
-        val distinct = LinkedHashSet<Int>()
-        for (position in lowercase.length - TRIGRAM_LENGTH downTo 0) distinct += mappedTrigramHash(lowercase, position)
-        return distinct.toIntArray()
-    }
+/** Distinct lowercase trigram hashes of [value] in probe order; empty for values shorter than a trigram. */
+private fun distinctTrigramHashes(value: String): IntArray {
+    if (value.length < TRIGRAM_LENGTH) return EMPTY_INTS
+    val lowercase = value.lowercase()
+    val distinct = LinkedHashSet<Int>()
+    for (position in lowercase.length - TRIGRAM_LENGTH downTo 0) distinct += mappedTrigramHash(lowercase, position)
+    return distinct.toIntArray()
 }
 
 /**
@@ -1623,7 +1647,7 @@ internal data class MappedPredicateKey(
     val expected: String
 )
 
-private class IntTupleKey(private val values: IntArray) {
+internal class IntTupleKey(private val values: IntArray) {
     private val hash = values.contentHashCode()
 
     override fun hashCode(): Int = hash
@@ -1849,6 +1873,7 @@ private class PostingCursorHeap(cursors: List<MappedPostingCursor>) {
 }
 
 private val EMPTY_INTS = IntArray(0)
+private val NO_LEADING_HASHES = arrayOfNulls<IntArray>(0)
 
 /** Marker for a posting range whose ascending order was accepted by an earlier validation. */
 private val KNOWN_VALID_ORDERS = LongArray(0)
@@ -1887,7 +1912,6 @@ private const val DIRECTORY_SCAN_RATIO = 8
 private const val SMALL_TRIGRAM_SPAN = 32
 private const val MAX_CACHED_TRIGRAM_TERMS = 256
 private const val DENSE_TRIGRAM_SPAN = 1_024
-private const val LEADING_VALUE_TRIGRAMS_SLOT = 0
 private const val TUPLE_LOOKUP_SETUP_SLOT = 1
 private val TUPLE_LOOKUP_PREFERENCE = intArrayOf(
     CALLER_CLASS_PROPERTY_INDEX,

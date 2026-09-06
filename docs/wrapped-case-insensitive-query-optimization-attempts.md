@@ -4910,3 +4910,32 @@ reverse):** four-properties-targeted `6.92 -> 6.37 / 6.56 -> 6.54 ms`, name-pair
 and wrapped DISTINCT rows within the jar-order band.
 
 **Conclusion:** kept.
+
+### 2026-09-06 - Attempt 157: Fewer and smaller classes on the first DISTINCT provenance row
+
+**Hypothesis:** the first DISTINCT dense row of a cold process still loaded six classes on the
+request thread, and preloading exactly those six before the request cut the row's CPU from
+8.1-8.4 ms to 4.7-6.1 ms, so their loading and verification is worth 2-3 ms. Two of them
+existed only as code structure: the graph kept its own id-tuple key class next to the view's
+identical one, and the request-shared leading-value trigram hashes lived in a class of their
+own, eagerly hashing every leading value even though only a graph without load-time tables
+ever reads them. The largest of the six, the tuple lookup, carried the directory-search
+fallback (galloping search, trigram presence checks) that a graph with load-time tables
+never executes, so its bytecode was verified on every cold request for nothing.
+
+**Change:** the graph's DISTINCT raw path dedupes on the view's `IntTupleKey`; the leading
+values, their lazily computed trigram hashes and the per-value absent hints live in
+`TupleLookupSetup`, which the request already shares through the scratch slot; and the
+tuple lookup's directory search moved into `TupleDirectorySearch`, created on first use only by
+a graph without load-time tables. The class count of the row drops from six to five, and the
+add-row's last request-thread class load disappears.
+
+**Evidence (local, 64 fixtures, eight runs forward and six reverse, medians forward /
+reverse):** distinct-dense first execution CPU `7.34 -> 5.97 / 7.21 -> 6.19 ms` (wall
+`8.27 -> 7.19 / 8.65 -> 8.42 ms`; every one of the fourteen candidate CPU samples is below the
+base median of its order), add first execution CPU `8.30 -> 7.37 / 8.66 -> 8.29 ms`; the
+targeted and dense projection rows load the same classes as before and stay within the
+jar-order band (four-properties-targeted `5.72 -> 6.46 / 6.29 -> 6.41 ms` wall against a
+`5.72`-`6.29` spread of the base itself between orders).
+
+**Conclusion:** kept.
