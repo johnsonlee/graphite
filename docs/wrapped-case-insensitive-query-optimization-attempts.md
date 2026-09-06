@@ -4409,3 +4409,25 @@ distinct-dense CPU `9.0..10.8 ms -> 7.0..8.2 ms`; the other dense terms `15..30%
 core tests and detekt pass.
 
 **Conclusion:** keep for exact-head hosted validation after Attempt 134's run is read.
+
+### 2026-09-06 - Attempt 136: Share the leading values' trigram hashes across the graphs of a request
+
+**Hypothesis:** with Attempt 135 in place, a fresh-JVM attribution of the distinct-dense row puts
+`7..8 ms` of its `12..15 ms` in the provenance pass over the 63 remaining graphs: `1,467` leading
+values pass through the trigram presence check (`~2 ms`, each call lowercasing the value and
+hashing every trigram again for every graph), `646` of them reach a directory search (`~2.5 ms`,
+`3,889` decodes), and only `11` are hits. The presence check repeats per graph work that depends
+only on the request's values.
+
+**Change:** the sorted leading values' distinct lowercase trigram hashes are computed once per
+request in a `StringPropertyTupleSet` scratch slot shared by every graph view, and each value
+remembers the trigram that last proved a graph absent so the next graph's presence pass usually
+stops at its first check, mirroring `TrigramTerm.absentHint` for predicate terms.
+
+**Evidence (local, 64 fixtures, fresh JVM in benchmark order, three alternating runs each):**
+distinct-dense first execution CPU `13.4..16.0 ms -> 12.0..14.4 ms`, second execution
+`6.2..8.5 -> 5.6..6.6 ms`; `add` first execution `10.4..12.6 -> 9.5..11.5 ms`; the targeted rows,
+which do not use the path, are unchanged within noise. The mapped-view and core tests and detekt
+pass.
+
+**Conclusion:** keep for exact-head hosted validation after Attempt 135's run is read.

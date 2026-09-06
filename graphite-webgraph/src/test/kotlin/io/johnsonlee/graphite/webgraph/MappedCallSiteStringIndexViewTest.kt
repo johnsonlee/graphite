@@ -460,4 +460,21 @@ class MappedCallSiteStringIndexViewTest {
             )
         }
     }
+
+    @Test
+    fun `leading value trigrams are the distinct lowercase trigram hashes with a per-value absent hint`() {
+        fun hash(text: String, position: Int): Int =
+            (text[position].code * 31 + text[position + 1].code) * 31 + text[position + 2].code
+
+        val trigrams = LeadingValueTrigrams(listOf("ab", "GetGet", "run"))
+
+        assertEquals(0, trigrams.hashes[0].size)
+        // "getget" has trigrams get, etg, tge, get: three distinct hashes in last-to-first order.
+        assertEquals(
+            listOf(hash("getget", 3), hash("getget", 2), hash("getget", 1)),
+            trigrams.hashes[1].toList()
+        )
+        assertEquals(listOf(hash("run", 0)), trigrams.hashes[2].toList())
+        assertEquals(listOf(0, 0, 0), trigrams.absentHints.toList())
+    }
 }

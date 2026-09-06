@@ -52,6 +52,20 @@ class StringPropertyTupleSetTest {
     }
 
     @Test
+    fun `shared scratch computes a value once per key and hands it to every later caller`() {
+        val tuples = StringPropertyTupleSet(listOf(alpha, gamma))
+        var computed = 0
+
+        val first = tuples.sharedScratch("hashes") { computed++; IntArray(3) }
+        val again = tuples.sharedScratch("hashes") { computed++; IntArray(3) }
+        val other = tuples.sharedScratch("hints") { computed++; IntArray(1) }
+
+        assertSame(first, again)
+        assertEquals(1, other.size)
+        assertEquals(2, computed)
+    }
+
+    @Test
     fun `grouping outside the tuple width or over an empty set is empty`() {
         val tuples = StringPropertyTupleSet(listOf(alpha, listOf("short")))
 

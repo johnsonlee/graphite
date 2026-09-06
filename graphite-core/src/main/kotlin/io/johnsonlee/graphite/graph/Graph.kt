@@ -218,6 +218,7 @@ class StringPropertyTupleSet(tuples: Collection<List<String?>>) : AbstractSet<Li
         ordered.firstOrNull()?.size ?: 0
     )
     private val sortedValueLists = arrayOfNulls<List<String>>(ordered.firstOrNull()?.size ?: 0)
+    private val scratch = HashMap<Any, Any>()
 
     override val size: Int
         get() = ordered.size
@@ -230,6 +231,16 @@ class StringPropertyTupleSet(tuples: Collection<List<String?>>) : AbstractSet<Li
     fun sortedValues(column: Int): List<String> {
         if (column !in sortedValueLists.indices) return emptyList()
         return sortedValueLists[column] ?: groupedBy(column).keys.filterNotNull().sorted().also { sortedValueLists[column] = it }
+    }
+
+    /**
+     * Request-scoped scratch shared by every storage backend that looks these tuples up, such as
+     * derived per-value data a cross-graph request would otherwise recompute for each graph.
+     * The value for [key] is computed once by [compute] and returned to every later caller.
+     */
+    @Suppress("UNCHECKED_CAST")
+    fun <T : Any> sharedScratch(key: Any, compute: () -> T): T = synchronized(scratch) {
+        scratch.getOrPut(key, compute) as T
     }
 
     /** Tuples grouped by their value in [column], in first-seen order; tuples shorter than the column are skipped. */

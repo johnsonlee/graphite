@@ -590,9 +590,14 @@ internal class MappedCallSiteStringIndexView private constructor(
                 // gallops from the previous position instead of bisecting the whole directory.
                 val leadingColumn = lookup.lookupOrder[0]
                 val grouped = selectedValues.groupedBy(leadingColumn)
-                for (value in selectedValues.sortedValues(leadingColumn)) {
+                val leadingValues = selectedValues.sortedValues(leadingColumn)
+                val leadingTrigrams = selectedValues.sharedScratch(LeadingValueTrigramsKey(leadingColumn)) {
+                    LeadingValueTrigrams(leadingValues)
+                }
+                for (index in leadingValues.indices) {
                     checkViewInterrupted()
-                    if (!lookup.leadingValuePresent(value, accounting)) continue
+                    val value = leadingValues[index]
+                    if (!lookup.leadingValuePresent(value, leadingTrigrams, index, accounting)) continue
                     for (values in grouped.getValue(value)) {
                         val order = lookup.hit(values, accounting)
                         if (order >= 0L) hits += StringPropertyDistinctRow(order, values)
@@ -646,13 +651,18 @@ internal class MappedCallSiteStringIndexView private constructor(
          * Directory row of the leading lookup property for [value], searched from the row reached by
          * the previous ascending leading value. Misses move the cursor to the insertion point.
          */
-        private fun leadingDirectoryRow(value: String, accounting: BufferedGraphWorkConsumer): Int {
+        private fun leadingDirectoryRow(
+            value: String,
+            trigrams: LeadingValueTrigrams,
+            index: Int,
+            accounting: BufferedGraphWorkConsumer
+        ): Int {
             val propertyIndex = projectedPropertyIndexes[lookupOrder[0]]
             val rowCache = rowCaches[propertyIndex] ?: HashMap<String, Int>().also { rowCaches[propertyIndex] = it }
             rowCache[value]?.let { return it }
             accounting.consume()
             var row = -1
-            if (mayContain(value)) {
+            if (mayContain(trigrams, index)) {
                 val found = searchDirectory(propertyIndex, value, accounting, leadingCursor)
                 if (found >= 0) {
                     row = found
@@ -663,6 +673,25 @@ internal class MappedCallSiteStringIndexView private constructor(
             }
             rowCache[value] = row
             return row
+        }
+
+        /**
+         * Presence check of the [index]th leading value through its request-shared trigram hashes,
+         * starting from the trigram that proved the previous graph absent.
+         */
+        private fun mayContain(trigrams: LeadingValueTrigrams, index: Int): Boolean {
+            val directory = trigramDirectory ?: return true
+            val hashes = trigrams.hashes[index]
+            if (hashes.isEmpty()) return true
+            val start = trigrams.absentHints[index]
+            for (offset in hashes.indices) {
+                val position = (start + offset) % hashes.size
+                if (!directory.contains(hashes[position])) {
+                    trigrams.absentHints[index] = position
+                    return false
+                }
+            }
+            return true
         }
 
         private fun mayContain(value: String): Boolean {
@@ -722,9 +751,13 @@ internal class MappedCallSiteStringIndexView private constructor(
             return -(low + 1)
         }
 
-        /** True when [value] is a dictionary string used by the leading lookup property. */
-        fun leadingValuePresent(value: String, accounting: BufferedGraphWorkConsumer): Boolean =
-            leadingDirectoryRow(value, accounting) >= 0
+        /** True when [value], the [index]th sorted leading value, is used by the leading lookup property. */
+        fun leadingValuePresent(
+            value: String,
+            trigrams: LeadingValueTrigrams,
+            index: Int,
+            accounting: BufferedGraphWorkConsumer
+        ): Boolean = leadingDirectoryRow(value, trigrams, index, accounting) >= 0
 
         /** Encounter order of the first node carrying [values], or -1 when the graph has none. */
         @Suppress("ReturnCount")
@@ -1222,6 +1255,32 @@ internal class TrigramTerm private constructor(val trigrams: IntArray) {
             if (terms.size >= MAX_CACHED_TRIGRAM_TERMS) terms.clear()
             return terms.putIfAbsent(key, term) ?: term
         }
+    }
+}
+
+/** Scratch key of the [LeadingValueTrigrams] of one leading column in a request's selected tuples. */
+private data class LeadingValueTrigramsKey(val column: Int)
+
+/**
+ * The distinct lowercase trigram hashes of every sorted leading value of a cross-graph DISTINCT
+ * request, computed once and shared by every graph view; a value shorter than a trigram has no
+ * hashes and is never rejected. [absentHints] remembers per value the trigram that last proved a
+ * graph absent so the next graph's presence pass usually stops at its first check.
+ */
+internal class LeadingValueTrigrams(values: List<String>) {
+    val hashes: Array<IntArray> = Array(values.size) { index -> distinctTrigramHashes(values[index]) }
+    val absentHints = IntArray(values.size)
+
+    private fun distinctTrigramHashes(value: String): IntArray {
+        if (value.length < TRIGRAM_LENGTH) return EMPTY_TRIGRAMS
+        val lowercase = value.lowercase()
+        val distinct = LinkedHashSet<Int>()
+        for (position in lowercase.length - TRIGRAM_LENGTH downTo 0) distinct += mappedTrigramHash(lowercase, position)
+        return distinct.toIntArray()
+    }
+
+    private companion object {
+        private val EMPTY_TRIGRAMS = IntArray(0)
     }
 }
 
