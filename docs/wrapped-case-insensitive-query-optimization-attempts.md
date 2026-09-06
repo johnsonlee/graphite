@@ -4384,5 +4384,8 @@ next two rarest trigram spans before decoding (targeted CPU `-15%` on four-prope
 single-property targeted rows `+30..50%` from the extra binary searches), and sharing the
 lowercase trigrams of selected tuple values across the graphs of one request (no change).
 
-**Conclusion:** keep for exact-head hosted validation of the global-wide gate; the remaining
-`8..11 ms` of the distinct-dense row is provenance data work on C1-level code, still to be cut.
+**Conclusion:** rejected in review and removed. Priming ran inside the first user request
+without charging its work to that request's `GraphWorkConsumer`, and the gate's nearest-rank P95
+over 34 rows excludes the single largest row, so the change could pass the gate by moving cost
+into an already-excluded outlier instead of lowering end-to-end cold latency. The engine's first
+use has to get cheaper on the rows that carry it, with every unit of work metered.

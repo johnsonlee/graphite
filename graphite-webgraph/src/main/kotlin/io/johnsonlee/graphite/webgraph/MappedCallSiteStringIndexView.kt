@@ -85,37 +85,6 @@ internal class MappedCallSiteStringIndexView private constructor(
      * the caller can answer from a bounded raw prefix before paying for verification. Returns null
      * when a predicate targets an unsupported property.
      */
-    /**
-     * Runs the lookup, projection, DISTINCT, and provenance paths once over the view's own first
-     * directory entry when the view opens. That costs well under a millisecond per graph and
-     * loads and profiles the engine's classes inside the request that opened the view, so the
-     * first user query of each shape pays for its own work instead of for the engine's first use.
-     */
-    @Suppress("TooGenericExceptionCaught", "SwallowedException")
-    internal fun prime() {
-        if (stringCount <= 0 || callSiteCount <= 0) return
-        val directory = propertyStringIds[CALLER_CLASS_PROPERTY_INDEX]
-        if (directory.limit() == 0) return
-        try {
-            val projected = IntArray(CALL_SITE_STRING_PROPERTY_COUNT) { index -> index }
-            val leading = stringTable.get(directory.get(0))
-            val exact = listOf(StringPropertyPredicate(PRIME_PROPERTIES[0], null, StringMatchMode.EQUALS, leading))
-            val rows = matchPlan(exact, null)?.let { plan -> projectRows(plan, projected, PRIME_LIMIT, null) }.orEmpty()
-            val term = leading.lowercase().takeLast(PRIME_TERM_LENGTH)
-            if (term.length < PRIME_MIN_TERM_LENGTH) return
-            val contains = PRIME_PROPERTIES.map { property ->
-                StringPropertyPredicate(property, StringValueTransform.LOWERCASE, StringMatchMode.CONTAINS, term)
-            }
-            val plan = matchPlan(contains, null) ?: return
-            projectRows(plan, projected, PRIME_LIMIT, null)
-            distinctRows(plan, projected, PRIME_LIMIT, null)
-            rows.firstOrNull()?.let { row -> selectedTupleHits(contains, projected, listOf(row.values), null) }
-        } catch (error: RuntimeException) {
-            // Priming is best effort: a view that answers its own entries oddly still serves queries,
-            // which validate their own ranges.
-        }
-    }
-
     fun matchPlan(predicates: List<StringPropertyPredicate>, workConsumer: GraphWorkConsumer?): MatchPlan? {
         if (predicates.any { predicate -> callSiteStringPropertyIndex(predicate.property) < 0 }) return null
         val probes = LinkedHashMap<MappedPredicateKey, PredicateProbe>(predicates.size * 2)
@@ -1610,10 +1579,6 @@ private const val INITIAL_DIRECTORY_CAPACITY = 1 shl 15
 private const val MAX_POOLED_LOAD_SCRATCH = 4
 private const val DIRECTORY_SCAN_RATIO = 8
 private const val SMALL_TRIGRAM_SPAN = 32
-private const val PRIME_LIMIT = 4
-private const val PRIME_TERM_LENGTH = 6
-private const val PRIME_MIN_TERM_LENGTH = 3
-private val PRIME_PROPERTIES = listOf(CALLER_CLASS_PROPERTY, CALLER_NAME_PROPERTY, CALLEE_CLASS_PROPERTY, CALLEE_NAME_PROPERTY)
 private const val MAX_CACHED_TRIGRAM_TERMS = 256
 private const val DENSE_TRIGRAM_SPAN = 1_024
 private val TUPLE_LOOKUP_PREFERENCE = intArrayOf(
