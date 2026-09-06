@@ -1269,6 +1269,7 @@ internal class MappedWebGraphBackedGraph(
 
     override fun close() {
         clearStringPropertyIndexes()
+        callSiteDirectoryHashes?.close()
         // MappedByteBuffer is unmapped by GC; no explicit unmap in standard API
     }
 

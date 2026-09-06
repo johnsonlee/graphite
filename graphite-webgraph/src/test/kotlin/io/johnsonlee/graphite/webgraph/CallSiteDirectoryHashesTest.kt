@@ -6,6 +6,9 @@ import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
+import io.johnsonlee.graphite.graph.StringMatchMode
+import io.johnsonlee.graphite.graph.StringPropertyPredicate
+import io.johnsonlee.graphite.graph.StringPropertyTupleSet
 import it.unimi.dsi.lang.MutableString
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -99,6 +102,59 @@ class CallSiteDirectoryHashesTest {
         assertFalse(hashes.matches(identity, stringCount + 1, uniqueCounts))
         assertFalse(hashes.matches(identity, stringCount, uniqueCounts.copyOf().also { counts -> counts[0]++ }))
         assertFalse(hashes.matches(identity.copyOf().also { bytes -> bytes[0] = (bytes[0] + 1).toByte() }, stringCount, uniqueCounts))
+    }
+
+    @Test
+    fun `tables reserve their exact bytes from the shared index budget and release them on close`() {
+        val dir = Files.createTempDirectory("callsite-directory-hashes-budget")
+        try {
+            GraphStore.save(referenceGraph(), dir, prepareCallSiteStringIndex = true)
+            val stringTable = StringTable.load(dir)
+            val sidecar = dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE)
+            val retainedBefore = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
+            val hashes = assertNotNull(CallSiteDirectoryHashes.load(sidecar, stringTable))
+            val (identity, stringCount, uniqueCounts) = header(dir)
+            assertEquals(CallSiteDirectoryHashes.tableBytes(uniqueCounts), hashes.retainedBytes)
+            assertEquals(retainedBefore + hashes.retainedBytes, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
+            assertTrue(hashes.matches(identity, stringCount, uniqueCounts))
+            hashes.close()
+            hashes.close()
+            assertEquals(retainedBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
+            assertFalse(hashes.matches(identity, stringCount, uniqueCounts))
+
+            // A saturated budget leaves the graph without tables, and the search path serves it.
+            val blocker = assertNotNull(
+                MappedCallSiteStringIndexMemoryBudget.tryReserve(
+                    MappedCallSiteStringIndexMemoryBudget.maxBytes - MappedCallSiteStringIndexMemoryBudget.retainedBytes()
+                )
+            )
+            try {
+                assertNull(CallSiteDirectoryHashes.load(sidecar, stringTable))
+                assertEquals(MappedCallSiteStringIndexMemoryBudget.maxBytes, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
+            } finally {
+                blocker.close()
+            }
+            assertEquals(retainedBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
+
+            // The mapped graph owns the tables: open reserves, close releases.
+            (GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph).use { graph ->
+                assertTrue(MappedCallSiteStringIndexMemoryBudget.retainedBytes() >= retainedBefore + hashes.retainedBytes)
+                assertEquals(
+                    listOf(listOf("app.pkg2.Caller2", "run2")),
+                    graph.distinctStringPropertyDisjunction(
+                        CallSiteNode::class.java,
+                        listOf(StringPropertyPredicate("callee_name", null, StringMatchMode.STARTS_WITH, "getValue")),
+                        listOf("caller_class", "caller_name"),
+                        limit = 1,
+                        selectedValues = StringPropertyTupleSet(listOf(listOf("app.pkg2.Caller2", "run2"))),
+                        workConsumer = null
+                    )?.map { row -> row.values }
+                )
+            }
+            assertEquals(retainedBefore, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
+        } finally {
+            dir.toFile().deleteRecursively()
+        }
     }
 
     @Test

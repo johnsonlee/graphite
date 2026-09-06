@@ -925,13 +925,26 @@ object GraphStore {
         val mappedBuffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size())
         channel.close()
 
-        val forward = joinLoad(forwardFuture)
-        val labelBytes = joinLoad(labelsFuture)
-        val stringTable = joinLoad(stringTableFuture)
-        val nodeIndex = joinLoad(nodeIndexFuture)
-        val methodCount = joinLoad(methodCountFuture)
-        val comparisonLookup = joinLoad(comparisonFuture)
-        val directoryHashes = joinLoad(directoryHashesFuture)
+        val forward: ImmutableGraph
+        val labelBytes: ByteArray
+        val stringTable: StringTable
+        val nodeIndex: NodeIndexData
+        val methodCount: Long
+        val comparisonLookup: BranchComparisonLookup
+        val directoryHashes: CallSiteDirectoryHashes?
+        try {
+            forward = joinLoad(forwardFuture)
+            labelBytes = joinLoad(labelsFuture)
+            stringTable = joinLoad(stringTableFuture)
+            nodeIndex = joinLoad(nodeIndexFuture)
+            methodCount = joinLoad(methodCountFuture)
+            comparisonLookup = joinLoad(comparisonFuture)
+            directoryHashes = joinLoad(directoryHashesFuture)
+        } catch (error: Exception) {
+            // A failed load releases the tables' budget reservation once their build has finished.
+            directoryHashesFuture.thenAccept { hashes -> hashes?.close() }
+            throw error
+        }
         val backward = lazy { loadBackward(dir, forward) }
         val cumulativeOutdeg = loadCumulativeOutdeg(dir, forward)
         val metadata = lazy {

@@ -2136,8 +2136,9 @@ class GraphStoreTest {
                 measuredRestore.close()
             }
 
-            val retainedBeforeRejectedRestore = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
             val rejectedRestore = GraphStore.loadMapped(dir) as MappedWebGraphBackedGraph
+            // The mapped load reserves the graph's own directory tables; a rejected restore adds nothing.
+            val retainedBeforeRejectedRestore = MappedCallSiteStringIndexMemoryBudget.retainedBytes()
             try {
                 var batchIndex = 0
                 assertFailsWith<IllegalStateException> {
