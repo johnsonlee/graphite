@@ -3,6 +3,8 @@ package c4
 import (
 	"fmt"
 	"strings"
+
+	"github.com/johnsonlee/graphite/graphite-server/internal/javastring"
 )
 
 func RenderStructurizrDSL(raw map[string]any) (string, error) {
@@ -28,7 +30,7 @@ func renderDSL(w Workspace) string {
 			return s
 		}
 		base := strings.ReplaceAll(Slugify(id), "-", "_")
-		if strings.TrimSpace(base) == "" {
+		if javastring.Trim(base) == "" {
 			base = "element"
 		}
 		candidate := "g_" + base
@@ -112,7 +114,7 @@ func renderDSL(w Workspace) string {
 				continue
 			}
 			key := v.Key
-			if strings.TrimSpace(key) == "" {
+			if javastring.Trim(key) == "" {
 				key = "graphite-" + group.kind
 				if group.kind == "systemContext" {
 					key = "graphite-context"

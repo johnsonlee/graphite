@@ -2,10 +2,11 @@ package c4
 
 import (
 	"fmt"
-	"regexp"
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/johnsonlee/graphite/graphite-server/internal/javastring"
 )
 
 type diagramLayer struct {
@@ -19,9 +20,18 @@ type diagramPlan struct {
 	Truncated int
 }
 
-var diagramIDPattern = regexp.MustCompile(`[^A-Za-z0-9_]`)
-
-func diagramID(s string) string { return diagramIDPattern.ReplaceAllString(s, "_") }
+// Java Pattern consumes each code point (or isolated surrogate) once.
+func diagramID(s string) string {
+	var out strings.Builder
+	for _, r := range javastring.CodePoints(s) {
+		if r >= 'A' && r <= 'Z' || r >= 'a' && r <= 'z' || r >= '0' && r <= '9' || r == '_' {
+			out.WriteRune(r)
+		} else {
+			out.WriteByte('_')
+		}
+	}
+	return out.String()
+}
 func diagramArchitecture(e *WorkspaceElement) string {
 	if s := e.Properties["graphite.architectureType"]; s != "" {
 		for _, valid := range []string{"actor", "software-system", "library", "runtime-platform", "external-library", "external-system", "application-runtime", "application-service", "application-component"} {
@@ -346,13 +356,13 @@ func componentDiagram(w Workspace) *diagramPlan {
 			continue
 		}
 		title := c.Name
-		if strings.TrimSpace(title) == "" {
+		if javastring.Trim(title) == "" {
 			title = "Container"
 		}
 		id := c.ID
-		if strings.TrimSpace(id) == "" {
+		if javastring.Trim(id) == "" {
 			id = c.Name
-			if strings.TrimSpace(id) == "" {
+			if javastring.Trim(id) == "" {
 				id = "container"
 			}
 		}
@@ -457,7 +467,7 @@ func renderDiagram(plan *diagramPlan, plant bool) string {
 			if plant {
 				lines = append(lines, indent(depth)+`package "`+escape(l.Title)+`" {`)
 			} else {
-				lines = append(lines, indent(depth)+"subgraph "+diagramID(strings.ToLower(l.ID))+"["+quote(l.Title)+"]")
+				lines = append(lines, indent(depth)+"subgraph "+diagramID(javastring.Lower(l.ID))+"["+quote(l.Title)+"]")
 			}
 			childDepth++
 		}

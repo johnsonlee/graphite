@@ -7,6 +7,8 @@ import (
 
 	"github.com/johnsonlee/graphite/graphite-server/internal/analysis"
 	"github.com/johnsonlee/graphite/graphite-server/internal/store"
+
+	"github.com/johnsonlee/graphite/graphite-server/internal/javastring"
 )
 
 // InferViewModel produces the full inference model. A missing limit uses the
@@ -35,7 +37,7 @@ func InferViewModel(g *store.Store, level string, limits ...int) (ViewModel, err
 	for _, e := range analysis.ExtractEndpoints(g) {
 		class, _ := e["class"].(string)
 		path, _ := e["path"].(string)
-		if strings.TrimSpace(class) != "" {
+		if javastring.Trim(class) != "" {
 			endpoints = append(endpoints, EndpointEvidence{ClassName: class, Path: path})
 		}
 	}
@@ -100,7 +102,7 @@ func CollapseContextDependencies(deps []ExternalDependency) ContextDependencyCol
 			base := ArtifactBaseName(a)
 			if strings.Contains(base, "-") {
 				prefix := strings.Split(base, "-")[0]
-				if strings.TrimSpace(prefix) != "" {
+				if javastring.Trim(prefix) != "" {
 					prefixCounts[prefix]++
 				}
 			}

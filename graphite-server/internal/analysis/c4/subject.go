@@ -3,9 +3,10 @@ package c4
 import (
 	"io"
 	"strings"
-	"unicode"
 
 	"github.com/johnsonlee/graphite/graphite-server/internal/store"
+
+	"github.com/johnsonlee/graphite/graphite-server/internal/javastring"
 )
 
 func ParseManifest(content string) ManifestMetadata {
@@ -13,14 +14,14 @@ func ParseManifest(content string) ManifestMetadata {
 	key := ""
 	for _, line := range strings.Split(strings.NewReplacer("\r\n", "\n", "\r", "\n").Replace(content), "\n") {
 		switch {
-		case strings.TrimSpace(line) == "":
+		case javastring.Trim(line) == "":
 			key = ""
 		case strings.HasPrefix(line, " ") && key != "":
 			attrs[key] += line[1:]
 		case strings.Contains(line, ":"):
 			kv := strings.SplitN(line, ":", 2)
-			key = strings.TrimSpace(kv[0])
-			attrs[key] = strings.TrimSpace(kv[1])
+			key = javastring.Trim(kv[0])
+			attrs[key] = javastring.Trim(kv[1])
 		}
 	}
 	m := ManifestMetadata{}
@@ -55,23 +56,19 @@ func InferSubjectName(boundary string, origin, startClass *string) string {
 	if key, ok := ArtifactKey(value(origin)); ok {
 		return humanizeArtifact(key, false)
 	}
-	if s := simpleName(value(startClass)); strings.TrimSpace(s) != "" {
+	if s := simpleName(value(startClass)); javastring.Trim(s) != "" {
 		out := strings.TrimSuffix(strings.TrimSuffix(s, "Application"), "App")
-		if strings.TrimSpace(out) != "" {
+		if javastring.Trim(out) != "" {
 			return out
 		}
 		return s
 	}
 	s := strings.TrimSuffix(strings.TrimPrefix(boundary, "("), ")")
 	leaf := simpleName(s)
-	if strings.TrimSpace(leaf) == "" {
+	if javastring.Trim(leaf) == "" {
 		leaf = s
 	}
-	r := []rune(leaf)
-	if len(r) > 0 && unicode.IsLower(r[0]) {
-		r[0] = unicode.ToTitle(r[0])
-	}
-	return string(r)
+	return javastring.TitleFirst(leaf)
 }
 func InferSubject(g *store.Store, methods []store.MethodDescriptor, calls []store.Node, endpointCount int, boundary string) SubjectDescriptor {
 	manifest := ReadManifest(g)
@@ -84,7 +81,7 @@ func InferSubject(g *store.Store, methods []store.MethodDescriptor, calls []stor
 	}
 	var origin *string
 	start := manifest.StartClass
-	if strings.TrimSpace(value(start)) == "" {
+	if javastring.Trim(value(start)) == "" {
 		start = nil
 	}
 	if g != nil && start != nil {
@@ -96,7 +93,7 @@ func InferSubject(g *store.Store, methods []store.MethodDescriptor, calls []stor
 }
 func inferSubjectEvidence(methods []store.MethodDescriptor, calls []store.Node, endpoints int, boundary string, manifest ManifestMetadata, hasBoot bool, origin *string) SubjectDescriptor {
 	start := manifest.StartClass
-	if strings.TrimSpace(value(start)) == "" {
+	if javastring.Trim(value(start)) == "" {
 		start = nil
 	}
 	reach := AnalyzeMainReachability(methods, calls, boundary, start)
@@ -113,10 +110,10 @@ func inferSubjectEvidence(methods []store.MethodDescriptor, calls []store.Node, 
 	}
 	o := value(origin)
 	bootOrigin := o == "BOOT-INF/classes/" || o == "WEB-INF/classes/" || strings.HasPrefix(o, "BOOT-INF/lib/") || strings.HasPrefix(o, "WEB-INF/lib/")
-	application := (hasBoot && bootLauncher && bootOrigin && reach.MainMethodCount > 0 && reach.ReachableInternalMethodCount > 1 && reach.ReachableInternalClassCount > 1) || (strings.TrimSpace(main) != "" && start != nil && reach.MainMethodCount > 0) || (hasMain && endpoints > 0 && reach.ReachableInternalMethodCount > 1) || (hasMain && reach.ReachableInternalMethodCount >= reach.ReachableExternalTargetCount && reach.ReachableInternalClassCount > 1)
+	application := (hasBoot && bootLauncher && bootOrigin && reach.MainMethodCount > 0 && reach.ReachableInternalMethodCount > 1 && reach.ReachableInternalClassCount > 1) || (javastring.Trim(main) != "" && start != nil && reach.MainMethodCount > 0) || (hasMain && endpoints > 0 && reach.ReachableInternalMethodCount > 1) || (hasMain && reach.ReachableInternalMethodCount >= reach.ReachableExternalTargetCount && reach.ReachableInternalClassCount > 1)
 	name := InferSubjectName(boundary, origin, start)
 	if application {
-		if strings.TrimSpace(name) == "" {
+		if javastring.Trim(name) == "" {
 			name = "Application"
 		}
 		s := SubjectDescriptor{ID: SubjectApplicationID, Name: name, Role: "application", Description: "Executable software system inferred from the Graphite code graph", Responsibility: "Owns the internal runtime containers and orchestrates the primary execution flows", ActorID: ptr("person:operators"), ActorName: ptr("Operators"), ActorDescription: ptr("Operators or launchers starting the executable artifact"), ActorResponsibility: ptr("Starts and operates the executable artifact")}

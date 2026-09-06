@@ -6,6 +6,8 @@ import (
 	"strings"
 
 	"github.com/johnsonlee/graphite/graphite-server/internal/store"
+
+	"github.com/johnsonlee/graphite/graphite-server/internal/javastring"
 )
 
 func InferContainerLayout(g *store.Store, methods []store.MethodDescriptor, calls []store.Node, endpoints []EndpointEvidence, boundary string, limit int) (ContainerLayout, error) {
@@ -26,7 +28,7 @@ func InferContainerLayout(g *store.Store, methods []store.MethodDescriptor, call
 		if IsInternalClass(e.ClassName, boundary) {
 			u := InternalPackageUnit(e.ClassName, boundary)
 			endpointCounts.add(u, 1)
-			if strings.TrimSpace(e.Path) != "" {
+			if javastring.Trim(e.Path) != "" {
 				paths[u] = append(paths[u], e.Path)
 			}
 		}
@@ -115,7 +117,7 @@ func InferContainerLayout(g *store.Store, methods []store.MethodDescriptor, call
 		}
 		d.Name = inferContainerName(cluster, scores, frequency, boundary)
 		name := d.Name
-		if strings.TrimSpace(name) == "" {
+		if javastring.Trim(name) == "" {
 			name = representative
 		}
 		d.ID = ContainerIDPrefix + Slugify(name)
@@ -187,7 +189,7 @@ func unitTokens(u, boundary string) []string {
 	ts := strings.Split(strings.TrimLeft(strings.TrimPrefix(u, boundary), "."), ".")
 	out := []string{}
 	for _, t := range ts {
-		if strings.TrimSpace(t) != "" {
+		if javastring.Trim(t) != "" {
 			out = append(out, t)
 		}
 	}

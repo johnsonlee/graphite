@@ -4,9 +4,10 @@ import (
 	"regexp"
 	"sort"
 	"strings"
-	"unicode"
 
 	"github.com/johnsonlee/graphite/graphite-server/internal/store"
+
+	"github.com/johnsonlee/graphite/graphite-server/internal/javastring"
 )
 
 var reverseDNSPrefixes = map[string]bool{"app": true, "biz": true, "co": true, "com": true, "dev": true, "edu": true, "gov": true, "io": true, "me": true, "mil": true, "net": true, "org": true}
@@ -14,14 +15,14 @@ var reverseDNSPrefixes = map[string]bool{"app": true, "biz": true, "co": true, "
 func nonblankSegments(value string) []string {
 	out := []string{}
 	for _, part := range strings.Split(value, ".") {
-		if strings.TrimSpace(part) != "" {
+		if javastring.Trim(part) != "" {
 			out = append(out, part)
 		}
 	}
 	return out
 }
 func IsReverseDNSNamespace(segments []string) bool {
-	return len(segments) > 0 && reverseDNSPrefixes[strings.ToLower(segments[0])]
+	return len(segments) > 0 && reverseDNSPrefixes[javastring.Lower(segments[0])]
 }
 func NamespaceRootSegmentCount(segments []string) int {
 	if len(segments) == 0 {
@@ -61,7 +62,7 @@ func packageName(className string) string {
 }
 func InternalPackageUnit(class, boundary string) string {
 	pkg := packageName(class)
-	if strings.TrimSpace(pkg) == "" {
+	if javastring.Trim(pkg) == "" {
 		return DefaultSystemBoundary
 	}
 	if !IsInternalClass(class, boundary) {
@@ -69,7 +70,7 @@ func InternalPackageUnit(class, boundary string) string {
 		return strings.Join(parts[:NamespaceRootSegmentCount(parts)], ".")
 	}
 	suffix := strings.TrimLeft(strings.TrimPrefix(pkg, boundary), ".")
-	if strings.TrimSpace(suffix) == "" {
+	if javastring.Trim(suffix) == "" {
 		return boundary
 	}
 	return boundary + "." + strings.SplitN(suffix, ".", 2)[0]
@@ -96,7 +97,7 @@ func DeriveSystemBoundary(methods []store.MethodDescriptor, callSites []store.No
 			continue
 		}
 		pkg := packageName(class)
-		if strings.TrimSpace(pkg) != "" {
+		if javastring.Trim(pkg) != "" {
 			packages = append(packages, pkg)
 		}
 	}
@@ -179,12 +180,10 @@ func HumanizeIdentifier(identifier string) string {
 	value = strings.NewReplacer("-", " ", "_", " ").Replace(value)
 	parts := []string{}
 	for _, part := range strings.Split(value, " ") {
-		if strings.TrimSpace(part) == "" {
+		if javastring.Trim(part) == "" {
 			continue
 		}
-		runes := []rune(strings.ToLower(part))
-		runes[0] = unicode.ToUpper(runes[0])
-		parts = append(parts, string(runes))
+		parts = append(parts, javastring.UpperFirst(javastring.Lower(part)))
 	}
 	return strings.Join(parts, " ")
 }

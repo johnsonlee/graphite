@@ -1,0 +1,66 @@
+{
+  "purpose": "bounded correctness only; no performance measurement or 64-graph runtime",
+  "date": "2026-09-07",
+  "reference_revision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "reference_jar": "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+  "reference_jar_sha256": "91c3a1d154ca96004c55df195d9f752e077cab3e33ca1570b2c88b872d9bc34d",
+  "java": "openjdk version \"17.0.18\" 2026-01-20\nOpenJDK Runtime Environment Homebrew (build 17.0.18+0)\nOpenJDK 64-Bit Server VM Homebrew (build 17.0.18+0, mixed mode, sharing)",
+  "go": "go version go1.22.0 darwin/arm64",
+  "migration_base_revision": "4124bfc44bedd7915e238b7a08f2524b48ed47b6",
+  "commands_from_repository_root": [
+    "java -Dfile.encoding=UTF-8 -Xmx128m -cp /tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar graphite-server/internal/analysis/c4/testdata/UnicodeOracle.java graphite-server/internal/analysis/c4/testdata/unicode-helpers.json",
+    "java -Dfile.encoding=UTF-8 -Xmx256m -cp /tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar graphite-server/internal/analysis/c4/testdata/UnicodeModelOracle.java graphite-server/internal/analysis/c4/testdata/unicode-model",
+    "java -Dfile.encoding=UTF-8 -Xmx128m -cp /tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar graphite-server/internal/javastring/testdata/GenerateJavaChar.java graphite-server/internal/javastring/testdata/java17-char.bin.gz",
+    "python3 graphite-server/internal/javastring/testdata/generate-char.py"
+  ],
+  "verification_from_graphite_server": [
+    "go test -race ./internal/analysis/c4 ./internal/javastring",
+    "go vet ./internal/analysis/c4 ./internal/javastring",
+    "GOOS=linux GOARCH=amd64 go test -c -o /tmp/graphite-c4-unicode-linux-amd64.test ./internal/analysis/c4"
+  ],
+  "verification_result": "pass; Linux compile only",
+  "helper_cases": 560,
+  "char_cases": 65536,
+  "unicode_model_comparisons": "2 load modes x 4 levels x (complete model + 3 complete text formats), exact UTF-16 units",
+  "old_golden_result": "six existing fixtures, both load modes, all levels/models/renderers still pass",
+  "observed_fixed_differences": [
+    "ROOT casing expansions (dotted I, sharp s, ligatures), Greek final Sigma and Java 17 Unicode properties",
+    "UTF-16 acronym length and first-char semantics for supplementary pairs",
+    "Kotlin blank and trim: U+001C versus U+0085; space characters",
+    "Java regex version suffix before final CRLF, CR, LF, NEL, LS, PS",
+    "isolated surrogate preservation in naming, workspace conversion, embedded JSON and renderer identity keys",
+    "diagram ID replacement consumes isolated surrogate once, lexical comparison orders UTF-16 units"
+  ],
+  "limits": [
+    "no real nested Spring Boot archive in this evidence",
+    "no full real-corpus C4 parity claim",
+    "malformed/coerced external workspace Gson behavior not fully replicated",
+    "no universal Unicode version independence: target Java 17 / pinned main Kotlin"
+  ],
+  "files": {
+    "graphite-server/internal/analysis/c4/testdata/UnicodeModelOracle.java": "234fcbdbb7d2804ce42534ecc313a5ea32e9b6278f36d08489c682c166f0f812",
+    "graphite-server/internal/analysis/c4/testdata/UnicodeOracle.java": "e0e8c663ca8db1e6e8530b32232cb0ba05f45ff262ad6f7c50020e2aa8faca94",
+    "graphite-server/internal/analysis/c4/testdata/unicode-helpers.json": "87abc5d1d20a438ed8a17c163ddfe2e8031feece5f2226a8849c5efe11492bff",
+    "graphite-server/internal/analysis/c4/testdata/unicode-model/expected.json": "3659d7f432db75e95479a58d4ba6f72d4f2fe5024981fd99927ec0cb12e38af8",
+    "graphite-server/internal/analysis/c4/testdata/unicode-model/store/forward.graph": "e596a8e5c49dd20a79bd0c1a7dd190a674507d1129785746fcc1c5e64cd8416c",
+    "graphite-server/internal/analysis/c4/testdata/unicode-model/store/forward.offsets": "5f0af91ea4724e4f9907cbf7102989e371fc96db54536978c5ff7c4738386df8",
+    "graphite-server/internal/analysis/c4/testdata/unicode-model/store/forward.properties": "89fc18f4e1b6232cbecb49d4bdc06dd680fadf45351444693a6d67075123e52c",
+    "graphite-server/internal/analysis/c4/testdata/unicode-model/store/graph.callsite-string-content.identity": "00f0e8a382c19e263b2f8c6e834d8ab31c063d09f4c04f7f0b273e0dd6e34f7d",
+    "graphite-server/internal/analysis/c4/testdata/unicode-model/store/graph.classoverview": "429532c8fde8f47db2449e0ad5b35a4e3fb352d3aaa4dc70bcaaf86aed534bdd",
+    "graphite-server/internal/analysis/c4/testdata/unicode-model/store/graph.comparisons": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8",
+    "graphite-server/internal/analysis/c4/testdata/unicode-model/store/graph.labelprefix": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0",
+    "graphite-server/internal/analysis/c4/testdata/unicode-model/store/graph.labels": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "graphite-server/internal/analysis/c4/testdata/unicode-model/store/graph.metadata": "06753a31c98c30df6267acec92cba84b5be2efd5d8e434763fbadea967015db7",
+    "graphite-server/internal/analysis/c4/testdata/unicode-model/store/graph.nodedata": "b5a18d7b620466d88b5372b17fb38fa7a682d5c7192a176e2e94b33127abf87f",
+    "graphite-server/internal/analysis/c4/testdata/unicode-model/store/graph.nodeindex": "a543d74922b206bb189a9bd90c32a1580a6a9d1736e3725b3ab753a16d381c7f",
+    "graphite-server/internal/analysis/c4/testdata/unicode-model/store/graph.nodeoffsets": "bf6980b25590d82e60fc79cb5db51d47d95348c8d7bf46d9a5f92b9c2fef73e9",
+    "graphite-server/internal/analysis/c4/testdata/unicode-model/store/graph.resources": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17",
+    "graphite-server/internal/analysis/c4/testdata/unicode-model/store/graph.strings": "23266386595fcb52fc7c012f4c6b4d0033f74f503c084fe788b51b1f26aa9aaa",
+    "graphite-server/internal/analysis/c4/testdata/unicode-model/store/graph.strings.identity": "ce2cff4837db3df894c50d78e34466badbce0dd3fcb677168ca25ff867e93673",
+    "graphite-server/internal/analysis/c4/testdata/unicode-model/store/graph.typeindex": "4476fd80c5987b2212752fdde9e1cd1c4230fd682fcc2b4d015ef30dd3c1874a",
+    "graphite-server/internal/javastring/char_generated.go": "467e19df5828c6f6df165fbc4947edc88d8e56fe3770ef0631e98d15ab381f6f",
+    "graphite-server/internal/javastring/testdata/GenerateJavaChar.java": "d329755b1b7e435955dc8ae097f35cd79524a4e44b1bfa2fa26b556fb6fe298f",
+    "graphite-server/internal/javastring/testdata/generate-char.py": "113db7680a8224e8fbdf7c637946666c6ba6229105b1452ddee12417402dbd99",
+    "graphite-server/internal/javastring/testdata/java17-char.bin.gz": "7185c829e4598b8c8b744ae3c976d1bfe5dc7ce97a53bf372c9d8c1170b226e2"
+  }
+}

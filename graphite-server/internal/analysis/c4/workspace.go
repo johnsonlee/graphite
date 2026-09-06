@@ -3,11 +3,14 @@ package c4
 import (
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"sort"
 	"strconv"
 	"strings"
 
 	"github.com/johnsonlee/graphite/graphite-server/internal/store"
+
+	"github.com/johnsonlee/graphite/graphite-server/internal/javastring"
 )
 
 type Workspace struct {
@@ -69,10 +72,7 @@ func BuildModel(g *store.Store, level string, limit ...int) (map[string]any, err
 	return EncodeWorkspace(ToWorkspace(v)), nil
 }
 func EncodeWorkspace(w Workspace) map[string]any {
-	b, _ := json.Marshal(w)
-	var m map[string]any
-	_ = json.Unmarshal(b, &m)
-	return m
+	return workspaceJSONValue(reflect.ValueOf(w)).(map[string]any)
 }
 func DecodeWorkspace(m map[string]any) (Workspace, error) {
 	b, err := json.Marshal(m)
@@ -81,6 +81,9 @@ func DecodeWorkspace(m map[string]any) (Workspace, error) {
 	}
 	w := Workspace{Name: "Graphite C4 Workspace"}
 	err = json.Unmarshal(b, &w)
+	if err == nil {
+		restoreWorkspaceStrings(reflect.ValueOf(&w).Elem(), m)
+	}
 	return w, err
 }
 func newWorkspaceElement(id, name, description, tags string) *WorkspaceElement {
@@ -90,10 +93,6 @@ func newWorkspaceElement(id, name, description, tags string) *WorkspaceElement {
 // Gson pretty-prints structured properties as embedded JSON strings. Preserve
 // reference field order and Double spelling because these strings are wire data.
 func prettyJSON(v any) string { return prettyValue(v, 0) }
-func jsonQuote(s string) string {
-	b, _ := json.Marshal(s)
-	return strings.NewReplacer("'", `\u0027`, "=", `\u003d`).Replace(string(b))
-}
 func prettyValue(v any, depth int) string {
 	indent := func(n int) string { return strings.Repeat("  ", n) }
 	switch x := v.(type) {
@@ -454,11 +453,11 @@ func ToWorkspace(m ViewModel) Workspace {
 			p := elementProperties(e)
 			id := stringProperty(p, "containerId")
 			if _, ok := p["containerId"]; !ok {
-				if name := stringProperty(p, "container"); strings.TrimSpace(name) != "" {
+				if name := stringProperty(p, "container"); javastring.Trim(name) != "" {
 					id = ContainerIDPrefix + name
 				}
 			}
-			if strings.TrimSpace(id) == "" {
+			if javastring.Trim(id) == "" {
 				continue
 			}
 			if _, ok := groups[id]; !ok {

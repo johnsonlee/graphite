@@ -31,3 +31,26 @@ conditional-casing categories. No JVM is invoked during server execution.
 Shared tests assert concrete casing, UTF-16, digit, whitespace and cancellation
 behavior. The existing query JVM corpora remain the end-to-end correctness oracle;
 these tests and generated data establish no performance claim.
+
+`char.go` adds Kotlin UTF-16 `Char` semantics for native C4 naming:
+`IsLowerChar`, `IsUpperChar`, `TitleChar`, `TitleFirst`, `UpperFirst`, `Blank`
+and `Trim`. Char operations inspect one UTF-16 unit; whole-string `Lower` and
+`Upper` still consume supplementary code points. `TitleChar` supports Kotlin's
+one-to-many titlecase expansions, including `ß` to `Ss`.
+
+The additional compact Char ranges come from
+`testdata/GenerateJavaChar.java`, invoking Java 17 Character predicates and
+`kotlin.text._OneToManyTitlecaseMappingsKt.titlecaseImpl` from the unchanged main
+jar. `char_test.go` compares every one of the 65,536 char values, including
+surrogates, against the saved binary oracle. These are new BMP predicates/title
+mappings; the shared ROOT casing and word-boundary tables remain single copies.
+Regenerate from repository root:
+
+```sh
+java -Dfile.encoding=UTF-8 -Xmx128m -cp /tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar graphite-server/internal/javastring/testdata/GenerateJavaChar.java graphite-server/internal/javastring/testdata/java17-char.bin.gz
+python3 graphite-server/internal/javastring/testdata/generate-char.py
+```
+
+The main jar revision and hashes are recorded in
+`../analysis/c4/testdata/unicode-provenance.json`. No table generation or JVM is
+needed at runtime.

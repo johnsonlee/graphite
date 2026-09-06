@@ -5,10 +5,10 @@ import (
 	"regexp"
 	"sort"
 	"strings"
-	"unicode"
-	"unicode/utf8"
 
 	"github.com/johnsonlee/graphite/graphite-server/internal/store"
+
+	"github.com/johnsonlee/graphite/graphite-server/internal/javastring"
 )
 
 // WeightedClass is ordered evidence. Keeping this as a slice preserves Kotlin
@@ -108,12 +108,12 @@ func ExternalDependencyDescription(kind DependencyKind) string {
 	}
 }
 func ArtifactKey(origin string) (string, bool) {
-	candidate := strings.TrimRight(strings.TrimSpace(origin), "/")
+	candidate := strings.TrimRight(javastring.Trim(origin), "/")
 	if i := strings.LastIndexByte(candidate, '/'); i >= 0 {
 		candidate = candidate[i+1:]
 	}
 	candidate = strings.TrimSuffix(candidate, ".jar")
-	return candidate, strings.TrimSpace(candidate) != ""
+	return candidate, javastring.Trim(candidate) != ""
 }
 func ArtifactNameFromDependencyID(id string) (string, bool) {
 	key := strings.TrimPrefix(id, DependencyIDPrefix)
@@ -121,12 +121,23 @@ func ArtifactNameFromDependencyID(id string) (string, bool) {
 		return "", false
 	}
 	name := strings.TrimPrefix(key, ArtifactIDPrefix)
-	return name, strings.TrimSpace(name) != ""
+	return name, javastring.Trim(name) != ""
 }
 
 var artifactVersion = regexp.MustCompile(`-\d+(?:[.-][0-9A-Za-z]+)*$`)
 
-func ArtifactBaseName(name string) string { return artifactVersion.ReplaceAllString(name, "") }
+func ArtifactBaseName(name string) string {
+	// Java Pattern's $ also matches before a final line terminator. Keep that
+	// terminator while removing the version, including CRLF as one terminator.
+	end := len(name)
+	for _, suffix := range []string{"\r\n", "\n", "\r", "\u0085", "\u2028", "\u2029"} {
+		if strings.HasSuffix(name, suffix) {
+			end -= len(suffix)
+			break
+		}
+	}
+	return artifactVersion.ReplaceAllString(name[:end], "") + name[end:]
+}
 func NamespaceGroup(name string) string {
 	segments := nonblankSegments(name)
 	if len(segments) == 0 {
@@ -134,8 +145,8 @@ func NamespaceGroup(name string) string {
 	}
 	cutoff := -1
 	for i, segment := range segments {
-		first, _ := utf8.DecodeRuneInString(segment)
-		if first <= 0xffff && unicode.IsUpper(first) {
+		first := javastring.UTF16(segment)[0]
+		if javastring.IsUpperChar(first) {
 			cutoff = i
 			break
 		}

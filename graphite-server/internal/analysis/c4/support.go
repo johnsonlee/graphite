@@ -1,13 +1,12 @@
 package c4
 
 import (
-	"encoding/json"
 	"fmt"
 	"regexp"
 	"sort"
 	"strings"
-	"unicode"
-	"unicode/utf16"
+
+	"github.com/johnsonlee/graphite/graphite-server/internal/javastring"
 )
 
 func ptr[T any](v T) *T { return &v }
@@ -30,7 +29,7 @@ func unique(xs []string) []string {
 	return out
 }
 func lexical(a, b string) bool {
-	aa, bb := utf16.Encode([]rune(a)), utf16.Encode([]rune(b))
+	aa, bb := javastring.UTF16(a), javastring.UTF16(b)
 	for i := 0; i < len(aa) && i < len(bb); i++ {
 		if aa[i] != bb[i] {
 			return aa[i] < bb[i]
@@ -70,19 +69,18 @@ func simpleName(s string) string { return s[strings.LastIndex(s, ".")+1:] }
 var slugPattern = regexp.MustCompile(`[^a-z0-9]+`)
 
 func Slugify(s string) string {
-	return strings.Trim(slugPattern.ReplaceAllString(strings.ToLower(s), "-"), "-")
+	return strings.Trim(slugPattern.ReplaceAllString(javastring.Lower(s), "-"), "-")
 }
 func humanizeArtifact(s string, acronyms bool) string {
-	tokens := strings.FieldsFunc(ArtifactBaseName(s), func(r rune) bool { return r == '-' || r == '_' })
-	for i, t := range tokens {
-		if acronyms && len([]rune(t)) <= 3 {
-			tokens[i] = strings.ToUpper(t)
+	tokens := []string{}
+	for _, t := range strings.FieldsFunc(ArtifactBaseName(s), func(r rune) bool { return r == '-' || r == '_' }) {
+		if javastring.Blank(t) {
+			continue
+		}
+		if acronyms && len(javastring.UTF16(t)) <= 3 {
+			tokens = append(tokens, javastring.Upper(t))
 		} else {
-			r := []rune(t)
-			if len(r) > 0 {
-				r[0] = unicode.ToTitle(r[0])
-			}
-			tokens[i] = string(r)
+			tokens = append(tokens, javastring.TitleFirst(t))
 		}
 	}
 	return strings.Join(tokens, " ")
@@ -126,7 +124,6 @@ func stringProperty(m map[string]any, k string) string {
 	}
 	return ""
 }
-func compactJSON(v any) string { b, _ := json.Marshal(v); return string(b) }
 
 type pair struct{ From, To string }
 type orderedCounts[K comparable] struct {
