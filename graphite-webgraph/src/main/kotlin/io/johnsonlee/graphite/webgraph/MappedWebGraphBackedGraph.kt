@@ -103,6 +103,7 @@ internal class MappedWebGraphBackedGraph(
     private val metadataFile: File,
     private val callSiteStringIndexFile: Path,
     private val persistentCallSiteStringIndexEnabled: Boolean,
+    private val callSiteDirectoryHashes: CallSiteDirectoryHashes?,
     private val methodCount: Long,
     private val comparisonLookup: BranchComparisonLookup,
     private val metadata: Lazy<GraphMetadata>,
@@ -970,7 +971,8 @@ internal class MappedWebGraphBackedGraph(
                 nodeOffsets.size,
                 nodeOrder = { nodeId -> nodeOffsets.offset(nodeId) },
                 rawStringIds = rawCallSiteStringIds,
-                workConsumer = workConsumer
+                workConsumer = workConsumer,
+                directoryHashes = callSiteDirectoryHashes
             )
             if (loaded == null) {
                 mappedCallSiteStringIndexViewUnavailable = true

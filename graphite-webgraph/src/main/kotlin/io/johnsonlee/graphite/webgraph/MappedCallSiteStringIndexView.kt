@@ -58,7 +58,8 @@ internal class MappedCallSiteStringIndexView private constructor(
     private val stringTable: StringTable,
     private val nodeOrder: (Int) -> Long,
     private val rawStringIds: CallSiteRawStringIds,
-    private val trigramDirectory: TrigramDirectory?
+    private val trigramDirectory: TrigramDirectory?,
+    private val directoryHashes: CallSiteDirectoryHashes?
 ) : Closeable {
     private val validatedPostingRanges = BoundedPostingRangeValidationCache.create()
     private val matchCache = BoundedMatchingStringIdCache.create()
@@ -714,7 +715,14 @@ internal class MappedCallSiteStringIndexView private constructor(
             val rowCache = rowCaches[propertyIndex] ?: HashMap<String, Int>().also { rowCaches[propertyIndex] = it }
             rowCache[value]?.let { return it }
             accounting.consume()
-            val row = if (mayContain(value)) maxOf(-1, searchDirectory(propertyIndex, value, accounting, 0)) else -1
+            val hashes = directoryHashes
+            val row = if (hashes != null) {
+                hashes.row(propertyIndex, value, stringTable, decoded)
+            } else if (mayContain(value)) {
+                maxOf(-1, searchDirectory(propertyIndex, value, accounting, 0))
+            } else {
+                -1
+            }
             rowCache[value] = row
             return row
         }
@@ -732,17 +740,35 @@ internal class MappedCallSiteStringIndexView private constructor(
         ): Int {
             val propertyIndex = projectedPropertyIndexes[lookupOrder[0]]
             accounting.consume()
-            if (!mayContain(trigrams, index)) return -1
-            val found = searchDirectory(propertyIndex, value, accounting, leadingCursor)
-            if (found < 0) {
-                leadingCursor = -(found + 1)
-                return -1
+            val hashes = directoryHashes
+            val found = if (hashes != null) {
+                hashes.row(propertyIndex, value, stringTable, decoded)
+            } else {
+                leadingSearchRow(propertyIndex, value, trigrams, index, accounting)
             }
-            leadingCursor = found
+            if (found < 0) return -1
             // Each sorted leading value is visited once per graph, so only a hit is worth caching:
             // the tuple lookups that follow it read the row back through [directoryRow].
             val rowCache = rowCaches[propertyIndex] ?: HashMap<String, Int>().also { rowCaches[propertyIndex] = it }
             rowCache[value] = found
+            return found
+        }
+
+        /**
+         * Directory search of the [index]th sorted leading value from the row reached by the
+         * previous value, for a graph without load-time tables; a miss moves the cursor to the
+         * insertion point.
+         */
+        private fun leadingSearchRow(
+            propertyIndex: Int,
+            value: String,
+            trigrams: LeadingValueTrigrams,
+            index: Int,
+            accounting: BufferedGraphWorkConsumer
+        ): Int {
+            if (!mayContain(trigrams, index)) return -1
+            val found = searchDirectory(propertyIndex, value, accounting, leadingCursor)
+            leadingCursor = if (found < 0) -(found + 1) else found
             return found
         }
 
@@ -975,7 +1001,8 @@ internal class MappedCallSiteStringIndexView private constructor(
             nodeIdCapacity: Int,
             nodeOrder: (Int) -> Long,
             rawStringIds: CallSiteRawStringIds,
-            workConsumer: GraphWorkConsumer?
+            workConsumer: GraphWorkConsumer?,
+            directoryHashes: CallSiteDirectoryHashes? = null
         ): MappedCallSiteStringIndexView? {
             if (!Files.isRegularFile(path) ||
                 expectedContentIdentity.size != CALL_SITE_STRING_INDEX_CONTENT_IDENTITY_BYTES
@@ -1058,7 +1085,8 @@ internal class MappedCallSiteStringIndexView private constructor(
                         stringTable,
                         nodeOrder,
                         rawStringIds,
-                        directory
+                        directory,
+                        directoryHashes?.takeIf { hashes -> hashes.matches(identity, stringCount, uniqueCounts) }
                     )
                 }
             } catch (error: Exception) {

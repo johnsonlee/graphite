@@ -904,6 +904,15 @@ object GraphStore {
         val metadataFile = dir.resolve(METADATA_FILE)
         val forwardFuture = CompletableFuture.supplyAsync { BVGraph.load(dir.resolve(FORWARD_GRAPH).toString()) }
         val stringTableFuture = CompletableFuture.supplyAsync { StringTable.load(dir) }
+        // The exact directory tables of the sidecar are load-time state of the graph: they are
+        // decoded here, next to the other mapped parts, and never inside a request.
+        val directoryHashesFuture = if (persistentCallSiteStringIndex) {
+            stringTableFuture.thenApplyAsync { stringTable ->
+                CallSiteDirectoryHashes.load(dir.resolve(CALL_SITE_STRING_INDEX_FILE), stringTable)
+            }
+        } else {
+            CompletableFuture.completedFuture(null)
+        }
         val nodeIndexFuture = CompletableFuture.supplyAsync { readMappedNodeIndex(dir) }
         val labelsFuture = CompletableFuture.supplyAsync { BinIO.loadBytes(dir.resolve(LABELS_FILE).toString()) }
         val methodCountFuture = CompletableFuture.supplyAsync { readMetadataMethodCount(metadataFile) }
@@ -922,6 +931,7 @@ object GraphStore {
         val nodeIndex = joinLoad(nodeIndexFuture)
         val methodCount = joinLoad(methodCountFuture)
         val comparisonLookup = joinLoad(comparisonFuture)
+        val directoryHashes = joinLoad(directoryHashesFuture)
         val backward = lazy { loadBackward(dir, forward) }
         val cumulativeOutdeg = loadCumulativeOutdeg(dir, forward)
         val metadata = lazy {
@@ -945,6 +955,7 @@ object GraphStore {
             metadataFile = metadataFile.toFile(),
             callSiteStringIndexFile = dir.resolve(CALL_SITE_STRING_INDEX_FILE),
             persistentCallSiteStringIndexEnabled = persistentCallSiteStringIndex,
+            callSiteDirectoryHashes = directoryHashes,
             methodCount = methodCount,
             comparisonLookup = comparisonLookup,
             metadata = metadata,

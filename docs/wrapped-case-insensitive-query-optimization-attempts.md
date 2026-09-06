@@ -4691,3 +4691,32 @@ the wrapped targeted row are unchanged within noise.
 
 **Conclusion:** reverted; the extra modulo and comparisons per step cost more than the decodes
 they save, and the search takes more steps when it drifts from the middle.
+
+### 2026-09-06 - Attempt 149: Exact directory tables built while the graph is mapped
+
+**Hypothesis:** the cold DISTINCT provenance pass resolves every selected value in every graph
+through a binary search of the property directory, and each of its steps decodes a front-coded
+prefix chain; across 63 graphs that is over six hundred searches on the P95 row. A table from
+the hash of a value to its directory row, built once when the graph is mapped, resolves a value
+with one probe and one verifying decode, and rejects a foreign value without decoding anything.
+The owner accepted this as a load-lifecycle trade-off measured by the mapped-load, resource and
+capacity gates, distinct from request-time priming.
+
+**Change:** `GraphStore.loadMapped` reads the four property directories of the sidecar next to
+the other mapped parts and builds one open-addressing table per property (four decoded in
+parallel, at most one-half load factor). The tables are graph-owned load-time state: closing
+the view between requests leaves them in place, and a view adopts them only when the sidecar it
+mapped carries the same identity, string count and directory sizes. The tuple lookups use them
+in place of the trigram presence check and the directory search; a graph without tables keeps
+the search.
+
+**Evidence (local, 64 fixtures, fresh JVM in benchmark order, ten alternating runs):**
+distinct-dense first execution wall median `11.20 -> 9.28 ms` (CPU median `10.43 -> 8.16 ms`),
+second execution `6.56 -> 4.74 ms`; `add` `11.02 -> 10.20 ms` and `9.45 -> 8.62 ms`;
+four-properties-targeted `7.93 -> 8.45 ms`, dense `6.49 -> 6.23 ms`, class-pair-targeted
+`3.62 -> 3.79 ms`, the wrapped targeted row unchanged. Mapped load, median of five loads in one
+JVM, two JVMs each: tika `125/130 -> 139/136 ms`, hive `189/174 -> 174/170 ms`,
+kotlin-compiler `100/97 -> 100/105 ms`; the table build overlaps the forward-graph load. The
+tables cost 9-26 ms per 64-fixture graph to build and about half a megabyte of heap each.
+
+**Conclusion:** keep for exact-head hosted validation.

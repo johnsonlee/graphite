@@ -627,4 +627,46 @@ class MappedCallSiteStringIndexViewTest {
                 assertTrue(secondWork < firstWork, "second graph work $secondWork vs first $firstWork")
             }
         }
+
+    /**
+     * A graph mapped before its sidecar existed carries no load-time directory tables, so the
+     * view its first request persists and opens resolves selected tuples through the presence
+     * bits and the directory search, walking the sorted leading values from the previous hit.
+     */
+    @Test
+    fun `a graph mapped before its sidecar existed resolves selected tuples through the directory search`() =
+        withPersistedGraph(prepareIndex = false) { dir, _, loaded ->
+            val predicates = listOf(predicate("callee_name", StringMatchMode.STARTS_WITH, "getValue"))
+            // Not the first directory row, so the values after it gallop from the row it reached.
+            val early = listOf("app.pkg1.Caller1", "run1")
+            val target = listOf("app.target.TargetedCaller", "run7")
+            val betweenMiss = listOf("app.pkg1.Caller1x", "run1")
+            val foreign = listOf("zzz.Unknown", "run7")
+            val absentTrigramName = listOf("app.target.TargetedCaller", "zzzq")
+            val selected = StringPropertyTupleSet(listOf(target, foreign, early, absentTrigramName, betweenMiss))
+            val hits = loaded.distinctStringPropertyDisjunction(
+                CallSiteNode::class.java,
+                predicates,
+                listOf("caller_class", "caller_name"),
+                limit = selected.size,
+                selectedValues = selected,
+                workConsumer = noWork
+            )
+            assertNotNull(hits)
+            assertEquals(listOf(early, target), hits.map { row -> row.values })
+            assertTrue(Files.isRegularFile(dir.resolve(GraphStore.CALL_SITE_STRING_INDEX_FILE)))
+            assertTrue(loaded.isMappedCallSiteStringIndexViewInitialized())
+            // A callee name whose trigrams all exist but that no call site carries is searched and missed.
+            val searchedMiss = loaded.distinctStringPropertyDisjunction(
+                CallSiteNode::class.java,
+                predicates,
+                listOf("caller_class", "callee_name"),
+                limit = 2,
+                selectedValues = StringPropertyTupleSet(
+                    listOf(listOf("app.target.TargetedCaller", "getValue1300"), listOf("app.target.TargetedCaller", "getValue7"))
+                ),
+                workConsumer = noWork
+            )
+            assertEquals(listOf(listOf("app.target.TargetedCaller", "getValue7")), searchedMiss?.map { row -> row.values })
+        }
 }
