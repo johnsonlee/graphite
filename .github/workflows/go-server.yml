@@ -39,6 +39,8 @@ jobs:
           java-version: '17'
       - name: Regenerate parser and shared frontend assets
         run: |
+          python3 internal/web/generate.py --check
+          python3 internal/web/test_generate.py
           go generate ./internal/cypher ./internal/web
           git diff --exit-code -- internal/cypher/generated internal/web/assets
       - name: Verify native behavior and races
