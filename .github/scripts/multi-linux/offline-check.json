@@ -1,0 +1,12 @@
+{
+  "scope": "Offline tests/read-only frozen source/build-receipt audit; no Java/build/new capture/push",
+  "testCount": 8,
+  "testExitCode": 0,
+  "trigger": "push-only exact existing branch plus repository/ref guard",
+  "crossCwdBundledSourcesAuthenticated": true,
+  "inProcessCanonicalEvidence": "Already successful Linux run34018650891 used identical flag and reproduced both original canonical hashes; future run retains strict identity checks",
+  "testLogSha256": "235b4d775d94d7dc0009e4f6f7445248cf61ed66b2bca73ef8fd6f7c370f0b78",
+  "performanceAcceptance": false,
+  "profilingCompleted": false,
+  "latestRevision": "Only README and paired-run coldMeaning disclosure changed: GC/finalization/100ms x3 sleeps/metrics/sampler setup; adapter byte-identical"
+}

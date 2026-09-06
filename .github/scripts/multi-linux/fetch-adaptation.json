@@ -1,0 +1,5 @@
+{
+  "originalSha256": "2d22b846e2378e34ff6b2f440c3fb0d77d7fd9f80e3372e12258e7acdcbf82bd",
+  "draftSha256": "a3887547565d83058eb29569a5ae1ccb9d34073fd92b9642915b28183af5937b",
+  "change": "Global artifact fetching/digest checks unchanged; remove unrelated async-profiler download and method-mode choice; read frozen fetch-pins.json. No requests executed."
+}

@@ -1,0 +1,13 @@
+test_bundle_authentication_from_other_cwd (test_draft.DraftTest.test_bundle_authentication_from_other_cwd) ... ok
+test_exact_protocol (test_draft.DraftTest.test_exact_protocol) ... ok
+test_local_oracle_identity_and_query_mutation (test_draft.DraftTest.test_local_oracle_identity_and_query_mutation) ... ok
+test_no_p95_and_keep_work_diffs (test_draft.DraftTest.test_no_p95_and_keep_work_diffs) ... ok
+test_original_controls_still_verify (test_draft.DraftTest.test_original_controls_still_verify) ... ok
+test_replay_reset_validator_only_fixture (test_draft.DraftTest.test_replay_reset_validator_only_fixture) ... ok
+test_workflow_exact_push_guard (test_draft.DraftTest.test_workflow_exact_push_guard) ... ok
+test_wrong_or_unknown_reset_fails (test_draft.DraftTest.test_wrong_or_unknown_reset_fails) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.489s
+
+OK

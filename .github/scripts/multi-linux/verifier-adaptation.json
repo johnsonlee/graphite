@@ -1,0 +1,6 @@
+{
+  "upstreamSha256": "99439d4a001cf214c8e2f44e67b8898064c3e0c4c754043cd99f950c712d910f",
+  "draftSha256": "560582c89036052498f79d6a2f0e73bf6451032dc665995dcfb6b7628b1a7196",
+  "change": "Explicit expected_reset argument with two-value whitelist, default per-query-cold; complete original value/order/provenance/type validation retained. CLI remains original default.",
+  "originalControlsUnchanged": true
+}

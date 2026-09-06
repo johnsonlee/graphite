@@ -1,0 +1,226 @@
+{
+  "scope": "Read-only source/API/path audit; no Java, build or new canonical rebuild",
+  "successfulPriorLinuxRun": 34018650891,
+  "priorRunReceiptSha256": "9e4ed6c9393b50bb5e346f5543ade8da3ff5548e7576d172ba7869b642c61b6d",
+  "priorBuildCommands": [
+    {
+      "label": "build-original-base",
+      "command": [
+        "/home/runner/work/graphite/graphite/base/gradlew",
+        "-p",
+        "/home/runner/work/graphite/graphite/base",
+        ":webgraph:jmhJar",
+        "--no-daemon",
+        "-Pkotlin.compiler.execution.strategy=in-process"
+      ],
+      "cwd": null,
+      "exitCode": 0
+    },
+    {
+      "label": "build-original-candidate",
+      "command": [
+        "/home/runner/work/graphite/graphite/candidate/gradlew",
+        "-p",
+        "/home/runner/work/graphite/graphite/candidate",
+        ":webgraph:jmhJar",
+        ":webgraph:prepareBenchmarkFixtures",
+        "--no-daemon",
+        "-Pkotlin.compiler.execution.strategy=in-process"
+      ],
+      "cwd": null,
+      "exitCode": 0
+    }
+  ],
+  "priorCanonicalResults": {
+    "base": {
+      "sha256": "5bda60cf176b3f168bd390f386ffb572a99ea9b3fee0cb984f81841a7ff4e8a0",
+      "canonicalContentSha256": "ddfed3136e1c443d1cbd1cc96285de133fb84ba2a6a252b43326f82020250275",
+      "expectedCiCanonical": "ddfed3136e1c443d1cbd1cc96285de133fb84ba2a6a252b43326f82020250275"
+    },
+    "candidate": {
+      "sha256": "d28be2ea2cc7a83a2ce3791ca9e5798a7984503cf83e6a0a5cb7ba0ac493bf57",
+      "canonicalContentSha256": "6a0cb25c8f55eb83d08aa8035c5667c1b8e09357da8f244bd70c7c49e1b673a4",
+      "expectedCiCanonical": "6a0cb25c8f55eb83d08aa8035c5667c1b8e09357da8f244bd70c7c49e1b673a4"
+    }
+  },
+  "draftBuildChange": "Add identical -Pkotlin.compiler.execution.strategy=in-process; preserve --no-daemon/tasks/order; retain future strict canonical checks",
+  "frozenMainSourceEvidence": [
+    {
+      "revision": "4e328b0109e13c896b74004823fb049fcb19251a",
+      "path": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/GraphStore.kt",
+      "sha256": "2fe499f043740e7b70970a242613f760bf23577aef45d6fa612161e1d4d546ad",
+      "relevantDeclarations": [
+        {
+          "line": 557,
+          "text": "private fun <T> joinLoad(future: CompletableFuture<T>): T ="
+        },
+        {
+          "line": 889,
+          "text": "fun loadMapped(dir: Path): Graph = loadMapped("
+        }
+      ]
+    },
+    {
+      "revision": "4e328b0109e13c896b74004823fb049fcb19251a",
+      "path": "graphite-core/src/main/kotlin/io/johnsonlee/graphite/core/Node.kt",
+      "sha256": "76cadcde83cad805f26ccfeca82ab5795d959e87386c6fa68bc1a3a57ae8ea68",
+      "relevantDeclarations": [
+        {
+          "line": 136,
+          "text": "val name: String,"
+        },
+        {
+          "line": 198,
+          "text": "data class CallSiteNode("
+        },
+        {
+          "line": 200,
+          "text": "val caller: MethodDescriptor,"
+        },
+        {
+          "line": 201,
+          "text": "val callee: MethodDescriptor,"
+        },
+        {
+          "line": 212,
+          "text": "data class AnnotationNode("
+        },
+        {
+          "line": 214,
+          "text": "val name: String,              // annotation FQN, e.g. \"org.springframework.web.bind.annotation.GetMapping\""
+        },
+        {
+          "line": 215,
+          "text": "val className: String,         // declaring class FQN"
+        },
+        {
+          "line": 217,
+          "text": "val values: Map<String, Any?>  // annotation attributes"
+        },
+        {
+          "line": 224,
+          "text": "val className: String,"
+        },
+        {
+          "line": 236,
+          "text": "val declaringClass: TypeDescriptor,"
+        },
+        {
+          "line": 237,
+          "text": "val name: String,"
+        },
+        {
+          "line": 245,
+          "text": "val declaringClass: TypeDescriptor,"
+        },
+        {
+          "line": 246,
+          "text": "val name: String,"
+        }
+      ]
+    },
+    {
+      "revision": "4e328b0109e13c896b74004823fb049fcb19251a",
+      "path": "graphite-core/src/main/kotlin/io/johnsonlee/graphite/graph/Graph.kt",
+      "sha256": "9f82ae8246869468415967f95c0107670c662e79f4baa3276b4ed389aa8638b2",
+      "relevantDeclarations": [
+        {
+          "line": 51,
+          "text": "fun <T : Node> nodesByStringProperty("
+        },
+        {
+          "line": 170,
+          "text": "fun <T : Node> nodesByStringProperty("
+        },
+        {
+          "line": 187,
+          "text": "fun <T : Node> nodesByTransformedStringProperty("
+        },
+        {
+          "line": 199,
+          "text": "fun <T : Node> nodesByTransformedStringProperty("
+        },
+        {
+          "line": 215,
+          "text": "fun <T : Node> nodesByStringPropertyDisjunction("
+        },
+        {
+          "line": 224,
+          "text": "fun <T : Node> nodesByStringPropertyDisjunction("
+        },
+        {
+          "line": 355,
+          "text": "fun <T : Node> nodes(type: Class<T>): Sequence<T>"
+        },
+        {
+          "line": 383,
+          "text": "fun <T : Edge> outgoing(id: NodeId, type: Class<T>): Sequence<T>"
+        },
+        {
+          "line": 388,
+          "text": "fun <T : Edge> incoming(id: NodeId, type: Class<T>): Sequence<T>"
+        },
+        {
+          "line": 523,
+          "text": "fun <T : Node> Graph.nodesByStringProperty("
+        },
+        {
+          "line": 533,
+          "text": "fun <T : Node> Graph.nodesByStringProperty("
+        },
+        {
+          "line": 544,
+          "text": "fun <T : Node> Graph.nodesByTransformedStringProperty("
+        },
+        {
+          "line": 555,
+          "text": "fun <T : Node> Graph.nodesByTransformedStringProperty("
+        },
+        {
+          "line": 567,
+          "text": "fun <T : Node> Graph.nodesByStringPropertyDisjunction("
+        },
+        {
+          "line": 575,
+          "text": "fun <T : Node> Graph.nodesByStringPropertyDisjunction("
+        },
+        {
+          "line": 688,
+          "text": "inline fun <reified T : Node> Graph.nodes(): Sequence<T> = nodes(T::class.java)"
+        },
+        {
+          "line": 689,
+          "text": "inline fun <reified T : Edge> Graph.outgoing(id: NodeId): Sequence<T> = outgoing(id, T::class.java)"
+        },
+        {
+          "line": 690,
+          "text": "inline fun <reified T : Edge> Graph.incoming(id: NodeId): Sequence<T> = incoming(id, T::class.java)"
+        }
+      ]
+    }
+  ],
+  "exporterOptions": [
+    "manifest",
+    "provenance",
+    "output",
+    "receipt",
+    "expected-jar-sha256"
+  ],
+  "receiptChecks": [
+    "passed true",
+    "kind ordered-callsite-tuples / non-callsite-property-census",
+    "frozen main revision",
+    "actual manifest/provenance/base JAR/output SHA256"
+  ],
+  "cwdContract": {
+    "workflow": "Explicit github.workspace for all shell steps",
+    "prepare": "CLI paths resolved absolute at entry; Gradle wrapper and -p target absolute; sources anchored to script __file__",
+    "paired": "Prepared receipt/output resolved at entry; all engine/catalog/class paths recorded absolute by preparation",
+    "fetch": "workspace and receipts default to caller cwd; workflow pins caller cwd to workspace",
+    "finalize": "diagnostic-output under caller cwd; workflow pins caller cwd to workspace",
+    "manifestAbsolutePaths": "No auto-relocation exists. Original absolute graph paths must resolve under the same runner workspace layout; otherwise setup fails."
+  },
+  "deploymentWorkflowDestination": ".github/workflows/attempt146-linux-profile.yml",
+  "deploymentScriptsDestination": ".github/scripts/multi-linux/",
+  "trigger": "push only codex/attempt146-linux-profile; exact repository/ref guard"
+}

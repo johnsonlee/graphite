@@ -1,0 +1,32 @@
+{
+  "scope": "Preparation-only revised draft; not deployed or run",
+  "files": {
+    "README.md": "da75f9b736483bd0353f05f95f3b7fac10dedb32c41228e8b97bc33267e7e1fc",
+    "common.py": "5d042a052e7323568a0bcb7670bd6f81e4806994ba07554a4df5dc2cdcbd25e3",
+    "deployment-manifest.json": "edabdd4d2f409a42f9794aa4af9888c363993e3ffdbed2331adfe6b6fc4b5a18",
+    "fetch-adaptation.json": "de20ced7134472e591a974617b6dd7fbdb59f9f185d4c8d4bbad11e778d18080",
+    "fetch-inputs.py": "a3887547565d83058eb29569a5ae1ccb9d34073fd92b9642915b28183af5937b",
+    "fetch-pins.json": "d4796376b5402162231f4a4a961f871ba5257aadfbf31c1610ce7510e8d92d06",
+    "finalize.py": "b87e15c1edd44394d02595f806f9127cdb7eac31881e99a332b9bf55e57a6351",
+    "frozen-v3/catalog.json": "bbc5ac76df7f3109aaeb9f45fd4acb5234117da4f0f03365cbb0e196c1d785f3",
+    "frozen-v3/workloads.tsv": "e62b5d7bee68e83fc81f215fd886473c3a22a3dcfae743b6bdcf76dcd6c5afd9",
+    "frozen-v4/catalog.json": "c27459947b41a3ac8665dcea870ae295bc85d0269b00dbb55eff10c85503d177",
+    "frozen-v4/prefix-and-zero-receipt.json": "a88842963e492d2720a43b50717011fd0aed1dd1282d8b84ff70211cc35ce57c",
+    "frozen-v4/workloads.tsv": "f3e240e79739fd28ae8c869758dcd4b2bc2559c4c90254136ab74f0235ae3923",
+    "offline-check.json": "3fcc9f754f6814c7a12caf06f5b0b7c8ee4cdeea3f7095cdd2a7619b269b15bb",
+    "offline-tests.log": "235b4d775d94d7dc0009e4f6f7445248cf61ed66b2bca73ef8fd6f7c370f0b78",
+    "paired-run.py": "ee98da47a90b79158aad9e4b9627b467af8e1034ab5701db525561cf8be9adcc",
+    "path-build-api-audit.json": "8b4caf2777a48822f8f957df36ec0b05b374309f64cd542fb37c26e8e0fda8fb",
+    "pins.json": "37f907cf181d98531dcdeafa7fbe097c98af8b73c927144f1c4c4ac5df2fb048",
+    "prepare.py": "2c59096027441fbe8bbc38fdba8c9c9302f84b63f93728eaf57999bb0c6e6071",
+    "test_draft.py": "9b950f7513fd383d63e8672dcec4f10db40656015a4c7a06b9a7e5a754ee9484",
+    "tools/ExportCallSites.java": "96d270cadc3ada03efe849becbfd5da9e9e13a4a2b8719dd97a551caf0fb4e9d",
+    "tools/MultiKeywordProfileRunner.java": "05bf55718595c9327609705dc35dc23fb9baa42168b02b081f93d2e010936c6c",
+    "tools/VerifyNonCallSiteProperties.java": "fbd8429903e7a65d5dd23e271c7a336231a98210a5a9cb641eaed66af1624a71",
+    "tools/derive.py": "dbd0490b342cce521b1ec8ad480f12e3940233a62685eb4c4e9eb69157018851",
+    "tools/run.py": "c6fd3da1ffc40d7b97f30ec82e95a977be33f224c4dcfc369f5c41222b216af7",
+    "tools/verify_run.py": "560582c89036052498f79d6a2f0e73bf6451032dc665995dcfb6b7628b1a7196",
+    "verifier-adaptation.json": "31317fbb2208908937fe00222544fb9cbe48d3b118786d13125b1ec9ba86f089",
+    "workflow.yml": "4bc69a79b3be52a2d643de0efb7cfe4e0931b9e668a286a9e9f2a942ebc4855d"
+  }
+}

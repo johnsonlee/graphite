@@ -1,0 +1,43 @@
+{
+  "workflow": {
+    "source": "workflow.yml",
+    "destination": ".github/workflows/attempt146-linux-profile.yml",
+    "replaceExisting": true
+  },
+  "scriptsDirectory": ".github/scripts/multi-linux/",
+  "requiredScriptsFiles": [
+    "README.md",
+    "common.py",
+    "fetch-adaptation.json",
+    "fetch-inputs.py",
+    "fetch-pins.json",
+    "finalize.py",
+    "frozen-v3/catalog.json",
+    "frozen-v3/workloads.tsv",
+    "frozen-v4/catalog.json",
+    "frozen-v4/prefix-and-zero-receipt.json",
+    "frozen-v4/workloads.tsv",
+    "paired-run.py",
+    "path-build-api-audit.json",
+    "pins.json",
+    "prepare.py",
+    "test_draft.py",
+    "tools/ExportCallSites.java",
+    "tools/MultiKeywordProfileRunner.java",
+    "tools/VerifyNonCallSiteProperties.java",
+    "tools/derive.py",
+    "tools/run.py",
+    "tools/verify_run.py",
+    "verifier-adaptation.json",
+    "workflow.yml"
+  ],
+  "optionalAuditFiles": [
+    "path-build-api-audit.json",
+    "offline-check.json",
+    "offline-tests.log",
+    "draft-freeze.json",
+    "deployment-manifest.json"
+  ],
+  "branch": "codex/attempt146-linux-profile",
+  "deploymentPerformed": false
+}
