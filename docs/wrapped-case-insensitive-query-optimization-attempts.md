@@ -4939,3 +4939,23 @@ jar-order band (four-properties-targeted `5.72 -> 6.46 / 6.29 -> 6.41 ms` wall a
 `5.72`-`6.29` spread of the base itself between orders).
 
 **Conclusion:** kept.
+
+### 2026-09-06 - Attempt 156, follow-up: the length shortcut behind the lowercase transform
+
+**Review finding (P1):** the raw-length rejection ran before the transform, but Unicode
+lowercasing can expand a code point: `"İ".lowercase()` is `"i̇"` (UTF-16 length
+1 to 2), so a lowercase EQUALS, STARTS_WITH, ENDS_WITH or CONTAINS on such a value that used to
+match was rejected by `stringMatches`, `reusableMatches` and `reusableContains` alike.
+
+**Change:** the raw length rejects only untransformed and ASCII-only values, whose lowercase
+keeps the length; a value with a non-ASCII character takes the Unicode fallback and is measured
+after its transform. `StringMatchingTest` covers the expanding mapping in every mode and the
+rejection of a transformed value that is still too short.
+
+**Evidence (local, 64 fixtures, six runs forward and four reverse, CPU medians forward /
+reverse):** four-properties-targeted `5.71 -> 5.50 / 5.74 -> 5.28 ms`, class-pair-targeted
+`2.73 -> 2.87 / 3.15 -> 2.73 ms`, the 64-graph wrapped targeted shape `1.86 -> 1.95 /
+1.64 -> 1.82 ms`, distinct-dense first execution `6.70 -> 6.41 / 6.16 -> 6.54 ms`: the ASCII
+scan of a short candidate before its rejection is within the jar-order band on every row.
+
+**Conclusion:** kept, with the shortcut narrowed to length-preserving cases.

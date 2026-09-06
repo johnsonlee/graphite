@@ -1554,12 +1554,13 @@ private fun StringPropertyPredicate.canUseTrigramPostings(): Boolean =
 
 /**
  * Matches one decoded string; lowercase transforms reuse the buffer for ASCII values. A string
- * shorter than the expected value cannot equal, start with, end with or contain it, so it is
- * rejected before any character is inspected: a long term such as a full class name meets
- * mostly shorter candidates, and lowercasing them was the bulk of the verification cost.
+ * shorter than the expected value cannot equal, start with, end with or contain it, so an
+ * untransformed or ASCII-only candidate is rejected before its buffer is lowercased: a long term
+ * such as a full class name meets mostly shorter candidates, and lowercasing them was the bulk of
+ * the verification cost. A non-ASCII candidate is measured after its Unicode lowercasing, which
+ * can expand a code point (U+0130 lowercases to two chars).
  */
 internal fun reusableMatches(actual: MutableString, predicate: StringPropertyPredicate): Boolean {
-    if (actual.length < predicate.expected.length) return false
     if (predicate.transform == StringValueTransform.LOWERCASE) {
         var index = 0
         while (index < actual.length) {
@@ -1568,7 +1569,10 @@ internal fun reusableMatches(actual: MutableString, predicate: StringPropertyPre
             }
             index++
         }
+        if (actual.length < predicate.expected.length) return false
         actual.toLowerCase()
+    } else if (actual.length < predicate.expected.length) {
+        return false
     }
     // Compared by identity rather than switched on, so a cold request never loads a when-mapping class.
     val mode = predicate.mode

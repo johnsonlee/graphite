@@ -2483,14 +2483,21 @@ private fun estimatedStringPropertyAdmissionBytes(key: StringPropertyAdmissionKe
         key.property.property.length.toLong() * Char.SIZE_BYTES +
         key.expected.length.toLong() * Char.SIZE_BYTES
 
+/**
+ * Matches one string value. A value shorter than the expected value cannot match, but the length
+ * only decides before the transform when the transform preserves it: Unicode lowercasing can
+ * expand a code point (U+0130 lowercases to two chars), so the raw length rejects untransformed
+ * and ASCII-only values, and every other value is measured after its transform.
+ */
 internal fun stringMatches(
     actual: String,
     transform: StringValueTransform?,
     mode: StringMatchMode,
     expected: String
 ): Boolean {
-    if (actual.length < expected.length) return false
+    if (actual.length < expected.length && (transform == null || isAscii(actual))) return false
     val transformed = transformString(actual, transform)
+    if (transformed.length < expected.length) return false
     // Compared by identity rather than switched on, so a cold request never loads a when-mapping class.
     return if (mode == StringMatchMode.EQUALS) {
         transformed == expected
@@ -2508,7 +2515,6 @@ internal fun reusableContains(
     transform: StringValueTransform?,
     expected: String
 ): Boolean {
-    if (actual.length < expected.length) return false
     if (transform == StringValueTransform.LOWERCASE) {
         var index = 0
         while (index < actual.length) {
@@ -2517,9 +2523,20 @@ internal fun reusableContains(
             }
             index++
         }
+        // ASCII lowercasing keeps the length, so a shorter value is rejected before the buffer is touched.
+        if (actual.length < expected.length) return false
         actual.toLowerCase()
+    } else if (actual.length < expected.length) {
+        return false
     }
     return actual.indexOf(expected) >= 0
+}
+
+private fun isAscii(value: String): Boolean {
+    for (index in value.indices) {
+        if (value[index].code > ASCII_MAX_CODE) return false
+    }
+    return true
 }
 
 internal fun consumeGraphWork(consumer: GraphWorkConsumer?, workUnits: Long) {
