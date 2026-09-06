@@ -93,14 +93,12 @@ internal object DirectProjectionResultCache {
             RESULT_GRAPH_IDS_KEY,
             Collections.singletonList(graphId)
         )
+        val layout = DirectProjectionRowLayout(immutableColumns, RESULT_METADATA_KEY)
         val rows = projectedRows.map { projected ->
             check(projected.values.size == immutableColumns.size) {
                 "Storage projection width ${projected.values.size} does not match ${immutableColumns.size} columns"
             }
-            val values = LinkedHashMap<String, Any?>(immutableColumns.size * 2 + 1)
-            immutableColumns.forEachIndexed { index, column -> values[column] = projected.values[index] }
-            values[RESULT_METADATA_KEY] = metadata
-            DirectProjectionCypherRow(Collections.unmodifiableMap(values), graphIds)
+            layout.row(projected.values, metadata, graphIds)
         }
         return CypherResult(immutableColumns, Collections.unmodifiableList(rows))
     }
@@ -149,8 +147,10 @@ internal object DirectProjectionResultCache {
 
     private fun estimatedProjectedStringBytes(rows: List<StringPropertyProjectionRow>): Long {
         var bytes = 0L
-        rows.forEach { row ->
-            row.values.filterNotNull().forEach { value ->
+        for (row in rows) {
+            val values = row.values
+            for (index in values.indices) {
+                val value = values[index] ?: continue
                 bytes = Math.addExact(
                     bytes,
                     Math.addExact(

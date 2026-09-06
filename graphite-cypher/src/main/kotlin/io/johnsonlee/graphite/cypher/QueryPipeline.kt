@@ -1683,6 +1683,7 @@ class QueryPipeline private constructor(
         val tracker = if (workTrackingEnabled) activeWorkTracker.get() else null
         val rows = ArrayList<Map<String, Any?>>(minOf(limit, DIRECT_ROW_INITIAL_CAPACITY))
         val sharedRows = qualified && projection.identity
+        val layout = if (sharedRows) null else DirectProjectionRowLayout(columns, RESULT_METADATA_KEY.takeIf { qualified })
         for (index in candidateSources.indices) {
             if (rows.size >= limit) break
             tracker?.checkCancelled()
@@ -1713,11 +1714,7 @@ class QueryPipeline private constructor(
                 Collections.singletonList(source.id)
             )
             for (raw in projected) {
-                val values = LinkedHashMap<String, Any?>(columns.size * 2 + 1)
-                val visible = projection.visibleValues(raw.values, source.id)
-                columns.forEachIndexed { columnIndex, column -> values[column] = visible[columnIndex] }
-                if (qualified) values[RESULT_METADATA_KEY] = metadata
-                rows += DirectProjectionCypherRow(Collections.unmodifiableMap(values), graphIds)
+                rows += checkNotNull(layout).row(projection.visibleValues(raw.values, source.id), metadata, graphIds)
                 if (rows.size >= limit) break
             }
         }
@@ -1814,13 +1811,14 @@ class QueryPipeline private constructor(
             }
         }
         val result = ArrayList<Map<String, Any?>>(rows.size)
+        val layout = DirectProjectionRowLayout(columns, RESULT_METADATA_KEY.takeIf { qualified })
         rows.forEach { (visible, graphIds) ->
-            val values = LinkedHashMap<String, Any?>(columns.size * 2 + 1)
-            columns.forEachIndexed { columnIndex, column -> values[column] = visible[columnIndex] }
-            if (qualified) {
-                values[RESULT_METADATA_KEY] = Collections.singletonMap<String, Any?>(RESULT_GRAPH_IDS_KEY, graphIds.sorted())
+            val metadata = if (qualified) {
+                Collections.singletonMap<String, Any?>(RESULT_GRAPH_IDS_KEY, graphIds.sorted())
+            } else {
+                null
             }
-            result += DirectProjectionCypherRow(Collections.unmodifiableMap(values), graphIds)
+            result += layout.row(visible, metadata, graphIds)
         }
         return CypherResult(columns, result)
     }

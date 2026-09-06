@@ -515,15 +515,19 @@ class CrossGraphCypherExecutor private constructor(
     fun execute(cypher: String, parameters: Map<String, Any?>, maxRows: Int): CypherResult =
         delegate.execute(cypher, parameters, maxRows).withExplicitMetadata()
 
-    private fun CypherResult.withExplicitMetadata(): CypherResult = copy(
-        rows = rows.map { row ->
-            if (RESULT_METADATA_KEY in row) {
-                row
-            } else {
-                row + (RESULT_METADATA_KEY to mapOf(RESULT_GRAPH_IDS_KEY to emptyList<String>()))
+    private fun CypherResult.withExplicitMetadata(): CypherResult {
+        // Storage-direct rows already carry their metadata; keep the result and its row list as is.
+        if (rows.all { row -> RESULT_METADATA_KEY in row }) return this
+        return copy(
+            rows = rows.map { row ->
+                if (RESULT_METADATA_KEY in row) {
+                    row
+                } else {
+                    row + (RESULT_METADATA_KEY to mapOf(RESULT_GRAPH_IDS_KEY to emptyList<String>()))
+                }
             }
-        }
-    )
+        )
+    }
 }
 
 /**

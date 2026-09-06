@@ -4318,3 +4318,36 @@ pools, keeps the persisted sidecar format, and raises the global-wide gate to `1
 main. Full CI, both hosted real64 pressure gates, and every review thread must pass before
 completion. This commit is not authorization to merge or tag; either action requires a new explicit
 user instruction.
+
+### 2026-09-06 - Attempt 133: Materialize direct projection rows on a shared column layout
+
+**Hypothesis:** the hosted cold graph-routing fork on `963328d` failed its request-selected rule
+(`request-selected-source-wrapped-contains`, base P95 `0.373 ms` → candidate `0.637 ms` against
+the `0.25 ms` absolute allowance) although the candidate does the same storage work as the base
+on those rows: the base spends about five seconds building heap indexes in the first family of the
+cold replay and reaches the later families with a C2-compiled pipeline, while the candidate
+finishes that family in under half a second and runs the same later families in tier-3 code.
+Under `-XX:TieredStopAtLevel=1` the two revisions cost the same per query, so the fixed cost of
+the per-query path in C1-quality code is what decides those rows, and the largest piece of it was
+building one `LinkedHashMap` per public row.
+
+**Change:**
+
+- `DirectProjectionCypherRow` is now one object over a column-name array shared by every row of a
+  result and one value array per row; lookups scan the handful of columns. A
+  `DirectProjectionRowLayout` resolves duplicate column names and the appended metadata key once
+  per result, with the same first-position/last-value semantics as an insertion-ordered map. The
+  result cache, the mapped CallSite row path, and the DISTINCT row path build rows through it.
+- The result cache's retained-bytes estimate iterates values without allocating per row, and the
+  cross-graph executor keeps a result whose rows already carry `$metadata` instead of mapping and
+  copying the row list.
+
+**Evidence (local, 64 fixtures):** C1-only materialization of 200 rows `0.59 ms → 0.03 ms`; the
+steady tiered dense single-graph query `0.11..0.13 ms → 0.033 ms`. The local cold routing fork
+went from FAIL (request-selected P95 regression `112%`, graphId P50 `+17.7%`) to PASS
+(request-selected `10.2%` P50 / `6.9%` P95, graphId P50 `+1.2%`), with every K-set width faster
+than the base (`0.54 / 1.67 / 3.34 ms → 0.24 / 0.36 / 0.74 ms` P95). The Cypher unit tests
+cover the row's map contract, duplicate columns, and rows without metadata.
+
+**Conclusion:** keep for exact-head hosted validation of the cold routing fork; the global-wide
+gate is unchanged by this commit and still needs its own evidence.
