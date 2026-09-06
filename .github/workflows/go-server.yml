@@ -45,6 +45,8 @@ jobs:
         run: go test -race ./...
       - name: Vet
         run: go vet ./...
+      - name: Verify benchmark failure evidence handling
+        run: python3 -W error::ResourceWarning scripts/test_benchmark_http.py
       - name: Build standalone server without CGo
         run: CGO_ENABLED=0 go build -o /tmp/graphite-server ./cmd/graphite-server
 

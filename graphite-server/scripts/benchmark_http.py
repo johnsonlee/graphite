@@ -35,9 +35,11 @@ def main():
  if manifest.get('graphCount')!=64 or len(expected_ids)!=64 or len(set(expected_ids))!=64:p.error('Full64 catalog required')
  if len(cases)!=42 or any(c['path']!='/api/cypher' or c.get('phase')!='query' for c in cases):p.error('Complete42-case root cross-graph workload required; no scoped/fanout substitute')
  if digest(a.fixture_root/'graphs.tsv')!=manifest['fixtureManifestSha256'] or digest(a.fixture_root/'fixture-provenance.tsv')!=manifest['fixtureProvenanceSha256']:p.error('Fixture identity mismatch')
- sources={r['graphId']:r for r in csv.DictReader((a.fixture_root/'fixture-provenance.tsv').open(),delimiter='\t')}
+ with (a.fixture_root/'fixture-provenance.tsv').open() as provenance:
+  sources={r['graphId']:r for r in csv.DictReader(provenance,delimiter='\t')}
  if set(sources)!=set(expected_ids):p.error('Provenance must contain precisely64 required IDs')
- a.output.mkdir(parents=True,exist_ok=True)
+ # A rerun must never replace raw observations from an earlier experiment.
+ a.output.mkdir(parents=True,exist_ok=False)
  runtimes={'baseline':(a.baseline_url,a.baseline_pid,a.baseline_fixture_root)}
  if a.candidate_url:runtimes['candidate']=(a.candidate_url,a.candidate_pid,a.candidate_fixture_root)
  catalogs={}
@@ -72,20 +74,41 @@ def main():
  oracle={};initial=[]
  for case in cases:
   record={'case':case}
+  initial.append(record)
   for runtime,(url,_,_) in runtimes.items():
-   started=time.perf_counter_ns();response=fetch(url,case,'');elapsed=(time.perf_counter_ns()-started)/1e6
+   started=time.perf_counter_ns()
+   try:response=fetch(url,case,'')
+   except Exception as error:
+    record[runtime]={'transportError':repr(error),'durationMs':(time.perf_counter_ns()-started)/1e6}
+    (a.output/'initial-replay.partial.json').write_text(json.dumps(initial,indent=2)+'\n')
+    (a.output/'correctness-failure.json').write_text(json.dumps({'phase':'initial','runtime':runtime,'record':record},indent=2)+'\n')
+    raise
+   elapsed=(time.perf_counter_ns()-started)/1e6
    record[runtime]={'durationMs':elapsed,'response':response}
-   if response['status']!=200:raise RuntimeError('Preflight HTTP failure: '+case['name'])
+   (a.output/'initial-replay.partial.json').write_text(json.dumps(initial,indent=2)+'\n')
+   if response['status']!=200:
+    (a.output/'correctness-failure.json').write_text(json.dumps({'phase':'initial','runtime':runtime,'record':record},indent=2)+'\n')
+    raise RuntimeError('Preflight HTTP failure: '+case['name'])
    if runtime=='baseline':oracle[case['name']]=signature(response,case)
    elif signature(response,case)!=oracle[case['name']]:
     (a.output/'correctness-failure.json').write_text(json.dumps(record,indent=2)+'\n');raise RuntimeError('Cross-graph response mismatch: '+case['name'])
-  initial.append(record)
  (a.output/'initial-replay.json').write_text(json.dumps(initial,indent=2)+'\n')
+ warmup_completed=0
  for iteration in range(a.warmups):
   for case in cases:
    for runtime,(url,_,_) in runtimes.items():
-    response=fetch(url,case,'')
-    if response['status']!=200 or signature(response,case)!=oracle[case['name']]:raise RuntimeError('Warmup correctness failed')
+    record={'phase':'warmup','iteration':iteration,'case':case,'runtime':runtime,'completedBefore':warmup_completed}
+    try:response=fetch(url,case,'')
+    except Exception as error:
+     record['transportError']=repr(error)
+     (a.output/'correctness-failure.json').write_text(json.dumps(record,indent=2)+'\n')
+     raise
+    if response['status']!=200 or signature(response,case)!=oracle[case['name']]:
+     record['response']=response
+     (a.output/'correctness-failure.json').write_text(json.dumps(record,indent=2)+'\n')
+     raise RuntimeError('Warmup correctness failed: '+case['name'])
+    warmup_completed+=1
+    (a.output/'warmup-progress.json').write_text(json.dumps({'completed':warmup_completed,'required':a.warmups*len(cases)*len(runtimes)})+'\n')
  samples={c['name']:{runtime:[] for runtime in runtimes} for c in cases};errors=[];process_samples=[];rng=random.Random(a.seed)
  def timed(runtime,case,iteration):
   started=time.perf_counter_ns()
@@ -116,6 +139,8 @@ def main():
   results.append(row)
  pooled={r:percentiles([v for item in samples.values() for v in item[r]]) for r in runtimes}
  result={'results':results,'pooledEqualWeightMix':pooled,'incorrectOrErrorSamples':len(errors),'processSamples':process_samples,'completeGoalAchieved':False,'limitations':'Only this warm concurrency stratum; cold replay has one observation/query and no per-query P95; ps CPU/RSS are snapshots not allocations/peak memory; full parity and both1/4 plus repeated cold/warm runs remain required'}
+ result['latencyPopulation']='All attempted timed requests, including errors; an error-containing result is not a successful latency comparison.'
+ result['validSuccessfulComparison']=bool(a.candidate_url) and not errors
  if a.candidate_url:result['pooledP95Speedup']=pooled['baseline']['p95Ms']/pooled['candidate']['p95Ms'];result['tenfoldEveryCase']=not errors and all(x['p95Speedup']>=10 for x in results)
  (a.output/'results.json').write_text(json.dumps(result,indent=2)+'\n')
  (a.output/'errors.json').write_text(json.dumps(errors,indent=2)+'\n')

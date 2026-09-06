@@ -58,6 +58,19 @@ mismatches. Every measured sample checks its full result against the baseline
 oracle outside the timer. HTTP errors, cancellation, timeouts and wrong results
 remain explicit failures; none are removed to improve percentiles.
 
+Each invocation requires a new output directory. The runner preserves completed
+and failed initial responses in `initial-replay.partial.json`, and writes full
+HTTP or transport failures from initial replay and warmup to
+`correctness-failure.json`. Warmup progress has an explicit completed/required
+count. Error-containing timed runs retain all attempts and are marked invalid
+for a successful latency comparison. These changes do not reclassify earlier
+saved benchmark receipts.
+
+Run `python3 -W error::ResourceWarning scripts/test_benchmark_http.py` from
+`graphite-server` to check evidence preservation and overwrite protection. These
+tests use fake transport solely to force failures before timing samples begin;
+they run no graph query and produce no performance measurements.
+
 Required matrix:
 
 | State | Client concurrency | Execution and evidence |
