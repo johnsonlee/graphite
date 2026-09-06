@@ -5102,3 +5102,11 @@ begins only once no collector has recorded an event for 250 ms (10 s timeout), s
 was already in flight finishes outside the measurement. A cycle the replay itself initiates
 stays inside it, and no collector setting changes. The harness is candidate-owned and copied
 into the base tree by the routing script, so both sides run it.
+
+**Result on bba2e24:** graph-routing passed in all three states (cold k8 candidate P95 0.89 ms
+against base 1.16 ms, medians 0.162 / 0.160 ms; two candidate rows and four base rows above
+1 ms remain, a replay-initiated burst staying inside the measurement as agreed). Global-wide
+failed on pair 1 only (6.69x: the wrapped-distinct/dense first execution at 17.64 ms against
+5.7-8.8 ms on the other five candidate replays of this and the previous head), with no collection
+recorded in any candidate replay of either head and a runner about 30% slower for both sides,
+so a documentation-only head re-samples both gates on the same code.
