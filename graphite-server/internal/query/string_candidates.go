@@ -13,6 +13,9 @@ import (
 // An internal context switch keeps correctness tests and diagnostic comparisons
 // on the complete scanner without changing the user-visible query language.
 type candidateScanOnlyKey struct{}
+
+// Force the certified A6 dictionary path in correctness comparisons.
+type candidateDirectoryOnlyKey struct{}
 type stringCandidateOperand struct {
 	property           store.CallSiteStringProperty
 	lower, emptyOnNull bool
@@ -184,6 +187,7 @@ func (e evaluator) indexedNodeWalker(graph *store.Store, clause cypher.MatchClau
 			return nil
 		}
 		selected := map[int32]bool{}
+		trigramChecked, trigramValid := false, false
 		for property := store.CallerClass; property <= store.CalleeName; property++ {
 			atoms := []stringCandidateAtom{}
 			for _, atom := range plan.atoms {
@@ -191,6 +195,52 @@ func (e evaluator) indexedNodeWalker(graph *store.Store, clause cypher.MatchClau
 					atoms = append(atoms, atom)
 				}
 			}
+			if len(atoms) == 0 {
+				continue
+			}
+			dictionaryAtoms := make([]stringCandidateAtom, 0, len(atoms))
+			for _, atom := range atoms {
+				hashes := e.candidateTrigrams(atom)
+				if len(hashes) != 0 && e.ctx.Value(candidateDirectoryOnlyKey{}) != true {
+					if !trigramChecked {
+						trigramValid, err = source.Store.CertifyCallSiteTrigrams(e.ctx, view)
+						if err != nil {
+							candidatePreparationError(err)
+							return nil
+						}
+						trigramChecked = true
+					}
+					if trigramValid {
+						stringIDs, err := view.TrigramAnchor(e.ctx, hashes)
+						if err != nil {
+							candidatePreparationError(err)
+							return nil
+						}
+						for _, sid := range stringIDs {
+							e.check()
+							value := source.Store.Strings[sid]
+							if atom.operand.lower {
+								value = e.javaCase(value, false)
+							}
+							if e.binary(cypher.Binary{Left: cypher.Literal{Value: value}, Op: atom.op, Right: cypher.Literal{Value: atom.term}}, nil) != true {
+								continue
+							}
+							ids, err := view.Postings(e.ctx, property, sid)
+							if err != nil {
+								candidatePreparationError(err)
+								return nil
+							}
+							for _, id := range ids {
+								e.check()
+								selected[id] = true
+							}
+						}
+						continue
+					}
+				}
+				dictionaryAtoms = append(dictionaryAtoms, atom)
+			}
+			atoms = dictionaryAtoms
 			if len(atoms) == 0 {
 				continue
 			}
@@ -267,4 +317,41 @@ func candidatePreparationError(err error) {
 	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) || errors.Is(err, store.ErrStoreClosed) {
 		panic(err)
 	}
+}
+
+// Persisted grams describe whole Java ROOT lowercase strings. Raw ASCII RHS
+// survives that transform; raw non-ASCII does not (contextual final sigma).
+// A LOWER predicate uses its ORIGINAL RHS: exact matching never lowercases it.
+func (e evaluator) candidateTrigrams(atom stringCandidateAtom) []int32 {
+	e.check()
+	if atom.op != "CONTAINS" {
+		return nil
+	}
+	units := javaUTF16(atom.term)
+	e.check()
+	if len(units) < 3 {
+		return nil
+	}
+	if !atom.operand.lower {
+		for i, u := range units {
+			e.check()
+			if u >= 128 {
+				return nil
+			}
+			if u >= 'A' && u <= 'Z' {
+				units[i] = u + ('a' - 'A')
+			}
+		}
+	}
+	hashes := []int32{}
+	seen := map[int32]bool{}
+	for i := 0; i+2 < len(units); i++ {
+		e.check()
+		hash := (int32(units[i])*31+int32(units[i+1]))*31 + int32(units[i+2])
+		if !seen[hash] {
+			seen[hash] = true
+			hashes = append(hashes, hash)
+		}
+	}
+	return hashes
 }

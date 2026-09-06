@@ -1,0 +1,66 @@
+File: profile-query
+Type: alloc_space
+Time: Sep 7, 2026 at 7:32am (KST)
+Showing nodes accounting for 6766.30kB, 100% of 6766.30kB total
+      flat  flat%   sum%        cum   cum%
+ 1805.17kB 26.68% 26.68%  3000.46kB 44.34%  compress/flate.NewWriter (inline)
+ 1195.29kB 17.67% 44.34%  1195.29kB 17.67%  compress/flate.(*compressor).init
+ 1184.27kB 17.50% 61.85%  1184.27kB 17.50%  runtime/pprof.StartCPUProfile
+  532.26kB  7.87% 69.71%  1044.38kB 15.44%  runtime/pprof.(*profileBuilder).emitLocation
+  513.12kB  7.58% 77.30%   513.12kB  7.58%  compress/flate.(*huffmanEncoder).generate
+  512.12kB  7.57% 84.87%   512.12kB  7.57%  runtime/pprof.(*protobuf).varint (inline)
+  512.05kB  7.57% 92.43%   512.05kB  7.57%  runtime/pprof.allFrames
+  512.01kB  7.57%   100%   512.01kB  7.57%  github.com/antlr4-go/antlr/v4.NewVisitRecord
+         0     0%   100%   513.12kB  7.58%  compress/flate.(*Writer).Close (inline)
+         0     0%   100%   513.12kB  7.58%  compress/flate.(*compressor).close
+         0     0%   100%   513.12kB  7.58%  compress/flate.(*compressor).encSpeed
+         0     0%   100%   513.12kB  7.58%  compress/flate.(*huffmanBitWriter).writeBlockHuff
+         0     0%   100%   513.12kB  7.58%  compress/gzip.(*Writer).Close
+         0     0%   100%  3000.46kB 44.34%  compress/gzip.(*Writer).Write
+         0     0%   100%   512.01kB  7.57%  github.com/antlr4-go/antlr/v4.(*ATNConfigSet).OptimizeConfigs
+         0     0%   100%   512.01kB  7.57%  github.com/antlr4-go/antlr/v4.(*BaseATNSimulator).getCachedContext
+         0     0%   100%   512.01kB  7.57%  github.com/antlr4-go/antlr/v4.(*ParserATNSimulator).AdaptivePredict
+         0     0%   100%   512.01kB  7.57%  github.com/antlr4-go/antlr/v4.(*ParserATNSimulator).addDFAEdge
+         0     0%   100%   512.01kB  7.57%  github.com/antlr4-go/antlr/v4.(*ParserATNSimulator).addDFAState
+         0     0%   100%   512.01kB  7.57%  github.com/antlr4-go/antlr/v4.(*ParserATNSimulator).computeTargetState
+         0     0%   100%   512.01kB  7.57%  github.com/antlr4-go/antlr/v4.(*ParserATNSimulator).execATN
+         0     0%   100%   512.01kB  7.57%  github.com/johnsonlee/graphite/graphite-server/internal/cypher.ParseContext
+         0     0%   100%   512.01kB  7.57%  github.com/johnsonlee/graphite/graphite-server/internal/cypher.parseContext
+         0     0%   100%   512.01kB  7.57%  github.com/johnsonlee/graphite/graphite-server/internal/cypher/generated.(*CypherParser).AddSubExpression
+         0     0%   100%   512.01kB  7.57%  github.com/johnsonlee/graphite/graphite-server/internal/cypher/generated.(*CypherParser).AndExpression
+         0     0%   100%   512.01kB  7.57%  github.com/johnsonlee/graphite/graphite-server/internal/cypher/generated.(*CypherParser).AtomExpression
+         0     0%   100%   512.01kB  7.57%  github.com/johnsonlee/graphite/graphite-server/internal/cypher/generated.(*CypherParser).Clause
+         0     0%   100%   512.01kB  7.57%  github.com/johnsonlee/graphite/graphite-server/internal/cypher/generated.(*CypherParser).ComparisonExpression
+         0     0%   100%   512.01kB  7.57%  github.com/johnsonlee/graphite/graphite-server/internal/cypher/generated.(*CypherParser).Expression
+         0     0%   100%   512.01kB  7.57%  github.com/johnsonlee/graphite/graphite-server/internal/cypher/generated.(*CypherParser).MultDivExpression
+         0     0%   100%   512.01kB  7.57%  github.com/johnsonlee/graphite/graphite-server/internal/cypher/generated.(*CypherParser).NotExpression
+         0     0%   100%   512.01kB  7.57%  github.com/johnsonlee/graphite/graphite-server/internal/cypher/generated.(*CypherParser).OrExpression
+         0     0%   100%   512.01kB  7.57%  github.com/johnsonlee/graphite/graphite-server/internal/cypher/generated.(*CypherParser).PostfixExpression
+         0     0%   100%   512.01kB  7.57%  github.com/johnsonlee/graphite/graphite-server/internal/cypher/generated.(*CypherParser).PowerExpression
+         0     0%   100%   512.01kB  7.57%  github.com/johnsonlee/graphite/graphite-server/internal/cypher/generated.(*CypherParser).Query
+         0     0%   100%   512.01kB  7.57%  github.com/johnsonlee/graphite/graphite-server/internal/cypher/generated.(*CypherParser).RegularQuery
+         0     0%   100%   512.01kB  7.57%  github.com/johnsonlee/graphite/graphite-server/internal/cypher/generated.(*CypherParser).ReturnItem
+         0     0%   100%   512.01kB  7.57%  github.com/johnsonlee/graphite/graphite-server/internal/cypher/generated.(*CypherParser).ReturnItems
+         0     0%   100%   512.01kB  7.57%  github.com/johnsonlee/graphite/graphite-server/internal/cypher/generated.(*CypherParser).ReturnSt
+         0     0%   100%   512.01kB  7.57%  github.com/johnsonlee/graphite/graphite-server/internal/cypher/generated.(*CypherParser).Script
+         0     0%   100%   512.01kB  7.57%  github.com/johnsonlee/graphite/graphite-server/internal/cypher/generated.(*CypherParser).SingleQuery
+         0     0%   100%   512.01kB  7.57%  github.com/johnsonlee/graphite/graphite-server/internal/cypher/generated.(*CypherParser).Statement
+         0     0%   100%   512.01kB  7.57%  github.com/johnsonlee/graphite/graphite-server/internal/cypher/generated.(*CypherParser).StringPredicateExpression
+         0     0%   100%   512.01kB  7.57%  github.com/johnsonlee/graphite/graphite-server/internal/cypher/generated.(*CypherParser).UnaryExpression
+         0     0%   100%   512.01kB  7.57%  github.com/johnsonlee/graphite/graphite-server/internal/cypher/generated.(*CypherParser).XorExpression
+         0     0%   100%  3109.64kB 45.96%  main.heap
+         0     0%   100%  4293.91kB 63.46%  main.main
+         0     0%   100%  4293.91kB 63.46%  main.profile
+         0     0%   100%  4293.91kB 63.46%  runtime.main
+         0     0%   100%  1556.43kB 23.00%  runtime/pprof.(*profileBuilder).appendLocsForStack
+         0     0%   100%  1960.38kB 28.97%  runtime/pprof.(*profileBuilder).build
+         0     0%   100%  1553.21kB 22.96%  runtime/pprof.(*profileBuilder).flush
+         0     0%   100%   512.12kB  7.57%  runtime/pprof.(*profileBuilder).pbLine
+         0     0%   100%  1553.21kB 22.96%  runtime/pprof.(*profileBuilder).pbSample
+         0     0%   100%   512.12kB  7.57%  runtime/pprof.(*protobuf).endMessage
+         0     0%   100%   512.12kB  7.57%  runtime/pprof.(*protobuf).length (inline)
+         0     0%   100%  3109.64kB 45.96%  runtime/pprof.WriteHeapProfile (inline)
+         0     0%   100%  1960.38kB 28.97%  runtime/pprof.profileWriter
+         0     0%   100%  3109.64kB 45.96%  runtime/pprof.writeHeap (inline)
+         0     0%   100%  3109.64kB 45.96%  runtime/pprof.writeHeapInternal
+         0     0%   100%  3109.64kB 45.96%  runtime/pprof.writeHeapProto

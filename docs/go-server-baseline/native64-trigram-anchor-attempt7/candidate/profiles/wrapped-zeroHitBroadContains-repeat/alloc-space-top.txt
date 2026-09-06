@@ -1,0 +1,21 @@
+File: profile-query
+Type: alloc_space
+Time: Sep 7, 2026 at 7:32am (KST)
+Showing nodes accounting for 3545.13kB, 100% of 3545.13kB total
+      flat  flat%   sum%        cum   cum%
+ 1805.17kB 50.92% 50.92%  3545.13kB   100%  compress/flate.NewWriter (inline)
+ 1195.29kB 33.72% 84.64%  1739.95kB 49.08%  compress/flate.(*compressor).init
+  544.67kB 15.36%   100%   544.67kB 15.36%  compress/flate.newDeflateFast (inline)
+         0     0%   100%  3545.13kB   100%  compress/gzip.(*Writer).Write
+         0     0%   100%  2097.87kB 59.18%  main.heap
+         0     0%   100%  2097.87kB 59.18%  main.main
+         0     0%   100%  2097.87kB 59.18%  main.profile
+         0     0%   100%  2097.87kB 59.18%  runtime.main
+         0     0%   100%  1447.25kB 40.82%  runtime/pprof.(*profileBuilder).build
+         0     0%   100%  2097.87kB 59.18%  runtime/pprof.(*profileBuilder).flush
+         0     0%   100%  2097.87kB 59.18%  runtime/pprof.(*profileBuilder).pbSample
+         0     0%   100%  2097.87kB 59.18%  runtime/pprof.WriteHeapProfile (inline)
+         0     0%   100%  1447.25kB 40.82%  runtime/pprof.profileWriter
+         0     0%   100%  2097.87kB 59.18%  runtime/pprof.writeHeap (inline)
+         0     0%   100%  2097.87kB 59.18%  runtime/pprof.writeHeapInternal
+         0     0%   100%  2097.87kB 59.18%  runtime/pprof.writeHeapProto

@@ -1,0 +1,38 @@
+{
+  "archive": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-trigram-independent-7kjkqhhk",
+  "runs": [
+    {
+      "command": [
+        "go",
+        "test",
+        "./internal/query",
+        "-run",
+        "^TestExternalTrigramAnchorPreservesEveryAdmittedSubstring$",
+        "-count=1",
+        "-v"
+      ],
+      "exitCode": 0,
+      "log": "independent-anchor-proof.log"
+    },
+    {
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./..."
+      ],
+      "exitCode": 0,
+      "log": "independent-race.log"
+    },
+    {
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "exitCode": 0,
+      "log": "independent-vet.log"
+    }
+  ],
+  "finishedAtUTC": "2026-09-06T22:31:06.049431+00:00"
+}

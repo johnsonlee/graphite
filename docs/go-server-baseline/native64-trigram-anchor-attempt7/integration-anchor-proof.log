@@ -1,0 +1,5 @@
+=== RUN   TestExternalTrigramAnchorPreservesEveryAdmittedSubstring
+    external_trigram_anchor_test.go:80: all admitted substring anchors retained their source SID: raw=292 lower=336 usedSIDs=37
+--- PASS: TestExternalTrigramAnchorPreservesEveryAdmittedSubstring (0.00s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/query	0.240s

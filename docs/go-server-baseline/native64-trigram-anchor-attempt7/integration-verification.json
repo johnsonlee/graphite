@@ -1,0 +1,38 @@
+{
+  "archive": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-trigram-integration-eucrmph8",
+  "runs": [
+    {
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./..."
+      ],
+      "exitCode": 0,
+      "log": "integration-race.log"
+    },
+    {
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "exitCode": 0,
+      "log": "integration-vet.log"
+    },
+    {
+      "command": [
+        "go",
+        "test",
+        "./internal/query",
+        "-run",
+        "^TestExternalTrigramAnchorPreservesEveryAdmittedSubstring$",
+        "-count=1",
+        "-v"
+      ],
+      "exitCode": 0,
+      "log": "integration-anchor-proof.log"
+    }
+  ],
+  "finishedAtUTC": "2026-09-06T22:45:58.894340+00:00"
+}

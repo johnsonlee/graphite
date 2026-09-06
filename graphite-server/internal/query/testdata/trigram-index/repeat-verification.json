@@ -1,0 +1,22 @@
+{
+  "canonicalJSONSHA256": {
+    "primitives.json": "f28dea6a1e7b2edcc683cfcc2fd107b2d8d335e9e75666351d713bcddbdb2242",
+    "queries.json": "bd4764f7717f60cd5eb6f83ee732e178f391dbeb2405478dc3f1813d9873e1c9",
+    "nodes.json": "1766069404bf980079cbcde53fb99fd84f7267a55a1e122ba95cf4180ea89e5f",
+    "strings.json": "5e95a8371ce02439ab5f9c3d3340e078b6bf4ac6be369a079c22af4350731362",
+    "index.json": "c135e7f047e3da3843a99293cb37be78f95d49e1bdf09eef0a02caadf79fb828"
+  },
+  "runs": [
+    {
+      "repetition": 2,
+      "allFiveCompleteJSONValuesEqual": true,
+      "stdout": "cases 232 values 33"
+    },
+    {
+      "repetition": 3,
+      "allFiveCompleteJSONValuesEqual": true,
+      "stdout": "cases 232 values 33"
+    }
+  ],
+  "note": "Map.of key serialization order varies between JVM processes; comparisons retain every value and array order but canonicalize object key order."
+}

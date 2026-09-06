@@ -1,0 +1,12 @@
+{
+  "timeUTC": "2026-09-06T22:30:04.377396+00:00",
+  "base": "4182478ee0575c3a359a47a152ed99edb4a4ede7",
+  "baseWorktree": "/tmp/graphite-go-trigram-base-attempt7-4182478e",
+  "candidateWorktree": "/private/tmp/graphite-go-trigram-attempt7-4182478e",
+  "independentArchive": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-trigram-independent-7kjkqhhk",
+  "frozenFilesVerified": 69,
+  "candidatePatchSHA256": "e3e6c413d129adb67097d122c8e883bbe6273996f5f02aa75450f21098341ed4",
+  "harnessSHA256": "b24ea6bad0f8f6378ccf132dda180bede117203d596dc58f893857e33df74bae",
+  "querySequence": "wrapped first(cold proofs), identical wrapped repeat(warm proofs), raw four-property zero(warm proofs), Method count control",
+  "scope": "All64 real fixture allocation/CPU diagnostics. Small packaging/CPU-report correctness work may co-tenant; not P95."
+}

@@ -386,11 +386,11 @@ func TestStringCandidateCancellationAtEveryPreparationCheck(t *testing.T) {
 	// First establish the cold certificate. The enumerated cancellation points
 	// then cover compilation, cached certification, dictionary transform/match,
 	// postings, offset reads, and union sorting rather than parser cancellation.
-	warm := evaluator{ctx: context.Background(), indexFirst: true}
+	warm := evaluator{ctx: context.WithValue(context.Background(), candidateDirectoryOnlyKey{}, true), indexFirst: true}
 	if warm.indexedNodeWalker(g, clause, &candidateSlot{}) == nil {
 		t.Fatal("warm preparation unavailable")
 	}
-	counter := &traversalCancelContext{Context: context.Background(), cancelAt: int(^uint(0) >> 1)}
+	counter := &traversalCancelContext{Context: context.WithValue(context.Background(), candidateDirectoryOnlyKey{}, true), cancelAt: int(^uint(0) >> 1)}
 	e := evaluator{ctx: counter, indexFirst: true}
 	if e.indexedNodeWalker(g, clause, &candidateSlot{}) == nil {
 		t.Fatal("counted preparation unavailable")
@@ -398,7 +398,7 @@ func TestStringCandidateCancellationAtEveryPreparationCheck(t *testing.T) {
 	canceledChecks := 0
 	for at := 1; at <= counter.checks; at++ {
 		func() {
-			ctx := &traversalCancelContext{Context: context.Background(), cancelAt: at}
+			ctx := &traversalCancelContext{Context: context.WithValue(context.Background(), candidateDirectoryOnlyKey{}, true), cancelAt: at}
 			e := evaluator{ctx: ctx, indexFirst: true}
 			defer func() {
 				caught := recover()

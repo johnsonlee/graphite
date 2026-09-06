@@ -1,0 +1,1254 @@
+[
+  {
+    "name": "0-untyped-raw",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": []
+    }
+  },
+  {
+    "name": "0-untyped-wrapped",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": []
+    }
+  },
+  {
+    "name": "0-typed-raw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": []
+    }
+  },
+  {
+    "name": "0-typed-wrapped",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": []
+    }
+  },
+  {
+    "name": "1-untyped-raw",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97
+      ]
+    }
+  },
+  {
+    "name": "1-untyped-wrapped",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97
+      ]
+    }
+  },
+  {
+    "name": "1-typed-raw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97
+      ]
+    }
+  },
+  {
+    "name": "1-typed-wrapped",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97
+      ]
+    }
+  },
+  {
+    "name": "2-untyped-raw",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        98
+      ]
+    }
+  },
+  {
+    "name": "2-untyped-wrapped",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        98
+      ]
+    }
+  },
+  {
+    "name": "2-typed-raw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        98
+      ]
+    }
+  },
+  {
+    "name": "2-typed-wrapped",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        98
+      ]
+    }
+  },
+  {
+    "name": "3-untyped-raw",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        98,
+        99
+      ]
+    }
+  },
+  {
+    "name": "3-untyped-wrapped",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        98,
+        99
+      ]
+    }
+  },
+  {
+    "name": "3-typed-raw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        98,
+        99
+      ]
+    }
+  },
+  {
+    "name": "3-typed-wrapped",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        98,
+        99
+      ]
+    }
+  },
+  {
+    "name": "4-untyped-raw",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        65,
+        66,
+        67
+      ]
+    }
+  },
+  {
+    "name": "4-untyped-wrapped",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        65,
+        66,
+        67
+      ]
+    }
+  },
+  {
+    "name": "4-typed-raw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        65,
+        66,
+        67
+      ]
+    }
+  },
+  {
+    "name": "4-typed-wrapped",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        65,
+        66,
+        67
+      ]
+    }
+  },
+  {
+    "name": "5-untyped-raw",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        97,
+        122
+      ]
+    }
+  },
+  {
+    "name": "5-untyped-wrapped",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        97,
+        122
+      ]
+    }
+  },
+  {
+    "name": "5-typed-raw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        97,
+        122
+      ]
+    }
+  },
+  {
+    "name": "5-typed-wrapped",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        97,
+        122
+      ]
+    }
+  },
+  {
+    "name": "6-untyped-raw",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        98,
+        91
+      ]
+    }
+  },
+  {
+    "name": "6-untyped-wrapped",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        98,
+        91
+      ]
+    }
+  },
+  {
+    "name": "6-typed-raw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        98,
+        91
+      ]
+    }
+  },
+  {
+    "name": "6-typed-wrapped",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        98,
+        91
+      ]
+    }
+  },
+  {
+    "name": "7-untyped-raw",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        97,
+        97
+      ]
+    }
+  },
+  {
+    "name": "7-untyped-wrapped",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        97,
+        97
+      ]
+    }
+  },
+  {
+    "name": "7-typed-raw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        97,
+        97
+      ]
+    }
+  },
+  {
+    "name": "7-typed-wrapped",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        97,
+        97
+      ]
+    }
+  },
+  {
+    "name": "8-untyped-raw",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        99,
+        99
+      ]
+    }
+  },
+  {
+    "name": "8-untyped-wrapped",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        99,
+        99
+      ]
+    }
+  },
+  {
+    "name": "8-typed-raw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        99,
+        99
+      ]
+    }
+  },
+  {
+    "name": "8-typed-wrapped",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        99,
+        99
+      ]
+    }
+  },
+  {
+    "name": "9-untyped-raw",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        88,
+        927,
+        931
+      ]
+    }
+  },
+  {
+    "name": "9-untyped-wrapped",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        88,
+        927,
+        931
+      ]
+    }
+  },
+  {
+    "name": "9-typed-raw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        88,
+        927,
+        931
+      ]
+    }
+  },
+  {
+    "name": "9-typed-wrapped",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        88,
+        927,
+        931
+      ]
+    }
+  },
+  {
+    "name": "10-untyped-raw",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        931,
+        49,
+        50
+      ]
+    }
+  },
+  {
+    "name": "10-untyped-wrapped",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        931,
+        49,
+        50
+      ]
+    }
+  },
+  {
+    "name": "10-typed-raw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        931,
+        49,
+        50
+      ]
+    }
+  },
+  {
+    "name": "10-typed-wrapped",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        931,
+        49,
+        50
+      ]
+    }
+  },
+  {
+    "name": "11-untyped-raw",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        120,
+        959,
+        963
+      ]
+    }
+  },
+  {
+    "name": "11-untyped-wrapped",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        120,
+        959,
+        963
+      ]
+    }
+  },
+  {
+    "name": "11-typed-raw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        120,
+        959,
+        963
+      ]
+    }
+  },
+  {
+    "name": "11-typed-wrapped",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        120,
+        959,
+        963
+      ]
+    }
+  },
+  {
+    "name": "12-untyped-raw",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        962,
+        49,
+        50
+      ]
+    }
+  },
+  {
+    "name": "12-untyped-wrapped",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        962,
+        49,
+        50
+      ]
+    }
+  },
+  {
+    "name": "12-typed-raw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        962,
+        49,
+        50
+      ]
+    }
+  },
+  {
+    "name": "12-typed-wrapped",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        962,
+        49,
+        50
+      ]
+    }
+  },
+  {
+    "name": "13-untyped-raw",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        304,
+        97,
+        98
+      ]
+    }
+  },
+  {
+    "name": "13-untyped-wrapped",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        304,
+        97,
+        98
+      ]
+    }
+  },
+  {
+    "name": "13-typed-raw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        304,
+        97,
+        98
+      ]
+    }
+  },
+  {
+    "name": "13-typed-wrapped",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        304,
+        97,
+        98
+      ]
+    }
+  },
+  {
+    "name": "14-untyped-raw",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        105,
+        775,
+        97
+      ]
+    }
+  },
+  {
+    "name": "14-untyped-wrapped",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        105,
+        775,
+        97
+      ]
+    }
+  },
+  {
+    "name": "14-typed-raw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        105,
+        775,
+        97
+      ]
+    }
+  },
+  {
+    "name": "14-typed-wrapped",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        105,
+        775,
+        97
+      ]
+    }
+  },
+  {
+    "name": "15-untyped-raw",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        20013,
+        25991,
+        27979
+      ]
+    }
+  },
+  {
+    "name": "15-untyped-wrapped",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        20013,
+        25991,
+        27979
+      ]
+    }
+  },
+  {
+    "name": "15-typed-raw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        20013,
+        25991,
+        27979
+      ]
+    }
+  },
+  {
+    "name": "15-typed-wrapped",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        20013,
+        25991,
+        27979
+      ]
+    }
+  },
+  {
+    "name": "16-untyped-raw",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        55357,
+        56832,
+        97
+      ]
+    }
+  },
+  {
+    "name": "16-untyped-wrapped",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        55357,
+        56832,
+        97
+      ]
+    }
+  },
+  {
+    "name": "16-typed-raw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        55357,
+        56832,
+        97
+      ]
+    }
+  },
+  {
+    "name": "16-typed-wrapped",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        55357,
+        56832,
+        97
+      ]
+    }
+  },
+  {
+    "name": "17-untyped-raw",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        55357,
+        56832
+      ]
+    }
+  },
+  {
+    "name": "17-untyped-wrapped",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        55357,
+        56832
+      ]
+    }
+  },
+  {
+    "name": "17-typed-raw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        55357,
+        56832
+      ]
+    }
+  },
+  {
+    "name": "17-typed-wrapped",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        55357,
+        56832
+      ]
+    }
+  },
+  {
+    "name": "18-untyped-raw",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        55296,
+        97,
+        98
+      ]
+    }
+  },
+  {
+    "name": "18-untyped-wrapped",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        55296,
+        97,
+        98
+      ]
+    }
+  },
+  {
+    "name": "18-typed-raw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        55296,
+        97,
+        98
+      ]
+    }
+  },
+  {
+    "name": "18-typed-wrapped",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        55296,
+        97,
+        98
+      ]
+    }
+  },
+  {
+    "name": "19-untyped-raw",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        56320,
+        97,
+        98
+      ]
+    }
+  },
+  {
+    "name": "19-untyped-wrapped",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        56320,
+        97,
+        98
+      ]
+    }
+  },
+  {
+    "name": "19-typed-raw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        56320,
+        97,
+        98
+      ]
+    }
+  },
+  {
+    "name": "19-typed-wrapped",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        56320,
+        97,
+        98
+      ]
+    }
+  },
+  {
+    "name": "20-untyped-raw",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        55296
+      ]
+    }
+  },
+  {
+    "name": "20-untyped-wrapped",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        55296
+      ]
+    }
+  },
+  {
+    "name": "20-typed-raw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        55296
+      ]
+    }
+  },
+  {
+    "name": "20-typed-wrapped",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        55296
+      ]
+    }
+  },
+  {
+    "name": "21-untyped-raw",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        56320
+      ]
+    }
+  },
+  {
+    "name": "21-untyped-wrapped",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        56320
+      ]
+    }
+  },
+  {
+    "name": "21-typed-raw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        56320
+      ]
+    }
+  },
+  {
+    "name": "21-typed-wrapped",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        56320
+      ]
+    }
+  },
+  {
+    "name": "22-untyped-raw",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        56832,
+        97,
+        98
+      ]
+    }
+  },
+  {
+    "name": "22-untyped-wrapped",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        56832,
+        97,
+        98
+      ]
+    }
+  },
+  {
+    "name": "22-typed-raw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        56832,
+        97,
+        98
+      ]
+    }
+  },
+  {
+    "name": "22-typed-wrapped",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        56832,
+        97,
+        98
+      ]
+    }
+  },
+  {
+    "name": "23-untyped-raw",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        77,
+        105,
+        88
+      ]
+    }
+  },
+  {
+    "name": "23-untyped-wrapped",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        77,
+        105,
+        88
+      ]
+    }
+  },
+  {
+    "name": "23-typed-raw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        77,
+        105,
+        88
+      ]
+    }
+  },
+  {
+    "name": "23-typed-wrapped",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        77,
+        105,
+        88
+      ]
+    }
+  },
+  {
+    "name": "24-untyped-raw",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        109,
+        105,
+        120
+      ]
+    }
+  },
+  {
+    "name": "24-untyped-wrapped",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        109,
+        105,
+        120
+      ]
+    }
+  },
+  {
+    "name": "24-typed-raw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        109,
+        105,
+        120
+      ]
+    }
+  },
+  {
+    "name": "24-typed-wrapped",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        109,
+        105,
+        120
+      ]
+    }
+  },
+  {
+    "name": "25-untyped-raw",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        233,
+        99,
+        111
+      ]
+    }
+  },
+  {
+    "name": "25-untyped-wrapped",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        233,
+        99,
+        111
+      ]
+    }
+  },
+  {
+    "name": "25-typed-raw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        233,
+        99,
+        111
+      ]
+    }
+  },
+  {
+    "name": "25-typed-wrapped",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        233,
+        99,
+        111
+      ]
+    }
+  },
+  {
+    "name": "26-untyped-raw",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        101,
+        769,
+        99
+      ]
+    }
+  },
+  {
+    "name": "26-untyped-wrapped",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        101,
+        769,
+        99
+      ]
+    }
+  },
+  {
+    "name": "26-typed-raw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        101,
+        769,
+        99
+      ]
+    }
+  },
+  {
+    "name": "26-typed-wrapped",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        101,
+        769,
+        99
+      ]
+    }
+  },
+  {
+    "name": "27-untyped-raw",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        65297,
+        65298,
+        65299
+      ]
+    }
+  },
+  {
+    "name": "27-untyped-wrapped",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        65297,
+        65298,
+        65299
+      ]
+    }
+  },
+  {
+    "name": "27-typed-raw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS $term OR n.callee_class CONTAINS $term OR n.callee_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        65297,
+        65298,
+        65299
+      ]
+    }
+  },
+  {
+    "name": "27-typed-wrapped",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS $term OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        65297,
+        65298,
+        65299
+      ]
+    }
+  },
+  {
+    "name": "STARTS WITH-X\u039f\u03a3\u0391",
+    "query": "RETURN $actual STARTS WITH $term AS raw, toLower($actual) STARTS WITH $term AS wrapped",
+    "params": {
+      "actual": [
+        88,
+        927,
+        931,
+        913
+      ],
+      "term": [
+        88,
+        927,
+        931
+      ]
+    }
+  },
+  {
+    "name": "STARTS WITH-A\u03a312",
+    "query": "RETURN $actual STARTS WITH $term AS raw, toLower($actual) STARTS WITH $term AS wrapped",
+    "params": {
+      "actual": [
+        65,
+        931,
+        49,
+        50
+      ],
+      "term": [
+        931,
+        49,
+        50
+      ]
+    }
+  },
+  {
+    "name": "ENDS WITH-X\u039f\u03a3\u0391",
+    "query": "RETURN $actual ENDS WITH $term AS raw, toLower($actual) ENDS WITH $term AS wrapped",
+    "params": {
+      "actual": [
+        88,
+        927,
+        931,
+        913
+      ],
+      "term": [
+        88,
+        927,
+        931
+      ]
+    }
+  },
+  {
+    "name": "ENDS WITH-A\u03a312",
+    "query": "RETURN $actual ENDS WITH $term AS raw, toLower($actual) ENDS WITH $term AS wrapped",
+    "params": {
+      "actual": [
+        65,
+        931,
+        49,
+        50
+      ],
+      "term": [
+        931,
+        49,
+        50
+      ]
+    }
+  }
+]

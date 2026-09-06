@@ -1,0 +1,3845 @@
+[
+  {
+    "name": "mixed-0-untyped",
+    "cross": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 40
+      },
+      {
+        "id": 106
+      }
+    ]
+  },
+  {
+    "name": "mixed-0-untyped",
+    "cross": true,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 40,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 40,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 106,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 106,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "mixed-0-typed",
+    "cross": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 40
+      },
+      {
+        "id": 106
+      }
+    ]
+  },
+  {
+    "name": "mixed-0-typed",
+    "cross": true,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 40,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 40,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 106,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 106,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "mixed-1-untyped",
+    "cross": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 40
+      },
+      {
+        "id": 106
+      }
+    ]
+  },
+  {
+    "name": "mixed-1-untyped",
+    "cross": true,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 40,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 40,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 106,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 106,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "mixed-1-typed",
+    "cross": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 40
+      },
+      {
+        "id": 106
+      }
+    ]
+  },
+  {
+    "name": "mixed-1-typed",
+    "cross": true,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 40,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 40,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 106,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 106,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "mixed-2-untyped",
+    "cross": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 117
+      }
+    ]
+  },
+  {
+    "name": "mixed-2-untyped",
+    "cross": true,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 117,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 117,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "mixed-2-typed",
+    "cross": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 117
+      }
+    ]
+  },
+  {
+    "name": "mixed-2-typed",
+    "cross": true,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 117,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 117,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "mixed-3-untyped",
+    "cross": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 106
+      },
+      {
+        "id": 117
+      }
+    ]
+  },
+  {
+    "name": "mixed-3-untyped",
+    "cross": true,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 106,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 106,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 117,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 117,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "mixed-3-typed",
+    "cross": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 106
+      },
+      {
+        "id": 117
+      }
+    ]
+  },
+  {
+    "name": "mixed-3-typed",
+    "cross": true,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 106,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 106,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 117,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 117,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "mixed-4-untyped",
+    "cross": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 117
+      }
+    ]
+  },
+  {
+    "name": "mixed-4-untyped",
+    "cross": true,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 117,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 117,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "mixed-4-typed",
+    "cross": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 117
+      }
+    ]
+  },
+  {
+    "name": "mixed-4-typed",
+    "cross": true,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 117,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 117,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "mixed-5-untyped",
+    "cross": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 40
+      },
+      {
+        "id": 84
+      },
+      {
+        "id": 260
+      }
+    ]
+  },
+  {
+    "name": "mixed-5-untyped",
+    "cross": true,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 40,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 40,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 84,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 84,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 260,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 260,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "mixed-5-typed",
+    "cross": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 40
+      },
+      {
+        "id": 84
+      },
+      {
+        "id": 260
+      }
+    ]
+  },
+  {
+    "name": "mixed-5-typed",
+    "cross": true,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 40,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 40,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 84,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 84,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 260,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 260,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "mixed-6-untyped",
+    "cross": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 84
+      },
+      {
+        "id": 95
+      },
+      {
+        "id": 348
+      }
+    ]
+  },
+  {
+    "name": "mixed-6-untyped",
+    "cross": true,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 84,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 84,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 95,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 95,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 348,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 348,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "mixed-6-typed",
+    "cross": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 84
+      },
+      {
+        "id": 95
+      },
+      {
+        "id": 348
+      }
+    ]
+  },
+  {
+    "name": "mixed-6-typed",
+    "cross": true,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 84,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 84,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 95,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 95,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 348,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 348,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "mixed-7-untyped",
+    "cross": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 7
+      },
+      {
+        "id": 18
+      },
+      {
+        "id": 29
+      },
+      {
+        "id": 40
+      },
+      {
+        "id": 51
+      },
+      {
+        "id": 62
+      },
+      {
+        "id": 73
+      },
+      {
+        "id": 84
+      },
+      {
+        "id": 95
+      },
+      {
+        "id": 106
+      },
+      {
+        "id": 117
+      },
+      {
+        "id": 128
+      },
+      {
+        "id": 139
+      },
+      {
+        "id": 150
+      },
+      {
+        "id": 161
+      },
+      {
+        "id": 172
+      },
+      {
+        "id": 183
+      },
+      {
+        "id": 194
+      },
+      {
+        "id": 205
+      },
+      {
+        "id": 216
+      },
+      {
+        "id": 227
+      },
+      {
+        "id": 238
+      },
+      {
+        "id": 249
+      },
+      {
+        "id": 260
+      },
+      {
+        "id": 271
+      },
+      {
+        "id": 282
+      },
+      {
+        "id": 293
+      },
+      {
+        "id": 304
+      },
+      {
+        "id": 315
+      },
+      {
+        "id": 326
+      },
+      {
+        "id": 337
+      },
+      {
+        "id": 348
+      },
+      {
+        "id": 359
+      }
+    ]
+  },
+  {
+    "name": "mixed-7-untyped",
+    "cross": true,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 7,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 7,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 18,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 18,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 29,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 29,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 40,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 40,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 51,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 51,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 62,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 62,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 73,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 73,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 84,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 84,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 95,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 95,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 106,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 106,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 117,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 117,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 128,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 128,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 139,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 139,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 150,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 150,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 161,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 161,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 172,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 172,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 183,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 183,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 194,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 194,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 205,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 205,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 216,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 216,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 227,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 227,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 238,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 238,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 249,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 249,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 260,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 260,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 271,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 271,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 282,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 282,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 293,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 293,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 304,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 304,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 315,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 315,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 326,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 326,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 337,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 337,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 348,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 348,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 359,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 359,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "mixed-7-typed",
+    "cross": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 7
+      },
+      {
+        "id": 18
+      },
+      {
+        "id": 29
+      },
+      {
+        "id": 40
+      },
+      {
+        "id": 51
+      },
+      {
+        "id": 62
+      },
+      {
+        "id": 73
+      },
+      {
+        "id": 84
+      },
+      {
+        "id": 95
+      },
+      {
+        "id": 106
+      },
+      {
+        "id": 117
+      },
+      {
+        "id": 128
+      },
+      {
+        "id": 139
+      },
+      {
+        "id": 150
+      },
+      {
+        "id": 161
+      },
+      {
+        "id": 172
+      },
+      {
+        "id": 183
+      },
+      {
+        "id": 194
+      },
+      {
+        "id": 205
+      },
+      {
+        "id": 216
+      },
+      {
+        "id": 227
+      },
+      {
+        "id": 238
+      },
+      {
+        "id": 249
+      },
+      {
+        "id": 260
+      },
+      {
+        "id": 271
+      },
+      {
+        "id": 282
+      },
+      {
+        "id": 293
+      },
+      {
+        "id": 304
+      },
+      {
+        "id": 315
+      },
+      {
+        "id": 326
+      },
+      {
+        "id": 337
+      },
+      {
+        "id": 348
+      },
+      {
+        "id": 359
+      }
+    ]
+  },
+  {
+    "name": "mixed-7-typed",
+    "cross": true,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 7,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 7,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 18,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 18,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 29,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 29,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 40,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 40,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 51,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 51,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 62,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 62,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 73,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 73,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 84,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 84,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 95,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 95,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 106,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 106,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 117,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 117,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 128,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 128,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 139,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 139,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 150,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 150,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 161,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 161,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 172,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 172,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 183,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 183,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 194,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 194,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 205,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 205,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 216,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 216,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 227,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 227,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 238,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 238,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 249,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 249,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 260,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 260,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 271,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 271,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 282,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 282,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 293,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 293,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 304,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 304,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 315,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 315,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 326,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 326,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 337,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 337,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 348,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 348,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 359,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 359,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "mixed-8-untyped",
+    "cross": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 7
+      },
+      {
+        "id": 18
+      },
+      {
+        "id": 29
+      },
+      {
+        "id": 40
+      },
+      {
+        "id": 51
+      },
+      {
+        "id": 62
+      },
+      {
+        "id": 73
+      },
+      {
+        "id": 84
+      },
+      {
+        "id": 95
+      },
+      {
+        "id": 106
+      },
+      {
+        "id": 117
+      },
+      {
+        "id": 128
+      },
+      {
+        "id": 139
+      },
+      {
+        "id": 150
+      },
+      {
+        "id": 161
+      },
+      {
+        "id": 172
+      },
+      {
+        "id": 183
+      },
+      {
+        "id": 194
+      },
+      {
+        "id": 205
+      },
+      {
+        "id": 216
+      },
+      {
+        "id": 227
+      },
+      {
+        "id": 238
+      },
+      {
+        "id": 249
+      },
+      {
+        "id": 260
+      },
+      {
+        "id": 271
+      },
+      {
+        "id": 282
+      },
+      {
+        "id": 293
+      },
+      {
+        "id": 304
+      },
+      {
+        "id": 315
+      },
+      {
+        "id": 326
+      },
+      {
+        "id": 337
+      },
+      {
+        "id": 348
+      },
+      {
+        "id": 359
+      },
+      {
+        "id": 999
+      }
+    ]
+  },
+  {
+    "name": "mixed-8-untyped",
+    "cross": true,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 7,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 7,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 18,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 18,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 29,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 29,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 40,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 40,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 51,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 51,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 62,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 62,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 73,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 73,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 84,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 84,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 95,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 95,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 106,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 106,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 117,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 117,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 128,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 128,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 139,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 139,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 150,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 150,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 161,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 161,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 172,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 172,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 183,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 183,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 194,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 194,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 205,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 205,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 216,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 216,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 227,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 227,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 238,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 238,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 249,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 249,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 260,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 260,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 271,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 271,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 282,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 282,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 293,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 293,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 304,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 304,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 315,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 315,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 326,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 326,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 337,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 337,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 348,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 348,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 359,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 359,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 999,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 999,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "mixed-8-typed",
+    "cross": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 7
+      },
+      {
+        "id": 18
+      },
+      {
+        "id": 29
+      },
+      {
+        "id": 40
+      },
+      {
+        "id": 51
+      },
+      {
+        "id": 62
+      },
+      {
+        "id": 73
+      },
+      {
+        "id": 84
+      },
+      {
+        "id": 95
+      },
+      {
+        "id": 106
+      },
+      {
+        "id": 117
+      },
+      {
+        "id": 128
+      },
+      {
+        "id": 139
+      },
+      {
+        "id": 150
+      },
+      {
+        "id": 161
+      },
+      {
+        "id": 172
+      },
+      {
+        "id": 183
+      },
+      {
+        "id": 194
+      },
+      {
+        "id": 205
+      },
+      {
+        "id": 216
+      },
+      {
+        "id": 227
+      },
+      {
+        "id": 238
+      },
+      {
+        "id": 249
+      },
+      {
+        "id": 260
+      },
+      {
+        "id": 271
+      },
+      {
+        "id": 282
+      },
+      {
+        "id": 293
+      },
+      {
+        "id": 304
+      },
+      {
+        "id": 315
+      },
+      {
+        "id": 326
+      },
+      {
+        "id": 337
+      },
+      {
+        "id": 348
+      },
+      {
+        "id": 359
+      }
+    ]
+  },
+  {
+    "name": "mixed-8-typed",
+    "cross": true,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 7,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 7,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 18,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 18,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 29,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 29,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 40,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 40,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 51,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 51,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 62,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 62,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 73,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 73,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 84,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 84,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 95,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 95,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 106,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 106,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 117,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 117,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 128,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 128,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 139,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 139,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 150,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 150,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 161,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 161,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 172,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 172,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 183,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 183,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 194,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 194,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 205,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 205,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 216,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 216,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 227,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 227,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 238,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 238,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 249,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 249,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 260,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 260,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 271,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 271,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 282,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 282,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 293,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 293,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 304,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 304,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 315,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 315,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 326,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 326,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 337,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 337,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 348,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 348,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 359,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 359,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "mixed-9-untyped",
+    "cross": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 95
+      },
+      {
+        "id": 293
+      }
+    ]
+  },
+  {
+    "name": "mixed-9-untyped",
+    "cross": true,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 95,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 95,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 293,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 293,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "mixed-9-typed",
+    "cross": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 95
+      },
+      {
+        "id": 293
+      }
+    ]
+  },
+  {
+    "name": "mixed-9-typed",
+    "cross": true,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 95,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 95,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 293,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 293,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "mixed-10-untyped",
+    "cross": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 95
+      },
+      {
+        "id": 293
+      }
+    ]
+  },
+  {
+    "name": "mixed-10-untyped",
+    "cross": true,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 95,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 95,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 293,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 293,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "mixed-10-typed",
+    "cross": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 95
+      },
+      {
+        "id": 293
+      }
+    ]
+  },
+  {
+    "name": "mixed-10-typed",
+    "cross": true,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 95,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 95,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 293,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 293,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "mixed-11-untyped",
+    "cross": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 106
+      }
+    ]
+  },
+  {
+    "name": "mixed-11-untyped",
+    "cross": true,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 106,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 106,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "mixed-11-typed",
+    "cross": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 106
+      }
+    ]
+  },
+  {
+    "name": "mixed-11-typed",
+    "cross": true,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 106,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 106,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "mixed-12-untyped",
+    "cross": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 95
+      }
+    ]
+  },
+  {
+    "name": "mixed-12-untyped",
+    "cross": true,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 95,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 95,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "mixed-12-typed",
+    "cross": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 95
+      }
+    ]
+  },
+  {
+    "name": "mixed-12-typed",
+    "cross": true,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 95,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 95,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "mixed-13-untyped",
+    "cross": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "mixed-13-untyped",
+    "cross": true,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "mixed-13-typed",
+    "cross": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "mixed-13-typed",
+    "cross": true,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "mixed-14-untyped",
+    "cross": false,
+    "columns": [
+      "id"
+    ],
+    "rows": []
+  },
+  {
+    "name": "mixed-14-untyped",
+    "cross": true,
+    "columns": [
+      "id"
+    ],
+    "rows": []
+  },
+  {
+    "name": "mixed-14-typed",
+    "cross": false,
+    "columns": [
+      "id"
+    ],
+    "rows": []
+  },
+  {
+    "name": "mixed-14-typed",
+    "cross": true,
+    "columns": [
+      "id"
+    ],
+    "rows": []
+  },
+  {
+    "name": "mixed-15-untyped",
+    "cross": false,
+    "columns": [
+      "id"
+    ],
+    "rows": []
+  },
+  {
+    "name": "mixed-15-untyped",
+    "cross": true,
+    "columns": [
+      "id"
+    ],
+    "rows": []
+  },
+  {
+    "name": "mixed-15-typed",
+    "cross": false,
+    "columns": [
+      "id"
+    ],
+    "rows": []
+  },
+  {
+    "name": "mixed-15-typed",
+    "cross": true,
+    "columns": [
+      "id"
+    ],
+    "rows": []
+  }
+]

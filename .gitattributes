@@ -8,3 +8,9 @@ docs/go-server-baseline/**/binary-build-info.txt -whitespace
 docs/go-server-baseline/c4-realboot-timestamp/*.headers -text -whitespace
 docs/go-server-baseline/c4-realboot-timestamp/release-index.html -text -whitespace
 docs/go-server-baseline/** linguist-generated=true
+
+# Go pprof emits a trailing blank when its raw profile has zero CPU samples.
+docs/go-server-baseline/native64-trigram-anchor-attempt7/candidate/profiles/global-wide-four-properties-zero/cpu-cum.txt whitespace=-blank-at-eol
+docs/go-server-baseline/native64-trigram-anchor-attempt7/candidate/profiles/global-wide-four-properties-zero/cpu-top.txt whitespace=-blank-at-eol
+docs/go-server-baseline/native64-trigram-anchor-attempt7/candidate/profiles/wrapped-zeroHitBroadContains-repeat/cpu-cum.txt whitespace=-blank-at-eol
+docs/go-server-baseline/native64-trigram-anchor-attempt7/candidate/profiles/wrapped-zeroHitBroadContains-repeat/cpu-top.txt whitespace=-blank-at-eol

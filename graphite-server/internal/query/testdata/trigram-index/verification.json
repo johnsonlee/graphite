@@ -1,0 +1,58 @@
+{
+  "mainQueryObservations": 232,
+  "fullFourFieldRowsCompared": 224,
+  "eligibleCases": 60,
+  "fallbackCases": 52,
+  "usedStringIDs": 37,
+  "requiredTrigramPairsVerified": 92,
+  "fullHashCollision": [
+    "aaz",
+    "ab["
+  ],
+  "signatureCollision": [
+    "aaa",
+    "acc"
+  ],
+  "rawNonASCIIUnsoundLowering": [
+    {
+      "actual": "X\u039f\u03a3\u0391",
+      "rhs": "X\u039f\u03a3",
+      "rawContains": true,
+      "lowerActualUnits": [
+        120,
+        959,
+        963,
+        945
+      ],
+      "lowerRhsUnits": [
+        120,
+        959,
+        962
+      ],
+      "missingHashes": [
+        146011
+      ]
+    },
+    {
+      "actual": "A\u03a312",
+      "rhs": "\u03a312",
+      "rawContains": true,
+      "lowerActualUnits": [
+        97,
+        962,
+        49,
+        50
+      ],
+      "lowerRhsUnits": [
+        963,
+        49,
+        50
+      ],
+      "missingHashes": [
+        927012
+      ]
+    }
+  ],
+  "productionChanges": false,
+  "performanceRun": false
+}

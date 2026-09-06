@@ -1,0 +1,50 @@
+File: profile-query
+Type: cpu
+Time: Sep 7, 2026 at 7:30am (KST)
+Duration: 307.99ms, Total samples = 110ms (35.72%)
+Showing nodes accounting for 110ms, 100% of 110ms total
+      flat  flat%   sum%        cum   cum%
+         0     0%     0%       90ms 81.82%  github.com/johnsonlee/graphite/graphite-server/internal/query.ExecuteCross
+         0     0%     0%       90ms 81.82%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.branch
+         0     0%     0%       90ms 81.82%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.indexedNodeWalker
+         0     0%     0%       90ms 81.82%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.match
+         0     0%     0%       90ms 81.82%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.matchSingleNode
+         0     0%     0%       90ms 81.82%  github.com/johnsonlee/graphite/graphite-server/internal/query.executeSources
+         0     0%     0%       90ms 81.82%  main.main
+         0     0%     0%       90ms 81.82%  main.profile
+         0     0%     0%       90ms 81.82%  main.profile.func1
+         0     0%     0%       90ms 81.82%  runtime.main
+         0     0%     0%       90ms 81.82%  runtime/pprof.Do
+      30ms 27.27% 27.27%       60ms 54.55%  runtime.mallocgc
+         0     0% 27.27%       40ms 36.36%  runtime.convTstring
+         0     0% 27.27%       30ms 27.27%  runtime.convT
+         0     0% 27.27%       20ms 18.18%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.binary
+         0     0% 27.27%       20ms 18.18%  runtime.notewakeup
+      20ms 18.18% 45.45%       20ms 18.18%  runtime.pthread_cond_signal
+         0     0% 45.45%       20ms 18.18%  runtime.semawakeup
+         0     0% 45.45%       20ms 18.18%  runtime.startm
+         0     0% 45.45%       20ms 18.18%  runtime.wakep
+      20ms 18.18% 63.64%       20ms 18.18%  unicode/utf8.ValidString
+      10ms  9.09% 72.73%       10ms  9.09%  runtime.(*fixalloc).alloc
+         0     0% 72.73%       10ms  9.09%  runtime.(*mcache).nextFree
+         0     0% 72.73%       10ms  9.09%  runtime.(*mcache).refill
+         0     0% 72.73%       10ms  9.09%  runtime.(*mcentral).cacheSpan
+         0     0% 72.73%       10ms  9.09%  runtime.(*mcentral).grow
+         0     0% 72.73%       10ms  9.09%  runtime.(*mheap).alloc
+         0     0% 72.73%       10ms  9.09%  runtime.(*mheap).alloc.func1
+         0     0% 72.73%       10ms  9.09%  runtime.(*mheap).allocMSpanLocked
+         0     0% 72.73%       10ms  9.09%  runtime.(*mheap).allocSpan
+      10ms  9.09% 81.82%       10ms  9.09%  runtime.(*mspan).heapBits
+         0     0% 81.82%       10ms  9.09%  runtime.(*mspan).writeHeapBitsSmall
+         0     0% 81.82%       10ms  9.09%  runtime.gopreempt_m (inline)
+         0     0% 81.82%       10ms  9.09%  runtime.goschedImpl
+         0     0% 81.82%       10ms  9.09%  runtime.heapSetType
+         0     0% 81.82%       10ms  9.09%  runtime.mcall
+      10ms  9.09% 90.91%       10ms  9.09%  runtime.memclrNoHeapPointers
+         0     0% 90.91%       10ms  9.09%  runtime.morestack
+         0     0% 90.91%       10ms  9.09%  runtime.newstack
+         0     0% 90.91%       10ms  9.09%  runtime.park_m
+         0     0% 90.91%       10ms  9.09%  runtime.resetspinning
+         0     0% 90.91%       10ms  9.09%  runtime.schedule
+         0     0% 90.91%       10ms  9.09%  runtime.systemstack
+      10ms  9.09%   100%       10ms  9.09%  runtime.typedmemmove

@@ -194,3 +194,33 @@ test diagnosis, final verification and reproduction commands are retained in
 `docs/go-server-baseline/native64-callsite-candidates-attempt6/`. No performance
 measurement uses synthetic graphs. Forced GC outside requests is excluded from
 request counters; no failed request is omitted or treated as a fast success.
+
+
+## 2026-09-07 — Attempt 7: certified shortest trigram anchors
+
+Hypothesis: replace full property-directory scans with the shortest necessary
+trigram span for eligible CONTAINS arms, retaining exact matching. A cold proof
+of derived-index completeness is part of this same hypothesis and measurement.
+No signature, lowercase cache, response cache or prefix/suffix path is added.
+
+| Item | Evidence / status |
+|---|---|
+| Native base | `4182478ee0575c3a359a47a152ed99edb4a4ede7` (Attempt 6 integrated), not main latency baseline |
+| Candidate identity | 69-file patch `e3e6c413d129adb67097d122c8e883bbe6273996f5f02aa75450f21098341ed4`; four production files; profile binary `4c6de7c06fff960e765fe1d833ecbdbfc0d9f8c7745c5a051a4c9609d3cf96d7` |
+| Real fixture | All 64 `/tmp/pr113-exp037-fixture.nXn4fg` shards; all 1,152 file hashes and all catalog counts reverified for each process |
+| Correctness | 296 main observations × three native paths × clean/missing/extra sidecars = 2,664 complete comparisons; independent 292 raw + 336 LOWER necessary-substring anchor checks; independent frozen and integrated archives pass full-module race/vet |
+| HTTP | 42/42 HTTP 200, complete ordered-body equality and no checked header differences against pinned main; default deadline/capacity, sequential all-64 requests |
+| Cold regression | Wrapped allocation 3,576,499,936 → 4,636,974,256 bytes; CPU 10.531 → 15.019 s; execution+marshal 10.532 → 15.012 s. Additional proof work is inside the measured query |
+| Warm wrapped repeat | Allocation 990,094,088 → 1,022,744 bytes; CPU 1.285419 → 0.004735 s; execution+marshal 1.283561 → 0.002235 s; no query-result cache |
+| Warm raw four-property zero | Allocation 111,623,440 → 739,272 bytes; CPU 0.163579 → 0.002629 s; execution+marshal 0.161139 → 0.001273 s |
+| GC / heap / control | All measured requests have zero GC cycles. Cold request-end heap 9.86 → 10.92 GB; post-forced-GC heap remains about 6.28 GB, not peak RSS. Method control -1,968 bytes and one small timing difference are inconclusive |
+| Remaining costs | Single candidate HTTP fetches still take 18.98 s for bimodal prefix, 12.42 s for wrapped DISTINCT dense, and 10.42 s for broad all-64 distribution; no P95 or main-relative conclusion from those single observations |
+| Integration | Root bbdfae2a retains its CandidateNode failNodeRead mapping; other 68 frozen files identical. Final clean archive and external anchor proof pass |
+| Decision | Keep verified warm allocation reduction with explicit cold regression and fixed-workload HTTP correctness. Overall functional parity and the 10× repeated paired main-relative P95 goal remain open |
+
+Raw evidence and reproduction are in
+`docs/go-server-baseline/native64-trigram-anchor-attempt7/`. Timings are individual
+instrumented observations with recorded host co-tenancy; very short warm CPU
+profiles have too few samples for fine hotspot attribution. Synthetic data is
+used only for correctness. Previous malformed-core/raw-projection gaps remain
+separate and no failed response is omitted from the denominator.

@@ -1,0 +1,2209 @@
+[
+  {
+    "units": [],
+    "lowerUnits": [],
+    "signatureHelper": "0",
+    "lowerHashes": [],
+    "eligibility": [
+      {
+        "mode": "STARTS_WITH",
+        "postings": true,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "STARTS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": true,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": true,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": true,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      }
+    ]
+  },
+  {
+    "units": [
+      97
+    ],
+    "lowerUnits": [
+      97
+    ],
+    "signatureHelper": "0",
+    "lowerHashes": [],
+    "eligibility": [
+      {
+        "mode": "STARTS_WITH",
+        "postings": true,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "STARTS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": true,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": true,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": true,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      }
+    ]
+  },
+  {
+    "units": [
+      97,
+      98
+    ],
+    "lowerUnits": [
+      97,
+      98
+    ],
+    "signatureHelper": "0",
+    "lowerHashes": [],
+    "eligibility": [
+      {
+        "mode": "STARTS_WITH",
+        "postings": true,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "STARTS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": true,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": true,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": true,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      }
+    ]
+  },
+  {
+    "units": [
+      97,
+      98,
+      99
+    ],
+    "lowerUnits": [
+      97,
+      98,
+      99
+    ],
+    "signatureHelper": "400002000",
+    "lowerHashes": [
+      96354
+    ],
+    "eligibility": [
+      {
+        "mode": "STARTS_WITH",
+        "postings": true,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "STARTS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": true,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": true,
+        "lower": false,
+        "signature": true
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": true,
+        "lower": true,
+        "signature": true
+      },
+      {
+        "mode": "EQUALS",
+        "postings": true,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      }
+    ]
+  },
+  {
+    "units": [
+      65,
+      66,
+      67
+    ],
+    "lowerUnits": [
+      97,
+      98,
+      99
+    ],
+    "signatureHelper": "400002000",
+    "lowerHashes": [
+      96354
+    ],
+    "eligibility": [
+      {
+        "mode": "STARTS_WITH",
+        "postings": true,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "STARTS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": true,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": true,
+        "lower": false,
+        "signature": true
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": true,
+        "lower": true,
+        "signature": true
+      },
+      {
+        "mode": "EQUALS",
+        "postings": true,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      }
+    ]
+  },
+  {
+    "units": [
+      97,
+      97,
+      122
+    ],
+    "lowerUnits": [
+      97,
+      97,
+      122
+    ],
+    "signatureHelper": "20000004000000",
+    "lowerHashes": [
+      96346
+    ],
+    "eligibility": [
+      {
+        "mode": "STARTS_WITH",
+        "postings": true,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "STARTS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": true,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": true,
+        "lower": false,
+        "signature": true
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": true,
+        "lower": true,
+        "signature": true
+      },
+      {
+        "mode": "EQUALS",
+        "postings": true,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      }
+    ]
+  },
+  {
+    "units": [
+      97,
+      98,
+      91
+    ],
+    "lowerUnits": [
+      97,
+      98,
+      91
+    ],
+    "signatureHelper": "20000004000000",
+    "lowerHashes": [
+      96346
+    ],
+    "eligibility": [
+      {
+        "mode": "STARTS_WITH",
+        "postings": true,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "STARTS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": true,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": true,
+        "lower": false,
+        "signature": true
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": true,
+        "lower": true,
+        "signature": true
+      },
+      {
+        "mode": "EQUALS",
+        "postings": true,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      }
+    ]
+  },
+  {
+    "units": [
+      97,
+      97,
+      97
+    ],
+    "lowerUnits": [
+      97,
+      97,
+      97
+    ],
+    "signatureHelper": "400000000002",
+    "lowerHashes": [
+      96321
+    ],
+    "eligibility": [
+      {
+        "mode": "STARTS_WITH",
+        "postings": true,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "STARTS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": true,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": true,
+        "lower": false,
+        "signature": true
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": true,
+        "lower": true,
+        "signature": true
+      },
+      {
+        "mode": "EQUALS",
+        "postings": true,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      }
+    ]
+  },
+  {
+    "units": [
+      97,
+      99,
+      99
+    ],
+    "lowerUnits": [
+      97,
+      99,
+      99
+    ],
+    "signatureHelper": "400000000002",
+    "lowerHashes": [
+      96385
+    ],
+    "eligibility": [
+      {
+        "mode": "STARTS_WITH",
+        "postings": true,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "STARTS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": true,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": true,
+        "lower": false,
+        "signature": true
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": true,
+        "lower": true,
+        "signature": true
+      },
+      {
+        "mode": "EQUALS",
+        "postings": true,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      }
+    ]
+  },
+  {
+    "units": [
+      88,
+      927,
+      931,
+      913
+    ],
+    "lowerUnits": [
+      120,
+      959,
+      963,
+      945
+    ],
+    "signatureHelper": "18002000",
+    "lowerHashes": [
+      146012,
+      952397
+    ],
+    "eligibility": [
+      {
+        "mode": "STARTS_WITH",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "STARTS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      }
+    ]
+  },
+  {
+    "units": [
+      65,
+      931,
+      49,
+      50
+    ],
+    "lowerUnits": [
+      97,
+      962,
+      49,
+      50
+    ],
+    "signatureHelper": "801100080000",
+    "lowerHashes": [
+      123088,
+      926051
+    ],
+    "eligibility": [
+      {
+        "mode": "STARTS_WITH",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "STARTS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      }
+    ]
+  },
+  {
+    "units": [
+      931,
+      49,
+      50
+    ],
+    "lowerUnits": [
+      963,
+      49,
+      50
+    ],
+    "signatureHelper": "1100000000",
+    "lowerHashes": [
+      927012
+    ],
+    "eligibility": [
+      {
+        "mode": "STARTS_WITH",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "STARTS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      }
+    ]
+  },
+  {
+    "units": [
+      88,
+      927,
+      931
+    ],
+    "lowerUnits": [
+      120,
+      959,
+      962
+    ],
+    "signatureHelper": "18000000",
+    "lowerHashes": [
+      146011
+    ],
+    "eligibility": [
+      {
+        "mode": "STARTS_WITH",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "STARTS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      }
+    ]
+  },
+  {
+    "units": [
+      304,
+      97,
+      98
+    ],
+    "lowerUnits": [
+      105,
+      775,
+      97,
+      98
+    ],
+    "signatureHelper": "100000000000400",
+    "lowerHashes": [
+      125027,
+      747880
+    ],
+    "eligibility": [
+      {
+        "mode": "STARTS_WITH",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "STARTS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      }
+    ]
+  },
+  {
+    "units": [
+      105,
+      775,
+      97,
+      98
+    ],
+    "lowerUnits": [
+      105,
+      775,
+      97,
+      98
+    ],
+    "signatureHelper": "10840000020",
+    "lowerHashes": [
+      125027,
+      747880
+    ],
+    "eligibility": [
+      {
+        "mode": "STARTS_WITH",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "STARTS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      }
+    ]
+  },
+  {
+    "units": [
+      20013,
+      25991,
+      27979,
+      35797
+    ],
+    "lowerUnits": [
+      20013,
+      25991,
+      27979,
+      35797
+    ],
+    "signatureHelper": "2200000120000",
+    "lowerHashes": [
+      20066193,
+      25880497
+    ],
+    "eligibility": [
+      {
+        "mode": "STARTS_WITH",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "STARTS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      }
+    ]
+  },
+  {
+    "units": [
+      20013,
+      25991,
+      27979
+    ],
+    "lowerUnits": [
+      20013,
+      25991,
+      27979
+    ],
+    "signatureHelper": "120000",
+    "lowerHashes": [
+      20066193
+    ],
+    "eligibility": [
+      {
+        "mode": "STARTS_WITH",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "STARTS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      }
+    ]
+  },
+  {
+    "units": [
+      55357,
+      56832,
+      97,
+      98
+    ],
+    "lowerUnits": [
+      55357,
+      56832,
+      97,
+      98
+    ],
+    "signatureHelper": "240003000",
+    "lowerHashes": [
+      54959966,
+      54618657
+    ],
+    "eligibility": [
+      {
+        "mode": "STARTS_WITH",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "STARTS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      }
+    ]
+  },
+  {
+    "units": [
+      55357,
+      56832
+    ],
+    "lowerUnits": [
+      55357,
+      56832
+    ],
+    "signatureHelper": "0",
+    "lowerHashes": [],
+    "eligibility": [
+      {
+        "mode": "STARTS_WITH",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "STARTS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      }
+    ]
+  },
+  {
+    "units": [
+      55296,
+      97,
+      98
+    ],
+    "lowerUnits": [
+      55296,
+      97,
+      98
+    ],
+    "signatureHelper": "2000000200000000",
+    "lowerHashes": [
+      53142561
+    ],
+    "eligibility": [
+      {
+        "mode": "STARTS_WITH",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "STARTS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      }
+    ]
+  },
+  {
+    "units": [
+      56320,
+      97,
+      98
+    ],
+    "lowerUnits": [
+      56320,
+      97,
+      98
+    ],
+    "signatureHelper": "210000000",
+    "lowerHashes": [
+      54126625
+    ],
+    "eligibility": [
+      {
+        "mode": "STARTS_WITH",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "STARTS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      }
+    ]
+  },
+  {
+    "units": [
+      55296
+    ],
+    "lowerUnits": [
+      55296
+    ],
+    "signatureHelper": "0",
+    "lowerHashes": [],
+    "eligibility": [
+      {
+        "mode": "STARTS_WITH",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "STARTS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      }
+    ]
+  },
+  {
+    "units": [
+      56320
+    ],
+    "lowerUnits": [
+      56320
+    ],
+    "signatureHelper": "0",
+    "lowerHashes": [],
+    "eligibility": [
+      {
+        "mode": "STARTS_WITH",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "STARTS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      }
+    ]
+  },
+  {
+    "units": [
+      97,
+      55357,
+      56832,
+      98
+    ],
+    "lowerUnits": [
+      97,
+      55357,
+      56832,
+      98
+    ],
+    "signatureHelper": "80001810",
+    "lowerHashes": [
+      1866116,
+      54959967
+    ],
+    "eligibility": [
+      {
+        "mode": "STARTS_WITH",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "STARTS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      }
+    ]
+  },
+  {
+    "units": [
+      97,
+      55296,
+      98
+    ],
+    "lowerUnits": [
+      97,
+      55296,
+      98
+    ],
+    "signatureHelper": "2000000000008",
+    "lowerHashes": [
+      1807491
+    ],
+    "eligibility": [
+      {
+        "mode": "STARTS_WITH",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "STARTS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      }
+    ]
+  },
+  {
+    "units": [
+      110,
+      101,
+      117,
+      116,
+      114,
+      97,
+      108
+    ],
+    "lowerUnits": [
+      110,
+      101,
+      117,
+      116,
+      114,
+      97,
+      108
+    ],
+    "signatureHelper": "280c0868000810",
+    "lowerHashes": [
+      108958,
+      100804,
+      116147,
+      115107,
+      112669
+    ],
+    "eligibility": [
+      {
+        "mode": "STARTS_WITH",
+        "postings": true,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "STARTS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": true,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": true,
+        "lower": false,
+        "signature": true
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": true,
+        "lower": true,
+        "signature": true
+      },
+      {
+        "mode": "EQUALS",
+        "postings": true,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      }
+    ]
+  },
+  {
+    "units": [
+      77,
+      105,
+      88,
+      101,
+      68
+    ],
+    "lowerUnits": [
+      109,
+      105,
+      120,
+      101,
+      100
+    ],
+    "signatureHelper": "412010c00000",
+    "lowerHashes": [
+      108124,
+      104726,
+      118551
+    ],
+    "eligibility": [
+      {
+        "mode": "STARTS_WITH",
+        "postings": true,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "STARTS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": true,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": true,
+        "lower": false,
+        "signature": true
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": true,
+        "lower": true,
+        "signature": true
+      },
+      {
+        "mode": "EQUALS",
+        "postings": true,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      }
+    ]
+  },
+  {
+    "units": [
+      233,
+      99,
+      111,
+      108,
+      101
+    ],
+    "lowerUnits": [
+      233,
+      99,
+      111,
+      108,
+      101
+    ],
+    "signatureHelper": "801010020200001",
+    "lowerHashes": [
+      227093,
+      98688,
+      110120
+    ],
+    "eligibility": [
+      {
+        "mode": "STARTS_WITH",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "STARTS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      }
+    ]
+  },
+  {
+    "units": [
+      101,
+      769,
+      99,
+      111,
+      108,
+      101
+    ],
+    "lowerUnits": [
+      101,
+      769,
+      99,
+      111,
+      108,
+      101
+    ],
+    "signatureHelper": "1218030000081",
+    "lowerHashes": [
+      120999,
+      742189,
+      98688,
+      110120
+    ],
+    "eligibility": [
+      {
+        "mode": "STARTS_WITH",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "STARTS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      }
+    ]
+  },
+  {
+    "units": [
+      97,
+      45,
+      98,
+      46,
+      99
+    ],
+    "lowerUnits": [
+      97,
+      45,
+      98,
+      46,
+      99
+    ],
+    "signatureHelper": "240800001800000",
+    "lowerHashes": [
+      94710,
+      46329,
+      95703
+    ],
+    "eligibility": [
+      {
+        "mode": "STARTS_WITH",
+        "postings": true,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "STARTS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": true,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": true,
+        "lower": false,
+        "signature": true
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": true,
+        "lower": true,
+        "signature": true
+      },
+      {
+        "mode": "EQUALS",
+        "postings": true,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      }
+    ]
+  },
+  {
+    "units": [
+      65297,
+      65298,
+      65299
+    ],
+    "lowerUnits": [
+      65297,
+      65298,
+      65299
+    ],
+    "signatureHelper": "4000000000040000",
+    "lowerHashes": [
+      64839954
+    ],
+    "eligibility": [
+      {
+        "mode": "STARTS_WITH",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "STARTS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      }
+    ]
+  },
+  {
+    "units": [
+      120,
+      931,
+      769,
+      97
+    ],
+    "lowerUnits": [
+      120,
+      963,
+      769,
+      97
+    ],
+    "signatureHelper": "421008",
+    "lowerHashes": [
+      145942,
+      949379
+    ],
+    "eligibility": [
+      {
+        "mode": "STARTS_WITH",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "STARTS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      }
+    ]
+  },
+  {
+    "units": [
+      88,
+      927,
+      931,
+      769
+    ],
+    "lowerUnits": [
+      120,
+      959,
+      962,
+      769
+    ],
+    "signatureHelper": "38002000",
+    "lowerHashes": [
+      146011,
+      952190
+    ],
+    "eligibility": [
+      {
+        "mode": "STARTS_WITH",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "STARTS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "ENDS_WITH",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "CONTAINS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": false,
+        "lower": false,
+        "signature": false
+      },
+      {
+        "mode": "EQUALS",
+        "postings": true,
+        "lower": true,
+        "signature": false
+      }
+    ]
+  }
+]

@@ -1,0 +1,353 @@
+{
+  "base": "bbdfae2a07b629c40d1ef0db6d156bff500989c9",
+  "archive": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-trigram-integration-eucrmph8",
+  "files": {
+    "graphite-server/internal/query/string_candidates.go": {
+      "sha256": "c9be5b7067c83744e625eddd3a80aa03db24a57c9c5297884a4039be83d24bf3",
+      "bytes": 10098,
+      "matchesFreeze": false
+    },
+    "graphite-server/internal/query/string_candidates_test.go": {
+      "sha256": "05114b9f3b9f6dea13ecc24cd0d5df411f42461d4fbaa347dfe2a1b801f593b7",
+      "bytes": 19890,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/README.md": {
+      "sha256": "840bcb9519a0664ed8313146e40db5f3180888c2231ac00300d64663dc362cd2",
+      "bytes": 11842,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/TrigramOracle.java": {
+      "sha256": "c766001618e5df8a7e242cb5436549297165cef0b8f6337181b95741500ad320",
+      "bytes": 5979,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/cases-units.json": {
+      "sha256": "ab311c21171098332a662a97ebc500977d55241e1cc4ec79e0eb265d2908ff63",
+      "bytes": 43633,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/extra.callsite-string-index": {
+      "sha256": "716dce2be33f25f5ec5e8cd993cb748eba4ae0650160c122fd1777a411bab8f7",
+      "bytes": 1956,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/index.json": {
+      "sha256": "d68e772fd1f6648a242c23cb8e3e2998d238997c9b47270bb0c9f0165edf0463",
+      "bytes": 3077,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/inputs.json": {
+      "sha256": "281beae9609b0bd1fbcf82af03916579ffad65514ee8a3eec515d973e39d340b",
+      "bytes": 41942,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/manifest.json": {
+      "sha256": "110990b5f06a09a5600c596a02331797c85a5e2f08368027e7e93586d7980818",
+      "bytes": 3884,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/missing.callsite-string-index": {
+      "sha256": "6205fb583a2b742fc41d3108be52a5f5c4161126a22090cfd95f1557b8477b0a",
+      "bytes": 1940,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/mutations.json": {
+      "sha256": "a4151e2e461da3f6fae584ee25a28aa20cf1c16e9cf6dde32b3bf264e3826320",
+      "bytes": 607,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/nodes.json": {
+      "sha256": "c458e2201d9d243f37dcf849f756e5aeaea500db86aef4cfa8b909f4a4d4fa38",
+      "bytes": 2887,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/oracle.log": {
+      "sha256": "f15097eacdee02194bf0de45c6c0076333d0193126533520cbe152e40c40f294",
+      "bytes": 201,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/primitives.json": {
+      "sha256": "6d4811b28143e4c94856cf04eccdd676ef9c5fbdc2b636c302842a3162991632",
+      "bytes": 40132,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/queries.json": {
+      "sha256": "6f6cc7c32d894a4d6b541e9908042e365da1267ceaf187bb417f31f3f6ed9d86",
+      "bytes": 142186,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/regenerate.py": {
+      "sha256": "92ac72c22f6cd54e3fa2b88124f7e91a767f8d7faf7b27e9758d38b32dc907b0",
+      "bytes": 741,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/repeat-verification.json": {
+      "sha256": "9a4118fcf007ca636e8c10c83ec615c6cee141afac0ca4fb31e60701e7fdf8be",
+      "bytes": 885,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/run.py": {
+      "sha256": "3f5fa8e6a427e3529fdbb31d532a820e9dbb9f5f58ce8f6827ce967c44705508",
+      "bytes": 2029,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/store/forward.graph": {
+      "sha256": "d3007634577c088d84bebaef333d5c7cc995e479eacc5b2f0b70315b60a3d134",
+      "bytes": 125,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/store/forward.offsets": {
+      "sha256": "28df3b2b9e6c86cef2f5456148a693d56df1add3902fb574b83b77c21f78bb19",
+      "bytes": 376,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/store/forward.properties": {
+      "sha256": "1f68a9f116099ab6e31b75bc30c87b52e184858a964642b41569bc2c09505954",
+      "bytes": 624,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/store/graph.callsite-string-content.identity": {
+      "sha256": "6ef954342e0c942e827375620eab3aa37980004cb629eff0132f24fdec45e0d3",
+      "bytes": 32,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/store/graph.callsite-string-index": {
+      "sha256": "8e57ee6c01fefb227078d145eec335865c1268c5d6578ce3b7dba7eda75f9c50",
+      "bytes": 1948,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/store/graph.classoverview": {
+      "sha256": "c67c5cb760155c07c64707eebe6bf5ed2ca838c78f4a8805f81c959665e7a387",
+      "bytes": 384,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/store/graph.comparisons": {
+      "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8",
+      "bytes": 8,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/store/graph.labelprefix": {
+      "sha256": "411ce3ddb1438ddef2b3e6448393c6747dd70dc5fb5984ed165683a4896b8eea",
+      "bytes": 4004,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/store/graph.labels": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/store/graph.metadata": {
+      "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb",
+      "bytes": 36,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/store/graph.nodedata": {
+      "sha256": "4373adf73a2515ba3443d57a22dfac371b18ea48c20c443cd2b8bf460a78e1fe",
+      "bytes": 1634,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/store/graph.nodeindex": {
+      "sha256": "229b94d2b5c80b4cf1558b0905ac6d8099fb7f8a3ec0e8f4592f196a85ce81a9",
+      "bytes": 450,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/store/graph.nodeoffsets": {
+      "sha256": "9fbe8297f6053ccedbe2b235d73c3babc767d62f610db0a27b886793737f6c84",
+      "bytes": 8008,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/store/graph.resources": {
+      "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17",
+      "bytes": 8,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/store/graph.strings": {
+      "sha256": "3f832d56a85666bea91424a8b8bf0d5a358868c6ce3819fa1bd4b26428e6f1d1",
+      "bytes": 739,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/store/graph.strings.identity": {
+      "sha256": "283bccc0dcd42df5ed068c3e2e05069e9365c714b5e901fc495d2b37fdf87c21",
+      "bytes": 32,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/store/graph.typeindex": {
+      "sha256": "4ed96634d0b604ee5382aed711a21153cad2a8175bbf7d3311b3eab58c4b7dbf",
+      "bytes": 352,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/strings.json": {
+      "sha256": "41f43d0934cdcf0fd2e033f90c373a096e591342af1b3b8a1d34cff0430df031",
+      "bytes": 6191,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/supplement.py": {
+      "sha256": "6ea4145a011df7c7495285c2bfe7a8257773348a522fed2000244a7b3f3cdaa1",
+      "bytes": 3961,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/supplement/cases-units.json": {
+      "sha256": "d40ebdddc657ddb70ea397901250189208c383f25bc300b196216f3e4a5fdb6f",
+      "bytes": 8309,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/supplement/index.json": {
+      "sha256": "ed12c145eb53429a6a6f15c4eddba686f4487e7bedde48916985a8801c184fac",
+      "bytes": 3077,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/supplement/inputs.json": {
+      "sha256": "53c06a86d553fb21b1b536b2499364b8f25eacae0043cd786555b4b048db34d0",
+      "bytes": 8102,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/supplement/nodes.json": {
+      "sha256": "d78775caf532ba08d32a9d941d4de60ffe27b79b9cedf32f2b10d8954d02c9fe",
+      "bytes": 2887,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/supplement/primitives.json": {
+      "sha256": "dffb932ab47b159ec768477c149fadff632c1d893c089f92a4b3b469ce154d89",
+      "bytes": 40132,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/supplement/queries.json": {
+      "sha256": "730b41da0e944b26c336cbe0f5802ee2eda95f64d8d25f480e91f51c1c9b3294",
+      "bytes": 55574,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/supplement/store/forward.graph": {
+      "sha256": "d3007634577c088d84bebaef333d5c7cc995e479eacc5b2f0b70315b60a3d134",
+      "bytes": 125,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/supplement/store/forward.offsets": {
+      "sha256": "28df3b2b9e6c86cef2f5456148a693d56df1add3902fb574b83b77c21f78bb19",
+      "bytes": 376,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/supplement/store/forward.properties": {
+      "sha256": "5be931e36ccb1745a3c1f069fa19a84aa3d9e8b9a893f10e418fde6a84b1bffc",
+      "bytes": 624,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/supplement/store/graph.callsite-string-content.identity": {
+      "sha256": "6ef954342e0c942e827375620eab3aa37980004cb629eff0132f24fdec45e0d3",
+      "bytes": 32,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/supplement/store/graph.callsite-string-index": {
+      "sha256": "8e57ee6c01fefb227078d145eec335865c1268c5d6578ce3b7dba7eda75f9c50",
+      "bytes": 1948,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/supplement/store/graph.classoverview": {
+      "sha256": "c67c5cb760155c07c64707eebe6bf5ed2ca838c78f4a8805f81c959665e7a387",
+      "bytes": 384,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/supplement/store/graph.comparisons": {
+      "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8",
+      "bytes": 8,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/supplement/store/graph.labelprefix": {
+      "sha256": "411ce3ddb1438ddef2b3e6448393c6747dd70dc5fb5984ed165683a4896b8eea",
+      "bytes": 4004,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/supplement/store/graph.labels": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/supplement/store/graph.metadata": {
+      "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb",
+      "bytes": 36,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/supplement/store/graph.nodedata": {
+      "sha256": "4373adf73a2515ba3443d57a22dfac371b18ea48c20c443cd2b8bf460a78e1fe",
+      "bytes": 1634,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/supplement/store/graph.nodeindex": {
+      "sha256": "229b94d2b5c80b4cf1558b0905ac6d8099fb7f8a3ec0e8f4592f196a85ce81a9",
+      "bytes": 450,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/supplement/store/graph.nodeoffsets": {
+      "sha256": "9fbe8297f6053ccedbe2b235d73c3babc767d62f610db0a27b886793737f6c84",
+      "bytes": 8008,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/supplement/store/graph.resources": {
+      "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17",
+      "bytes": 8,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/supplement/store/graph.strings": {
+      "sha256": "3f832d56a85666bea91424a8b8bf0d5a358868c6ce3819fa1bd4b26428e6f1d1",
+      "bytes": 739,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/supplement/store/graph.strings.identity": {
+      "sha256": "283bccc0dcd42df5ed068c3e2e05069e9365c714b5e901fc495d2b37fdf87c21",
+      "bytes": 32,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/supplement/store/graph.typeindex": {
+      "sha256": "4ed96634d0b604ee5382aed711a21153cad2a8175bbf7d3311b3eab58c4b7dbf",
+      "bytes": 352,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/supplement/strings.json": {
+      "sha256": "bbdfb6a6ab9288ef13d7a19e2a207f9603d17f2f7b07249f08f2064a2f8de8a5",
+      "bytes": 6191,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/supplement/verification.json": {
+      "sha256": "0ab7c0356c6037897d3e618bc8b9b27e1883b636899a191426306836e8eb7455",
+      "bytes": 352,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/verification.json": {
+      "sha256": "cddf6dd87e7bd92fc6cd3c6458c0fbddc2f42bd160110ca905577a981371eb80",
+      "bytes": 990,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/testdata/trigram-index/verify.py": {
+      "sha256": "e0512f74cbf6eb3146b07e92f1fe004f4a7a3f30496ee761387fdd821fb3b669",
+      "bytes": 3481,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/query/trigram_candidates_test.go": {
+      "sha256": "312de7847cfb9110892b3dc3e60825caa2096fe20b03102fd95d63d229a87be5",
+      "bytes": 5999,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/store/callsite_trigrams.go": {
+      "sha256": "8a8e6bb7e129e40c180e8465cef3c93df27ffebbed52a0d9a6503d4f61d35e2f",
+      "bytes": 2497,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/store/store.go": {
+      "sha256": "5b7da5c88344be4f22a8b55671c3ca7c8b8818a8b654f13f28079faa31ba8950",
+      "bytes": 8139,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/store/trigram_certificate.go": {
+      "sha256": "5868a1a37ad31a9b3f8f6441fc12fdd91327f85960f0307bbfa28d33330b3bac",
+      "bytes": 3632,
+      "matchesFreeze": true
+    },
+    "graphite-server/internal/store/trigram_certificate_test.go": {
+      "sha256": "2398281b1eb6106947ee8a008975cd73abf8bc0e08adb0a60f7194d66a60edb0",
+      "bytes": 8598,
+      "matchesFreeze": true
+    }
+  },
+  "changesFromFreeze": "Only string_candidates.go differs: retain bbdfae2a failNodeRead at actual CandidateNode consumption; all other 68 frozen files byte-identical.",
+  "externalProof": "external_trigram_anchor_test.go"
+}

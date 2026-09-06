@@ -1,0 +1,38 @@
+File: profile-query
+Type: alloc_space
+Time: Sep 7, 2026 at 7:30am (KST)
+Showing nodes accounting for 3.26GB, 99.51% of 3.28GB total
+Dropped 35 nodes (cum <= 0.02GB)
+      flat  flat%   sum%        cum   cum%
+    0.82GB 25.04% 25.04%     0.82GB 25.04%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).bytes
+    0.81GB 24.77% 49.81%     0.81GB 24.77%  bytes.NewReader (inline)
+    0.57GB 17.44% 67.25%     1.07GB 32.61%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).method
+    0.48GB 14.68% 81.93%     0.71GB 21.81%  github.com/johnsonlee/graphite/graphite-server/internal/javastring.CodePoints
+    0.23GB  7.12% 89.06%     0.23GB  7.12%  github.com/johnsonlee/graphite/graphite-server/internal/javastring.UTF16
+    0.11GB  3.40% 92.46%     0.11GB  3.40%  unicode/utf8.AppendRune (inline)
+    0.08GB  2.38% 94.84%     3.27GB 99.88%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.indexedNodeWalker
+    0.07GB  2.07% 96.91%     0.07GB  2.07%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*CallSiteStringIndex).Postings
+    0.04GB  1.15% 98.06%     1.45GB 44.25%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).node
+    0.03GB  0.82% 98.88%     0.03GB  0.82%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*CallSiteStringIndex).Directory
+    0.02GB  0.63% 99.51%     0.06GB  1.77%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).ids
+         0     0% 99.51%     0.83GB 25.46%  github.com/johnsonlee/graphite/graphite-server/internal/javastring.Case
+         0     0% 99.51%     3.27GB 99.90%  github.com/johnsonlee/graphite/graphite-server/internal/query.ExecuteCross
+         0     0% 99.51%     3.27GB 99.88%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.branch
+         0     0% 99.51%     0.83GB 25.46%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.javaCase (inline)
+         0     0% 99.51%     3.27GB 99.88%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.match
+         0     0% 99.51%     3.27GB 99.88%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.matchSingleNode
+         0     0% 99.51%     3.27GB 99.90%  github.com/johnsonlee/graphite/graphite-server/internal/query.executeSources
+         0     0% 99.51%     2.26GB 69.02%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).CandidateNode
+         0     0% 99.51%     2.34GB 71.55%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).CertifyCallSiteCandidates
+         0     0% 99.51%     2.26GB 69.02%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).Node
+         0     0% 99.51%     2.34GB 71.55%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).certifyCallSiteCandidates
+         0     0% 99.51%     0.11GB  3.23%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).count
+         0     0% 99.51%     0.75GB 22.92%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).i32 (inline)
+         0     0% 99.51%     0.51GB 15.44%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).str
+         0     0% 99.51%     0.07GB  2.12%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).u8 (inline)
+         0     0% 99.51%     3.28GB   100%  main.main
+         0     0% 99.51%     3.28GB   100%  main.profile
+         0     0% 99.51%     3.27GB 99.90%  main.profile.func1
+         0     0% 99.51%     3.28GB   100%  runtime.main
+         0     0% 99.51%     3.27GB 99.90%  runtime/pprof.Do
+         0     0% 99.51%     0.11GB  3.40%  strings.(*Builder).WriteRune

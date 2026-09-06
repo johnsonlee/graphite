@@ -1,0 +1,18 @@
+{
+  "timeUTC": "2026-09-06T22:35:14.066900+00:00",
+  "command": [
+    "go",
+    "build",
+    "-o",
+    "/tmp/graphite-go-trigram-http-attempt7",
+    "./cmd/graphite-server"
+  ],
+  "worktree": "/private/tmp/graphite-go-trigram-attempt7-4182478e",
+  "exitCode": 0,
+  "stdout": "",
+  "stderr": "",
+  "frozenFilesVerified": 69,
+  "binarySHA256": "372ba269c0b3b7699c310f94f981b97d1ba2412601d90bfa9202b0ec98601dcb",
+  "runnerSHA256": "2898864c437f9de6db061183e360de55c30ff9aa01575845b6bb4131985d5b93",
+  "runnerChange": "Record one elapsed fetch duration per completed response for diagnostic shape selection only; not P95/acceptance."
+}

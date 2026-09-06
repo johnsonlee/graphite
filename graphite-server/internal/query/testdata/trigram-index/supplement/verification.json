@@ -1,0 +1,7 @@
+{
+  "observations": 64,
+  "runs": 3,
+  "completeJSONValuesEqual": true,
+  "canonicalJSONSHA256": "5c0fe9a2b5d6f17a4fa4dc5fc8926ba7bd3922223708c20fd9b478fe3f44ec60",
+  "note": "Only object key order is canonicalized. Arrays, values and exception class/messages are retained. This is main correctness capture on a tiny actual-writer graph, no timing."
+}

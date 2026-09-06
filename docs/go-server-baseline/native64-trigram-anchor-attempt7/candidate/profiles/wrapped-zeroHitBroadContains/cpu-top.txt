@@ -1,0 +1,81 @@
+File: profile-query
+Type: cpu
+Time: Sep 7, 2026 at 7:32am (KST)
+Duration: 15.17s, Total samples = 14.35s (94.59%)
+Showing nodes accounting for 13.93s, 97.07% of 14.35s total
+Dropped 70 nodes (cum <= 0.07s)
+      flat  flat%   sum%        cum   cum%
+     9.08s 63.28% 63.28%      9.08s 63.28%  runtime.madvise
+     2.48s 17.28% 80.56%      2.48s 17.28%  runtime.memmove
+        1s  6.97% 87.53%         1s  6.97%  encoding/binary.bigEndian.Uint32 (inline)
+     0.44s  3.07% 90.59%      0.44s  3.07%  runtime.(*mspan).init
+     0.22s  1.53% 92.13%      0.22s  1.53%  encoding/binary.bigEndian.Uint64 (inline)
+     0.21s  1.46% 93.59%      0.21s  1.46%  github.com/johnsonlee/graphite/graphite-server/internal/store.callSiteIndexCRC.func1
+     0.20s  1.39% 94.98%      0.37s  2.58%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*CallSiteStringIndex).trigramBound (inline)
+     0.08s  0.56% 95.54%      0.08s  0.56%  runtime.memclrNoHeapPointers
+     0.08s  0.56% 96.10%      0.08s  0.56%  runtime.pthread_cond_signal
+     0.04s  0.28% 96.38%      0.59s  4.11%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*CallSiteStringIndex).Postings
+     0.04s  0.28% 96.66%      0.28s  1.95%  runtime.mapassign_fast32
+     0.01s  0.07% 96.72%      0.17s  1.18%  github.com/johnsonlee/graphite/graphite-server/internal/javastring.Case
+     0.01s  0.07% 96.79%      0.15s  1.05%  github.com/johnsonlee/graphite/graphite-server/internal/javastring.UTF16
+     0.01s  0.07% 96.86%      0.38s  2.65%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*CallSiteStringIndex).containsTrigrams
+     0.01s  0.07% 96.93%      0.17s  1.18%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*CallSiteStringIndex).trigramAt (inline)
+     0.01s  0.07% 97.00%      0.34s  2.37%  runtime.growslice
+     0.01s  0.07% 97.07%      0.63s  4.39%  runtime.mallocgc
+         0     0% 97.07%      2.15s 14.98%  bytes.(*Reader).Read
+         0     0% 97.07%      0.09s  0.63%  bytes.NewReader (inline)
+         0     0% 97.07%      0.11s  0.77%  github.com/johnsonlee/graphite/graphite-server/internal/javastring.CodePoints
+         0     0% 97.07%      5.15s 35.89%  github.com/johnsonlee/graphite/graphite-server/internal/query.ExecuteCross
+         0     0% 97.07%      5.15s 35.89%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.branch
+         0     0% 97.07%      5.15s 35.89%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.indexedNodeWalker
+         0     0% 97.07%      5.15s 35.89%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.match
+         0     0% 97.07%      5.15s 35.89%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.matchSingleNode
+         0     0% 97.07%      5.15s 35.89%  github.com/johnsonlee/graphite/graphite-server/internal/query.executeSources
+         0     0% 97.07%      0.54s  3.76%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*CallSiteStringIndex).intAt (inline)
+         0     0% 97.07%      2.33s 16.24%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).CandidateNode
+         0     0% 97.07%      3.28s 22.86%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).CertifyCallSiteCandidates
+         0     0% 97.07%      1.08s  7.53%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).CertifyCallSiteTrigrams
+         0     0% 97.07%      2.32s 16.17%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).Node
+         0     0% 97.07%      0.35s  2.44%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).RawCallSiteStringIDs
+         0     0% 97.07%      0.33s  2.30%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).RawCallSiteStringIDs.func2
+         0     0% 97.07%      0.78s  5.44%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).TryCallSiteStringIndex
+         0     0% 97.07%      3.28s 22.86%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).certifyCallSiteCandidates
+         0     0% 97.07%      1.08s  7.53%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).certifyCallSiteTrigrams
+         0     0% 97.07%      0.78s  5.44%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).loadCallSiteStringIndex
+         0     0% 97.07%      0.46s  3.21%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).loadCallSiteStringIndex.func3 (inline)
+         0     0% 97.07%      2.18s 15.19%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).bytes
+         0     0% 97.07%      0.37s  2.58%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).count
+         0     0% 97.07%      2.13s 14.84%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).i32 (inline)
+         0     0% 97.07%      0.19s  1.32%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).ids
+         0     0% 97.07%      1.46s 10.17%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).method
+         0     0% 97.07%      2.23s 15.54%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).node
+         0     0% 97.07%      1.29s  8.99%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).str
+         0     0% 97.07%      0.21s  1.46%  github.com/johnsonlee/graphite/graphite-server/internal/store.callSiteIndexCRC
+         0     0% 97.07%      0.67s  4.67%  github.com/johnsonlee/graphite/graphite-server/internal/store.lowerTrigramHashes
+         0     0% 97.07%      2.15s 14.98%  io.ReadAtLeast
+         0     0% 97.07%      2.15s 14.98%  io.ReadFull (inline)
+         0     0% 97.07%      5.15s 35.89%  main.main
+         0     0% 97.07%      5.15s 35.89%  main.profile
+         0     0% 97.07%      5.15s 35.89%  main.profile.func1
+         0     0% 97.07%      0.57s  3.97%  runtime.(*mcache).nextFree
+         0     0% 97.07%      0.56s  3.90%  runtime.(*mcache).refill
+         0     0% 97.07%      0.51s  3.55%  runtime.(*mcentral).cacheSpan
+         0     0% 97.07%      0.47s  3.28%  runtime.(*mcentral).grow
+         0     0% 97.07%      0.44s  3.07%  runtime.(*mheap).alloc
+         0     0% 97.07%      9.54s 66.48%  runtime.(*mheap).alloc.func1
+         0     0% 97.07%      9.54s 66.48%  runtime.(*mheap).allocSpan
+         0     0% 97.07%      0.46s  3.21%  runtime.(*mheap).initSpan
+         0     0% 97.07%      0.15s  1.05%  runtime.hashGrow
+         0     0% 97.07%      5.15s 35.89%  runtime.main
+         0     0% 97.07%      0.15s  1.05%  runtime.makeBucketArray
+         0     0% 97.07%      0.10s   0.7%  runtime.makeslice
+         0     0% 97.07%      0.15s  1.05%  runtime.newarray
+         0     0% 97.07%      0.10s   0.7%  runtime.newobject
+         0     0% 97.07%      0.08s  0.56%  runtime.notewakeup
+         0     0% 97.07%      0.08s  0.56%  runtime.semawakeup
+         0     0% 97.07%      0.08s  0.56%  runtime.startm
+         0     0% 97.07%      9.07s 63.21%  runtime.sysUsed (inline)
+         0     0% 97.07%      9.07s 63.21%  runtime.sysUsedOS (inline)
+         0     0% 97.07%      9.55s 66.55%  runtime.systemstack
+         0     0% 97.07%      0.08s  0.56%  runtime.wakep
+         0     0% 97.07%      5.15s 35.89%  runtime/pprof.Do

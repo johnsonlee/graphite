@@ -1,0 +1,354 @@
+[
+  {
+    "name": "mixed-0-untyped",
+    "query": "MATCH (n) WHERE n.callee_name CONTAINS 'abc' OR n.caller_name CONTAINS 'X\u039f\u03a3' RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        98,
+        99
+      ]
+    }
+  },
+  {
+    "name": "mixed-0-typed",
+    "query": "MATCH (n:CallSiteNode) WHERE n.callee_name CONTAINS 'abc' OR n.caller_name CONTAINS 'X\u039f\u03a3' RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        98,
+        99
+      ]
+    }
+  },
+  {
+    "name": "mixed-1-untyped",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'X\u039f\u03a3' OR n.callee_name CONTAINS 'abc' RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        98,
+        99
+      ]
+    }
+  },
+  {
+    "name": "mixed-1-typed",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'X\u039f\u03a3' OR n.callee_name CONTAINS 'abc' RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        98,
+        99
+      ]
+    }
+  },
+  {
+    "name": "mixed-2-untyped",
+    "query": "MATCH (n) WHERE n.callee_class CONTAINS '\u03a312' OR n.caller_class CONTAINS 'AAA' RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        98,
+        99
+      ]
+    }
+  },
+  {
+    "name": "mixed-2-typed",
+    "query": "MATCH (n:CallSiteNode) WHERE n.callee_class CONTAINS '\u03a312' OR n.caller_class CONTAINS 'AAA' RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        98,
+        99
+      ]
+    }
+  },
+  {
+    "name": "mixed-3-untyped",
+    "query": "MATCH (n) WHERE toLower(n.caller_name) CONTAINS 'x\u03bf\u03c3' OR n.callee_class='A\u03a312' RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        98,
+        99
+      ]
+    }
+  },
+  {
+    "name": "mixed-3-typed",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(n.caller_name) CONTAINS 'x\u03bf\u03c3' OR n.callee_class='A\u03a312' RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        98,
+        99
+      ]
+    }
+  },
+  {
+    "name": "mixed-4-untyped",
+    "query": "MATCH (n) WHERE toLower(n.caller_name) CONTAINS 'X\u039f\u03a3' OR n.callee_class='A\u03a312' RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        98,
+        99
+      ]
+    }
+  },
+  {
+    "name": "mixed-4-typed",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(n.caller_name) CONTAINS 'X\u039f\u03a3' OR n.callee_class='A\u03a312' RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        98,
+        99
+      ]
+    }
+  },
+  {
+    "name": "mixed-5-untyped",
+    "query": "MATCH (n) WHERE n.callee_name CONTAINS 'aaa' OR n.callee_name STARTS WITH 'a' RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        98,
+        99
+      ]
+    }
+  },
+  {
+    "name": "mixed-5-typed",
+    "query": "MATCH (n:CallSiteNode) WHERE n.callee_name CONTAINS 'aaa' OR n.callee_name STARTS WITH 'a' RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        98,
+        99
+      ]
+    }
+  },
+  {
+    "name": "mixed-6-untyped",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS 'acc' OR n.callee_name ENDS WITH 'a' RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        98,
+        99
+      ]
+    }
+  },
+  {
+    "name": "mixed-6-typed",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'acc' OR n.callee_name ENDS WITH 'a' RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        98,
+        99
+      ]
+    }
+  },
+  {
+    "name": "mixed-7-untyped",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS 'absent' OR n.callee_name CONTAINS '' RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        98,
+        99
+      ]
+    }
+  },
+  {
+    "name": "mixed-7-typed",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'absent' OR n.callee_name CONTAINS '' RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        98,
+        99
+      ]
+    }
+  },
+  {
+    "name": "mixed-8-untyped",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.callee_name,'')) CONTAINS 'abc' OR coalesce(n.caller_name,'') CONTAINS '' RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        98,
+        99
+      ]
+    }
+  },
+  {
+    "name": "mixed-8-typed",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(coalesce(n.callee_name,'')) CONTAINS 'abc' OR coalesce(n.caller_name,'') CONTAINS '' RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        98,
+        99
+      ]
+    }
+  },
+  {
+    "name": "mixed-9-untyped",
+    "query": "MATCH (n) WHERE toLower(n.caller_class) CONTAINS 'acc' OR toLower(n.callee_class) CONTAINS 'mix' RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        98,
+        99
+      ]
+    }
+  },
+  {
+    "name": "mixed-9-typed",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(n.caller_class) CONTAINS 'acc' OR toLower(n.callee_class) CONTAINS 'mix' RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        98,
+        99
+      ]
+    }
+  },
+  {
+    "name": "mixed-10-untyped",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS 'acc' OR n.callee_class CONTAINS 'MiX' RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        98,
+        99
+      ]
+    }
+  },
+  {
+    "name": "mixed-10-typed",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'acc' OR n.callee_class CONTAINS 'MiX' RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        98,
+        99
+      ]
+    }
+  },
+  {
+    "name": "mixed-11-untyped",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS 'X\u039f\u03a3' RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        98,
+        99
+      ]
+    }
+  },
+  {
+    "name": "mixed-11-typed",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS $term OR n.caller_name CONTAINS 'X\u039f\u03a3' RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        98,
+        99
+      ]
+    }
+  },
+  {
+    "name": "mixed-12-untyped",
+    "query": "MATCH (n) WHERE n.callee_class CONTAINS $term OR n.caller_class CONTAINS 'acc' RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        98,
+        99
+      ]
+    }
+  },
+  {
+    "name": "mixed-12-typed",
+    "query": "MATCH (n:CallSiteNode) WHERE n.callee_class CONTAINS $term OR n.caller_class CONTAINS 'acc' RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        98,
+        99
+      ]
+    }
+  },
+  {
+    "name": "mixed-13-untyped",
+    "query": "MATCH (n) WHERE n.callee_class CONTAINS 'absent' OR substring('x','bad')='x' RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        98,
+        99
+      ]
+    }
+  },
+  {
+    "name": "mixed-13-typed",
+    "query": "MATCH (n:CallSiteNode) WHERE n.callee_class CONTAINS 'absent' OR substring('x','bad')='x' RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        98,
+        99
+      ]
+    }
+  },
+  {
+    "name": "mixed-14-untyped",
+    "query": "MATCH (n) WHERE n.callee_class CONTAINS 'abc' OR n.callee_class CONTAINS 'ABC' RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        98,
+        99
+      ]
+    }
+  },
+  {
+    "name": "mixed-14-typed",
+    "query": "MATCH (n:CallSiteNode) WHERE n.callee_class CONTAINS 'abc' OR n.callee_class CONTAINS 'ABC' RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        98,
+        99
+      ]
+    }
+  },
+  {
+    "name": "mixed-15-untyped",
+    "query": "MATCH (n) WHERE n.callee_class CONTAINS 'absent' OR n.callee_name CONTAINS 'absent' RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        98,
+        99
+      ]
+    }
+  },
+  {
+    "name": "mixed-15-typed",
+    "query": "MATCH (n:CallSiteNode) WHERE n.callee_class CONTAINS 'absent' OR n.callee_name CONTAINS 'absent' RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": [
+        97,
+        98,
+        99
+      ]
+    }
+  }
+]

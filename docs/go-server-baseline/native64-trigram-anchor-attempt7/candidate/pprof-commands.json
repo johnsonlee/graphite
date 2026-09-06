@@ -1,0 +1,174 @@
+[
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-j8b_2kdi/profile-query",
+      "docs/go-server-baseline/native64-trigram-anchor-attempt7/candidate/profiles/wrapped-zeroHitBroadContains/cpu.pprof"
+    ],
+    "output": "docs/go-server-baseline/native64-trigram-anchor-attempt7/candidate/profiles/wrapped-zeroHitBroadContains/cpu-top.txt",
+    "exitCode": 0,
+    "stderr": ""
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-cum",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-j8b_2kdi/profile-query",
+      "docs/go-server-baseline/native64-trigram-anchor-attempt7/candidate/profiles/wrapped-zeroHitBroadContains/cpu.pprof"
+    ],
+    "output": "docs/go-server-baseline/native64-trigram-anchor-attempt7/candidate/profiles/wrapped-zeroHitBroadContains/cpu-cum.txt",
+    "exitCode": 0,
+    "stderr": ""
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-alloc_space",
+      "-base",
+      "docs/go-server-baseline/native64-trigram-anchor-attempt7/candidate/profiles/wrapped-zeroHitBroadContains/heap-before.pprof",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-j8b_2kdi/profile-query",
+      "docs/go-server-baseline/native64-trigram-anchor-attempt7/candidate/profiles/wrapped-zeroHitBroadContains/heap-after.pprof"
+    ],
+    "output": "docs/go-server-baseline/native64-trigram-anchor-attempt7/candidate/profiles/wrapped-zeroHitBroadContains/alloc-space-top.txt",
+    "exitCode": 0,
+    "stderr": ""
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-j8b_2kdi/profile-query",
+      "docs/go-server-baseline/native64-trigram-anchor-attempt7/candidate/profiles/wrapped-zeroHitBroadContains-repeat/cpu.pprof"
+    ],
+    "output": "docs/go-server-baseline/native64-trigram-anchor-attempt7/candidate/profiles/wrapped-zeroHitBroadContains-repeat/cpu-top.txt",
+    "exitCode": 0,
+    "stderr": ""
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-cum",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-j8b_2kdi/profile-query",
+      "docs/go-server-baseline/native64-trigram-anchor-attempt7/candidate/profiles/wrapped-zeroHitBroadContains-repeat/cpu.pprof"
+    ],
+    "output": "docs/go-server-baseline/native64-trigram-anchor-attempt7/candidate/profiles/wrapped-zeroHitBroadContains-repeat/cpu-cum.txt",
+    "exitCode": 0,
+    "stderr": ""
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-alloc_space",
+      "-base",
+      "docs/go-server-baseline/native64-trigram-anchor-attempt7/candidate/profiles/wrapped-zeroHitBroadContains-repeat/heap-before.pprof",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-j8b_2kdi/profile-query",
+      "docs/go-server-baseline/native64-trigram-anchor-attempt7/candidate/profiles/wrapped-zeroHitBroadContains-repeat/heap-after.pprof"
+    ],
+    "output": "docs/go-server-baseline/native64-trigram-anchor-attempt7/candidate/profiles/wrapped-zeroHitBroadContains-repeat/alloc-space-top.txt",
+    "exitCode": 0,
+    "stderr": ""
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-j8b_2kdi/profile-query",
+      "docs/go-server-baseline/native64-trigram-anchor-attempt7/candidate/profiles/global-wide-four-properties-zero/cpu.pprof"
+    ],
+    "output": "docs/go-server-baseline/native64-trigram-anchor-attempt7/candidate/profiles/global-wide-four-properties-zero/cpu-top.txt",
+    "exitCode": 0,
+    "stderr": ""
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-cum",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-j8b_2kdi/profile-query",
+      "docs/go-server-baseline/native64-trigram-anchor-attempt7/candidate/profiles/global-wide-four-properties-zero/cpu.pprof"
+    ],
+    "output": "docs/go-server-baseline/native64-trigram-anchor-attempt7/candidate/profiles/global-wide-four-properties-zero/cpu-cum.txt",
+    "exitCode": 0,
+    "stderr": ""
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-alloc_space",
+      "-base",
+      "docs/go-server-baseline/native64-trigram-anchor-attempt7/candidate/profiles/global-wide-four-properties-zero/heap-before.pprof",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-j8b_2kdi/profile-query",
+      "docs/go-server-baseline/native64-trigram-anchor-attempt7/candidate/profiles/global-wide-four-properties-zero/heap-after.pprof"
+    ],
+    "output": "docs/go-server-baseline/native64-trigram-anchor-attempt7/candidate/profiles/global-wide-four-properties-zero/alloc-space-top.txt",
+    "exitCode": 0,
+    "stderr": ""
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-j8b_2kdi/profile-query",
+      "docs/go-server-baseline/native64-trigram-anchor-attempt7/candidate/profiles/supplemental-method-count/cpu.pprof"
+    ],
+    "output": "docs/go-server-baseline/native64-trigram-anchor-attempt7/candidate/profiles/supplemental-method-count/cpu-top.txt",
+    "exitCode": 0,
+    "stderr": ""
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-cum",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-j8b_2kdi/profile-query",
+      "docs/go-server-baseline/native64-trigram-anchor-attempt7/candidate/profiles/supplemental-method-count/cpu.pprof"
+    ],
+    "output": "docs/go-server-baseline/native64-trigram-anchor-attempt7/candidate/profiles/supplemental-method-count/cpu-cum.txt",
+    "exitCode": 0,
+    "stderr": ""
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-alloc_space",
+      "-base",
+      "docs/go-server-baseline/native64-trigram-anchor-attempt7/candidate/profiles/supplemental-method-count/heap-before.pprof",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-j8b_2kdi/profile-query",
+      "docs/go-server-baseline/native64-trigram-anchor-attempt7/candidate/profiles/supplemental-method-count/heap-after.pprof"
+    ],
+    "output": "docs/go-server-baseline/native64-trigram-anchor-attempt7/candidate/profiles/supplemental-method-count/alloc-space-top.txt",
+    "exitCode": 0,
+    "stderr": ""
+  }
+]

@@ -1,0 +1,6 @@
+File: profile-query
+Type: cpu
+Time: Sep 7, 2026 at 7:32am (KST)
+Duration: 206.57ms, Total samples = 0 
+Showing nodes accounting for 0, 0% of 0 total
+      flat  flat%   sum%        cum   cum%

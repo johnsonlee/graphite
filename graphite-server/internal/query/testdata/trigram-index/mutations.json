@@ -1,0 +1,16 @@
+{
+  "missing": {
+    "removedPair": 198981539856392,
+    "addedPair": null,
+    "crc32": 222676786,
+    "base": "main-created store/graph.callsite-string-index",
+    "mutation": "one derived trigram pair only; updated count, retained-byte estimate and typed numeric CRC; core/identity/CSR unchanged"
+  },
+  "extra": {
+    "removedPair": null,
+    "addedPair": 413695544918030,
+    "crc32": 401225762,
+    "base": "main-created store/graph.callsite-string-index",
+    "mutation": "one derived trigram pair only; updated count, retained-byte estimate and typed numeric CRC; core/identity/CSR unchanged"
+  }
+}

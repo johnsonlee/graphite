@@ -25,6 +25,7 @@ type Store struct {
 	dir                string
 	callSiteIndex      callSiteIndexState
 	candidateProof     candidateCertificateState
+	trigramProof       candidateCertificateState
 	overview           lazyClassOverview
 	Mode               string
 	mappedData         []byte
