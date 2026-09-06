@@ -5064,7 +5064,11 @@ so a shard's JSON says whether the extra process CPU is on request threads, in c
 the compiler, or in native work off Java threads. The compared metrics are unchanged. The resource
 benchmark's heap sampler now runs until the retained value is read after the teardown
 collections, and the peak folds that read in, so the sampled window covers the point it is
-compared against; this can only raise the candidate's peak.
+compared against; this can only raise the candidate's peak. That sampler change was withdrawn
+from the branch in the following commit: the resource harness is a trusted control of the gate,
+pinned by `REAL_ONLY_RESOURCE_HARNESS_SHA256` in the workflow and installed over the candidate's
+copy before the JMH jar is built, so it cannot be changed from a candidate branch; the same
+change is offered as a patch for `main` in the PR thread.
 
 **Next:** read the attribution on the red rows of the next head and decide whether the CPU is a
 property of the diff (then fixed here) or of the measurement (then a gate patch proposed for
