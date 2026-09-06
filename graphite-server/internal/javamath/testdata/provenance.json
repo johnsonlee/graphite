@@ -1,0 +1,124 @@
+{
+  "oracleJava": "OpenJDK 64-Bit Server VM Homebrew 17.0.18+0, macOS ARM64",
+  "javaFlags": [
+    "-Xmx128m"
+  ],
+  "oracleSourceSHA256": "b0a4b454f91013d4e0bb140fbd20da6781cbc6d7dcc437e6392886685f81415c",
+  "fixtureGzipSHA256": "9fa07b25b6ddf4c0937c22caea8ff4c754a1aef1379ad3dbf9e197cfa806242e",
+  "fixtureUncompressedSHA256": "0857589a0aaba5593b2a40472b79bf89c38d86986713696a710758f6711f0dbe",
+  "cases": 30320,
+  "unaryCasesPerFunction": 2741,
+  "atan2Cases": 2910,
+  "mathColdVersusWarmDifferences": 0,
+  "mathVersusStrictMathDifferences": {
+    "sin": 150,
+    "cos": 116
+  },
+  "sources": [
+    {
+      "url": "https://raw.githubusercontent.com/openjdk/jdk17u/jdk-17.0.18%2B8/src/java.base/share/classes/java/lang/FdLibm.java",
+      "sha256": "24b6dc21d26d6f4f578ea35126a32b55311164e583d0b25e03b72b40f3f41887",
+      "role": "target behavior inspection only; no source copied"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/openjdk/jdk17u/jdk-17.0.18%2B8/src/java.base/share/classes/java/lang/Math.java",
+      "sha256": "ca85b54e20ee35896b675fef59f201dbc2c56c263f9c2a89cfa10285090bb1d1",
+      "role": "target behavior inspection only; no source copied"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/openjdk/jdk17u/jdk-17.0.18%2B8/src/hotspot/share/runtime/sharedRuntime.cpp",
+      "sha256": "b71dfbe6bd9923821d979cf0963632eb7142cae9582a2fd1ce8cdadc50c8104e",
+      "role": "target behavior inspection only; no source copied"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/openjdk/jdk17u/jdk-17.0.18%2B8/src/java.base/share/classes/java/lang/StrictMath.java",
+      "sha256": "1a52f5cdb3cf7d902e0b1e1ba4733435a434fb4c5c8a50d18e5f1c6ad98c7661",
+      "role": "target behavior inspection only; no source copied"
+    },
+    {
+      "url": "https://netlib.org/fdlibm/e_acos.c",
+      "sha256": "bc9fbb24c214030604c0df4c811370f37d511e0c72580767d8c81bd68b0c3a5a",
+      "role": "permissively licensed algorithm source"
+    },
+    {
+      "url": "https://netlib.org/fdlibm/e_asin.c",
+      "sha256": "4ec96c4c7747df94911404b1577e404e13efc51e104f1934e72b536b61adc911",
+      "role": "permissively licensed algorithm source"
+    },
+    {
+      "url": "https://netlib.org/fdlibm/e_atan2.c",
+      "sha256": "61dbf9edc927468280ccde872ecfb7cb1ea7cbaf6e1b28e7021c968abe5f7c6e",
+      "role": "permissively licensed algorithm source"
+    },
+    {
+      "url": "https://netlib.org/fdlibm/e_exp.c",
+      "sha256": "04c96195b7ced914d659b5fd204724c182f091af8631fe42016ad6e27cb302ef",
+      "role": "permissively licensed algorithm source"
+    },
+    {
+      "url": "https://netlib.org/fdlibm/e_log.c",
+      "sha256": "a2b1bd1b367026a35f36da53425cd618386c3bf69d23ac224a40791aa9855ac9",
+      "role": "permissively licensed algorithm source"
+    },
+    {
+      "url": "https://netlib.org/fdlibm/e_log10.c",
+      "sha256": "0d636f23e0e70430344cfb003aebce3317260e28c716bbfb8c0839117e533efc",
+      "role": "permissively licensed algorithm source"
+    },
+    {
+      "url": "https://netlib.org/fdlibm/e_rem_pio2.c",
+      "sha256": "3a08dd4a38f9f9fc9478a33ca05cb81a6566f1010ab14412e97cae091bede16b",
+      "role": "permissively licensed algorithm source"
+    },
+    {
+      "url": "https://netlib.org/fdlibm/k_cos.c",
+      "sha256": "841086c75288f3f9fef03bae2a9dc24e99c3cdb2035e170c69452013a7b5befc",
+      "role": "permissively licensed algorithm source"
+    },
+    {
+      "url": "https://netlib.org/fdlibm/k_rem_pio2.c",
+      "sha256": "5796209ea3fe1af88e22badeaed0f6a6aa923914e097e227c410527cb5815740",
+      "role": "permissively licensed algorithm source"
+    },
+    {
+      "url": "https://netlib.org/fdlibm/k_sin.c",
+      "sha256": "75d391f3c124806ce14893cd038ae5dd10663e40430ffa174d5fddcb33012167",
+      "role": "permissively licensed algorithm source"
+    },
+    {
+      "url": "https://netlib.org/fdlibm/k_tan.c",
+      "sha256": "9dfd4c84f7930da3184a6c425ce7901979c84088cf231c33a7edefc3e0f487c0",
+      "role": "permissively licensed algorithm source"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/openjdk/jdk17u/jdk-17.0.18%2B8/src/hotspot/cpu/aarch64/macroAssembler_aarch64_trig.cpp",
+      "sha256": "950c1ee8f3c02f897d89a0bce3c055a5eef0978bb537b4df4da5933b8181dc3b",
+      "role": "target behavior inspection only; no source copied"
+    },
+    {
+      "url": "https://netlib.org/fdlibm/s_atan.c",
+      "sha256": "8583c253aed6318dee2a48135e3f3b1328d838a390372a69414ac41eb5ce5ce1",
+      "role": "permissively licensed algorithm source"
+    },
+    {
+      "url": "https://netlib.org/fdlibm/s_cos.c",
+      "sha256": "bdcbea3c83b2d4aa521b9a5341f3e58b8cb9c8d326fcc4abb715f3704cf17799",
+      "role": "permissively licensed algorithm source"
+    },
+    {
+      "url": "https://netlib.org/fdlibm/s_sin.c",
+      "sha256": "4d5edb75368e4f8e0ac18682d3ae4b6944ba06801637cf0df6f378d6211f4c81",
+      "role": "permissively licensed algorithm source"
+    },
+    {
+      "url": "https://netlib.org/fdlibm/s_tan.c",
+      "sha256": "f86caed50cf19150e0be229469785ce937d8d9b37046541408bce146180ba685",
+      "role": "permissively licensed algorithm source"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/openjdk/jdk17u/jdk-17.0.18%2B8/src/hotspot/cpu/aarch64/stubGenerator_aarch64.cpp",
+      "sha256": "56c2df66073bc2e11deab5d884f13aed0eba344730a2a4fe54a18d99345ee205",
+      "role": "target behavior inspection only; no source copied"
+    }
+  ]
+}

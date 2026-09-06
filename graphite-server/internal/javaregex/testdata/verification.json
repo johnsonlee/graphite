@@ -1,0 +1,104 @@
+{
+  "purpose": "Correctness only; no performance claim or complete Java Pattern equivalence proof",
+  "observedAtUnixSeconds": 1788723379.946361,
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "javaVersion": "17.0.18",
+  "goVersion": "go version go1.22.0 darwin/arm64",
+  "oracleCases": 4050,
+  "passed": 4050,
+  "knownGapCases": 0,
+  "validation": [
+    {
+      "command": "go test -race ./internal/javaregex -count=1",
+      "exitCode": 0
+    },
+    {
+      "command": "go vet ./internal/javaregex",
+      "exitCode": 0
+    }
+  ],
+  "scope": "Standalone native package only; query/server integration not changed by this agent",
+  "sourceFiles": [
+    {
+      "path": "README.md",
+      "bytes": 4778,
+      "sha256": "ee7e8ae35a0bd39dcec8c14a45e01a804c371097dfe45fa4ee6a06c37a59ba29"
+    },
+    {
+      "path": "advanced.go",
+      "bytes": 5093,
+      "sha256": "e80ddc525d398f2993923d6847669733c9f8639cfed4d770539bf7cbdd6347e6"
+    },
+    {
+      "path": "java17_advanced.json",
+      "bytes": 517086,
+      "sha256": "cb01db0c7fd6998a5c3ccc56849f78936913e5473734fc0545c1ee34ce65167a"
+    },
+    {
+      "path": "java17_names.json.gz",
+      "bytes": 1472124,
+      "sha256": "ce3a06669d9af7f75fc95d58956fb125faaefd341c2f0a0f33c0d12785ed95d8"
+    },
+    {
+      "path": "java17_unicode.json",
+      "bytes": 224193,
+      "sha256": "f4b80b142388de42cf63d0c8c03cb22e510775e38f4ceef969085981b956c36b"
+    },
+    {
+      "path": "match.go",
+      "bytes": 6245,
+      "sha256": "3a9f7a36b31b3c4b1c417f86802f7dde9b33d7a5c9709a02f9a76f8df5f4f7ac"
+    },
+    {
+      "path": "parse.go",
+      "bytes": 16156,
+      "sha256": "ec1b8a0cbac834e6182d4199fba15bfb1310aae4cfc48898b7c923200c37fbf4"
+    },
+    {
+      "path": "regex.go",
+      "bytes": 3056,
+      "sha256": "cf08bcb423b9f34331b22fb22d7f1ec1d5475e383182cb8eb2bc9340f6821c98"
+    },
+    {
+      "path": "regex_test.go",
+      "bytes": 4708,
+      "sha256": "ce98567eb5c4f52059bc43b83193506b21c007260077998583d8ee8f6335ac6b"
+    },
+    {
+      "path": "testdata/GenerateAdvanced.java",
+      "bytes": 2093,
+      "sha256": "0c8d3a70f85a341eceddb4ab12d4fe4f54c8b1276da1af797223a6fe3a9debe3"
+    },
+    {
+      "path": "testdata/GenerateUnicode.java",
+      "bytes": 3348,
+      "sha256": "caa9b3d88848ee78bd5c7cb3249b4fb50184bb99c3041aec838f8d5d5050b172"
+    },
+    {
+      "path": "testdata/Oracle.java",
+      "bytes": 957,
+      "sha256": "ab7c1ea23c7e43785972c939196f6afe8f6456c26e2d8d159d6c80ac4051bcd8"
+    },
+    {
+      "path": "testdata/cases.json",
+      "bytes": 443890,
+      "sha256": "bfe683968705fad2751ff753e84fe885d74e70b6447bf8afc9d139d6378ca852"
+    },
+    {
+      "path": "testdata/generate_cases.py",
+      "bytes": 5108,
+      "sha256": "e4939c47ae23146cd6c5221ebd612361922a7b0c7589af9dd29a3ab1127a6463"
+    },
+    {
+      "path": "testdata/java17-oracle.json",
+      "bytes": 604928,
+      "sha256": "3e7a4aa9c682ecc6c7cbb7a063c33b454621ae22a84de1b229dd52eb598134d9"
+    },
+    {
+      "path": "unicode.go",
+      "bytes": 10404,
+      "sha256": "f026bd8303907723a5acac161c3bc00ab20203400b6313f42408436fcafc77b1"
+    }
+  ],
+  "sourceManifestSha256": "7407042ef03e3e155dab0373871696f01708eac425d1176757db3691df2c40cc"
+}
