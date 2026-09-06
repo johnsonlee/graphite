@@ -574,23 +574,11 @@ internal class MappedWebGraphBackedGraph(
     }
 
     /**
-     * Scans a bounded prefix of the CallSite storage order for the first [limit] matches. Returns
-     * null when the prefix does not fill [limit], so dense terms answer from a few hundred raw
-     * nodes while sparse terms continue on the index. Filled prefixes are cached per graph.
-     */
-    @Suppress("CyclomaticComplexMethod", "LoopWithTooManyJumpStatements")
-    private fun probeRawCallSiteNodeIds(
-        predicates: List<StringPropertyPredicate>,
-        limit: Int,
-        workConsumer: GraphWorkConsumer?,
-        maxInspected: Int = rawProbeNodeBudget(limit, RAW_PROJECTION_PROBE_FACTOR),
-        plan: MappedCallSiteStringIndexView.MatchPlan? = null
-    ): IntArray? = probeRawCallSites(predicates, limit, workConsumer, maxInspected, plan)?.nodeIds
-
-    /**
-     * The first [limit] CallSite nodes of a bounded raw prefix that satisfy one of [predicates], in
-     * node order, together with the string ids the probe read for them so a projection that
-     * follows a fresh probe does not read the node records again. A cached probe carries only
+     * Scans a bounded prefix of the CallSite storage order for the first [limit] nodes that satisfy
+     * one of [predicates]. Returns null when the prefix does not fill [limit], so dense terms answer
+     * from a few hundred raw nodes while sparse terms continue on the index; filled prefixes are
+     * cached per graph. A fresh probe also carries the string ids it read for each matched node so
+     * a projection that follows does not read the node records again; a cached probe carries only
      * the node ids.
      */
     @Suppress("CyclomaticComplexMethod", "LongMethod", "ReturnCount", "LoopWithTooManyJumpStatements")
@@ -683,7 +671,7 @@ internal class MappedWebGraphBackedGraph(
     private fun projectRawCallSiteRows(
         nodeIds: IntArray,
         projectedPropertyIndexes: IntArray,
-        probedStringIds: IntArray? = null
+        probedStringIds: IntArray?
     ): List<StringPropertyProjectionRow> {
         val stringIds = IntArray(CALL_SITE_STRING_PROPERTY_COUNT)
         val rows = ArrayList<StringPropertyProjectionRow>(nodeIds.size)
@@ -755,14 +743,14 @@ internal class MappedWebGraphBackedGraph(
                     callSiteMappedViewLookupCount.incrementAndGet()
                     if (plan.knownEmpty) return emptySequence()
                     if (isDensePlan(plan, limit, RAW_PROBE_MAX_LIMIT)) {
-                        probeRawCallSiteNodeIds(
+                        probeRawCallSites(
                             predicates,
                             limit,
                             workConsumer,
                             maxInspected = rawProbeNodeBudget(limit, DENSE_RAW_PROBE_FACTOR),
                             plan = plan
-                        )?.let { nodeIds ->
-                            return nodeIds.asSequence().mapNotNull { nodeId -> node(NodeId(nodeId)) as? T }
+                        )?.let { probe ->
+                            return probe.nodeIds.asSequence().mapNotNull { nodeId -> node(NodeId(nodeId)) as? T }
                         }
                     }
                     if (plan.isEmpty) return emptySequence()

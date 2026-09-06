@@ -4504,3 +4504,21 @@ and detekt pass.
 
 **Conclusion:** keep for exact-head hosted validation after Attempt 138's run is read; the dense
 projection row itself needs a different cut.
+
+### 2026-09-06 - Attempt 140: Trim the remaining per-graph fixed steps of the provenance pass (rejected)
+
+**Hypothesis:** after Attempt 137 the provenance pass still pays a few small per-graph steps on
+cold code: the setup check compares projections through `IntArray.contentEquals`, whose JDK
+implementation runs the vectorized mismatch helper, the graph derives the projected property
+indexes again for every graph, and the hit list is sorted and truncated even when it holds no or
+one row.
+
+**Change (not kept):** a hand-written comparison in the setup check, the projected property
+indexes shared through a third scratch slot of the selected tuples, and no sort for hit lists of
+at most one row.
+
+**Evidence (local, 64 fixtures, fresh JVM in benchmark order, three alternating runs, medians):**
+distinct-dense first execution CPU `12.3 -> 12.4 ms`, second `5.5 -> 5.4 ms`; `add` `9.8 -> 10.0 ms`.
+No measurable change; the webgraph tests and detekt pass.
+
+**Conclusion:** reverted; the per-graph fixed cost that remains is not in these steps.

@@ -305,6 +305,27 @@ class MappedCallSiteStringIndexViewTest {
         }
 
     @Test
+    fun `a cached raw probe serves a projection of other properties by reading the node records again`() =
+        withPersistedGraph(prepareIndex = true) { _, reference, loaded ->
+            val dense = listOf(predicate("callee_name", StringMatchMode.CONTAINS, "get"))
+            fun project(properties: List<String>) =
+                loaded.projectStringPropertyDisjunction(CallSiteNode::class.java, dense, properties, 4, noWork)
+            val expected = referenceNodes(reference, dense, 4)
+            assertEquals(
+                expected.map { node -> listOf(node.callee.name) },
+                project(listOf("callee_name"))?.map { row -> row.values }
+            )
+            assertEquals(1, loaded.rawProjectionMatchCount())
+            // The same predicates and limit hit the probe cache, which carries node ids only.
+            assertEquals(
+                expected.map { node -> listOf(node.caller.declaringClass.className, node.callee.name) },
+                project(listOf("caller_class", "callee_name"))?.map { row -> row.values }
+            )
+            assertEquals(1, loaded.rawProjectionMatchCount())
+            assertEquals(0L, loaded.callSiteStringIndexLookupCount())
+        }
+
+    @Test
     fun `an interrupted request stops its raw prefix probes before touching more storage`() =
         withPersistedGraph(prepareIndex = true) { _, _, loaded ->
             val dense = listOf(predicate("callee_name", StringMatchMode.CONTAINS, "get"))
