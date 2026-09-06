@@ -1,0 +1,686 @@
+{
+  "baselineRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "graphId": "",
+  "graphCount": 64,
+  "requiredGraphIds": [
+    "fixture-android-00",
+    "fixture-android-01",
+    "fixture-android-02",
+    "fixture-android-03",
+    "fixture-android-04",
+    "fixture-android-05",
+    "fixture-android-06",
+    "fixture-android-07",
+    "fixture-android-08",
+    "fixture-android-09",
+    "fixture-android-10",
+    "fixture-android-11",
+    "fixture-android-12",
+    "fixture-android-13",
+    "fixture-android-14",
+    "fixture-android-15",
+    "fixture-hive-00",
+    "fixture-hive-01",
+    "fixture-hive-02",
+    "fixture-hive-03",
+    "fixture-hive-04",
+    "fixture-hive-05",
+    "fixture-hive-06",
+    "fixture-hive-07",
+    "fixture-hive-08",
+    "fixture-hive-09",
+    "fixture-hive-10",
+    "fixture-hive-11",
+    "fixture-hive-12",
+    "fixture-hive-13",
+    "fixture-hive-14",
+    "fixture-hive-15",
+    "fixture-kotlin-compiler-00",
+    "fixture-kotlin-compiler-01",
+    "fixture-kotlin-compiler-02",
+    "fixture-kotlin-compiler-03",
+    "fixture-kotlin-compiler-04",
+    "fixture-kotlin-compiler-05",
+    "fixture-kotlin-compiler-06",
+    "fixture-kotlin-compiler-07",
+    "fixture-kotlin-compiler-08",
+    "fixture-kotlin-compiler-09",
+    "fixture-kotlin-compiler-10",
+    "fixture-kotlin-compiler-11",
+    "fixture-kotlin-compiler-12",
+    "fixture-kotlin-compiler-13",
+    "fixture-kotlin-compiler-14",
+    "fixture-kotlin-compiler-15",
+    "fixture-tika-00",
+    "fixture-tika-01",
+    "fixture-tika-02",
+    "fixture-tika-03",
+    "fixture-tika-04",
+    "fixture-tika-05",
+    "fixture-tika-06",
+    "fixture-tika-07",
+    "fixture-tika-08",
+    "fixture-tika-09",
+    "fixture-tika-10",
+    "fixture-tika-11",
+    "fixture-tika-12",
+    "fixture-tika-13",
+    "fixture-tika-14",
+    "fixture-tika-15"
+  ],
+  "fixtureRoot": "/tmp/pr113-exp037-fixture.nXn4fg",
+  "fixtureManifestSha256": "809c8b8ceed25428af65350edfa2c391f449051bf069b12555df245099f26ae2",
+  "fixtureProvenanceSha256": "3b10a4a619498122df1bc0718130be25b55bd063b7c2bd79a4af079137c891cc",
+  "sourceSha256": {
+    "graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AllFixtureWrappedDiscoveryLatencyBenchmark.kt": "78ca6a23e8f5e86674296d9f878a828ad8892ed6e18fc616a9ecbcdf2d21c492",
+    "graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/LargeBroadQueryPressureBenchmark.kt": "154a6ff739caac2600b769072d6861d1d8d04c4692c7eff8bca5c8d7477d499f"
+  },
+  "purpose": "64 real graphs, root cross-graph HTTP; all8 wrapped + all34 global-wide shapes, three HTTP literal-binding adaptations explicitly recorded",
+  "ordering": "HTTP registry sorts graph IDs; terms/placement are retained from original fixture manifest order; original JMH values are not assumed to be HTTP oracles",
+  "cases": [
+    {
+      "name": "wrapped-zeroHitBroadContains",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'graphite_latency_no_such_symbol_9f36'\n   OR toLower(coalesce(n.caller_name, '')) CONTAINS 'graphite_latency_no_such_symbol_9f36'\n   OR toLower(coalesce(n.callee_class, '')) CONTAINS 'graphite_latency_no_such_symbol_9f36'\n   OR toLower(coalesce(n.callee_name, '')) CONTAINS 'graphite_latency_no_such_symbol_9f36'\nRETURN DISTINCT n.graph_id, n.caller_class AS caller, n.caller_name AS callerMethod,\n    n.callee_class AS callee, n.callee_name AS calleeMethod\nLIMIT 250"
+      },
+      "phase": "query",
+      "family": "all-fixture-wrapped",
+      "sourceConstant": "ZERO_HIT_QUERY"
+    },
+    {
+      "name": "wrapped-denseDistributedMethodContains",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_name, '')) CONTAINS 'get'\n   OR toLower(coalesce(n.callee_name, '')) CONTAINS 'get'\nRETURN DISTINCT n.graph_id, n.caller_class AS caller, n.caller_name AS callerMethod,\n    n.callee_class AS callee, n.callee_name AS calleeMethod\nLIMIT 50"
+      },
+      "phase": "query",
+      "family": "all-fixture-wrapped",
+      "sourceConstant": "DENSE_DISTRIBUTED_METHOD_QUERY"
+    },
+    {
+      "name": "wrapped-earlyGraphClassPrefix",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) STARTS WITH 'android.'\n   OR toLower(coalesce(n.callee_class, '')) STARTS WITH 'android.'\nRETURN DISTINCT n.graph_id, n.caller_class AS caller, n.caller_name AS callerMethod,\n    n.callee_class AS callee, n.callee_name AS calleeMethod\nLIMIT 1"
+      },
+      "phase": "query",
+      "family": "all-fixture-wrapped",
+      "sourceConstant": "EARLY_GRAPH_PREFIX_QUERY"
+    },
+    {
+      "name": "wrapped-middleGraphsClassPrefix",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) STARTS WITH 'org.apache.tika.'\n   OR toLower(coalesce(n.callee_class, '')) STARTS WITH 'org.apache.tika.'\n   OR toLower(coalesce(n.caller_class, '')) STARTS WITH 'org.apache.hadoop.hive.'\n   OR toLower(coalesce(n.callee_class, '')) STARTS WITH 'org.apache.hadoop.hive.'\nRETURN DISTINCT n.graph_id, n.caller_class AS caller, n.caller_name AS callerMethod,\n    n.callee_class AS callee, n.callee_name AS calleeMethod\nLIMIT 250"
+      },
+      "phase": "query",
+      "family": "all-fixture-wrapped",
+      "sourceConstant": "MIDDLE_GRAPHS_PREFIX_QUERY"
+    },
+    {
+      "name": "wrapped-lateGraphClassPrefix",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) STARTS WITH 'org.jetbrains.kotlin.'\n   OR toLower(coalesce(n.callee_class, '')) STARTS WITH 'org.jetbrains.kotlin.'\nRETURN DISTINCT n.graph_id, n.caller_class AS caller, n.caller_name AS callerMethod,\n    n.callee_class AS callee, n.callee_name AS calleeMethod\nLIMIT 50"
+      },
+      "phase": "query",
+      "family": "all-fixture-wrapped",
+      "sourceConstant": "LATE_GRAPH_PREFIX_QUERY"
+    },
+    {
+      "name": "wrapped-broadlyDistributedClassPrefix",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) STARTS WITH 'java.'\n   OR toLower(coalesce(n.callee_class, '')) STARTS WITH 'java.'\nRETURN DISTINCT n.graph_id, n.caller_class AS caller, n.caller_name AS callerMethod,\n    n.callee_class AS callee, n.callee_name AS calleeMethod\nLIMIT 250"
+      },
+      "phase": "query",
+      "family": "all-fixture-wrapped",
+      "sourceConstant": "BROADLY_DISTRIBUTED_PREFIX_QUERY"
+    },
+    {
+      "name": "wrapped-firstLastGraphBimodalClassPrefix",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) STARTS WITH 'android.'\n   OR toLower(coalesce(n.callee_class, '')) STARTS WITH 'android.'\n   OR toLower(coalesce(n.caller_class, '')) STARTS WITH 'org.jetbrains.kotlin.'\n   OR toLower(coalesce(n.callee_class, '')) STARTS WITH 'org.jetbrains.kotlin.'\nRETURN DISTINCT n.graph_id, n.caller_class AS caller, n.caller_name AS callerMethod,\n    n.callee_class AS callee, n.callee_name AS calleeMethod\nLIMIT 250"
+      },
+      "phase": "query",
+      "family": "all-fixture-wrapped",
+      "sourceConstant": "FIRST_LAST_GRAPH_BIMODAL_QUERY"
+    },
+    {
+      "name": "wrapped-skewedMixedClassMethodOperator",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) STARTS WITH 'android.'\n   OR toLower(coalesce(n.callee_class, '')) STARTS WITH 'android.'\n   OR toLower(coalesce(n.caller_name, '')) ENDS WITH 'provider'\n   OR toLower(coalesce(n.callee_name, '')) ENDS WITH 'provider'\nRETURN DISTINCT n.graph_id, n.caller_class AS caller, n.caller_name AS callerMethod,\n    n.callee_class AS callee, n.callee_name AS calleeMethod\nLIMIT 250"
+      },
+      "phase": "query",
+      "family": "all-fixture-wrapped",
+      "sourceConstant": "SKEWED_MIXED_OPERATOR_QUERY"
+    },
+    {
+      "name": "global-wide-four-properties-zero",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n)\nWHERE n.caller_class CONTAINS '__graphite_fixture64_absent_fixture-android-00__' OR n.caller_name CONTAINS '__graphite_fixture64_absent_fixture-android-00__' OR n.callee_class CONTAINS '__graphite_fixture64_absent_fixture-android-00__' OR n.callee_name CONTAINS '__graphite_fixture64_absent_fixture-android-00__'\nRETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200"
+      },
+      "phase": "query",
+      "family": "global-wide",
+      "selectivity": "zero",
+      "termSourceGraph": "fixture-android-00",
+      "workloadIdentity": "47c5f2f8275ab2447995a1b45a36cd5b0b70e258e0f75934abd1f0cef5c2b93e"
+    },
+    {
+      "name": "global-wide-four-properties-targeted",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'android.media.internal.guava_common.util.concurrent.TrustedListenableFutureTask$TrustedFutureInterruptibleAsyncTask' OR n.caller_name CONTAINS 'android.media.internal.guava_common.util.concurrent.TrustedListenableFutureTask$TrustedFutureInterruptibleAsyncTask' OR n.callee_class CONTAINS 'android.media.internal.guava_common.util.concurrent.TrustedListenableFutureTask$TrustedFutureInterruptibleAsyncTask' OR n.callee_name CONTAINS 'android.media.internal.guava_common.util.concurrent.TrustedListenableFutureTask$TrustedFutureInterruptibleAsyncTask'\nRETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200"
+      },
+      "phase": "query",
+      "family": "global-wide",
+      "selectivity": "targeted",
+      "termSourceGraph": "fixture-android-00",
+      "workloadIdentity": "47c5f2f8275ab2447995a1b45a36cd5b0b70e258e0f75934abd1f0cef5c2b93e"
+    },
+    {
+      "name": "global-wide-four-properties-dense",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'get' OR n.caller_name CONTAINS 'get' OR n.callee_class CONTAINS 'get' OR n.callee_name CONTAINS 'get'\nRETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200"
+      },
+      "phase": "query",
+      "family": "global-wide",
+      "selectivity": "dense",
+      "termSourceGraph": "fixture-android-00",
+      "workloadIdentity": "47c5f2f8275ab2447995a1b45a36cd5b0b70e258e0f75934abd1f0cef5c2b93e"
+    },
+    {
+      "name": "global-wide-class-pair-zero",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n)\nWHERE n.caller_class CONTAINS '__graphite_fixture64_absent_fixture-android-07__' OR n.caller_name CONTAINS '__graphite_fixture64_absent_fixture-android-07__' OR n.callee_class CONTAINS '__graphite_fixture64_absent_fixture-android-07__' OR n.callee_name CONTAINS '__graphite_fixture64_absent_fixture-android-07__'\nRETURN n.caller_class, n.callee_class\nLIMIT 200"
+      },
+      "phase": "query",
+      "family": "global-wide",
+      "selectivity": "zero",
+      "termSourceGraph": "fixture-android-07",
+      "workloadIdentity": "2884fe5070e6e70bd2c44e54af37c56e2cfd19343a8721d5b36093d7d1db0f7d"
+    },
+    {
+      "name": "global-wide-class-pair-targeted",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'com.android.server.wallpapereffectsgeneration.RemoteWallpaperEffectsGenerationService$RemoteWallpaperEffectsGenerationServiceCallback' OR n.caller_name CONTAINS 'com.android.server.wallpapereffectsgeneration.RemoteWallpaperEffectsGenerationService$RemoteWallpaperEffectsGenerationServiceCallback' OR n.callee_class CONTAINS 'com.android.server.wallpapereffectsgeneration.RemoteWallpaperEffectsGenerationService$RemoteWallpaperEffectsGenerationServiceCallback' OR n.callee_name CONTAINS 'com.android.server.wallpapereffectsgeneration.RemoteWallpaperEffectsGenerationService$RemoteWallpaperEffectsGenerationServiceCallback'\nRETURN n.caller_class, n.callee_class\nLIMIT 200"
+      },
+      "phase": "query",
+      "family": "global-wide",
+      "selectivity": "targeted",
+      "termSourceGraph": "fixture-android-07",
+      "workloadIdentity": "2884fe5070e6e70bd2c44e54af37c56e2cfd19343a8721d5b36093d7d1db0f7d"
+    },
+    {
+      "name": "global-wide-class-pair-dense",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'get' OR n.caller_name CONTAINS 'get' OR n.callee_class CONTAINS 'get' OR n.callee_name CONTAINS 'get'\nRETURN n.caller_class, n.callee_class\nLIMIT 200"
+      },
+      "phase": "query",
+      "family": "global-wide",
+      "selectivity": "dense",
+      "termSourceGraph": "fixture-android-00",
+      "workloadIdentity": "47c5f2f8275ab2447995a1b45a36cd5b0b70e258e0f75934abd1f0cef5c2b93e"
+    },
+    {
+      "name": "global-wide-name-pair-zero",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n)\nWHERE n.caller_class CONTAINS '__graphite_fixture64_absent_fixture-android-14__' OR n.caller_name CONTAINS '__graphite_fixture64_absent_fixture-android-14__' OR n.callee_class CONTAINS '__graphite_fixture64_absent_fixture-android-14__' OR n.callee_name CONTAINS '__graphite_fixture64_absent_fixture-android-14__'\nRETURN n.caller_name, n.callee_name\nLIMIT 200"
+      },
+      "phase": "query",
+      "family": "global-wide",
+      "selectivity": "zero",
+      "termSourceGraph": "fixture-android-14",
+      "workloadIdentity": "caf42d54ef3437f216c963929327ed5ef3f52ce080fa2be4c3305c2370617ab1"
+    },
+    {
+      "name": "global-wide-name-pair-targeted",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'com.android.server.companion.datatransfer.contextsync.CallMetadataSyncConnectionService$CallMetadataSyncConnectionCallback' OR n.caller_name CONTAINS 'com.android.server.companion.datatransfer.contextsync.CallMetadataSyncConnectionService$CallMetadataSyncConnectionCallback' OR n.callee_class CONTAINS 'com.android.server.companion.datatransfer.contextsync.CallMetadataSyncConnectionService$CallMetadataSyncConnectionCallback' OR n.callee_name CONTAINS 'com.android.server.companion.datatransfer.contextsync.CallMetadataSyncConnectionService$CallMetadataSyncConnectionCallback'\nRETURN n.caller_name, n.callee_name\nLIMIT 200"
+      },
+      "phase": "query",
+      "family": "global-wide",
+      "selectivity": "targeted",
+      "termSourceGraph": "fixture-android-14",
+      "workloadIdentity": "caf42d54ef3437f216c963929327ed5ef3f52ce080fa2be4c3305c2370617ab1"
+    },
+    {
+      "name": "global-wide-name-pair-dense",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'get' OR n.caller_name CONTAINS 'get' OR n.callee_class CONTAINS 'get' OR n.callee_name CONTAINS 'get'\nRETURN n.caller_name, n.callee_name\nLIMIT 200"
+      },
+      "phase": "query",
+      "family": "global-wide",
+      "selectivity": "dense",
+      "termSourceGraph": "fixture-android-00",
+      "workloadIdentity": "47c5f2f8275ab2447995a1b45a36cd5b0b70e258e0f75934abd1f0cef5c2b93e"
+    },
+    {
+      "name": "global-wide-caller-class-zero",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n)\nWHERE n.caller_class CONTAINS '__graphite_fixture64_absent_fixture-tika-05__' OR n.caller_name CONTAINS '__graphite_fixture64_absent_fixture-tika-05__' OR n.callee_class CONTAINS '__graphite_fixture64_absent_fixture-tika-05__' OR n.callee_name CONTAINS '__graphite_fixture64_absent_fixture-tika-05__'\nRETURN n.caller_class\nLIMIT 200"
+      },
+      "phase": "query",
+      "family": "global-wide",
+      "selectivity": "zero",
+      "termSourceGraph": "fixture-tika-05",
+      "workloadIdentity": "a70ca503c8d7edc9fd5b26430e9c4bd9517cfcf9084469733cfeff8a4fef63f8"
+    },
+    {
+      "name": "global-wide-caller-class-targeted",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'net.bytebuddy.dynamic.scaffold.TypeWriter$Default$ForInlining$WithFullProcessing$InitializationHandler$Appending$WithDrain$WithoutActiveRecord' OR n.caller_name CONTAINS 'net.bytebuddy.dynamic.scaffold.TypeWriter$Default$ForInlining$WithFullProcessing$InitializationHandler$Appending$WithDrain$WithoutActiveRecord' OR n.callee_class CONTAINS 'net.bytebuddy.dynamic.scaffold.TypeWriter$Default$ForInlining$WithFullProcessing$InitializationHandler$Appending$WithDrain$WithoutActiveRecord' OR n.callee_name CONTAINS 'net.bytebuddy.dynamic.scaffold.TypeWriter$Default$ForInlining$WithFullProcessing$InitializationHandler$Appending$WithDrain$WithoutActiveRecord'\nRETURN n.caller_class\nLIMIT 200"
+      },
+      "phase": "query",
+      "family": "global-wide",
+      "selectivity": "targeted",
+      "termSourceGraph": "fixture-tika-05",
+      "workloadIdentity": "a70ca503c8d7edc9fd5b26430e9c4bd9517cfcf9084469733cfeff8a4fef63f8"
+    },
+    {
+      "name": "global-wide-caller-class-dense",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'get' OR n.caller_name CONTAINS 'get' OR n.callee_class CONTAINS 'get' OR n.callee_name CONTAINS 'get'\nRETURN n.caller_class\nLIMIT 200"
+      },
+      "phase": "query",
+      "family": "global-wide",
+      "selectivity": "dense",
+      "termSourceGraph": "fixture-android-00",
+      "workloadIdentity": "47c5f2f8275ab2447995a1b45a36cd5b0b70e258e0f75934abd1f0cef5c2b93e"
+    },
+    {
+      "name": "global-wide-callee-class-zero",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n)\nWHERE n.caller_class CONTAINS '__graphite_fixture64_absent_fixture-tika-12__' OR n.caller_name CONTAINS '__graphite_fixture64_absent_fixture-tika-12__' OR n.callee_class CONTAINS '__graphite_fixture64_absent_fixture-tika-12__' OR n.callee_name CONTAINS '__graphite_fixture64_absent_fixture-tika-12__'\nRETURN n.callee_class\nLIMIT 200"
+      },
+      "phase": "query",
+      "family": "global-wide",
+      "selectivity": "zero",
+      "termSourceGraph": "fixture-tika-12",
+      "workloadIdentity": "333b320af3f398d083e1d44b1a79e54fa546da12ce118f18db6f7cc3387398c8"
+    },
+    {
+      "name": "global-wide-callee-class-targeted",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'net.bytebuddy.pool.TypePool$Default$LazyTypeDescription$GenericTypeToken$ForTypeVariable$Formal$LazyTypeVariable$LazyBoundTokenList' OR n.caller_name CONTAINS 'net.bytebuddy.pool.TypePool$Default$LazyTypeDescription$GenericTypeToken$ForTypeVariable$Formal$LazyTypeVariable$LazyBoundTokenList' OR n.callee_class CONTAINS 'net.bytebuddy.pool.TypePool$Default$LazyTypeDescription$GenericTypeToken$ForTypeVariable$Formal$LazyTypeVariable$LazyBoundTokenList' OR n.callee_name CONTAINS 'net.bytebuddy.pool.TypePool$Default$LazyTypeDescription$GenericTypeToken$ForTypeVariable$Formal$LazyTypeVariable$LazyBoundTokenList'\nRETURN n.callee_class\nLIMIT 200"
+      },
+      "phase": "query",
+      "family": "global-wide",
+      "selectivity": "targeted",
+      "termSourceGraph": "fixture-tika-12",
+      "workloadIdentity": "333b320af3f398d083e1d44b1a79e54fa546da12ce118f18db6f7cc3387398c8"
+    },
+    {
+      "name": "global-wide-callee-class-dense",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'get' OR n.caller_name CONTAINS 'get' OR n.callee_class CONTAINS 'get' OR n.callee_name CONTAINS 'get'\nRETURN n.callee_class\nLIMIT 200"
+      },
+      "phase": "query",
+      "family": "global-wide",
+      "selectivity": "dense",
+      "termSourceGraph": "fixture-android-00",
+      "workloadIdentity": "47c5f2f8275ab2447995a1b45a36cd5b0b70e258e0f75934abd1f0cef5c2b93e"
+    },
+    {
+      "name": "global-wide-provenance-zero",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n)\nWHERE n.caller_class CONTAINS '__graphite_fixture64_absent_fixture-hive-03__' OR n.caller_name CONTAINS '__graphite_fixture64_absent_fixture-hive-03__' OR n.callee_class CONTAINS '__graphite_fixture64_absent_fixture-hive-03__' OR n.callee_name CONTAINS '__graphite_fixture64_absent_fixture-hive-03__'\nRETURN n.graphId, n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200"
+      },
+      "phase": "query",
+      "family": "global-wide",
+      "selectivity": "zero",
+      "termSourceGraph": "fixture-hive-03",
+      "workloadIdentity": "bc37ba5880a9fc3e89dea2bf6571ad8db10f8c499dfca7c678b831d8edb064fe"
+    },
+    {
+      "name": "global-wide-provenance-targeted",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore$get_materialization_invalidation_info_result$get_materialization_invalidation_info_resultStandardSchemeFactory' OR n.caller_name CONTAINS 'org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore$get_materialization_invalidation_info_result$get_materialization_invalidation_info_resultStandardSchemeFactory' OR n.callee_class CONTAINS 'org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore$get_materialization_invalidation_info_result$get_materialization_invalidation_info_resultStandardSchemeFactory' OR n.callee_name CONTAINS 'org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore$get_materialization_invalidation_info_result$get_materialization_invalidation_info_resultStandardSchemeFactory'\nRETURN n.graphId, n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200"
+      },
+      "phase": "query",
+      "family": "global-wide",
+      "selectivity": "targeted",
+      "termSourceGraph": "fixture-hive-03",
+      "workloadIdentity": "bc37ba5880a9fc3e89dea2bf6571ad8db10f8c499dfca7c678b831d8edb064fe"
+    },
+    {
+      "name": "global-wide-provenance-dense",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'get' OR n.caller_name CONTAINS 'get' OR n.callee_class CONTAINS 'get' OR n.callee_name CONTAINS 'get'\nRETURN n.graphId, n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200"
+      },
+      "phase": "query",
+      "family": "global-wide",
+      "selectivity": "dense",
+      "termSourceGraph": "fixture-android-00",
+      "workloadIdentity": "47c5f2f8275ab2447995a1b45a36cd5b0b70e258e0f75934abd1f0cef5c2b93e"
+    },
+    {
+      "name": "global-wide-aliased-zero",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n)\nWHERE n.caller_class CONTAINS '__graphite_fixture64_absent_fixture-hive-10__' OR n.caller_name CONTAINS '__graphite_fixture64_absent_fixture-hive-10__' OR n.callee_class CONTAINS '__graphite_fixture64_absent_fixture-hive-10__' OR n.callee_name CONTAINS '__graphite_fixture64_absent_fixture-hive-10__'\nRETURN n.caller_class AS caller, n.caller_name AS callerMethod, n.callee_class AS callee, n.callee_name AS calleeMethod\nLIMIT 200"
+      },
+      "phase": "query",
+      "family": "global-wide",
+      "selectivity": "zero",
+      "termSourceGraph": "fixture-hive-10",
+      "workloadIdentity": "e942f277a2b44bd11b03bd9380dd5388338721030a1701c31ff2277dd8f8cd9a"
+    },
+    {
+      "name": "global-wide-aliased-targeted",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore$append_partition_by_name_with_environment_context_result$append_partition_by_name_with_environment_context_resultStandardScheme' OR n.caller_name CONTAINS 'org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore$append_partition_by_name_with_environment_context_result$append_partition_by_name_with_environment_context_resultStandardScheme' OR n.callee_class CONTAINS 'org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore$append_partition_by_name_with_environment_context_result$append_partition_by_name_with_environment_context_resultStandardScheme' OR n.callee_name CONTAINS 'org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore$append_partition_by_name_with_environment_context_result$append_partition_by_name_with_environment_context_resultStandardScheme'\nRETURN n.caller_class AS caller, n.caller_name AS callerMethod, n.callee_class AS callee, n.callee_name AS calleeMethod\nLIMIT 200"
+      },
+      "phase": "query",
+      "family": "global-wide",
+      "selectivity": "targeted",
+      "termSourceGraph": "fixture-hive-10",
+      "workloadIdentity": "e942f277a2b44bd11b03bd9380dd5388338721030a1701c31ff2277dd8f8cd9a"
+    },
+    {
+      "name": "global-wide-aliased-dense",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'get' OR n.caller_name CONTAINS 'get' OR n.callee_class CONTAINS 'get' OR n.callee_name CONTAINS 'get'\nRETURN n.caller_class AS caller, n.caller_name AS callerMethod, n.callee_class AS callee, n.callee_name AS calleeMethod\nLIMIT 200"
+      },
+      "phase": "query",
+      "family": "global-wide",
+      "selectivity": "dense",
+      "termSourceGraph": "fixture-android-00",
+      "workloadIdentity": "47c5f2f8275ab2447995a1b45a36cd5b0b70e258e0f75934abd1f0cef5c2b93e"
+    },
+    {
+      "name": "global-wide-parameterized-zero",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n)\nWHERE n.caller_class CONTAINS '__graphite_fixture64_absent_fixture-kotlin-compiler-01__' OR n.caller_name CONTAINS '__graphite_fixture64_absent_fixture-kotlin-compiler-01__' OR n.callee_class CONTAINS '__graphite_fixture64_absent_fixture-kotlin-compiler-01__' OR n.callee_name CONTAINS '__graphite_fixture64_absent_fixture-kotlin-compiler-01__'\nRETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200"
+      },
+      "phase": "query",
+      "family": "global-wide",
+      "selectivity": "zero",
+      "termSourceGraph": "fixture-kotlin-compiler-01",
+      "workloadIdentity": "a2378f34cd746f343988852d75ea5d50b8bfe89e6cd965dacb19b742e3a8c966",
+      "httpAdaptation": "Bind the fixed JMH term as an escaped literal: current main HTTP does not accept parameters maps; original JMH parameter transport remains separately required."
+    },
+    {
+      "name": "global-wide-parameterized-targeted",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'org.jetbrains.kotlin.fir.analysis.jvm.checkers.expression.FirJavaSamConstructorNullabilityChecker$getReturnedExpressions$extractReturnedExpression$finallyBlockEnterNode$1' OR n.caller_name CONTAINS 'org.jetbrains.kotlin.fir.analysis.jvm.checkers.expression.FirJavaSamConstructorNullabilityChecker$getReturnedExpressions$extractReturnedExpression$finallyBlockEnterNode$1' OR n.callee_class CONTAINS 'org.jetbrains.kotlin.fir.analysis.jvm.checkers.expression.FirJavaSamConstructorNullabilityChecker$getReturnedExpressions$extractReturnedExpression$finallyBlockEnterNode$1' OR n.callee_name CONTAINS 'org.jetbrains.kotlin.fir.analysis.jvm.checkers.expression.FirJavaSamConstructorNullabilityChecker$getReturnedExpressions$extractReturnedExpression$finallyBlockEnterNode$1'\nRETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200"
+      },
+      "phase": "query",
+      "family": "global-wide",
+      "selectivity": "targeted",
+      "termSourceGraph": "fixture-kotlin-compiler-01",
+      "workloadIdentity": "a2378f34cd746f343988852d75ea5d50b8bfe89e6cd965dacb19b742e3a8c966",
+      "httpAdaptation": "Bind the fixed JMH term as an escaped literal: current main HTTP does not accept parameters maps; original JMH parameter transport remains separately required."
+    },
+    {
+      "name": "global-wide-parameterized-dense",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'get' OR n.caller_name CONTAINS 'get' OR n.callee_class CONTAINS 'get' OR n.callee_name CONTAINS 'get'\nRETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200"
+      },
+      "phase": "query",
+      "family": "global-wide",
+      "selectivity": "dense",
+      "termSourceGraph": "fixture-android-00",
+      "workloadIdentity": "47c5f2f8275ab2447995a1b45a36cd5b0b70e258e0f75934abd1f0cef5c2b93e",
+      "httpAdaptation": "Bind the fixed JMH term as an escaped literal: current main HTTP does not accept parameters maps; original JMH parameter transport remains separately required."
+    },
+    {
+      "name": "global-wide-wrapped-case-insensitive-zero",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) CONTAINS '__graphite_fixture64_absent_fixture-kotlin-compiler-08__' OR toLower(coalesce(n.caller_name, '')) CONTAINS '__graphite_fixture64_absent_fixture-kotlin-compiler-08__' OR toLower(coalesce(n.callee_class, '')) CONTAINS '__graphite_fixture64_absent_fixture-kotlin-compiler-08__' OR toLower(coalesce(n.callee_name, '')) CONTAINS '__graphite_fixture64_absent_fixture-kotlin-compiler-08__'\nRETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200"
+      },
+      "phase": "query",
+      "family": "global-wide",
+      "selectivity": "zero",
+      "termSourceGraph": "fixture-kotlin-compiler-08",
+      "workloadIdentity": "37be466842d1f239df76fe55e92f6769fc0b2d6e47e43f0020c40a8ce8422cb0"
+    },
+    {
+      "name": "global-wide-wrapped-case-insensitive-targeted",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'org.jetbrains.kotlin.fir.java.scopes.javaclassusesitememberscope$shouldbevisibleasoverrideofbuiltinwitherasedvalueparameters$$inlined$collectintersectionresultsforcallables$1' OR toLower(coalesce(n.caller_name, '')) CONTAINS 'org.jetbrains.kotlin.fir.java.scopes.javaclassusesitememberscope$shouldbevisibleasoverrideofbuiltinwitherasedvalueparameters$$inlined$collectintersectionresultsforcallables$1' OR toLower(coalesce(n.callee_class, '')) CONTAINS 'org.jetbrains.kotlin.fir.java.scopes.javaclassusesitememberscope$shouldbevisibleasoverrideofbuiltinwitherasedvalueparameters$$inlined$collectintersectionresultsforcallables$1' OR toLower(coalesce(n.callee_name, '')) CONTAINS 'org.jetbrains.kotlin.fir.java.scopes.javaclassusesitememberscope$shouldbevisibleasoverrideofbuiltinwitherasedvalueparameters$$inlined$collectintersectionresultsforcallables$1'\nRETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200"
+      },
+      "phase": "query",
+      "family": "global-wide",
+      "selectivity": "targeted",
+      "termSourceGraph": "fixture-kotlin-compiler-08",
+      "workloadIdentity": "37be466842d1f239df76fe55e92f6769fc0b2d6e47e43f0020c40a8ce8422cb0"
+    },
+    {
+      "name": "global-wide-wrapped-case-insensitive-dense",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'get' OR toLower(coalesce(n.caller_name, '')) CONTAINS 'get' OR toLower(coalesce(n.callee_class, '')) CONTAINS 'get' OR toLower(coalesce(n.callee_name, '')) CONTAINS 'get'\nRETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200"
+      },
+      "phase": "query",
+      "family": "global-wide",
+      "selectivity": "dense",
+      "termSourceGraph": "fixture-android-00",
+      "workloadIdentity": "47c5f2f8275ab2447995a1b45a36cd5b0b70e258e0f75934abd1f0cef5c2b93e"
+    },
+    {
+      "name": "global-wide-wrapped-case-insensitive-distinct-zero",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) CONTAINS '__graphite_fixture64_absent_fixture-kotlin-compiler-15__' OR toLower(coalesce(n.caller_name, '')) CONTAINS '__graphite_fixture64_absent_fixture-kotlin-compiler-15__' OR toLower(coalesce(n.callee_class, '')) CONTAINS '__graphite_fixture64_absent_fixture-kotlin-compiler-15__' OR toLower(coalesce(n.callee_name, '')) CONTAINS '__graphite_fixture64_absent_fixture-kotlin-compiler-15__'\nRETURN DISTINCT n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200"
+      },
+      "phase": "query",
+      "family": "global-wide",
+      "selectivity": "zero",
+      "termSourceGraph": "fixture-kotlin-compiler-15",
+      "workloadIdentity": "86015e396789c5c1cf86d1df3b0b97987a7b461bfcfb129491f3d758793d1d65"
+    },
+    {
+      "name": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'org.jetbrains.kotlin.analysis.decompiled.light.classes.ktlightenumentryfordecompileddeclaration$getinitializingclass$$inlined$cachedvaluewithlibrarytracker$1' OR toLower(coalesce(n.caller_name, '')) CONTAINS 'org.jetbrains.kotlin.analysis.decompiled.light.classes.ktlightenumentryfordecompileddeclaration$getinitializingclass$$inlined$cachedvaluewithlibrarytracker$1' OR toLower(coalesce(n.callee_class, '')) CONTAINS 'org.jetbrains.kotlin.analysis.decompiled.light.classes.ktlightenumentryfordecompileddeclaration$getinitializingclass$$inlined$cachedvaluewithlibrarytracker$1' OR toLower(coalesce(n.callee_name, '')) CONTAINS 'org.jetbrains.kotlin.analysis.decompiled.light.classes.ktlightenumentryfordecompileddeclaration$getinitializingclass$$inlined$cachedvaluewithlibrarytracker$1'\nRETURN DISTINCT n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200"
+      },
+      "phase": "query",
+      "family": "global-wide",
+      "selectivity": "targeted",
+      "termSourceGraph": "fixture-kotlin-compiler-15",
+      "workloadIdentity": "86015e396789c5c1cf86d1df3b0b97987a7b461bfcfb129491f3d758793d1d65"
+    },
+    {
+      "name": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'get' OR toLower(coalesce(n.caller_name, '')) CONTAINS 'get' OR toLower(coalesce(n.callee_class, '')) CONTAINS 'get' OR toLower(coalesce(n.callee_name, '')) CONTAINS 'get'\nRETURN DISTINCT n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200"
+      },
+      "phase": "query",
+      "family": "global-wide",
+      "selectivity": "dense",
+      "termSourceGraph": "fixture-android-00",
+      "workloadIdentity": "47c5f2f8275ab2447995a1b45a36cd5b0b70e258e0f75934abd1f0cef5c2b93e"
+    },
+    {
+      "name": "global-wide-distribution-broad-all-64",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'get' OR toLower(coalesce(n.caller_name, '')) CONTAINS 'get' OR toLower(coalesce(n.callee_class, '')) CONTAINS 'get' OR toLower(coalesce(n.callee_name, '')) CONTAINS 'get'\nRETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200"
+      },
+      "phase": "query",
+      "family": "global-wide",
+      "distribution": "broad-all-64",
+      "termSourceGraph": "fixture-android-00",
+      "expectedHitGraphIds": [
+        "fixture-android-00",
+        "fixture-android-01",
+        "fixture-android-02",
+        "fixture-android-03",
+        "fixture-android-04",
+        "fixture-android-05",
+        "fixture-android-06",
+        "fixture-android-07",
+        "fixture-android-08",
+        "fixture-android-09",
+        "fixture-android-10",
+        "fixture-android-11",
+        "fixture-android-12",
+        "fixture-android-13",
+        "fixture-android-14",
+        "fixture-android-15",
+        "fixture-tika-00",
+        "fixture-tika-01",
+        "fixture-tika-02",
+        "fixture-tika-03",
+        "fixture-tika-04",
+        "fixture-tika-05",
+        "fixture-tika-06",
+        "fixture-tika-07",
+        "fixture-tika-08",
+        "fixture-tika-09",
+        "fixture-tika-10",
+        "fixture-tika-11",
+        "fixture-tika-12",
+        "fixture-tika-13",
+        "fixture-tika-14",
+        "fixture-tika-15",
+        "fixture-hive-00",
+        "fixture-hive-01",
+        "fixture-hive-02",
+        "fixture-hive-03",
+        "fixture-hive-04",
+        "fixture-hive-05",
+        "fixture-hive-06",
+        "fixture-hive-07",
+        "fixture-hive-08",
+        "fixture-hive-09",
+        "fixture-hive-10",
+        "fixture-hive-11",
+        "fixture-hive-12",
+        "fixture-hive-13",
+        "fixture-hive-14",
+        "fixture-hive-15",
+        "fixture-kotlin-compiler-00",
+        "fixture-kotlin-compiler-01",
+        "fixture-kotlin-compiler-02",
+        "fixture-kotlin-compiler-03",
+        "fixture-kotlin-compiler-04",
+        "fixture-kotlin-compiler-05",
+        "fixture-kotlin-compiler-06",
+        "fixture-kotlin-compiler-07",
+        "fixture-kotlin-compiler-08",
+        "fixture-kotlin-compiler-09",
+        "fixture-kotlin-compiler-10",
+        "fixture-kotlin-compiler-11",
+        "fixture-kotlin-compiler-12",
+        "fixture-kotlin-compiler-13",
+        "fixture-kotlin-compiler-14",
+        "fixture-kotlin-compiler-15"
+      ]
+    },
+    {
+      "name": "global-wide-distribution-localized-early",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'com.android.internal.app.iappopsservice$stub$proxy' OR toLower(coalesce(n.caller_name, '')) CONTAINS 'com.android.internal.app.iappopsservice$stub$proxy' OR toLower(coalesce(n.callee_class, '')) CONTAINS 'com.android.internal.app.iappopsservice$stub$proxy' OR toLower(coalesce(n.callee_name, '')) CONTAINS 'com.android.internal.app.iappopsservice$stub$proxy'\nRETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200"
+      },
+      "phase": "query",
+      "family": "global-wide",
+      "distribution": "localized-early",
+      "termSourceGraph": "fixture-android-00",
+      "expectedHitGraphIds": [
+        "fixture-android-00"
+      ]
+    },
+    {
+      "name": "global-wide-distribution-localized-late",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'org.jetbrains.kotlin.backend.jvm.lower.jvmmultifieldvalueclassloweringkt$extractvariablessetterstoouterpossibleblock$1' OR toLower(coalesce(n.caller_name, '')) CONTAINS 'org.jetbrains.kotlin.backend.jvm.lower.jvmmultifieldvalueclassloweringkt$extractvariablessetterstoouterpossibleblock$1' OR toLower(coalesce(n.callee_class, '')) CONTAINS 'org.jetbrains.kotlin.backend.jvm.lower.jvmmultifieldvalueclassloweringkt$extractvariablessetterstoouterpossibleblock$1' OR toLower(coalesce(n.callee_name, '')) CONTAINS 'org.jetbrains.kotlin.backend.jvm.lower.jvmmultifieldvalueclassloweringkt$extractvariablessetterstoouterpossibleblock$1'\nRETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200"
+      },
+      "phase": "query",
+      "family": "global-wide",
+      "distribution": "localized-late",
+      "termSourceGraph": "fixture-kotlin-compiler-15",
+      "expectedHitGraphIds": [
+        "fixture-kotlin-compiler-15"
+      ]
+    },
+    {
+      "name": "global-wide-distribution-localized-middle",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'org.openxmlformats.schemas.spreadsheetml.x2006.main.impl.ctpivottabledefinitionimpl' OR toLower(coalesce(n.caller_name, '')) CONTAINS 'org.openxmlformats.schemas.spreadsheetml.x2006.main.impl.ctpivottabledefinitionimpl' OR toLower(coalesce(n.callee_class, '')) CONTAINS 'org.openxmlformats.schemas.spreadsheetml.x2006.main.impl.ctpivottabledefinitionimpl' OR toLower(coalesce(n.callee_name, '')) CONTAINS 'org.openxmlformats.schemas.spreadsheetml.x2006.main.impl.ctpivottabledefinitionimpl'\nRETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200"
+      },
+      "phase": "query",
+      "family": "global-wide",
+      "distribution": "localized-middle",
+      "termSourceGraph": "fixture-tika-15",
+      "expectedHitGraphIds": [
+        "fixture-tika-15"
+      ]
+    }
+  ]
+}

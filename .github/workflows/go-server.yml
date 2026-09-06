@@ -1,0 +1,53 @@
+name: Go server
+
+on:
+  pull_request:
+    paths:
+      - 'graphite-server/**'
+      - 'graphite-cypher/src/main/antlr/**'
+      - 'graphite-explore/src/main/resources/web/**'
+      - '.github/workflows/go-server.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'graphite-server/**'
+      - 'graphite-cypher/src/main/antlr/**'
+      - 'graphite-explore/src/main/resources/web/**'
+      - '.github/workflows/go-server.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  native-tests:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: graphite-server
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: graphite-server/go.mod
+          cache-dependency-path: graphite-server/go.sum
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Regenerate parser and shared frontend assets
+        run: |
+          go generate ./internal/cypher ./internal/web
+          git diff --exit-code -- internal/cypher/generated internal/web/assets
+      - name: Verify native behavior and races
+        run: go test -race ./...
+      - name: Vet
+        run: go vet ./...
+      - name: Build standalone server without CGo
+        run: CGO_ENABLED=0 go build -o /tmp/graphite-server ./cmd/graphite-server
+
+  # This workflow is a correctness gate. Full64 real-data performance acceptance
+  # remains mandatory and is documented in graphite-server/scripts/README.md;
+  # tiny test fixtures must never substitute for that performance gate.

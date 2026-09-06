@@ -1,0 +1,1145 @@
+[
+  {
+    "name": "graphs-empty",
+    "method": "GET",
+    "path": "/api/graphs",
+    "request": null,
+    "requestHeaders": {
+      "Host": "localhost:55538",
+      "User-agent": "Python-urllib/3.14",
+      "Content-type": "application/json",
+      "Accept": "application/json"
+    },
+    "status": 200,
+    "headers": {
+      "Date": "Sun, 06 Sep 2026 18:03:08 GMT",
+      "Connection": "close",
+      "Content-Type": "application/json",
+      "Content-Length": "242"
+    },
+    "body": "{\n  \"data\": \"/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-go-empty-baseline-s9m4ujtz\",\n  \"loadMode\": \"MAPPED\",\n  \"count\": 0,\n  \"totals\": {\n    \"nodes\": 0,\n    \"edges\": 0,\n    \"methods\": 0,\n    \"callSites\": 0\n  },\n  \"graphs\": []\n}",
+    "json": {
+      "data": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-go-empty-baseline-s9m4ujtz",
+      "loadMode": "MAPPED",
+      "count": 0,
+      "totals": {
+        "nodes": 0,
+        "edges": 0,
+        "methods": 0,
+        "callSites": 0
+      },
+      "graphs": []
+    }
+  },
+  {
+    "name": "topology-empty",
+    "method": "GET",
+    "path": "/api/topology",
+    "request": null,
+    "requestHeaders": {
+      "Host": "localhost:55538",
+      "User-agent": "Python-urllib/3.14",
+      "Content-type": "application/json",
+      "Accept": "application/json"
+    },
+    "status": 200,
+    "headers": {
+      "Date": "Sun, 06 Sep 2026 18:03:08 GMT",
+      "Connection": "close",
+      "Content-Type": "application/json;charset=utf-8",
+      "Content-Length": "137"
+    },
+    "body": "{\"nodes\":[],\"edges\":[],\"graphCount\":0,\"relationCount\":0,\"matchedRows\":0,\"builtAt\":\"2026-09-06T18:03:08.454381Z\",\"rules\":[],\"stale\":false}",
+    "json": {
+      "nodes": [],
+      "edges": [],
+      "graphCount": 0,
+      "relationCount": 0,
+      "matchedRows": 0,
+      "builtAt": "2026-09-06T18:03:08.454381Z",
+      "rules": [],
+      "stale": false
+    }
+  },
+  {
+    "name": "missing-graph",
+    "method": "GET",
+    "path": "/api/graphs/missing",
+    "request": null,
+    "requestHeaders": {
+      "Host": "localhost:55538",
+      "User-agent": "Python-urllib/3.14",
+      "Content-type": "application/json",
+      "Accept": "application/json"
+    },
+    "status": 404,
+    "headers": {
+      "Date": "Sun, 06 Sep 2026 18:03:08 GMT",
+      "Connection": "close",
+      "Content-Type": "application/json",
+      "Content-Length": "42"
+    },
+    "body": "{\n  \"error\": \"Graph not loaded: missing\"\n}",
+    "json": {
+      "error": "Graph not loaded: missing"
+    }
+  },
+  {
+    "name": "invalid-graph-id",
+    "method": "GET",
+    "path": "/api/graphs/bad!",
+    "request": null,
+    "requestHeaders": {
+      "Host": "localhost:55538",
+      "User-agent": "Python-urllib/3.14",
+      "Content-type": "application/json",
+      "Accept": "application/json"
+    },
+    "status": 400,
+    "headers": {
+      "Date": "Sun, 06 Sep 2026 18:03:08 GMT",
+      "Connection": "close",
+      "Content-Type": "application/json",
+      "Content-Length": "111"
+    },
+    "body": "{\n  \"error\": \"Invalid graph id \\u0027bad!\\u0027. Use 1-128 chars: letters, digits, dot, underscore, or dash.\"\n}",
+    "json": {
+      "error": "Invalid graph id 'bad!'. Use 1-128 chars: letters, digits, dot, underscore, or dash."
+    }
+  },
+  {
+    "name": "missing-scoped-node",
+    "method": "GET",
+    "path": "/api/graphs/missing/node/1",
+    "request": null,
+    "requestHeaders": {
+      "Host": "localhost:55538",
+      "User-agent": "Python-urllib/3.14",
+      "Content-type": "application/json",
+      "Accept": "application/json"
+    },
+    "status": 404,
+    "headers": {
+      "Date": "Sun, 06 Sep 2026 18:03:08 GMT",
+      "Connection": "close",
+      "Content-Type": "application/json",
+      "Content-Length": "33"
+    },
+    "body": "{\n  \"error\": \"Graph not loaded\"\n}",
+    "json": {
+      "error": "Graph not loaded"
+    }
+  },
+  {
+    "name": "missing-root-node",
+    "method": "GET",
+    "path": "/api/node/1",
+    "request": null,
+    "requestHeaders": {
+      "Host": "localhost:55538",
+      "User-agent": "Python-urllib/3.14",
+      "Content-type": "application/json",
+      "Accept": "application/json"
+    },
+    "status": 404,
+    "headers": {
+      "Date": "Sun, 06 Sep 2026 18:03:08 GMT",
+      "Connection": "close",
+      "Content-Type": "application/json",
+      "Content-Length": "156"
+    },
+    "body": "{\n    \"title\": \"Endpoint GET /api/node/1 not found\",\n    \"status\": 404,\n    \"type\": \"https://javalin.io/documentation#endpointnotfound\",\n    \"details\": {}\n}",
+    "json": {
+      "title": "Endpoint GET /api/node/1 not found",
+      "status": 404,
+      "type": "https://javalin.io/documentation#endpointnotfound",
+      "details": {}
+    }
+  },
+  {
+    "name": "missing-root-subgraph",
+    "method": "GET",
+    "path": "/api/subgraph?center=1",
+    "request": null,
+    "requestHeaders": {
+      "Host": "localhost:55538",
+      "User-agent": "Python-urllib/3.14",
+      "Content-type": "application/json",
+      "Accept": "application/json"
+    },
+    "status": 404,
+    "headers": {
+      "Date": "Sun, 06 Sep 2026 18:03:08 GMT",
+      "Connection": "close",
+      "Content-Type": "application/json",
+      "Content-Length": "158"
+    },
+    "body": "{\n    \"title\": \"Endpoint GET /api/subgraph not found\",\n    \"status\": 404,\n    \"type\": \"https://javalin.io/documentation#endpointnotfound\",\n    \"details\": {}\n}",
+    "json": {
+      "title": "Endpoint GET /api/subgraph not found",
+      "status": 404,
+      "type": "https://javalin.io/documentation#endpointnotfound",
+      "details": {}
+    }
+  },
+  {
+    "name": "removed-nodes",
+    "method": "GET",
+    "path": "/api/nodes",
+    "request": null,
+    "requestHeaders": {
+      "Host": "localhost:55538",
+      "User-agent": "Python-urllib/3.14",
+      "Content-type": "application/json",
+      "Accept": "application/json"
+    },
+    "status": 404,
+    "headers": {
+      "Date": "Sun, 06 Sep 2026 18:03:08 GMT",
+      "Connection": "close",
+      "Content-Type": "application/json",
+      "Content-Length": "155"
+    },
+    "body": "{\n    \"title\": \"Endpoint GET /api/nodes not found\",\n    \"status\": 404,\n    \"type\": \"https://javalin.io/documentation#endpointnotfound\",\n    \"details\": {}\n}",
+    "json": {
+      "title": "Endpoint GET /api/nodes not found",
+      "status": 404,
+      "type": "https://javalin.io/documentation#endpointnotfound",
+      "details": {}
+    }
+  },
+  {
+    "name": "removed-methods",
+    "method": "GET",
+    "path": "/api/methods",
+    "request": null,
+    "requestHeaders": {
+      "Host": "localhost:55538",
+      "User-agent": "Python-urllib/3.14",
+      "Content-type": "application/json",
+      "Accept": "application/json"
+    },
+    "status": 404,
+    "headers": {
+      "Date": "Sun, 06 Sep 2026 18:03:08 GMT",
+      "Connection": "close",
+      "Content-Type": "application/json",
+      "Content-Length": "157"
+    },
+    "body": "{\n    \"title\": \"Endpoint GET /api/methods not found\",\n    \"status\": 404,\n    \"type\": \"https://javalin.io/documentation#endpointnotfound\",\n    \"details\": {}\n}",
+    "json": {
+      "title": "Endpoint GET /api/methods not found",
+      "status": 404,
+      "type": "https://javalin.io/documentation#endpointnotfound",
+      "details": {}
+    }
+  },
+  {
+    "name": "removed-call-sites",
+    "method": "GET",
+    "path": "/api/call-sites",
+    "request": null,
+    "requestHeaders": {
+      "Host": "localhost:55538",
+      "User-agent": "Python-urllib/3.14",
+      "Content-type": "application/json",
+      "Accept": "application/json"
+    },
+    "status": 404,
+    "headers": {
+      "Date": "Sun, 06 Sep 2026 18:03:08 GMT",
+      "Connection": "close",
+      "Content-Type": "application/json",
+      "Content-Length": "160"
+    },
+    "body": "{\n    \"title\": \"Endpoint GET /api/call-sites not found\",\n    \"status\": 404,\n    \"type\": \"https://javalin.io/documentation#endpointnotfound\",\n    \"details\": {}\n}",
+    "json": {
+      "title": "Endpoint GET /api/call-sites not found",
+      "status": 404,
+      "type": "https://javalin.io/documentation#endpointnotfound",
+      "details": {}
+    }
+  },
+  {
+    "name": "missing-annotations-params",
+    "method": "GET",
+    "path": "/api/annotations",
+    "request": null,
+    "requestHeaders": {
+      "Host": "localhost:55538",
+      "User-agent": "Python-urllib/3.14",
+      "Content-type": "application/json",
+      "Accept": "application/json"
+    },
+    "status": 400,
+    "headers": {
+      "Date": "Sun, 06 Sep 2026 18:03:08 GMT",
+      "Connection": "close",
+      "Content-Type": "text/plain",
+      "Content-Length": "25"
+    },
+    "body": "Missing 'class' parameter"
+  },
+  {
+    "name": "annotations-empty",
+    "method": "GET",
+    "path": "/api/annotations?class=C&member=m",
+    "request": null,
+    "requestHeaders": {
+      "Host": "localhost:55538",
+      "User-agent": "Python-urllib/3.14",
+      "Content-type": "application/json",
+      "Accept": "application/json"
+    },
+    "status": 200,
+    "headers": {
+      "Date": "Sun, 06 Sep 2026 18:03:08 GMT",
+      "Connection": "close",
+      "Content-Type": "application/json",
+      "Content-Length": "63"
+    },
+    "body": "{\n  \"graphCount\": 0,\n  \"resultGraphCount\": 0,\n  \"results\": []\n}",
+    "json": {
+      "graphCount": 0,
+      "resultGraphCount": 0,
+      "results": []
+    }
+  },
+  {
+    "name": "resources-empty",
+    "method": "GET",
+    "path": "/api/resources",
+    "request": null,
+    "requestHeaders": {
+      "Host": "localhost:55538",
+      "User-agent": "Python-urllib/3.14",
+      "Content-type": "application/json",
+      "Accept": "application/json"
+    },
+    "status": 200,
+    "headers": {
+      "Date": "Sun, 06 Sep 2026 18:03:08 GMT",
+      "Connection": "close",
+      "Content-Type": "application/json",
+      "Content-Length": "63"
+    },
+    "body": "{\n  \"graphCount\": 0,\n  \"resultGraphCount\": 0,\n  \"results\": []\n}",
+    "json": {
+      "graphCount": 0,
+      "resultGraphCount": 0,
+      "results": []
+    }
+  },
+  {
+    "name": "resource-missing",
+    "method": "GET",
+    "path": "/api/resources/absent.txt",
+    "request": null,
+    "requestHeaders": {
+      "Host": "localhost:55538",
+      "User-agent": "Python-urllib/3.14",
+      "Content-type": "application/json",
+      "Accept": "application/json"
+    },
+    "status": 404,
+    "headers": {
+      "Date": "Sun, 06 Sep 2026 18:03:08 GMT",
+      "Connection": "close",
+      "Content-Type": "text/plain",
+      "Content-Length": "30"
+    },
+    "body": "Resource not found: absent.txt"
+  },
+  {
+    "name": "endpoints-empty",
+    "method": "GET",
+    "path": "/api/endpoints",
+    "request": null,
+    "requestHeaders": {
+      "Host": "localhost:55538",
+      "User-agent": "Python-urllib/3.14",
+      "Content-type": "application/json",
+      "Accept": "application/json"
+    },
+    "status": 200,
+    "headers": {
+      "Date": "Sun, 06 Sep 2026 18:03:08 GMT",
+      "Connection": "close",
+      "Content-Type": "application/json",
+      "Content-Length": "63"
+    },
+    "body": "{\n  \"graphCount\": 0,\n  \"resultGraphCount\": 0,\n  \"results\": []\n}",
+    "json": {
+      "graphCount": 0,
+      "resultGraphCount": 0,
+      "results": []
+    }
+  },
+  {
+    "name": "overview-empty",
+    "method": "GET",
+    "path": "/api/overview",
+    "request": null,
+    "requestHeaders": {
+      "Host": "localhost:55538",
+      "User-agent": "Python-urllib/3.14",
+      "Content-type": "application/json",
+      "Accept": "application/json"
+    },
+    "status": 200,
+    "headers": {
+      "Date": "Sun, 06 Sep 2026 18:03:08 GMT",
+      "Connection": "close",
+      "Content-Type": "application/json",
+      "Content-Length": "63"
+    },
+    "body": "{\n  \"graphCount\": 0,\n  \"resultGraphCount\": 0,\n  \"results\": []\n}",
+    "json": {
+      "graphCount": 0,
+      "resultGraphCount": 0,
+      "results": []
+    }
+  },
+  {
+    "name": "c4-empty",
+    "method": "GET",
+    "path": "/api/architecture/c4",
+    "request": null,
+    "requestHeaders": {
+      "Host": "localhost:55538",
+      "User-agent": "Python-urllib/3.14",
+      "Content-type": "application/json",
+      "Accept": "application/json"
+    },
+    "status": 200,
+    "headers": {
+      "Date": "Sun, 06 Sep 2026 18:03:08 GMT",
+      "Connection": "close",
+      "Content-Type": "application/json",
+      "Content-Length": "63"
+    },
+    "body": "{\n  \"graphCount\": 0,\n  \"resultGraphCount\": 0,\n  \"results\": []\n}",
+    "json": {
+      "graphCount": 0,
+      "resultGraphCount": 0,
+      "results": []
+    }
+  },
+  {
+    "name": "c4-invalid-level",
+    "method": "GET",
+    "path": "/api/architecture/c4?level=invalid",
+    "request": null,
+    "requestHeaders": {
+      "Host": "localhost:55538",
+      "User-agent": "Python-urllib/3.14",
+      "Content-type": "application/json",
+      "Accept": "application/json"
+    },
+    "status": 400,
+    "headers": {
+      "Date": "Sun, 06 Sep 2026 18:03:08 GMT",
+      "Connection": "close",
+      "Content-Type": "application/json",
+      "Content-Length": "131"
+    },
+    "body": "{\n  \"error\": \"Invalid \\u0027level\\u0027 parameter\",\n  \"allowed\": [\n    \"context\",\n    \"container\",\n    \"component\",\n    \"all\"\n  ]\n}",
+    "json": {
+      "error": "Invalid 'level' parameter",
+      "allowed": [
+        "context",
+        "container",
+        "component",
+        "all"
+      ]
+    }
+  },
+  {
+    "name": "c4-accept-overrides-invalid-format",
+    "method": "GET",
+    "path": "/api/architecture/c4?format=invalid",
+    "request": null,
+    "requestHeaders": {
+      "Host": "localhost:55538",
+      "User-agent": "Python-urllib/3.14",
+      "Content-type": "application/json",
+      "Accept": "application/json"
+    },
+    "status": 200,
+    "headers": {
+      "Date": "Sun, 06 Sep 2026 18:03:08 GMT",
+      "Connection": "close",
+      "Content-Type": "application/json",
+      "Content-Length": "63"
+    },
+    "body": "{\n  \"graphCount\": 0,\n  \"resultGraphCount\": 0,\n  \"results\": []\n}",
+    "json": {
+      "graphCount": 0,
+      "resultGraphCount": 0,
+      "results": []
+    }
+  },
+  {
+    "name": "c4-invalid-format",
+    "method": "GET",
+    "path": "/api/architecture/c4?format=invalid",
+    "request": null,
+    "requestHeaders": {
+      "Host": "localhost:55538",
+      "User-agent": "Python-urllib/3.14",
+      "Content-type": "application/json",
+      "Accept": "*/*"
+    },
+    "status": 400,
+    "headers": {
+      "Date": "Sun, 06 Sep 2026 18:03:08 GMT",
+      "Connection": "close",
+      "Content-Type": "application/json",
+      "Content-Length": "126"
+    },
+    "body": "{\n  \"error\": \"Invalid \\u0027format\\u0027 parameter\",\n  \"allowed\": [\n    \"json\",\n    \"mermaid\",\n    \"plantuml\",\n    \"dsl\"\n  ]\n}",
+    "json": {
+      "error": "Invalid 'format' parameter",
+      "allowed": [
+        "json",
+        "mermaid",
+        "plantuml",
+        "dsl"
+      ]
+    }
+  },
+  {
+    "name": "metrics-disabled",
+    "method": "GET",
+    "path": "/metrics",
+    "request": null,
+    "requestHeaders": {
+      "Host": "localhost:55538",
+      "User-agent": "Python-urllib/3.14",
+      "Content-type": "application/json",
+      "Accept": "application/json"
+    },
+    "status": 404,
+    "headers": {
+      "Date": "Sun, 06 Sep 2026 18:03:08 GMT",
+      "Connection": "close",
+      "Content-Type": "application/json",
+      "Content-Length": "153"
+    },
+    "body": "{\n    \"title\": \"Endpoint GET /metrics not found\",\n    \"status\": 404,\n    \"type\": \"https://javalin.io/documentation#endpointnotfound\",\n    \"details\": {}\n}",
+    "json": {
+      "title": "Endpoint GET /metrics not found",
+      "status": 404,
+      "type": "https://javalin.io/documentation#endpointnotfound",
+      "details": {}
+    }
+  },
+  {
+    "name": "cypher-missing-query",
+    "method": "GET",
+    "path": "/api/cypher",
+    "request": null,
+    "requestHeaders": {
+      "Host": "localhost:55538",
+      "User-agent": "Python-urllib/3.14",
+      "Content-type": "application/json",
+      "Accept": "application/json"
+    },
+    "status": 400,
+    "headers": {
+      "Date": "Sun, 06 Sep 2026 18:03:08 GMT",
+      "Connection": "close",
+      "Content-Type": "text/plain",
+      "Content-Length": "25"
+    },
+    "body": "Missing 'query' parameter"
+  },
+  {
+    "name": "cypher-return",
+    "method": "POST",
+    "path": "/api/cypher",
+    "request": {
+      "query": "RETURN 1 AS ok"
+    },
+    "requestHeaders": {
+      "Content-length": "27",
+      "Host": "localhost:55538",
+      "User-agent": "Python-urllib/3.14",
+      "Content-type": "application/json",
+      "Accept": "application/json"
+    },
+    "status": 200,
+    "headers": {
+      "Date": "Sun, 06 Sep 2026 18:03:08 GMT",
+      "Connection": "close",
+      "Content-Type": "application/json",
+      "Content-Length": "163"
+    },
+    "body": "{\n  \"columns\": [\n    \"ok\"\n  ],\n  \"rows\": [\n    {\n      \"ok\": 1,\n      \"$metadata\": {\n        \"graphIds\": []\n      }\n    }\n  ],\n  \"rowCount\": 1,\n  \"graphCount\": 0\n}",
+    "json": {
+      "columns": [
+        "ok"
+      ],
+      "rows": [
+        {
+          "ok": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ],
+      "rowCount": 1,
+      "graphCount": 0
+    }
+  },
+  {
+    "name": "cypher-get-return",
+    "method": "GET",
+    "path": "/api/cypher?query=RETURN%201%20AS%20ok",
+    "request": null,
+    "requestHeaders": {
+      "Host": "localhost:55538",
+      "User-agent": "Python-urllib/3.14",
+      "Content-type": "application/json",
+      "Accept": "application/json"
+    },
+    "status": 200,
+    "headers": {
+      "Date": "Sun, 06 Sep 2026 18:03:08 GMT",
+      "Connection": "close",
+      "Content-Type": "application/json",
+      "Content-Length": "163"
+    },
+    "body": "{\n  \"columns\": [\n    \"ok\"\n  ],\n  \"rows\": [\n    {\n      \"ok\": 1,\n      \"$metadata\": {\n        \"graphIds\": []\n      }\n    }\n  ],\n  \"rowCount\": 1,\n  \"graphCount\": 0\n}",
+    "json": {
+      "columns": [
+        "ok"
+      ],
+      "rows": [
+        {
+          "ok": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ],
+      "rowCount": 1,
+      "graphCount": 0
+    }
+  },
+  {
+    "name": "cypher-match-empty",
+    "method": "POST",
+    "path": "/api/cypher",
+    "request": {
+      "query": "MATCH (n) RETURN n"
+    },
+    "requestHeaders": {
+      "Content-length": "31",
+      "Host": "localhost:55538",
+      "User-agent": "Python-urllib/3.14",
+      "Content-type": "application/json",
+      "Accept": "application/json"
+    },
+    "status": 200,
+    "headers": {
+      "Date": "Sun, 06 Sep 2026 18:03:08 GMT",
+      "Connection": "close",
+      "Content-Type": "application/json",
+      "Content-Length": "80"
+    },
+    "body": "{\n  \"columns\": [\n    \"n\"\n  ],\n  \"rows\": [],\n  \"rowCount\": 0,\n  \"graphCount\": 0\n}",
+    "json": {
+      "columns": [
+        "n"
+      ],
+      "rows": [],
+      "rowCount": 0,
+      "graphCount": 0
+    }
+  },
+  {
+    "name": "cypher-count-empty",
+    "method": "POST",
+    "path": "/api/cypher",
+    "request": {
+      "query": "MATCH (n) RETURN count(n) AS total"
+    },
+    "requestHeaders": {
+      "Content-length": "47",
+      "Host": "localhost:55538",
+      "User-agent": "Python-urllib/3.14",
+      "Content-type": "application/json",
+      "Accept": "application/json"
+    },
+    "status": 200,
+    "headers": {
+      "Date": "Sun, 06 Sep 2026 18:03:08 GMT",
+      "Connection": "close",
+      "Content-Type": "application/json",
+      "Content-Length": "169"
+    },
+    "body": "{\n  \"columns\": [\n    \"total\"\n  ],\n  \"rows\": [\n    {\n      \"total\": 0,\n      \"$metadata\": {\n        \"graphIds\": []\n      }\n    }\n  ],\n  \"rowCount\": 1,\n  \"graphCount\": 0\n}",
+    "json": {
+      "columns": [
+        "total"
+      ],
+      "rows": [
+        {
+          "total": 0,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ],
+      "rowCount": 1,
+      "graphCount": 0
+    }
+  },
+  {
+    "name": "cypher-invalid",
+    "method": "POST",
+    "path": "/api/cypher",
+    "request": {
+      "query": "NOT A VALID QUERY"
+    },
+    "requestHeaders": {
+      "Content-length": "30",
+      "Host": "localhost:55538",
+      "User-agent": "Python-urllib/3.14",
+      "Content-type": "application/json",
+      "Accept": "application/json"
+    },
+    "status": 400,
+    "headers": {
+      "Date": "Sun, 06 Sep 2026 18:03:08 GMT",
+      "Connection": "close",
+      "Content-Type": "application/json",
+      "Content-Length": "336"
+    },
+    "body": "{\n  \"error\": \"Syntax error at position 0: mismatched input \\u0027NOT\\u0027 expecting {\\u0027CREATE\\u0027, \\u0027DELETE\\u0027, \\u0027DETACH\\u0027, \\u0027MATCH\\u0027, \\u0027MERGE\\u0027, \\u0027OPTIONAL\\u0027, \\u0027REMOVE\\u0027, \\u0027RETURN\\u0027, \\u0027SET\\u0027, \\u0027WITH\\u0027, \\u0027UNWIND\\u0027}\",\n  \"code\": \"cypher_query_failed\"\n}",
+    "json": {
+      "error": "Syntax error at position 0: mismatched input 'NOT' expecting {'CREATE', 'DELETE', 'DETACH', 'MATCH', 'MERGE', 'OPTIONAL', 'REMOVE', 'RETURN', 'SET', 'WITH', 'UNWIND'}",
+      "code": "cypher_query_failed"
+    }
+  },
+  {
+    "name": "cypher-write",
+    "method": "POST",
+    "path": "/api/cypher",
+    "request": {
+      "query": "CREATE (n) RETURN n"
+    },
+    "requestHeaders": {
+      "Content-length": "32",
+      "Host": "localhost:55538",
+      "User-agent": "Python-urllib/3.14",
+      "Content-type": "application/json",
+      "Accept": "application/json"
+    },
+    "status": 400,
+    "headers": {
+      "Date": "Sun, 06 Sep 2026 18:03:08 GMT",
+      "Connection": "close",
+      "Content-Type": "application/json",
+      "Content-Length": "129"
+    },
+    "body": "{\n  \"error\": \"An operation is not implemented: CREATE is not supported \u2014 graph is immutable\",\n  \"code\": \"cypher_query_failed\"\n}",
+    "json": {
+      "error": "An operation is not implemented: CREATE is not supported \u2014 graph is immutable",
+      "code": "cypher_query_failed"
+    }
+  },
+  {
+    "name": "cypher-unknown-function",
+    "method": "POST",
+    "path": "/api/cypher",
+    "request": {
+      "query": "RETURN unknown(1)"
+    },
+    "requestHeaders": {
+      "Content-length": "30",
+      "Host": "localhost:55538",
+      "User-agent": "Python-urllib/3.14",
+      "Content-type": "application/json",
+      "Accept": "application/json"
+    },
+    "status": 400,
+    "headers": {
+      "Date": "Sun, 06 Sep 2026 18:03:08 GMT",
+      "Connection": "close",
+      "Content-Type": "application/json",
+      "Content-Length": "75"
+    },
+    "body": "{\n  \"error\": \"Unknown function: unknown\",\n  \"code\": \"cypher_query_failed\"\n}",
+    "json": {
+      "error": "Unknown function: unknown",
+      "code": "cypher_query_failed"
+    }
+  },
+  {
+    "name": "cypher-null-row",
+    "method": "POST",
+    "path": "/api/cypher",
+    "request": {
+      "query": "RETURN null AS nil, [1,null] AS values"
+    },
+    "requestHeaders": {
+      "Content-length": "51",
+      "Host": "localhost:55538",
+      "User-agent": "Python-urllib/3.14",
+      "Content-type": "application/json",
+      "Accept": "application/json"
+    },
+    "status": 200,
+    "headers": {
+      "Date": "Sun, 06 Sep 2026 18:03:08 GMT",
+      "Connection": "close",
+      "Content-Type": "application/json",
+      "Content-Length": "214"
+    },
+    "body": "{\n  \"columns\": [\n    \"nil\",\n    \"values\"\n  ],\n  \"rows\": [\n    {\n      \"values\": [\n        1,\n        null\n      ],\n      \"$metadata\": {\n        \"graphIds\": []\n      }\n    }\n  ],\n  \"rowCount\": 1,\n  \"graphCount\": 0\n}",
+    "json": {
+      "columns": [
+        "nil",
+        "values"
+      ],
+      "rows": [
+        {
+          "values": [
+            1,
+            null
+          ],
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ],
+      "rowCount": 1,
+      "graphCount": 0
+    }
+  },
+  {
+    "name": "cypher-unwind",
+    "method": "POST",
+    "path": "/api/cypher",
+    "request": {
+      "query": "UNWIND [3,1,2] AS n RETURN n ORDER BY n DESC LIMIT 2"
+    },
+    "requestHeaders": {
+      "Content-length": "65",
+      "Host": "localhost:55538",
+      "User-agent": "Python-urllib/3.14",
+      "Content-type": "application/json",
+      "Accept": "application/json"
+    },
+    "status": 200,
+    "headers": {
+      "Date": "Sun, 06 Sep 2026 18:03:08 GMT",
+      "Connection": "close",
+      "Content-Type": "application/json",
+      "Content-Length": "240"
+    },
+    "body": "{\n  \"columns\": [\n    \"n\"\n  ],\n  \"rows\": [\n    {\n      \"n\": 3,\n      \"$metadata\": {\n        \"graphIds\": []\n      }\n    },\n    {\n      \"n\": 2,\n      \"$metadata\": {\n        \"graphIds\": []\n      }\n    }\n  ],\n  \"rowCount\": 2,\n  \"graphCount\": 0\n}",
+    "json": {
+      "columns": [
+        "n"
+      ],
+      "rows": [
+        {
+          "n": 3,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "n": 2,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ],
+      "rowCount": 2,
+      "graphCount": 0
+    }
+  },
+  {
+    "name": "cypher-unknown-timeout-field-ignored",
+    "method": "POST",
+    "path": "/api/cypher",
+    "request": {
+      "query": "RETURN 1",
+      "timeoutMillis": 0
+    },
+    "requestHeaders": {
+      "Content-length": "41",
+      "Host": "localhost:55538",
+      "User-agent": "Python-urllib/3.14",
+      "Content-type": "application/json",
+      "Accept": "application/json"
+    },
+    "status": 200,
+    "headers": {
+      "Date": "Sun, 06 Sep 2026 18:03:08 GMT",
+      "Connection": "close",
+      "Content-Type": "application/json",
+      "Content-Length": "161"
+    },
+    "body": "{\n  \"columns\": [\n    \"1\"\n  ],\n  \"rows\": [\n    {\n      \"1\": 1,\n      \"$metadata\": {\n        \"graphIds\": []\n      }\n    }\n  ],\n  \"rowCount\": 1,\n  \"graphCount\": 0\n}",
+    "json": {
+      "columns": [
+        "1"
+      ],
+      "rows": [
+        {
+          "1": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ],
+      "rowCount": 1,
+      "graphCount": 0
+    }
+  },
+  {
+    "name": "cypher-invalid-timeout",
+    "method": "POST",
+    "path": "/api/cypher",
+    "request": {
+      "query": "RETURN 1",
+      "timeoutMs": 0
+    },
+    "requestHeaders": {
+      "Content-length": "37",
+      "Host": "localhost:55538",
+      "User-agent": "Python-urllib/3.14",
+      "Content-type": "application/json",
+      "Accept": "application/json"
+    },
+    "status": 400,
+    "headers": {
+      "Date": "Sun, 06 Sep 2026 18:03:08 GMT",
+      "Connection": "close",
+      "Content-Type": "application/json",
+      "Content-Length": "98"
+    },
+    "body": "{\n  \"error\": \"\\u0027timeoutMs\\u0027 must be a positive integer\",\n  \"code\": \"cypher_query_failed\"\n}",
+    "json": {
+      "error": "'timeoutMs' must be a positive integer",
+      "code": "cypher_query_failed"
+    }
+  },
+  {
+    "name": "cypher-selected-empty",
+    "method": "POST",
+    "path": "/api/cypher/graphs",
+    "request": {
+      "query": "RETURN 1 AS ok",
+      "allGraphs": true
+    },
+    "requestHeaders": {
+      "Content-length": "46",
+      "Host": "localhost:55538",
+      "User-agent": "Python-urllib/3.14",
+      "Content-type": "application/json",
+      "Accept": "application/json"
+    },
+    "status": 200,
+    "headers": {
+      "Date": "Sun, 06 Sep 2026 18:03:08 GMT",
+      "Connection": "close",
+      "Content-Type": "application/json",
+      "Content-Length": "221"
+    },
+    "body": "{\n  \"mode\": \"cross-graph\",\n  \"graphs\": [],\n  \"graphCount\": 0,\n  \"columns\": [\n    \"ok\"\n  ],\n  \"rows\": [\n    {\n      \"ok\": 1,\n      \"$metadata\": {\n        \"graphIds\": []\n      }\n    }\n  ],\n  \"rowCount\": 1,\n  \"limit\": 1000\n}",
+    "json": {
+      "mode": "cross-graph",
+      "graphs": [],
+      "graphCount": 0,
+      "columns": [
+        "ok"
+      ],
+      "rows": [
+        {
+          "ok": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ],
+      "rowCount": 1,
+      "limit": 1000
+    }
+  },
+  {
+    "name": "cypher-fanout-empty",
+    "method": "POST",
+    "path": "/api/cypher/graphs",
+    "request": {
+      "query": "RETURN 1 AS ok",
+      "allGraphs": true,
+      "mode": "fanout"
+    },
+    "requestHeaders": {
+      "Content-length": "64",
+      "Host": "localhost:55538",
+      "User-agent": "Python-urllib/3.14",
+      "Content-type": "application/json",
+      "Accept": "application/json"
+    },
+    "status": 200,
+    "headers": {
+      "Date": "Sun, 06 Sep 2026 18:03:08 GMT",
+      "Connection": "close",
+      "Content-Type": "application/json",
+      "Content-Length": "209"
+    },
+    "body": "{\n  \"columns\": [\n    \"graphId\"\n  ],\n  \"rows\": [],\n  \"rowCount\": 0,\n  \"graphCount\": 0,\n  \"queriedGraphCount\": 0,\n  \"perGraphLimit\": 0,\n  \"limit\": 1000,\n  \"truncated\": false,\n  \"graphs\": [],\n  \"mode\": \"fanout\"\n}",
+    "json": {
+      "columns": [
+        "graphId"
+      ],
+      "rows": [],
+      "rowCount": 0,
+      "graphCount": 0,
+      "queriedGraphCount": 0,
+      "perGraphLimit": 0,
+      "limit": 1000,
+      "truncated": false,
+      "graphs": [],
+      "mode": "fanout"
+    }
+  },
+  {
+    "name": "cypher-selection-missing",
+    "method": "POST",
+    "path": "/api/cypher/graphs",
+    "request": {
+      "query": "RETURN 1"
+    },
+    "requestHeaders": {
+      "Content-length": "21",
+      "Host": "localhost:55538",
+      "User-agent": "Python-urllib/3.14",
+      "Content-type": "application/json",
+      "Accept": "application/json"
+    },
+    "status": 400,
+    "headers": {
+      "Date": "Sun, 06 Sep 2026 18:03:08 GMT",
+      "Connection": "close",
+      "Content-Type": "application/json",
+      "Content-Length": "143"
+    },
+    "body": "{\n  \"error\": \"Specify exactly one of \\u0027allGraphs\\u003dtrue\\u0027 or a non-empty \\u0027graphs\\u0027 list\",\n  \"code\": \"cypher_query_failed\"\n}",
+    "json": {
+      "error": "Specify exactly one of 'allGraphs=true' or a non-empty 'graphs' list",
+      "code": "cypher_query_failed"
+    }
+  },
+  {
+    "name": "cypher-selection-duplicates",
+    "method": "POST",
+    "path": "/api/cypher/graphs",
+    "request": {
+      "query": "RETURN 1",
+      "graphs": [
+        "a",
+        "a"
+      ]
+    },
+    "requestHeaders": {
+      "Content-length": "43",
+      "Host": "localhost:55538",
+      "User-agent": "Python-urllib/3.14",
+      "Content-type": "application/json",
+      "Accept": "application/json"
+    },
+    "status": 400,
+    "headers": {
+      "Date": "Sun, 06 Sep 2026 18:03:08 GMT",
+      "Connection": "close",
+      "Content-Type": "application/json",
+      "Content-Length": "74"
+    },
+    "body": "{\n  \"error\": \"Graph ids must be unique\",\n  \"code\": \"cypher_query_failed\"\n}",
+    "json": {
+      "error": "Graph ids must be unique",
+      "code": "cypher_query_failed"
+    }
+  },
+  {
+    "name": "cypher-scoped-missing",
+    "method": "POST",
+    "path": "/api/graphs/missing/cypher",
+    "request": {
+      "query": "RETURN 1"
+    },
+    "requestHeaders": {
+      "Content-length": "21",
+      "Host": "localhost:55538",
+      "User-agent": "Python-urllib/3.14",
+      "Content-type": "application/json",
+      "Accept": "application/json"
+    },
+    "status": 404,
+    "headers": {
+      "Date": "Sun, 06 Sep 2026 18:03:08 GMT",
+      "Connection": "close",
+      "Content-Type": "application/json",
+      "Content-Length": "33"
+    },
+    "body": "{\n  \"error\": \"Graph not loaded\"\n}",
+    "json": {
+      "error": "Graph not loaded"
+    }
+  },
+  {
+    "name": "graph-load-missing-path",
+    "method": "PUT",
+    "path": "/api/graphs/test",
+    "request": {},
+    "requestHeaders": {
+      "Content-length": "2",
+      "Host": "localhost:55538",
+      "User-agent": "Python-urllib/3.14",
+      "Content-type": "application/json",
+      "Accept": "application/json"
+    },
+    "status": 400,
+    "headers": {
+      "Date": "Sun, 06 Sep 2026 18:03:08 GMT",
+      "Connection": "close",
+      "Content-Type": "application/json",
+      "Content-Length": "47"
+    },
+    "body": "{\n  \"error\": \"Missing \\u0027path\\u0027 field\"\n}",
+    "json": {
+      "error": "Missing 'path' field"
+    }
+  },
+  {
+    "name": "graph-delete-missing",
+    "method": "DELETE",
+    "path": "/api/graphs/missing",
+    "request": null,
+    "requestHeaders": {
+      "Host": "localhost:55538",
+      "User-agent": "Python-urllib/3.14",
+      "Content-type": "application/json",
+      "Accept": "application/json"
+    },
+    "status": 404,
+    "headers": {
+      "Date": "Sun, 06 Sep 2026 18:03:08 GMT",
+      "Connection": "close",
+      "Content-Type": "application/json",
+      "Content-Length": "42"
+    },
+    "body": "{\n  \"error\": \"Graph not loaded: missing\"\n}",
+    "json": {
+      "error": "Graph not loaded: missing"
+    }
+  }
+]

@@ -1,0 +1,111 @@
+{
+  "purpose": "Correctness-only HTTP differential; no performance evidence",
+  "manifest": "graphite-server/scripts/tika-real-cases.json",
+  "manifestSha256": "0fe2f88429086bd5cb71095706b4cd1e8fb74e4c03bd74d34fd0489d2f05afb6",
+  "baselineUrl": "http://localhost:18851",
+  "candidateUrl": "http://localhost:18852",
+  "cases": 21,
+  "mismatches": [
+    {
+      "name": "node-FloatConstant",
+      "baseline": {
+        "status": 500,
+        "value": {
+          "title": "Server Error",
+          "status": 500,
+          "type": "https://javalin.io/documentation#internalservererrorresponse",
+          "details": {}
+        }
+      },
+      "candidate": {
+        "status": 500,
+        "value": "json: unsupported value: NaN\n"
+      }
+    },
+    {
+      "name": "node-DoubleConstant",
+      "baseline": {
+        "status": 200,
+        "value": {
+          "type": "DoubleConstant",
+          "id": 6106695,
+          "value": 9.223372036854776e+18,
+          "label": "9.223372036854776E18d"
+        }
+      },
+      "candidate": {
+        "status": 200,
+        "value": {
+          "id": 6106695,
+          "label": "9.223372036854776e+18d",
+          "type": "DoubleConstant",
+          "value": 9223372036854776000
+        }
+      }
+    },
+    {
+      "name": "node-ResourceFile",
+      "baseline": {
+        "status": 200,
+        "value": {
+          "type": "ResourceFileNode",
+          "id": 6041227,
+          "path": "InternetCodepages.txt",
+          "source": "shard-00.jar",
+          "format": "text",
+          "label": "InternetCodepages.txt"
+        }
+      },
+      "candidate": {
+        "status": 200,
+        "value": {
+          "format": "text",
+          "id": 6041227,
+          "label": "InternetCodepages.txt",
+          "path": "InternetCodepages.txt",
+          "profile": null,
+          "source": "shard-00.jar",
+          "type": "ResourceFileNode"
+        }
+      }
+    }
+  ],
+  "headerDifferences": [
+    {
+      "case": "node-FloatConstant",
+      "header": "Content-Type",
+      "baseline": "application/json",
+      "candidate": "text/plain; charset=utf-8"
+    },
+    {
+      "case": "node-missing",
+      "header": "Content-Type",
+      "baseline": "text/plain",
+      "candidate": "text/plain; charset=utf-8"
+    },
+    {
+      "case": "node-negative",
+      "header": "Content-Type",
+      "baseline": "text/plain",
+      "candidate": "text/plain; charset=utf-8"
+    },
+    {
+      "case": "node-invalid",
+      "header": "Content-Type",
+      "baseline": "text/plain",
+      "candidate": "text/plain; charset=utf-8"
+    },
+    {
+      "case": "node-overflow",
+      "header": "Content-Type",
+      "baseline": "text/plain",
+      "candidate": "text/plain; charset=utf-8"
+    },
+    {
+      "case": "annotations-missing-member",
+      "header": "Content-Type",
+      "baseline": "text/plain",
+      "candidate": "text/plain; charset=utf-8"
+    }
+  ]
+}

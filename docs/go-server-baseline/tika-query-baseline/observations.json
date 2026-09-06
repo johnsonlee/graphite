@@ -1,0 +1,873 @@
+[
+  {
+    "case": {
+      "name": "graphs",
+      "method": "GET",
+      "path": "/api/graphs",
+      "dynamicPointers": [
+        "/data",
+        "/graphs/0/path",
+        "/graphs/0/loadedAt"
+      ]
+    },
+    "baseline": {
+      "status": 200,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "486"
+      },
+      "body": "{\n  \"data\": \"/tmp/graphite-go-http-diff-real/baseline\",\n  \"loadMode\": \"MAPPED\",\n  \"count\": 1,\n  \"totals\": {\n    \"nodes\": 222589,\n    \"edges\": 235360,\n    \"methods\": 17584,\n    \"callSites\": 55707\n  },\n  \"graphs\": [\n    {\n      \"id\": \"tika\",\n      \"path\": \"/tmp/graphite-go-http-diff-real/baseline/tika\",\n      \"loadMode\": \"MAPPED\",\n      \"loadedAt\": \"2026-09-06T18:04:41.868040Z\",\n      \"nodes\": 222589,\n      \"edges\": 235360,\n      \"methods\": 17584,\n      \"callSites\": 55707\n    }\n  ]\n}",
+      "json": {
+        "data": "/tmp/graphite-go-http-diff-real/baseline",
+        "loadMode": "MAPPED",
+        "count": 1,
+        "totals": {
+          "nodes": 222589,
+          "edges": 235360,
+          "methods": 17584,
+          "callSites": 55707
+        },
+        "graphs": [
+          {
+            "id": "tika",
+            "path": "/tmp/graphite-go-http-diff-real/baseline/tika",
+            "loadMode": "MAPPED",
+            "loadedAt": "2026-09-06T18:04:41.868040Z",
+            "nodes": 222589,
+            "edges": 235360,
+            "methods": 17584,
+            "callSites": 55707
+          }
+        ]
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "descriptor",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}",
+      "dynamicPointers": [
+        "/graph/path",
+        "/graph/loadedAt"
+      ]
+    },
+    "baseline": {
+      "status": 200,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "259"
+      },
+      "body": "{\n  \"graph\": {\n    \"id\": \"tika\",\n    \"path\": \"/tmp/graphite-go-http-diff-real/baseline/tika\",\n    \"loadMode\": \"MAPPED\",\n    \"loadedAt\": \"2026-09-06T18:04:41.868040Z\",\n    \"nodes\": 222589,\n    \"edges\": 235360,\n    \"methods\": 17584,\n    \"callSites\": 55707\n  }\n}",
+      "json": {
+        "graph": {
+          "id": "tika",
+          "path": "/tmp/graphite-go-http-diff-real/baseline/tika",
+          "loadMode": "MAPPED",
+          "loadedAt": "2026-09-06T18:04:41.868040Z",
+          "nodes": 222589,
+          "edges": 235360,
+          "methods": 17584,
+          "callSites": 55707
+        }
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "node-CallSite",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/6041281"
+    },
+    "baseline": {
+      "status": 200,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "219"
+      },
+      "body": "{\n  \"type\": \"CallSiteNode\",\n  \"id\": 6041281,\n  \"caller\": \"org.xml.sax.SAXNotSupportedException.\\u003cinit\\u003e()\",\n  \"callee\": \"org.xml.sax.SAXException.\\u003cinit\\u003e()\",\n  \"label\": \"SAXException.\\u003cinit\\u003e\"\n}",
+      "json": {
+        "type": "CallSiteNode",
+        "id": 6041281,
+        "caller": "org.xml.sax.SAXNotSupportedException.<init>()",
+        "callee": "org.xml.sax.SAXException.<init>()",
+        "label": "SAXException.<init>"
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "node-IntConstant",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/6041652"
+    },
+    "baseline": {
+      "status": 200,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "74"
+      },
+      "body": "{\n  \"type\": \"IntConstant\",\n  \"id\": 6041652,\n  \"value\": 0,\n  \"label\": \"0\"\n}",
+      "json": {
+        "type": "IntConstant",
+        "id": 6041652,
+        "value": 0,
+        "label": "0"
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "node-StringConstant",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/6041799"
+    },
+    "baseline": {
+      "status": 200,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "149"
+      },
+      "body": "{\n  \"type\": \"StringConstant\",\n  \"id\": 6041799,\n  \"value\": \"http://www.w3.org/2000/09/xmldsig#\",\n  \"label\": \"\\\"http://www.w3.org/2000/09/xmldsig#\\\"\"\n}",
+      "json": {
+        "type": "StringConstant",
+        "id": 6041799,
+        "value": "http://www.w3.org/2000/09/xmldsig#",
+        "label": "\"http://www.w3.org/2000/09/xmldsig#\""
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "node-LongConstant",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/6042612"
+    },
+    "baseline": {
+      "status": 200,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "78"
+      },
+      "body": "{\n  \"type\": \"LongConstant\",\n  \"id\": 6042612,\n  \"value\": 33,\n  \"label\": \"33L\"\n}",
+      "json": {
+        "type": "LongConstant",
+        "id": 6042612,
+        "value": 33,
+        "label": "33L"
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "node-FloatConstant",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/6122734"
+    },
+    "baseline": {
+      "status": 500,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "145"
+      },
+      "body": "{\n    \"title\": \"Server Error\",\n    \"status\": 500,\n    \"type\": \"https://javalin.io/documentation#internalservererrorresponse\",\n    \"details\": {}\n}",
+      "json": {
+        "title": "Server Error",
+        "status": 500,
+        "type": "https://javalin.io/documentation#internalservererrorresponse",
+        "details": {}
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "node-DoubleConstant",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/6106695"
+    },
+    "baseline": {
+      "status": 200,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "116"
+      },
+      "body": "{\n  \"type\": \"DoubleConstant\",\n  \"id\": 6106695,\n  \"value\": 9.223372036854776E18,\n  \"label\": \"9.223372036854776E18d\"\n}",
+      "json": {
+        "type": "DoubleConstant",
+        "id": 6106695,
+        "value": 9.223372036854776e+18,
+        "label": "9.223372036854776E18d"
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "node-NullConstant",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/6041645"
+    },
+    "baseline": {
+      "status": 200,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "64"
+      },
+      "body": "{\n  \"type\": \"NullConstant\",\n  \"id\": 6041645,\n  \"label\": \"null\"\n}",
+      "json": {
+        "type": "NullConstant",
+        "id": 6041645,
+        "label": "null"
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "node-Field",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/6041287"
+    },
+    "baseline": {
+      "status": 200,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "202"
+      },
+      "body": "{\n  \"type\": \"FieldNode\",\n  \"id\": 6041287,\n  \"class\": \"org.xml.sax.SAXNotSupportedException\",\n  \"name\": \"serialVersionUID\",\n  \"fieldType\": \"long\",\n  \"label\": \"SAXNotSupportedException.serialVersionUID\"\n}",
+      "json": {
+        "type": "FieldNode",
+        "id": 6041287,
+        "class": "org.xml.sax.SAXNotSupportedException",
+        "name": "serialVersionUID",
+        "fieldType": "long",
+        "label": "SAXNotSupportedException.serialVersionUID"
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "node-Parameter",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/6041283"
+    },
+    "baseline": {
+      "status": 200,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "204"
+      },
+      "body": "{\n  \"type\": \"ParameterNode\",\n  \"id\": 6041283,\n  \"index\": 0,\n  \"paramType\": \"java.lang.String\",\n  \"method\": \"org.xml.sax.SAXNotSupportedException.\\u003cinit\\u003e(java.lang.String)\",\n  \"label\": \"param#0\"\n}",
+      "json": {
+        "type": "ParameterNode",
+        "id": 6041283,
+        "index": 0,
+        "paramType": "java.lang.String",
+        "method": "org.xml.sax.SAXNotSupportedException.<init>(java.lang.String)",
+        "label": "param#0"
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "node-Return",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/6041259"
+    },
+    "baseline": {
+      "status": 200,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "123"
+      },
+      "body": "{\n  \"type\": \"ReturnNode\",\n  \"id\": 6041259,\n  \"method\": \"org.xml.sax.ext.Attributes2.isDeclared(int)\",\n  \"label\": \"return\"\n}",
+      "json": {
+        "type": "ReturnNode",
+        "id": 6041259,
+        "method": "org.xml.sax.ext.Attributes2.isDeclared(int)",
+        "label": "return"
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "node-LocalVariable",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/6041280"
+    },
+    "baseline": {
+      "status": 200,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "207"
+      },
+      "body": "{\n  \"type\": \"LocalVariable\",\n  \"id\": 6041280,\n  \"name\": \"this\",\n  \"varType\": \"org.xml.sax.SAXNotSupportedException\",\n  \"method\": \"org.xml.sax.SAXNotSupportedException.\\u003cinit\\u003e()\",\n  \"label\": \"this\"\n}",
+      "json": {
+        "type": "LocalVariable",
+        "id": 6041280,
+        "name": "this",
+        "varType": "org.xml.sax.SAXNotSupportedException",
+        "method": "org.xml.sax.SAXNotSupportedException.<init>()",
+        "label": "this"
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "node-ResourceFile",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/6041227"
+    },
+    "baseline": {
+      "status": 200,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "168"
+      },
+      "body": "{\n  \"type\": \"ResourceFileNode\",\n  \"id\": 6041227,\n  \"path\": \"InternetCodepages.txt\",\n  \"source\": \"shard-00.jar\",\n  \"format\": \"text\",\n  \"label\": \"InternetCodepages.txt\"\n}",
+      "json": {
+        "type": "ResourceFileNode",
+        "id": 6041227,
+        "path": "InternetCodepages.txt",
+        "source": "shard-00.jar",
+        "format": "text",
+        "label": "InternetCodepages.txt"
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "node-missing",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/0"
+    },
+    "baseline": {
+      "status": 404,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "text/plain",
+        "Content-Length": "14"
+      },
+      "body": "Node not found"
+    }
+  },
+  {
+    "case": {
+      "name": "node-negative",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/-1"
+    },
+    "baseline": {
+      "status": 404,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "text/plain",
+        "Content-Length": "14"
+      },
+      "body": "Node not found"
+    }
+  },
+  {
+    "case": {
+      "name": "node-invalid",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/abc"
+    },
+    "baseline": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "text/plain",
+        "Content-Length": "15"
+      },
+      "body": "Invalid node ID"
+    }
+  },
+  {
+    "case": {
+      "name": "node-overflow",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/2147483648"
+    },
+    "baseline": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "text/plain",
+        "Content-Length": "15"
+      },
+      "body": "Invalid node ID"
+    }
+  },
+  {
+    "case": {
+      "name": "annotations-missing-member",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/annotations?class=org.apache.tika.Tika"
+    },
+    "baseline": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "text/plain",
+        "Content-Length": "26"
+      },
+      "body": "Missing 'member' parameter"
+    }
+  },
+  {
+    "case": {
+      "name": "annotations-unknown",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/annotations?class=absent.Class&member=absent"
+    },
+    "baseline": {
+      "status": 200,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "2"
+      },
+      "body": "{}",
+      "json": {}
+    }
+  },
+  {
+    "case": {
+      "name": "annotations-root-unknown",
+      "method": "GET",
+      "path": "/api/annotations?class=absent.Class&member=absent"
+    },
+    "baseline": {
+      "status": 200,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "120"
+      },
+      "body": "{\n  \"graphCount\": 1,\n  \"resultGraphCount\": 1,\n  \"results\": [\n    {\n      \"graphId\": \"tika\",\n      \"data\": {}\n    }\n  ]\n}",
+      "json": {
+        "graphCount": 1,
+        "resultGraphCount": 1,
+        "results": [
+          {
+            "graphId": "tika",
+            "data": {}
+          }
+        ]
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "query-literal",
+      "method": "POST",
+      "path": "/api/graphs/{graphId}/cypher",
+      "body": {
+        "query": "RETURN 1 AS ok"
+      },
+      "phase": "query"
+    },
+    "baseline": {
+      "status": 200,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "91"
+      },
+      "body": "{\n  \"columns\": [\n    \"ok\"\n  ],\n  \"rows\": [\n    {\n      \"ok\": 1\n    }\n  ],\n  \"rowCount\": 1\n}",
+      "json": {
+        "columns": [
+          "ok"
+        ],
+        "rows": [
+          {
+            "ok": 1
+          }
+        ],
+        "rowCount": 1
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "query-null",
+      "method": "POST",
+      "path": "/api/graphs/{graphId}/cypher",
+      "body": {
+        "query": "RETURN null AS nil, [1,null] AS values"
+      },
+      "phase": "query"
+    },
+    "baseline": {
+      "status": 200,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "142"
+      },
+      "body": "{\n  \"columns\": [\n    \"nil\",\n    \"values\"\n  ],\n  \"rows\": [\n    {\n      \"values\": [\n        1,\n        null\n      ]\n    }\n  ],\n  \"rowCount\": 1\n}",
+      "json": {
+        "columns": [
+          "nil",
+          "values"
+        ],
+        "rows": [
+          {
+            "values": [
+              1,
+              null
+            ]
+          }
+        ],
+        "rowCount": 1
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "query-unwind",
+      "method": "POST",
+      "path": "/api/graphs/{graphId}/cypher",
+      "body": {
+        "query": "UNWIND [3,1,2] AS n RETURN n ORDER BY n DESC LIMIT 2"
+      },
+      "phase": "query"
+    },
+    "baseline": {
+      "status": 200,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "115"
+      },
+      "body": "{\n  \"columns\": [\n    \"n\"\n  ],\n  \"rows\": [\n    {\n      \"n\": 3\n    },\n    {\n      \"n\": 2\n    }\n  ],\n  \"rowCount\": 2\n}",
+      "json": {
+        "columns": [
+          "n"
+        ],
+        "rows": [
+          {
+            "n": 3
+          },
+          {
+            "n": 2
+          }
+        ],
+        "rowCount": 2
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "query-string-value",
+      "method": "POST",
+      "path": "/api/graphs/{graphId}/cypher",
+      "body": {
+        "query": "MATCH (n:StringConstant) RETURN n.id AS id,n.value AS value LIMIT 5"
+      },
+      "phase": "query"
+    },
+    "baseline": {
+      "status": 200,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "423"
+      },
+      "body": "{\n  \"columns\": [\n    \"id\",\n    \"value\"\n  ],\n  \"rows\": [\n    {\n      \"id\": 6041799,\n      \"value\": \"http://www.w3.org/2000/09/xmldsig#\"\n    },\n    {\n      \"id\": 6041800,\n      \"value\": \"X509IssuerName\"\n    },\n    {\n      \"id\": 6041803,\n      \"value\": \"X509SerialNumber\"\n    },\n    {\n      \"id\": 6042302,\n      \"value\": \"Transforms\"\n    },\n    {\n      \"id\": 6042305,\n      \"value\": \"DigestMethod\"\n    }\n  ],\n  \"rowCount\": 5\n}",
+      "json": {
+        "columns": [
+          "id",
+          "value"
+        ],
+        "rows": [
+          {
+            "id": 6041799,
+            "value": "http://www.w3.org/2000/09/xmldsig#"
+          },
+          {
+            "id": 6041800,
+            "value": "X509IssuerName"
+          },
+          {
+            "id": 6041803,
+            "value": "X509SerialNumber"
+          },
+          {
+            "id": 6042302,
+            "value": "Transforms"
+          },
+          {
+            "id": 6042305,
+            "value": "DigestMethod"
+          }
+        ],
+        "rowCount": 5
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "query-callsite-properties",
+      "method": "POST",
+      "path": "/api/graphs/{graphId}/cypher",
+      "body": {
+        "query": "MATCH (n:CallSite) RETURN n.id AS id,n.callee_class AS class,n.callee_name AS name LIMIT 5"
+      },
+      "phase": "query"
+    },
+    "baseline": {
+      "status": 200,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "717"
+      },
+      "body": "{\n  \"columns\": [\n    \"id\",\n    \"class\",\n    \"name\"\n  ],\n  \"rows\": [\n    {\n      \"id\": 6041281,\n      \"class\": \"org.xml.sax.SAXException\",\n      \"name\": \"\\u003cinit\\u003e\"\n    },\n    {\n      \"id\": 6041286,\n      \"class\": \"org.xml.sax.SAXException\",\n      \"name\": \"\\u003cinit\\u003e\"\n    },\n    {\n      \"id\": 6041638,\n      \"class\": \"org.apache.xmlbeans.impl.values.XmlComplexContentImpl\",\n      \"name\": \"\\u003cinit\\u003e\"\n    },\n    {\n      \"id\": 6041642,\n      \"class\": \"org.w3.x2000.x09.xmldsig.impl.X509IssuerSerialTypeImpl\",\n      \"name\": \"monitor\"\n    },\n    {\n      \"id\": 6041643,\n      \"class\": \"org.w3.x2000.x09.xmldsig.impl.X509IssuerSerialTypeImpl\",\n      \"name\": \"check_orphaned\"\n    }\n  ],\n  \"rowCount\": 5\n}",
+      "json": {
+        "columns": [
+          "id",
+          "class",
+          "name"
+        ],
+        "rows": [
+          {
+            "id": 6041281,
+            "class": "org.xml.sax.SAXException",
+            "name": "<init>"
+          },
+          {
+            "id": 6041286,
+            "class": "org.xml.sax.SAXException",
+            "name": "<init>"
+          },
+          {
+            "id": 6041638,
+            "class": "org.apache.xmlbeans.impl.values.XmlComplexContentImpl",
+            "name": "<init>"
+          },
+          {
+            "id": 6041642,
+            "class": "org.w3.x2000.x09.xmldsig.impl.X509IssuerSerialTypeImpl",
+            "name": "monitor"
+          },
+          {
+            "id": 6041643,
+            "class": "org.w3.x2000.x09.xmldsig.impl.X509IssuerSerialTypeImpl",
+            "name": "check_orphaned"
+          }
+        ],
+        "rowCount": 5
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "query-method",
+      "method": "POST",
+      "path": "/api/graphs/{graphId}/cypher",
+      "body": {
+        "query": "MATCH (m:Method) RETURN m.signature AS signature,m.name AS name LIMIT 5"
+      },
+      "phase": "query"
+    },
+    "baseline": {
+      "status": 200,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "690"
+      },
+      "body": "{\n  \"columns\": [\n    \"signature\",\n    \"name\"\n  ],\n  \"rows\": [\n    {\n      \"signature\": \"org.xml.sax.ext.Attributes2.isDeclared(int)\",\n      \"name\": \"isDeclared\"\n    },\n    {\n      \"signature\": \"org.xml.sax.ext.Attributes2.isDeclared(java.lang.String)\",\n      \"name\": \"isDeclared\"\n    },\n    {\n      \"signature\": \"org.xml.sax.ext.Attributes2.isDeclared(java.lang.String,java.lang.String)\",\n      \"name\": \"isDeclared\"\n    },\n    {\n      \"signature\": \"org.xml.sax.ext.Attributes2.isSpecified(int)\",\n      \"name\": \"isSpecified\"\n    },\n    {\n      \"signature\": \"org.xml.sax.ext.Attributes2.isSpecified(java.lang.String,java.lang.String)\",\n      \"name\": \"isSpecified\"\n    }\n  ],\n  \"rowCount\": 5\n}",
+      "json": {
+        "columns": [
+          "signature",
+          "name"
+        ],
+        "rows": [
+          {
+            "signature": "org.xml.sax.ext.Attributes2.isDeclared(int)",
+            "name": "isDeclared"
+          },
+          {
+            "signature": "org.xml.sax.ext.Attributes2.isDeclared(java.lang.String)",
+            "name": "isDeclared"
+          },
+          {
+            "signature": "org.xml.sax.ext.Attributes2.isDeclared(java.lang.String,java.lang.String)",
+            "name": "isDeclared"
+          },
+          {
+            "signature": "org.xml.sax.ext.Attributes2.isSpecified(int)",
+            "name": "isSpecified"
+          },
+          {
+            "signature": "org.xml.sax.ext.Attributes2.isSpecified(java.lang.String,java.lang.String)",
+            "name": "isSpecified"
+          }
+        ],
+        "rowCount": 5
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "query-count",
+      "method": "POST",
+      "path": "/api/graphs/{graphId}/cypher",
+      "body": {
+        "query": "MATCH (n:StringConstant) RETURN count(n) AS count"
+      },
+      "phase": "query"
+    },
+    "baseline": {
+      "status": 200,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "100"
+      },
+      "body": "{\n  \"columns\": [\n    \"count\"\n  ],\n  \"rows\": [\n    {\n      \"count\": 5197\n    }\n  ],\n  \"rowCount\": 1\n}",
+      "json": {
+        "columns": [
+          "count"
+        ],
+        "rows": [
+          {
+            "count": 5197
+          }
+        ],
+        "rowCount": 1
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "query-contains",
+      "method": "POST",
+      "path": "/api/graphs/{graphId}/cypher",
+      "body": {
+        "query": "MATCH (n:StringConstant) WHERE n.value CONTAINS 'http' RETURN n.value AS value LIMIT 5"
+      },
+      "phase": "query"
+    },
+    "baseline": {
+      "status": 200,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "498"
+      },
+      "body": "{\n  \"columns\": [\n    \"value\"\n  ],\n  \"rows\": [\n    {\n      \"value\": \"http://www.w3.org/2000/09/xmldsig#\"\n    },\n    {\n      \"value\": \"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"\n    },\n    {\n      \"value\": \"http://schemas.openxmlformats.org/officeDocument/2006/math\"\n    },\n    {\n      \"value\": \"http://schemas.openxmlformats.org/spreadsheetml/2006/main\"\n    },\n    {\n      \"value\": \"http://schemas.openxmlformats.org/officeDocument/2006/relationships\"\n    }\n  ],\n  \"rowCount\": 5\n}",
+      "json": {
+        "columns": [
+          "value"
+        ],
+        "rows": [
+          {
+            "value": "http://www.w3.org/2000/09/xmldsig#"
+          },
+          {
+            "value": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+          },
+          {
+            "value": "http://schemas.openxmlformats.org/officeDocument/2006/math"
+          },
+          {
+            "value": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+          },
+          {
+            "value": "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+          }
+        ],
+        "rowCount": 5
+      }
+    }
+  },
+  {
+    "case": {
+      "name": "query-lower-or-distinct",
+      "method": "POST",
+      "path": "/api/graphs/{graphId}/cypher",
+      "body": {
+        "query": "MATCH (n:StringConstant) WHERE toLower(n.value) CONTAINS 'http' OR toLower(n.value) CONTAINS 'xml' RETURN DISTINCT n.value AS value LIMIT 5"
+      },
+      "phase": "query"
+    },
+    "baseline": {
+      "status": 200,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "367"
+      },
+      "body": "{\n  \"columns\": [\n    \"value\"\n  ],\n  \"rows\": [\n    {\n      \"value\": \"http://www.w3.org/2000/09/xmldsig#\"\n    },\n    {\n      \"value\": \"http://schemas.openxmlformats.org/wordprocessingml/2006/main\"\n    },\n    {\n      \"value\": \"customXml\"\n    },\n    {\n      \"value\": \"customXmlInsRangeStart\"\n    },\n    {\n      \"value\": \"customXmlInsRangeEnd\"\n    }\n  ],\n  \"rowCount\": 5\n}",
+      "json": {
+        "columns": [
+          "value"
+        ],
+        "rows": [
+          {
+            "value": "http://www.w3.org/2000/09/xmldsig#"
+          },
+          {
+            "value": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+          },
+          {
+            "value": "customXml"
+          },
+          {
+            "value": "customXmlInsRangeStart"
+          },
+          {
+            "value": "customXmlInsRangeEnd"
+          }
+        ],
+        "rowCount": 5
+      }
+    }
+  }
+]

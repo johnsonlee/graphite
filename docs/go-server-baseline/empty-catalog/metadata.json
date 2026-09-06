@@ -1,0 +1,17 @@
+{
+  "revision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "jar": "/private/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+  "jarSha256": "91c3a1d154ca96004c55df195d9f752e077cab3e33ca1570b2c88b872d9bc34d",
+  "javaVersion": "openjdk version \"17.0.18\" 2026-01-20\nOpenJDK Runtime Environment Homebrew (build 17.0.18+0)\nOpenJDK 64-Bit Server VM Homebrew (build 17.0.18+0, mixed mode, sharing)\n",
+  "command": [
+    "java",
+    "-jar",
+    "/private/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+    "--data",
+    "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-go-empty-baseline-s9m4ujtz",
+    "--port",
+    "55538"
+  ],
+  "cases": 40,
+  "purpose": "Correctness-only empty-catalog HTTP baseline; no performance claims"
+}

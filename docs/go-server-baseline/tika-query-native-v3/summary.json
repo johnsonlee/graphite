@@ -1,0 +1,10 @@
+{
+  "purpose": "Correctness-only HTTP differential; no performance evidence",
+  "manifest": "graphite-server/scripts/tika-real-cases.json",
+  "manifestSha256": "0fe2f88429086bd5cb71095706b4cd1e8fb74e4c03bd74d34fd0489d2f05afb6",
+  "baselineUrl": "http://localhost:18851",
+  "candidateUrl": "http://localhost:18852",
+  "cases": 30,
+  "mismatches": [],
+  "headerDifferences": []
+}

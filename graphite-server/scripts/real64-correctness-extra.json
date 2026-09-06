@@ -1,0 +1,47 @@
+{
+  "graphId": "",
+  "graphCount": 64,
+  "purpose": "Correctness-only cross-graph provenance and reserved-alias cases; excluded from performance workload",
+  "cases": [
+    {
+      "name": "anonymous-distinct-constant",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (:IntConstant) RETURN DISTINCT 1 AS one LIMIT 1"
+      }
+    },
+    {
+      "name": "literal-metadata-alias",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "RETURN 1 AS `$metadata`"
+      }
+    },
+    {
+      "name": "node-metadata-alias",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (n:IntConstant) RETURN 1 AS `$metadata` LIMIT 1"
+      }
+    },
+    {
+      "name": "anonymous-constant",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "MATCH (:IntConstant) RETURN 1 AS one LIMIT 1"
+      }
+    },
+    {
+      "name": "root-null",
+      "method": "POST",
+      "path": "/api/cypher",
+      "body": {
+        "query": "RETURN null AS nil, [1,null] AS values"
+      }
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "passed": 42,
+  "manifestCases": 42,
+  "completeManifestCompared": true,
+  "bodyStatusMismatches": 0,
+  "headerDifferences": 0,
+  "finishedAtUnixSeconds": 1788720457.1474013,
+  "approximateWallSeconds": 904.5923702716827,
+  "wallTimePrecision": "ps elapsed-time rounds to seconds; derived total duration is approximate within~1second",
+  "purpose": "Correctness only; wall time is not a performance comparison",
+  "dedicatedServersStopped": {
+    "mainPid": 25444,
+    "nativePid": 25446,
+    "mainExitCode": 143,
+    "nativeExitCode": 0
+  },
+  "separateProvenanceCases": {
+    "cases": 5,
+    "pass": 3,
+    "mismatch": 2,
+    "reason": "anonymous MATCH graphIds provenance in frozen binary; current source corrected but not tested here"
+  }
+}

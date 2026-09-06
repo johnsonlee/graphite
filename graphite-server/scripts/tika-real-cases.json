@@ -1,0 +1,202 @@
+{
+  "graphId": "tika",
+  "fixture": "/tmp/pr113-exp037-fixture.nXn4fg/fixture-tika-00",
+  "purpose": "Correctness only; IDs independently selected through JVM MATCH by label",
+  "cases": [
+    {
+      "name": "graphs",
+      "method": "GET",
+      "path": "/api/graphs",
+      "dynamicPointers": [
+        "/data",
+        "/graphs/0/path",
+        "/graphs/0/loadedAt"
+      ]
+    },
+    {
+      "name": "descriptor",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}",
+      "dynamicPointers": [
+        "/graph/path",
+        "/graph/loadedAt"
+      ]
+    },
+    {
+      "name": "node-CallSite",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/6041281"
+    },
+    {
+      "name": "node-IntConstant",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/6041652"
+    },
+    {
+      "name": "node-StringConstant",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/6041799"
+    },
+    {
+      "name": "node-LongConstant",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/6042612"
+    },
+    {
+      "name": "node-FloatConstant",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/6122734"
+    },
+    {
+      "name": "node-DoubleConstant",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/6106695"
+    },
+    {
+      "name": "node-NullConstant",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/6041645"
+    },
+    {
+      "name": "node-Field",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/6041287"
+    },
+    {
+      "name": "node-Parameter",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/6041283"
+    },
+    {
+      "name": "node-Return",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/6041259"
+    },
+    {
+      "name": "node-LocalVariable",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/6041280"
+    },
+    {
+      "name": "node-ResourceFile",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/6041227"
+    },
+    {
+      "name": "node-missing",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/0"
+    },
+    {
+      "name": "node-negative",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/-1"
+    },
+    {
+      "name": "node-invalid",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/abc"
+    },
+    {
+      "name": "node-overflow",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/2147483648"
+    },
+    {
+      "name": "annotations-missing-member",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/annotations?class=org.apache.tika.Tika"
+    },
+    {
+      "name": "annotations-unknown",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/annotations?class=absent.Class&member=absent"
+    },
+    {
+      "name": "annotations-root-unknown",
+      "method": "GET",
+      "path": "/api/annotations?class=absent.Class&member=absent"
+    },
+    {
+      "name": "query-literal",
+      "method": "POST",
+      "path": "/api/graphs/{graphId}/cypher",
+      "body": {
+        "query": "RETURN 1 AS ok"
+      },
+      "phase": "query"
+    },
+    {
+      "name": "query-null",
+      "method": "POST",
+      "path": "/api/graphs/{graphId}/cypher",
+      "body": {
+        "query": "RETURN null AS nil, [1,null] AS values"
+      },
+      "phase": "query"
+    },
+    {
+      "name": "query-unwind",
+      "method": "POST",
+      "path": "/api/graphs/{graphId}/cypher",
+      "body": {
+        "query": "UNWIND [3,1,2] AS n RETURN n ORDER BY n DESC LIMIT 2"
+      },
+      "phase": "query"
+    },
+    {
+      "name": "query-string-value",
+      "method": "POST",
+      "path": "/api/graphs/{graphId}/cypher",
+      "body": {
+        "query": "MATCH (n:StringConstant) RETURN n.id AS id,n.value AS value LIMIT 5"
+      },
+      "phase": "query"
+    },
+    {
+      "name": "query-callsite-properties",
+      "method": "POST",
+      "path": "/api/graphs/{graphId}/cypher",
+      "body": {
+        "query": "MATCH (n:CallSite) RETURN n.id AS id,n.callee_class AS class,n.callee_name AS name LIMIT 5"
+      },
+      "phase": "query"
+    },
+    {
+      "name": "query-method",
+      "method": "POST",
+      "path": "/api/graphs/{graphId}/cypher",
+      "body": {
+        "query": "MATCH (m:Method) RETURN m.signature AS signature,m.name AS name LIMIT 5"
+      },
+      "phase": "query"
+    },
+    {
+      "name": "query-count",
+      "method": "POST",
+      "path": "/api/graphs/{graphId}/cypher",
+      "body": {
+        "query": "MATCH (n:StringConstant) RETURN count(n) AS count"
+      },
+      "phase": "query"
+    },
+    {
+      "name": "query-contains",
+      "method": "POST",
+      "path": "/api/graphs/{graphId}/cypher",
+      "body": {
+        "query": "MATCH (n:StringConstant) WHERE n.value CONTAINS 'http' RETURN n.value AS value LIMIT 5"
+      },
+      "phase": "query"
+    },
+    {
+      "name": "query-lower-or-distinct",
+      "method": "POST",
+      "path": "/api/graphs/{graphId}/cypher",
+      "body": {
+        "query": "MATCH (n:StringConstant) WHERE toLower(n.value) CONTAINS 'http' OR toLower(n.value) CONTAINS 'xml' RETURN DISTINCT n.value AS value LIMIT 5"
+      },
+      "phase": "query"
+    }
+  ]
+}

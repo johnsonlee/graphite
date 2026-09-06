@@ -1,0 +1,14 @@
+{
+  "baselineRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "baselineArtifactSha256": "91c3a1d154ca96004c55df195d9f752e077cab3e33ca1570b2c88b872d9bc34d",
+  "candidateArtifact": "/tmp/graphite-server-native-initial",
+  "candidateArtifactSha256": "1e6d7f769c5b9ca7180d92bab7713028afd9a27c03d53e72943cb81da51830b8",
+  "candidateSourceManifest": "docs/go-server-baseline/native-initial-snapshot/manifest.json",
+  "candidateSourceArchive": "/tmp/graphite-server-native-initial-source.tar.gz",
+  "baselinePid": 25444,
+  "candidatePid": 25446,
+  "purpose": "Correctness preflight64 only; not native latency benchmark",
+  "observedCatalogs": "catalogs.json",
+  "baselineGCLog": "main-gc.log",
+  "candidateGCLog": "native-server-gc.log"
+}

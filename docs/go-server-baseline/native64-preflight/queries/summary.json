@@ -1,0 +1,12 @@
+{
+  "purpose": "Correctness-only HTTP differential; no performance evidence",
+  "manifest": "graphite-server/scripts/real64-workload.json",
+  "manifestSha256": "b60e1c07a739cd1ff481237a10e53ba2556177125c035223db9e4252ae307bd5",
+  "baselineUrl": "http://localhost:18851",
+  "candidateUrl": "http://localhost:18852",
+  "cases": 42,
+  "manifestCases": 42,
+  "completeManifestCompared": true,
+  "mismatches": [],
+  "headerDifferences": []
+}

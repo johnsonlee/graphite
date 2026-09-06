@@ -1,0 +1,232 @@
+{
+  "revision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "oracle": "Java17 source-only ParserOracle with actual compiled main classes and empty Graph proxy; no HTTP requests",
+  "cases": [
+    {
+      "query": "",
+      "ast": "[]",
+      "clauseTypes": [],
+      "columns": [],
+      "rows": [
+        {}
+      ]
+    },
+    {
+      "query": " \t\n",
+      "ast": "[]",
+      "clauseTypes": [],
+      "columns": [],
+      "rows": [
+        {}
+      ]
+    },
+    {
+      "query": "\u001c",
+      "ast": "[]",
+      "clauseTypes": [],
+      "columns": [],
+      "rows": [
+        {}
+      ]
+    },
+    {
+      "query": "\u0085",
+      "parseError": "CypherParseException",
+      "parseMessage": "Syntax error at position 0: token recognition error at: '\u0085'"
+    },
+    {
+      "query": "\u00a0",
+      "ast": "[]",
+      "clauseTypes": [],
+      "columns": [],
+      "rows": [
+        {}
+      ]
+    },
+    {
+      "query": "RETURN 1 AS a; RETURN 2 AS b",
+      "ast": "[Return(items=[ReturnItem(expression=Literal(value=1), alias=a)], distinct=false), Return(items=[ReturnItem(expression=Literal(value=2), alias=b)], distinct=false)]",
+      "clauseTypes": [
+        "Return",
+        "Return"
+      ],
+      "columns": [
+        "b"
+      ],
+      "rows": [
+        {
+          "b": 2
+        }
+      ]
+    },
+    {
+      "query": "UNWIND [1,2] AS x; RETURN x",
+      "ast": "[Unwind(expression=ListLiteral(elements=[Literal(value=1), Literal(value=2)]), variable=x), Return(items=[ReturnItem(expression=Variable(name=x), alias=null)], distinct=false)]",
+      "clauseTypes": [
+        "Unwind",
+        "Return"
+      ],
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 1
+        },
+        {
+          "x": 2
+        }
+      ]
+    },
+    {
+      "query": "; RETURN 1 AS a; ;RETURN a+1 AS b;",
+      "ast": "[Return(items=[ReturnItem(expression=Literal(value=1), alias=a)], distinct=false), Return(items=[ReturnItem(expression=BinaryOp(op=+, left=Variable(name=a), right=Literal(value=1)), alias=b)], distinct=false)]",
+      "clauseTypes": [
+        "Return",
+        "Return"
+      ],
+      "columns": [
+        "b"
+      ],
+      "rows": [
+        {
+          "b": 2
+        }
+      ]
+    },
+    {
+      "query": "; RETURN 1 AS a;",
+      "parseError": "CypherParseException",
+      "parseMessage": "Syntax error at position 0: extraneous input ';' expecting {'CREATE', 'DELETE', 'DETACH', 'MATCH', 'MERGE', 'OPTIONAL', 'REMOVE', 'RETURN', 'SET', 'WITH', 'UNWIND'}"
+    },
+    {
+      "query": "RETURN 1 AS a;;",
+      "parseError": "CypherParseException",
+      "parseMessage": "Syntax error at position 14: no viable alternative at input ';;'"
+    },
+    {
+      "query": "RETURN 1 AS a UNION ALL RETURN 2 AS a; RETURN a+1 AS b",
+      "ast": "[Return(items=[ReturnItem(expression=Literal(value=1), alias=a)], distinct=false), Union(all=true), Return(items=[ReturnItem(expression=Literal(value=2), alias=a)], distinct=false), Return(items=[ReturnItem(expression=BinaryOp(op=+, left=Variable(name=a), right=Literal(value=1)), alias=b)], distinct=false)]",
+      "clauseTypes": [
+        "Return",
+        "Union",
+        "Return",
+        "Return"
+      ],
+      "columns": [
+        "a"
+      ],
+      "rows": [
+        {
+          "a": 1
+        },
+        {
+          "b": 3
+        }
+      ]
+    },
+    {
+      "query": "RETURN 1 AS a; RETURN a+1 AS b UNION RETURN 3 AS b",
+      "ast": "[Return(items=[ReturnItem(expression=Literal(value=1), alias=a)], distinct=false), Return(items=[ReturnItem(expression=BinaryOp(op=+, left=Variable(name=a), right=Literal(value=1)), alias=b)], distinct=false), Union(all=false), Return(items=[ReturnItem(expression=Literal(value=3), alias=b)], distinct=false)]",
+      "clauseTypes": [
+        "Return",
+        "Return",
+        "Union",
+        "Return"
+      ],
+      "columns": [
+        "b"
+      ],
+      "rows": [
+        {
+          "b": 2
+        },
+        {
+          "b": 3
+        }
+      ]
+    },
+    {
+      "query": "RETURN ';' AS value",
+      "parseError": "CypherParseException",
+      "parseMessage": "Syntax error at position 7: token recognition error at: '''"
+    },
+    {
+      "query": "RETURN 'a;b' AS value",
+      "parseError": "CypherParseException",
+      "parseMessage": "Syntax error at position 7: token recognition error at: ''a'"
+    },
+    {
+      "query": "RETURN 1 AS x /* ; comment */",
+      "parseError": "CypherParseException",
+      "parseMessage": "Syntax error at position 14: mismatched input '/' expecting {<EOF>, ';'}"
+    },
+    {
+      "query": "CREATE (n:Thing {name:'x'}) RETURN n",
+      "ast": "[Create(patterns=[CypherPattern(elements=[NodePattern(variable=n, labels=[Thing], properties={name=Literal(value=x)})], pathVariable=null)]), Return(items=[ReturnItem(expression=Variable(name=n), alias=null)], distinct=false)]",
+      "clauseTypes": [
+        "Create",
+        "Return"
+      ],
+      "executionError": "NotImplementedError",
+      "executionMessage": "An operation is not implemented: CREATE is not supported \u2014 graph is immutable"
+    },
+    {
+      "query": "MERGE (n:Thing) RETURN n",
+      "ast": "[Create(patterns=[CypherPattern(elements=[NodePattern(variable=n, labels=[Thing], properties={})], pathVariable=null)]), Return(items=[ReturnItem(expression=Variable(name=n), alias=null)], distinct=false)]",
+      "clauseTypes": [
+        "Create",
+        "Return"
+      ],
+      "executionError": "NotImplementedError",
+      "executionMessage": "An operation is not implemented: CREATE is not supported \u2014 graph is immutable"
+    },
+    {
+      "query": "MATCH (n) DETACH DELETE n",
+      "ast": "[Match(patterns=[CypherPattern(elements=[NodePattern(variable=n, labels=[], properties={})], pathVariable=null)], optional=false, where=null), Delete(expressions=[Variable(name=n)], detach=true)]",
+      "clauseTypes": [
+        "Match",
+        "Delete"
+      ],
+      "executionError": "NotImplementedError",
+      "executionMessage": "An operation is not implemented: DELETE is not supported \u2014 graph is immutable"
+    },
+    {
+      "query": "MATCH (n) SET n.x=1,n += {a:2},n={b:3},n:A:B RETURN n",
+      "ast": "[Match(patterns=[CypherPattern(elements=[NodePattern(variable=n, labels=[], properties={})], pathVariable=null)], optional=false, where=null), Set(items=[PropertySet(variable=n, property=x, expression=Literal(value=1)), MergePropertiesSet(variable=n, expression=MapLiteral(entries={a=Literal(value=2)})), AllPropertiesSet(variable=n, expression=MapLiteral(entries={b=Literal(value=3)})), LabelSet(variable=n, labels=[A, B])]), Return(items=[ReturnItem(expression=Variable(name=n), alias=null)], distinct=false)]",
+      "clauseTypes": [
+        "Match",
+        "Set",
+        "Return"
+      ],
+      "executionError": "NotImplementedError",
+      "executionMessage": "An operation is not implemented: SET is not supported \u2014 graph is immutable"
+    },
+    {
+      "query": "MATCH (n) REMOVE n.x,n:A:B RETURN n",
+      "ast": "[Match(patterns=[CypherPattern(elements=[NodePattern(variable=n, labels=[], properties={})], pathVariable=null)], optional=false, where=null), Remove(items=[PropertyRemove(variable=n, property=x), LabelRemove(variable=n, labels=[A, B])]), Return(items=[ReturnItem(expression=Variable(name=n), alias=null)], distinct=false)]",
+      "clauseTypes": [
+        "Match",
+        "Remove",
+        "Return"
+      ],
+      "executionError": "NotImplementedError",
+      "executionMessage": "An operation is not implemented: REMOVE is not supported \u2014 graph is immutable"
+    },
+    {
+      "query": "RETURN ((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((1)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))) AS deeplyNested",
+      "ast": "[Return(items=[ReturnItem(expression=Literal(value=1), alias=deeplyNested)], distinct=false)]",
+      "clauseTypes": [
+        "Return"
+      ],
+      "columns": [
+        "deeplyNested"
+      ],
+      "rows": [
+        {
+          "deeplyNested": 1
+        }
+      ]
+    }
+  ]
+}

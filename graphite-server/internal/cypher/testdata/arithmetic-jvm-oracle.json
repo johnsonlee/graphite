@@ -1,0 +1,418 @@
+{
+  "source": "Live main JVM server /api/cypher at 127.0.0.1:18851",
+  "capturedAt": "2026-09-06T18:17:39.371610+00:00",
+  "purpose": "Scalar correctness only; no performance measurements",
+  "cases": [
+    {
+      "name": "small-decimal-add",
+      "query": "RETURN toString(1 + 1) AS value",
+      "status": 200,
+      "response": {
+        "columns": [
+          "value"
+        ],
+        "rows": [
+          {
+            "value": "2",
+            "$metadata": {
+              "graphIds": []
+            }
+          }
+        ],
+        "rowCount": 1,
+        "graphCount": 64
+      },
+      "raw": "{\n  \"columns\": [\n    \"value\"\n  ],\n  \"rows\": [\n    {\n      \"value\": \"2\",\n      \"$metadata\": {\n        \"graphIds\": []\n      }\n    }\n  ],\n  \"rowCount\": 1,\n  \"graphCount\": 64\n}"
+    },
+    {
+      "name": "hex-decimal-add",
+      "query": "RETURN toString(0x1 + 1) AS value",
+      "status": 200,
+      "response": {
+        "columns": [
+          "value"
+        ],
+        "rows": [
+          {
+            "value": "2.0",
+            "$metadata": {
+              "graphIds": []
+            }
+          }
+        ],
+        "rowCount": 1,
+        "graphCount": 64
+      },
+      "raw": "{\n  \"columns\": [\n    \"value\"\n  ],\n  \"rows\": [\n    {\n      \"value\": \"2.0\",\n      \"$metadata\": {\n        \"graphIds\": []\n      }\n    }\n  ],\n  \"rowCount\": 1,\n  \"graphCount\": 64\n}"
+    },
+    {
+      "name": "octal-decimal-add",
+      "query": "RETURN toString(0o1 + 1) AS value",
+      "status": 200,
+      "response": {
+        "columns": [
+          "value"
+        ],
+        "rows": [
+          {
+            "value": "2.0",
+            "$metadata": {
+              "graphIds": []
+            }
+          }
+        ],
+        "rowCount": 1,
+        "graphCount": 64
+      },
+      "raw": "{\n  \"columns\": [\n    \"value\"\n  ],\n  \"rows\": [\n    {\n      \"value\": \"2.0\",\n      \"$metadata\": {\n        \"graphIds\": []\n      }\n    }\n  ],\n  \"rowCount\": 1,\n  \"graphCount\": 64\n}"
+    },
+    {
+      "name": "int-overflow-to-long",
+      "query": "RETURN toString(2147483647 + 1) AS value",
+      "status": 200,
+      "response": {
+        "columns": [
+          "value"
+        ],
+        "rows": [
+          {
+            "value": "2147483648",
+            "$metadata": {
+              "graphIds": []
+            }
+          }
+        ],
+        "rowCount": 1,
+        "graphCount": 64
+      },
+      "raw": "{\n  \"columns\": [\n    \"value\"\n  ],\n  \"rows\": [\n    {\n      \"value\": \"2147483648\",\n      \"$metadata\": {\n        \"graphIds\": []\n      }\n    }\n  ],\n  \"rowCount\": 1,\n  \"graphCount\": 64\n}"
+    },
+    {
+      "name": "mixed-long-int",
+      "query": "RETURN toString(2147483648 + 1) AS value",
+      "status": 200,
+      "response": {
+        "columns": [
+          "value"
+        ],
+        "rows": [
+          {
+            "value": "2.147483649E9",
+            "$metadata": {
+              "graphIds": []
+            }
+          }
+        ],
+        "rowCount": 1,
+        "graphCount": 64
+      },
+      "raw": "{\n  \"columns\": [\n    \"value\"\n  ],\n  \"rows\": [\n    {\n      \"value\": \"2.147483649E9\",\n      \"$metadata\": {\n        \"graphIds\": []\n      }\n    }\n  ],\n  \"rowCount\": 1,\n  \"graphCount\": 64\n}"
+    },
+    {
+      "name": "both-long",
+      "query": "RETURN toString(2147483648 + 2147483648) AS value",
+      "status": 200,
+      "response": {
+        "columns": [
+          "value"
+        ],
+        "rows": [
+          {
+            "value": "4294967296",
+            "$metadata": {
+              "graphIds": []
+            }
+          }
+        ],
+        "rowCount": 1,
+        "graphCount": 64
+      },
+      "raw": "{\n  \"columns\": [\n    \"value\"\n  ],\n  \"rows\": [\n    {\n      \"value\": \"4294967296\",\n      \"$metadata\": {\n        \"graphIds\": []\n      }\n    }\n  ],\n  \"rowCount\": 1,\n  \"graphCount\": 64\n}"
+    },
+    {
+      "name": "long-max-plus-long",
+      "query": "RETURN toString(9223372036854775807 + 0x1) AS value",
+      "status": 200,
+      "response": {
+        "columns": [
+          "value"
+        ],
+        "rows": [
+          {
+            "value": "9223372036854775807",
+            "$metadata": {
+              "graphIds": []
+            }
+          }
+        ],
+        "rowCount": 1,
+        "graphCount": 64
+      },
+      "raw": "{\n  \"columns\": [\n    \"value\"\n  ],\n  \"rows\": [\n    {\n      \"value\": \"9223372036854775807\",\n      \"$metadata\": {\n        \"graphIds\": []\n      }\n    }\n  ],\n  \"rowCount\": 1,\n  \"graphCount\": 64\n}"
+    },
+    {
+      "name": "long-max-plus-int",
+      "query": "RETURN toString(9223372036854775807 + 1) AS value",
+      "status": 200,
+      "response": {
+        "columns": [
+          "value"
+        ],
+        "rows": [
+          {
+            "value": "9.223372036854776E18",
+            "$metadata": {
+              "graphIds": []
+            }
+          }
+        ],
+        "rowCount": 1,
+        "graphCount": 64
+      },
+      "raw": "{\n  \"columns\": [\n    \"value\"\n  ],\n  \"rows\": [\n    {\n      \"value\": \"9.223372036854776E18\",\n      \"$metadata\": {\n        \"graphIds\": []\n      }\n    }\n  ],\n  \"rowCount\": 1,\n  \"graphCount\": 64\n}"
+    },
+    {
+      "name": "large-integral-rounding",
+      "query": "RETURN toString(9007199254740993 + 0x0) AS value",
+      "status": 200,
+      "response": {
+        "columns": [
+          "value"
+        ],
+        "rows": [
+          {
+            "value": "9007199254740992",
+            "$metadata": {
+              "graphIds": []
+            }
+          }
+        ],
+        "rowCount": 1,
+        "graphCount": 64
+      },
+      "raw": "{\n  \"columns\": [\n    \"value\"\n  ],\n  \"rows\": [\n    {\n      \"value\": \"9007199254740992\",\n      \"$metadata\": {\n        \"graphIds\": []\n      }\n    }\n  ],\n  \"rowCount\": 1,\n  \"graphCount\": 64\n}"
+    },
+    {
+      "name": "fractional-division",
+      "query": "RETURN toString(5 / 2) AS value",
+      "status": 200,
+      "response": {
+        "columns": [
+          "value"
+        ],
+        "rows": [
+          {
+            "value": "2.5",
+            "$metadata": {
+              "graphIds": []
+            }
+          }
+        ],
+        "rowCount": 1,
+        "graphCount": 64
+      },
+      "raw": "{\n  \"columns\": [\n    \"value\"\n  ],\n  \"rows\": [\n    {\n      \"value\": \"2.5\",\n      \"$metadata\": {\n        \"graphIds\": []\n      }\n    }\n  ],\n  \"rowCount\": 1,\n  \"graphCount\": 64\n}"
+    },
+    {
+      "name": "integral-division",
+      "query": "RETURN toString(4 / 2) AS value",
+      "status": 200,
+      "response": {
+        "columns": [
+          "value"
+        ],
+        "rows": [
+          {
+            "value": "2",
+            "$metadata": {
+              "graphIds": []
+            }
+          }
+        ],
+        "rowCount": 1,
+        "graphCount": 64
+      },
+      "raw": "{\n  \"columns\": [\n    \"value\"\n  ],\n  \"rows\": [\n    {\n      \"value\": \"2\",\n      \"$metadata\": {\n        \"graphIds\": []\n      }\n    }\n  ],\n  \"rowCount\": 1,\n  \"graphCount\": 64\n}"
+    },
+    {
+      "name": "mixed-integral-division",
+      "query": "RETURN toString(4 / 0x2) AS value",
+      "status": 200,
+      "response": {
+        "columns": [
+          "value"
+        ],
+        "rows": [
+          {
+            "value": "2.0",
+            "$metadata": {
+              "graphIds": []
+            }
+          }
+        ],
+        "rowCount": 1,
+        "graphCount": 64
+      },
+      "raw": "{\n  \"columns\": [\n    \"value\"\n  ],\n  \"rows\": [\n    {\n      \"value\": \"2.0\",\n      \"$metadata\": {\n        \"graphIds\": []\n      }\n    }\n  ],\n  \"rowCount\": 1,\n  \"graphCount\": 64\n}"
+    },
+    {
+      "name": "boolean-arithmetic",
+      "query": "RETURN toString(true - false) AS value",
+      "status": 200,
+      "response": {
+        "columns": [
+          "value"
+        ],
+        "rows": [
+          {
+            "value": "0.0",
+            "$metadata": {
+              "graphIds": []
+            }
+          }
+        ],
+        "rowCount": 1,
+        "graphCount": 64
+      },
+      "raw": "{\n  \"columns\": [\n    \"value\"\n  ],\n  \"rows\": [\n    {\n      \"value\": \"0.0\",\n      \"$metadata\": {\n        \"graphIds\": []\n      }\n    }\n  ],\n  \"rowCount\": 1,\n  \"graphCount\": 64\n}"
+    },
+    {
+      "name": "string-arithmetic",
+      "query": "RETURN toString('5' - 1) AS value",
+      "status": 200,
+      "response": {
+        "columns": [
+          "value"
+        ],
+        "rows": [
+          {
+            "value": "4.0",
+            "$metadata": {
+              "graphIds": []
+            }
+          }
+        ],
+        "rowCount": 1,
+        "graphCount": 64
+      },
+      "raw": "{\n  \"columns\": [\n    \"value\"\n  ],\n  \"rows\": [\n    {\n      \"value\": \"4.0\",\n      \"$metadata\": {\n        \"graphIds\": []\n      }\n    }\n  ],\n  \"rowCount\": 1,\n  \"graphCount\": 64\n}"
+    },
+    {
+      "name": "unary-plus-string",
+      "query": "RETURN +'abc' AS value",
+      "status": 200,
+      "response": {
+        "columns": [
+          "value"
+        ],
+        "rows": [
+          {
+            "value": "abc",
+            "$metadata": {
+              "graphIds": []
+            }
+          }
+        ],
+        "rowCount": 1,
+        "graphCount": 64
+      },
+      "raw": "{\n  \"columns\": [\n    \"value\"\n  ],\n  \"rows\": [\n    {\n      \"value\": \"abc\",\n      \"$metadata\": {\n        \"graphIds\": []\n      }\n    }\n  ],\n  \"rowCount\": 1,\n  \"graphCount\": 64\n}"
+    },
+    {
+      "name": "unary-minus-string",
+      "query": "RETURN toString(-'5') AS value",
+      "status": 200,
+      "response": {
+        "columns": [
+          "value"
+        ],
+        "rows": [
+          {
+            "value": "-5.0",
+            "$metadata": {
+              "graphIds": []
+            }
+          }
+        ],
+        "rowCount": 1,
+        "graphCount": 64
+      },
+      "raw": "{\n  \"columns\": [\n    \"value\"\n  ],\n  \"rows\": [\n    {\n      \"value\": \"-5.0\",\n      \"$metadata\": {\n        \"graphIds\": []\n      }\n    }\n  ],\n  \"rowCount\": 1,\n  \"graphCount\": 64\n}"
+    },
+    {
+      "name": "floating-whole",
+      "query": "RETURN toString(1.0 + 1.0) AS value",
+      "status": 200,
+      "response": {
+        "columns": [
+          "value"
+        ],
+        "rows": [
+          {
+            "value": "2.0",
+            "$metadata": {
+              "graphIds": []
+            }
+          }
+        ],
+        "rowCount": 1,
+        "graphCount": 64
+      },
+      "raw": "{\n  \"columns\": [\n    \"value\"\n  ],\n  \"rows\": [\n    {\n      \"value\": \"2.0\",\n      \"$metadata\": {\n        \"graphIds\": []\n      }\n    }\n  ],\n  \"rowCount\": 1,\n  \"graphCount\": 64\n}"
+    },
+    {
+      "name": "integer-mod-zero",
+      "query": "RETURN 1 % 0 AS value",
+      "status": 500,
+      "response": {
+        "title": "Server Error",
+        "status": 500,
+        "type": "https://javalin.io/documentation#internalservererrorresponse",
+        "details": {}
+      },
+      "raw": "{\n    \"title\": \"Server Error\",\n    \"status\": 500,\n    \"type\": \"https://javalin.io/documentation#internalservererrorresponse\",\n    \"details\": {}\n}"
+    },
+    {
+      "name": "integer-exp-whole",
+      "query": "RETURN toString(2 ^ 3) AS value",
+      "status": 200,
+      "response": {
+        "columns": [
+          "value"
+        ],
+        "rows": [
+          {
+            "value": "8",
+            "$metadata": {
+              "graphIds": []
+            }
+          }
+        ],
+        "rowCount": 1,
+        "graphCount": 64
+      },
+      "raw": "{\n  \"columns\": [\n    \"value\"\n  ],\n  \"rows\": [\n    {\n      \"value\": \"8\",\n      \"$metadata\": {\n        \"graphIds\": []\n      }\n    }\n  ],\n  \"rowCount\": 1,\n  \"graphCount\": 64\n}"
+    },
+    {
+      "name": "integer-exp-fraction",
+      "query": "RETURN toString(2 ^ -1) AS value",
+      "status": 200,
+      "response": {
+        "columns": [
+          "value"
+        ],
+        "rows": [
+          {
+            "value": "0.5",
+            "$metadata": {
+              "graphIds": []
+            }
+          }
+        ],
+        "rowCount": 1,
+        "graphCount": 64
+      },
+      "raw": "{\n  \"columns\": [\n    \"value\"\n  ],\n  \"rows\": [\n    {\n      \"value\": \"0.5\",\n      \"$metadata\": {\n        \"graphIds\": []\n      }\n    }\n  ],\n  \"rowCount\": 1,\n  \"graphCount\": 64\n}"
+    }
+  ]
+}

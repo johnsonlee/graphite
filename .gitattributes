@@ -1,0 +1,5 @@
+# Preserve raw oracle output, including whitespace emitted by the JVM server.
+docs/go-server-baseline/**/*.log -whitespace
+# Unified diffs retain context prefixes before tabs and blank lines.
+docs/go-server-baseline/**/*.patch -whitespace
+docs/go-server-baseline/** linguist-generated=true

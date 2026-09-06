@@ -1,0 +1,4562 @@
+[
+  {
+    "iteration": 0,
+    "case": "wrapped-denseDistributedMethodContains",
+    "runtime": "baseline",
+    "durationMs": 224.322,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:23:47 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 0,
+    "case": "global-wide-wrapped-case-insensitive-distinct-targeted",
+    "runtime": "baseline",
+    "durationMs": 12.295958,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:23:48 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 1,
+    "case": "wrapped-middleGraphsClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 457.330542,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:23:48 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 2,
+    "case": "wrapped-lateGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 479.945708,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:23:49 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 2,
+    "case": "wrapped-broadlyDistributedClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 36.896458,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:23:50 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 3,
+    "case": "wrapped-broadlyDistributedClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 66.81625,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:23:51 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 6,
+    "case": "wrapped-lateGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 1.294917,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:23:56 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 6,
+    "case": "wrapped-middleGraphsClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 477.453125,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:23:56 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 7,
+    "case": "wrapped-denseDistributedMethodContains",
+    "runtime": "baseline",
+    "durationMs": 72.114916,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:23:57 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 7,
+    "case": "wrapped-firstLastGraphBimodalClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 287.31775,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:23:57 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 8,
+    "case": "wrapped-lateGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 24.198583,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:23:58 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 8,
+    "case": "wrapped-middleGraphsClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 11.6895,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:23:58 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 9,
+    "case": "wrapped-denseDistributedMethodContains",
+    "runtime": "baseline",
+    "durationMs": 30.616208,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:23:59 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 10,
+    "case": "wrapped-earlyGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 28.517,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:24:01 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 10,
+    "case": "wrapped-lateGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 3.251667,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:24:01 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 10,
+    "case": "wrapped-firstLastGraphBimodalClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 132.410375,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:24:01 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 13,
+    "case": "wrapped-skewedMixedClassMethodOperator",
+    "runtime": "baseline",
+    "durationMs": 296.67875,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:24:04 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 13,
+    "case": "wrapped-middleGraphsClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 223.683417,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:24:04 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 15,
+    "case": "wrapped-middleGraphsClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 4.479166,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:24:07 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 15,
+    "case": "wrapped-earlyGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 138.930125,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:24:07 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 18,
+    "case": "wrapped-firstLastGraphBimodalClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 38.275875,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:24:11 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 19,
+    "case": "wrapped-middleGraphsClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 3.984042,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:24:12 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 20,
+    "case": "wrapped-firstLastGraphBimodalClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 24.938375,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:24:14 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 22,
+    "case": "wrapped-firstLastGraphBimodalClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 25.111,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:24:16 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 24,
+    "case": "wrapped-skewedMixedClassMethodOperator",
+    "runtime": "baseline",
+    "durationMs": 84.765583,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:24:19 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 25,
+    "case": "wrapped-broadlyDistributedClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 502.54425,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:24:21 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 28,
+    "case": "wrapped-skewedMixedClassMethodOperator",
+    "runtime": "baseline",
+    "durationMs": 26.903125,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:24:24 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 30,
+    "case": "wrapped-skewedMixedClassMethodOperator",
+    "runtime": "baseline",
+    "durationMs": 363.115166,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:24:27 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 31,
+    "case": "wrapped-broadlyDistributedClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 421.740541,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:24:29 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 31,
+    "case": "wrapped-earlyGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 398.518458,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:24:29 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 33,
+    "case": "wrapped-firstLastGraphBimodalClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 185.194333,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:24:32 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 35,
+    "case": "wrapped-earlyGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 388.349625,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:24:35 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 35,
+    "case": "wrapped-lateGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 297.597958,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:24:35 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 38,
+    "case": "wrapped-firstLastGraphBimodalClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 446.371417,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:24:39 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 38,
+    "case": "wrapped-middleGraphsClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 525.618541,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:24:39 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 42,
+    "case": "wrapped-skewedMixedClassMethodOperator",
+    "runtime": "baseline",
+    "durationMs": 319.127959,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:24:45 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 43,
+    "case": "wrapped-firstLastGraphBimodalClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 705.944958,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:24:47 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 43,
+    "case": "wrapped-lateGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 86.093834,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:24:48 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 44,
+    "case": "wrapped-firstLastGraphBimodalClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 408.433125,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:24:48 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 44,
+    "case": "wrapped-skewedMixedClassMethodOperator",
+    "runtime": "baseline",
+    "durationMs": 384.542625,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:24:48 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 44,
+    "case": "wrapped-middleGraphsClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 357.270583,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:24:48 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 46,
+    "case": "wrapped-middleGraphsClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 3.639542,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:24:50 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 47,
+    "case": "wrapped-broadlyDistributedClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 142.825375,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:24:52 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 49,
+    "case": "wrapped-earlyGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 26.709708,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:24:55 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 49,
+    "case": "global-wide-wrapped-case-insensitive-distinct-dense",
+    "runtime": "baseline",
+    "durationMs": 19.127542,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:24:55 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 50,
+    "case": "wrapped-firstLastGraphBimodalClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 36.308667,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:24:57 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 51,
+    "case": "wrapped-lateGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 583.8625,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:24:57 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 51,
+    "case": "wrapped-middleGraphsClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 554.121125,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:24:57 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 51,
+    "case": "wrapped-skewedMixedClassMethodOperator",
+    "runtime": "baseline",
+    "durationMs": 527.044833,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:24:57 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 53,
+    "case": "wrapped-firstLastGraphBimodalClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 334.88925,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:25:01 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 54,
+    "case": "wrapped-broadlyDistributedClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 408.718959,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:25:03 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 54,
+    "case": "wrapped-middleGraphsClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 246.670542,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:25:03 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 55,
+    "case": "wrapped-lateGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 254.302,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:25:04 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 56,
+    "case": "wrapped-firstLastGraphBimodalClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 23.747833,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:25:04 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 58,
+    "case": "wrapped-firstLastGraphBimodalClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 367.730375,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:25:07 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 58,
+    "case": "wrapped-lateGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 151.941125,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:25:07 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 58,
+    "case": "wrapped-middleGraphsClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 22.994959,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:25:08 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 59,
+    "case": "wrapped-firstLastGraphBimodalClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 24.849625,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:25:09 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 60,
+    "case": "wrapped-broadlyDistributedClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 128.261958,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:25:11 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 61,
+    "case": "wrapped-earlyGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 289.229875,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:25:11 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 62,
+    "case": "wrapped-broadlyDistributedClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 59.024583,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:25:13 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 63,
+    "case": "wrapped-skewedMixedClassMethodOperator",
+    "runtime": "baseline",
+    "durationMs": 506.371083,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:25:15 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 63,
+    "case": "wrapped-broadlyDistributedClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 274.341125,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:25:15 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 64,
+    "case": "wrapped-earlyGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 25.68875,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:25:16 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 65,
+    "case": "wrapped-denseDistributedMethodContains",
+    "runtime": "baseline",
+    "durationMs": 487.261042,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:25:17 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 66,
+    "case": "wrapped-lateGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 306.748958,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:25:19 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 68,
+    "case": "wrapped-earlyGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 127.407375,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:25:21 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 70,
+    "case": "wrapped-lateGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 258.744666,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:25:24 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 71,
+    "case": "wrapped-skewedMixedClassMethodOperator",
+    "runtime": "baseline",
+    "durationMs": 55.275625,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:25:25 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 72,
+    "case": "wrapped-skewedMixedClassMethodOperator",
+    "runtime": "baseline",
+    "durationMs": 178.455542,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:25:27 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 72,
+    "case": "wrapped-earlyGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 31.277625,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:25:27 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 73,
+    "case": "wrapped-denseDistributedMethodContains",
+    "runtime": "baseline",
+    "durationMs": 366.164834,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:25:29 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 74,
+    "case": "wrapped-skewedMixedClassMethodOperator",
+    "runtime": "baseline",
+    "durationMs": 476.433542,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:25:30 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 75,
+    "case": "wrapped-skewedMixedClassMethodOperator",
+    "runtime": "baseline",
+    "durationMs": 39.971583,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:25:31 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 76,
+    "case": "wrapped-skewedMixedClassMethodOperator",
+    "runtime": "baseline",
+    "durationMs": 29.435,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:25:33 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 77,
+    "case": "wrapped-lateGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 33.08125,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:25:35 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 78,
+    "case": "wrapped-earlyGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 382.133958,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:25:36 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 79,
+    "case": "wrapped-skewedMixedClassMethodOperator",
+    "runtime": "baseline",
+    "durationMs": 466.774917,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:25:37 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 81,
+    "case": "wrapped-broadlyDistributedClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 28.817292,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:25:39 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 83,
+    "case": "wrapped-middleGraphsClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 24.2435,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:25:42 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 85,
+    "case": "wrapped-skewedMixedClassMethodOperator",
+    "runtime": "baseline",
+    "durationMs": 606.948292,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:25:45 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 85,
+    "case": "wrapped-earlyGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 602.653625,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:25:45 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 85,
+    "case": "wrapped-firstLastGraphBimodalClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 50.649208,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:25:46 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 87,
+    "case": "wrapped-earlyGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 120.366209,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:25:48 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 89,
+    "case": "wrapped-denseDistributedMethodContains",
+    "runtime": "baseline",
+    "durationMs": 126.722417,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:25:51 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 90,
+    "case": "wrapped-lateGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 124.815041,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:25:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 90,
+    "case": "wrapped-firstLastGraphBimodalClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 1.6815,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:25:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 90,
+    "case": "wrapped-skewedMixedClassMethodOperator",
+    "runtime": "baseline",
+    "durationMs": 4.433208,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:25:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 92,
+    "case": "wrapped-middleGraphsClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 421.028541,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:25:55 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 93,
+    "case": "wrapped-broadlyDistributedClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 366.507584,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:25:56 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 94,
+    "case": "wrapped-zeroHitBroadContains",
+    "runtime": "baseline",
+    "durationMs": 73.981375,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:25:58 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 95,
+    "case": "global-wide-wrapped-case-insensitive-distinct-dense",
+    "runtime": "baseline",
+    "durationMs": 33.888959,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:26:00 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 97,
+    "case": "wrapped-firstLastGraphBimodalClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 24.492833,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:26:02 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 98,
+    "case": "global-wide-wrapped-case-insensitive-distinct-targeted",
+    "runtime": "baseline",
+    "durationMs": 1.451834,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:26:03 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 99,
+    "case": "wrapped-skewedMixedClassMethodOperator",
+    "runtime": "baseline",
+    "durationMs": 404.584125,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:26:05 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 101,
+    "case": "wrapped-middleGraphsClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 51.569375,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:26:07 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 103,
+    "case": "wrapped-firstLastGraphBimodalClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 865.742458,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:26:10 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 103,
+    "case": "wrapped-skewedMixedClassMethodOperator",
+    "runtime": "baseline",
+    "durationMs": 586.914167,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:26:10 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 105,
+    "case": "global-wide-callee-class-zero",
+    "runtime": "baseline",
+    "durationMs": 2.437959,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:26:13 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 109,
+    "case": "wrapped-lateGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 28.199208,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:26:19 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 110,
+    "case": "wrapped-firstLastGraphBimodalClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 2.917625,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:26:20 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 110,
+    "case": "global-wide-wrapped-case-insensitive-distinct-dense",
+    "runtime": "baseline",
+    "durationMs": 12.684833,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:26:21 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 113,
+    "case": "wrapped-firstLastGraphBimodalClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 26.319708,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:26:25 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 114,
+    "case": "wrapped-firstLastGraphBimodalClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 366.428459,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:26:26 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 115,
+    "case": "wrapped-firstLastGraphBimodalClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 700.324583,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:26:27 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 115,
+    "case": "wrapped-earlyGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 610.93025,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:26:27 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 116,
+    "case": "wrapped-firstLastGraphBimodalClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 544.409833,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:26:29 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 116,
+    "case": "wrapped-zeroHitBroadContains",
+    "runtime": "baseline",
+    "durationMs": 75.248792,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:26:29 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 117,
+    "case": "wrapped-firstLastGraphBimodalClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 35.4855,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:26:30 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 118,
+    "case": "wrapped-broadlyDistributedClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 129.852333,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:26:31 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 121,
+    "case": "wrapped-skewedMixedClassMethodOperator",
+    "runtime": "baseline",
+    "durationMs": 25.365417,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:26:35 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 121,
+    "case": "wrapped-middleGraphsClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 60.948584,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:26:36 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 122,
+    "case": "wrapped-lateGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 24.236833,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:26:36 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 123,
+    "case": "wrapped-middleGraphsClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 347.071,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:26:39 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 123,
+    "case": "wrapped-broadlyDistributedClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 333.830667,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:26:39 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 124,
+    "case": "wrapped-lateGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 24.284458,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:26:39 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 125,
+    "case": "wrapped-lateGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 152.752916,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:26:40 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 125,
+    "case": "wrapped-denseDistributedMethodContains",
+    "runtime": "baseline",
+    "durationMs": 63.316417,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:26:40 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 125,
+    "case": "wrapped-firstLastGraphBimodalClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 750.052167,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:26:40 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 126,
+    "case": "wrapped-firstLastGraphBimodalClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 2.307625,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:26:42 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 126,
+    "case": "wrapped-broadlyDistributedClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 290.7885,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:26:42 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 126,
+    "case": "wrapped-skewedMixedClassMethodOperator",
+    "runtime": "baseline",
+    "durationMs": 288.899666,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:26:42 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 127,
+    "case": "wrapped-broadlyDistributedClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 368.980417,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:26:43 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 127,
+    "case": "wrapped-skewedMixedClassMethodOperator",
+    "runtime": "baseline",
+    "durationMs": 139.254542,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:26:43 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 127,
+    "case": "global-wide-wrapped-case-insensitive-distinct-targeted",
+    "runtime": "baseline",
+    "durationMs": 136.701458,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:26:43 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 128,
+    "case": "wrapped-skewedMixedClassMethodOperator",
+    "runtime": "baseline",
+    "durationMs": 592.602709,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:26:44 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 130,
+    "case": "wrapped-earlyGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 24.872291,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:26:48 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 131,
+    "case": "wrapped-middleGraphsClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 358.919708,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:26:49 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 131,
+    "case": "wrapped-firstLastGraphBimodalClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 329.033667,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:26:49 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 133,
+    "case": "wrapped-earlyGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 361.809917,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:26:52 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 134,
+    "case": "wrapped-middleGraphsClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 23.976125,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:26:52 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 136,
+    "case": "wrapped-lateGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 177.771583,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:26:55 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 136,
+    "case": "wrapped-middleGraphsClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 148.332083,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:26:55 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 137,
+    "case": "wrapped-middleGraphsClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 24.702083,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:26:57 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 139,
+    "case": "wrapped-broadlyDistributedClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 349.679667,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:26:59 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 139,
+    "case": "wrapped-earlyGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 292.302666,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:26:59 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 143,
+    "case": "wrapped-skewedMixedClassMethodOperator",
+    "runtime": "baseline",
+    "durationMs": 72.164875,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:27:05 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 143,
+    "case": "global-wide-wrapped-case-insensitive-distinct-dense",
+    "runtime": "baseline",
+    "durationMs": 175.048625,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:27:06 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 145,
+    "case": "global-wide-wrapped-case-insensitive-distinct-targeted",
+    "runtime": "baseline",
+    "durationMs": 136.4115,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:27:08 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 147,
+    "case": "wrapped-skewedMixedClassMethodOperator",
+    "runtime": "baseline",
+    "durationMs": 201.610542,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:27:11 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 148,
+    "case": "wrapped-earlyGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 323.399167,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:27:13 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 149,
+    "case": "wrapped-denseDistributedMethodContains",
+    "runtime": "baseline",
+    "durationMs": 29.821959,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:27:14 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 150,
+    "case": "wrapped-middleGraphsClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 308.272291,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:27:15 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 152,
+    "case": "global-wide-wrapped-case-insensitive-distinct-dense",
+    "runtime": "baseline",
+    "durationMs": 41.900625,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:27:18 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 153,
+    "case": "wrapped-broadlyDistributedClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 649.906041,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:27:20 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 153,
+    "case": "wrapped-lateGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 537.170042,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:27:20 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 154,
+    "case": "wrapped-lateGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 463.877,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:27:22 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 156,
+    "case": "global-wide-wrapped-case-insensitive-distinct-dense",
+    "runtime": "baseline",
+    "durationMs": 25.610334,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:27:24 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 156,
+    "case": "wrapped-earlyGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 24.678542,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:27:24 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 159,
+    "case": "wrapped-broadlyDistributedClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 33.637542,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:27:28 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 161,
+    "case": "wrapped-middleGraphsClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 390.797542,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:27:31 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 161,
+    "case": "wrapped-skewedMixedClassMethodOperator",
+    "runtime": "baseline",
+    "durationMs": 226.521375,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:27:31 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 162,
+    "case": "wrapped-broadlyDistributedClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 298.1725,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:27:32 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 163,
+    "case": "wrapped-denseDistributedMethodContains",
+    "runtime": "baseline",
+    "durationMs": 207.067625,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:27:34 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 166,
+    "case": "wrapped-middleGraphsClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 122.918417,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:27:38 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 166,
+    "case": "wrapped-broadlyDistributedClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 185.5335,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:27:38 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 171,
+    "case": "wrapped-lateGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 23.633958,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:27:46 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 172,
+    "case": "wrapped-firstLastGraphBimodalClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 49.114709,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:27:47 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 172,
+    "case": "wrapped-lateGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 23.353417,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:27:47 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 172,
+    "case": "wrapped-skewedMixedClassMethodOperator",
+    "runtime": "baseline",
+    "durationMs": 25.918875,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:27:47 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 173,
+    "case": "global-wide-wrapped-case-insensitive-distinct-dense",
+    "runtime": "baseline",
+    "durationMs": 1.182292,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:27:48 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 174,
+    "case": "wrapped-skewedMixedClassMethodOperator",
+    "runtime": "baseline",
+    "durationMs": 355.359833,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:27:49 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 174,
+    "case": "wrapped-earlyGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 341.996167,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:27:49 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 175,
+    "case": "wrapped-broadlyDistributedClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 24.2825,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:27:50 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 175,
+    "case": "wrapped-middleGraphsClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 452.223625,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:27:50 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 175,
+    "case": "wrapped-firstLastGraphBimodalClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 2.644834,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:27:51 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 176,
+    "case": "wrapped-lateGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 23.08025,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:27:51 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 177,
+    "case": "wrapped-firstLastGraphBimodalClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 408.367708,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:27:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 178,
+    "case": "wrapped-firstLastGraphBimodalClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 24.949291,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:27:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 178,
+    "case": "wrapped-middleGraphsClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 51.666667,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:27:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 180,
+    "case": "wrapped-skewedMixedClassMethodOperator",
+    "runtime": "baseline",
+    "durationMs": 25.715,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:27:56 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 182,
+    "case": "wrapped-skewedMixedClassMethodOperator",
+    "runtime": "baseline",
+    "durationMs": 553.432042,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:27:59 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 183,
+    "case": "wrapped-broadlyDistributedClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 141.264583,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:28:00 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 184,
+    "case": "wrapped-middleGraphsClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 360.630417,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:28:01 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 184,
+    "case": "wrapped-earlyGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 439.547,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:28:01 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 185,
+    "case": "wrapped-broadlyDistributedClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 24.494667,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:28:03 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 186,
+    "case": "wrapped-broadlyDistributedClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 2.122625,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:28:04 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 187,
+    "case": "wrapped-lateGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 269.920833,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:28:06 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 188,
+    "case": "wrapped-lateGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 301.417417,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:28:07 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 188,
+    "case": "wrapped-skewedMixedClassMethodOperator",
+    "runtime": "baseline",
+    "durationMs": 196.555083,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:28:07 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 189,
+    "case": "wrapped-broadlyDistributedClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 460.355292,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:28:08 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 190,
+    "case": "wrapped-firstLastGraphBimodalClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 287.422666,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:28:09 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 193,
+    "case": "wrapped-broadlyDistributedClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 137.216292,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:28:14 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 194,
+    "case": "wrapped-lateGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 137.253083,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:28:15 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 195,
+    "case": "wrapped-skewedMixedClassMethodOperator",
+    "runtime": "baseline",
+    "durationMs": 218.29475,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:28:17 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 195,
+    "case": "wrapped-lateGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 183.893292,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:28:17 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 196,
+    "case": "wrapped-middleGraphsClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 154.249958,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:28:17 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 196,
+    "case": "wrapped-firstLastGraphBimodalClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 83.889291,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:28:17 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 198,
+    "case": "global-wide-wrapped-case-insensitive-distinct-zero",
+    "runtime": "baseline",
+    "durationMs": 3.476375,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:28:20 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  },
+  {
+    "iteration": 199,
+    "case": "wrapped-earlyGraphClassPrefix",
+    "runtime": "baseline",
+    "durationMs": 97.614958,
+    "status": 400,
+    "correct": false,
+    "responseSha256": "52dfab5b32337271a778c7f3db6baa748423aac320c302d9cc2a8de5ca3f4d04",
+    "failure": null,
+    "response": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:28:22 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "111"
+      },
+      "body": "{\n  \"error\": \"Cannot grow a closed mapped CallSite string-index reservation\",\n  \"code\": \"cypher_query_failed\"\n}",
+      "json": {
+        "error": "Cannot grow a closed mapped CallSite string-index reservation",
+        "code": "cypher_query_failed"
+      }
+    }
+  }
+]

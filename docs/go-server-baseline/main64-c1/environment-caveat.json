@@ -1,0 +1,22 @@
+{
+  "measurementClassification": "Provisional diagnostic baseline; not uncontended acceptance evidence",
+  "coTenancy": [
+    "Other agents performed source edits, builds and unit tests on the same host.",
+    "Cypher agent sent20 arithmetic oracle requests and1 additional toString boundary request to the measured baseline server during the c1 timing window. Agent acknowledged and stopped further requests."
+  ],
+  "baselinePid": 16519,
+  "baselineRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "serverConfiguration": {
+    "java": "17.0.18 arm64 Homebrew",
+    "maximumHeap": "8g",
+    "maxConcurrentCypher": 4,
+    "cypherMaxTimeoutMs": 60000,
+    "loadMode": "MAPPED",
+    "graphCount": 64
+  },
+  "scriptsSha256": {
+    "graphite-server/scripts/benchmark_http.py": "fb7c18e95db5806ca097b2b0ba39fe3ee1a825bbe44c22d53164a845d1a64553",
+    "graphite-server/scripts/http_parity.py": "bd80ef15bdf7b11e73f14da60b9be55e0ed13975139284503ee972696fa4ccab"
+  },
+  "requiredFollowup": "Repeat paired native/main full64 c1/c4 cold/warm protocol with competing workers idle before any10x acceptance claim."
+}

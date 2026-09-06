@@ -1,0 +1,847 @@
+[
+  {
+    "case": {
+      "name": "graphs",
+      "method": "GET",
+      "path": "/api/graphs",
+      "dynamicPointers": [
+        "/data",
+        "/graphs/0/path",
+        "/graphs/0/loadedAt"
+      ]
+    },
+    "baseline": {
+      "status": 200,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "486"
+      },
+      "body": "{\n  \"data\": \"/tmp/graphite-go-http-diff-real/baseline\",\n  \"loadMode\": \"MAPPED\",\n  \"count\": 1,\n  \"totals\": {\n    \"nodes\": 222589,\n    \"edges\": 235360,\n    \"methods\": 17584,\n    \"callSites\": 55707\n  },\n  \"graphs\": [\n    {\n      \"id\": \"tika\",\n      \"path\": \"/tmp/graphite-go-http-diff-real/baseline/tika\",\n      \"loadMode\": \"MAPPED\",\n      \"loadedAt\": \"2026-09-06T18:04:41.868040Z\",\n      \"nodes\": 222589,\n      \"edges\": 235360,\n      \"methods\": 17584,\n      \"callSites\": 55707\n    }\n  ]\n}",
+      "json": {
+        "data": "/tmp/graphite-go-http-diff-real/baseline",
+        "loadMode": "MAPPED",
+        "count": 1,
+        "totals": {
+          "nodes": 222589,
+          "edges": 235360,
+          "methods": 17584,
+          "callSites": 55707
+        },
+        "graphs": [
+          {
+            "id": "tika",
+            "path": "/tmp/graphite-go-http-diff-real/baseline/tika",
+            "loadMode": "MAPPED",
+            "loadedAt": "2026-09-06T18:04:41.868040Z",
+            "nodes": 222589,
+            "edges": 235360,
+            "methods": 17584,
+            "callSites": 55707
+          }
+        ]
+      }
+    },
+    "candidate": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json",
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Content-Length": "363",
+        "Connection": "close"
+      },
+      "body": "{\"count\":1,\"data\":\"/tmp/graphite-go-http-diff-real/candidate\",\"graphs\":[{\"id\":\"tika\",\"path\":\"/tmp/graphite-go-http-diff-real/candidate/tika\",\"loadMode\":\"MAPPED\",\"loadedAt\":\"2026-09-06T18:04:43.221089Z\",\"nodes\":222589,\"edges\":235360,\"methods\":17584,\"callSites\":55707}],\"loadMode\":\"MAPPED\",\"totals\":{\"nodes\":222589,\"edges\":235360,\"methods\":17584,\"callSites\":55707}}",
+      "json": {
+        "count": 1,
+        "data": "/tmp/graphite-go-http-diff-real/candidate",
+        "graphs": [
+          {
+            "id": "tika",
+            "path": "/tmp/graphite-go-http-diff-real/candidate/tika",
+            "loadMode": "MAPPED",
+            "loadedAt": "2026-09-06T18:04:43.221089Z",
+            "nodes": 222589,
+            "edges": 235360,
+            "methods": 17584,
+            "callSites": 55707
+          }
+        ],
+        "loadMode": "MAPPED",
+        "totals": {
+          "nodes": 222589,
+          "edges": 235360,
+          "methods": 17584,
+          "callSites": 55707
+        }
+      }
+    },
+    "equal": true
+  },
+  {
+    "case": {
+      "name": "descriptor",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}",
+      "dynamicPointers": [
+        "/graph/path",
+        "/graph/loadedAt"
+      ]
+    },
+    "baseline": {
+      "status": 200,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "259"
+      },
+      "body": "{\n  \"graph\": {\n    \"id\": \"tika\",\n    \"path\": \"/tmp/graphite-go-http-diff-real/baseline/tika\",\n    \"loadMode\": \"MAPPED\",\n    \"loadedAt\": \"2026-09-06T18:04:41.868040Z\",\n    \"nodes\": 222589,\n    \"edges\": 235360,\n    \"methods\": 17584,\n    \"callSites\": 55707\n  }\n}",
+      "json": {
+        "graph": {
+          "id": "tika",
+          "path": "/tmp/graphite-go-http-diff-real/baseline/tika",
+          "loadMode": "MAPPED",
+          "loadedAt": "2026-09-06T18:04:41.868040Z",
+          "nodes": 222589,
+          "edges": 235360,
+          "methods": 17584,
+          "callSites": 55707
+        }
+      }
+    },
+    "candidate": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json",
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Content-Length": "204",
+        "Connection": "close"
+      },
+      "body": "{\"graph\":{\"id\":\"tika\",\"path\":\"/tmp/graphite-go-http-diff-real/candidate/tika\",\"loadMode\":\"MAPPED\",\"loadedAt\":\"2026-09-06T18:04:43.221089Z\",\"nodes\":222589,\"edges\":235360,\"methods\":17584,\"callSites\":55707}}",
+      "json": {
+        "graph": {
+          "id": "tika",
+          "path": "/tmp/graphite-go-http-diff-real/candidate/tika",
+          "loadMode": "MAPPED",
+          "loadedAt": "2026-09-06T18:04:43.221089Z",
+          "nodes": 222589,
+          "edges": 235360,
+          "methods": 17584,
+          "callSites": 55707
+        }
+      }
+    },
+    "equal": true
+  },
+  {
+    "case": {
+      "name": "node-CallSite",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/6041281"
+    },
+    "baseline": {
+      "status": 200,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "219"
+      },
+      "body": "{\n  \"type\": \"CallSiteNode\",\n  \"id\": 6041281,\n  \"caller\": \"org.xml.sax.SAXNotSupportedException.\\u003cinit\\u003e()\",\n  \"callee\": \"org.xml.sax.SAXException.\\u003cinit\\u003e()\",\n  \"label\": \"SAXException.\\u003cinit\\u003e\"\n}",
+      "json": {
+        "type": "CallSiteNode",
+        "id": 6041281,
+        "caller": "org.xml.sax.SAXNotSupportedException.<init>()",
+        "callee": "org.xml.sax.SAXException.<init>()",
+        "label": "SAXException.<init>"
+      }
+    },
+    "candidate": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json",
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Content-Length": "198",
+        "Connection": "close"
+      },
+      "body": "{\"callee\":\"org.xml.sax.SAXException.\\u003cinit\\u003e()\",\"caller\":\"org.xml.sax.SAXNotSupportedException.\\u003cinit\\u003e()\",\"id\":6041281,\"label\":\"SAXException.\\u003cinit\\u003e\",\"type\":\"CallSiteNode\"}",
+      "json": {
+        "callee": "org.xml.sax.SAXException.<init>()",
+        "caller": "org.xml.sax.SAXNotSupportedException.<init>()",
+        "id": 6041281,
+        "label": "SAXException.<init>",
+        "type": "CallSiteNode"
+      }
+    },
+    "equal": true
+  },
+  {
+    "case": {
+      "name": "node-IntConstant",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/6041652"
+    },
+    "baseline": {
+      "status": 200,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "74"
+      },
+      "body": "{\n  \"type\": \"IntConstant\",\n  \"id\": 6041652,\n  \"value\": 0,\n  \"label\": \"0\"\n}",
+      "json": {
+        "type": "IntConstant",
+        "id": 6041652,
+        "value": 0,
+        "label": "0"
+      }
+    },
+    "candidate": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json",
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Content-Length": "57",
+        "Connection": "close"
+      },
+      "body": "{\"id\":6041652,\"label\":\"0\",\"type\":\"IntConstant\",\"value\":0}",
+      "json": {
+        "id": 6041652,
+        "label": "0",
+        "type": "IntConstant",
+        "value": 0
+      }
+    },
+    "equal": true
+  },
+  {
+    "case": {
+      "name": "node-StringConstant",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/6041799"
+    },
+    "baseline": {
+      "status": 200,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "149"
+      },
+      "body": "{\n  \"type\": \"StringConstant\",\n  \"id\": 6041799,\n  \"value\": \"http://www.w3.org/2000/09/xmldsig#\",\n  \"label\": \"\\\"http://www.w3.org/2000/09/xmldsig#\\\"\"\n}",
+      "json": {
+        "type": "StringConstant",
+        "id": 6041799,
+        "value": "http://www.w3.org/2000/09/xmldsig#",
+        "label": "\"http://www.w3.org/2000/09/xmldsig#\""
+      }
+    },
+    "candidate": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json",
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Content-Length": "132",
+        "Connection": "close"
+      },
+      "body": "{\"id\":6041799,\"label\":\"\\\"http://www.w3.org/2000/09/xmldsig#\\\"\",\"type\":\"StringConstant\",\"value\":\"http://www.w3.org/2000/09/xmldsig#\"}",
+      "json": {
+        "id": 6041799,
+        "label": "\"http://www.w3.org/2000/09/xmldsig#\"",
+        "type": "StringConstant",
+        "value": "http://www.w3.org/2000/09/xmldsig#"
+      }
+    },
+    "equal": true
+  },
+  {
+    "case": {
+      "name": "node-LongConstant",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/6042612"
+    },
+    "baseline": {
+      "status": 200,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "78"
+      },
+      "body": "{\n  \"type\": \"LongConstant\",\n  \"id\": 6042612,\n  \"value\": 33,\n  \"label\": \"33L\"\n}",
+      "json": {
+        "type": "LongConstant",
+        "id": 6042612,
+        "value": 33,
+        "label": "33L"
+      }
+    },
+    "candidate": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json",
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Content-Length": "61",
+        "Connection": "close"
+      },
+      "body": "{\"id\":6042612,\"label\":\"33L\",\"type\":\"LongConstant\",\"value\":33}",
+      "json": {
+        "id": 6042612,
+        "label": "33L",
+        "type": "LongConstant",
+        "value": 33
+      }
+    },
+    "equal": true
+  },
+  {
+    "case": {
+      "name": "node-FloatConstant",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/6122734"
+    },
+    "baseline": {
+      "status": 500,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "145"
+      },
+      "body": "{\n    \"title\": \"Server Error\",\n    \"status\": 500,\n    \"type\": \"https://javalin.io/documentation#internalservererrorresponse\",\n    \"details\": {}\n}",
+      "json": {
+        "title": "Server Error",
+        "status": 500,
+        "type": "https://javalin.io/documentation#internalservererrorresponse",
+        "details": {}
+      }
+    },
+    "candidate": {
+      "status": 500,
+      "headers": {
+        "Content-Type": "text/plain; charset=utf-8",
+        "X-Content-Type-Options": "nosniff",
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Content-Length": "29",
+        "Connection": "close"
+      },
+      "body": "json: unsupported value: NaN\n"
+    },
+    "equal": false
+  },
+  {
+    "case": {
+      "name": "node-DoubleConstant",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/6106695"
+    },
+    "baseline": {
+      "status": 200,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "116"
+      },
+      "body": "{\n  \"type\": \"DoubleConstant\",\n  \"id\": 6106695,\n  \"value\": 9.223372036854776E18,\n  \"label\": \"9.223372036854776E18d\"\n}",
+      "json": {
+        "type": "DoubleConstant",
+        "id": 6106695,
+        "value": 9.223372036854776e+18,
+        "label": "9.223372036854776E18d"
+      }
+    },
+    "candidate": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json",
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Content-Length": "99",
+        "Connection": "close"
+      },
+      "body": "{\"id\":6106695,\"label\":\"9.223372036854776e+18d\",\"type\":\"DoubleConstant\",\"value\":9223372036854776000}",
+      "json": {
+        "id": 6106695,
+        "label": "9.223372036854776e+18d",
+        "type": "DoubleConstant",
+        "value": 9223372036854776000
+      }
+    },
+    "equal": false
+  },
+  {
+    "case": {
+      "name": "node-NullConstant",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/6041645"
+    },
+    "baseline": {
+      "status": 200,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "64"
+      },
+      "body": "{\n  \"type\": \"NullConstant\",\n  \"id\": 6041645,\n  \"label\": \"null\"\n}",
+      "json": {
+        "type": "NullConstant",
+        "id": 6041645,
+        "label": "null"
+      }
+    },
+    "candidate": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json",
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Content-Length": "51",
+        "Connection": "close"
+      },
+      "body": "{\"id\":6041645,\"label\":\"null\",\"type\":\"NullConstant\"}",
+      "json": {
+        "id": 6041645,
+        "label": "null",
+        "type": "NullConstant"
+      }
+    },
+    "equal": true
+  },
+  {
+    "case": {
+      "name": "node-Field",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/6041287"
+    },
+    "baseline": {
+      "status": 200,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "202"
+      },
+      "body": "{\n  \"type\": \"FieldNode\",\n  \"id\": 6041287,\n  \"class\": \"org.xml.sax.SAXNotSupportedException\",\n  \"name\": \"serialVersionUID\",\n  \"fieldType\": \"long\",\n  \"label\": \"SAXNotSupportedException.serialVersionUID\"\n}",
+      "json": {
+        "type": "FieldNode",
+        "id": 6041287,
+        "class": "org.xml.sax.SAXNotSupportedException",
+        "name": "serialVersionUID",
+        "fieldType": "long",
+        "label": "SAXNotSupportedException.serialVersionUID"
+      }
+    },
+    "candidate": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json",
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Content-Length": "177",
+        "Connection": "close"
+      },
+      "body": "{\"class\":\"org.xml.sax.SAXNotSupportedException\",\"fieldType\":\"long\",\"id\":6041287,\"label\":\"SAXNotSupportedException.serialVersionUID\",\"name\":\"serialVersionUID\",\"type\":\"FieldNode\"}",
+      "json": {
+        "class": "org.xml.sax.SAXNotSupportedException",
+        "fieldType": "long",
+        "id": 6041287,
+        "label": "SAXNotSupportedException.serialVersionUID",
+        "name": "serialVersionUID",
+        "type": "FieldNode"
+      }
+    },
+    "equal": true
+  },
+  {
+    "case": {
+      "name": "node-Parameter",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/6041283"
+    },
+    "baseline": {
+      "status": 200,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "204"
+      },
+      "body": "{\n  \"type\": \"ParameterNode\",\n  \"id\": 6041283,\n  \"index\": 0,\n  \"paramType\": \"java.lang.String\",\n  \"method\": \"org.xml.sax.SAXNotSupportedException.\\u003cinit\\u003e(java.lang.String)\",\n  \"label\": \"param#0\"\n}",
+      "json": {
+        "type": "ParameterNode",
+        "id": 6041283,
+        "index": 0,
+        "paramType": "java.lang.String",
+        "method": "org.xml.sax.SAXNotSupportedException.<init>(java.lang.String)",
+        "label": "param#0"
+      }
+    },
+    "candidate": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json",
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Content-Length": "179",
+        "Connection": "close"
+      },
+      "body": "{\"id\":6041283,\"index\":0,\"label\":\"param#0\",\"method\":\"org.xml.sax.SAXNotSupportedException.\\u003cinit\\u003e(java.lang.String)\",\"paramType\":\"java.lang.String\",\"type\":\"ParameterNode\"}",
+      "json": {
+        "id": 6041283,
+        "index": 0,
+        "label": "param#0",
+        "method": "org.xml.sax.SAXNotSupportedException.<init>(java.lang.String)",
+        "paramType": "java.lang.String",
+        "type": "ParameterNode"
+      }
+    },
+    "equal": true
+  },
+  {
+    "case": {
+      "name": "node-Return",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/6041259"
+    },
+    "baseline": {
+      "status": 200,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "123"
+      },
+      "body": "{\n  \"type\": \"ReturnNode\",\n  \"id\": 6041259,\n  \"method\": \"org.xml.sax.ext.Attributes2.isDeclared(int)\",\n  \"label\": \"return\"\n}",
+      "json": {
+        "type": "ReturnNode",
+        "id": 6041259,
+        "method": "org.xml.sax.ext.Attributes2.isDeclared(int)",
+        "label": "return"
+      }
+    },
+    "candidate": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json",
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Content-Length": "106",
+        "Connection": "close"
+      },
+      "body": "{\"id\":6041259,\"label\":\"return\",\"method\":\"org.xml.sax.ext.Attributes2.isDeclared(int)\",\"type\":\"ReturnNode\"}",
+      "json": {
+        "id": 6041259,
+        "label": "return",
+        "method": "org.xml.sax.ext.Attributes2.isDeclared(int)",
+        "type": "ReturnNode"
+      }
+    },
+    "equal": true
+  },
+  {
+    "case": {
+      "name": "node-LocalVariable",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/6041280"
+    },
+    "baseline": {
+      "status": 200,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "207"
+      },
+      "body": "{\n  \"type\": \"LocalVariable\",\n  \"id\": 6041280,\n  \"name\": \"this\",\n  \"varType\": \"org.xml.sax.SAXNotSupportedException\",\n  \"method\": \"org.xml.sax.SAXNotSupportedException.\\u003cinit\\u003e()\",\n  \"label\": \"this\"\n}",
+      "json": {
+        "type": "LocalVariable",
+        "id": 6041280,
+        "name": "this",
+        "varType": "org.xml.sax.SAXNotSupportedException",
+        "method": "org.xml.sax.SAXNotSupportedException.<init>()",
+        "label": "this"
+      }
+    },
+    "candidate": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json",
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Content-Length": "182",
+        "Connection": "close"
+      },
+      "body": "{\"id\":6041280,\"label\":\"this\",\"method\":\"org.xml.sax.SAXNotSupportedException.\\u003cinit\\u003e()\",\"name\":\"this\",\"type\":\"LocalVariable\",\"varType\":\"org.xml.sax.SAXNotSupportedException\"}",
+      "json": {
+        "id": 6041280,
+        "label": "this",
+        "method": "org.xml.sax.SAXNotSupportedException.<init>()",
+        "name": "this",
+        "type": "LocalVariable",
+        "varType": "org.xml.sax.SAXNotSupportedException"
+      }
+    },
+    "equal": true
+  },
+  {
+    "case": {
+      "name": "node-ResourceFile",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/6041227"
+    },
+    "baseline": {
+      "status": 200,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "168"
+      },
+      "body": "{\n  \"type\": \"ResourceFileNode\",\n  \"id\": 6041227,\n  \"path\": \"InternetCodepages.txt\",\n  \"source\": \"shard-00.jar\",\n  \"format\": \"text\",\n  \"label\": \"InternetCodepages.txt\"\n}",
+      "json": {
+        "type": "ResourceFileNode",
+        "id": 6041227,
+        "path": "InternetCodepages.txt",
+        "source": "shard-00.jar",
+        "format": "text",
+        "label": "InternetCodepages.txt"
+      }
+    },
+    "candidate": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json",
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Content-Length": "158",
+        "Connection": "close"
+      },
+      "body": "{\"format\":\"text\",\"id\":6041227,\"label\":\"InternetCodepages.txt\",\"path\":\"InternetCodepages.txt\",\"profile\":null,\"source\":\"shard-00.jar\",\"type\":\"ResourceFileNode\"}",
+      "json": {
+        "format": "text",
+        "id": 6041227,
+        "label": "InternetCodepages.txt",
+        "path": "InternetCodepages.txt",
+        "profile": null,
+        "source": "shard-00.jar",
+        "type": "ResourceFileNode"
+      }
+    },
+    "equal": false
+  },
+  {
+    "case": {
+      "name": "node-missing",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/0"
+    },
+    "baseline": {
+      "status": 404,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "text/plain",
+        "Content-Length": "14"
+      },
+      "body": "Node not found"
+    },
+    "candidate": {
+      "status": 404,
+      "headers": {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Content-Length": "14",
+        "Connection": "close"
+      },
+      "body": "Node not found"
+    },
+    "equal": true
+  },
+  {
+    "case": {
+      "name": "node-negative",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/-1"
+    },
+    "baseline": {
+      "status": 404,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "text/plain",
+        "Content-Length": "14"
+      },
+      "body": "Node not found"
+    },
+    "candidate": {
+      "status": 404,
+      "headers": {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Content-Length": "14",
+        "Connection": "close"
+      },
+      "body": "Node not found"
+    },
+    "equal": true
+  },
+  {
+    "case": {
+      "name": "node-invalid",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/abc"
+    },
+    "baseline": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "text/plain",
+        "Content-Length": "15"
+      },
+      "body": "Invalid node ID"
+    },
+    "candidate": {
+      "status": 400,
+      "headers": {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Content-Length": "15",
+        "Connection": "close"
+      },
+      "body": "Invalid node ID"
+    },
+    "equal": true
+  },
+  {
+    "case": {
+      "name": "node-overflow",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/node/2147483648"
+    },
+    "baseline": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "text/plain",
+        "Content-Length": "15"
+      },
+      "body": "Invalid node ID"
+    },
+    "candidate": {
+      "status": 400,
+      "headers": {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Content-Length": "15",
+        "Connection": "close"
+      },
+      "body": "Invalid node ID"
+    },
+    "equal": true
+  },
+  {
+    "case": {
+      "name": "annotations-missing-member",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/annotations?class=org.apache.tika.Tika"
+    },
+    "baseline": {
+      "status": 400,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "text/plain",
+        "Content-Length": "26"
+      },
+      "body": "Missing 'member' parameter"
+    },
+    "candidate": {
+      "status": 400,
+      "headers": {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Content-Length": "26",
+        "Connection": "close"
+      },
+      "body": "Missing 'member' parameter"
+    },
+    "equal": true
+  },
+  {
+    "case": {
+      "name": "annotations-unknown",
+      "method": "GET",
+      "path": "/api/graphs/{graphId}/annotations?class=absent.Class&member=absent"
+    },
+    "baseline": {
+      "status": 200,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "2"
+      },
+      "body": "{}",
+      "json": {}
+    },
+    "candidate": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json",
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Content-Length": "2",
+        "Connection": "close"
+      },
+      "body": "{}",
+      "json": {}
+    },
+    "equal": true
+  },
+  {
+    "case": {
+      "name": "annotations-root-unknown",
+      "method": "GET",
+      "path": "/api/annotations?class=absent.Class&member=absent"
+    },
+    "baseline": {
+      "status": 200,
+      "headers": {
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "120"
+      },
+      "body": "{\n  \"graphCount\": 1,\n  \"resultGraphCount\": 1,\n  \"results\": [\n    {\n      \"graphId\": \"tika\",\n      \"data\": {}\n    }\n  ]\n}",
+      "json": {
+        "graphCount": 1,
+        "resultGraphCount": 1,
+        "results": [
+          {
+            "graphId": "tika",
+            "data": {}
+          }
+        ]
+      }
+    },
+    "candidate": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json",
+        "Date": "Sun, 06 Sep 2026 18:06:53 GMT",
+        "Content-Length": "78",
+        "Connection": "close"
+      },
+      "body": "{\"graphCount\":1,\"resultGraphCount\":1,\"results\":[{\"data\":{},\"graphId\":\"tika\"}]}",
+      "json": {
+        "graphCount": 1,
+        "resultGraphCount": 1,
+        "results": [
+          {
+            "data": {},
+            "graphId": "tika"
+          }
+        ]
+      }
+    },
+    "equal": true
+  }
+]
