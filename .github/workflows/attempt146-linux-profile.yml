@@ -1,0 +1,75 @@
+name: Attempt 146 Linux diagnostic (not acceptance)
+
+on:
+  push:
+    branches: [codex/attempt146-linux-profile]
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  global34-diagnostic:
+    if: github.repository == 'johnsonlee/graphite' && github.ref == 'refs/heads/codex/attempt146-linux-profile'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      JAVA_OPTS: -Xmx2g -XX:MetaspaceSize=512m -Dfile.encoding=UTF-8
+      JVM_OPTS: -Xmx2g -XX:MetaspaceSize=512m -Dfile.encoding=UTF-8
+    steps:
+      - name: Checkout diagnostic scripts from this exact push
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+          path: diagnostic
+          persist-credentials: false
+      - name: Checkout frozen candidate production and original harness
+        uses: actions/checkout@v7
+        with:
+          ref: 23dafb3dc82b31ea78a5d399d3ed68f70de5340f
+          path: candidate
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Checkout frozen base production
+        uses: actions/checkout@v7
+        with:
+          ref: 4e328b0109e13c896b74004823fb049fcb19251a
+          path: base
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up Java as in original global workflow
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Download and digest-verify exact original-run artifacts and official profiler
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 diagnostic/.github/scripts/linux-diagnostic/fetch-inputs.py --mode global
+      - name: Prepare and record ephemeral runner perf permissions
+        run: python3 diagnostic/.github/scripts/linux-diagnostic/prepare-perf.py
+      - name: Verify original identities, build marker-only overlay, run fixed diagnostics
+        run: |
+          python3 diagnostic/.github/scripts/linux-diagnostic/global/run-global.py \
+            --base-tree base \
+            --candidate-tree candidate \
+            --fixture-dir shared-fixture64 \
+            --evidence-dir global-evidence/benchmark-global-wide-116-1/reference-4e328b0109e13c896b74004823fb049fcb19251a \
+            --async-library diagnostic-tools/async-profiler-4.3-linux-x64/lib/libasyncProfiler.so \
+            --output diagnostic-output/global
+      - name: Preserve completion, environment, source and output hashes even on failure
+        if: always()
+        env:
+          DIAGNOSTIC_JOB_STATUS: ${{ job.status }}
+        run: python3 diagnostic/.github/scripts/linux-diagnostic/finalize.py
+      - name: Upload diagnostic evidence even on failure
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: attempt146-linux-global-diagnostic-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            diagnostic-output/
+            !diagnostic-output/**/classes/**
+            !diagnostic-output/**/*.jar
+          if-no-files-found: error
+          retention-days: 14
