@@ -176,12 +176,12 @@ func (e evaluator) call(name string, args []any) any {
 			return nil
 		}
 		if name == "ltrim" {
-			return strings.TrimLeftFunc(s, func(r rune) bool { return javaWhitespace[r] })
+			return strings.TrimLeftFunc(s, func(r rune) bool { return javaWhitespace(r) })
 		}
 		if name == "rtrim" {
-			return strings.TrimRightFunc(s, func(r rune) bool { return javaWhitespace[r] })
+			return strings.TrimRightFunc(s, func(r rune) bool { return javaWhitespace(r) })
 		}
-		return strings.TrimFunc(s, func(r rune) bool { return javaWhitespace[r] })
+		return strings.TrimFunc(s, func(r rune) bool { return javaWhitespace(r) })
 	case "replace", "split", "substring", "left", "right":
 		s, ok := value.(string)
 		if !ok {

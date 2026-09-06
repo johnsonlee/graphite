@@ -51,7 +51,7 @@ evaluate ORDER BY lazily during comparison, so a one-row result does not evaluat
 an otherwise-invalid sort expression.
 
 Reproduce with `testdata/regenerate-functions.py <pinned-main-jar>` and
-`testdata/generate-java-unicode.py <pinned-main-jar>`. Java is development-only;
+`../javastring/testdata/generate-java-unicode.py <pinned-main-jar>`. Java is development-only;
 the compiled query engine never invokes a JVM. All fixtures are correctness-only.
 The remaining server/planner/procedure matrix and performance acceptance remain
 separate work; these results do not establish full server parity or a speedup.
