@@ -487,27 +487,16 @@ class MappedCallSiteStringIndexViewTest {
         fun hash(text: String, position: Int): Int =
             (text[position].code * 31 + text[position + 1].code) * 31 + text[position + 2].code
 
-        val setup = TupleLookupSetup(emptyList(), intArrayOf(0))
-        val values = listOf("ab", "GetGet", "run")
-        setup.leadingValues(0, values)
+        val trigrams = LeadingValueTrigrams(0, listOf("ab", "GetGet", "run"))
 
-        assertEquals(0, setup.leadingTrigramHashes(0).size)
+        assertEquals(0, trigrams.hashes[0].size)
         // "getget" has trigrams get, etg, tge, get: three distinct hashes in last-to-first order.
         assertEquals(
             listOf(hash("getget", 3), hash("getget", 2), hash("getget", 1)),
-            setup.leadingTrigramHashes(1).toList()
+            trigrams.hashes[1].toList()
         )
-        assertSame(setup.leadingTrigramHashes(1), setup.leadingTrigramHashes(1))
-        assertEquals(listOf(hash("run", 0)), setup.leadingTrigramHashes(2).toList())
-        assertEquals(listOf(0, 0, 0), (0..2).map(setup::leadingAbsentHint))
-
-        setup.rememberLeadingAbsent(1, 2)
-        assertEquals(2, setup.leadingAbsentHint(1))
-        // Re-registering the same values keeps the hints; a new list resets them.
-        setup.leadingValues(0, values)
-        assertEquals(2, setup.leadingAbsentHint(1))
-        setup.leadingValues(0, listOf("ab", "GetGet", "run"))
-        assertEquals(0, setup.leadingAbsentHint(1))
+        assertEquals(listOf(hash("run", 0)), trigrams.hashes[2].toList())
+        assertEquals(listOf(0, 0, 0), trigrams.absentHints.toList())
     }
 
     @Test

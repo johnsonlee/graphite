@@ -4938,7 +4938,14 @@ targeted and dense projection rows load the same classes as before and stay with
 jar-order band (four-properties-targeted `5.72 -> 6.46 / 6.29 -> 6.41 ms` wall against a
 `5.72`-`6.29` spread of the base itself between orders).
 
-**Conclusion:** kept.
+**Conclusion:** reverted. The head carrying this change (9bbfc11) passed the three 10x pairs
+(11.15x / 15.46x / 10.59x) but failed the gate on two secondary checks that its diff does not
+touch: pair 2's wrapped non-DISTINCT shape at 1.84x (base targeted row 5.78 ms against the
+candidate's dense row 3.15 ms; 2x required) and the startup-prepared routing state's
+request-selected P95 (six candidate rows of 1.1-2.5 ms among 192 rows of 0.1-0.4 ms, +75.5%
+against a 15% limit). Exact-head results are authoritative and hosted re-runs are not
+available, so the change is reverted as a failed attempt and may be re-attempted on a later
+head.
 
 ### 2026-09-06 - Attempt 156, follow-up: the length shortcut behind the lowercase transform
 
