@@ -22,6 +22,16 @@ class StringPropertyTupleSetTest {
         assertTrue(listOf("c.Gamma", "run", null, "get") in tuples)
         assertFalse(listOf("a.Alpha", "run", "b.Beta", "put") in tuples)
         assertEquals(setOf(alpha, gamma, alphaAgain), tuples)
+        assertEquals<Set<List<String?>>>(tuples, setOf(alpha, gamma, alphaAgain))
+        assertEquals(tuples, tuples)
+        assertEquals(setOf(alpha, gamma, alphaAgain).hashCode(), tuples.hashCode())
+        assertEquals(listOf(alpha, gamma, alphaAgain).toString(), tuples.toString())
+        assertTrue(tuples.containsAll(listOf(alpha, gamma)))
+        assertFalse(tuples.containsAll(listOf(alpha, listOf("missing"))))
+        assertFalse(tuples.isEmpty())
+        assertTrue(StringPropertyTupleSet(emptyList()).isEmpty())
+        assertFalse(tuples.equals(listOf(alpha, gamma, alphaAgain)))
+        assertFalse(tuples.equals(setOf(alpha)))
     }
 
     @Test

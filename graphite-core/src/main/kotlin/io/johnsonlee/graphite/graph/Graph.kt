@@ -210,8 +210,10 @@ data class StringPropertyDistinctRow(
  * Immutable set of projected tuples shared by every source of one provenance recheck. Column
  * groupings are computed once and cached, so a storage backend can reject every tuple that shares
  * an absent value with a single dictionary lookup instead of one lookup per tuple per source.
+ * The set contract is implemented here rather than inherited, so the first DISTINCT request of a
+ * process loads this one class instead of a base class and its companion.
  */
-class StringPropertyTupleSet(tuples: Collection<List<String?>>) : AbstractSet<List<String?>>() {
+class StringPropertyTupleSet(tuples: Collection<List<String?>>) : Set<List<String?>> {
     private val ordered: List<List<String?>> = LinkedHashSet(tuples).toList()
     private val members: Set<List<String?>> = ordered.toHashSet()
     private val groupings = arrayOfNulls<Map<String?, List<List<String?>>>>(
@@ -226,6 +228,16 @@ class StringPropertyTupleSet(tuples: Collection<List<String?>>) : AbstractSet<Li
     override fun iterator(): Iterator<List<String?>> = ordered.iterator()
 
     override fun contains(element: List<String?>): Boolean = element in members
+
+    override fun containsAll(elements: Collection<List<String?>>): Boolean = members.containsAll(elements)
+
+    override fun isEmpty(): Boolean = ordered.isEmpty()
+
+    override fun equals(other: Any?): Boolean = other === this || other is Set<*> && members == other
+
+    override fun hashCode(): Int = members.hashCode()
+
+    override fun toString(): String = ordered.toString()
 
     /** The distinct non-null values of [column] in ascending code-unit order; computed once per column. */
     fun sortedValues(column: Int): List<String> {

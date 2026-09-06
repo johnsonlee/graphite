@@ -2443,11 +2443,15 @@ internal fun stringMatches(
     expected: String
 ): Boolean {
     val transformed = transformString(actual, transform)
-    return when (mode) {
-        StringMatchMode.EQUALS -> transformed == expected
-        StringMatchMode.STARTS_WITH -> transformed.startsWith(expected)
-        StringMatchMode.ENDS_WITH -> transformed.endsWith(expected)
-        StringMatchMode.CONTAINS -> transformed.contains(expected)
+    // Compared by identity rather than switched on, so a cold request never loads a when-mapping class.
+    return if (mode == StringMatchMode.EQUALS) {
+        transformed == expected
+    } else if (mode == StringMatchMode.STARTS_WITH) {
+        transformed.startsWith(expected)
+    } else if (mode == StringMatchMode.ENDS_WITH) {
+        transformed.endsWith(expected)
+    } else {
+        transformed.contains(expected)
     }
 }
 
@@ -2505,10 +2509,8 @@ internal class BufferedGraphWorkConsumer(private val delegate: GraphWorkConsumer
     }
 }
 
-private fun transformString(value: String, transform: StringValueTransform?): String = when (transform) {
-    null -> value
-    StringValueTransform.LOWERCASE -> value.lowercase()
-}
+private fun transformString(value: String, transform: StringValueTransform?): String =
+    if (transform == StringValueTransform.LOWERCASE) value.lowercase() else value
 
 private fun trigramHash(value: String, position: Int): Int =
     (value[position].code * STRING_HASH_FACTOR + value[position + 1].code) * STRING_HASH_FACTOR +

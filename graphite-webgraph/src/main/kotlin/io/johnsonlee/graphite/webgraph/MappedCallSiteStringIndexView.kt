@@ -718,7 +718,7 @@ internal class MappedCallSiteStringIndexView private constructor(
                     if ((index and TUPLE_INTERRUPTION_POLL_MASK) == 0) checkViewInterrupted()
                     val value = leadingValues[index]
                     if (!lookup.leadingValuePresent(value, leadingTrigrams, index, accounting)) continue
-                    for (values in grouped.getValue(value)) {
+                    for (values in grouped[value] ?: continue) {
                         val order = lookup.hit(values, accounting)
                         if (order >= 0L) hits += StringPropertyDistinctRow(order, values)
                     }

@@ -4774,3 +4774,25 @@ the wrapped single-graph rows within `±0.4 ms`.
 **Conclusion:** kept. The seven classes the row still loads are the row, its layout, the
 result cache and the storage projection row, which are the result itself, plus the JDK entry
 and set classes the public map contract requires.
+
+### 2026-09-06 - Attempt 152: Load fewer classes on the first DISTINCT provenance row
+
+**Hypothesis:** after Attempt 151 the first DISTINCT dense row of a cold process still loaded ten
+classes, four of which exist only because of how the code is written: the Kotlin `AbstractSet`
+base class and its companion behind `StringPropertyTupleSet`, the default-value marker interface
+pulled in by a `getValue` call on the grouped tuples, and the `when` mapping table for the match
+mode and transform enums of the graph's string matcher.
+
+**Change:** `StringPropertyTupleSet` implements `Set` directly with the same equality, hashing and
+string form as before, the tuple lookup indexes the grouped tuples with a plain map read, and the
+graph's string matcher and value transform compare their enums instead of switching on them.
+
+**Evidence (local, 64 fixtures, fresh JVM in benchmark order, ten alternating runs, wall
+medians):** distinct-dense first execution `8.53 -> 8.03 ms` (classes loaded by the row
+`10 -> 6`, CPU `7.78 -> 6.48 ms`), second execution `4.45 -> 4.28 ms`, `add` first execution
+`9.25 -> 8.52 ms`; the targeted projection rows and the wrapped single-graph rows within
+`±0.4 ms`.
+
+**Conclusion:** kept. The six classes the row still loads are the distinct row, the tuple set,
+the lookup setup, the tuple lookup, the leading-value trigrams and the raw string-id tuple, each
+of which carries state the request needs.
