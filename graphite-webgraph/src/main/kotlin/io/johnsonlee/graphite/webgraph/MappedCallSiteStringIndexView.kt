@@ -278,6 +278,117 @@ internal class MappedCallSiteStringIndexView private constructor(
 
         internal fun rows(propertyIndex: Int): IntArray = resolve()[propertyIndex] ?: EMPTY_INTS
 
+        /** Number of the plan's posting ranges that hold at least one posting. */
+        internal fun nonEmptyRangeCount(): Int {
+            var count = 0
+            repeat(CALL_SITE_STRING_PROPERTY_COUNT) { propertyIndex ->
+                rows(propertyIndex).forEach { row ->
+                    if (postingStart(propertyIndex, row) < propertyPostingEnds[propertyIndex].get(row)) count++
+                }
+            }
+            return count
+        }
+
+        // The k-way merge of the plan's posting ranges in encounter order keeps one cursor per
+        // range in parallel arrays and a binary min-heap of cursor indexes, so a cold request
+        // loads no cursor or heap class before its first merged row.
+        private var mergeProperty = EMPTY_INTS
+        private var mergePosition = EMPTY_INTS
+        private var mergeFirst = EMPTY_INTS
+        private var mergeLast = EMPTY_INTS
+        private var mergeValidated: Array<LongArray?> = NO_VALIDATED_ORDERS
+        private var mergeNode = EMPTY_INTS
+        private var mergeOrder = EMPTY_LONGS
+        private var mergeHeap = EMPTY_INTS
+        private var mergeSize = 0
+
+        /**
+         * Opens one cursor per non-empty posting range ([count] of them) on its validated
+         * encounter orders; false when a range fails validation and the caller must use raw
+         * storage.
+         */
+        internal fun openPostingMerge(count: Int): Boolean {
+            mergeProperty = IntArray(count)
+            mergePosition = IntArray(count)
+            mergeFirst = IntArray(count)
+            mergeLast = IntArray(count)
+            mergeValidated = arrayOfNulls(count)
+            mergeNode = IntArray(count)
+            mergeOrder = LongArray(count)
+            mergeHeap = IntArray(count)
+            var cursor = 0
+            repeat(CALL_SITE_STRING_PROPERTY_COUNT) { propertyIndex ->
+                rows(propertyIndex).forEach { row ->
+                    val start = postingStart(propertyIndex, row)
+                    val end = propertyPostingEnds[propertyIndex].get(row)
+                    if (start < end) {
+                        val orders = validatedPostingOrders(propertyIndex, row, start until end, workConsumer)
+                            ?: return false
+                        mergeProperty[cursor] = propertyIndex
+                        mergeFirst[cursor] = start
+                        mergePosition[cursor] = start
+                        mergeLast[cursor] = end - 1
+                        mergeValidated[cursor] = if (orders === KNOWN_VALID_ORDERS) null else orders
+                        mergeNode[cursor] = propertyPostingNodeIds[propertyIndex].get(start)
+                        mergeOrder[cursor] = mergeOrderAt(cursor, start)
+                        mergeHeap[cursor] = cursor
+                        cursor++
+                    }
+                }
+            }
+            mergeSize = cursor
+            for (index in cursor / 2 - 1 downTo 0) mergeSiftDown(index)
+            return true
+        }
+
+        internal fun mergeHasNext(): Boolean = mergeSize > 0
+
+        /** Node id at the head of the merge: the smallest encounter order, then node id. */
+        internal fun mergeNodeId(): Int = mergeNode[mergeHeap[0]]
+
+        internal fun mergeOrder(): Long = mergeOrder[mergeHeap[0]]
+
+        /** Moves the head cursor to its next posting, or drops it when its range is exhausted. */
+        internal fun mergeAdvance() {
+            val cursor = mergeHeap[0]
+            val position = mergePosition[cursor] + 1
+            if (position <= mergeLast[cursor]) {
+                mergePosition[cursor] = position
+                mergeNode[cursor] = propertyPostingNodeIds[mergeProperty[cursor]].get(position)
+                mergeOrder[cursor] = mergeOrderAt(cursor, position)
+                mergeSiftDown(0)
+            } else {
+                mergeSize--
+                if (mergeSize > 0) {
+                    mergeHeap[0] = mergeHeap[mergeSize]
+                    mergeSiftDown(0)
+                }
+            }
+        }
+
+        private fun mergeOrderAt(cursor: Int, position: Int): Long =
+            mergeValidated[cursor]?.get(position - mergeFirst[cursor]) ?: nodeOrder(mergeNode[cursor])
+
+        private fun mergeLess(left: Int, right: Int): Boolean =
+            mergeOrder[left] < mergeOrder[right] ||
+                mergeOrder[left] == mergeOrder[right] && mergeNode[left] < mergeNode[right]
+
+        private fun mergeSiftDown(start: Int) {
+            val heap = mergeHeap
+            var parent = start
+            while (true) {
+                val left = parent * 2 + 1
+                if (left >= mergeSize) return
+                val right = left + 1
+                val child = if (right < mergeSize && mergeLess(heap[right], heap[left])) right else left
+                if (!mergeLess(heap[child], heap[parent])) return
+                val swapped = heap[parent]
+                heap[parent] = heap[child]
+                heap[child] = swapped
+                parent = child
+            }
+        }
+
         /** True when the raw string ids of one node satisfy at least one planned predicate. */
         internal fun matchesNode(stringIds: IntArray): Boolean {
             val resolved = resolve()
@@ -485,53 +596,27 @@ internal class MappedCallSiteStringIndexView private constructor(
             consumeGraphWork(workConsumer, head.size.toLong())
             return head
         }
-        val cursors = ArrayList<MappedPostingCursor>(rangeCount)
-        repeat(CALL_SITE_STRING_PROPERTY_COUNT) { propertyIndex ->
-            plan.rows(propertyIndex).forEach { row ->
-                val start = postingStart(propertyIndex, row)
-                val end = propertyPostingEnds[propertyIndex].get(row)
-                if (start < end) {
-                    cursors += validatedPostingCursor(propertyIndex, row, start until end, workConsumer) ?: return null
-                }
-            }
-        }
+        if (!plan.openPostingMerge(rangeCount)) return null
         val result = IntArrayList(minOf(limit, MAX_INITIAL_RESULT_CAPACITY))
         val accounting = BufferedGraphWorkConsumer(workConsumer)
         try {
-            val heap = PostingCursorHeap(cursors)
             var previousNodeId = -1
             var visited = 0
-            while (heap.isNotEmpty()) {
+            while (plan.mergeHasNext()) {
                 if ((visited++ and VIEW_INTERRUPTION_POLL_MASK) == 0) checkViewInterrupted()
-                val cursor = heap.peek()
-                val nodeId = cursor.nodeId
+                val nodeId = plan.mergeNodeId()
                 accounting.consume()
                 if (nodeId != previousNodeId) {
                     result.add(nodeId)
                     previousNodeId = nodeId
                     if (result.size >= limit) break
                 }
-                if (cursor.advance()) heap.siftDownRoot() else heap.removeRoot()
+                plan.mergeAdvance()
             }
         } finally {
             accounting.flush()
         }
         return result.toIntArray()
-    }
-
-    private fun validatedPostingCursor(
-        propertyIndex: Int,
-        row: Int,
-        range: IntRange,
-        workConsumer: GraphWorkConsumer?
-    ): MappedPostingCursor? {
-        val orders = validatedPostingOrders(propertyIndex, row, range, workConsumer) ?: return null
-        val postings = propertyPostingNodeIds[propertyIndex]
-        return if (orders === KNOWN_VALID_ORDERS) {
-            MappedPostingCursor(postings, range, nodeOrder)
-        } else {
-            MappedPostingCursor(postings, range, nodeOrder, orders)
-        }
     }
 
     /**
@@ -628,28 +713,17 @@ internal class MappedCallSiteStringIndexView private constructor(
         workConsumer: GraphWorkConsumer?
     ): List<StringPropertyDistinctRow>? {
         if (limit <= 0 || plan.isEmpty) return emptyList()
-        val cursors = ArrayList<MappedPostingCursor>()
-        repeat(CALL_SITE_STRING_PROPERTY_COUNT) { propertyIndex ->
-            plan.rows(propertyIndex).forEach { row ->
-                val start = postingStart(propertyIndex, row)
-                val end = propertyPostingEnds[propertyIndex].get(row)
-                if (start < end) {
-                    cursors += validatedPostingCursor(propertyIndex, row, start until end, workConsumer) ?: return null
-                }
-            }
-        }
+        if (!plan.openPostingMerge(plan.nonEmptyRangeCount())) return null
         val rows = ArrayList<StringPropertyDistinctRow>(minOf(limit, MAX_INITIAL_RESULT_CAPACITY))
         val seen = HashSet<IntTupleKey>()
         val stringIds = IntArray(CALL_SITE_STRING_PROPERTY_COUNT)
         val accounting = BufferedGraphWorkConsumer(workConsumer)
         try {
-            val heap = PostingCursorHeap(cursors)
             var previousNodeId = -1
             var visited = 0
-            while (heap.isNotEmpty()) {
+            while (plan.mergeHasNext()) {
                 if ((visited++ and VIEW_INTERRUPTION_POLL_MASK) == 0) checkViewInterrupted()
-                val cursor = heap.peek()
-                val nodeId = cursor.nodeId
+                val nodeId = plan.mergeNodeId()
                 accounting.consume()
                 if (nodeId != previousNodeId) {
                     previousNodeId = nodeId
@@ -660,11 +734,11 @@ internal class MappedCallSiteStringIndexView private constructor(
                         }
                     })
                     if (seen.add(key)) {
-                        rows += StringPropertyDistinctRow(cursor.order, projectValues(stringIds, projectedPropertyIndexes))
+                        rows += StringPropertyDistinctRow(plan.mergeOrder(), projectValues(stringIds, projectedPropertyIndexes))
                         if (rows.size >= limit) break
                     }
                 }
-                if (cursor.advance()) heap.siftDownRoot() else heap.removeRoot()
+                plan.mergeAdvance()
             }
         } finally {
             accounting.flush()
@@ -1785,78 +1859,12 @@ private class PlanPostingCountCache {
     fun clear() = entries.clear()
 }
 
-private class MappedPostingCursor(
-    private val postings: IntBuffer,
-    range: IntRange,
-    private val nodeOrder: (Int) -> Long,
-    private val validatedOrders: LongArray? = null
-) {
-    private val firstPosition = range.first
-    private var position = range.first
-    private val lastPosition = range.last
-
-    var nodeId: Int = postings.get(position)
-        private set
-    var order: Long = orderAt(position)
-        private set
-
-    fun advance(): Boolean {
-        if (++position > lastPosition) return false
-        nodeId = postings.get(position)
-        order = orderAt(position)
-        return true
-    }
-
-    private fun orderAt(index: Int): Long = validatedOrders?.get(index - firstPosition) ?: nodeOrder(nodeId)
-}
-
-/** Binary min-heap of cursors keyed by encounter order, then node id. */
-private class PostingCursorHeap(cursors: List<MappedPostingCursor>) {
-    private val heap = cursors.toTypedArray()
-    private var size = heap.size
-
-    init {
-        for (index in size / 2 - 1 downTo 0) siftDown(index)
-    }
-
-    fun isNotEmpty(): Boolean = size > 0
-
-    fun peek(): MappedPostingCursor = heap[0]
-
-    fun siftDownRoot() = siftDown(0)
-
-    fun removeRoot() {
-        size--
-        if (size > 0) {
-            heap[0] = heap[size]
-            siftDown(0)
-        }
-    }
-
-    private fun less(left: MappedPostingCursor, right: MappedPostingCursor): Boolean =
-        left.order < right.order || left.order == right.order && left.nodeId < right.nodeId
-
-    private fun siftDown(start: Int) {
-        var parent = start
-        while (true) {
-            val left = parent * 2 + 1
-            if (left >= size) return
-            val right = left + 1
-            val child = if (right < size && less(heap[right], heap[left])) right else left
-            if (!less(heap[child], heap[parent])) return
-            val swapped = heap[parent]
-            heap[parent] = heap[child]
-            heap[child] = swapped
-            parent = child
-        }
-    }
-}
-
 private val EMPTY_INTS = IntArray(0)
 
 /** Marker for a posting range whose ascending order was accepted by an earlier validation. */
 private val KNOWN_VALID_ORDERS = LongArray(0)
 private val EMPTY_LONGS = LongArray(0)
+private val NO_VALIDATED_ORDERS = arrayOfNulls<LongArray>(0)
 private val EMPTY_BYTES = ByteArray(0)
 
 internal const val MAPPED_POSTING_RANGE_VALIDATION_CACHE_CAPACITY = 1 shl 10

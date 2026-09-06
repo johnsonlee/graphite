@@ -4966,3 +4966,28 @@ reverse):** four-properties-targeted `5.71 -> 5.50 / 5.74 -> 5.28 ms`, class-pai
 scan of a short candidate before its rejection is within the jar-order band on every row.
 
 **Conclusion:** kept, with the shortcut narrowed to length-preserving cases.
+
+### 2026-09-06 - Attempt 158: Merge posting ranges through the plan's arrays instead of cursor and heap classes
+
+**Hypothesis:** the first targeted projection row of a cold process still loaded seven classes on
+the request thread (the posting cursor and its heap, the storage projection row, the result
+cache and its key, the row layout and the public row), and preloading exactly those seven before
+the request cut the row's CPU median from 5.61 to 4.25 ms over five runs. The cursor and the
+heap are the two that exist only as code structure: a k-way merge of validated posting ranges
+needs one position, bound, node id and encounter order per range and a heap of range indexes,
+none of which requires a class of its own.
+
+**Change:** `MatchPlan` keeps the merge in parallel arrays (`openPostingMerge`,
+`mergeHasNext`, `mergeNodeId`, `mergeOrder`, `mergeAdvance`) with an index min-heap ordered by
+encounter order then node id, the validated orders of a range read from its `LongArray` when the
+range was not already known valid; `orderedMatchingNodeIds` and `distinctRows` drive it, and
+`MappedPostingCursor` and `PostingCursorHeap` are gone. The row loads five classes instead of
+seven.
+
+**Evidence (local, 64 fixtures, eight runs forward and six reverse, medians forward / reverse):**
+four-properties-targeted wall `6.43 -> 6.10 / 6.59 -> 5.99 ms` (CPU `5.51 -> 5.33 /
+5.88 -> 5.35 ms`), add first execution CPU `8.76 -> 8.21 / 9.03 -> 7.76 ms`, distinct-dense
+first execution wall `8.04 -> 7.49 / 8.25 -> 8.04 ms`; class-pair-targeted CPU `2.66 -> 2.79 /
+2.90 -> 2.92 ms` and the remaining rows within the jar-order band.
+
+**Conclusion:** kept.
