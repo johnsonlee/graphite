@@ -1,0 +1,145 @@
+{
+  "purpose": "Single-process allocation/CPU diagnostic, cold certificate then warm; not HTTP/P95; host co-tenancy recorded in candidate-pre-run.json.",
+  "queries": [
+    {
+      "name": "wrapped-zeroHitBroadContains",
+      "base": {
+        "outputSHA256": "b776d360f1d6eb34c3a0594d0d8239821bbe4f96958a90907764d5a48a6aa1dd",
+        "outputBytes": 113,
+        "deltas": {
+          "frees": 735708642,
+          "mallocs": 812497245,
+          "numGC": 3,
+          "pauseTotalNs": 189165,
+          "systemCPUSeconds": 0.7840250000000001,
+          "totalAllocBytes": 20063190048,
+          "userCPUSeconds": 57.122609000000004
+        },
+        "wallSecondsDiagnostic": 44.655958083,
+        "heapEnd": 8901704512,
+        "postForcedGCHeap": 6282950880
+      },
+      "candidate": {
+        "outputSHA256": "b776d360f1d6eb34c3a0594d0d8239821bbe4f96958a90907764d5a48a6aa1dd",
+        "outputBytes": 113,
+        "deltas": {
+          "frees": 175330254,
+          "mallocs": 293461769,
+          "numGC": 0,
+          "pauseTotalNs": 0,
+          "systemCPUSeconds": 0.33941100000000013,
+          "totalAllocBytes": 3576489880,
+          "userCPUSeconds": 10.289517999999997
+        },
+        "wallSecondsDiagnostic": 10.611580791,
+        "heapEnd": 9859388840,
+        "postForcedGCHeap": 6282636560
+      }
+    },
+    {
+      "name": "wrapped-zeroHitBroadContains-repeat",
+      "base": {
+        "outputSHA256": "b776d360f1d6eb34c3a0594d0d8239821bbe4f96958a90907764d5a48a6aa1dd",
+        "outputBytes": 113,
+        "deltas": {
+          "frees": 754014456,
+          "mallocs": 812475909,
+          "numGC": 3,
+          "pauseTotalNs": 218375,
+          "systemCPUSeconds": 0.5376630000000002,
+          "totalAllocBytes": 20061635120,
+          "userCPUSeconds": 57.27855100000001
+        },
+        "wallSecondsDiagnostic": 44.478505875,
+        "heapEnd": 8280520864,
+        "postForcedGCHeap": 6283057200
+      },
+      "candidate": {
+        "outputSHA256": "b776d360f1d6eb34c3a0594d0d8239821bbe4f96958a90907764d5a48a6aa1dd",
+        "outputBytes": 113,
+        "deltas": {
+          "frees": 2302420,
+          "mallocs": 24419817,
+          "numGC": 0,
+          "pauseTotalNs": 0,
+          "systemCPUSeconds": 0.015426999999999857,
+          "totalAllocBytes": 990091056,
+          "userCPUSeconds": 1.2660780000000003
+        },
+        "wallSecondsDiagnostic": 1.279450583,
+        "heapEnd": 7273971056,
+        "postForcedGCHeap": 6282740728
+      }
+    },
+    {
+      "name": "global-wide-four-properties-zero",
+      "base": {
+        "outputSHA256": "f585f8c837c05a598d43e16848760d2ef6a76ea7dc015ca1ffb187dece3a5e03",
+        "outputBytes": 118,
+        "deltas": {
+          "frees": 172478636,
+          "mallocs": 326539972,
+          "numGC": 0,
+          "pauseTotalNs": 0,
+          "systemCPUSeconds": 0.19979600000000008,
+          "totalAllocBytes": 3661675032,
+          "userCPUSeconds": 13.340656000000024
+        },
+        "wallSecondsDiagnostic": 13.541673124999999,
+        "heapEnd": 9945914040,
+        "postForcedGCHeap": 6283089656
+      },
+      "candidate": {
+        "outputSHA256": "f585f8c837c05a598d43e16848760d2ef6a76ea7dc015ca1ffb187dece3a5e03",
+        "outputBytes": 118,
+        "deltas": {
+          "frees": 23,
+          "mallocs": 6143977,
+          "numGC": 0,
+          "pauseTotalNs": 0,
+          "systemCPUSeconds": 0.0022969999999999935,
+          "totalAllocBytes": 111622880,
+          "userCPUSeconds": 0.16304600000000846
+        },
+        "wallSecondsDiagnostic": 0.162914958,
+        "heapEnd": 6395569144,
+        "postForcedGCHeap": 6282779048
+      }
+    },
+    {
+      "name": "supplemental-method-count",
+      "base": {
+        "outputSHA256": "21daca2ccd004eb51e41c0e51c8d4bad939861279acfa168c4f65b2c269e8a2b",
+        "outputBytes": 1480,
+        "deltas": {
+          "frees": 52,
+          "mallocs": 13752896,
+          "numGC": 0,
+          "pauseTotalNs": 0,
+          "systemCPUSeconds": 0.08842400000000028,
+          "totalAllocBytes": 2441489624,
+          "userCPUSeconds": 0.701816999999977
+        },
+        "wallSecondsDiagnostic": 0.765723958,
+        "heapEnd": 8725760768,
+        "postForcedGCHeap": 6283225928
+      },
+      "candidate": {
+        "outputSHA256": "21daca2ccd004eb51e41c0e51c8d4bad939861279acfa168c4f65b2c269e8a2b",
+        "outputBytes": 1480,
+        "deltas": {
+          "frees": 52,
+          "mallocs": 13752898,
+          "numGC": 0,
+          "pauseTotalNs": 0,
+          "systemCPUSeconds": 0.07402399999999987,
+          "totalAllocBytes": 2441489720,
+          "userCPUSeconds": 0.7051479999999941
+        },
+        "wallSecondsDiagnostic": 0.776748708,
+        "heapEnd": 8725447488,
+        "postForcedGCHeap": 6282915784
+      }
+    }
+  ]
+}

@@ -1,0 +1,76 @@
+File: profile-query
+Type: cpu
+Time: Sep 7, 2026 at 6:48am (KST)
+Duration: 919.16ms, Total samples = 720ms (78.33%)
+Showing nodes accounting for 720ms, 100% of 720ms total
+      flat  flat%   sum%        cum   cum%
+         0     0%     0%      590ms 81.94%  runtime.systemstack
+         0     0%     0%      570ms 79.17%  runtime.(*mheap).alloc.func1
+         0     0%     0%      570ms 79.17%  runtime.(*mheap).allocSpan
+     550ms 76.39% 76.39%      550ms 76.39%  runtime.madvise
+         0     0% 76.39%      530ms 73.61%  runtime.sysUsed (inline)
+         0     0% 76.39%      530ms 73.61%  runtime.sysUsedOS (inline)
+         0     0% 76.39%      110ms 15.28%  github.com/johnsonlee/graphite/graphite-server/internal/query.ExecuteCross
+         0     0% 76.39%      110ms 15.28%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.branch
+         0     0% 76.39%      110ms 15.28%  github.com/johnsonlee/graphite/graphite-server/internal/query.executeSources
+         0     0% 76.39%      110ms 15.28%  main.main
+         0     0% 76.39%      110ms 15.28%  main.profile
+         0     0% 76.39%      110ms 15.28%  main.profile.func1
+         0     0% 76.39%      110ms 15.28%  runtime.main
+         0     0% 76.39%      110ms 15.28%  runtime/pprof.Do
+         0     0% 76.39%      100ms 13.89%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.match
+         0     0% 76.39%      100ms 13.89%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.matchMaterialized
+         0     0% 76.39%      100ms 13.89%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.matchPattern
+         0     0% 76.39%      100ms 13.89%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.nodeCandidates (inline)
+         0     0% 76.39%      100ms 13.89%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.walkNodeCandidates
+         0     0% 76.39%       90ms 12.50%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.matchPattern.func1
+      40ms  5.56% 81.94%       70ms  9.72%  runtime.mallocgc
+         0     0% 81.94%       50ms  6.94%  github.com/johnsonlee/graphite/graphite-server/internal/query.addProvenance
+      50ms  6.94% 88.89%       50ms  6.94%  runtime.pthread_cond_signal
+         0     0% 88.89%       50ms  6.94%  runtime.semawakeup
+         0     0% 88.89%       40ms  5.56%  runtime.newobject (partial-inline)
+         0     0% 88.89%       40ms  5.56%  runtime.unlock (inline)
+         0     0% 88.89%       40ms  5.56%  runtime.unlock2
+         0     0% 88.89%       40ms  5.56%  runtime.unlockWithRank (inline)
+      10ms  1.39% 90.28%       30ms  4.17%  runtime.mapassign_faststr
+         0     0% 90.28%       20ms  2.78%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.bind
+         0     0% 90.28%       20ms  2.78%  runtime.(*pageAlloc).scavenge.func1
+         0     0% 90.28%       20ms  2.78%  runtime.(*pageAlloc).scavengeOne
+      10ms  1.39% 91.67%       20ms  2.78%  runtime.growslice
+      20ms  2.78% 94.44%       20ms  2.78%  runtime.mapaccess1_faststr
+         0     0% 94.44%       20ms  2.78%  runtime.sysUnused (inline)
+         0     0% 94.44%       20ms  2.78%  runtime.sysUnusedOS (inline)
+         0     0% 94.44%       10ms  1.39%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.aggregate
+         0     0% 94.44%       10ms  1.39%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.cloneRow
+         0     0% 94.44%       10ms  1.39%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.eval
+         0     0% 94.44%       10ms  1.39%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.evaluateAggregate
+         0     0% 94.44%       10ms  1.39%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.project
+         0     0% 94.44%       10ms  1.39%  github.com/johnsonlee/graphite/graphite-server/internal/query.provenance (inline)
+         0     0% 94.44%       10ms  1.39%  runtime.(*gcControllerState).update
+         0     0% 94.44%       10ms  1.39%  runtime.(*mcache).nextFree
+         0     0% 94.44%       10ms  1.39%  runtime.(*mcache).refill
+      10ms  1.39% 95.83%       10ms  1.39%  runtime.(*mspan).writeHeapBitsSmall
+      10ms  1.39% 97.22%       10ms  1.39%  runtime.acquirem (inline)
+         0     0% 97.22%       10ms  1.39%  runtime.convT
+         0     0% 97.22%       10ms  1.39%  runtime.convTslice
+         0     0% 97.22%       10ms  1.39%  runtime.findRunnable
+         0     0% 97.22%       10ms  1.39%  runtime.gopreempt_m (inline)
+         0     0% 97.22%       10ms  1.39%  runtime.goschedImpl
+         0     0% 97.22%       10ms  1.39%  runtime.heapSetType
+         0     0% 97.22%       10ms  1.39%  runtime.mPark (inline)
+         0     0% 97.22%       10ms  1.39%  runtime.makemap
+         0     0% 97.22%       10ms  1.39%  runtime.mcall
+         0     0% 97.22%       10ms  1.39%  runtime.morestack
+         0     0% 97.22%       10ms  1.39%  runtime.newstack
+         0     0% 97.22%       10ms  1.39%  runtime.notesleep
+         0     0% 97.22%       10ms  1.39%  runtime.notewakeup
+         0     0% 97.22%       10ms  1.39%  runtime.park_m
+      10ms  1.39% 98.61%       10ms  1.39%  runtime.pthread_cond_wait
+         0     0% 98.61%       10ms  1.39%  runtime.schedule
+         0     0% 98.61%       10ms  1.39%  runtime.semasleep
+         0     0% 98.61%       10ms  1.39%  runtime.startm
+         0     0% 98.61%       10ms  1.39%  runtime.stopm
+         0     0% 98.61%       10ms  1.39%  runtime.traceAcquire (inline)
+         0     0% 98.61%       10ms  1.39%  runtime.traceEnabled (inline)
+         0     0% 98.61%       10ms  1.39%  runtime.wakep
+      10ms  1.39%   100%       10ms  1.39%  runtime/internal/atomic.(*Uintptr).Load (inline)

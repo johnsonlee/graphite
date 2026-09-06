@@ -1,0 +1,63 @@
+package query
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"os"
+	"reflect"
+	"testing"
+)
+
+func TestCaptureCandidateCorruptEvidence(t *testing.T) {
+	var cases []struct{ Name, Query string }
+	raw, err := os.ReadFile("testdata/candidate-index/corrupt-cases.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = json.Unmarshal(raw, &cases); err != nil {
+		t.Fatal(err)
+	}
+	all := []any{}
+	for _, fixture := range []string{"clean", "bad-first-unmatched", "bad-last-unmatched", "bad-matched"} {
+		g := candidateGraph(t, fixture)
+		for _, c := range cases {
+			for _, cross := range []bool{false, true} {
+				run := func(ctx context.Context) map[string]any {
+					item := map[string]any{"name": c.Name, "query": c.Query, "cross": cross, "fixture": fixture}
+					var result Result
+					var err error
+					if cross {
+						result, err = ExecuteCross(ctx, []Graph{{"a", g}, {"b", g}}, c.Query, nil, -1)
+					} else {
+						result, err = Execute(ctx, g, c.Query, nil, -1)
+					}
+					if err != nil {
+						var e *Error
+						if errors.As(err, &e) {
+							item["error"], item["message"] = e.Class, e.Message
+						} else {
+							item["error"], item["message"] = "GoError", err.Error()
+						}
+					} else {
+						item["columns"], item["rows"] = result.Columns, result.Rows
+					}
+					return item
+				}
+				indexed := run(context.Background())
+				scan := run(context.WithValue(context.Background(), candidateScanOnlyKey{}, true))
+				if !reflect.DeepEqual(indexed, scan) {
+					t.Fatalf("%s/%s indexed and scan differ", fixture, c.Name)
+				}
+				all = append(all, indexed)
+			}
+		}
+	}
+	data, err := json.MarshalIndent(all, "", "  ")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = os.WriteFile("testdata/candidate-index/corrupt-native.json", append(data, '\n'), 0600); err != nil {
+		t.Fatal(err)
+	}
+}

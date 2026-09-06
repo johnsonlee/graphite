@@ -12,11 +12,19 @@ func (e evaluator) matchSingleNode(graph *store.Store, rows []map[string]any, cl
 	pattern := clause.Patterns[0].Nodes[0]
 	result := []map[string]any{}
 	slot := &candidateSlot{}
+	var indexed func(func(any))
+	if len(rows) == 1 && len(rows[0]) == 0 {
+		indexed = e.indexedNodeWalker(graph, clause, slot)
+	}
 	for _, row := range rows {
 		e.check()
 		bound := e.cloneRow(row)
 		accepted := false
-		e.walkNodeCandidates(graph, pattern, row, slot, func(value any) {
+		walk := indexed
+		if walk == nil {
+			walk = func(accept func(any)) { e.walkNodeCandidates(graph, pattern, row, slot, accept) }
+		}
+		walk(func(value any) {
 			// Scratch bindings may be retained for key-order bookkeeping. Never
 			// leave the borrowed view in them after this candidate finishes.
 			// Retain the key position even on a miss, as the original scanner did.

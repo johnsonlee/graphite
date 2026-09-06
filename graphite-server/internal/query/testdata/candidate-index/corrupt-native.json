@@ -1,0 +1,914 @@
+[
+  {
+    "columns": [
+      "id"
+    ],
+    "cross": false,
+    "fixture": "clean",
+    "name": "untyped-raw",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN id(n) AS id",
+    "rows": [
+      {
+        "id": 2
+      },
+      {
+        "id": 41
+      }
+    ]
+  },
+  {
+    "columns": [
+      "id"
+    ],
+    "cross": true,
+    "fixture": "clean",
+    "name": "untyped-raw",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN id(n) AS id",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "id": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "id": 41
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        },
+        "id": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        },
+        "id": 41
+      }
+    ]
+  },
+  {
+    "cross": false,
+    "error": "ClassCastException",
+    "fixture": "clean",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+    "name": "untyped-raw-throwing-projection",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+  },
+  {
+    "cross": true,
+    "error": "ClassCastException",
+    "fixture": "clean",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+    "name": "untyped-raw-throwing-projection",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+  },
+  {
+    "columns": [
+      "id"
+    ],
+    "cross": false,
+    "fixture": "clean",
+    "name": "untyped-wrapped",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN id(n) AS id",
+    "rows": [
+      {
+        "id": 2
+      },
+      {
+        "id": 41
+      }
+    ]
+  },
+  {
+    "columns": [
+      "id"
+    ],
+    "cross": true,
+    "fixture": "clean",
+    "name": "untyped-wrapped",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN id(n) AS id",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "id": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "id": 41
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        },
+        "id": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        },
+        "id": 41
+      }
+    ]
+  },
+  {
+    "cross": false,
+    "error": "ClassCastException",
+    "fixture": "clean",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+    "name": "untyped-wrapped-throwing-projection",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+  },
+  {
+    "cross": true,
+    "error": "ClassCastException",
+    "fixture": "clean",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+    "name": "untyped-wrapped-throwing-projection",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+  },
+  {
+    "columns": [
+      "id"
+    ],
+    "cross": false,
+    "fixture": "clean",
+    "name": "typed-raw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN id(n) AS id",
+    "rows": [
+      {
+        "id": 2
+      },
+      {
+        "id": 41
+      }
+    ]
+  },
+  {
+    "columns": [
+      "id"
+    ],
+    "cross": true,
+    "fixture": "clean",
+    "name": "typed-raw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN id(n) AS id",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "id": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "id": 41
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        },
+        "id": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        },
+        "id": 41
+      }
+    ]
+  },
+  {
+    "cross": false,
+    "error": "ClassCastException",
+    "fixture": "clean",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+    "name": "typed-raw-throwing-projection",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+  },
+  {
+    "cross": true,
+    "error": "ClassCastException",
+    "fixture": "clean",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+    "name": "typed-raw-throwing-projection",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+  },
+  {
+    "columns": [
+      "id"
+    ],
+    "cross": false,
+    "fixture": "clean",
+    "name": "typed-wrapped",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN id(n) AS id",
+    "rows": [
+      {
+        "id": 2
+      },
+      {
+        "id": 41
+      }
+    ]
+  },
+  {
+    "columns": [
+      "id"
+    ],
+    "cross": true,
+    "fixture": "clean",
+    "name": "typed-wrapped",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN id(n) AS id",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "id": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "id": 41
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        },
+        "id": 2
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        },
+        "id": 41
+      }
+    ]
+  },
+  {
+    "cross": false,
+    "error": "ClassCastException",
+    "fixture": "clean",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+    "name": "typed-wrapped-throwing-projection",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+  },
+  {
+    "cross": true,
+    "error": "ClassCastException",
+    "fixture": "clean",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+    "name": "typed-wrapped-throwing-projection",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+  },
+  {
+    "columns": [
+      "caller_class",
+      "caller_name",
+      "callee_class",
+      "callee_name"
+    ],
+    "cross": false,
+    "fixture": "clean",
+    "name": "fourfields-raw-distinct-limit",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS 'other' OR n.caller_name CONTAINS 'other' OR n.callee_class CONTAINS 'other' OR n.callee_name CONTAINS 'other' RETURN DISTINCT n.caller_class AS caller_class,n.caller_name AS caller_name,n.callee_class AS callee_class,n.callee_name AS callee_name LIMIT 1000",
+    "rows": [
+      {
+        "callee_class": "example.Target",
+        "callee_name": "other",
+        "caller_class": "example.Other",
+        "caller_name": "other"
+      },
+      {
+        "callee_class": "example.Target",
+        "callee_name": "invoke",
+        "caller_class": "example.Other",
+        "caller_name": "other"
+      }
+    ]
+  },
+  {
+    "columns": [
+      "caller_class",
+      "caller_name",
+      "callee_class",
+      "callee_name"
+    ],
+    "cross": true,
+    "fixture": "clean",
+    "name": "fourfields-raw-distinct-limit",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS 'other' OR n.caller_name CONTAINS 'other' OR n.callee_class CONTAINS 'other' OR n.callee_name CONTAINS 'other' RETURN DISTINCT n.caller_class AS caller_class,n.caller_name AS caller_name,n.callee_class AS callee_class,n.callee_name AS callee_name LIMIT 1000",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        },
+        "callee_class": "example.Target",
+        "callee_name": "other",
+        "caller_class": "example.Other",
+        "caller_name": "other"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        },
+        "callee_class": "example.Target",
+        "callee_name": "invoke",
+        "caller_class": "example.Other",
+        "caller_name": "other"
+      }
+    ]
+  },
+  {
+    "columns": [
+      "caller_class",
+      "caller_name",
+      "callee_class",
+      "callee_name"
+    ],
+    "cross": false,
+    "fixture": "clean",
+    "name": "fourfields-wrapped-distinct-limit",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS 'other' OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS 'other' OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS 'other' RETURN DISTINCT n.caller_class AS caller_class,n.caller_name AS caller_name,n.callee_class AS callee_class,n.callee_name AS callee_name LIMIT 1000",
+    "rows": [
+      {
+        "callee_class": "example.Target",
+        "callee_name": "other",
+        "caller_class": "example.Other",
+        "caller_name": "other"
+      },
+      {
+        "callee_class": "example.Target",
+        "callee_name": "invoke",
+        "caller_class": "example.Other",
+        "caller_name": "other"
+      }
+    ]
+  },
+  {
+    "columns": [
+      "caller_class",
+      "caller_name",
+      "callee_class",
+      "callee_name"
+    ],
+    "cross": true,
+    "fixture": "clean",
+    "name": "fourfields-wrapped-distinct-limit",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS 'other' OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS 'other' OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS 'other' RETURN DISTINCT n.caller_class AS caller_class,n.caller_name AS caller_name,n.callee_class AS callee_class,n.callee_name AS callee_name LIMIT 1000",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        },
+        "callee_class": "example.Target",
+        "callee_name": "other",
+        "caller_class": "example.Other",
+        "caller_name": "other"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        },
+        "callee_class": "example.Target",
+        "callee_name": "invoke",
+        "caller_class": "example.Other",
+        "caller_name": "other"
+      }
+    ]
+  },
+  {
+    "cross": false,
+    "error": "CypherException",
+    "fixture": "bad-first-unmatched",
+    "message": "node 17: string index 2147483647 outside table of 9",
+    "name": "untyped-raw",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN id(n) AS id"
+  },
+  {
+    "cross": true,
+    "error": "CypherException",
+    "fixture": "bad-first-unmatched",
+    "message": "node 17: string index 2147483647 outside table of 9",
+    "name": "untyped-raw",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN id(n) AS id"
+  },
+  {
+    "cross": false,
+    "error": "CypherException",
+    "fixture": "bad-first-unmatched",
+    "message": "node 17: string index 2147483647 outside table of 9",
+    "name": "untyped-raw-throwing-projection",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+  },
+  {
+    "cross": true,
+    "error": "CypherException",
+    "fixture": "bad-first-unmatched",
+    "message": "node 17: string index 2147483647 outside table of 9",
+    "name": "untyped-raw-throwing-projection",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+  },
+  {
+    "cross": false,
+    "error": "CypherException",
+    "fixture": "bad-first-unmatched",
+    "message": "node 17: string index 2147483647 outside table of 9",
+    "name": "untyped-wrapped",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN id(n) AS id"
+  },
+  {
+    "cross": true,
+    "error": "CypherException",
+    "fixture": "bad-first-unmatched",
+    "message": "node 17: string index 2147483647 outside table of 9",
+    "name": "untyped-wrapped",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN id(n) AS id"
+  },
+  {
+    "cross": false,
+    "error": "CypherException",
+    "fixture": "bad-first-unmatched",
+    "message": "node 17: string index 2147483647 outside table of 9",
+    "name": "untyped-wrapped-throwing-projection",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+  },
+  {
+    "cross": true,
+    "error": "CypherException",
+    "fixture": "bad-first-unmatched",
+    "message": "node 17: string index 2147483647 outside table of 9",
+    "name": "untyped-wrapped-throwing-projection",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+  },
+  {
+    "cross": false,
+    "error": "CypherException",
+    "fixture": "bad-first-unmatched",
+    "message": "node 17: string index 2147483647 outside table of 9",
+    "name": "typed-raw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN id(n) AS id"
+  },
+  {
+    "cross": true,
+    "error": "CypherException",
+    "fixture": "bad-first-unmatched",
+    "message": "node 17: string index 2147483647 outside table of 9",
+    "name": "typed-raw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN id(n) AS id"
+  },
+  {
+    "cross": false,
+    "error": "CypherException",
+    "fixture": "bad-first-unmatched",
+    "message": "node 17: string index 2147483647 outside table of 9",
+    "name": "typed-raw-throwing-projection",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+  },
+  {
+    "cross": true,
+    "error": "CypherException",
+    "fixture": "bad-first-unmatched",
+    "message": "node 17: string index 2147483647 outside table of 9",
+    "name": "typed-raw-throwing-projection",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+  },
+  {
+    "cross": false,
+    "error": "CypherException",
+    "fixture": "bad-first-unmatched",
+    "message": "node 17: string index 2147483647 outside table of 9",
+    "name": "typed-wrapped",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN id(n) AS id"
+  },
+  {
+    "cross": true,
+    "error": "CypherException",
+    "fixture": "bad-first-unmatched",
+    "message": "node 17: string index 2147483647 outside table of 9",
+    "name": "typed-wrapped",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN id(n) AS id"
+  },
+  {
+    "cross": false,
+    "error": "CypherException",
+    "fixture": "bad-first-unmatched",
+    "message": "node 17: string index 2147483647 outside table of 9",
+    "name": "typed-wrapped-throwing-projection",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+  },
+  {
+    "cross": true,
+    "error": "CypherException",
+    "fixture": "bad-first-unmatched",
+    "message": "node 17: string index 2147483647 outside table of 9",
+    "name": "typed-wrapped-throwing-projection",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+  },
+  {
+    "cross": false,
+    "error": "CypherException",
+    "fixture": "bad-first-unmatched",
+    "message": "node 17: string index 2147483647 outside table of 9",
+    "name": "fourfields-raw-distinct-limit",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS 'other' OR n.caller_name CONTAINS 'other' OR n.callee_class CONTAINS 'other' OR n.callee_name CONTAINS 'other' RETURN DISTINCT n.caller_class AS caller_class,n.caller_name AS caller_name,n.callee_class AS callee_class,n.callee_name AS callee_name LIMIT 1000"
+  },
+  {
+    "cross": true,
+    "error": "CypherException",
+    "fixture": "bad-first-unmatched",
+    "message": "node 17: string index 2147483647 outside table of 9",
+    "name": "fourfields-raw-distinct-limit",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS 'other' OR n.caller_name CONTAINS 'other' OR n.callee_class CONTAINS 'other' OR n.callee_name CONTAINS 'other' RETURN DISTINCT n.caller_class AS caller_class,n.caller_name AS caller_name,n.callee_class AS callee_class,n.callee_name AS callee_name LIMIT 1000"
+  },
+  {
+    "cross": false,
+    "error": "CypherException",
+    "fixture": "bad-first-unmatched",
+    "message": "node 17: string index 2147483647 outside table of 9",
+    "name": "fourfields-wrapped-distinct-limit",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS 'other' OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS 'other' OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS 'other' RETURN DISTINCT n.caller_class AS caller_class,n.caller_name AS caller_name,n.callee_class AS callee_class,n.callee_name AS callee_name LIMIT 1000"
+  },
+  {
+    "cross": true,
+    "error": "CypherException",
+    "fixture": "bad-first-unmatched",
+    "message": "node 17: string index 2147483647 outside table of 9",
+    "name": "fourfields-wrapped-distinct-limit",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS 'other' OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS 'other' OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS 'other' RETURN DISTINCT n.caller_class AS caller_class,n.caller_name AS caller_name,n.callee_class AS callee_class,n.callee_name AS callee_name LIMIT 1000"
+  },
+  {
+    "cross": false,
+    "error": "CypherException",
+    "fixture": "bad-last-unmatched",
+    "message": "node 90: string index 2147483647 outside table of 9",
+    "name": "untyped-raw",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN id(n) AS id"
+  },
+  {
+    "cross": true,
+    "error": "CypherException",
+    "fixture": "bad-last-unmatched",
+    "message": "node 90: string index 2147483647 outside table of 9",
+    "name": "untyped-raw",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN id(n) AS id"
+  },
+  {
+    "cross": false,
+    "error": "CypherException",
+    "fixture": "bad-last-unmatched",
+    "message": "node 90: string index 2147483647 outside table of 9",
+    "name": "untyped-raw-throwing-projection",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+  },
+  {
+    "cross": true,
+    "error": "CypherException",
+    "fixture": "bad-last-unmatched",
+    "message": "node 90: string index 2147483647 outside table of 9",
+    "name": "untyped-raw-throwing-projection",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+  },
+  {
+    "cross": false,
+    "error": "CypherException",
+    "fixture": "bad-last-unmatched",
+    "message": "node 90: string index 2147483647 outside table of 9",
+    "name": "untyped-wrapped",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN id(n) AS id"
+  },
+  {
+    "cross": true,
+    "error": "CypherException",
+    "fixture": "bad-last-unmatched",
+    "message": "node 90: string index 2147483647 outside table of 9",
+    "name": "untyped-wrapped",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN id(n) AS id"
+  },
+  {
+    "cross": false,
+    "error": "CypherException",
+    "fixture": "bad-last-unmatched",
+    "message": "node 90: string index 2147483647 outside table of 9",
+    "name": "untyped-wrapped-throwing-projection",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+  },
+  {
+    "cross": true,
+    "error": "CypherException",
+    "fixture": "bad-last-unmatched",
+    "message": "node 90: string index 2147483647 outside table of 9",
+    "name": "untyped-wrapped-throwing-projection",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+  },
+  {
+    "cross": false,
+    "error": "CypherException",
+    "fixture": "bad-last-unmatched",
+    "message": "node 90: string index 2147483647 outside table of 9",
+    "name": "typed-raw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN id(n) AS id"
+  },
+  {
+    "cross": true,
+    "error": "CypherException",
+    "fixture": "bad-last-unmatched",
+    "message": "node 90: string index 2147483647 outside table of 9",
+    "name": "typed-raw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN id(n) AS id"
+  },
+  {
+    "cross": false,
+    "error": "CypherException",
+    "fixture": "bad-last-unmatched",
+    "message": "node 90: string index 2147483647 outside table of 9",
+    "name": "typed-raw-throwing-projection",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+  },
+  {
+    "cross": true,
+    "error": "CypherException",
+    "fixture": "bad-last-unmatched",
+    "message": "node 90: string index 2147483647 outside table of 9",
+    "name": "typed-raw-throwing-projection",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+  },
+  {
+    "cross": false,
+    "error": "CypherException",
+    "fixture": "bad-last-unmatched",
+    "message": "node 90: string index 2147483647 outside table of 9",
+    "name": "typed-wrapped",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN id(n) AS id"
+  },
+  {
+    "cross": true,
+    "error": "CypherException",
+    "fixture": "bad-last-unmatched",
+    "message": "node 90: string index 2147483647 outside table of 9",
+    "name": "typed-wrapped",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN id(n) AS id"
+  },
+  {
+    "cross": false,
+    "error": "CypherException",
+    "fixture": "bad-last-unmatched",
+    "message": "node 90: string index 2147483647 outside table of 9",
+    "name": "typed-wrapped-throwing-projection",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+  },
+  {
+    "cross": true,
+    "error": "CypherException",
+    "fixture": "bad-last-unmatched",
+    "message": "node 90: string index 2147483647 outside table of 9",
+    "name": "typed-wrapped-throwing-projection",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+  },
+  {
+    "cross": false,
+    "error": "CypherException",
+    "fixture": "bad-last-unmatched",
+    "message": "node 90: string index 2147483647 outside table of 9",
+    "name": "fourfields-raw-distinct-limit",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS 'other' OR n.caller_name CONTAINS 'other' OR n.callee_class CONTAINS 'other' OR n.callee_name CONTAINS 'other' RETURN DISTINCT n.caller_class AS caller_class,n.caller_name AS caller_name,n.callee_class AS callee_class,n.callee_name AS callee_name LIMIT 1000"
+  },
+  {
+    "cross": true,
+    "error": "CypherException",
+    "fixture": "bad-last-unmatched",
+    "message": "node 90: string index 2147483647 outside table of 9",
+    "name": "fourfields-raw-distinct-limit",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS 'other' OR n.caller_name CONTAINS 'other' OR n.callee_class CONTAINS 'other' OR n.callee_name CONTAINS 'other' RETURN DISTINCT n.caller_class AS caller_class,n.caller_name AS caller_name,n.callee_class AS callee_class,n.callee_name AS callee_name LIMIT 1000"
+  },
+  {
+    "cross": false,
+    "error": "CypherException",
+    "fixture": "bad-last-unmatched",
+    "message": "node 90: string index 2147483647 outside table of 9",
+    "name": "fourfields-wrapped-distinct-limit",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS 'other' OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS 'other' OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS 'other' RETURN DISTINCT n.caller_class AS caller_class,n.caller_name AS caller_name,n.callee_class AS callee_class,n.callee_name AS callee_name LIMIT 1000"
+  },
+  {
+    "cross": true,
+    "error": "CypherException",
+    "fixture": "bad-last-unmatched",
+    "message": "node 90: string index 2147483647 outside table of 9",
+    "name": "fourfields-wrapped-distinct-limit",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS 'other' OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS 'other' OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS 'other' RETURN DISTINCT n.caller_class AS caller_class,n.caller_name AS caller_name,n.callee_class AS callee_class,n.callee_name AS callee_name LIMIT 1000"
+  },
+  {
+    "cross": false,
+    "error": "CypherException",
+    "fixture": "bad-matched",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "untyped-raw",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN id(n) AS id"
+  },
+  {
+    "cross": true,
+    "error": "CypherException",
+    "fixture": "bad-matched",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "untyped-raw",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN id(n) AS id"
+  },
+  {
+    "cross": false,
+    "error": "CypherException",
+    "fixture": "bad-matched",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "untyped-raw-throwing-projection",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+  },
+  {
+    "cross": true,
+    "error": "CypherException",
+    "fixture": "bad-matched",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "untyped-raw-throwing-projection",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+  },
+  {
+    "cross": false,
+    "error": "CypherException",
+    "fixture": "bad-matched",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "untyped-wrapped",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN id(n) AS id"
+  },
+  {
+    "cross": true,
+    "error": "CypherException",
+    "fixture": "bad-matched",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "untyped-wrapped",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN id(n) AS id"
+  },
+  {
+    "cross": false,
+    "error": "CypherException",
+    "fixture": "bad-matched",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "untyped-wrapped-throwing-projection",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+  },
+  {
+    "cross": true,
+    "error": "CypherException",
+    "fixture": "bad-matched",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "untyped-wrapped-throwing-projection",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+  },
+  {
+    "cross": false,
+    "error": "CypherException",
+    "fixture": "bad-matched",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "typed-raw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN id(n) AS id"
+  },
+  {
+    "cross": true,
+    "error": "CypherException",
+    "fixture": "bad-matched",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "typed-raw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN id(n) AS id"
+  },
+  {
+    "cross": false,
+    "error": "CypherException",
+    "fixture": "bad-matched",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "typed-raw-throwing-projection",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+  },
+  {
+    "cross": true,
+    "error": "CypherException",
+    "fixture": "bad-matched",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "typed-raw-throwing-projection",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+  },
+  {
+    "cross": false,
+    "error": "CypherException",
+    "fixture": "bad-matched",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "typed-wrapped",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN id(n) AS id"
+  },
+  {
+    "cross": true,
+    "error": "CypherException",
+    "fixture": "bad-matched",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "typed-wrapped",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN id(n) AS id"
+  },
+  {
+    "cross": false,
+    "error": "CypherException",
+    "fixture": "bad-matched",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "typed-wrapped-throwing-projection",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+  },
+  {
+    "cross": true,
+    "error": "CypherException",
+    "fixture": "bad-matched",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "typed-wrapped-throwing-projection",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+  },
+  {
+    "cross": false,
+    "error": "CypherException",
+    "fixture": "bad-matched",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "fourfields-raw-distinct-limit",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS 'other' OR n.caller_name CONTAINS 'other' OR n.callee_class CONTAINS 'other' OR n.callee_name CONTAINS 'other' RETURN DISTINCT n.caller_class AS caller_class,n.caller_name AS caller_name,n.callee_class AS callee_class,n.callee_name AS callee_name LIMIT 1000"
+  },
+  {
+    "cross": true,
+    "error": "CypherException",
+    "fixture": "bad-matched",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "fourfields-raw-distinct-limit",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS 'other' OR n.caller_name CONTAINS 'other' OR n.callee_class CONTAINS 'other' OR n.callee_name CONTAINS 'other' RETURN DISTINCT n.caller_class AS caller_class,n.caller_name AS caller_name,n.callee_class AS callee_class,n.callee_name AS callee_name LIMIT 1000"
+  },
+  {
+    "cross": false,
+    "error": "CypherException",
+    "fixture": "bad-matched",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "fourfields-wrapped-distinct-limit",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS 'other' OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS 'other' OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS 'other' RETURN DISTINCT n.caller_class AS caller_class,n.caller_name AS caller_name,n.callee_class AS callee_class,n.callee_name AS callee_name LIMIT 1000"
+  },
+  {
+    "cross": true,
+    "error": "CypherException",
+    "fixture": "bad-matched",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "fourfields-wrapped-distinct-limit",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS 'other' OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS 'other' OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS 'other' RETURN DISTINCT n.caller_class AS caller_class,n.caller_name AS caller_name,n.callee_class AS callee_class,n.callee_name AS callee_name LIMIT 1000"
+  }
+]

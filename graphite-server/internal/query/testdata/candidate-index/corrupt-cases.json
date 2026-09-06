@@ -1,0 +1,42 @@
+[
+  {
+    "name": "untyped-raw",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN id(n) AS id"
+  },
+  {
+    "name": "untyped-raw-throwing-projection",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+  },
+  {
+    "name": "untyped-wrapped",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN id(n) AS id"
+  },
+  {
+    "name": "untyped-wrapped-throwing-projection",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+  },
+  {
+    "name": "typed-raw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN id(n) AS id"
+  },
+  {
+    "name": "typed-raw-throwing-projection",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+  },
+  {
+    "name": "typed-wrapped",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN id(n) AS id"
+  },
+  {
+    "name": "typed-wrapped-throwing-projection",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+  },
+  {
+    "name": "fourfields-raw-distinct-limit",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS 'other' OR n.caller_name CONTAINS 'other' OR n.callee_class CONTAINS 'other' OR n.callee_name CONTAINS 'other' RETURN DISTINCT n.caller_class AS caller_class,n.caller_name AS caller_name,n.callee_class AS callee_class,n.callee_name AS callee_name LIMIT 1000"
+  },
+  {
+    "name": "fourfields-wrapped-distinct-limit",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS 'other' OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS 'other' OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS 'other' RETURN DISTINCT n.caller_class AS caller_class,n.caller_name AS caller_name,n.callee_class AS callee_class,n.callee_name AS callee_name LIMIT 1000"
+  }
+]

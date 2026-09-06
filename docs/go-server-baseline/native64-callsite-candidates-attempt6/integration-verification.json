@@ -1,0 +1,16 @@
+{
+  "archive": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-attempt6-integration-8o5x1j2g",
+  "runs": [
+    {
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./..."
+      ],
+      "log": "integration-race.log",
+      "exitCode": 1
+    }
+  ],
+  "finishedAtUTC": "2026-09-06T22:06:57.027871+00:00"
+}

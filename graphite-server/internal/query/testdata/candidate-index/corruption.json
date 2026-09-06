@@ -1,0 +1,38 @@
+{
+  "mainCommit": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "mainJarSHA256": "91c3a1d154ca96004c55df195d9f752e077cab3e33ca1570b2c88b872d9bc34d",
+  "nativeBaselineCommit": "1c235916",
+  "cleanNodeDataSHA256": "f0a4462a820a7daa557704796992c79b9ddafcb80475aaafa020592cb4e19e1a",
+  "mainCases": 80,
+  "nativeVsForcedScanEqual": 80,
+  "mainVsNativeKnownDifferences": 61,
+  "mutations": [
+    {
+      "fixture": "bad-first-unmatched",
+      "nodeID": 17,
+      "field": "callee return-type string ID",
+      "byteOffset": 49,
+      "originalSID": 8,
+      "mutatedSID": 2147483647,
+      "nodeDataSHA256": "6b1bdab184bcef434610d15ea5ffbb6c1d410943dce553ca440a12470b170ae1"
+    },
+    {
+      "fixture": "bad-last-unmatched",
+      "nodeID": 90,
+      "field": "callee return-type string ID",
+      "byteOffset": 204,
+      "originalSID": 8,
+      "mutatedSID": 2147483647,
+      "nodeDataSHA256": "f5654334c848b77e8fe24e527fb2348e5d2a4943f84ffeb75446bacc3bac9052"
+    },
+    {
+      "fixture": "bad-matched",
+      "nodeID": 2,
+      "field": "callee return-type string ID",
+      "byteOffset": 98,
+      "originalSID": 8,
+      "mutatedSID": 2147483647,
+      "nodeDataSHA256": "9727c0bb15ff09833a7d051df8eecca190e98f0338a045929d7f865d933318d8"
+    }
+  ]
+}

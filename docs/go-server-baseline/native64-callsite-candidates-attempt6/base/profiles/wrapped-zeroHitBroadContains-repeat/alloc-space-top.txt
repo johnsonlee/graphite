@@ -1,0 +1,43 @@
+File: profile-query
+Type: alloc_space
+Time: Sep 7, 2026 at 6:47am (KST)
+Showing nodes accounting for 18.40GB, 99.42% of 18.51GB total
+Dropped 62 nodes (cum <= 0.09GB)
+      flat  flat%   sum%        cum   cum%
+    6.30GB 34.02% 34.02%     9.41GB 50.86%  github.com/johnsonlee/graphite/graphite-server/internal/javastring.CodePoints
+    3.42GB 18.46% 52.48%    15.42GB 83.33%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.eval
+    3.12GB 16.84% 69.32%     3.12GB 16.84%  github.com/johnsonlee/graphite/graphite-server/internal/javastring.UTF16
+    1.33GB  7.19% 76.51%     1.33GB  7.19%  unicode/utf8.AppendRune (inline)
+    0.86GB  4.63% 81.14%     0.86GB  4.63%  bytes.NewReader (inline)
+    0.82GB  4.43% 85.57%     0.82GB  4.43%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).bytes
+    0.71GB  3.81% 89.38%     0.71GB  3.81%  github.com/johnsonlee/graphite/graphite-server/internal/query.addProvenance
+    0.56GB  3.00% 92.38%     1.05GB  5.69%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).method
+    0.54GB  2.93% 95.31%     0.54GB  2.93%  strings.(*Builder).grow
+    0.29GB  1.57% 96.88%    11.17GB 60.37%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.callLegacy
+    0.29GB  1.56% 98.44%     0.29GB  1.56%  github.com/johnsonlee/graphite/graphite-server/internal/query.NodeProperty
+    0.14GB  0.76% 99.20%     0.14GB  0.76%  strings.(*Builder).WriteString (inline)
+    0.04GB  0.21% 99.42%     1.44GB  7.77%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).node
+         0     0% 99.42%    10.88GB 58.81%  github.com/johnsonlee/graphite/graphite-server/internal/javastring.Case
+         0     0% 99.42%     0.29GB  1.56%  github.com/johnsonlee/graphite/graphite-server/internal/query.(*candidateSlot).property
+         0     0% 99.42%    18.50GB   100%  github.com/johnsonlee/graphite/graphite-server/internal/query.ExecuteCross
+         0     0% 99.42%    15.42GB 83.33%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.binary
+         0     0% 99.42%    18.50GB   100%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.branch
+         0     0% 99.42%    11.72GB 63.30%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.call
+         0     0% 99.42%    10.88GB 58.81%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.javaCase (inline)
+         0     0% 99.42%    18.50GB   100%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.match
+         0     0% 99.42%    18.50GB   100%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.matchSingleNode
+         0     0% 99.42%    16.13GB 87.14%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.matchSingleNode.func1
+         0     0% 99.42%    18.50GB   100%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.walkNodeCandidates
+         0     0% 99.42%    18.50GB   100%  github.com/johnsonlee/graphite/graphite-server/internal/query.executeSources
+         0     0% 99.42%     2.29GB 12.40%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).Node
+         0     0% 99.42%     0.17GB  0.94%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).count
+         0     0% 99.42%     0.82GB  4.41%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).i32 (inline)
+         0     0% 99.42%     0.44GB  2.36%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).str
+         0     0% 99.42%    18.50GB   100%  main.main
+         0     0% 99.42%    18.50GB   100%  main.profile
+         0     0% 99.42%    18.50GB   100%  main.profile.func1
+         0     0% 99.42%    18.50GB   100%  runtime.main
+         0     0% 99.42%    18.50GB   100%  runtime/pprof.Do
+         0     0% 99.42%     0.54GB  2.93%  strings.(*Builder).Grow
+         0     0% 99.42%     1.33GB  7.19%  strings.(*Builder).WriteRune
+         0     0% 99.42%     0.54GB  2.93%  strings.ToLower

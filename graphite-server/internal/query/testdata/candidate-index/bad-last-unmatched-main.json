@@ -1,0 +1,220 @@
+[
+  {
+    "name": "untyped-raw",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN id(n) AS id",
+    "cross": false,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "untyped-raw",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN id(n) AS id",
+    "cross": true,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "untyped-raw-throwing-projection",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN substring(n.callee_name,\u0027bad\u0027) AS failure",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "untyped-raw-throwing-projection",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN substring(n.callee_name,\u0027bad\u0027) AS failure",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "untyped-wrapped",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_name,\u0027\u0027))) CONTAINS \u0027other\u0027 RETURN id(n) AS id",
+    "cross": false,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "untyped-wrapped",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_name,\u0027\u0027))) CONTAINS \u0027other\u0027 RETURN id(n) AS id",
+    "cross": true,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "untyped-wrapped-throwing-projection",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_name,\u0027\u0027))) CONTAINS \u0027other\u0027 RETURN substring(n.callee_name,\u0027bad\u0027) AS failure",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "untyped-wrapped-throwing-projection",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_name,\u0027\u0027))) CONTAINS \u0027other\u0027 RETURN substring(n.callee_name,\u0027bad\u0027) AS failure",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "typed-raw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN id(n) AS id",
+    "cross": false,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "typed-raw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN id(n) AS id",
+    "cross": true,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "typed-raw-throwing-projection",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN substring(n.callee_name,\u0027bad\u0027) AS failure",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "typed-raw-throwing-projection",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN substring(n.callee_name,\u0027bad\u0027) AS failure",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "typed-wrapped",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_name,\u0027\u0027))) CONTAINS \u0027other\u0027 RETURN id(n) AS id",
+    "cross": false,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "typed-wrapped",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_name,\u0027\u0027))) CONTAINS \u0027other\u0027 RETURN id(n) AS id",
+    "cross": true,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "typed-wrapped-throwing-projection",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_name,\u0027\u0027))) CONTAINS \u0027other\u0027 RETURN substring(n.callee_name,\u0027bad\u0027) AS failure",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "typed-wrapped-throwing-projection",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_name,\u0027\u0027))) CONTAINS \u0027other\u0027 RETURN substring(n.callee_name,\u0027bad\u0027) AS failure",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "fourfields-raw-distinct-limit",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS \u0027other\u0027 OR n.caller_name CONTAINS \u0027other\u0027 OR n.callee_class CONTAINS \u0027other\u0027 OR n.callee_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.caller_class AS caller_class,n.caller_name AS caller_name,n.callee_class AS callee_class,n.callee_name AS callee_name LIMIT 1000",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "caller_class",
+      "caller_name",
+      "callee_class",
+      "callee_name"
+    ],
+    "rows": [
+      {
+        "caller_class": "example.Other",
+        "caller_name": "other",
+        "callee_class": "example.Target",
+        "callee_name": "other",
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        }
+      },
+      {
+        "caller_class": "example.Other",
+        "caller_name": "other",
+        "callee_class": "example.Target",
+        "callee_name": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "fourfields-raw-distinct-limit",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS \u0027other\u0027 OR n.caller_name CONTAINS \u0027other\u0027 OR n.callee_class CONTAINS \u0027other\u0027 OR n.callee_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.caller_class AS caller_class,n.caller_name AS caller_name,n.callee_class AS callee_class,n.callee_name AS callee_name LIMIT 1000",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "caller_class",
+      "caller_name",
+      "callee_class",
+      "callee_name"
+    ],
+    "rows": [
+      {
+        "caller_class": "example.Other",
+        "caller_name": "other",
+        "callee_class": "example.Target",
+        "callee_name": "other",
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      },
+      {
+        "caller_class": "example.Other",
+        "caller_name": "other",
+        "callee_class": "example.Target",
+        "callee_name": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "fourfields-wrapped-distinct-limit",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,\u0027\u0027))) CONTAINS \u0027other\u0027 OR toLower(toString(coalesce(n.caller_name,\u0027\u0027))) CONTAINS \u0027other\u0027 OR toLower(toString(coalesce(n.callee_class,\u0027\u0027))) CONTAINS \u0027other\u0027 OR toLower(toString(coalesce(n.callee_name,\u0027\u0027))) CONTAINS \u0027other\u0027 RETURN DISTINCT n.caller_class AS caller_class,n.caller_name AS caller_name,n.callee_class AS callee_class,n.callee_name AS callee_name LIMIT 1000",
+    "cross": false,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "fourfields-wrapped-distinct-limit",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,\u0027\u0027))) CONTAINS \u0027other\u0027 OR toLower(toString(coalesce(n.caller_name,\u0027\u0027))) CONTAINS \u0027other\u0027 OR toLower(toString(coalesce(n.callee_class,\u0027\u0027))) CONTAINS \u0027other\u0027 OR toLower(toString(coalesce(n.callee_name,\u0027\u0027))) CONTAINS \u0027other\u0027 RETURN DISTINCT n.caller_class AS caller_class,n.caller_name AS caller_name,n.callee_class AS callee_class,n.callee_name AS callee_name LIMIT 1000",
+    "cross": true,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  }
+]

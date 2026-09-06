@@ -1,0 +1,1595 @@
+[
+  {
+    "name": "raw-\u003d",
+    "query": "MATCH (n) WHERE n.caller_name \u003d \u0027other\u0027 RETURN id(n) AS id ORDER BY id",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 2
+      },
+      {
+        "id": 41
+      }
+    ]
+  },
+  {
+    "name": "raw-\u003d",
+    "query": "MATCH (n) WHERE n.caller_name \u003d \u0027other\u0027 RETURN id(n) AS id ORDER BY id",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 2,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 2,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 41,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 41,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "wrapped-\u003d",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,\u0027\u0027))) \u003d \u0027example.other\u0027 RETURN id(n) AS id ORDER BY id",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 2
+      },
+      {
+        "id": 41
+      }
+    ]
+  },
+  {
+    "name": "wrapped-\u003d",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,\u0027\u0027))) \u003d \u0027example.other\u0027 RETURN id(n) AS id ORDER BY id",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 2,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 2,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 41,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 41,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "raw-CONTAINS",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN id(n) AS id ORDER BY id",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 2
+      },
+      {
+        "id": 41
+      }
+    ]
+  },
+  {
+    "name": "raw-CONTAINS",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN id(n) AS id ORDER BY id",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 2,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 2,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 41,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 41,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "wrapped-CONTAINS",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,\u0027\u0027))) CONTAINS \u0027example.other\u0027 RETURN id(n) AS id ORDER BY id",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 2
+      },
+      {
+        "id": 41
+      }
+    ]
+  },
+  {
+    "name": "wrapped-CONTAINS",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,\u0027\u0027))) CONTAINS \u0027example.other\u0027 RETURN id(n) AS id ORDER BY id",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 2,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 2,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 41,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 41,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "raw-STARTS WITH",
+    "query": "MATCH (n) WHERE n.caller_name STARTS WITH \u0027other\u0027 RETURN id(n) AS id ORDER BY id",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 2
+      },
+      {
+        "id": 41
+      }
+    ]
+  },
+  {
+    "name": "raw-STARTS WITH",
+    "query": "MATCH (n) WHERE n.caller_name STARTS WITH \u0027other\u0027 RETURN id(n) AS id ORDER BY id",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 2,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 2,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 41,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 41,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "wrapped-STARTS WITH",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,\u0027\u0027))) STARTS WITH \u0027example.other\u0027 RETURN id(n) AS id ORDER BY id",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 2
+      },
+      {
+        "id": 41
+      }
+    ]
+  },
+  {
+    "name": "wrapped-STARTS WITH",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,\u0027\u0027))) STARTS WITH \u0027example.other\u0027 RETURN id(n) AS id ORDER BY id",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 2,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 2,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 41,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 41,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "raw-ENDS WITH",
+    "query": "MATCH (n) WHERE n.caller_name ENDS WITH \u0027other\u0027 RETURN id(n) AS id ORDER BY id",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 2
+      },
+      {
+        "id": 41
+      }
+    ]
+  },
+  {
+    "name": "raw-ENDS WITH",
+    "query": "MATCH (n) WHERE n.caller_name ENDS WITH \u0027other\u0027 RETURN id(n) AS id ORDER BY id",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 2,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 2,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 41,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 41,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "wrapped-ENDS WITH",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,\u0027\u0027))) ENDS WITH \u0027example.other\u0027 RETURN id(n) AS id ORDER BY id",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 2
+      },
+      {
+        "id": 41
+      }
+    ]
+  },
+  {
+    "name": "wrapped-ENDS WITH",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,\u0027\u0027))) ENDS WITH \u0027example.other\u0027 RETURN id(n) AS id ORDER BY id",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 2,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 2,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 41,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 41,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "untyped-four-raw",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS \u0027other\u0027 OR n.caller_name CONTAINS \u0027other\u0027 OR n.callee_class CONTAINS \u0027other\u0027 OR n.callee_name CONTAINS \u0027other\u0027 RETURN id(n) AS id ORDER BY id",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 2
+      },
+      {
+        "id": 41
+      }
+    ]
+  },
+  {
+    "name": "untyped-four-raw",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS \u0027other\u0027 OR n.caller_name CONTAINS \u0027other\u0027 OR n.callee_class CONTAINS \u0027other\u0027 OR n.callee_name CONTAINS \u0027other\u0027 RETURN id(n) AS id ORDER BY id",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 2,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 2,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 41,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 41,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "untyped-four-wrapped",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,\u0027\u0027))) CONTAINS \u0027other\u0027 OR toLower(toString(coalesce(n.caller_name,\u0027\u0027))) CONTAINS \u0027other\u0027 OR toLower(toString(coalesce(n.callee_class,\u0027\u0027))) CONTAINS \u0027other\u0027 OR toLower(toString(coalesce(n.callee_name,\u0027\u0027))) CONTAINS \u0027other\u0027 RETURN id(n) AS id ORDER BY id",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 2
+      },
+      {
+        "id": 41
+      }
+    ]
+  },
+  {
+    "name": "untyped-four-wrapped",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,\u0027\u0027))) CONTAINS \u0027other\u0027 OR toLower(toString(coalesce(n.caller_name,\u0027\u0027))) CONTAINS \u0027other\u0027 OR toLower(toString(coalesce(n.callee_class,\u0027\u0027))) CONTAINS \u0027other\u0027 OR toLower(toString(coalesce(n.callee_name,\u0027\u0027))) CONTAINS \u0027other\u0027 RETURN id(n) AS id ORDER BY id",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 2,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 2,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 41,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 41,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "typed-four-raw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS \u0027other\u0027 OR n.caller_name CONTAINS \u0027other\u0027 OR n.callee_class CONTAINS \u0027other\u0027 OR n.callee_name CONTAINS \u0027other\u0027 RETURN id(n) AS id ORDER BY id",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 2
+      },
+      {
+        "id": 41
+      }
+    ]
+  },
+  {
+    "name": "typed-four-raw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS \u0027other\u0027 OR n.caller_name CONTAINS \u0027other\u0027 OR n.callee_class CONTAINS \u0027other\u0027 OR n.callee_name CONTAINS \u0027other\u0027 RETURN id(n) AS id ORDER BY id",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 2,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 2,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 41,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 41,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "typed-four-wrapped",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_class,\u0027\u0027))) CONTAINS \u0027other\u0027 OR toLower(toString(coalesce(n.caller_name,\u0027\u0027))) CONTAINS \u0027other\u0027 OR toLower(toString(coalesce(n.callee_class,\u0027\u0027))) CONTAINS \u0027other\u0027 OR toLower(toString(coalesce(n.callee_name,\u0027\u0027))) CONTAINS \u0027other\u0027 RETURN id(n) AS id ORDER BY id",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 2
+      },
+      {
+        "id": 41
+      }
+    ]
+  },
+  {
+    "name": "typed-four-wrapped",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_class,\u0027\u0027))) CONTAINS \u0027other\u0027 OR toLower(toString(coalesce(n.caller_name,\u0027\u0027))) CONTAINS \u0027other\u0027 OR toLower(toString(coalesce(n.callee_class,\u0027\u0027))) CONTAINS \u0027other\u0027 OR toLower(toString(coalesce(n.callee_name,\u0027\u0027))) CONTAINS \u0027other\u0027 RETURN id(n) AS id ORDER BY id",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 2,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 2,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 41,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 41,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "empty-null-wrapper",
+    "query": "MATCH (n) WHERE coalesce(n.caller_name,\u0027\u0027) CONTAINS \u0027\u0027 RETURN id(n) AS id ORDER BY id",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 2
+      },
+      {
+        "id": 17
+      },
+      {
+        "id": 41
+      },
+      {
+        "id": 90
+      }
+    ]
+  },
+  {
+    "name": "empty-null-wrapper",
+    "query": "MATCH (n) WHERE coalesce(n.caller_name,\u0027\u0027) CONTAINS \u0027\u0027 RETURN id(n) AS id ORDER BY id",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 2,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 2,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 17,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 17,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 41,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 41,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 90,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 90,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "raw-empty",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027\u0027 RETURN id(n) AS id ORDER BY id",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 2
+      },
+      {
+        "id": 17
+      },
+      {
+        "id": 41
+      },
+      {
+        "id": 90
+      }
+    ]
+  },
+  {
+    "name": "raw-empty",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027\u0027 RETURN id(n) AS id ORDER BY id",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 2,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 2,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 17,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 17,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 41,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 41,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 90,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 90,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "or-overlap-count",
+    "query": "MATCH (n) WHERE n.caller_name\u003d\u0027other\u0027 OR n.callee_name\u003d\u0027invoke\u0027 RETURN count(n) AS count",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "count"
+    ],
+    "rows": [
+      {
+        "count": 4
+      }
+    ]
+  },
+  {
+    "name": "or-overlap-count",
+    "query": "MATCH (n) WHERE n.caller_name\u003d\u0027other\u0027 OR n.callee_name\u003d\u0027invoke\u0027 RETURN count(n) AS count",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "count"
+    ],
+    "rows": [
+      {
+        "count": 8,
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "distinct-provenance",
+    "query": "MATCH (n) WHERE n.caller_name\u003d\u0027other\u0027 RETURN DISTINCT n.caller_class AS caller ORDER BY caller LIMIT 1",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "caller"
+    ],
+    "rows": [
+      {
+        "caller": "example.Other"
+      }
+    ]
+  },
+  {
+    "name": "distinct-provenance",
+    "query": "MATCH (n) WHERE n.caller_name\u003d\u0027other\u0027 RETURN DISTINCT n.caller_class AS caller ORDER BY caller LIMIT 1",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "caller"
+    ],
+    "rows": [
+      {
+        "caller": "example.Other",
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "available-empty",
+    "query": "MATCH (n) WHERE n.caller_name\u003d\u0027absent\u0027 RETURN id(n) AS id",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": []
+  },
+  {
+    "name": "available-empty",
+    "query": "MATCH (n) WHERE n.caller_name\u003d\u0027absent\u0027 RETURN id(n) AS id",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": []
+  },
+  {
+    "name": "half-surrogate",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS \u0027\\ud800\u0027 RETURN id(n) AS id ORDER BY id",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 17
+      },
+      {
+        "id": 90
+      }
+    ]
+  },
+  {
+    "name": "half-surrogate",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS \u0027\\ud800\u0027 RETURN id(n) AS id ORDER BY id",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 17,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 17,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 90,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 90,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "java-lower",
+    "query": "MATCH (n) WHERE toLower(n.caller_class) CONTAINS \u0027i\\u0307d\u0027 RETURN id(n) AS id ORDER BY id",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 17
+      },
+      {
+        "id": 90
+      }
+    ]
+  },
+  {
+    "name": "java-lower",
+    "query": "MATCH (n) WHERE toLower(n.caller_class) CONTAINS \u0027i\\u0307d\u0027 RETURN id(n) AS id ORDER BY id",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 17,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 17,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 90,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 90,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "lower-rhs-unchanged",
+    "query": "MATCH (n) WHERE toLower(n.caller_class) CONTAINS \u0027OTHER\u0027 RETURN id(n) AS id",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": []
+  },
+  {
+    "name": "lower-rhs-unchanged",
+    "query": "MATCH (n) WHERE toLower(n.caller_class) CONTAINS \u0027OTHER\u0027 RETURN id(n) AS id",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-string",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 2
+      },
+      {
+        "id": 41
+      }
+    ]
+  },
+  {
+    "name": "parameter-string",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 2,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 2,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 41,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 41,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "parameter-null",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-null",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-number",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-number",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-missing",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": []
+  },
+  {
+    "name": "parameter-missing",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": []
+  },
+  {
+    "name": "extra-argument",
+    "query": "MATCH (n) WHERE toString(n.caller_name,1/0)\u003d\u0027other\u0027 RETURN id(n) AS id ORDER BY id",
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "extra-argument",
+    "query": "MATCH (n) WHERE toString(n.caller_name,1/0)\u003d\u0027other\u0027 RETURN id(n) AS id ORDER BY id",
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "throwing-fallback",
+    "query": "MATCH (n) WHERE coalesce(n.caller_name,1/0)\u003d\u0027other\u0027 RETURN id(n) AS id ORDER BY id",
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "throwing-fallback",
+    "query": "MATCH (n) WHERE coalesce(n.caller_name,1/0)\u003d\u0027other\u0027 RETURN id(n) AS id ORDER BY id",
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "Division by zero"
+  },
+  {
+    "name": "throwing-or",
+    "query": "MATCH (n) WHERE n.caller_name\u003d\u0027other\u0027 OR substring(\u0027x\u0027,\u0027bad\u0027)\u003d\u0027x\u0027 RETURN id(n) AS id ORDER BY id",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "throwing-or",
+    "query": "MATCH (n) WHERE n.caller_name\u003d\u0027other\u0027 OR substring(\u0027x\u0027,\u0027bad\u0027)\u003d\u0027x\u0027 RETURN id(n) AS id ORDER BY id",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "incomplete-or",
+    "query": "MATCH (n) WHERE n.caller_name\u003d\u0027absent\u0027 OR true RETURN id(n) AS id ORDER BY id",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 2
+      },
+      {
+        "id": 17
+      },
+      {
+        "id": 41
+      },
+      {
+        "id": 90
+      }
+    ]
+  },
+  {
+    "name": "incomplete-or",
+    "query": "MATCH (n) WHERE n.caller_name\u003d\u0027absent\u0027 OR true RETURN id(n) AS id ORDER BY id",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": 2,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 2,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 17,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 17,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 41,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 41,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "id": 90,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "id": 90,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "optional",
+    "query": "OPTIONAL MATCH (n) WHERE n.caller_name\u003d\u0027absent\u0027 RETURN id(n) AS id",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": null
+      }
+    ]
+  },
+  {
+    "name": "optional",
+    "query": "OPTIONAL MATCH (n) WHERE n.caller_name\u003d\u0027absent\u0027 RETURN id(n) AS id",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": [
+      {
+        "id": null,
+        "$metadata": {
+          "graphIds": []
+        }
+      }
+    ]
+  },
+  {
+    "name": "unwind",
+    "query": "UNWIND [\u0027other\u0027,\u0027caller\u0027] AS term MATCH (n) WHERE n.caller_name\u003dterm RETURN term,id(n) AS id ORDER BY term,id",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "term",
+      "id"
+    ],
+    "rows": [
+      {
+        "term": "caller",
+        "id": 17
+      },
+      {
+        "term": "caller",
+        "id": 90
+      },
+      {
+        "term": "other",
+        "id": 2
+      },
+      {
+        "term": "other",
+        "id": 41
+      }
+    ]
+  },
+  {
+    "name": "unwind",
+    "query": "UNWIND [\u0027other\u0027,\u0027caller\u0027] AS term MATCH (n) WHERE n.caller_name\u003dterm RETURN term,id(n) AS id ORDER BY term,id",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "term",
+      "id"
+    ],
+    "rows": [
+      {
+        "term": "caller",
+        "id": 17,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "term": "caller",
+        "id": 17,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "term": "caller",
+        "id": 90,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "term": "caller",
+        "id": 90,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "term": "other",
+        "id": 2,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "term": "other",
+        "id": 2,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "term": "other",
+        "id": 41,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "term": "other",
+        "id": 41,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "old-binding",
+    "query": "WITH {caller_name:\u0027other\u0027} AS n MATCH (n) WHERE n.caller_name\u003d\u0027other\u0027 RETURN n",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "n"
+    ],
+    "rows": []
+  },
+  {
+    "name": "old-binding",
+    "query": "WITH {caller_name:\u0027other\u0027} AS n MATCH (n) WHERE n.caller_name\u003d\u0027other\u0027 RETURN n",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "n"
+    ],
+    "rows": []
+  },
+  {
+    "name": "inline-ordered",
+    "query": "MATCH (n {id:-1,caller_name:1/0}) WHERE n.caller_name\u003d\u0027other\u0027 RETURN id(n) AS id",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": []
+  },
+  {
+    "name": "inline-ordered",
+    "query": "MATCH (n {id:-1,caller_name:1/0}) WHERE n.caller_name\u003d\u0027other\u0027 RETURN id(n) AS id",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "id"
+    ],
+    "rows": []
+  }
+]

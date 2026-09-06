@@ -1,0 +1,17 @@
+{
+  "timeUTC": "2026-09-06T22:04:55.890862+00:00",
+  "command": [
+    "go",
+    "build",
+    "-o",
+    "/tmp/graphite-go-callsite-candidates-http-attempt6",
+    "./cmd/graphite-server"
+  ],
+  "worktree": "/tmp/graphite-go-callsite-candidates-attempt6-1c235916",
+  "exitCode": 0,
+  "stdout": "",
+  "stderr": "",
+  "frozenSourceManifestSHA256": "25de7e620cd2d0cb868b55de6b12002629cf90ef1bfb9118c600c62cf33ba504",
+  "allFrozenFilesVerified": 127,
+  "binarySHA256": "e4408e7c562add74928bd27b230f98d0c330f3e2314cf260732ae59acf78cb9c"
+}

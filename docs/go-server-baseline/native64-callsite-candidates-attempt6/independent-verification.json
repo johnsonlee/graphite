@@ -1,0 +1,44 @@
+{
+  "base": "1c235916a930a9dd65ce2a68dfaee854a40e9d05",
+  "archive": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-attempt6-independent-yxgqb3vi",
+  "patchSHA256": "22429f2b01531350bfd13c57eefb52c962a62e674353260d819a492dafb18e1e",
+  "all127FrozenFilesMatch": true,
+  "auditSHA256": "228faad9e86f6e4b785ec8e9ce79f7a5dc9faec00f30789cf6a0caa250cba114",
+  "purpose": "Independent candidate archive with external correctness-only proof overlay; performance runs use the unmodified frozen candidate.",
+  "runs": [
+    {
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./internal/query",
+        "-run",
+        "^TestExternalCandidateNullAndWrapperProof$",
+        "-count=1",
+        "-v"
+      ],
+      "exitCode": 0,
+      "log": "independent-null-proof.log"
+    },
+    {
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./..."
+      ],
+      "exitCode": 0,
+      "log": "independent-race.log"
+    },
+    {
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "exitCode": 0,
+      "log": "independent-vet.log"
+    }
+  ],
+  "finishedAtUTC": "2026-09-06T21:56:57.752889+00:00"
+}

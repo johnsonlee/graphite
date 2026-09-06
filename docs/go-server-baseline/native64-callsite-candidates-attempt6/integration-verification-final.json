@@ -1,0 +1,50 @@
+{
+  "archive": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-attempt6-integration-final-vjf4g8f4",
+  "runs": [
+    {
+      "command": [
+        "go",
+        "test",
+        "./internal/query",
+        "-run",
+        "^TestStringCandidateCancellationAtEveryPreparationCheck$",
+        "-count=40"
+      ],
+      "log": "integration-final-cancellation.log",
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./..."
+      ],
+      "log": "integration-final-race.log",
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "log": "integration-final-vet.log",
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "go",
+        "test",
+        "./internal/query",
+        "-run",
+        "^TestExternalCandidateNullAndWrapperProof$",
+        "-count=1",
+        "-v"
+      ],
+      "log": "integration-final-null-proof.log",
+      "exitCode": 0
+    }
+  ],
+  "finishedAtUTC": "2026-09-06T22:10:27.934110+00:00"
+}

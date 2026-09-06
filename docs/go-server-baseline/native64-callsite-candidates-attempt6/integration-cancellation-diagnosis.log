@@ -1,0 +1,33 @@
+--- FAIL: TestStringCandidateCancellationAtEveryPreparationCheck (0.01s)
+    string_candidates_test.go:409: cancellation at 119 returned a walker; actual context checks=118
+    string_candidates_test.go:405: check 119 got <nil>
+--- FAIL: TestStringCandidateCancellationAtEveryPreparationCheck (0.00s)
+    string_candidates_test.go:409: cancellation at 118 returned a walker; actual context checks=117
+    string_candidates_test.go:405: check 118 got <nil>
+--- FAIL: TestStringCandidateCancellationAtEveryPreparationCheck (0.00s)
+    string_candidates_test.go:409: cancellation at 118 returned a walker; actual context checks=117
+    string_candidates_test.go:405: check 118 got <nil>
+--- FAIL: TestStringCandidateCancellationAtEveryPreparationCheck (0.00s)
+    string_candidates_test.go:409: cancellation at 118 returned a walker; actual context checks=117
+    string_candidates_test.go:405: check 118 got <nil>
+--- FAIL: TestStringCandidateCancellationAtEveryPreparationCheck (0.00s)
+    string_candidates_test.go:409: cancellation at 118 returned a walker; actual context checks=117
+    string_candidates_test.go:405: check 118 got <nil>
+--- FAIL: TestStringCandidateCancellationAtEveryPreparationCheck (0.00s)
+    string_candidates_test.go:409: cancellation at 118 returned a walker; actual context checks=117
+    string_candidates_test.go:405: check 118 got <nil>
+--- FAIL: TestStringCandidateCancellationAtEveryPreparationCheck (0.00s)
+    string_candidates_test.go:409: cancellation at 119 returned a walker; actual context checks=117
+    string_candidates_test.go:405: check 119 got <nil>
+--- FAIL: TestStringCandidateCancellationAtEveryPreparationCheck (0.00s)
+    string_candidates_test.go:409: cancellation at 118 returned a walker; actual context checks=117
+    string_candidates_test.go:405: check 118 got <nil>
+--- FAIL: TestStringCandidateCancellationAtEveryPreparationCheck (0.00s)
+    string_candidates_test.go:409: cancellation at 118 returned a walker; actual context checks=117
+    string_candidates_test.go:405: check 118 got <nil>
+--- FAIL: TestStringCandidateCancellationAtEveryPreparationCheck (0.00s)
+    string_candidates_test.go:409: cancellation at 118 returned a walker; actual context checks=117
+    string_candidates_test.go:405: check 118 got <nil>
+FAIL
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/query	0.275s
+FAIL

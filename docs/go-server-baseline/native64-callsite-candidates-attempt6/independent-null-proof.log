@@ -1,0 +1,5 @@
+=== RUN   TestExternalCandidateNullAndWrapperProof
+    external_null_proof_test.go:83: admitted=1456 complete-kind/predicate comparisons=21840
+--- PASS: TestExternalCandidateNullAndWrapperProof (0.11s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/query	1.478s

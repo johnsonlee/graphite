@@ -1,0 +1,13 @@
+{
+  "baseRevision": "1c235916a930a9dd65ce2a68dfaee854a40e9d05",
+  "baseWorktree": "/tmp/graphite-go-callsite-base-attempt6-1c235916",
+  "profileHarnessSHA256": "b24ea6bad0f8f6378ccf132dda180bede117203d596dc58f893857e33df74bae",
+  "querySequence": [
+    "wrapped-zeroHitBroadContains",
+    "wrapped-zeroHitBroadContains-repeat",
+    "global-wide-four-properties-zero",
+    "supplemental-method-count"
+  ],
+  "purpose": "All64 native diagnostic: first wrapped includes candidate preparation, second wrapped repeats in the same process. No P95 claim.",
+  "candidate": "Awaiting final frozen Attempt6 source; no candidate run started."
+}

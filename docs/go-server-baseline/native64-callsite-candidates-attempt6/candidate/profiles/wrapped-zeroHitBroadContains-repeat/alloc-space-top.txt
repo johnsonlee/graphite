@@ -1,0 +1,25 @@
+File: profile-query
+Type: alloc_space
+Time: Sep 7, 2026 at 6:59am (KST)
+Showing nodes accounting for 948.64MB, 99.25% of 955.84MB total
+Dropped 22 nodes (cum <= 4.78MB)
+      flat  flat%   sum%        cum   cum%
+  511.10MB 53.47% 53.47%   740.12MB 77.43%  github.com/johnsonlee/graphite/graphite-server/internal/javastring.CodePoints
+  229.02MB 23.96% 77.43%   229.02MB 23.96%  github.com/johnsonlee/graphite/graphite-server/internal/javastring.UTF16
+   98.50MB 10.31% 87.74%   948.64MB 99.25%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.indexedNodeWalker
+      93MB  9.73% 97.47%       93MB  9.73%  unicode/utf8.AppendRune (inline)
+    8.51MB  0.89% 98.36%     8.51MB  0.89%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*CallSiteStringIndex).Directory
+    8.50MB  0.89% 99.25%     8.50MB  0.89%  strings.(*Builder).WriteString (inline)
+         0     0% 99.25%   841.63MB 88.05%  github.com/johnsonlee/graphite/graphite-server/internal/javastring.Case
+         0     0% 99.25%   948.64MB 99.25%  github.com/johnsonlee/graphite/graphite-server/internal/query.ExecuteCross
+         0     0% 99.25%   948.64MB 99.25%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.branch
+         0     0% 99.25%   841.63MB 88.05%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.javaCase (inline)
+         0     0% 99.25%   948.64MB 99.25%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.match
+         0     0% 99.25%   948.64MB 99.25%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.matchSingleNode
+         0     0% 99.25%   948.64MB 99.25%  github.com/johnsonlee/graphite/graphite-server/internal/query.executeSources
+         0     0% 99.25%   952.81MB 99.68%  main.main
+         0     0% 99.25%   952.81MB 99.68%  main.profile
+         0     0% 99.25%   948.64MB 99.25%  main.profile.func1
+         0     0% 99.25%   952.81MB 99.68%  runtime.main
+         0     0% 99.25%   948.64MB 99.25%  runtime/pprof.Do
+         0     0% 99.25%       93MB  9.73%  strings.(*Builder).WriteRune

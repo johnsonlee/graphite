@@ -163,3 +163,34 @@ counter comparisons are in `docs/go-server-baseline/native64-string-predicate-at
 the independent review is in `string-predicate-readonly-audit/`. Attempt 4's
 incomplete/504 receipt is preserved. No performance measurement uses synthetic
 data or drops a failed response from its denominator.
+
+
+## 2026-09-07 — Attempt 6: certified CallSite string candidates
+
+Hypothesis: filter the existing four-property CSR dictionaries before decoding
+nodes, while proving index membership and preserving original native scan
+failures, candidate order and downstream evaluation. No trigram/signature filter
+or query-response cache is included in this attempt.
+
+| Item | Evidence / status |
+|---|---|
+| Native base | `1c235916a930a9dd65ce2a68dfaee854a40e9d05`, including the optional index reader; native-to-native diagnostic, not main latency comparison |
+| Candidate identity | Frozen 127-file patch `22429f2b01531350bfd13c57eefb52c962a62e674353260d819a492dafb18e1e`; six production files; profile binary `18c3158ece6578fe4b793bbf7af750a1245b0a85920d2a207ac4e75dee315075` |
+| Real fixture | All 64 `/tmp/pr113-exp037-fixture.nXn4fg` persisted shards, 19,431,891 nodes / 20,448,885 edges; all 1,152 frozen files freshly hashed before each profile; all catalog counts checked |
+| Eligibility | Initial mandatory named single-node MATCH; four caller/callee string fields; whole pure OR of exact supported predicates/wrappers; MAPPED only; every selected graph must be certified before emission; Annotation/null/unsupported cases fall back |
+| Correctness | 192 valid complete main queries and forced-scan comparisons; independent 1,456 admitted forms / 21,840 kind-and-transform comparisons; final integrated clean archive full-module race/vet passes |
+| HTTP | 42/42 HTTP 200, full ordered-body equality and no checked header differences against pinned main; default timeout/admission, sequential all-64 replay |
+| Corrupt-store limitation | 80/80 enabled-versus-forced-native-scan equal; 61/80 still differ from main (60 malformed-core/raw-projection/error cases plus one scoped metadata case). Existing main parity gaps remain explicit |
+| Cold wrapped query | Allocation 20,063,190,048 → 3,576,489,880 bytes; GC 3 → 0; CPU 57.907 → 10.629 s; execution+marshal 44.656 → 10.612 s. Includes certificate and optional-index preparation |
+| Warm identical repeat | Allocation 20,061,635,120 → 990,091,056 bytes; GC 3 → 0; CPU 57.816 → 1.282 s; execution+marshal 44.479 → 1.279 s; proof retained in same process, no result cache |
+| Warm raw four-property zero | Allocation 3,661,675,032 → 111,622,880 bytes; GC 0 → 0; CPU 13.540 → 0.165 s; execution+marshal 13.542 → 0.163 s |
+| Heap / control | Cold wrapped request-end heap rises 8.90 → 9.86 GB; warm wrapped 8.28 → 7.27 GB, raw 9.95 → 6.40 GB; post-forced-GC heap about 6.28 GB, not peak RSS. Method control +96 bytes, 0.766 → 0.777 s is not a meaningful regression claim |
+| Test finding | Initial integration test assumed fixed sort check count; independent 40-run diagnosis showed cancelAt 118/119 was not reached when only 117/118 checks occurred. Test now distinguishes reached thresholds; 40 repeats and full race/vet pass. Failed receipts remain; no production change from this correction |
+| Integration | Root `3feb4157` plus the candidate preserves later count/early-limit changes in engine.go; one cancellation test corrected, other 125 frozen files unchanged. Source hashes and independent final archive recorded separately |
+| Decision | Keep verified allocation reduction and fixed-workload HTTP correctness. Single profiled cold/warm observations include host co-tenancy and are not P95, controlled paired acceptance or proof of the overall 10× main-relative target |
+
+Exact source/binary identities, all outputs, profiles, counters, initial failed
+test diagnosis, final verification and reproduction commands are retained in
+`docs/go-server-baseline/native64-callsite-candidates-attempt6/`. No performance
+measurement uses synthetic graphs. Forced GC outside requests is excluded from
+request counters; no failed request is omitted or treated as a fast success.

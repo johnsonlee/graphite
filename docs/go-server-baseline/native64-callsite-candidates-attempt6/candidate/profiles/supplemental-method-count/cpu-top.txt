@@ -1,0 +1,78 @@
+File: profile-query
+Type: cpu
+Time: Sep 7, 2026 at 6:59am (KST)
+Duration: 918.69ms, Total samples = 680ms (74.02%)
+Showing nodes accounting for 680ms, 100% of 680ms total
+      flat  flat%   sum%        cum   cum%
+     480ms 70.59% 70.59%      480ms 70.59%  runtime.madvise
+      40ms  5.88% 76.47%      100ms 14.71%  runtime.mallocgc
+      30ms  4.41% 80.88%       30ms  4.41%  runtime.memclrNoHeapPointers
+      20ms  2.94% 83.82%       20ms  2.94%  runtime.(*mspan).writeHeapBitsSmall
+      20ms  2.94% 86.76%       20ms  2.94%  runtime.memmove
+      20ms  2.94% 89.71%       20ms  2.94%  runtime.pthread_cond_signal
+      10ms  1.47% 91.18%       10ms  1.47%  cmpbody
+      10ms  1.47% 92.65%       40ms  5.88%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.bind
+      10ms  1.47% 94.12%       10ms  1.47%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.check (inline)
+      10ms  1.47% 95.59%       10ms  1.47%  github.com/johnsonlee/graphite/graphite-server/internal/query.wireKeyCollision
+      10ms  1.47% 97.06%       10ms  1.47%  runtime.(*fixalloc).alloc
+      10ms  1.47% 98.53%       10ms  1.47%  runtime.kevent
+      10ms  1.47%   100%       10ms  1.47%  runtime.mapaccess1_faststr
+         0     0%   100%       10ms  1.47%  cmp.Less[go.shape.string] (inline)
+         0     0%   100%      170ms 25.00%  github.com/johnsonlee/graphite/graphite-server/internal/query.ExecuteCross
+         0     0%   100%       20ms  2.94%  github.com/johnsonlee/graphite/graphite-server/internal/query.addProvenance
+         0     0%   100%       20ms  2.94%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.aggregate
+         0     0%   100%      160ms 23.53%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.branch
+         0     0%   100%       30ms  4.41%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.cloneRow
+         0     0%   100%       20ms  2.94%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.eval
+         0     0%   100%       20ms  2.94%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.evaluateAggregate
+         0     0%   100%      130ms 19.12%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.match
+         0     0%   100%      130ms 19.12%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.matchMaterialized
+         0     0%   100%      120ms 17.65%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.matchPattern
+         0     0%   100%      110ms 16.18%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.matchPattern.func1
+         0     0%   100%      120ms 17.65%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.nodeCandidates (inline)
+         0     0%   100%       30ms  4.41%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.project
+         0     0%   100%      120ms 17.65%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.walkNodeCandidates
+         0     0%   100%      170ms 25.00%  github.com/johnsonlee/graphite/graphite-server/internal/query.executeSources
+         0     0%   100%       10ms  1.47%  github.com/johnsonlee/graphite/graphite-server/internal/query.mergeProvenance (inline)
+         0     0%   100%      170ms 25.00%  main.main
+         0     0%   100%      170ms 25.00%  main.profile
+         0     0%   100%      170ms 25.00%  main.profile.func1
+         0     0%   100%       10ms  1.47%  runtime.(*mcache).nextFree
+         0     0%   100%       10ms  1.47%  runtime.(*mcache).refill
+         0     0%   100%       10ms  1.47%  runtime.(*mcentral).cacheSpan
+         0     0%   100%       10ms  1.47%  runtime.(*mcentral).grow
+         0     0%   100%       10ms  1.47%  runtime.(*mheap).alloc
+         0     0%   100%      490ms 72.06%  runtime.(*mheap).alloc.func1
+         0     0%   100%       10ms  1.47%  runtime.(*mheap).allocMSpanLocked
+         0     0%   100%      490ms 72.06%  runtime.(*mheap).allocSpan
+         0     0%   100%       10ms  1.47%  runtime.convT
+         0     0%   100%       10ms  1.47%  runtime.findRunnable
+         0     0%   100%       10ms  1.47%  runtime.gopreempt_m (inline)
+         0     0%   100%       10ms  1.47%  runtime.goschedImpl
+         0     0%   100%       20ms  2.94%  runtime.growslice
+         0     0%   100%       20ms  2.94%  runtime.heapSetType
+         0     0%   100%      170ms 25.00%  runtime.main
+         0     0%   100%       30ms  4.41%  runtime.makemap
+         0     0%   100%       30ms  4.41%  runtime.mapassign_faststr
+         0     0%   100%       20ms  2.94%  runtime.mcall
+         0     0%   100%       10ms  1.47%  runtime.morestack
+         0     0%   100%       10ms  1.47%  runtime.netpoll
+         0     0%   100%       80ms 11.76%  runtime.newobject (partial-inline)
+         0     0%   100%       10ms  1.47%  runtime.newstack
+         0     0%   100%       20ms  2.94%  runtime.notewakeup
+         0     0%   100%       20ms  2.94%  runtime.park_m
+         0     0%   100%       10ms  1.47%  runtime.resetspinning
+         0     0%   100%       20ms  2.94%  runtime.schedule
+         0     0%   100%       20ms  2.94%  runtime.semawakeup
+         0     0%   100%       20ms  2.94%  runtime.startm
+         0     0%   100%      480ms 70.59%  runtime.sysUsed (inline)
+         0     0%   100%      480ms 70.59%  runtime.sysUsedOS (inline)
+         0     0%   100%      490ms 72.06%  runtime.systemstack
+         0     0%   100%       10ms  1.47%  runtime.typedslicecopy
+         0     0%   100%       20ms  2.94%  runtime.wakep
+         0     0%   100%      170ms 25.00%  runtime/pprof.Do
+         0     0%   100%       10ms  1.47%  slices.Sort[go.shape.[]string,go.shape.string] (inline)
+         0     0%   100%       10ms  1.47%  slices.partialInsertionSortOrdered[go.shape.string]
+         0     0%   100%       10ms  1.47%  slices.pdqsortOrdered[go.shape.string]
+         0     0%   100%       10ms  1.47%  sort.Strings (inline)
+         0     0%   100%       10ms  1.47%  sort.stringsImpl

@@ -1,0 +1,549 @@
+{
+  "baseCommit": "1c235916a930a9dd65ce2a68dfaee854a40e9d05",
+  "readerInBase": {
+    "commit": "1c235916",
+    "originalFrozenPatchSHA256": "4a346947cfe45ee67e3e90e07bcaab129130159203bf89121be756315322ab74"
+  },
+  "worktree": "/private/tmp/graphite-go-callsite-candidates-attempt6-1c235916",
+  "patchSHA256": "22429f2b01531350bfd13c57eefb52c962a62e674353260d819a492dafb18e1e",
+  "files": {
+    "graphite-server/internal/query/engine.go": {
+      "sha256": "8eafeac53c0395e359e2d78b4f39e0cdadc166e7fbad1e55d2ee39affe9394bb",
+      "bytes": 13768
+    },
+    "graphite-server/internal/query/eval.go": {
+      "sha256": "aa4bae2a64621ab0f29a47a43b32210502ee7469dbabfce6c9eb8ecfccc1cd52",
+      "bytes": 13973
+    },
+    "graphite-server/internal/query/scan.go": {
+      "sha256": "bd4edd9fed796e474e2f9155d423f549bf44283444d34483448da2271dfc5962",
+      "bytes": 2262
+    },
+    "graphite-server/internal/query/string_candidates.go": {
+      "sha256": "d40f9a2f63bdce2f6453a1df12a80a7964c43aaf8e2b0679229c083c1920c5aa",
+      "bytes": 7715
+    },
+    "graphite-server/internal/query/string_candidates_test.go": {
+      "sha256": "7787a179be5d86c8c08342a6e7e584b2d0cd7376f0e0670abfcb7b4fd4b744d0",
+      "bytes": 19286
+    },
+    "graphite-server/internal/query/testdata/candidate-index/GenerateMixed.java": {
+      "sha256": "83f93f34fbdc8bc9da5270bc075fc14df6ae7b09159e25cf970de5e9d2f2668c",
+      "bytes": 1132
+    },
+    "graphite-server/internal/query/testdata/candidate-index/PlannerOracle.java": {
+      "sha256": "8ec40966ac5c770ef3026fc56cb08b35d7ef4ef22e022621fb5b05dd56ae5093",
+      "bytes": 1875
+    },
+    "graphite-server/internal/query/testdata/candidate-index/README.md": {
+      "sha256": "1bfbdd9384336eba2647c50cbb1aa52c9ce3c41ff3c74c0113ab5f3e1b3a398e",
+      "bytes": 9787
+    },
+    "graphite-server/internal/query/testdata/candidate-index/annotation-plan-main.json": {
+      "sha256": "b6d99d43df7a112401bafbaec49ce1ff40aeeec7042977cf52f846de403f5a10",
+      "bytes": 33938
+    },
+    "graphite-server/internal/query/testdata/candidate-index/annotation/forward.graph": {
+      "sha256": "a06b43d6cbce4500b78b1cae88235ac2ff26e9c3f4f2ef63a7a73bf4ac2ff2cd",
+      "bytes": 19
+    },
+    "graphite-server/internal/query/testdata/candidate-index/annotation/forward.offsets": {
+      "sha256": "feee71d2abc095ff45a953f52d5348d725cb0ce7a4c1133d7181e42b76468453",
+      "bytes": 57
+    },
+    "graphite-server/internal/query/testdata/candidate-index/annotation/forward.properties": {
+      "sha256": "ffd621df1d05f2573a08fc97331ba669c45e3127a8e796b1849484ec6f9ab5bf",
+      "bytes": 622
+    },
+    "graphite-server/internal/query/testdata/candidate-index/annotation/graph.callsite-string-content.identity": {
+      "sha256": "f48c5c905395c1520ef224db261d08b6d0adb204e802f5d6141df6c92090e18b",
+      "bytes": 32
+    },
+    "graphite-server/internal/query/testdata/candidate-index/annotation/graph.callsite-string-index": {
+      "sha256": "218df00b3d85cb631ada6c07ac79eefa70d7edafadb33dc39fe71ba74e8f2fb8",
+      "bytes": 724
+    },
+    "graphite-server/internal/query/testdata/candidate-index/annotation/graph.classoverview": {
+      "sha256": "e097b1b3f1c5ce4795f30a46ecec7729f9ef4ea559092d2eac6639ac58530b7f",
+      "bytes": 64
+    },
+    "graphite-server/internal/query/testdata/candidate-index/annotation/graph.comparisons": {
+      "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8",
+      "bytes": 8
+    },
+    "graphite-server/internal/query/testdata/candidate-index/annotation/graph.labelprefix": {
+      "sha256": "4beb641f77c3df2749a5dffc0a23f4270dc4b94e1e940287fc3ebfa05b720662",
+      "bytes": 608
+    },
+    "graphite-server/internal/query/testdata/candidate-index/annotation/graph.labels": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "graphite-server/internal/query/testdata/candidate-index/annotation/graph.metadata": {
+      "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb",
+      "bytes": 36
+    },
+    "graphite-server/internal/query/testdata/candidate-index/annotation/graph.nodedata": {
+      "sha256": "6626890863e9bc38872cb9d4e413ec110f78286689b744415a48c4b83cb87af7",
+      "bytes": 273
+    },
+    "graphite-server/internal/query/testdata/candidate-index/annotation/graph.nodeindex": {
+      "sha256": "cfcf49a18995796e41f20a80e06ba4c2063e2cc043c0ec92554f58513275939f",
+      "bytes": 86
+    },
+    "graphite-server/internal/query/testdata/candidate-index/annotation/graph.nodeoffsets": {
+      "sha256": "f7702279dda52c816e36806ade085c7229b8d3683386556a678fc6aba2af611c",
+      "bytes": 1216
+    },
+    "graphite-server/internal/query/testdata/candidate-index/annotation/graph.resources": {
+      "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17",
+      "bytes": 8
+    },
+    "graphite-server/internal/query/testdata/candidate-index/annotation/graph.strings": {
+      "sha256": "c91fb0be379ae506c3ca85b12d248ec330f36798f52488ec6b1df0cad0890456",
+      "bytes": 639
+    },
+    "graphite-server/internal/query/testdata/candidate-index/annotation/graph.strings.identity": {
+      "sha256": "16ed36c9387a79f50d2021aca79b72e0cda08100fb2016dc5a9cb28f880474ff",
+      "bytes": 32
+    },
+    "graphite-server/internal/query/testdata/candidate-index/annotation/graph.typeindex": {
+      "sha256": "abd3aec9e0083003de752ef8ff08175a675efc9e4d3d78d215c738973b60fcd8",
+      "bytes": 240
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-first-unmatched-main.json": {
+      "sha256": "e3b1bed5e6d3450fb503c3f7031c4af7e15cb3e52413bc81b8bbbefc3ca7ff7f",
+      "bytes": 9211
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-first-unmatched/forward.graph": {
+      "sha256": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4",
+      "bytes": 12
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-first-unmatched/forward.offsets": {
+      "sha256": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458",
+      "bytes": 35
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-first-unmatched/forward.properties": {
+      "sha256": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc",
+      "bytes": 620
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-first-unmatched/graph.callsite-string-content.identity": {
+      "sha256": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0",
+      "bytes": 32
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-first-unmatched/graph.callsite-string-index": {
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+      "bytes": 676
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-first-unmatched/graph.classoverview": {
+      "sha256": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea",
+      "bytes": 64
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-first-unmatched/graph.comparisons": {
+      "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8",
+      "bytes": 8
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-first-unmatched/graph.labelprefix": {
+      "sha256": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23",
+      "bytes": 368
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-first-unmatched/graph.labels": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-first-unmatched/graph.metadata": {
+      "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb",
+      "bytes": 36
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-first-unmatched/graph.nodedata": {
+      "sha256": "6b1bdab184bcef434610d15ea5ffbb6c1d410943dce553ca440a12470b170ae1",
+      "bytes": 220
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-first-unmatched/graph.nodeindex": {
+      "sha256": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c",
+      "bytes": 60
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-first-unmatched/graph.nodeoffsets": {
+      "sha256": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf",
+      "bytes": 736
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-first-unmatched/graph.resources": {
+      "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17",
+      "bytes": 8
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-first-unmatched/graph.strings": {
+      "sha256": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b",
+      "bytes": 535
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-first-unmatched/graph.strings.identity": {
+      "sha256": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb",
+      "bytes": 32
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-first-unmatched/graph.typeindex": {
+      "sha256": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849",
+      "bytes": 232
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-last-unmatched-main.json": {
+      "sha256": "29f064a179fa68780f325823483c2b32dce2c5b749ce8725f3dc1a379d3045c4",
+      "bytes": 9947
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-last-unmatched/forward.graph": {
+      "sha256": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4",
+      "bytes": 12
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-last-unmatched/forward.offsets": {
+      "sha256": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458",
+      "bytes": 35
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-last-unmatched/forward.properties": {
+      "sha256": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc",
+      "bytes": 620
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-last-unmatched/graph.callsite-string-content.identity": {
+      "sha256": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0",
+      "bytes": 32
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-last-unmatched/graph.callsite-string-index": {
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+      "bytes": 676
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-last-unmatched/graph.classoverview": {
+      "sha256": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea",
+      "bytes": 64
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-last-unmatched/graph.comparisons": {
+      "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8",
+      "bytes": 8
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-last-unmatched/graph.labelprefix": {
+      "sha256": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23",
+      "bytes": 368
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-last-unmatched/graph.labels": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-last-unmatched/graph.metadata": {
+      "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb",
+      "bytes": 36
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-last-unmatched/graph.nodedata": {
+      "sha256": "f5654334c848b77e8fe24e527fb2348e5d2a4943f84ffeb75446bacc3bac9052",
+      "bytes": 220
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-last-unmatched/graph.nodeindex": {
+      "sha256": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c",
+      "bytes": 60
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-last-unmatched/graph.nodeoffsets": {
+      "sha256": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf",
+      "bytes": 736
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-last-unmatched/graph.resources": {
+      "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17",
+      "bytes": 8
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-last-unmatched/graph.strings": {
+      "sha256": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b",
+      "bytes": 535
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-last-unmatched/graph.strings.identity": {
+      "sha256": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb",
+      "bytes": 32
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-last-unmatched/graph.typeindex": {
+      "sha256": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849",
+      "bytes": 232
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-matched-main.json": {
+      "sha256": "e3b1bed5e6d3450fb503c3f7031c4af7e15cb3e52413bc81b8bbbefc3ca7ff7f",
+      "bytes": 9211
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-matched/forward.graph": {
+      "sha256": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4",
+      "bytes": 12
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-matched/forward.offsets": {
+      "sha256": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458",
+      "bytes": 35
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-matched/forward.properties": {
+      "sha256": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc",
+      "bytes": 620
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-matched/graph.callsite-string-content.identity": {
+      "sha256": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0",
+      "bytes": 32
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-matched/graph.callsite-string-index": {
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+      "bytes": 676
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-matched/graph.classoverview": {
+      "sha256": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea",
+      "bytes": 64
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-matched/graph.comparisons": {
+      "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8",
+      "bytes": 8
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-matched/graph.labelprefix": {
+      "sha256": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23",
+      "bytes": 368
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-matched/graph.labels": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-matched/graph.metadata": {
+      "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb",
+      "bytes": 36
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-matched/graph.nodedata": {
+      "sha256": "9727c0bb15ff09833a7d051df8eecca190e98f0338a045929d7f865d933318d8",
+      "bytes": 220
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-matched/graph.nodeindex": {
+      "sha256": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c",
+      "bytes": 60
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-matched/graph.nodeoffsets": {
+      "sha256": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf",
+      "bytes": 736
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-matched/graph.resources": {
+      "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17",
+      "bytes": 8
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-matched/graph.strings": {
+      "sha256": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b",
+      "bytes": 535
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-matched/graph.strings.identity": {
+      "sha256": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb",
+      "bytes": 32
+    },
+    "graphite-server/internal/query/testdata/candidate-index/bad-matched/graph.typeindex": {
+      "sha256": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849",
+      "bytes": 232
+    },
+    "graphite-server/internal/query/testdata/candidate-index/capture-native_test.go.txt": {
+      "sha256": "c30432a121089b28d4dfca28b9ddeac990fa63bf09826a6bbb81dd84b004c811",
+      "bytes": 1792
+    },
+    "graphite-server/internal/query/testdata/candidate-index/clean-main.json": {
+      "sha256": "a6da3980345938fbe8f04f0fcb0a65b858f1783aeeda21efd63eefd797a1921e",
+      "bytes": 12475
+    },
+    "graphite-server/internal/query/testdata/candidate-index/clean-plan-main.json": {
+      "sha256": "987c5560b6ce28099d941e37b49cc290b4a3a1b2b0ac05eaafb3f63109c6f980",
+      "bytes": 31445
+    },
+    "graphite-server/internal/query/testdata/candidate-index/clean/forward.graph": {
+      "sha256": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4",
+      "bytes": 12
+    },
+    "graphite-server/internal/query/testdata/candidate-index/clean/forward.offsets": {
+      "sha256": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458",
+      "bytes": 35
+    },
+    "graphite-server/internal/query/testdata/candidate-index/clean/forward.properties": {
+      "sha256": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc",
+      "bytes": 620
+    },
+    "graphite-server/internal/query/testdata/candidate-index/clean/graph.callsite-string-content.identity": {
+      "sha256": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0",
+      "bytes": 32
+    },
+    "graphite-server/internal/query/testdata/candidate-index/clean/graph.callsite-string-index": {
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+      "bytes": 676
+    },
+    "graphite-server/internal/query/testdata/candidate-index/clean/graph.classoverview": {
+      "sha256": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea",
+      "bytes": 64
+    },
+    "graphite-server/internal/query/testdata/candidate-index/clean/graph.comparisons": {
+      "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8",
+      "bytes": 8
+    },
+    "graphite-server/internal/query/testdata/candidate-index/clean/graph.labelprefix": {
+      "sha256": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23",
+      "bytes": 368
+    },
+    "graphite-server/internal/query/testdata/candidate-index/clean/graph.labels": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "graphite-server/internal/query/testdata/candidate-index/clean/graph.metadata": {
+      "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb",
+      "bytes": 36
+    },
+    "graphite-server/internal/query/testdata/candidate-index/clean/graph.nodedata": {
+      "sha256": "f0a4462a820a7daa557704796992c79b9ddafcb80475aaafa020592cb4e19e1a",
+      "bytes": 220
+    },
+    "graphite-server/internal/query/testdata/candidate-index/clean/graph.nodeindex": {
+      "sha256": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c",
+      "bytes": 60
+    },
+    "graphite-server/internal/query/testdata/candidate-index/clean/graph.nodeoffsets": {
+      "sha256": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf",
+      "bytes": 736
+    },
+    "graphite-server/internal/query/testdata/candidate-index/clean/graph.resources": {
+      "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17",
+      "bytes": 8
+    },
+    "graphite-server/internal/query/testdata/candidate-index/clean/graph.strings": {
+      "sha256": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b",
+      "bytes": 535
+    },
+    "graphite-server/internal/query/testdata/candidate-index/clean/graph.strings.identity": {
+      "sha256": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb",
+      "bytes": 32
+    },
+    "graphite-server/internal/query/testdata/candidate-index/clean/graph.typeindex": {
+      "sha256": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849",
+      "bytes": 232
+    },
+    "graphite-server/internal/query/testdata/candidate-index/corrupt-cases.json": {
+      "sha256": "a6b4d0e3332a524e0476b50ab2df283780655204b821dcdf177efed20c5ae356",
+      "bytes": 2193
+    },
+    "graphite-server/internal/query/testdata/candidate-index/corrupt-main-native-differences.json": {
+      "sha256": "a9010723efbbe98ed6c1d5406e71ea10f6dd9e91eec0be4121d83ecdc6f42de8",
+      "bytes": 53539
+    },
+    "graphite-server/internal/query/testdata/candidate-index/corrupt-native.json": {
+      "sha256": "ef2b2339b45d4b40792b6b22a45ca0592a13353a5d19096f5fbc43f37696aa43",
+      "bytes": 34243
+    },
+    "graphite-server/internal/query/testdata/candidate-index/corruption.json": {
+      "sha256": "651e522ea095d678291c5b6890c3ca30d9403a877055ad922c35a592b850c0ee",
+      "bytes": 1256
+    },
+    "graphite-server/internal/query/testdata/candidate-index/mixed-plan-main.json": {
+      "sha256": "c1f44b2c060369b0ee3a92ac936d30c0e8917fc7cbbcf150ef98aede0de76c33",
+      "bytes": 31999
+    },
+    "graphite-server/internal/query/testdata/candidate-index/mixed/forward.graph": {
+      "sha256": "a06b43d6cbce4500b78b1cae88235ac2ff26e9c3f4f2ef63a7a73bf4ac2ff2cd",
+      "bytes": 19
+    },
+    "graphite-server/internal/query/testdata/candidate-index/mixed/forward.offsets": {
+      "sha256": "feee71d2abc095ff45a953f52d5348d725cb0ce7a4c1133d7181e42b76468453",
+      "bytes": 57
+    },
+    "graphite-server/internal/query/testdata/candidate-index/mixed/forward.properties": {
+      "sha256": "ffd621df1d05f2573a08fc97331ba669c45e3127a8e796b1849484ec6f9ab5bf",
+      "bytes": 622
+    },
+    "graphite-server/internal/query/testdata/candidate-index/mixed/graph.callsite-string-content.identity": {
+      "sha256": "4bee63fc39e49ccdd6ed09d7580d1f5e20f77417a65e6c4343089ca49fc1a197",
+      "bytes": 32
+    },
+    "graphite-server/internal/query/testdata/candidate-index/mixed/graph.callsite-string-index": {
+      "sha256": "1df643a085c77f231a8311b3d4213be2672e31df29791dbf98a22d6a01fa9922",
+      "bytes": 676
+    },
+    "graphite-server/internal/query/testdata/candidate-index/mixed/graph.classoverview": {
+      "sha256": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea",
+      "bytes": 64
+    },
+    "graphite-server/internal/query/testdata/candidate-index/mixed/graph.comparisons": {
+      "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8",
+      "bytes": 8
+    },
+    "graphite-server/internal/query/testdata/candidate-index/mixed/graph.labelprefix": {
+      "sha256": "4beb641f77c3df2749a5dffc0a23f4270dc4b94e1e940287fc3ebfa05b720662",
+      "bytes": 608
+    },
+    "graphite-server/internal/query/testdata/candidate-index/mixed/graph.labels": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "graphite-server/internal/query/testdata/candidate-index/mixed/graph.metadata": {
+      "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb",
+      "bytes": 36
+    },
+    "graphite-server/internal/query/testdata/candidate-index/mixed/graph.nodedata": {
+      "sha256": "684c5ac3a660fd72962efb4ca66e7edfd1e6151947f6d44e441d54ed1353a3d5",
+      "bytes": 229
+    },
+    "graphite-server/internal/query/testdata/candidate-index/mixed/graph.nodeindex": {
+      "sha256": "4c46f03eec5eb741642a99bc2aa94126be8eb51dfcecf8040704fc95b8d20f6f",
+      "bytes": 73
+    },
+    "graphite-server/internal/query/testdata/candidate-index/mixed/graph.nodeoffsets": {
+      "sha256": "49775f73a14894ce7fa89cba8340265455fa23bf45871de783ce068532e0db04",
+      "bytes": 1216
+    },
+    "graphite-server/internal/query/testdata/candidate-index/mixed/graph.resources": {
+      "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17",
+      "bytes": 8
+    },
+    "graphite-server/internal/query/testdata/candidate-index/mixed/graph.strings": {
+      "sha256": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b",
+      "bytes": 535
+    },
+    "graphite-server/internal/query/testdata/candidate-index/mixed/graph.strings.identity": {
+      "sha256": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb",
+      "bytes": 32
+    },
+    "graphite-server/internal/query/testdata/candidate-index/mixed/graph.typeindex": {
+      "sha256": "64846246b3564767174e44b28acccffd0984e5ca79e03236c59deeb4b88abc47",
+      "bytes": 236
+    },
+    "graphite-server/internal/query/testdata/candidate-index/plan-cases.json": {
+      "sha256": "4c12fd41358bbd996dbd1a9df918fe6d1b6289ea152485382dbca90d12fe171d",
+      "bytes": 5310
+    },
+    "graphite-server/internal/query/testdata/candidate-index/regenerate-plans.py": {
+      "sha256": "908f19e7491fe79bfa43938111a4afc9c87188b0446943ba99ec3cadc7419d6b",
+      "bytes": 3576
+    },
+    "graphite-server/internal/store/candidate_certificate.go": {
+      "sha256": "49bf7397cca779b3cb576fa3f03dcbe329f373945fc4f3582e98a9e5582e7290",
+      "bytes": 4179
+    },
+    "graphite-server/internal/store/candidate_certificate_test.go": {
+      "sha256": "57585d1cf7e6768b1d7477741eefa1978c8b103c8278e8c5740e0cc12a1c533d",
+      "bytes": 3407
+    },
+    "graphite-server/internal/store/store.go": {
+      "sha256": "8d15bf52bb82679cee263d545690868b517fc853f1d718149ce1272239566d78",
+      "bytes": 8093
+    }
+  },
+  "productionFiles": [
+    "graphite-server/internal/query/engine.go",
+    "graphite-server/internal/query/eval.go",
+    "graphite-server/internal/query/scan.go",
+    "graphite-server/internal/query/string_candidates.go",
+    "graphite-server/internal/store/store.go",
+    "graphite-server/internal/store/candidate_certificate.go"
+  ],
+  "correctness": {
+    "mainValidDataCompleteComparisons": 192,
+    "sameCasesAlsoComparedToForcedScan": 192,
+    "corruptCompleteNativeVsForcedScanComparisons": 80,
+    "corruptMainVsNativeKnownDifferences": 61,
+    "corruptMainDenominator": 80,
+    "fullModuleRace": "passed",
+    "fullModuleVet": "passed",
+    "contextCancellation": "all preparation check positions; final certificate publication for valid and invalid proofs",
+    "lifetime": "concurrent Close; cached certificate and candidate decode after Close",
+    "fallbacks": "Annotation, coalesced empty needle, invalid proof, missing index, EAGER after directory removal, noncanonical legacy index order",
+    "proof": "full native node decode, source CallSite offset order, complete CSR property association"
+  },
+  "scope": {
+    "indexedLoadMode": "MAPPED only",
+    "queryMode": "initial pure OR string predicate node MATCH; raw and wrapped four-field unlabelled forms included",
+    "searchMethod": "directory filtering and postings union; no trigrams/signatures",
+    "coldCost": "reader validation and certificate execution occur inside first eligible query",
+    "cache": "completed valid or invalid proof for immutable Store lifetime; cancellation/deadline/close errors not cached"
+  },
+  "performanceRunsByThisAgent": 0,
+  "commitsByThisAgent": 0
+}

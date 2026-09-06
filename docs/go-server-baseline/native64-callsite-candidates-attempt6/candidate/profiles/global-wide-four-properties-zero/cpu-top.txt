@@ -1,0 +1,39 @@
+File: profile-query
+Type: cpu
+Time: Sep 7, 2026 at 6:59am (KST)
+Duration: 308.46ms, Total samples = 110ms (35.66%)
+Showing nodes accounting for 110ms, 100% of 110ms total
+      flat  flat%   sum%        cum   cum%
+      30ms 27.27% 27.27%       80ms 72.73%  runtime.mallocgc
+      30ms 27.27% 54.55%       30ms 27.27%  unicode/utf8.ValidString
+      10ms  9.09% 63.64%       20ms 18.18%  runtime.(*mspan).heapBits
+      10ms  9.09% 72.73%       10ms  9.09%  runtime.heapBitsSlice (inline)
+      10ms  9.09% 81.82%       10ms  9.09%  runtime.memclrNoHeapPointers
+      10ms  9.09% 90.91%       10ms  9.09%  runtime.nextFreeFast (inline)
+      10ms  9.09%   100%       10ms  9.09%  runtime.step
+         0     0%   100%      110ms   100%  github.com/johnsonlee/graphite/graphite-server/internal/query.ExecuteCross
+         0     0%   100%       30ms 27.27%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.binary
+         0     0%   100%      110ms   100%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.branch
+         0     0%   100%      110ms   100%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.indexedNodeWalker
+         0     0%   100%      110ms   100%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.match
+         0     0%   100%      110ms   100%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.matchSingleNode
+         0     0%   100%      110ms   100%  github.com/johnsonlee/graphite/graphite-server/internal/query.executeSources
+         0     0%   100%      110ms   100%  main.main
+         0     0%   100%      110ms   100%  main.profile
+         0     0%   100%      110ms   100%  main.profile.func1
+         0     0%   100%       10ms  9.09%  runtime.(*inlineUnwinder).resolveInternal (inline)
+         0     0%   100%       20ms 18.18%  runtime.(*mspan).writeHeapBitsSmall
+         0     0%   100%       10ms  9.09%  runtime.callers
+         0     0%   100%       10ms  9.09%  runtime.callers.func1
+         0     0%   100%       60ms 54.55%  runtime.convT
+         0     0%   100%       20ms 18.18%  runtime.convTstring
+         0     0%   100%       20ms 18.18%  runtime.heapSetType
+         0     0%   100%       10ms  9.09%  runtime.mProf_Malloc
+         0     0%   100%      110ms   100%  runtime.main
+         0     0%   100%       10ms  9.09%  runtime.newInlineUnwinder
+         0     0%   100%       10ms  9.09%  runtime.pcdatavalue1
+         0     0%   100%       10ms  9.09%  runtime.pcvalue
+         0     0%   100%       10ms  9.09%  runtime.profilealloc
+         0     0%   100%       10ms  9.09%  runtime.systemstack
+         0     0%   100%       10ms  9.09%  runtime.tracebackPCs
+         0     0%   100%      110ms   100%  runtime/pprof.Do

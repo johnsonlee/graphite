@@ -1,0 +1,140 @@
+[
+  {
+    "name": "raw-=",
+    "query": "MATCH (n) WHERE n.caller_name = 'other' RETURN id(n) AS id ORDER BY id"
+  },
+  {
+    "name": "wrapped-=",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,''))) = 'example.other' RETURN id(n) AS id ORDER BY id"
+  },
+  {
+    "name": "raw-CONTAINS",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN id(n) AS id ORDER BY id"
+  },
+  {
+    "name": "wrapped-CONTAINS",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS 'example.other' RETURN id(n) AS id ORDER BY id"
+  },
+  {
+    "name": "raw-STARTS WITH",
+    "query": "MATCH (n) WHERE n.caller_name STARTS WITH 'other' RETURN id(n) AS id ORDER BY id"
+  },
+  {
+    "name": "wrapped-STARTS WITH",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,''))) STARTS WITH 'example.other' RETURN id(n) AS id ORDER BY id"
+  },
+  {
+    "name": "raw-ENDS WITH",
+    "query": "MATCH (n) WHERE n.caller_name ENDS WITH 'other' RETURN id(n) AS id ORDER BY id"
+  },
+  {
+    "name": "wrapped-ENDS WITH",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,''))) ENDS WITH 'example.other' RETURN id(n) AS id ORDER BY id"
+  },
+  {
+    "name": "untyped-four-raw",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS 'other' OR n.caller_name CONTAINS 'other' OR n.callee_class CONTAINS 'other' OR n.callee_name CONTAINS 'other' RETURN id(n) AS id ORDER BY id"
+  },
+  {
+    "name": "untyped-four-wrapped",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS 'other' OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS 'other' OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS 'other' RETURN id(n) AS id ORDER BY id"
+  },
+  {
+    "name": "typed-four-raw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'other' OR n.caller_name CONTAINS 'other' OR n.callee_class CONTAINS 'other' OR n.callee_name CONTAINS 'other' RETURN id(n) AS id ORDER BY id"
+  },
+  {
+    "name": "typed-four-wrapped",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS 'other' OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS 'other' OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS 'other' RETURN id(n) AS id ORDER BY id"
+  },
+  {
+    "name": "empty-null-wrapper",
+    "query": "MATCH (n) WHERE coalesce(n.caller_name,'') CONTAINS '' RETURN id(n) AS id ORDER BY id"
+  },
+  {
+    "name": "raw-empty",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS '' RETURN id(n) AS id ORDER BY id"
+  },
+  {
+    "name": "or-overlap-count",
+    "query": "MATCH (n) WHERE n.caller_name='other' OR n.callee_name='invoke' RETURN count(n) AS count"
+  },
+  {
+    "name": "distinct-provenance",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_class AS caller ORDER BY caller LIMIT 1"
+  },
+  {
+    "name": "available-empty",
+    "query": "MATCH (n) WHERE n.caller_name='absent' RETURN id(n) AS id"
+  },
+  {
+    "name": "half-surrogate",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS '\\ud800' RETURN id(n) AS id ORDER BY id"
+  },
+  {
+    "name": "java-lower",
+    "query": "MATCH (n) WHERE toLower(n.caller_class) CONTAINS 'i\\u0307d' RETURN id(n) AS id ORDER BY id"
+  },
+  {
+    "name": "lower-rhs-unchanged",
+    "query": "MATCH (n) WHERE toLower(n.caller_class) CONTAINS 'OTHER' RETURN id(n) AS id"
+  },
+  {
+    "name": "parameter-string",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": "other"
+    }
+  },
+  {
+    "name": "parameter-null",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": null
+    }
+  },
+  {
+    "name": "parameter-number",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {
+      "term": 3
+    }
+  },
+  {
+    "name": "parameter-missing",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS $term RETURN id(n) AS id ORDER BY id",
+    "params": {}
+  },
+  {
+    "name": "extra-argument",
+    "query": "MATCH (n) WHERE toString(n.caller_name,1/0)='other' RETURN id(n) AS id ORDER BY id"
+  },
+  {
+    "name": "throwing-fallback",
+    "query": "MATCH (n) WHERE coalesce(n.caller_name,1/0)='other' RETURN id(n) AS id ORDER BY id"
+  },
+  {
+    "name": "throwing-or",
+    "query": "MATCH (n) WHERE n.caller_name='other' OR substring('x','bad')='x' RETURN id(n) AS id ORDER BY id"
+  },
+  {
+    "name": "incomplete-or",
+    "query": "MATCH (n) WHERE n.caller_name='absent' OR true RETURN id(n) AS id ORDER BY id"
+  },
+  {
+    "name": "optional",
+    "query": "OPTIONAL MATCH (n) WHERE n.caller_name='absent' RETURN id(n) AS id"
+  },
+  {
+    "name": "unwind",
+    "query": "UNWIND ['other','caller'] AS term MATCH (n) WHERE n.caller_name=term RETURN term,id(n) AS id ORDER BY term,id"
+  },
+  {
+    "name": "old-binding",
+    "query": "WITH {caller_name:'other'} AS n MATCH (n) WHERE n.caller_name='other' RETURN n"
+  },
+  {
+    "name": "inline-ordered",
+    "query": "MATCH (n {id:-1,caller_name:1/0}) WHERE n.caller_name='other' RETURN id(n) AS id"
+  }
+]

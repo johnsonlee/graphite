@@ -20,6 +20,7 @@ func (e *Error) Error() string { return e.Message }
 func fail(message string)      { panic(&Error{Message: message, Class: "CypherException"}) }
 
 type evaluator struct {
+	indexFirst bool
 	ctx        context.Context
 	parameters map[string]any
 	graphs     []Graph

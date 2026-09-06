@@ -1,0 +1,109 @@
+File: profile-query
+Type: cpu
+Time: Sep 7, 2026 at 6:47am (KST)
+Duration: 44.63s, Total samples = 52.27s (117.11%)
+Showing nodes accounting for 48.99s, 93.72% of 52.27s total
+Dropped 155 nodes (cum <= 0.26s)
+      flat  flat%   sum%        cum   cum%
+    21.61s 41.34% 41.34%     21.61s 41.34%  runtime.memmove
+    12.04s 23.03% 64.38%     12.04s 23.03%  runtime.madvise
+     2.46s  4.71% 69.08%      7.49s 14.33%  runtime.scanobject
+     1.30s  2.49% 71.57%      1.30s  2.49%  runtime.pthread_kill
+     1.29s  2.47% 74.04%      2.47s  4.73%  runtime.greyobject
+     0.92s  1.76% 75.80%      1.27s  2.43%  runtime.findObject
+     0.78s  1.49% 77.29%      0.78s  1.49%  runtime.typePointers.nextFast (inline)
+     0.69s  1.32% 78.61%      0.69s  1.32%  runtime.pthread_cond_signal
+     0.66s  1.26% 79.87%      0.66s  1.26%  runtime.(*mspan).base (inline)
+     0.65s  1.24% 81.12%      1.92s  3.67%  runtime.mallocgc
+     0.64s  1.22% 82.34%      0.64s  1.22%  runtime.duffcopy
+     0.60s  1.15% 83.49%      9.71s 18.58%  runtime.gcDrain
+     0.54s  1.03% 84.52%      0.54s  1.03%  runtime.usleep
+     0.53s  1.01% 85.54%      0.74s  1.42%  runtime.mapaccess2_fast32
+     0.53s  1.01% 86.55%      0.59s  1.13%  runtime.newArenaMayUnlock
+     0.39s  0.75% 87.30%      0.39s  0.75%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.check (partial-inline)
+     0.38s  0.73% 88.02%      0.38s  0.73%  runtime.pthread_cond_wait
+     0.32s  0.61% 88.64%      5.35s 10.24%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.eval
+     0.32s  0.61% 89.25%      0.55s  1.05%  strings.ToLower
+     0.28s  0.54% 89.78%      0.28s  0.54%  runtime.(*gcBits).bytep (inline)
+     0.28s  0.54% 90.32%      0.28s  0.54%  runtime.spanOf (inline)
+     0.28s  0.54% 90.86%      0.33s  0.63%  runtime.typePointers.next
+     0.22s  0.42% 91.28%      5.33s 10.20%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.binary
+     0.20s  0.38% 91.66%      2.38s  4.55%  github.com/johnsonlee/graphite/graphite-server/internal/javastring.Case
+     0.15s  0.29% 91.95%      0.45s  0.86%  github.com/johnsonlee/graphite/graphite-server/internal/javastring.UTF16
+     0.10s  0.19% 92.14%     21.99s 42.07%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).bytes
+     0.09s  0.17% 92.31%         1s  1.91%  runtime.growslice
+     0.07s  0.13% 92.44%      1.02s  1.95%  github.com/johnsonlee/graphite/graphite-server/internal/javastring.CodePoints
+     0.07s  0.13% 92.58%      3.52s  6.73%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.call
+     0.07s  0.13% 92.71%     21.64s 41.40%  io.ReadAtLeast
+     0.07s  0.13% 92.84%      0.28s  0.54%  strings.(*Builder).WriteRune
+     0.06s  0.11% 92.96%     21.57s 41.27%  bytes.(*Reader).Read
+     0.06s  0.11% 93.07%      0.40s  0.77%  github.com/johnsonlee/graphite/graphite-server/internal/query.(*candidateSlot).property
+     0.06s  0.11% 93.19%      2.80s  5.36%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.callLegacy
+     0.06s  0.11% 93.30%        14s 26.78%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).str
+     0.04s 0.077% 93.38%      2.42s  4.63%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.javaCase (inline)
+     0.03s 0.057% 93.44%     13.78s 26.36%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).method
+     0.03s 0.057% 93.50%      0.86s  1.65%  runtime.makeslice
+     0.02s 0.038% 93.53%     22.24s 42.55%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).node
+     0.01s 0.019% 93.55%      5.72s 10.94%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.matchSingleNode.func1
+     0.01s 0.019% 93.57%     28.38s 54.30%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.walkNodeCandidates
+     0.01s 0.019% 93.59%     22.54s 43.12%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).Node
+     0.01s 0.019% 93.61%      3.18s  6.08%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).count
+     0.01s 0.019% 93.63%     21.45s 41.04%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).i32 (inline)
+     0.01s 0.019% 93.65%      0.69s  1.32%  runtime.(*mcache).nextFree
+     0.01s 0.019% 93.67%     12.51s 23.93%  runtime.(*mheap).allocSpan
+     0.01s 0.019% 93.69%      0.39s  0.75%  runtime.(*sweepLocked).sweep
+     0.01s 0.019% 93.71%      0.61s  1.17%  runtime.findRunnable
+     0.01s 0.019% 93.72%      0.64s  1.22%  runtime.morestack
+         0     0% 93.72%     28.38s 54.30%  github.com/johnsonlee/graphite/graphite-server/internal/query.ExecuteCross
+         0     0% 93.72%     28.38s 54.30%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.branch
+         0     0% 93.72%     28.38s 54.30%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.match
+         0     0% 93.72%     28.38s 54.30%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.matchSingleNode
+         0     0% 93.72%     28.38s 54.30%  github.com/johnsonlee/graphite/graphite-server/internal/query.executeSources
+         0     0% 93.72%      1.28s  2.45%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).ids
+         0     0% 93.72%      0.53s  1.01%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*decoder).u8 (inline)
+         0     0% 93.72%     21.64s 41.40%  io.ReadFull (inline)
+         0     0% 93.72%     28.38s 54.30%  main.main
+         0     0% 93.72%     28.38s 54.30%  main.profile
+         0     0% 93.72%     28.38s 54.30%  main.profile.func1
+         0     0% 93.72%      1.29s  2.47%  runtime.(*gcControllerState).enlistWorker
+         0     0% 93.72%      1.24s  2.37%  runtime.(*gcWork).balance
+         0     0% 93.72%      0.67s  1.28%  runtime.(*mcache).refill
+         0     0% 93.72%      0.65s  1.24%  runtime.(*mcentral).cacheSpan
+         0     0% 93.72%      0.38s  0.73%  runtime.(*mcentral).grow
+         0     0% 93.72%      0.35s  0.67%  runtime.(*mheap).alloc
+         0     0% 93.72%     12.50s 23.91%  runtime.(*mheap).alloc.func1
+         0     0% 93.72%      0.37s  0.71%  runtime.(*mheap).initSpan
+         0     0% 93.72%      0.29s  0.55%  runtime.(*sweepLocked).sweep.(*mheap).freeSpan.func3
+         0     0% 93.72%      0.36s  0.69%  runtime.bgsweep
+         0     0% 93.72%      8.44s 16.15%  runtime.gcBgMarkWorker
+         0     0% 93.72%      9.71s 18.58%  runtime.gcBgMarkWorker.func2
+         0     0% 93.72%      2.54s  4.86%  runtime.gcDrainMarkWorkerDedicated (inline)
+         0     0% 93.72%      7.17s 13.72%  runtime.gcDrainMarkWorkerIdle (inline)
+         0     0% 93.72%      0.63s  1.21%  runtime.gopreempt_m (inline)
+         0     0% 93.72%      0.65s  1.24%  runtime.goschedImpl
+         0     0% 93.72%      0.56s  1.07%  runtime.lock (partial-inline)
+         0     0% 93.72%      0.56s  1.07%  runtime.lock2
+         0     0% 93.72%      0.56s  1.07%  runtime.lockWithRank (inline)
+         0     0% 93.72%      0.36s  0.69%  runtime.mPark (inline)
+         0     0% 93.72%     28.38s 54.30%  runtime.main
+         0     0% 93.72%      0.70s  1.34%  runtime.mcall
+         0     0% 93.72%      0.71s  1.36%  runtime.newMarkBits
+         0     0% 93.72%      0.63s  1.21%  runtime.newstack
+         0     0% 93.72%      0.36s  0.69%  runtime.notesleep
+         0     0% 93.72%      0.70s  1.34%  runtime.notewakeup
+         0     0% 93.72%      0.54s  1.03%  runtime.osyield (inline)
+         0     0% 93.72%      0.68s  1.30%  runtime.park_m
+         0     0% 93.72%      1.30s  2.49%  runtime.preemptM
+         0     0% 93.72%      1.30s  2.49%  runtime.preemptone
+         0     0% 93.72%      0.67s  1.28%  runtime.schedule
+         0     0% 93.72%      0.38s  0.73%  runtime.semasleep
+         0     0% 93.72%      0.71s  1.36%  runtime.semawakeup
+         0     0% 93.72%      1.30s  2.49%  runtime.signalM (inline)
+         0     0% 93.72%      0.70s  1.34%  runtime.startm
+         0     0% 93.72%      0.39s  0.75%  runtime.stopm
+         0     0% 93.72%      0.36s  0.69%  runtime.sweepone
+         0     0% 93.72%     12.04s 23.03%  runtime.sysUsed (inline)
+         0     0% 93.72%     12.04s 23.03%  runtime.sysUsedOS (inline)
+         0     0% 93.72%     22.55s 43.14%  runtime.systemstack
+         0     0% 93.72%      0.71s  1.36%  runtime.wakep
+         0     0% 93.72%     28.38s 54.30%  runtime/pprof.Do

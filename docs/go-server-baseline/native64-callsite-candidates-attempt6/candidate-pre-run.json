@@ -1,0 +1,9 @@
+{
+  "checkedAtUTC": "2026-09-06T21:59:03.196938+00:00",
+  "all127FrozenFilesStillMatch": true,
+  "baseRevision": "1c235916a930a9dd65ce2a68dfaee854a40e9d05",
+  "patchSHA256": "22429f2b01531350bfd13c57eefb52c962a62e674353260d819a492dafb18e1e",
+  "hostCoTenancy": "Concurrent local JVM/Gradle and Go CLI correctness work reported by the packaging worker; no concurrent other real64 query runner. These profiles are diagnostics, not controlled P95 acceptance.",
+  "independentProofComparisons": 21840,
+  "independentAdmittedCombinations": 1456
+}

@@ -24,6 +24,7 @@ type nodeLocation struct {
 type Store struct {
 	dir                string
 	callSiteIndex      callSiteIndexState
+	candidateProof     candidateCertificateState
 	overview           lazyClassOverview
 	Mode               string
 	mappedData         []byte

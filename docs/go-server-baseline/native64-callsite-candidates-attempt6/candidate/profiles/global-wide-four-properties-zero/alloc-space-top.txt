@@ -1,0 +1,32 @@
+File: profile-query
+Type: alloc_space
+Time: Sep 7, 2026 at 6:59am (KST)
+Showing nodes accounting for 110.30MB, 100% of 110.30MB total
+      flat  flat%   sum%        cum   cum%
+   89.50MB 81.14% 81.14%   104.36MB 94.61%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.indexedNodeWalker
+   14.86MB 13.47% 94.61%    14.86MB 13.47%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*CallSiteStringIndex).Directory
+    1.76MB  1.60% 96.21%     3.60MB  3.27%  compress/flate.NewWriter (inline)
+    1.27MB  1.15% 97.36%     1.84MB  1.67%  compress/flate.(*compressor).init
+    1.16MB  1.05% 98.41%     1.16MB  1.05%  runtime/pprof.StartCPUProfile
+    0.68MB  0.61% 99.03%     2.70MB  2.45%  runtime/pprof.writeHeapInternal
+    0.57MB  0.52% 99.54%     0.57MB  0.52%  compress/flate.newDeflateFast (inline)
+    0.50MB  0.46%   100%     2.02MB  1.83%  runtime/pprof.(*profileBuilder).emitLocation
+         0     0%   100%     3.60MB  3.27%  compress/gzip.(*Writer).Write
+         0     0%   100%   104.36MB 94.61%  github.com/johnsonlee/graphite/graphite-server/internal/query.ExecuteCross
+         0     0%   100%   104.36MB 94.61%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.branch
+         0     0%   100%   104.36MB 94.61%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.match
+         0     0%   100%   104.36MB 94.61%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.matchSingleNode
+         0     0%   100%   104.36MB 94.61%  github.com/johnsonlee/graphite/graphite-server/internal/query.executeSources
+         0     0%   100%     2.70MB  2.45%  main.heap
+         0     0%   100%   108.21MB 98.11%  main.main
+         0     0%   100%   108.21MB 98.11%  main.profile
+         0     0%   100%   104.36MB 94.61%  main.profile.func1
+         0     0%   100%   108.21MB 98.11%  runtime.main
+         0     0%   100%     2.02MB  1.83%  runtime/pprof.(*profileBuilder).appendLocsForStack
+         0     0%   100%     2.09MB  1.89%  runtime/pprof.(*profileBuilder).build
+         0     0%   100%     1.52MB  1.38%  runtime/pprof.(*profileBuilder).flush
+         0     0%   100%   104.36MB 94.61%  runtime/pprof.Do
+         0     0%   100%     2.70MB  2.45%  runtime/pprof.WriteHeapProfile (inline)
+         0     0%   100%     2.09MB  1.89%  runtime/pprof.profileWriter
+         0     0%   100%     2.70MB  2.45%  runtime/pprof.writeHeap (inline)
+         0     0%   100%     2.02MB  1.83%  runtime/pprof.writeHeapProto
