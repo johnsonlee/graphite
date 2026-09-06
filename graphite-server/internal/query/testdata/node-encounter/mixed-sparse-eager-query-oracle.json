@@ -1,0 +1,2181 @@
+{
+  "mainCommit": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "cases": [
+    {
+      "name": "mixed-sparse-0",
+      "query": "MATCH (n) RETURN id(n) AS id",
+      "cross": false,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 90
+        },
+        {
+          "id": 41
+        },
+        {
+          "id": 22
+        },
+        {
+          "id": 2
+        },
+        {
+          "id": 4
+        },
+        {
+          "id": 6
+        },
+        {
+          "id": 17
+        },
+        {
+          "id": 77
+        },
+        {
+          "id": 103
+        }
+      ]
+    },
+    {
+      "name": "mixed-sparse-1",
+      "query": "MATCH (n) RETURN id(n) AS id",
+      "cross": true,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 90,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 41,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 22,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 6,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 17,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 77,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 103,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 90,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 41,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 22,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 6,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 17,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 77,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 103,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "mixed-sparse-2",
+      "query": "MATCH (n) RETURN id(n) AS id LIMIT 5",
+      "cross": false,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 90
+        },
+        {
+          "id": 41
+        },
+        {
+          "id": 22
+        },
+        {
+          "id": 2
+        },
+        {
+          "id": 4
+        }
+      ]
+    },
+    {
+      "name": "mixed-sparse-3",
+      "query": "MATCH (n) RETURN id(n) AS id LIMIT 5",
+      "cross": true,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 90,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 41,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 22,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "mixed-sparse-4",
+      "query": "MATCH (n) WHERE id(n)>=0 RETURN id(n) AS id",
+      "cross": false,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 90
+        },
+        {
+          "id": 41
+        },
+        {
+          "id": 22
+        },
+        {
+          "id": 2
+        },
+        {
+          "id": 4
+        },
+        {
+          "id": 6
+        },
+        {
+          "id": 17
+        },
+        {
+          "id": 77
+        },
+        {
+          "id": 103
+        }
+      ]
+    },
+    {
+      "name": "mixed-sparse-5",
+      "query": "MATCH (n) WHERE id(n)>=0 RETURN id(n) AS id",
+      "cross": true,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 90,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 41,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 22,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 6,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 17,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 77,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 103,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 90,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 41,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 22,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 6,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 17,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 77,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 103,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "mixed-sparse-6",
+      "query": "MATCH (n:Node) RETURN id(n) AS id",
+      "cross": false,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 90
+        },
+        {
+          "id": 41
+        },
+        {
+          "id": 22
+        },
+        {
+          "id": 2
+        },
+        {
+          "id": 4
+        },
+        {
+          "id": 6
+        },
+        {
+          "id": 17
+        },
+        {
+          "id": 77
+        },
+        {
+          "id": 103
+        }
+      ]
+    },
+    {
+      "name": "mixed-sparse-7",
+      "query": "MATCH (n:Node) RETURN id(n) AS id",
+      "cross": true,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 90,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 41,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 22,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 6,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 17,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 77,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 103,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 90,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 41,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 22,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 6,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 17,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 77,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 103,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "mixed-sparse-8",
+      "query": "MATCH (n:Constant) RETURN id(n) AS id",
+      "cross": false,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 90
+        },
+        {
+          "id": 41
+        },
+        {
+          "id": 22
+        },
+        {
+          "id": 2
+        },
+        {
+          "id": 4
+        },
+        {
+          "id": 6
+        }
+      ]
+    },
+    {
+      "name": "mixed-sparse-9",
+      "query": "MATCH (n:Constant) RETURN id(n) AS id",
+      "cross": true,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 90,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 41,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 22,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 6,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 90,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 41,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 22,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 6,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "mixed-sparse-10",
+      "query": "MATCH (n:IntConstant) RETURN id(n) AS id",
+      "cross": false,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 90
+        },
+        {
+          "id": 41
+        },
+        {
+          "id": 22
+        }
+      ]
+    },
+    {
+      "name": "mixed-sparse-11",
+      "query": "MATCH (n:IntConstant) RETURN id(n) AS id",
+      "cross": true,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 90,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 41,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 22,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 90,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 41,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 22,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "mixed-sparse-12",
+      "query": "MATCH (n:StringConstant) RETURN id(n) AS id",
+      "cross": false,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 2
+        },
+        {
+          "id": 4
+        },
+        {
+          "id": 6
+        }
+      ]
+    },
+    {
+      "name": "mixed-sparse-13",
+      "query": "MATCH (n:StringConstant) RETURN id(n) AS id",
+      "cross": true,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 6,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 6,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "mixed-sparse-14",
+      "query": "MATCH (n:CallSiteNode) RETURN id(n) AS id",
+      "cross": false,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 17
+        },
+        {
+          "id": 77
+        },
+        {
+          "id": 103
+        }
+      ]
+    },
+    {
+      "name": "mixed-sparse-15",
+      "query": "MATCH (n:CallSiteNode) RETURN id(n) AS id",
+      "cross": true,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 17,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 77,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 103,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 17,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 77,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 103,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "mixed-sparse-16",
+      "query": "UNWIND [1,2] AS x MATCH (n) RETURN x,id(n) AS id",
+      "cross": false,
+      "columns": [
+        "x",
+        "id"
+      ],
+      "rows": [
+        {
+          "x": 1,
+          "id": 90
+        },
+        {
+          "x": 1,
+          "id": 41
+        },
+        {
+          "x": 1,
+          "id": 22
+        },
+        {
+          "x": 1,
+          "id": 2
+        },
+        {
+          "x": 1,
+          "id": 4
+        },
+        {
+          "x": 1,
+          "id": 6
+        },
+        {
+          "x": 1,
+          "id": 17
+        },
+        {
+          "x": 1,
+          "id": 77
+        },
+        {
+          "x": 1,
+          "id": 103
+        },
+        {
+          "x": 2,
+          "id": 90
+        },
+        {
+          "x": 2,
+          "id": 41
+        },
+        {
+          "x": 2,
+          "id": 22
+        },
+        {
+          "x": 2,
+          "id": 2
+        },
+        {
+          "x": 2,
+          "id": 4
+        },
+        {
+          "x": 2,
+          "id": 6
+        },
+        {
+          "x": 2,
+          "id": 17
+        },
+        {
+          "x": 2,
+          "id": 77
+        },
+        {
+          "x": 2,
+          "id": 103
+        }
+      ]
+    },
+    {
+      "name": "mixed-sparse-17",
+      "query": "UNWIND [1,2] AS x MATCH (n) RETURN x,id(n) AS id",
+      "cross": true,
+      "columns": [
+        "x",
+        "id"
+      ],
+      "rows": [
+        {
+          "x": 1,
+          "id": 90,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "x": 1,
+          "id": 41,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "x": 1,
+          "id": 22,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "x": 1,
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "x": 1,
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "x": 1,
+          "id": 6,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "x": 1,
+          "id": 17,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "x": 1,
+          "id": 77,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "x": 1,
+          "id": 103,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "x": 1,
+          "id": 90,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "x": 1,
+          "id": 41,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "x": 1,
+          "id": 22,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "x": 1,
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "x": 1,
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "x": 1,
+          "id": 6,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "x": 1,
+          "id": 17,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "x": 1,
+          "id": 77,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "x": 1,
+          "id": 103,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "x": 2,
+          "id": 90,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "x": 2,
+          "id": 41,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "x": 2,
+          "id": 22,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "x": 2,
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "x": 2,
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "x": 2,
+          "id": 6,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "x": 2,
+          "id": 17,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "x": 2,
+          "id": 77,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "x": 2,
+          "id": 103,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "x": 2,
+          "id": 90,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "x": 2,
+          "id": 41,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "x": 2,
+          "id": 22,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "x": 2,
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "x": 2,
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "x": 2,
+          "id": 6,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "x": 2,
+          "id": 17,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "x": 2,
+          "id": 77,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "x": 2,
+          "id": 103,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "mixed-sparse-18",
+      "query": "OPTIONAL MATCH (n) RETURN id(n) AS id",
+      "cross": false,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 90
+        },
+        {
+          "id": 41
+        },
+        {
+          "id": 22
+        },
+        {
+          "id": 2
+        },
+        {
+          "id": 4
+        },
+        {
+          "id": 6
+        },
+        {
+          "id": 17
+        },
+        {
+          "id": 77
+        },
+        {
+          "id": 103
+        }
+      ]
+    },
+    {
+      "name": "mixed-sparse-19",
+      "query": "OPTIONAL MATCH (n) RETURN id(n) AS id",
+      "cross": true,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 90,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 41,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 22,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 6,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 17,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 77,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 103,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 90,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 41,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 22,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 6,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 17,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 77,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 103,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "mixed-sparse-20",
+      "query": "MATCH (n) WITH collect(id(n)) AS ids UNWIND ids AS id RETURN id",
+      "cross": false,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 90
+        },
+        {
+          "id": 41
+        },
+        {
+          "id": 22
+        },
+        {
+          "id": 2
+        },
+        {
+          "id": 4
+        },
+        {
+          "id": 6
+        },
+        {
+          "id": 17
+        },
+        {
+          "id": 77
+        },
+        {
+          "id": 103
+        }
+      ]
+    },
+    {
+      "name": "mixed-sparse-21",
+      "query": "MATCH (n) WITH collect(id(n)) AS ids UNWIND ids AS id RETURN id",
+      "cross": true,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 90,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 41,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 22,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 6,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 17,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 77,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 103,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 90,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 41,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 22,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 6,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 17,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 77,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 103,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "mixed-sparse-22",
+      "query": "MATCH (n) RETURN id(n) AS id ORDER BY id",
+      "cross": false,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 2
+        },
+        {
+          "id": 4
+        },
+        {
+          "id": 6
+        },
+        {
+          "id": 17
+        },
+        {
+          "id": 22
+        },
+        {
+          "id": 41
+        },
+        {
+          "id": 77
+        },
+        {
+          "id": 90
+        },
+        {
+          "id": 103
+        }
+      ]
+    },
+    {
+      "name": "mixed-sparse-23",
+      "query": "MATCH (n) RETURN id(n) AS id ORDER BY id",
+      "cross": true,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 6,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 6,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 17,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 17,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 22,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 22,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 41,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 41,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 77,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 77,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 90,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 90,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 103,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 103,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "mixed-sparse-24",
+      "query": "MATCH (n) WHERE n.callee_name='run' RETURN id(n) AS id",
+      "cross": false,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 17
+        },
+        {
+          "id": 77
+        },
+        {
+          "id": 103
+        }
+      ]
+    },
+    {
+      "name": "mixed-sparse-25",
+      "query": "MATCH (n) WHERE n.callee_name='run' RETURN id(n) AS id",
+      "cross": true,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 17,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 77,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 103,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 17,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 77,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 103,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "mixed-sparse-26",
+      "query": "MATCH (n:CallSiteNode) WHERE n.callee_name='run' RETURN id(n) AS id",
+      "cross": false,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 17
+        },
+        {
+          "id": 77
+        },
+        {
+          "id": 103
+        }
+      ]
+    },
+    {
+      "name": "mixed-sparse-27",
+      "query": "MATCH (n:CallSiteNode) WHERE n.callee_name='run' RETURN id(n) AS id",
+      "cross": true,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 17,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 77,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 103,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 17,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 77,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 103,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

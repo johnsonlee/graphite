@@ -1,0 +1,14 @@
+package query
+import("context";"encoding/json";"os";"testing";"github.com/johnsonlee/graphite/graphite-server/internal/store")
+func TestEncounterProbe(t *testing.T){
+ for _, fixture:=range []string{"all-kinds","mixed-sparse"}{for _,mode:=range []string{"EAGER","MAPPED"}{
+  raw,err:=os.ReadFile("testdata/node-encounter/"+fixture+"-eager-none.json");if err!=nil{t.Fatal(err)}
+  var oracle struct{Queries []struct{Query string;Cross bool}};if err=json.Unmarshal(raw,&oracle);err!=nil{t.Fatal(err)}
+  g,err:=store.OpenMode("testdata/node-encounter/"+fixture,mode);if err!=nil{t.Fatal(err)}
+  rows:=[]any{};for _,c:=range oracle.Queries{var result Result;var err error;if c.Cross{result,err=ExecuteCross(context.Background(),[]Graph{{"b",g},{"a",g}},c.Query,nil,-1)}else{result,err=Execute(context.Background(),g,c.Query,nil,-1)}
+   item:=map[string]any{"query":c.Query,"cross":c.Cross};if err!=nil{if e,ok:=err.(*Error);ok{item["error"]=e.Class;item["message"]=e.Message}else{t.Fatal(err)}}else{item["columns"]=result.Columns;item["rows"]=result.Rows};rows=append(rows,item)
+  }
+  output:=map[string]any{"mode":mode,"NodeIDs":g.NodeIDs(),"CallSiteNodeIDs":g.NodesOfKind("CallSiteNode"),"queries":rows};data,err:=json.MarshalIndent(output,"","  ");if err!=nil{t.Fatal(err)}
+  if err=os.WriteFile("testdata/node-encounter/"+fixture+"-native-"+mode+".json",append(data,'\n'),0600);err!=nil{t.Fatal(err)};g.Close()
+ }}
+}

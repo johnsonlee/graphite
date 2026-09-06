@@ -151,7 +151,7 @@ func (e evaluator) walkNodeCandidates(graph *store.Store, pattern cypher.NodePat
 			}
 			continue
 		}
-		for _, id := range source.Store.NodeIDs() {
+		for _, id := range source.Store.QueryNodeIDs() {
 			e.check()
 			node, err := source.Store.Node(id)
 			if err != nil {

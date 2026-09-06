@@ -1,0 +1,2232 @@
+{
+  "mode": "EAGER",
+  "prehash": "reverse",
+  "sources": {
+    "Node": [
+      90,
+      41,
+      22,
+      2,
+      4,
+      6,
+      17,
+      77,
+      103
+    ],
+    "ConstantNode": [
+      90,
+      41,
+      22,
+      2,
+      4,
+      6
+    ],
+    "IntConstant": [
+      90,
+      41,
+      22
+    ],
+    "StringConstant": [
+      2,
+      4,
+      6
+    ],
+    "LongConstant": [],
+    "FloatConstant": [],
+    "DoubleConstant": [],
+    "BooleanConstant": [],
+    "NullConstant": [],
+    "EnumConstant": [],
+    "LocalVariable": [],
+    "FieldNode": [],
+    "ParameterNode": [],
+    "ReturnNode": [],
+    "CallSiteNode": [
+      17,
+      77,
+      103
+    ],
+    "AnnotationNode": [],
+    "ResourceValueNode": [],
+    "ResourceFileNode": []
+  },
+  "classIdentityHashes": {
+    "IntConstant": 1304836502,
+    "StringConstant": 895328852,
+    "LongConstant": 723074861,
+    "FloatConstant": 1670675563,
+    "DoubleConstant": 1725154839,
+    "BooleanConstant": 1581781576,
+    "NullConstant": 1872034366,
+    "EnumConstant": 644117698,
+    "LocalVariable": 491044090,
+    "FieldNode": 1580066828,
+    "ParameterNode": 1625635731,
+    "ReturnNode": 1360875712,
+    "CallSiteNode": 1627674070,
+    "AnnotationNode": 1639705018,
+    "ResourceValueNode": 1846274136,
+    "ResourceFileNode": 1554874502
+  },
+  "queries": [
+    {
+      "query": "MATCH (n) RETURN id(n) AS id",
+      "cross": false,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 90
+        },
+        {
+          "id": 41
+        },
+        {
+          "id": 22
+        },
+        {
+          "id": 2
+        },
+        {
+          "id": 4
+        },
+        {
+          "id": 6
+        },
+        {
+          "id": 17
+        },
+        {
+          "id": 77
+        },
+        {
+          "id": 103
+        }
+      ]
+    },
+    {
+      "query": "MATCH (n) RETURN id(n) AS id",
+      "cross": true,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 90,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 41,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 22,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 6,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 17,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 77,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 103,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 90,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 41,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 22,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 6,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 17,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 77,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 103,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "query": "MATCH (n) RETURN id(n) AS id LIMIT 5",
+      "cross": false,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 90
+        },
+        {
+          "id": 41
+        },
+        {
+          "id": 22
+        },
+        {
+          "id": 2
+        },
+        {
+          "id": 4
+        }
+      ]
+    },
+    {
+      "query": "MATCH (n) RETURN id(n) AS id LIMIT 5",
+      "cross": true,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 90,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 41,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 22,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "query": "MATCH (n) WHERE id(n)\u003e\u003d0 RETURN id(n) AS id",
+      "cross": false,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 90
+        },
+        {
+          "id": 41
+        },
+        {
+          "id": 22
+        },
+        {
+          "id": 2
+        },
+        {
+          "id": 4
+        },
+        {
+          "id": 6
+        },
+        {
+          "id": 17
+        },
+        {
+          "id": 77
+        },
+        {
+          "id": 103
+        }
+      ]
+    },
+    {
+      "query": "MATCH (n) WHERE id(n)\u003e\u003d0 RETURN id(n) AS id",
+      "cross": true,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 90,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 41,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 22,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 6,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 17,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 77,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 103,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 90,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 41,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 22,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 6,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 17,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 77,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 103,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "query": "MATCH (n:Node) RETURN id(n) AS id",
+      "cross": false,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 90
+        },
+        {
+          "id": 41
+        },
+        {
+          "id": 22
+        },
+        {
+          "id": 2
+        },
+        {
+          "id": 4
+        },
+        {
+          "id": 6
+        },
+        {
+          "id": 17
+        },
+        {
+          "id": 77
+        },
+        {
+          "id": 103
+        }
+      ]
+    },
+    {
+      "query": "MATCH (n:Node) RETURN id(n) AS id",
+      "cross": true,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 90,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 41,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 22,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 6,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 17,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 77,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 103,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 90,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 41,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 22,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 6,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 17,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 77,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 103,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "query": "MATCH (n:Constant) RETURN id(n) AS id",
+      "cross": false,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 90
+        },
+        {
+          "id": 41
+        },
+        {
+          "id": 22
+        },
+        {
+          "id": 2
+        },
+        {
+          "id": 4
+        },
+        {
+          "id": 6
+        }
+      ]
+    },
+    {
+      "query": "MATCH (n:Constant) RETURN id(n) AS id",
+      "cross": true,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 90,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 41,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 22,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 6,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 90,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 41,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 22,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 6,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "query": "MATCH (n:IntConstant) RETURN id(n) AS id",
+      "cross": false,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 90
+        },
+        {
+          "id": 41
+        },
+        {
+          "id": 22
+        }
+      ]
+    },
+    {
+      "query": "MATCH (n:IntConstant) RETURN id(n) AS id",
+      "cross": true,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 90,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 41,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 22,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 90,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 41,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 22,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "query": "MATCH (n:StringConstant) RETURN id(n) AS id",
+      "cross": false,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 2
+        },
+        {
+          "id": 4
+        },
+        {
+          "id": 6
+        }
+      ]
+    },
+    {
+      "query": "MATCH (n:StringConstant) RETURN id(n) AS id",
+      "cross": true,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 6,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 6,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "query": "MATCH (n:CallSiteNode) RETURN id(n) AS id",
+      "cross": false,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 17
+        },
+        {
+          "id": 77
+        },
+        {
+          "id": 103
+        }
+      ]
+    },
+    {
+      "query": "MATCH (n:CallSiteNode) RETURN id(n) AS id",
+      "cross": true,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 17,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 77,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 103,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 17,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 77,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 103,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "query": "UNWIND [1,2] AS x MATCH (n) RETURN x,id(n) AS id",
+      "cross": false,
+      "columns": [
+        "x",
+        "id"
+      ],
+      "rows": [
+        {
+          "x": 1,
+          "id": 90
+        },
+        {
+          "x": 1,
+          "id": 41
+        },
+        {
+          "x": 1,
+          "id": 22
+        },
+        {
+          "x": 1,
+          "id": 2
+        },
+        {
+          "x": 1,
+          "id": 4
+        },
+        {
+          "x": 1,
+          "id": 6
+        },
+        {
+          "x": 1,
+          "id": 17
+        },
+        {
+          "x": 1,
+          "id": 77
+        },
+        {
+          "x": 1,
+          "id": 103
+        },
+        {
+          "x": 2,
+          "id": 90
+        },
+        {
+          "x": 2,
+          "id": 41
+        },
+        {
+          "x": 2,
+          "id": 22
+        },
+        {
+          "x": 2,
+          "id": 2
+        },
+        {
+          "x": 2,
+          "id": 4
+        },
+        {
+          "x": 2,
+          "id": 6
+        },
+        {
+          "x": 2,
+          "id": 17
+        },
+        {
+          "x": 2,
+          "id": 77
+        },
+        {
+          "x": 2,
+          "id": 103
+        }
+      ]
+    },
+    {
+      "query": "UNWIND [1,2] AS x MATCH (n) RETURN x,id(n) AS id",
+      "cross": true,
+      "columns": [
+        "x",
+        "id"
+      ],
+      "rows": [
+        {
+          "x": 1,
+          "id": 90,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "x": 1,
+          "id": 41,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "x": 1,
+          "id": 22,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "x": 1,
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "x": 1,
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "x": 1,
+          "id": 6,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "x": 1,
+          "id": 17,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "x": 1,
+          "id": 77,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "x": 1,
+          "id": 103,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "x": 1,
+          "id": 90,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "x": 1,
+          "id": 41,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "x": 1,
+          "id": 22,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "x": 1,
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "x": 1,
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "x": 1,
+          "id": 6,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "x": 1,
+          "id": 17,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "x": 1,
+          "id": 77,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "x": 1,
+          "id": 103,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "x": 2,
+          "id": 90,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "x": 2,
+          "id": 41,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "x": 2,
+          "id": 22,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "x": 2,
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "x": 2,
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "x": 2,
+          "id": 6,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "x": 2,
+          "id": 17,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "x": 2,
+          "id": 77,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "x": 2,
+          "id": 103,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "x": 2,
+          "id": 90,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "x": 2,
+          "id": 41,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "x": 2,
+          "id": 22,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "x": 2,
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "x": 2,
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "x": 2,
+          "id": 6,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "x": 2,
+          "id": 17,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "x": 2,
+          "id": 77,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "x": 2,
+          "id": 103,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "query": "OPTIONAL MATCH (n) RETURN id(n) AS id",
+      "cross": false,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 90
+        },
+        {
+          "id": 41
+        },
+        {
+          "id": 22
+        },
+        {
+          "id": 2
+        },
+        {
+          "id": 4
+        },
+        {
+          "id": 6
+        },
+        {
+          "id": 17
+        },
+        {
+          "id": 77
+        },
+        {
+          "id": 103
+        }
+      ]
+    },
+    {
+      "query": "OPTIONAL MATCH (n) RETURN id(n) AS id",
+      "cross": true,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 90,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 41,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 22,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 6,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 17,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 77,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 103,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 90,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 41,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 22,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 6,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 17,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 77,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 103,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "query": "MATCH (n) WITH collect(id(n)) AS ids UNWIND ids AS id RETURN id",
+      "cross": false,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 90
+        },
+        {
+          "id": 41
+        },
+        {
+          "id": 22
+        },
+        {
+          "id": 2
+        },
+        {
+          "id": 4
+        },
+        {
+          "id": 6
+        },
+        {
+          "id": 17
+        },
+        {
+          "id": 77
+        },
+        {
+          "id": 103
+        }
+      ]
+    },
+    {
+      "query": "MATCH (n) WITH collect(id(n)) AS ids UNWIND ids AS id RETURN id",
+      "cross": true,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 90,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 41,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 22,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 6,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 17,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 77,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 103,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 90,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 41,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 22,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 6,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 17,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 77,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 103,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "query": "MATCH (n) RETURN id(n) AS id ORDER BY id",
+      "cross": false,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 2
+        },
+        {
+          "id": 4
+        },
+        {
+          "id": 6
+        },
+        {
+          "id": 17
+        },
+        {
+          "id": 22
+        },
+        {
+          "id": 41
+        },
+        {
+          "id": 77
+        },
+        {
+          "id": 90
+        },
+        {
+          "id": 103
+        }
+      ]
+    },
+    {
+      "query": "MATCH (n) RETURN id(n) AS id ORDER BY id",
+      "cross": true,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 6,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 6,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 17,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 17,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 22,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 22,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 41,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 41,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 77,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 77,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 90,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 90,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 103,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 103,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "query": "MATCH (n) WHERE n.callee_name\u003d\u0027run\u0027 RETURN id(n) AS id",
+      "cross": false,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 17
+        },
+        {
+          "id": 77
+        },
+        {
+          "id": 103
+        }
+      ]
+    },
+    {
+      "query": "MATCH (n) WHERE n.callee_name\u003d\u0027run\u0027 RETURN id(n) AS id",
+      "cross": true,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 17,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 77,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 103,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 17,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 77,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 103,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "query": "MATCH (n:CallSiteNode) WHERE n.callee_name\u003d\u0027run\u0027 RETURN id(n) AS id",
+      "cross": false,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 17
+        },
+        {
+          "id": 77
+        },
+        {
+          "id": 103
+        }
+      ]
+    },
+    {
+      "query": "MATCH (n:CallSiteNode) WHERE n.callee_name\u003d\u0027run\u0027 RETURN id(n) AS id",
+      "cross": true,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 17,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 77,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 103,
+          "$metadata": {
+            "graphIds": [
+              "b"
+            ]
+          }
+        },
+        {
+          "id": 17,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 77,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        },
+        {
+          "id": 103,
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "restSubgraph": {
+    "nodes": [
+      {
+        "type": "IntConstant",
+        "id": 90,
+        "value": 0,
+        "label": "0"
+      }
+    ],
+    "edges": []
+  }
+}
