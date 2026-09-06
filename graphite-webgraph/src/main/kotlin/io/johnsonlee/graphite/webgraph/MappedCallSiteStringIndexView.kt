@@ -585,11 +585,15 @@ internal class MappedCallSiteStringIndexView private constructor(
         var visited = 0
         try {
             if (selectedValues is StringPropertyTupleSet) {
-                // Tuples sharing an absent leading value are rejected together by one lookup.
-                for ((value, tuples) in selectedValues.groupedBy(lookup.lookupOrder[0])) {
+                // Tuples sharing an absent leading value are rejected together by one lookup, and
+                // the leading values are visited in dictionary order so each directory search
+                // gallops from the previous position instead of bisecting the whole directory.
+                val leadingColumn = lookup.lookupOrder[0]
+                val grouped = selectedValues.groupedBy(leadingColumn)
+                for (value in selectedValues.sortedValues(leadingColumn)) {
                     checkViewInterrupted()
-                    if (value == null || !lookup.leadingValuePresent(value, accounting)) continue
-                    for (values in tuples) {
+                    if (!lookup.leadingValuePresent(value, accounting)) continue
+                    for (values in grouped.getValue(value)) {
                         val order = lookup.hit(values, accounting)
                         if (order >= 0L) hits += StringPropertyDistinctRow(order, values)
                     }
@@ -617,8 +621,10 @@ internal class MappedCallSiteStringIndexView private constructor(
     ) {
         private val ids = IntArray(projectedPropertyIndexes.size)
         private val stringIds = IntArray(CALL_SITE_STRING_PROPERTY_COUNT)
-        private val rowCache = HashMap<String, Int>()
+        private val rowCaches = arrayOfNulls<HashMap<String, Int>>(CALL_SITE_STRING_PROPERTY_COUNT)
         private val decoded = MutableString()
+        /** Directory position reached by the ascending leading-value walk of [selectedTupleHits]. */
+        private var leadingCursor = 0
 
         /**
          * Directory row of [value] in [propertyIndex], or -1 when no CallSite carries it there.
@@ -628,11 +634,34 @@ internal class MappedCallSiteStringIndexView private constructor(
          * directory, which is far smaller than the whole dictionary.
          */
         private fun directoryRow(propertyIndex: Int, value: String, accounting: BufferedGraphWorkConsumer): Int {
-            val cacheKey = if (projectedPropertyIndexes.size == 1) value else "$propertyIndex\u0000$value"
-            rowCache[cacheKey]?.let { return it }
+            val rowCache = rowCaches[propertyIndex] ?: HashMap<String, Int>().also { rowCaches[propertyIndex] = it }
+            rowCache[value]?.let { return it }
             accounting.consume()
-            val row = if (mayContain(value)) searchDirectory(propertyIndex, value, accounting) else -1
-            rowCache[cacheKey] = row
+            val row = if (mayContain(value)) maxOf(-1, searchDirectory(propertyIndex, value, accounting, 0)) else -1
+            rowCache[value] = row
+            return row
+        }
+
+        /**
+         * Directory row of the leading lookup property for [value], searched from the row reached by
+         * the previous ascending leading value. Misses move the cursor to the insertion point.
+         */
+        private fun leadingDirectoryRow(value: String, accounting: BufferedGraphWorkConsumer): Int {
+            val propertyIndex = projectedPropertyIndexes[lookupOrder[0]]
+            val rowCache = rowCaches[propertyIndex] ?: HashMap<String, Int>().also { rowCaches[propertyIndex] = it }
+            rowCache[value]?.let { return it }
+            accounting.consume()
+            var row = -1
+            if (mayContain(value)) {
+                val found = searchDirectory(propertyIndex, value, accounting, leadingCursor)
+                if (found >= 0) {
+                    row = found
+                    leadingCursor = found
+                } else {
+                    leadingCursor = -(found + 1)
+                }
+            }
+            rowCache[value] = row
             return row
         }
 
@@ -646,10 +675,39 @@ internal class MappedCallSiteStringIndexView private constructor(
             return true
         }
 
-        private fun searchDirectory(propertyIndex: Int, value: String, accounting: BufferedGraphWorkConsumer): Int {
+        /**
+         * Row of [value] in the property directory, or `-(insertion point + 1)` when absent. The
+         * search gallops from [fromRow] first, so an ascending sequence of values costs a number of
+         * decodes proportional to the log of the distance between hits rather than of the directory.
+         */
+        private fun searchDirectory(
+            propertyIndex: Int,
+            value: String,
+            accounting: BufferedGraphWorkConsumer,
+            fromRow: Int
+        ): Int {
             val directory = propertyStringIds[propertyIndex]
-            var low = 0
-            var high = directory.limit() - 1
+            val size = directory.limit()
+            var low = fromRow.coerceIn(0, size)
+            var high = size - 1
+            if (fromRow > 0) {
+                var step = 1
+                var probe = low
+                while (probe < size) {
+                    accounting.consume()
+                    stringTable.get(directory.get(probe), decoded)
+                    val comparison = decoded.compareTo(value)
+                    if (comparison == 0) return probe
+                    if (comparison > 0) {
+                        high = probe - 1
+                        break
+                    }
+                    low = probe + 1
+                    probe += step
+                    step = step shl 1
+                }
+                if (probe >= size) high = size - 1
+            }
             while (low <= high) {
                 accounting.consume()
                 val middle = (low + high).ushr(1)
@@ -661,12 +719,12 @@ internal class MappedCallSiteStringIndexView private constructor(
                     else -> return middle
                 }
             }
-            return -1
+            return -(low + 1)
         }
 
         /** True when [value] is a dictionary string used by the leading lookup property. */
         fun leadingValuePresent(value: String, accounting: BufferedGraphWorkConsumer): Boolean =
-            directoryRow(projectedPropertyIndexes[lookupOrder[0]], value, accounting) >= 0
+            leadingDirectoryRow(value, accounting) >= 0
 
         /** Encounter order of the first node carrying [values], or -1 when the graph has none. */
         @Suppress("ReturnCount")

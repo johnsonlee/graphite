@@ -4389,3 +4389,23 @@ without charging its work to that request's `GraphWorkConsumer`, and the gate's 
 over 34 rows excludes the single largest row, so the change could pass the gate by moving cost
 into an already-excluded outlier instead of lowering end-to-end cold latency. The engine's first
 use has to get cheaper on the rows that carry it, with every unit of work metered.
+
+### 2026-09-06 - Attempt 135: Walk selected leading values in dictionary order with a galloping search
+
+**Hypothesis:** after Attempt 134 the distinct-dense row still spends `8..11 ms` in data work on
+C1-level code; a warm-code profile over eight dense terms puts about a quarter of it in the
+provenance pass's directory searches, each of which bisected the whole property directory and
+decoded one front-coded string per probe, for up to 200 selected values in each of 63 graphs.
+
+**Change:** `StringPropertyTupleSet` exposes the distinct non-null values of a column in
+code-unit order, computed once per request; `selectedTupleHits` visits the leading values in
+that order and the leading directory search gallops from the row reached by the previous value
+before bisecting, so consecutive lookups cost decodes proportional to the log of the distance
+between hits. Tuple-lookup row caches are per property instead of keyed by a concatenated string.
+
+**Evidence (local, fresh JVM, eight dense terms after the replay's first shapes, three runs):**
+distinct-dense CPU `9.0..10.8 ms -> 7.0..8.2 ms`; the other dense terms `15..30%` lower
+(`run` `5.0..5.9 -> 3.5..4.2 ms`, `new` `6.0..6.9 -> 4.3..5.0 ms`). The mapped-view, store, and
+core tests and detekt pass.
+
+**Conclusion:** keep for exact-head hosted validation after Attempt 134's run is read.

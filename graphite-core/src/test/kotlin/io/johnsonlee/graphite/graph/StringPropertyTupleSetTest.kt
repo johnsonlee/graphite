@@ -40,6 +40,18 @@ class StringPropertyTupleSetTest {
     }
 
     @Test
+    fun `sorted values of a column are the distinct non-null values in code-unit order computed once`() {
+        val tuples = StringPropertyTupleSet(listOf(gamma, alpha, alphaAgain))
+
+        assertEquals(listOf("a.Alpha", "c.Gamma"), tuples.sortedValues(0))
+        assertSame(tuples.sortedValues(0), tuples.sortedValues(0))
+        assertEquals(listOf("b.Beta"), tuples.sortedValues(2))
+        assertEquals(listOf("load", "run"), tuples.sortedValues(1))
+        assertEquals(emptyList(), tuples.sortedValues(4))
+        assertEquals(emptyList(), StringPropertyTupleSet(emptyList()).sortedValues(0))
+    }
+
+    @Test
     fun `grouping outside the tuple width or over an empty set is empty`() {
         val tuples = StringPropertyTupleSet(listOf(alpha, listOf("short")))
 

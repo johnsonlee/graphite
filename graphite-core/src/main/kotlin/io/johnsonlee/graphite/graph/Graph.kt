@@ -217,6 +217,7 @@ class StringPropertyTupleSet(tuples: Collection<List<String?>>) : AbstractSet<Li
     private val groupings = arrayOfNulls<Map<String?, List<List<String?>>>>(
         ordered.firstOrNull()?.size ?: 0
     )
+    private val sortedValueLists = arrayOfNulls<List<String>>(ordered.firstOrNull()?.size ?: 0)
 
     override val size: Int
         get() = ordered.size
@@ -224,6 +225,12 @@ class StringPropertyTupleSet(tuples: Collection<List<String?>>) : AbstractSet<Li
     override fun iterator(): Iterator<List<String?>> = ordered.iterator()
 
     override fun contains(element: List<String?>): Boolean = element in members
+
+    /** The distinct non-null values of [column] in ascending code-unit order; computed once per column. */
+    fun sortedValues(column: Int): List<String> {
+        if (column !in sortedValueLists.indices) return emptyList()
+        return sortedValueLists[column] ?: groupedBy(column).keys.filterNotNull().sorted().also { sortedValueLists[column] = it }
+    }
 
     /** Tuples grouped by their value in [column], in first-seen order; tuples shorter than the column are skipped. */
     fun groupedBy(column: Int): Map<String?, List<List<String?>>> {
