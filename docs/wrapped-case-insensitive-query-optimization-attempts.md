@@ -4821,3 +4821,68 @@ moved `+0.6 ms` in forward order and `-0.1 ms` in reverse order, which is the or
 harness rather than the change; the DISTINCT and wrapped rows within `±0.4 ms`.
 
 **Conclusion:** kept.
+
+### 2026-09-06 - Attempt 154: Decode into reusable buffers without an intermediate array (rejected)
+
+**Hypothesis:** every decode into a reusable buffer (directory-search probes, matcher
+verification, the load-time table build) allocated one character array per string and copied
+it, so writing straight into the buffer through the list's array-filling decode would remove an
+allocation and a copy per decode and the load-time garbage of the table build.
+
+**Change (not kept):** `StringTable.get(index, buffer)` called the char-coded list's
+`get(index, array, offset, length)` with a grow-once retry, raising the buffer's length to its
+capacity first because the buffer clears the characters it grows over.
+
+**Evidence (local, 64 fixtures, fresh JVM in benchmark order, eight runs):** the array-filling
+decode reaches the fastutil `CharArrays` helper and the six nested classes its verification
+loads, exactly what Attempt 142 avoided: the first targeted projection row loaded fourteen
+classes instead of seven and its wall median went `6.70 -> 8.24 ms`; the dense row `4.63 -> 4.53`
+and the DISTINCT rows within noise.
+
+**Conclusion:** reverted. The allocation per decode is cheaper on a cold request than the
+helper classes the allocation-free path drags in.
+
+### 2026-09-06 - Attempt 153, follow-up: the candidate condition searched inside the matcher
+
+**Observation:** head c04de10 (Attempt 153) failed the global-wide gate on a slow runner: pair 1
+at 8.13x on the wrapped-distinct/dense row (16.5 ms against 9.3 and 13.0 ms in the other forks)
+and pair 3 at 1.41x on the wrapped case-insensitive targeted shape. Both rows run the raw prefix
+probe, and the local A/B of 153 had already shown the DISTINCT dense row 0.1-0.5 ms slower while
+the plain dense row got faster: routing the candidate check through the match plan replaced a
+lambda's direct search with a sealed `when` and an extra call level per candidate id, which on
+cold interpreted code costs more than the class it saved.
+
+**Change:** the matcher now holds the plan's condition as plain fields, the sorted ids of an
+exact term or the anchor trigram's posting range with the mapped postings, and searches them
+itself; the plan only hands out its probe. No interface, lambda or plan dispatch remains on the
+per-id path, and the class-load saving of 153 stays.
+
+**Evidence (local, 64 fixtures, eight runs forward and six reverse, medians, together with
+Attempt 155):** distinct-dense first execution CPU `7.42 -> 7.19 / 7.52 -> 6.76 ms`, second
+execution wall `4.18 -> 4.11 / 4.71 -> 3.86 ms`; targeted, dense and wrapped rows within
+`±0.3 ms` once the jar-order effect is accounted for.
+
+### 2026-09-06 - Attempt 155: Trigram directory indexed by rank over its presence bits
+
+**Hypothesis:** the resource gate's sampled peak counts only allocation regions the query has
+retired (every candidate invocation sits either 2,019,080 bytes above or 62,024 bytes below the
+post-collection retained heap, 2,081,104 bytes apart), and the candidate's retained delta of
+4.27 MB across 36 graphs sits 62 KB above two such regions, so the check flips whenever a query
+retires only two. Most of that delta is the per-view trigram directory: a sorted array of the
+distinct trigram hashes, the posting start of each, and a presence bit set over the ASCII hash
+range. The sorted array is redundant for hashes inside the bit set's range: a trigram's position
+is the number of set bits before it.
+
+**Change:** the directory keeps one running count of set bits per bit-set word (about 8 KB) and
+drops the sorted hashes below the range, keeping only the few above it; a lookup is a bit test,
+a population count and one array read instead of a binary search. This also closes a gap in the
+old presence test, which switched to the sorted array only above the bit set's word boundary
+while bits were set only below the ASCII limit, so hashes in the 32-value gap were reported
+absent.
+
+**Evidence:** per graph about 27 KB less retained heap (72 KB of sorted hashes and starts plus
+16 KB of bits become 36 KB of starts, 16 KB of bits and 8 KB of ranks), about 1 MB across the
+36-graph resource fixture, which puts the retained delta below two allocation regions; the
+lookup is O(1). Local latency rows within noise (see the follow-up above for the paired A/B).
+
+**Conclusion:** kept.

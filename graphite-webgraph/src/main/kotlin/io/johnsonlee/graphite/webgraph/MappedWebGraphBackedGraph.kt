@@ -51,6 +51,7 @@ import java.io.DataOutputStream
 import java.io.EOFException
 import java.io.File
 import java.nio.ByteBuffer
+import java.nio.LongBuffer
 import java.nio.MappedByteBuffer
 import java.nio.channels.FileChannel
 import java.nio.file.AtomicMoveNotSupportedException
@@ -431,12 +432,7 @@ internal class MappedWebGraphBackedGraph(
             val predicate = predicates[index]
             val key = MappedPredicateKey(predicate.transform, predicate.mode, predicate.expected)
             sharedMatchers.getOrPut(key) {
-                BoundedStringMatcher(
-                    stringTable,
-                    key,
-                    candidatePlan = plan,
-                    candidateProbe = plan?.candidateProbe(predicate)
-                )
+                rawCandidateMatcher(stringTable, key, LOCAL_STRING_MATCH_CACHE_CAPACITY, plan, predicate)
             }
         }
         val order = IntArray(predicates.size) { it }
@@ -623,12 +619,12 @@ internal class MappedWebGraphBackedGraph(
         val matchStates = Array(predicates.size) { index ->
             val predicate = predicates[index]
             sharedStates.getOrPut(MappedPredicateKey(predicate.transform, predicate.mode, predicate.expected)) {
-                BoundedStringMatcher(
+                rawCandidateMatcher(
                     stringTable,
                     MappedPredicateKey(predicate.transform, predicate.mode, predicate.expected),
                     RAW_PROJECTION_STRING_MATCH_CACHE_CAPACITY,
                     plan,
-                    plan?.candidateProbe(predicate)
+                    predicate
                 )
             }
         }
@@ -2034,8 +2030,11 @@ private class BoundedStringMatcher(
     private val stringTable: StringTable,
     private val predicate: MappedPredicateKey,
     cacheCapacity: Int = LOCAL_STRING_MATCH_CACHE_CAPACITY,
-    private val candidatePlan: MappedCallSiteStringIndexView.MatchPlan? = null,
-    private val candidateProbe: MappedCallSiteStringIndexView.PredicateProbe? = null
+    private val absent: Boolean = false,
+    private val exactStringIds: IntArray? = null,
+    private val trigramPostings: LongBuffer? = null,
+    private val anchorFirst: Int = 0,
+    private val anchorLast: Int = -1
 ) {
     private val stringCount = stringTable.size()
     private val capacity = cacheCapacity.coerceAtLeast(1).takeHighestOneBit()
@@ -2050,8 +2049,10 @@ private class BoundedStringMatcher(
         val state = state(stringId)
         if (state == RAW_STRING_MATCH) return true
         if (state == RAW_STRING_MISS) return false
-        val probe = candidateProbe
-        if (probe != null && candidatePlan?.acceptsCandidate(probe, stringId) == false) {
+        if (absent ||
+            exactStringIds != null && java.util.Arrays.binarySearch(exactStringIds, stringId) < 0 ||
+            trigramPostings != null && !postingsContain(trigramPostings, anchorFirst, anchorLast, stringId)
+        ) {
             put(stringId, RAW_STRING_MISS)
             return false
         }
@@ -2085,6 +2086,53 @@ private class BoundedStringMatcher(
         val spread = stringId xor (stringId ushr LOCAL_STRING_MATCH_CACHE_HASH_SHIFT)
         return spread and (capacity - 1)
     }
+}
+
+/**
+ * A matcher for [predicate] that first applies the necessary condition the match [plan] learned
+ * about its raw string ids, held as plain fields so the check on a cold request is an array
+ * search or a mapped binary search with no interface, lambda or plan dispatch in between.
+ */
+private fun rawCandidateMatcher(
+    stringTable: StringTable,
+    key: MappedPredicateKey,
+    cacheCapacity: Int,
+    plan: MappedCallSiteStringIndexView.MatchPlan?,
+    predicate: StringPropertyPredicate
+): BoundedStringMatcher {
+    val probe = plan?.candidateProbe(predicate)
+    return if (probe is MappedCallSiteStringIndexView.PredicateProbe.Exact) {
+        BoundedStringMatcher(stringTable, key, cacheCapacity, exactStringIds = probe.stringIds)
+    } else if (probe is MappedCallSiteStringIndexView.PredicateProbe.Trigram) {
+        BoundedStringMatcher(
+            stringTable,
+            key,
+            cacheCapacity,
+            trigramPostings = plan.trigramPostings(),
+            anchorFirst = probe.anchor.first,
+            anchorLast = probe.anchor.last
+        )
+    } else {
+        BoundedStringMatcher(stringTable, key, cacheCapacity, absent = probe != null)
+    }
+}
+
+/** Membership of [stringId] in one trigram's postings, which are sorted by string id. */
+private fun postingsContain(postings: LongBuffer, first: Int, last: Int, stringId: Int): Boolean {
+    var low = first
+    var high = last
+    while (low <= high) {
+        val middle = (low + high).ushr(1)
+        val candidate = postings.get(middle).toInt()
+        if (candidate < stringId) {
+            low = middle + 1
+        } else if (candidate > stringId) {
+            high = middle - 1
+        } else {
+            return true
+        }
+    }
+    return false
 }
 
 /** Shares predicate state across iterators and enforces one aggregate retained-memory bound per graph. */
