@@ -466,7 +466,7 @@ class MappedCallSiteStringIndexViewTest {
         fun hash(text: String, position: Int): Int =
             (text[position].code * 31 + text[position + 1].code) * 31 + text[position + 2].code
 
-        val trigrams = LeadingValueTrigrams(listOf("ab", "GetGet", "run"))
+        val trigrams = LeadingValueTrigrams(0, listOf("ab", "GetGet", "run"))
 
         assertEquals(0, trigrams.hashes[0].size)
         // "getget" has trigrams get, etg, tge, get: three distinct hashes in last-to-first order.

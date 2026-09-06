@@ -52,17 +52,20 @@ class StringPropertyTupleSetTest {
     }
 
     @Test
-    fun `shared scratch computes a value once per key and hands it to every later caller`() {
+    fun `scratch slots hand a stored value to every later reader and ignore slots outside the range`() {
         val tuples = StringPropertyTupleSet(listOf(alpha, gamma))
-        var computed = 0
+        val hashes = IntArray(3)
 
-        val first = tuples.sharedScratch("hashes") { computed++; IntArray(3) }
-        val again = tuples.sharedScratch("hashes") { computed++; IntArray(3) }
-        val other = tuples.sharedScratch("hints") { computed++; IntArray(1) }
+        assertEquals(null, tuples.scratch(0))
+        tuples.scratch(0, hashes)
+        tuples.scratch(1, "hints")
+        tuples.scratch(9, "ignored")
+        tuples.scratch(-1, "ignored")
 
-        assertSame(first, again)
-        assertEquals(1, other.size)
-        assertEquals(2, computed)
+        assertSame(hashes, tuples.scratch(0))
+        assertEquals("hints", tuples.scratch(1))
+        assertEquals(null, tuples.scratch(9))
+        assertEquals(null, tuples.scratch(-1))
     }
 
     @Test

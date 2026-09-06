@@ -4431,3 +4431,30 @@ which do not use the path, are unchanged within noise. The mapped-view and core 
 pass.
 
 **Conclusion:** keep for exact-head hosted validation after Attempt 135's run is read.
+
+### 2026-09-06 - Attempt 137: Hoist the per-graph tuple-lookup setup into scratch slots of the selected tuples
+
+**Hypothesis:** with Attempt 136 in place, fresh-JVM timers inside the distinct-dense row's
+provenance pass (`~8.5 ms` of a `15..19 ms` row) put `2.2..2.6 ms` in building each graph's
+`TupleLookup`: the lookup order and the projected/residual predicate split are recomputed per
+graph from the same predicates, and the row cache of the leading property is read and written for
+every visited value although each sorted value is visited once per graph and only hits are read
+back. On the code a first execution runs, every per-graph step of this kind costs `20..35 µs`, so
+63 graphs turn a handful of collection operations into milliseconds.
+
+**Change:** the graph-independent part of the lookup (`TupleLookupSetup`) is computed once per
+request and shared through a fixed scratch slot of the `StringPropertyTupleSet`, as are the
+leading values' trigram hashes of Attempt 136; a view validates the stored value against its own
+inputs (predicate list identity, projection) instead of hashing a key, because a synchronized
+map lookup keyed by the predicates costs as much per graph on cold code as the work it replaced
+(`1.3..1.9 ms` per row measured for both the data-class key and an identity key). The leading
+directory search no longer consults or fills the row cache on a miss, and the ascending walk polls
+for interruption every 64 values like the unsorted walk.
+
+**Evidence (local, 64 fixtures, fresh JVM in benchmark order, three alternating runs each):**
+distinct-dense first execution CPU `11.6..15.0 ms -> 10.3..12.3 ms`, second execution
+`6.4..6.9 -> 4.9..5.8 ms`; `add` first execution `9.7..10.9 -> 8.6..10.4 ms`; the targeted rows
+are unchanged within noise. Timers inside the row: provenance `8.1..8.6 -> 7.2..7.3 ms`, graph
+DISTINCT total `12.3..12.8 -> 10.8..11.0 ms`. The core and mapped-view tests and detekt pass.
+
+**Conclusion:** keep for exact-head hosted validation after Attempt 136's run is read.

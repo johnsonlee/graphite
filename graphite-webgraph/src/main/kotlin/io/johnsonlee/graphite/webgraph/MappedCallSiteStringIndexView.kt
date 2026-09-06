@@ -578,7 +578,16 @@ internal class MappedCallSiteStringIndexView private constructor(
         workConsumer: GraphWorkConsumer?
     ): List<StringPropertyDistinctRow> {
         if (selectedValues.isEmpty()) return emptyList()
-        val lookup = tupleLookup(predicates, projectedPropertyIndexes, workConsumer) ?: return emptyList()
+        val setup = if (selectedValues is StringPropertyTupleSet) {
+            (selectedValues.scratch(TUPLE_LOOKUP_SETUP_SLOT) as? TupleLookupSetup)
+                ?.takeIf { shared -> shared.matches(predicates, projectedPropertyIndexes) }
+                ?: TupleLookupSetup(predicates, projectedPropertyIndexes).also { created ->
+                    selectedValues.scratch(TUPLE_LOOKUP_SETUP_SLOT, created)
+                }
+        } else {
+            TupleLookupSetup(predicates, projectedPropertyIndexes)
+        }
+        val lookup = tupleLookup(setup, projectedPropertyIndexes, workConsumer) ?: return emptyList()
         if (lookup.lookupOrder.isEmpty()) return lookup.nullTupleHits(selectedValues)
         val hits = ArrayList<StringPropertyDistinctRow>()
         val accounting = BufferedGraphWorkConsumer(workConsumer)
@@ -591,11 +600,13 @@ internal class MappedCallSiteStringIndexView private constructor(
                 val leadingColumn = lookup.lookupOrder[0]
                 val grouped = selectedValues.groupedBy(leadingColumn)
                 val leadingValues = selectedValues.sortedValues(leadingColumn)
-                val leadingTrigrams = selectedValues.sharedScratch(LeadingValueTrigramsKey(leadingColumn)) {
-                    LeadingValueTrigrams(leadingValues)
-                }
+                val leadingTrigrams = (selectedValues.scratch(LEADING_VALUE_TRIGRAMS_SLOT) as? LeadingValueTrigrams)
+                    ?.takeIf { shared -> shared.column == leadingColumn }
+                    ?: LeadingValueTrigrams(leadingColumn, leadingValues).also { created ->
+                        selectedValues.scratch(LEADING_VALUE_TRIGRAMS_SLOT, created)
+                    }
                 for (index in leadingValues.indices) {
-                    checkViewInterrupted()
+                    if ((index and TUPLE_INTERRUPTION_POLL_MASK) == 0) checkViewInterrupted()
                     val value = leadingValues[index]
                     if (!lookup.leadingValuePresent(value, leadingTrigrams, index, accounting)) continue
                     for (values in grouped.getValue(value)) {
@@ -648,8 +659,9 @@ internal class MappedCallSiteStringIndexView private constructor(
         }
 
         /**
-         * Directory row of the leading lookup property for [value], searched from the row reached by
-         * the previous ascending leading value. Misses move the cursor to the insertion point.
+         * Directory row of the leading lookup property for [value], the [index]th sorted leading
+         * value, searched from the row reached by the previous value. Misses move the cursor to the
+         * insertion point.
          */
         private fun leadingDirectoryRow(
             value: String,
@@ -658,21 +670,19 @@ internal class MappedCallSiteStringIndexView private constructor(
             accounting: BufferedGraphWorkConsumer
         ): Int {
             val propertyIndex = projectedPropertyIndexes[lookupOrder[0]]
-            val rowCache = rowCaches[propertyIndex] ?: HashMap<String, Int>().also { rowCaches[propertyIndex] = it }
-            rowCache[value]?.let { return it }
             accounting.consume()
-            var row = -1
-            if (mayContain(trigrams, index)) {
-                val found = searchDirectory(propertyIndex, value, accounting, leadingCursor)
-                if (found >= 0) {
-                    row = found
-                    leadingCursor = found
-                } else {
-                    leadingCursor = -(found + 1)
-                }
+            if (!mayContain(trigrams, index)) return -1
+            val found = searchDirectory(propertyIndex, value, accounting, leadingCursor)
+            if (found < 0) {
+                leadingCursor = -(found + 1)
+                return -1
             }
-            rowCache[value] = row
-            return row
+            leadingCursor = found
+            // Each sorted leading value is visited once per graph, so only a hit is worth caching:
+            // the tuple lookups that follow it read the row back through [directoryRow].
+            val rowCache = rowCaches[propertyIndex] ?: HashMap<String, Int>().also { rowCaches[propertyIndex] = it }
+            rowCache[value] = found
+            return found
         }
 
         /**
@@ -835,32 +845,16 @@ internal class MappedCallSiteStringIndexView private constructor(
     }
 
     private fun tupleLookup(
-        predicates: List<StringPropertyPredicate>,
+        setup: TupleLookupSetup,
         projectedPropertyIndexes: IntArray,
         workConsumer: GraphWorkConsumer?
     ): TupleLookup? {
-        // Caller classes are the most graph-specific tuple component, so an absent caller class
-        // rejects a foreign tuple after a single dictionary lookup shared by all of its call sites.
-        val lookupOrder = projectedPropertyIndexes.indices
-            .filter { index -> projectedPropertyIndexes[index] >= 0 }
-            .sortedBy { index -> TUPLE_LOOKUP_PREFERENCE.indexOf(projectedPropertyIndexes[index]) }
-            .toIntArray()
-        val projectedPredicates = ArrayList<StringPropertyPredicate>()
-        val residualPredicates = ArrayList<StringPropertyPredicate>()
-        predicates.forEach { predicate ->
-            val propertyIndex = callSiteStringPropertyIndex(predicate.property)
-            if (propertyIndex >= 0 && projectedPropertyIndexes.contains(propertyIndex)) {
-                projectedPredicates += predicate
-            } else {
-                residualPredicates += predicate
-            }
-        }
-        val residualPlan = if (residualPredicates.isEmpty()) {
+        val residualPlan = if (setup.residualPredicates.isEmpty()) {
             null
         } else {
-            matchPlan(residualPredicates, workConsumer) ?: return null
+            matchPlan(setup.residualPredicates, workConsumer) ?: return null
         }
-        return TupleLookup(projectedPropertyIndexes, lookupOrder, projectedPredicates, residualPlan, workConsumer)
+        return TupleLookup(projectedPropertyIndexes, setup.lookupOrder, setup.projectedPredicates, residualPlan, workConsumer)
     }
 
     private fun projectValues(stringIds: IntArray, projectedPropertyIndexes: IntArray): List<String?> =
@@ -1258,16 +1252,49 @@ internal class TrigramTerm private constructor(val trigrams: IntArray) {
     }
 }
 
-/** Scratch key of the [LeadingValueTrigrams] of one leading column in a request's selected tuples. */
-private data class LeadingValueTrigramsKey(val column: Int)
+/**
+ * The graph-independent part of a tuple lookup: the property order in which tuples are looked up
+ * and the split of the predicates into those the projected values answer and those a candidate
+ * node must be checked against. Computed once per request and shared by every graph view through
+ * the selected tuples' scratch slot; [matches] tells a view whether the stored setup is its own.
+ */
+internal class TupleLookupSetup(
+    private val predicates: List<StringPropertyPredicate>,
+    private val projectedPropertyIndexes: IntArray
+) {
+    /** True for the same predicate list instance and projection this setup was derived from. */
+    fun matches(predicates: List<StringPropertyPredicate>, projectedPropertyIndexes: IntArray): Boolean =
+        this.predicates === predicates && this.projectedPropertyIndexes.contentEquals(projectedPropertyIndexes)
+
+    // Caller classes are the most graph-specific tuple component, so an absent caller class
+    // rejects a foreign tuple after a single dictionary lookup shared by all of its call sites.
+    val lookupOrder: IntArray = projectedPropertyIndexes.indices
+        .filter { index -> projectedPropertyIndexes[index] >= 0 }
+        .sortedBy { index -> TUPLE_LOOKUP_PREFERENCE.indexOf(projectedPropertyIndexes[index]) }
+        .toIntArray()
+    val projectedPredicates = ArrayList<StringPropertyPredicate>()
+    val residualPredicates = ArrayList<StringPropertyPredicate>()
+
+    init {
+        predicates.forEach { predicate ->
+            val propertyIndex = callSiteStringPropertyIndex(predicate.property)
+            if (propertyIndex >= 0 && projectedPropertyIndexes.contains(propertyIndex)) {
+                projectedPredicates += predicate
+            } else {
+                residualPredicates += predicate
+            }
+        }
+    }
+}
 
 /**
  * The distinct lowercase trigram hashes of every sorted leading value of a cross-graph DISTINCT
- * request, computed once and shared by every graph view; a value shorter than a trigram has no
- * hashes and is never rejected. [absentHints] remembers per value the trigram that last proved a
- * graph absent so the next graph's presence pass usually stops at its first check.
+ * request, computed once for the leading [column] and shared by every graph view through the
+ * selected tuples' scratch slot; a value shorter than a trigram has no hashes and is never
+ * rejected. [absentHints] remembers per value the trigram that last proved a graph absent so the
+ * next graph's presence pass usually stops at its first check.
  */
-internal class LeadingValueTrigrams(values: List<String>) {
+internal class LeadingValueTrigrams(val column: Int, values: List<String>) {
     val hashes: Array<IntArray> = Array(values.size) { index -> distinctTrigramHashes(values[index]) }
     val absentHints = IntArray(values.size)
 
@@ -1698,6 +1725,8 @@ private const val DIRECTORY_SCAN_RATIO = 8
 private const val SMALL_TRIGRAM_SPAN = 32
 private const val MAX_CACHED_TRIGRAM_TERMS = 256
 private const val DENSE_TRIGRAM_SPAN = 1_024
+private const val LEADING_VALUE_TRIGRAMS_SLOT = 0
+private const val TUPLE_LOOKUP_SETUP_SLOT = 1
 private val TUPLE_LOOKUP_PREFERENCE = intArrayOf(
     CALLER_CLASS_PROPERTY_INDEX,
     CALLEE_CLASS_PROPERTY_INDEX,

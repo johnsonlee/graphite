@@ -212,13 +212,17 @@ data class StringPropertyDistinctRow(
  * an absent value with a single dictionary lookup instead of one lookup per tuple per source.
  */
 class StringPropertyTupleSet(tuples: Collection<List<String?>>) : AbstractSet<List<String?>>() {
+    private companion object {
+        private const val SCRATCH_SLOTS = 4
+    }
+
     private val ordered: List<List<String?>> = LinkedHashSet(tuples).toList()
     private val members: Set<List<String?>> = ordered.toHashSet()
     private val groupings = arrayOfNulls<Map<String?, List<List<String?>>>>(
         ordered.firstOrNull()?.size ?: 0
     )
     private val sortedValueLists = arrayOfNulls<List<String>>(ordered.firstOrNull()?.size ?: 0)
-    private val scratch = HashMap<Any, Any>()
+    private val scratch = arrayOfNulls<Any>(SCRATCH_SLOTS)
 
     override val size: Int
         get() = ordered.size
@@ -234,13 +238,15 @@ class StringPropertyTupleSet(tuples: Collection<List<String?>>) : AbstractSet<Li
     }
 
     /**
-     * Request-scoped scratch shared by every storage backend that looks these tuples up, such as
-     * derived per-value data a cross-graph request would otherwise recompute for each graph.
-     * The value for [key] is computed once by [compute] and returned to every later caller.
+     * Request-scoped scratch shared by every storage backend that looks these tuples up: derived
+     * per-value data a cross-graph request would otherwise recompute for each graph. A backend owns
+     * a [slot] and validates the value it reads back against its inputs, so a read costs one array
+     * load on the cold code a first execution runs; slots outside the range read and write nothing.
      */
-    @Suppress("UNCHECKED_CAST")
-    fun <T : Any> sharedScratch(key: Any, compute: () -> T): T = synchronized(scratch) {
-        scratch.getOrPut(key, compute) as T
+    fun scratch(slot: Int): Any? = if (slot in scratch.indices) scratch[slot] else null
+
+    fun scratch(slot: Int, value: Any?) {
+        if (slot in scratch.indices) scratch[slot] = value
     }
 
     /** Tuples grouped by their value in [column], in first-seen order; tuples shorter than the column are skipped. */
