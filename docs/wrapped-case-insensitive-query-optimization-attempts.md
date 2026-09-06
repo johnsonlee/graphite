@@ -4796,3 +4796,28 @@ medians):** distinct-dense first execution `8.53 -> 8.03 ms` (classes loaded by 
 **Conclusion:** kept. The six classes the row still loads are the distinct row, the tuple set,
 the lookup setup, the tuple lookup, the leading-value trigrams and the raw string-id tuple, each
 of which carries state the request needs.
+
+### 2026-09-06 - Attempt 153: Fold the helper classes of the first dense projection row
+
+**Hypothesis:** with the targeted rows down, the single-graph dense projection row is one of the
+two candidate P95 rows (10-13 ms on the hosted runner), and its first execution still loaded eight
+classes; preloading seven of them ahead of the request cut the row's CPU by about 1.2 ms locally.
+Five of them are helpers of the raw prefix probe that exist only as code structure: a predicate
+key that duplicates the view's, a two-field holder for the probe result, an object around the
+adaptive predicate order, an object around the projection decode cache, and a function interface
+whose one implementation is a lambda class of the view.
+
+**Change:** the raw probe keys its matchers with the view's `MappedPredicateKey`, returns its node
+ids and string ids as a pair, tries the predicates through a function over a caller-held order
+array, decodes projected strings through a function over caller-held cache arrays, and asks the
+match plan directly (`acceptsCandidate` on the plan's probe) instead of calling a filter interface.
+`MappedNodeIdIterator` and `BoundedStringMatcher` remain.
+
+**Evidence (local, 64 fixtures, fresh JVM in benchmark order; ten runs in forward jar order and
+six in reverse order, wall medians forward / reverse):** four-properties-dense
+`5.21 -> 4.96 / 5.79 -> 4.64 ms` (classes loaded by the row `8 -> 2`, CPU `4.47 -> 3.85 /
+4.98 -> 3.85 ms`), `add` second execution `8.16 -> 5.94 / 9.06 -> 5.76 ms`; the targeted rows
+moved `+0.6 ms` in forward order and `-0.1 ms` in reverse order, which is the order effect of the
+harness rather than the change; the DISTINCT and wrapped rows within `±0.4 ms`.
+
+**Conclusion:** kept.

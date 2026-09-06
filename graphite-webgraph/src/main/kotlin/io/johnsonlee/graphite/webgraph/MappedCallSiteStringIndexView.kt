@@ -293,19 +293,27 @@ internal class MappedCallSiteStringIndexView private constructor(
         }
 
         /**
-         * A necessary condition on raw string ids for [predicate] that costs one mapped binary
-         * search and no string decode, or null when the plan learned nothing about it. Raw
-         * prefix probes of dense plans reject most ids through it before decoding any string.
+         * The plan's probe of [predicate] when it yields a necessary condition on raw string ids
+         * (see [acceptsCandidate]), or null when the plan learned nothing about it.
          */
-        internal fun candidateFilter(predicate: StringPropertyPredicate): StringIdFilter? =
+        internal fun candidateProbe(predicate: StringPropertyPredicate): PredicateProbe? =
             when (val probe = probes[MappedPredicateKey(predicate.transform, predicate.mode, predicate.expected)]) {
-                is PredicateProbe.Absent -> StringIdFilter { false }
-                is PredicateProbe.Exact -> StringIdFilter { stringId ->
-                    java.util.Arrays.binarySearch(probe.stringIds, stringId) >= 0
-                }
-                is PredicateProbe.Trigram -> trigramMembership(probe.anchor)
+                is PredicateProbe.Absent, is PredicateProbe.Exact, is PredicateProbe.Trigram -> probe
                 else -> null
             }
+
+        /**
+         * A necessary condition on a raw string id for the predicate behind [probe] that costs one
+         * mapped binary search and no string decode. Raw prefix probes of dense plans reject most
+         * ids through it before decoding any string. The check is a plan method rather than a
+         * function interface so a cold request loads neither an interface nor a lambda class for it.
+         */
+        internal fun acceptsCandidate(probe: PredicateProbe, stringId: Int): Boolean = when (probe) {
+            is PredicateProbe.Absent -> false
+            is PredicateProbe.Exact -> java.util.Arrays.binarySearch(probe.stringIds, stringId) >= 0
+            is PredicateProbe.Trigram -> trigramMember(probe.anchor, stringId)
+            else -> true
+        }
 
         private fun resolve(): Array<IntArray?> {
             rowsByProperty?.let { return it }
@@ -998,23 +1006,21 @@ internal class MappedCallSiteStringIndexView private constructor(
         }
 
     /** Membership of a string id in one trigram's postings, which are sorted by string id. */
-    private fun trigramMembership(anchor: IntRange): StringIdFilter = StringIdFilter { stringId ->
+    private fun trigramMember(anchor: IntRange, stringId: Int): Boolean {
         var low = anchor.first
         var high = anchor.last
-        var found = false
         while (low <= high) {
             val middle = (low + high).ushr(1)
             val candidate = trigramPostings.get(middle).toInt()
-            when {
-                candidate < stringId -> low = middle + 1
-                candidate > stringId -> high = middle - 1
-                else -> {
-                    found = true
-                    break
-                }
+            if (candidate < stringId) {
+                low = middle + 1
+            } else if (candidate > stringId) {
+                high = middle - 1
+            } else {
+                return true
             }
         }
-        found
+        return false
     }
 
     private fun trigramPostingRange(trigram: Int): IntRange? {
@@ -1349,11 +1355,6 @@ private class ViewLoadScratch {
             }
         }
     }
-}
-
-/** A cheap test on raw string ids; false proves the id cannot satisfy a predicate. */
-internal fun interface StringIdFilter {
-    fun accepts(stringId: Int): Boolean
 }
 
 /**
