@@ -5082,3 +5082,23 @@ the confirmation pass repeats the same sample. The proposed repair for `main` me
 of the Java threads that serve the request, after a collection that removes the setup garbage
 from the window, gates on that, and keeps the process figure advisory; the patch is in the PR
 thread and at `bench/keep/method-cpu-gate.patch` of the session.
+
+### 2026-09-06 - Gate repair, step 2: the routing harness waits for collector quiescence before the measured replay
+
+**Context:** on c21fd18 the cold graph-set k8 rule went red on code that had passed it in the
+three previous runs: six candidate rows of 1.50-3.06 ms inside graph-set rows 219-237 of 246,
+on shapes that measure 0.10-0.40 ms elsewhere, with the candidate's median row faster than the
+base's. A local replay of the 246 graph-set rows on the 64 fixtures shows the same first-parse
+tail on both jars (candidate 9 and `main` 10 k8 literal rows above 1 ms, from the first
+execution of each unique 8-id literal text) and no tail once the texts are parsed (candidate k8
+0.23 / 0.68 / 0.93 ms), which the CI harness already does in trial setup. The CI replay records
+one collection while used heap grows from 3.48 to 3.9 GB of 8 GB, the point where G1 starts a
+concurrent cycle, and the marking that follows competes with the query thread on the runner's
+four cores, harder for the candidate (3.0-3.2 cores busy) than for the base (1.8-2.2).
+
+**Change (owner's choice, the narrow form of option 1):** invocation setup runs
+`awaitGcQuiescence()` after the forced collections and before the sampler starts: the replay
+begins only once no collector has recorded an event for 250 ms (10 s timeout), so a cycle that
+was already in flight finishes outside the measurement. A cycle the replay itself initiates
+stays inside it, and no collector setting changes. The harness is candidate-owned and copied
+into the base tree by the routing script, so both sides run it.

@@ -155,6 +155,7 @@ open class LargeBroadQueryPressureBenchmark {
         }
         resetCallSiteScanMetrics()
         forcePressureGc()
+        awaitGcQuiescence()
         sampler.start()
     }
 
@@ -1138,6 +1139,28 @@ private fun forcePressureGc() {
         System.gc()
         System.runFinalization()
         Thread.sleep(GC_PAUSE_MILLIS)
+    }
+}
+
+/**
+ * Lets a collection cycle that was already in flight when the forced collections ran finish
+ * before the measured replay starts: the replay begins only once no collector has recorded an
+ * event for [GC_QUIESCENCE_STABLE_MILLIS], or after [GC_QUIESCENCE_TIMEOUT_MILLIS]. A cycle the
+ * replay itself initiates stays inside the measurement; no collector setting changes.
+ */
+private fun awaitGcQuiescence() {
+    val deadline = System.nanoTime() + GC_QUIESCENCE_TIMEOUT_MILLIS * NANOS_PER_MILLI
+    var last = gcSnapshot()
+    var stableSince = System.nanoTime()
+    while (System.nanoTime() < deadline) {
+        Thread.sleep(GC_QUIESCENCE_POLL_MILLIS)
+        val now = gcSnapshot()
+        if (now != last) {
+            last = now
+            stableSince = System.nanoTime()
+        } else if (System.nanoTime() - stableSince >= GC_QUIESCENCE_STABLE_MILLIS * NANOS_PER_MILLI) {
+            return
+        }
     }
 }
 
@@ -2191,6 +2214,10 @@ private const val SAMPLER_JOIN_MILLIS = 5_000L
 private val SHA_256_IDENTITY = Regex("[0-9a-f]{64}")
 private const val GC_ATTEMPTS = 3
 private const val GC_PAUSE_MILLIS = 100L
+private const val GC_QUIESCENCE_STABLE_MILLIS = 250L
+private const val GC_QUIESCENCE_POLL_MILLIS = 10L
+private const val GC_QUIESCENCE_TIMEOUT_MILLIS = 10_000L
+private const val NANOS_PER_MILLI = 1_000_000L
 
 private val TARGETED_TERMS = listOf("android.", "org.apache.tika.", "org.apache.hadoop.hive.", "kotlin")
 private val DENSE_TERMS = listOf("java", "org", "get", "set")
