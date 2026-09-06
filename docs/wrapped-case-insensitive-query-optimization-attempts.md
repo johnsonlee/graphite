@@ -5590,3 +5590,37 @@ same direction; this first failure does not abandon it or automatically revert t
 The PR receives no failed/no-progress production change. Final10x is unmet and no merge is
 authorized. Managed-worker NCPU cap is not a cap on all JVM or existing query callers.
 [Current report](profiling/attempt142/README.md).
+
+
+### 2026-09-06 - Attempt 143: Split mapped exact candidate filtering over the shared resource
+
+**Same direction as142:** phase/queue evidence motivates ordered graph-local filter chunks
+on the existing STORAGE lane. Preserve original predicate/index/OR algorithms and successful
+work totals; reuse first-caller participation and structured cancel/join. Anchor>=2048,
+at least1024 entries per requested task, bounded by existing segment budget and shared P.
+These grain choices are hypotheses, not measured optimal constants.
+
+**Validation:**2101 module tests, four detekt, two JMH packages and JMH test-exclusion pass.
+Five new behavior tests cover ordered IDs, repeated-key work, budget/threshold limits,
+budget failure and cancel(false) actual callback drain. AdditionalP1/P2/P3 runs pass;
+P1 returns early from two concurrency tests. Real fixture64 supplemental36 full correctness
+passes. First ComplexCondition lint failure and equivalent repair are retained.
+
+| First pair C/B | Frozen-main | Candidate |
+|---|---:|---:|
+| Original34 P95 ms |43.523250|47.237166|
+| Process CPU s |1.475462|1.643484|
+| targeted DISTINCT ms |22.061458|36.072500|
+
+**Not accepted:** strict P95 progress fails (+8.53%). No further acceptance pairs or candidateCI.
+This is the second failed candidate in shared scheduling, retained in isolated experiment
+history, not promoted into the finalPR or a reason to abandon the direction.
+Preserved142 targeted probes have57 pre-anchor early returns (-1 sentinels), and7 established
+anchors containing14 IDs total (maximum3); neither path enters143's new split branch.
+Additional audit correction: candidate graph peak3/segment peak2 violates the unchanged2/2
+condition;142 pair1 already had this mismatch, previously omitted from the conclusion.
+Separate peaks do not establish5 live workers. The ready-pump retirement-before-task-exit
+window is source-reachable, not recorded proof of the observed interleaving. Fix this
+independent scheduling defect before attributing latency. The full comparator was not run.
+Parent81e7c5f9; frozen-main4e328b01; exact corpus/JAR/source/check commands in
+[attempt143 report](profiling/attempt143/README.md).

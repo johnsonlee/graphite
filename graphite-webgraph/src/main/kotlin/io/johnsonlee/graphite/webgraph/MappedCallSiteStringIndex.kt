@@ -1965,7 +1965,7 @@ internal fun <T> trackedSplitCallSiteTask(task: Callable<T>): Callable<T> = Call
 }
 
 @Suppress("ThrowsCount", "TooGenericExceptionCaught")
-private fun <T> executeSplitCallSiteTasks(
+internal fun <T> executeSplitCallSiteTasks(
     tasks: List<Callable<T>>,
     backgroundParallelism: Int
 ): List<T> {
