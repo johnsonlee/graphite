@@ -435,6 +435,7 @@ internal class MappedWebGraphBackedGraph(
         // raw string ids: deduplicating on ids decodes only the tuples that become rows.
         val seenStringIds = HashSet<RawStringIdTuple>()
         val projectedIds = IntArray(projectedPropertyIndexes.size)
+        val decoder = RawProjectionDecoder(stringTable)
         val targetSize = minOf(limit, selectedValues?.size ?: limit)
         val accounting = BufferedGraphWorkConsumer(workConsumer)
         val stringIds = IntArray(CALL_SITE_STRING_PROPERTY_COUNT)
@@ -473,7 +474,7 @@ internal class MappedWebGraphBackedGraph(
                 }
                 val values = List(projectedPropertyIndexes.size) { index ->
                     val propertyIndex = projectedPropertyIndexes[index]
-                    if (propertyIndex < 0) null else stringTable.get(stringIds[propertyIndex])
+                    if (propertyIndex < 0) null else decoder.decode(stringIds[propertyIndex])
                 }
                 if ((selectedValues != null && values !in selectedValues) || !seenValues.add(values)) continue
                 rows += StringPropertyDistinctRow(nodeOffsets.offset(nodeId), values)
@@ -675,6 +676,7 @@ internal class MappedWebGraphBackedGraph(
     ): List<StringPropertyProjectionRow> {
         val stringIds = IntArray(CALL_SITE_STRING_PROPERTY_COUNT)
         val rows = ArrayList<StringPropertyProjectionRow>(nodeIds.size)
+        val decoder = RawProjectionDecoder(stringTable)
         for (index in nodeIds.indices) {
             if (probedStringIds != null) {
                 System.arraycopy(
@@ -693,7 +695,7 @@ internal class MappedWebGraphBackedGraph(
                 }
             }
             rows += StringPropertyProjectionRow(
-                List(projectedPropertyIndexes.size) { column -> stringTable.get(stringIds[projectedPropertyIndexes[column]]) }
+                List(projectedPropertyIndexes.size) { column -> decoder.decode(stringIds[projectedPropertyIndexes[column]]) }
             )
         }
         return rows
@@ -1807,6 +1809,8 @@ private const val MAX_RAW_STRING_MATCH_STATES = 32
 private const val LOCAL_STRING_MATCH_CACHE_CAPACITY = 1 shl 16
 private const val LOCAL_STRING_MATCH_CACHE_HASH_SHIFT = 16
 private const val RAW_PROJECTION_STRING_MATCH_CACHE_CAPACITY = 1 shl 12
+private const val RAW_PROJECTION_DECODE_SLOTS = 1 shl 10
+private const val RAW_PROJECTION_DECODE_HASH_SHIFT = 10
 private const val RAW_PROJECTION_MIN_PROBE_NODES = 64
 private const val RAW_PROJECTION_MAX_PROBE_NODES = 8_192
 private const val RAW_PROJECTION_PROBE_FACTOR = 4
@@ -1841,10 +1845,25 @@ private class RawCallSiteProbe(val nodeIds: IntArray, val stringIds: IntArray?)
 private class RawPredicateOrder(size: Int) {
     private val order = IntArray(size) { it }
 
+    /**
+     * True when some predicate matches its property's string id. Most ids of a bounded probe
+     * were decided by an earlier node, so a matcher's remembered state is read here before its
+     * match method is entered: on the interpreted code a first execution runs, the two calls
+     * that a remembered id would otherwise pay cost as much as the decision itself.
+     */
     fun anyMatches(matchers: Array<BoundedStringMatcher>, propertyIndexes: IntArray, stringIds: IntArray): Boolean {
         for (position in order.indices) {
             val predicate = order[position]
-            if (matchers[predicate].matches(stringIds[propertyIndexes[predicate]])) {
+            val matcher = matchers[predicate]
+            val stringId = stringIds[propertyIndexes[predicate]]
+            val remembered = matcher.rememberedStates
+            val state = if (remembered != null) remembered[stringId] else matcher.state(stringId)
+            val matched = when (state) {
+                RAW_STRING_MATCH -> true
+                RAW_STRING_MISS -> false
+                else -> matcher.matches(stringId)
+            }
+            if (matched) {
                 if (position > 0) {
                     order[position] = order[position - 1]
                     order[position - 1] = predicate
@@ -1853,6 +1872,25 @@ private class RawPredicateOrder(size: Int) {
             }
         }
         return false
+    }
+}
+
+/**
+ * Projected strings of a bounded probe repeat across its rows: the same caller class heads
+ * most rows of a dense term, so each string id is decoded once per projection and served
+ * from a direct-mapped table afterwards.
+ */
+private class RawProjectionDecoder(private val stringTable: StringTable) {
+    private val keys = IntArray(RAW_PROJECTION_DECODE_SLOTS)
+    private val values = arrayOfNulls<String>(RAW_PROJECTION_DECODE_SLOTS)
+
+    fun decode(stringId: Int): String {
+        val slot = (stringId xor (stringId ushr RAW_PROJECTION_DECODE_HASH_SHIFT)) and (RAW_PROJECTION_DECODE_SLOTS - 1)
+        if (keys[slot] == stringId + 1) return checkNotNull(values[slot])
+        val value = stringTable.get(stringId)
+        keys[slot] = stringId + 1
+        values[slot] = value
+        return value
     }
 }
 private const val RAW_STRING_MATCH_STATE_ENTRY_ESTIMATED_BYTES = 96L
@@ -1969,7 +2007,9 @@ private class BoundedStringMatcher(
 ) {
     private val stringCount = stringTable.size()
     private val capacity = cacheCapacity.coerceAtLeast(1).takeHighestOneBit()
-    private val dense = if (stringCount <= capacity) ByteArray(stringCount) else null
+    /** Match states by string id when the table is small enough to remember every id directly. */
+    val rememberedStates = if (stringCount <= capacity) ByteArray(stringCount) else null
+    private val dense = rememberedStates
     private val keys = if (dense == null) IntArray(capacity) else null
     private val values = if (dense == null) ByteArray(capacity) else null
     private val actual = MutableString()
@@ -1992,7 +2032,7 @@ private class BoundedStringMatcher(
         return matched
     }
 
-    private fun state(stringId: Int): Byte {
+    fun state(stringId: Int): Byte {
         dense?.let { return it[stringId] }
         val slot = cacheSlot(stringId)
         return if (keys!![slot] == stringId + 1) values!![slot] else 0

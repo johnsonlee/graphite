@@ -4522,3 +4522,25 @@ distinct-dense first execution CPU `12.3 -> 12.4 ms`, second `5.5 -> 5.4 ms`; `a
 No measurable change; the webgraph tests and detekt pass.
 
 **Conclusion:** reverted; the per-graph fixed cost that remains is not in these steps.
+
+### 2026-09-06 - Attempt 141: Read remembered match states in the probe loop and decode each projected string once
+
+**Hypothesis:** the bounded raw probe of a dense term decides most string ids from states it
+remembered for an earlier node: the four-properties-dense row makes `2,146` matcher calls for
+`681` nodes and `1,840` of them are remembered hits, the `add` term `12,483` calls with `11,218`
+hits. Each hit still enters the matcher's match method and its state method, two interpreted
+calls on the code a first execution runs, and the projection that follows decodes `800` strings
+for `200` rows although the values repeat (`23` distinct caller classes head the dense rows).
+
+**Change:** the predicate order reads a matcher's remembered state array directly and enters the
+match method only for an undecided id; a bounded projection and the DISTINCT raw projection decode
+each string id once through a direct-mapped table of `1,024` slots.
+
+**Evidence (local, 64 fixtures, fresh JVM in benchmark order, five alternating runs, medians):**
+`add` first execution CPU `9.97 -> 9.23 ms`, second `7.80 -> 6.19 ms`; four-properties-dense
+`4.78 -> 4.17 ms`; class-pair-dense `1.22 -> 0.99 ms`; distinct-dense second execution wall
+`7.07 -> 5.58 ms` while its first execution (`11.5 -> 12.0 ms` CPU) and the targeted rows are
+unchanged within noise.
+
+**Conclusion:** keep for exact-head hosted validation; the dense rows' remaining cost is the
+probe's setup and first use (`1.8 ms` of a `3.5 ms` probe) and the node record reads.
