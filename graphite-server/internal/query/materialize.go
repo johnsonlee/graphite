@@ -5,6 +5,13 @@ import "github.com/johnsonlee/graphite/graphite-server/internal/store"
 func (e evaluator) materialize(value any) any {
 	e.check()
 	switch v := value.(type) {
+	case store.Edge, qualifiedEdge:
+		return e.materializeEdge(v)
+	case pathValue:
+		if v.Qualified {
+			return map[string]any{"graphId": v.GraphID, "length": int32(len(v.Edges)), "nodes": e.materialize(v.Nodes), "relationships": e.materialize(v.Edges)}
+		}
+		return e.materialize(pathElements(v))
 	case qualifiedNode:
 		r := e.materialize(v.Node).(map[string]any)
 		r["graphId"] = v.GraphID

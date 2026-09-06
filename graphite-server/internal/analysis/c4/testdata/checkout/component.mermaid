@@ -1,0 +1,8 @@
+graph TD
+    subgraph application["Application Layer"]
+        subgraph container_application_runtime["Checkout Runtime"]
+            component_api([Api])
+            component_service_and_repository([Service and Repository])
+        end
+    end
+    component_api -->|routes to| component_service_and_repository

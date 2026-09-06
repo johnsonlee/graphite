@@ -1,0 +1,14 @@
+{
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "fixture": "JVM v3 tiny correctness fixture, two graph namespaces; no performance use",
+  "completeResponseEquality": true,
+  "normalized": [
+    "builtAt"
+  ],
+  "checks": [
+    "aggregated weights, trimmed/default protocol, sorted/deduplicated details, ignored self edge",
+    "failed unload rolls catalog and topology back",
+    "replacement rebuilds topology"
+  ],
+  "topologyQuery": "UNWIND [{s:'a',t:'z',p:' http ',w:2,o:'GET /z',e:'B'},{s:'a',t:'z',p:'http',w:3,o:'GET /z',e:'A'},{s:'z',t:'a',p:null,w:null,o:null,e:null},{s:'a',t:'a',p:null,w:-1,o:null,e:null}] AS r RETURN r.s AS source, r.t AS target, r.p AS protocol, r.w AS weight, r.o AS operation, r.e AS evidence"
+}

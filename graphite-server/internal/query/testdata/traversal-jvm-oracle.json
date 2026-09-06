@@ -1,0 +1,2340 @@
+{
+  "revision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "oracle": "Main JVM classes via TraversalOracle.java,8 nodes/15 edges persisted correctness fixture, no HTTP or performance measurements",
+  "cases": [
+    {
+      "query": "MATCH (a {id:0})-[r]->(b) RETURN a.id AS a,b.id AS b,type(r) AS type,r.kind AS kind,r.virtual AS virtual,r.dynamic AS dynamic",
+      "cross": false,
+      "columns": [
+        "a",
+        "b",
+        "type",
+        "kind",
+        "virtual",
+        "dynamic"
+      ],
+      "rows": [
+        {
+          "a": 0,
+          "b": 0,
+          "type": "DATAFLOW",
+          "kind": "ASSIGN",
+          "virtual": null,
+          "dynamic": null
+        },
+        {
+          "a": 0,
+          "b": 1,
+          "type": "DATAFLOW",
+          "kind": "ASSIGN",
+          "virtual": null,
+          "dynamic": null
+        },
+        {
+          "a": 0,
+          "b": 2,
+          "type": "CALL",
+          "kind": null,
+          "virtual": true,
+          "dynamic": true
+        }
+      ],
+      "name": "single-outgoing"
+    },
+    {
+      "query": "MATCH (a {id:0})<-[r]-(b) RETURN b.id AS b,type(r) AS type",
+      "cross": false,
+      "columns": [
+        "b",
+        "type"
+      ],
+      "rows": [
+        {
+          "b": 0,
+          "type": "DATAFLOW"
+        },
+        {
+          "b": 2,
+          "type": "DATAFLOW"
+        }
+      ],
+      "name": "single-incoming"
+    },
+    {
+      "query": "MATCH (a {id:0})-[r]-(b) RETURN b.id AS b,type(r) AS type",
+      "cross": false,
+      "columns": [
+        "b",
+        "type"
+      ],
+      "rows": [
+        {
+          "b": 0,
+          "type": "DATAFLOW"
+        },
+        {
+          "b": 1,
+          "type": "DATAFLOW"
+        },
+        {
+          "b": 2,
+          "type": "CALL"
+        },
+        {
+          "b": 0,
+          "type": "DATAFLOW"
+        },
+        {
+          "b": 2,
+          "type": "DATAFLOW"
+        }
+      ],
+      "name": "single-both-self-loop"
+    },
+    {
+      "query": "MATCH (a {id:0})-[r*1]-(b) RETURN b.id AS b,[x IN r | type(x)] AS types",
+      "cross": false,
+      "columns": [
+        "b",
+        "types"
+      ],
+      "rows": [
+        {
+          "b": 0,
+          "types": [
+            "DATAFLOW"
+          ]
+        },
+        {
+          "b": 1,
+          "types": [
+            "DATAFLOW"
+          ]
+        },
+        {
+          "b": 2,
+          "types": [
+            "CALL"
+          ]
+        },
+        {
+          "b": 2,
+          "types": [
+            "DATAFLOW"
+          ]
+        }
+      ],
+      "name": "variable-both-self-loop"
+    },
+    {
+      "query": "MATCH (a {id:0})-[r:DATA_FLOW|CALL]->(b) RETURN b.id AS b,type(r) AS type",
+      "cross": false,
+      "columns": [
+        "b",
+        "type"
+      ],
+      "rows": [
+        {
+          "b": 0,
+          "type": "DATAFLOW"
+        },
+        {
+          "b": 1,
+          "type": "DATAFLOW"
+        },
+        {
+          "b": 2,
+          "type": "CALL"
+        }
+      ],
+      "name": "edge-family-alternatives"
+    },
+    {
+      "query": "MATCH (a {id:0})-[r:CALL {virtual:true,dynamic:true}]->(b) RETURN r,b.id AS b",
+      "cross": false,
+      "columns": [
+        "r",
+        "b"
+      ],
+      "rows": [
+        {
+          "r": {
+            "from": 0,
+            "to": 2,
+            "isVirtual": true,
+            "isDynamic": true
+          },
+          "b": 2
+        }
+      ],
+      "name": "edge-properties"
+    },
+    {
+      "query": "MATCH (a {id:0})-[:EXTENDS]->(b) RETURN b.id AS b",
+      "cross": false,
+      "columns": [
+        "b"
+      ],
+      "rows": [],
+      "name": "unknown-relationship-type"
+    },
+    {
+      "query": "MATCH (a)-[:D_A_T_A_F_L_O_W]->(b) RETURN b",
+      "cross": false,
+      "columns": [
+        "b"
+      ],
+      "rows": [],
+      "name": "malformed-type-alias"
+    },
+    {
+      "query": "MATCH (a)-[r:RESOURCE]->(b) RETURN a.id AS a,b.id AS b,type(r) AS type,r.kind AS kind",
+      "cross": false,
+      "columns": [
+        "a",
+        "b",
+        "type",
+        "kind"
+      ],
+      "rows": [
+        {
+          "a": 3,
+          "b": 4,
+          "type": "RESOURCE_OPEN",
+          "kind": "OPENS"
+        },
+        {
+          "a": 3,
+          "b": 5,
+          "type": "RESOURCE_LOAD",
+          "kind": "LOADS"
+        },
+        {
+          "a": 3,
+          "b": 6,
+          "type": "RESOURCE_BUNDLE_CANDIDATE",
+          "kind": "BUNDLE_CANDIDATE"
+        },
+        {
+          "a": 3,
+          "b": 7,
+          "type": "RESOURCE_LOOKUP",
+          "kind": "LOOKUP"
+        },
+        {
+          "a": 4,
+          "b": 5,
+          "type": "RESOURCE_KEYS",
+          "kind": "ENUMERATES"
+        }
+      ],
+      "name": "resource-types"
+    },
+    {
+      "query": "MATCH (a)-[r:RESOURCE_LOAD]->(b) RETURN a.id AS a,b.id AS b,type(r) AS type",
+      "cross": false,
+      "columns": [
+        "a",
+        "b",
+        "type"
+      ],
+      "rows": [
+        {
+          "a": 3,
+          "b": 5,
+          "type": "RESOURCE_LOAD"
+        }
+      ],
+      "name": "resource-exact-alias"
+    },
+    {
+      "query": "MATCH (a)-[r:CONTROL_FLOW|TYPE]->(b) RETURN r",
+      "cross": false,
+      "columns": [
+        "r"
+      ],
+      "rows": [
+        {
+          "r": {
+            "from": 1,
+            "to": 3,
+            "kind": "EXTENDS"
+          }
+        },
+        {
+          "r": {
+            "from": 2,
+            "to": 3,
+            "kind": "BRANCH_TRUE",
+            "comparison": {
+              "operator": "NE",
+              "comparandNodeId": 7
+            }
+          }
+        },
+        {
+          "r": {
+            "from": 6,
+            "to": 7,
+            "kind": "IMPLEMENTS"
+          }
+        }
+      ],
+      "name": "edge-raw-materialization"
+    },
+    {
+      "query": "MATCH p=(a {id:0})-[r:CALL]->(b) RETURN p,p.length AS length,nodes(p) AS nodes,relationships(p) AS relationships",
+      "cross": false,
+      "columns": [
+        "p",
+        "length",
+        "nodes",
+        "relationships"
+      ],
+      "rows": [
+        {
+          "p": [
+            {
+              "id": 0,
+              "type": "IntConstant",
+              "value": 100
+            },
+            {
+              "from": 0,
+              "to": 2,
+              "isVirtual": true,
+              "isDynamic": true
+            },
+            {
+              "id": 2,
+              "type": "IntConstant",
+              "value": 102
+            }
+          ],
+          "length": 1,
+          "nodes": [
+            {
+              "id": 0,
+              "type": "IntConstant",
+              "value": 100
+            },
+            {
+              "id": 2,
+              "type": "IntConstant",
+              "value": 102
+            }
+          ],
+          "relationships": [
+            {
+              "from": 0,
+              "to": 2,
+              "isVirtual": true,
+              "isDynamic": true
+            }
+          ]
+        }
+      ],
+      "name": "path-single"
+    },
+    {
+      "query": "MATCH p=({id:0})-[:CALL]->() RETURN p,size(p) AS size",
+      "cross": false,
+      "columns": [
+        "p",
+        "size"
+      ],
+      "rows": [
+        {
+          "p": [
+            {
+              "id": 0,
+              "type": "IntConstant",
+              "value": 100
+            },
+            {
+              "from": 0,
+              "to": 2,
+              "isVirtual": true,
+              "isDynamic": true
+            },
+            {
+              "id": 2,
+              "type": "IntConstant",
+              "value": 102
+            }
+          ],
+          "size": 1
+        }
+      ],
+      "name": "path-anonymous"
+    },
+    {
+      "query": "MATCH p=(a {id:0}) RETURN p,length(p) AS length",
+      "cross": false,
+      "columns": [
+        "p",
+        "length"
+      ],
+      "rows": [
+        {
+          "p": [
+            {
+              "id": 0,
+              "type": "IntConstant",
+              "value": 100
+            }
+          ],
+          "length": 0
+        }
+      ],
+      "name": "path-node-only"
+    },
+    {
+      "query": "MATCH p=(a {id:0})<-[:DATAFLOW]-(b {id:2}) RETURN p,[n IN nodes(p) | n.id] AS ids",
+      "cross": false,
+      "columns": [
+        "p",
+        "ids"
+      ],
+      "rows": [
+        {
+          "p": [
+            {
+              "id": 0,
+              "type": "IntConstant",
+              "value": 100
+            },
+            {
+              "from": 2,
+              "to": 0,
+              "kind": "RETURN_VALUE"
+            },
+            {
+              "id": 2,
+              "type": "IntConstant",
+              "value": 102
+            }
+          ],
+          "ids": [
+            0,
+            2
+          ]
+        }
+      ],
+      "name": "path-incoming"
+    },
+    {
+      "query": "MATCH p=(a {id:0})-[r:CALL]->(b)-[s:CONTROL_FLOW]->(c) RETURN p,[n IN nodes(p) | n.id] AS ids",
+      "cross": false,
+      "columns": [
+        "p",
+        "ids"
+      ],
+      "rows": [
+        {
+          "p": [
+            {
+              "id": 0,
+              "type": "IntConstant",
+              "value": 100
+            },
+            {
+              "from": 0,
+              "to": 2,
+              "isVirtual": true,
+              "isDynamic": true
+            },
+            {
+              "id": 2,
+              "type": "IntConstant",
+              "value": 102
+            },
+            {
+              "from": 2,
+              "to": 3,
+              "kind": "BRANCH_TRUE",
+              "comparison": {
+                "operator": "NE",
+                "comparandNodeId": 7
+              }
+            },
+            {
+              "id": 3,
+              "type": "IntConstant",
+              "value": 103
+            }
+          ],
+          "ids": [
+            0,
+            2,
+            3
+          ]
+        }
+      ],
+      "name": "path-two-segments"
+    },
+    {
+      "query": "MATCH p=(a {id:0})-[r:DATAFLOW*0]->(b) RETURN b.id AS b,r,p",
+      "cross": false,
+      "columns": [
+        "b",
+        "r",
+        "p"
+      ],
+      "rows": [
+        {
+          "b": 0,
+          "r": [],
+          "p": [
+            {
+              "id": 0,
+              "type": "IntConstant",
+              "value": 100
+            }
+          ]
+        }
+      ],
+      "name": "variable-zero"
+    },
+    {
+      "query": "MATCH p=(a {id:0})-[r:DATAFLOW*]->(b) RETURN b.id AS b,size(r) AS depth,[n IN nodes(p) | n.id] AS ids",
+      "cross": false,
+      "columns": [
+        "b",
+        "depth",
+        "ids"
+      ],
+      "rows": [
+        {
+          "b": 0,
+          "depth": 1,
+          "ids": [
+            0,
+            0
+          ]
+        },
+        {
+          "b": 1,
+          "depth": 2,
+          "ids": [
+            0,
+            0,
+            1
+          ]
+        },
+        {
+          "b": 2,
+          "depth": 3,
+          "ids": [
+            0,
+            0,
+            1,
+            2
+          ]
+        },
+        {
+          "b": 0,
+          "depth": 4,
+          "ids": [
+            0,
+            0,
+            1,
+            2,
+            0
+          ]
+        },
+        {
+          "b": 1,
+          "depth": 1,
+          "ids": [
+            0,
+            1
+          ]
+        },
+        {
+          "b": 2,
+          "depth": 2,
+          "ids": [
+            0,
+            1,
+            2
+          ]
+        },
+        {
+          "b": 0,
+          "depth": 3,
+          "ids": [
+            0,
+            1,
+            2,
+            0
+          ]
+        },
+        {
+          "b": 0,
+          "depth": 4,
+          "ids": [
+            0,
+            1,
+            2,
+            0,
+            0
+          ]
+        }
+      ],
+      "name": "variable-default-depth-first"
+    },
+    {
+      "query": "MATCH (a {id:0})-[r:DATAFLOW*2..3]->(b) RETURN b.id AS b,size(r) AS depth",
+      "cross": false,
+      "columns": [
+        "b",
+        "depth"
+      ],
+      "rows": [
+        {
+          "b": 1,
+          "depth": 2
+        },
+        {
+          "b": 2,
+          "depth": 3
+        },
+        {
+          "b": 2,
+          "depth": 2
+        },
+        {
+          "b": 0,
+          "depth": 3
+        }
+      ],
+      "name": "variable-bounded"
+    },
+    {
+      "query": "MATCH (a {id:0})-[r:DATAFLOW*..2]->(b) RETURN b.id AS b,size(r) AS depth",
+      "cross": false,
+      "columns": [
+        "b",
+        "depth"
+      ],
+      "rows": [
+        {
+          "b": 0,
+          "depth": 1
+        },
+        {
+          "b": 1,
+          "depth": 2
+        },
+        {
+          "b": 1,
+          "depth": 1
+        },
+        {
+          "b": 2,
+          "depth": 2
+        }
+      ],
+      "name": "variable-upper-only"
+    },
+    {
+      "query": "MATCH (a {id:0})-[r:DATAFLOW*3..1]->(b) RETURN b",
+      "cross": false,
+      "columns": [
+        "b"
+      ],
+      "rows": [],
+      "name": "variable-invalid-range"
+    },
+    {
+      "query": "MATCH (a {id:0})-[r:DATAFLOW*0..3 {kind:\"ASSIGN\"}]->(b) RETURN b.id AS b,size(r) AS depth",
+      "cross": false,
+      "columns": [
+        "b",
+        "depth"
+      ],
+      "rows": [
+        {
+          "b": 0,
+          "depth": 0
+        },
+        {
+          "b": 0,
+          "depth": 1
+        },
+        {
+          "b": 1,
+          "depth": 2
+        },
+        {
+          "b": 1,
+          "depth": 1
+        }
+      ],
+      "name": "variable-edge-filter"
+    },
+    {
+      "query": "MATCH (a {id:0})-[r:CALL]->(b), (a)-[s:CALL]->(c) RETURN b.id AS b,c.id AS c",
+      "cross": false,
+      "columns": [
+        "b",
+        "c"
+      ],
+      "rows": [],
+      "name": "same-match-no-edge-reuse"
+    },
+    {
+      "query": "MATCH (a {id:0})-[r:CALL]->(b) MATCH (a)-[r]->(c) RETURN b.id AS b,c.id AS c",
+      "cross": false,
+      "columns": [
+        "b",
+        "c"
+      ],
+      "rows": [
+        {
+          "b": 2,
+          "c": 2
+        }
+      ],
+      "name": "separate-match-edge-reuse"
+    },
+    {
+      "query": "MATCH (a {id:0})-[r:CALL]->(b) MATCH (x)-[s]-(a)-[r]->(b) RETURN x.id AS x,type(s) AS type",
+      "cross": false,
+      "columns": [
+        "x",
+        "type"
+      ],
+      "rows": [
+        {
+          "x": 0,
+          "type": "DATAFLOW"
+        },
+        {
+          "x": 0,
+          "type": "DATAFLOW"
+        },
+        {
+          "x": 1,
+          "type": "DATAFLOW"
+        },
+        {
+          "x": 2,
+          "type": "DATAFLOW"
+        }
+      ],
+      "name": "reserved-prebound-edge"
+    },
+    {
+      "query": "MATCH (a {id:0})-[r:DATAFLOW*1..2]->(b) MATCH (a)-[r:DATAFLOW*1..2]->(c) RETURN b.id AS b,c.id AS c,size(r) AS depth",
+      "cross": false,
+      "columns": [
+        "b",
+        "c",
+        "depth"
+      ],
+      "rows": [
+        {
+          "b": 0,
+          "c": 0,
+          "depth": 1
+        },
+        {
+          "b": 1,
+          "c": 1,
+          "depth": 2
+        },
+        {
+          "b": 1,
+          "c": 1,
+          "depth": 1
+        },
+        {
+          "b": 2,
+          "c": 2,
+          "depth": 2
+        }
+      ],
+      "name": "variable-bound-list"
+    },
+    {
+      "query": "MATCH (a {id:0})-[r:CALL]->(b) MATCH (a)-[r*1]->(c) RETURN c",
+      "cross": false,
+      "columns": [
+        "c"
+      ],
+      "rows": [],
+      "name": "variable-binding-scalar-mismatch"
+    },
+    {
+      "query": "MATCH (a {id:0}) OPTIONAL MATCH p=(a)-[r:CALL]->(b) WHERE b.id=999 RETURN a.id AS a,b,r,p",
+      "cross": false,
+      "columns": [
+        "a",
+        "b",
+        "r",
+        "p"
+      ],
+      "rows": [
+        {
+          "a": 0,
+          "b": null,
+          "r": null,
+          "p": null
+        }
+      ],
+      "name": "optional-predicate-null-fill"
+    },
+    {
+      "query": "MATCH (a {id:0}) OPTIONAL MATCH p=(a)-[r:CALL]->(b)-[s:RESOURCE]->(c) RETURN a.id AS a,b,c,r,s,p",
+      "cross": false,
+      "columns": [
+        "a",
+        "b",
+        "c",
+        "r",
+        "s",
+        "p"
+      ],
+      "rows": [
+        {
+          "a": 0,
+          "b": null,
+          "c": null,
+          "r": null,
+          "s": null,
+          "p": null
+        }
+      ],
+      "name": "optional-chain-null-fill"
+    },
+    {
+      "query": "OPTIONAL MATCH (a {id:999}) OPTIONAL MATCH (a)-[r]->(b) RETURN a,b,r",
+      "cross": false,
+      "columns": [
+        "a",
+        "b",
+        "r"
+      ],
+      "rows": [
+        {
+          "a": null,
+          "b": null,
+          "r": null
+        }
+      ],
+      "name": "optional-bound-null"
+    },
+    {
+      "query": "MATCH p=(a {id:0})-[r:DATAFLOW*1..3]->(a) RETURN size(r) AS depth,[n IN nodes(p) | n.id] AS ids",
+      "cross": false,
+      "columns": [
+        "depth",
+        "ids"
+      ],
+      "rows": [
+        {
+          "depth": 1,
+          "ids": [
+            0,
+            0
+          ]
+        },
+        {
+          "depth": 3,
+          "ids": [
+            0,
+            1,
+            2,
+            0
+          ]
+        }
+      ],
+      "name": "target-repeated-node"
+    },
+    {
+      "query": "MATCH (a {id:0})-[r]->(b:StringConstant) RETURN b",
+      "cross": false,
+      "columns": [
+        "b"
+      ],
+      "rows": [],
+      "name": "target-type-filter"
+    },
+    {
+      "query": "MATCH (a {id:0})-[r:Missing*0]->(b) RETURN b",
+      "cross": false,
+      "columns": [
+        "b"
+      ],
+      "rows": [],
+      "name": "unknown-zero-type"
+    },
+    {
+      "query": "MATCH (a {id:a.id}) RETURN a.id AS id",
+      "cross": false,
+      "columns": [
+        "id"
+      ],
+      "rows": [],
+      "name": "self-inline-binding"
+    },
+    {
+      "query": "MATCH p=(a {id:0})-[r:CALL]->(b) RETURN graphId(a) AS graph,graphId(r) AS edgeGraph,graphId(p) AS pathGraph,p,r",
+      "cross": true,
+      "columns": [
+        "graph",
+        "edgeGraph",
+        "pathGraph",
+        "p",
+        "r"
+      ],
+      "rows": [
+        {
+          "graph": "orders",
+          "edgeGraph": "orders",
+          "pathGraph": "orders",
+          "p": {
+            "graphId": "orders",
+            "length": 1,
+            "nodes": [
+              {
+                "id": 0,
+                "type": "IntConstant",
+                "value": 100,
+                "graphId": "orders",
+                "elementId": "orders:0",
+                "qualifiedId": "orders:0"
+              },
+              {
+                "id": 2,
+                "type": "IntConstant",
+                "value": 102,
+                "graphId": "orders",
+                "elementId": "orders:2",
+                "qualifiedId": "orders:2"
+              }
+            ],
+            "relationships": [
+              {
+                "graphId": "orders",
+                "from": 0,
+                "to": 2,
+                "fromElementId": "orders:0",
+                "toElementId": "orders:2",
+                "type": "CALL",
+                "virtual": true,
+                "dynamic": true
+              }
+            ]
+          },
+          "r": {
+            "graphId": "orders",
+            "from": 0,
+            "to": 2,
+            "fromElementId": "orders:0",
+            "toElementId": "orders:2",
+            "type": "CALL",
+            "virtual": true,
+            "dynamic": true
+          },
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "graph": "billing",
+          "edgeGraph": "billing",
+          "pathGraph": "billing",
+          "p": {
+            "graphId": "billing",
+            "length": 1,
+            "nodes": [
+              {
+                "id": 0,
+                "type": "IntConstant",
+                "value": 100,
+                "graphId": "billing",
+                "elementId": "billing:0",
+                "qualifiedId": "billing:0"
+              },
+              {
+                "id": 2,
+                "type": "IntConstant",
+                "value": 102,
+                "graphId": "billing",
+                "elementId": "billing:2",
+                "qualifiedId": "billing:2"
+              }
+            ],
+            "relationships": [
+              {
+                "graphId": "billing",
+                "from": 0,
+                "to": 2,
+                "fromElementId": "billing:0",
+                "toElementId": "billing:2",
+                "type": "CALL",
+                "virtual": true,
+                "dynamic": true
+              }
+            ]
+          },
+          "r": {
+            "graphId": "billing",
+            "from": 0,
+            "to": 2,
+            "fromElementId": "billing:0",
+            "toElementId": "billing:2",
+            "type": "CALL",
+            "virtual": true,
+            "dynamic": true
+          },
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        }
+      ],
+      "name": "cross-qualified-path"
+    },
+    {
+      "query": "MATCH ({id:0})-[:CALL]->() RETURN 1 AS value",
+      "cross": true,
+      "columns": [
+        "value"
+      ],
+      "rows": [
+        {
+          "value": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "value": 1,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ],
+      "name": "cross-anonymous-provenance"
+    },
+    {
+      "query": "MATCH ({id:0})-[r:CALL]->() RETURN graphId(r) AS graph",
+      "cross": true,
+      "columns": [
+        "graph"
+      ],
+      "rows": [
+        {
+          "graph": "orders",
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "graph": "billing",
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        }
+      ],
+      "name": "cross-relationship-only-provenance"
+    },
+    {
+      "query": "MATCH (a {id:0,graphId:'orders'}),(b {id:2,graphId:'billing'}) MATCH (a)-[r:CALL]->(b) RETURN r",
+      "cross": true,
+      "columns": [
+        "r"
+      ],
+      "rows": [],
+      "name": "cross-bound-target-stays-source"
+    },
+    {
+      "query": "MATCH (a {id:0,graphId:'orders'}) OPTIONAL MATCH p=(a)-[r:Missing]->(b) RETURN a.id AS a,r,p,b",
+      "cross": true,
+      "columns": [
+        "a",
+        "r",
+        "p",
+        "b"
+      ],
+      "rows": [
+        {
+          "a": 0,
+          "r": null,
+          "p": null,
+          "b": null,
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        }
+      ],
+      "name": "cross-optional-provenance"
+    },
+    {
+      "query": "MATCH p=({id:0})-[r*0]->() RETURN graphId(p) AS graph,graphId(r) AS empty,r,p",
+      "cross": true,
+      "columns": [
+        "graph",
+        "empty",
+        "r",
+        "p"
+      ],
+      "rows": [
+        {
+          "graph": "orders",
+          "empty": null,
+          "r": [],
+          "p": {
+            "graphId": "orders",
+            "length": 0,
+            "nodes": [
+              {
+                "id": 0,
+                "type": "IntConstant",
+                "value": 100,
+                "graphId": "orders",
+                "elementId": "orders:0",
+                "qualifiedId": "orders:0"
+              }
+            ],
+            "relationships": []
+          },
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "graph": "billing",
+          "empty": null,
+          "r": [],
+          "p": {
+            "graphId": "billing",
+            "length": 0,
+            "nodes": [
+              {
+                "id": 0,
+                "type": "IntConstant",
+                "value": 100,
+                "graphId": "billing",
+                "elementId": "billing:0",
+                "qualifiedId": "billing:0"
+              }
+            ],
+            "relationships": []
+          },
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        }
+      ],
+      "name": "cross-zero-path"
+    },
+    {
+      "query": "MATCH ({id:0})-[r*0]->() RETURN r",
+      "cross": true,
+      "columns": [
+        "r"
+      ],
+      "rows": [
+        {
+          "r": [],
+          "$metadata": {
+            "graphIds": []
+          }
+        },
+        {
+          "r": [],
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ],
+      "name": "cross-empty-list-provenance"
+    },
+    {
+      "query": "MATCH (a)-[r]->(b) RETURN a.id AS a,b.id AS b,type(r) AS type ORDER BY r DESC",
+      "cross": false,
+      "columns": [
+        "a",
+        "b",
+        "type"
+      ],
+      "rows": [
+        {
+          "a": 7,
+          "b": 7,
+          "type": "CALL"
+        },
+        {
+          "a": 6,
+          "b": 7,
+          "type": "TYPE"
+        },
+        {
+          "a": 5,
+          "b": 3,
+          "type": "DATAFLOW"
+        },
+        {
+          "a": 4,
+          "b": 5,
+          "type": "RESOURCE_KEYS"
+        },
+        {
+          "a": 3,
+          "b": 7,
+          "type": "RESOURCE_LOOKUP"
+        },
+        {
+          "a": 3,
+          "b": 6,
+          "type": "RESOURCE_BUNDLE_CANDIDATE"
+        },
+        {
+          "a": 3,
+          "b": 5,
+          "type": "RESOURCE_LOAD"
+        },
+        {
+          "a": 3,
+          "b": 4,
+          "type": "RESOURCE_OPEN"
+        },
+        {
+          "a": 2,
+          "b": 3,
+          "type": "CONTROL_FLOW"
+        },
+        {
+          "a": 2,
+          "b": 0,
+          "type": "DATAFLOW"
+        },
+        {
+          "a": 1,
+          "b": 3,
+          "type": "TYPE"
+        },
+        {
+          "a": 1,
+          "b": 2,
+          "type": "DATAFLOW"
+        },
+        {
+          "a": 0,
+          "b": 2,
+          "type": "CALL"
+        },
+        {
+          "a": 0,
+          "b": 1,
+          "type": "DATAFLOW"
+        },
+        {
+          "a": 0,
+          "b": 0,
+          "type": "DATAFLOW"
+        }
+      ],
+      "name": "relationship-sort"
+    },
+    {
+      "query": "MATCH p=(a {id:0})-[r:DATAFLOW*1..3]->(b) RETURN [n IN nodes(p)|n.id] AS ids ORDER BY p",
+      "cross": false,
+      "columns": [
+        "ids"
+      ],
+      "rows": [
+        {
+          "ids": [
+            0,
+            0
+          ]
+        },
+        {
+          "ids": [
+            0,
+            0,
+            1
+          ]
+        },
+        {
+          "ids": [
+            0,
+            0,
+            1,
+            2
+          ]
+        },
+        {
+          "ids": [
+            0,
+            1
+          ]
+        },
+        {
+          "ids": [
+            0,
+            1,
+            2
+          ]
+        },
+        {
+          "ids": [
+            0,
+            1,
+            2,
+            0
+          ]
+        }
+      ],
+      "name": "path-sort"
+    },
+    {
+      "query": "MATCH (a {id:0})-[r]-(b) RETURN DISTINCT r",
+      "cross": false,
+      "columns": [
+        "r"
+      ],
+      "rows": [
+        {
+          "r": {
+            "from": 0,
+            "to": 0,
+            "kind": "ASSIGN"
+          }
+        },
+        {
+          "r": {
+            "from": 0,
+            "to": 1,
+            "kind": "ASSIGN"
+          }
+        },
+        {
+          "r": {
+            "from": 0,
+            "to": 2,
+            "isVirtual": true,
+            "isDynamic": true
+          }
+        },
+        {
+          "r": {
+            "from": 2,
+            "to": 0,
+            "kind": "RETURN_VALUE"
+          }
+        }
+      ],
+      "name": "relationship-distinct"
+    },
+    {
+      "query": "MATCH p=(a {id:0})-[r]-(b) RETURN DISTINCT p",
+      "cross": false,
+      "columns": [
+        "p"
+      ],
+      "rows": [
+        {
+          "p": [
+            {
+              "id": 0,
+              "type": "IntConstant",
+              "value": 100
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "ASSIGN"
+            },
+            {
+              "id": 0,
+              "type": "IntConstant",
+              "value": 100
+            }
+          ]
+        },
+        {
+          "p": [
+            {
+              "id": 0,
+              "type": "IntConstant",
+              "value": 100
+            },
+            {
+              "from": 0,
+              "to": 1,
+              "kind": "ASSIGN"
+            },
+            {
+              "id": 1,
+              "type": "IntConstant",
+              "value": 101
+            }
+          ]
+        },
+        {
+          "p": [
+            {
+              "id": 0,
+              "type": "IntConstant",
+              "value": 100
+            },
+            {
+              "from": 0,
+              "to": 2,
+              "isVirtual": true,
+              "isDynamic": true
+            },
+            {
+              "id": 2,
+              "type": "IntConstant",
+              "value": 102
+            }
+          ]
+        },
+        {
+          "p": [
+            {
+              "id": 0,
+              "type": "IntConstant",
+              "value": 100
+            },
+            {
+              "from": 2,
+              "to": 0,
+              "kind": "RETURN_VALUE"
+            },
+            {
+              "id": 2,
+              "type": "IntConstant",
+              "value": 102
+            }
+          ]
+        }
+      ],
+      "name": "path-distinct"
+    },
+    {
+      "query": "MATCH (a {id:0})-[r]-(b) RETURN r,count(*) AS count ORDER BY r",
+      "cross": false,
+      "columns": [
+        "r",
+        "count"
+      ],
+      "rows": [
+        {
+          "r": {
+            "from": 0,
+            "to": 0,
+            "kind": "ASSIGN"
+          },
+          "count": 2
+        },
+        {
+          "r": {
+            "from": 0,
+            "to": 1,
+            "kind": "ASSIGN"
+          },
+          "count": 1
+        },
+        {
+          "r": {
+            "from": 0,
+            "to": 2,
+            "isVirtual": true,
+            "isDynamic": true
+          },
+          "count": 1
+        },
+        {
+          "r": {
+            "from": 2,
+            "to": 0,
+            "kind": "RETURN_VALUE"
+          },
+          "count": 1
+        }
+      ],
+      "name": "relationship-group"
+    },
+    {
+      "query": "MATCH p=(a {id:0})-[r]-(b) RETURN p,count(*) AS count ORDER BY p",
+      "cross": false,
+      "columns": [
+        "p",
+        "count"
+      ],
+      "rows": [
+        {
+          "p": [
+            {
+              "id": 0,
+              "type": "IntConstant",
+              "value": 100
+            },
+            {
+              "from": 0,
+              "to": 0,
+              "kind": "ASSIGN"
+            },
+            {
+              "id": 0,
+              "type": "IntConstant",
+              "value": 100
+            }
+          ],
+          "count": 2
+        },
+        {
+          "p": [
+            {
+              "id": 0,
+              "type": "IntConstant",
+              "value": 100
+            },
+            {
+              "from": 0,
+              "to": 1,
+              "kind": "ASSIGN"
+            },
+            {
+              "id": 1,
+              "type": "IntConstant",
+              "value": 101
+            }
+          ],
+          "count": 1
+        },
+        {
+          "p": [
+            {
+              "id": 0,
+              "type": "IntConstant",
+              "value": 100
+            },
+            {
+              "from": 0,
+              "to": 2,
+              "isVirtual": true,
+              "isDynamic": true
+            },
+            {
+              "id": 2,
+              "type": "IntConstant",
+              "value": 102
+            }
+          ],
+          "count": 1
+        },
+        {
+          "p": [
+            {
+              "id": 0,
+              "type": "IntConstant",
+              "value": 100
+            },
+            {
+              "from": 2,
+              "to": 0,
+              "kind": "RETURN_VALUE"
+            },
+            {
+              "id": 2,
+              "type": "IntConstant",
+              "value": 102
+            }
+          ],
+          "count": 1
+        }
+      ],
+      "name": "path-group"
+    },
+    {
+      "query": "MATCH (a {id:0})-[r]->(b),(c {id:1})-[s]->(d) RETURN b.id AS b,d.id AS d,r<s AS less,r=r AS same",
+      "cross": false,
+      "columns": [
+        "b",
+        "d",
+        "less",
+        "same"
+      ],
+      "rows": [
+        {
+          "b": 0,
+          "d": 2,
+          "less": true,
+          "same": true
+        },
+        {
+          "b": 0,
+          "d": 3,
+          "less": true,
+          "same": true
+        },
+        {
+          "b": 1,
+          "d": 2,
+          "less": true,
+          "same": true
+        },
+        {
+          "b": 1,
+          "d": 3,
+          "less": true,
+          "same": true
+        },
+        {
+          "b": 2,
+          "d": 2,
+          "less": true,
+          "same": true
+        },
+        {
+          "b": 2,
+          "d": 3,
+          "less": true,
+          "same": true
+        }
+      ],
+      "name": "relationship-predicate"
+    },
+    {
+      "query": "MATCH (a {id:2})-[r]->(b) RETURN toString(r) AS string",
+      "cross": false,
+      "columns": [
+        "string"
+      ],
+      "rows": [
+        {
+          "string": "DataFlowEdge(from=node#2, to=node#0, kind=RETURN_VALUE)"
+        },
+        {
+          "string": "ControlFlowEdge(from=node#2, to=node#3, kind=BRANCH_TRUE, comparison=BranchComparison(operator=NE, comparandNodeId=node#7))"
+        }
+      ],
+      "name": "relationship-raw-string"
+    },
+    {
+      "query": "MATCH (a)-[r {type:'CALL'}]->(b) RETURN r",
+      "cross": false,
+      "columns": [
+        "r"
+      ],
+      "rows": [],
+      "name": "relationship-inline-type-unsupported"
+    },
+    {
+      "query": "MATCH (a {id:0})-[r]->(b {id:b.id}) RETURN b",
+      "cross": false,
+      "columns": [
+        "b"
+      ],
+      "rows": [],
+      "name": "target-inline-new-binding"
+    },
+    {
+      "query": "MATCH p=(a {id:0})-[r:CALL]->(b) RETURN nodes([a,r,b,1,null]) AS nodes,relationships([a,r,b,1,null]) AS rels,nodes(r) AS invalid,relationships(a) AS invalid2",
+      "cross": false,
+      "columns": [
+        "nodes",
+        "rels",
+        "invalid",
+        "invalid2"
+      ],
+      "rows": [
+        {
+          "nodes": [
+            {
+              "id": 0,
+              "type": "IntConstant",
+              "value": 100
+            },
+            {
+              "id": 2,
+              "type": "IntConstant",
+              "value": 102
+            }
+          ],
+          "rels": [
+            {
+              "from": 0,
+              "to": 2,
+              "isVirtual": true,
+              "isDynamic": true
+            }
+          ],
+          "invalid": null,
+          "invalid2": null
+        }
+      ],
+      "name": "list-path-functions"
+    },
+    {
+      "query": "MATCH p=(a {id:0})-[r:CALL]->(b) MATCH p=(b)-[s:CONTROL_FLOW]->(c) RETURN [n IN nodes(p)|n.id] AS ids",
+      "cross": false,
+      "columns": [
+        "ids"
+      ],
+      "rows": [
+        {
+          "ids": [
+            2,
+            3
+          ]
+        }
+      ],
+      "name": "path-rebind"
+    },
+    {
+      "query": "MATCH p=(a {id:0})<-[r:DATAFLOW*0..3]-(b) RETURN [n IN nodes(p)|n.id] AS ids",
+      "cross": false,
+      "columns": [
+        "ids"
+      ],
+      "rows": [
+        {
+          "ids": [
+            0
+          ]
+        },
+        {
+          "ids": [
+            0,
+            0
+          ]
+        },
+        {
+          "ids": [
+            0,
+            0,
+            2
+          ]
+        },
+        {
+          "ids": [
+            0,
+            0,
+            2,
+            1
+          ]
+        },
+        {
+          "ids": [
+            0,
+            2
+          ]
+        },
+        {
+          "ids": [
+            0,
+            2,
+            1
+          ]
+        },
+        {
+          "ids": [
+            0,
+            2,
+            1,
+            0
+          ]
+        }
+      ],
+      "name": "variable-incoming"
+    },
+    {
+      "query": "MATCH p=(a {id:0})-[r:DATAFLOW*0..3]-(b) RETURN [n IN nodes(p)|n.id] AS ids",
+      "cross": false,
+      "columns": [
+        "ids"
+      ],
+      "rows": [
+        {
+          "ids": [
+            0
+          ]
+        },
+        {
+          "ids": [
+            0,
+            0
+          ]
+        },
+        {
+          "ids": [
+            0,
+            0,
+            1
+          ]
+        },
+        {
+          "ids": [
+            0,
+            0,
+            1,
+            2
+          ]
+        },
+        {
+          "ids": [
+            0,
+            0,
+            2
+          ]
+        },
+        {
+          "ids": [
+            0,
+            0,
+            2,
+            1
+          ]
+        },
+        {
+          "ids": [
+            0,
+            1
+          ]
+        },
+        {
+          "ids": [
+            0,
+            1,
+            2
+          ]
+        },
+        {
+          "ids": [
+            0,
+            1,
+            2,
+            0
+          ]
+        },
+        {
+          "ids": [
+            0,
+            2
+          ]
+        },
+        {
+          "ids": [
+            0,
+            2,
+            1
+          ]
+        },
+        {
+          "ids": [
+            0,
+            2,
+            1,
+            0
+          ]
+        }
+      ],
+      "name": "variable-both"
+    },
+    {
+      "query": "MATCH ({id:0})-[:CALL]->()-[:CONTROL_FLOW]->(b) RETURN b.id AS b",
+      "cross": false,
+      "columns": [
+        "b"
+      ],
+      "rows": [
+        {
+          "b": 3
+        }
+      ],
+      "name": "anonymous-middle"
+    },
+    {
+      "query": "MATCH (a {id:0})-[r:DATAFLOW*1]->(b),(a)-[s:DATAFLOW*1]->(c) RETURN b.id AS b,c.id AS c",
+      "cross": false,
+      "columns": [
+        "b",
+        "c"
+      ],
+      "rows": [
+        {
+          "b": 0,
+          "c": 1
+        },
+        {
+          "b": 1,
+          "c": 0
+        }
+      ],
+      "name": "multiple-comma-variable-no-reuse"
+    },
+    {
+      "query": "MATCH (a {id:0})-[r]->(b) RETURN graphId(r) AS graph,b.id AS b ORDER BY r",
+      "cross": true,
+      "columns": [
+        "graph",
+        "b"
+      ],
+      "rows": [
+        {
+          "graph": "billing",
+          "b": 0,
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "graph": "billing",
+          "b": 1,
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "graph": "billing",
+          "b": 2,
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "graph": "orders",
+          "b": 0,
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "graph": "orders",
+          "b": 1,
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "graph": "orders",
+          "b": 2,
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        }
+      ],
+      "name": "cross-relationship-sort"
+    },
+    {
+      "query": "MATCH (a {id:0})-[r:CALL]->(b),(c {id:1})-[s:TYPE]->(d) RETURN graphId(r) AS rg,graphId(s) AS sg,r<s AS less",
+      "cross": true,
+      "columns": [
+        "rg",
+        "sg",
+        "less"
+      ],
+      "rows": [
+        {
+          "rg": "orders",
+          "sg": "orders",
+          "less": true,
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "rg": "orders",
+          "sg": "billing",
+          "less": false,
+          "$metadata": {
+            "graphIds": [
+              "billing",
+              "orders"
+            ]
+          }
+        },
+        {
+          "rg": "billing",
+          "sg": "orders",
+          "less": true,
+          "$metadata": {
+            "graphIds": [
+              "billing",
+              "orders"
+            ]
+          }
+        },
+        {
+          "rg": "billing",
+          "sg": "billing",
+          "less": true,
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        }
+      ],
+      "name": "cross-relationship-predicate"
+    },
+    {
+      "query": "MATCH ({id:2})-[r:CONTROL_FLOW]->() RETURN r,r.graphId AS graph,r.type AS type,r.kind AS kind,r.from AS missing,id(r) AS missingId",
+      "cross": true,
+      "columns": [
+        "r",
+        "graph",
+        "type",
+        "kind",
+        "missing",
+        "missingId"
+      ],
+      "rows": [
+        {
+          "r": {
+            "graphId": "orders",
+            "from": 2,
+            "to": 3,
+            "fromElementId": "orders:2",
+            "toElementId": "orders:3",
+            "type": "CONTROL_FLOW",
+            "kind": "BRANCH_TRUE"
+          },
+          "graph": "orders",
+          "type": "CONTROL_FLOW",
+          "kind": "BRANCH_TRUE",
+          "missing": null,
+          "missingId": null,
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "r": {
+            "graphId": "billing",
+            "from": 2,
+            "to": 3,
+            "fromElementId": "billing:2",
+            "toElementId": "billing:3",
+            "type": "CONTROL_FLOW",
+            "kind": "BRANCH_TRUE"
+          },
+          "graph": "billing",
+          "type": "CONTROL_FLOW",
+          "kind": "BRANCH_TRUE",
+          "missing": null,
+          "missingId": null,
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        }
+      ],
+      "name": "cross-relationship-properties"
+    },
+    {
+      "query": "MATCH p=({id:0})-[r:DATAFLOW*0..2]->() RETURN p.graphId AS graph,[n IN nodes(p)|n.id] AS ids ORDER BY p",
+      "cross": true,
+      "columns": [
+        "graph",
+        "ids"
+      ],
+      "rows": [
+        {
+          "graph": "billing",
+          "ids": [
+            0
+          ],
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "graph": "billing",
+          "ids": [
+            0,
+            0
+          ],
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "graph": "billing",
+          "ids": [
+            0,
+            0,
+            1
+          ],
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "graph": "billing",
+          "ids": [
+            0,
+            1
+          ],
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "graph": "billing",
+          "ids": [
+            0,
+            1,
+            2
+          ],
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "graph": "orders",
+          "ids": [
+            0
+          ],
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "graph": "orders",
+          "ids": [
+            0,
+            0
+          ],
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "graph": "orders",
+          "ids": [
+            0,
+            0,
+            1
+          ],
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "graph": "orders",
+          "ids": [
+            0,
+            1
+          ],
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "graph": "orders",
+          "ids": [
+            0,
+            1,
+            2
+          ],
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        }
+      ],
+      "name": "cross-path-sort"
+    },
+    {
+      "query": "MATCH (a {id:0})-[r]-(b) RETURN DISTINCT r ORDER BY r",
+      "cross": true,
+      "columns": [
+        "r"
+      ],
+      "rows": [
+        {
+          "r": {
+            "graphId": "billing",
+            "from": 0,
+            "to": 0,
+            "fromElementId": "billing:0",
+            "toElementId": "billing:0",
+            "type": "DATAFLOW",
+            "kind": "ASSIGN"
+          },
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "r": {
+            "graphId": "billing",
+            "from": 0,
+            "to": 1,
+            "fromElementId": "billing:0",
+            "toElementId": "billing:1",
+            "type": "DATAFLOW",
+            "kind": "ASSIGN"
+          },
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "r": {
+            "graphId": "billing",
+            "from": 0,
+            "to": 2,
+            "fromElementId": "billing:0",
+            "toElementId": "billing:2",
+            "type": "CALL",
+            "virtual": true,
+            "dynamic": true
+          },
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "r": {
+            "graphId": "billing",
+            "from": 2,
+            "to": 0,
+            "fromElementId": "billing:2",
+            "toElementId": "billing:0",
+            "type": "DATAFLOW",
+            "kind": "RETURN_VALUE"
+          },
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "r": {
+            "graphId": "orders",
+            "from": 0,
+            "to": 0,
+            "fromElementId": "orders:0",
+            "toElementId": "orders:0",
+            "type": "DATAFLOW",
+            "kind": "ASSIGN"
+          },
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "r": {
+            "graphId": "orders",
+            "from": 0,
+            "to": 1,
+            "fromElementId": "orders:0",
+            "toElementId": "orders:1",
+            "type": "DATAFLOW",
+            "kind": "ASSIGN"
+          },
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "r": {
+            "graphId": "orders",
+            "from": 0,
+            "to": 2,
+            "fromElementId": "orders:0",
+            "toElementId": "orders:2",
+            "type": "CALL",
+            "virtual": true,
+            "dynamic": true
+          },
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "r": {
+            "graphId": "orders",
+            "from": 2,
+            "to": 0,
+            "fromElementId": "orders:2",
+            "toElementId": "orders:0",
+            "type": "DATAFLOW",
+            "kind": "RETURN_VALUE"
+          },
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        }
+      ],
+      "name": "cross-distinct-provenance"
+    }
+  ]
+}

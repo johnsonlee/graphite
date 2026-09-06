@@ -17,10 +17,19 @@ import (
 type Server struct {
 	Registry *Registry
 	Guard    *Guard
+	Version  string
+	Topology *TopologyService
+	Metrics  *PerformanceMetrics
 }
 
 func (s *Server) Handler() http.Handler {
 	mux := http.NewServeMux()
+	if s.Metrics != nil {
+		mux.Handle("GET /metrics", s.Metrics)
+	}
+	mux.HandleFunc("GET /openapi.json", s.openAPI)
+	mux.HandleFunc("GET /swagger.json", s.openAPI)
+	mux.HandleFunc("GET /api/topology", s.topology)
 	mux.HandleFunc("GET /api/graphs", s.listGraphs)
 	mux.HandleFunc("GET /api/graphs/{graphId}", s.describeGraph)
 	mux.HandleFunc("PUT /api/graphs/{graphId}", s.loadGraph)
@@ -46,6 +55,8 @@ func (s *Server) Handler() http.Handler {
 	mux.HandleFunc("GET /api/graphs/{graphId}/overview", s.overview)
 	mux.HandleFunc("GET /api/endpoints", s.endpoints)
 	mux.HandleFunc("GET /api/graphs/{graphId}/endpoints", s.endpoints)
+	mux.HandleFunc("GET /api/architecture/c4", s.architecture)
+	mux.HandleFunc("GET /api/graphs/{graphId}/architecture/c4", s.architecture)
 	assets := web.Files()
 	static := http.FileServer(http.FS(assets))
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -65,7 +76,7 @@ func (s *Server) Handler() http.Handler {
 			writeText(w, 404, "Endpoint "+r.Method+" "+r.URL.Path+" not found")
 		}
 	})
-	return mux
+	return s.instrumentHTTP(mux)
 }
 
 func writeJSON(w http.ResponseWriter, status int, value any) {

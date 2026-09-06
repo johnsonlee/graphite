@@ -1,0 +1,11 @@
+@startuml
+top to bottom direction
+skinparam shadowing false
+package "Application Layer" {
+  package "Checkout Runtime" {
+    component "Api" as component_api
+    component "Service and Repository" as component_service_and_repository
+  }
+}
+component_api --> component_service_and_repository : routes to
+@enduml

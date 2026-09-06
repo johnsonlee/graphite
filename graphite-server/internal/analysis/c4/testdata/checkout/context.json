@@ -1,0 +1,199 @@
+{
+  "name": "Graphite C4 Workspace",
+  "description": "Structurizr workspace derived from the Graphite code graph",
+  "properties": {
+    "graphite.level": "context",
+    "graphite.availableLevels": "[\n  \"context\",\n  \"container\",\n  \"component\",\n  \"all\"\n]",
+    "graphite.format": "structurizr-workspace"
+  },
+  "model": {
+    "people": [
+      {
+        "id": "person:http-clients",
+        "name": "HTTP Clients",
+        "description": "External clients invoking detected HTTP endpoints",
+        "tags": "Person,Graphite,actor",
+        "properties": {
+          "graphite.type": "person",
+          "graphite.kind": "actor",
+          "graphite.architectureType": "actor",
+          "graphite.responsibility": "Initiates synchronous request flows into the application boundary"
+        },
+        "relationships": [
+          {
+            "id": "rel-1",
+            "destinationId": "system:application",
+            "description": "Invokes Checkout through its HTTP interface",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"endpoints\": 1\n}"
+            }
+          }
+        ],
+        "containers": [],
+        "components": []
+      }
+    ],
+    "softwareSystems": [
+      {
+        "id": "system:application",
+        "name": "Checkout",
+        "description": "Executable software system inferred from the Graphite code graph",
+        "tags": "Software System,Graphite,application",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "application",
+          "graphite.architectureType": "software-system",
+          "graphite.responsibility": "Owns the internal runtime containers and orchestrates the primary execution flows",
+          "graphite.whySelected": "Dominant namespace boundary inferred from internal classes and call-site traffic",
+          "graphite.methods": "4.0",
+          "graphite.endpoints": "1.0",
+          "graphite.classes": "7.0"
+        },
+        "relationships": [
+          {
+            "id": "rel-2",
+            "destinationId": "dependency:artifact:postgresql-42.7.3",
+            "description": "Checkout uses postgresql-42.7.3",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"artifact\",\n  \"confidence\": \"high\",\n  \"artifacts\": [\n    \"postgresql-42.7.3\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-3",
+            "destinationId": "dependency:namespace:com.partner.payment",
+            "description": "Checkout uses com.partner.payment",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.payment\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          }
+        ],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:artifact:postgresql-42.7.3",
+        "name": "postgresql-42.7.3",
+        "description": "Reusable third-party library capabilities referenced from the subject system",
+        "tags": "Software System,Graphite,library",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "library",
+          "graphite.architectureType": "external-library",
+          "graphite.responsibility": "Provides reusable library capabilities linked from the application runtime"
+        },
+        "relationships": [
+          {
+            "id": "rel-4",
+            "destinationId": "dependency:runtime:java",
+            "description": "postgresql-42.7.3 runs on Java Runtime",
+            "technology": "runs-on",
+            "tags": "Relationship,Graphite,runs-on",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "runs-on",
+              "graphite.evidence": "{\n  \"source\": \"runtime\",\n  \"kind\": \"runtime\"\n}"
+            }
+          }
+        ],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.payment",
+        "name": "com.partner.payment",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:runtime:java",
+        "name": "Java Runtime",
+        "description": "Language and platform runtime supporting the application and its libraries",
+        "tags": "Software System,Graphite,runtime",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "runtime",
+          "graphite.architectureType": "runtime-platform",
+          "graphite.responsibility": "Provides language and platform runtime services used by the application"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      }
+    ]
+  },
+  "views": {
+    "systemContextViews": [
+      {
+        "key": "graphite-context",
+        "description": "Graphite-derived C4 system context view",
+        "softwareSystemId": "system:application",
+        "elements": [
+          {
+            "id": "person:http-clients"
+          },
+          {
+            "id": "dependency:artifact:postgresql-42.7.3"
+          },
+          {
+            "id": "dependency:namespace:com.partner.payment"
+          },
+          {
+            "id": "dependency:runtime:java"
+          },
+          {
+            "id": "system:application"
+          }
+        ],
+        "relationships": [
+          {
+            "id": "rel-1"
+          },
+          {
+            "id": "rel-2"
+          },
+          {
+            "id": "rel-3"
+          },
+          {
+            "id": "rel-4"
+          }
+        ],
+        "properties": {
+          "graphite.level": "context"
+        }
+      }
+    ],
+    "containerViews": [],
+    "componentViews": [],
+    "configuration": {
+      "scope": "softwareSystem",
+      "properties": {
+        "graphite.level": "context",
+        "graphite.availableLevels": "[\n  \"context\",\n  \"container\",\n  \"component\",\n  \"all\"\n]"
+      }
+    }
+  }
+}

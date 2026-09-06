@@ -1,0 +1,36 @@
+{
+  "name": "Graphite C4 Workspace",
+  "description": "Structurizr workspace derived from the Graphite code graph",
+  "properties": {
+    "graphite.level": "component",
+    "graphite.availableLevels": "[\n  \"context\",\n  \"container\",\n  \"component\",\n  \"all\"\n]",
+    "graphite.format": "structurizr-workspace"
+  },
+  "model": {
+    "people": [],
+    "softwareSystems": [
+      {
+        "id": "system:subject",
+        "name": "Subject",
+        "description": "Derived from the Graphite code graph",
+        "tags": "Software System,Graphite,Application",
+        "properties": {},
+        "relationships": [],
+        "containers": [],
+        "components": []
+      }
+    ]
+  },
+  "views": {
+    "systemContextViews": [],
+    "containerViews": [],
+    "componentViews": [],
+    "configuration": {
+      "scope": "softwareSystem",
+      "properties": {
+        "graphite.level": "component",
+        "graphite.availableLevels": "[\n  \"context\",\n  \"container\",\n  \"component\",\n  \"all\"\n]"
+      }
+    }
+  }
+}

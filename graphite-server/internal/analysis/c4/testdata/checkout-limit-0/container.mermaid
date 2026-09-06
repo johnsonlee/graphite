@@ -1,0 +1,10 @@
+graph TD
+    subgraph application["Application Layer"]
+        subgraph runtime_boundary["Runtime Boundary"]
+            container_application_runtime([Checkout Runtime])
+        end
+    end
+    subgraph external_systems["External Systems"]
+        dependency_namespace_com_partner_payment["payment"]
+    end
+    container_application_runtime -->|uses| dependency_namespace_com_partner_payment

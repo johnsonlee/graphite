@@ -1,0 +1,374 @@
+{
+  "main": {
+    "before": {
+      "status": 200,
+      "body": {
+        "nodes": [
+          {
+            "id": "a",
+            "graphId": "a",
+            "type": "Graph",
+            "label": "a",
+            "nodes": 16,
+            "edges": 4,
+            "methods": 1,
+            "callSites": 1
+          },
+          {
+            "id": "z",
+            "graphId": "z",
+            "type": "Graph",
+            "label": "z",
+            "nodes": 16,
+            "edges": 4,
+            "methods": 1,
+            "callSites": 1
+          }
+        ],
+        "edges": [
+          {
+            "from": "a",
+            "to": "z",
+            "type": "TopologyCall",
+            "protocol": "http",
+            "weight": 5,
+            "operations": [
+              "GET /z"
+            ],
+            "evidence": [
+              "A",
+              "B"
+            ]
+          },
+          {
+            "from": "z",
+            "to": "a",
+            "type": "TopologyCall",
+            "protocol": "call",
+            "weight": 1,
+            "operations": [],
+            "evidence": []
+          }
+        ],
+        "graphCount": 2,
+        "relationCount": 2,
+        "matchedRows": 4,
+        "rules": [
+          "calls.cypher"
+        ],
+        "stale": false
+      }
+    },
+    "failedUnload": {
+      "status": 400,
+      "body": {
+        "error": "Topology query 'calls.cypher' returned unknown graph 'z' in 'target'"
+      }
+    },
+    "afterFailedUnload": {
+      "status": 200,
+      "body": {
+        "nodes": [
+          {
+            "id": "a",
+            "graphId": "a",
+            "type": "Graph",
+            "label": "a",
+            "nodes": 16,
+            "edges": 4,
+            "methods": 1,
+            "callSites": 1
+          },
+          {
+            "id": "z",
+            "graphId": "z",
+            "type": "Graph",
+            "label": "z",
+            "nodes": 16,
+            "edges": 4,
+            "methods": 1,
+            "callSites": 1
+          }
+        ],
+        "edges": [
+          {
+            "from": "a",
+            "to": "z",
+            "type": "TopologyCall",
+            "protocol": "http",
+            "weight": 5,
+            "operations": [
+              "GET /z"
+            ],
+            "evidence": [
+              "A",
+              "B"
+            ]
+          },
+          {
+            "from": "z",
+            "to": "a",
+            "type": "TopologyCall",
+            "protocol": "call",
+            "weight": 1,
+            "operations": [],
+            "evidence": []
+          }
+        ],
+        "graphCount": 2,
+        "relationCount": 2,
+        "matchedRows": 4,
+        "rules": [
+          "calls.cypher"
+        ],
+        "stale": false
+      }
+    },
+    "afterReplacement": {
+      "status": 200,
+      "body": {
+        "nodes": [
+          {
+            "id": "a",
+            "graphId": "a",
+            "type": "Graph",
+            "label": "a",
+            "nodes": 16,
+            "edges": 4,
+            "methods": 1,
+            "callSites": 1
+          },
+          {
+            "id": "z",
+            "graphId": "z",
+            "type": "Graph",
+            "label": "z",
+            "nodes": 16,
+            "edges": 4,
+            "methods": 1,
+            "callSites": 1
+          }
+        ],
+        "edges": [
+          {
+            "from": "a",
+            "to": "z",
+            "type": "TopologyCall",
+            "protocol": "http",
+            "weight": 5,
+            "operations": [
+              "GET /z"
+            ],
+            "evidence": [
+              "A",
+              "B"
+            ]
+          },
+          {
+            "from": "z",
+            "to": "a",
+            "type": "TopologyCall",
+            "protocol": "call",
+            "weight": 1,
+            "operations": [],
+            "evidence": []
+          }
+        ],
+        "graphCount": 2,
+        "relationCount": 2,
+        "matchedRows": 4,
+        "rules": [
+          "calls.cypher"
+        ],
+        "stale": false
+      }
+    },
+    "replacementStatus": 200
+  },
+  "native": {
+    "before": {
+      "status": 200,
+      "body": {
+        "nodes": [
+          {
+            "id": "a",
+            "graphId": "a",
+            "type": "Graph",
+            "label": "a",
+            "nodes": 16,
+            "edges": 4,
+            "methods": 1,
+            "callSites": 1
+          },
+          {
+            "id": "z",
+            "graphId": "z",
+            "type": "Graph",
+            "label": "z",
+            "nodes": 16,
+            "edges": 4,
+            "methods": 1,
+            "callSites": 1
+          }
+        ],
+        "edges": [
+          {
+            "from": "a",
+            "to": "z",
+            "type": "TopologyCall",
+            "protocol": "http",
+            "weight": 5,
+            "operations": [
+              "GET /z"
+            ],
+            "evidence": [
+              "A",
+              "B"
+            ]
+          },
+          {
+            "from": "z",
+            "to": "a",
+            "type": "TopologyCall",
+            "protocol": "call",
+            "weight": 1,
+            "operations": [],
+            "evidence": []
+          }
+        ],
+        "graphCount": 2,
+        "relationCount": 2,
+        "matchedRows": 4,
+        "rules": [
+          "calls.cypher"
+        ],
+        "stale": false
+      }
+    },
+    "failedUnload": {
+      "status": 400,
+      "body": {
+        "error": "Topology query 'calls.cypher' returned unknown graph 'z' in 'target'"
+      }
+    },
+    "afterFailedUnload": {
+      "status": 200,
+      "body": {
+        "nodes": [
+          {
+            "id": "a",
+            "graphId": "a",
+            "type": "Graph",
+            "label": "a",
+            "nodes": 16,
+            "edges": 4,
+            "methods": 1,
+            "callSites": 1
+          },
+          {
+            "id": "z",
+            "graphId": "z",
+            "type": "Graph",
+            "label": "z",
+            "nodes": 16,
+            "edges": 4,
+            "methods": 1,
+            "callSites": 1
+          }
+        ],
+        "edges": [
+          {
+            "from": "a",
+            "to": "z",
+            "type": "TopologyCall",
+            "protocol": "http",
+            "weight": 5,
+            "operations": [
+              "GET /z"
+            ],
+            "evidence": [
+              "A",
+              "B"
+            ]
+          },
+          {
+            "from": "z",
+            "to": "a",
+            "type": "TopologyCall",
+            "protocol": "call",
+            "weight": 1,
+            "operations": [],
+            "evidence": []
+          }
+        ],
+        "graphCount": 2,
+        "relationCount": 2,
+        "matchedRows": 4,
+        "rules": [
+          "calls.cypher"
+        ],
+        "stale": false
+      }
+    },
+    "afterReplacement": {
+      "status": 200,
+      "body": {
+        "nodes": [
+          {
+            "id": "a",
+            "graphId": "a",
+            "type": "Graph",
+            "label": "a",
+            "nodes": 16,
+            "edges": 4,
+            "methods": 1,
+            "callSites": 1
+          },
+          {
+            "id": "z",
+            "graphId": "z",
+            "type": "Graph",
+            "label": "z",
+            "nodes": 16,
+            "edges": 4,
+            "methods": 1,
+            "callSites": 1
+          }
+        ],
+        "edges": [
+          {
+            "from": "a",
+            "to": "z",
+            "type": "TopologyCall",
+            "protocol": "http",
+            "weight": 5,
+            "operations": [
+              "GET /z"
+            ],
+            "evidence": [
+              "A",
+              "B"
+            ]
+          },
+          {
+            "from": "z",
+            "to": "a",
+            "type": "TopologyCall",
+            "protocol": "call",
+            "weight": 1,
+            "operations": [],
+            "evidence": []
+          }
+        ],
+        "graphCount": 2,
+        "relationCount": 2,
+        "matchedRows": 4,
+        "rules": [
+          "calls.cypher"
+        ],
+        "stale": false
+      }
+    },
+    "replacementStatus": 200
+  }
+}

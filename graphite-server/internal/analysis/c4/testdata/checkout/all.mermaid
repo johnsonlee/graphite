@@ -1,0 +1,43 @@
+%% Context
+graph TD
+    subgraph actors["Actors"]
+        person_http_clients([HTTP Clients])
+    end
+    subgraph application["Application Layer"]
+        system_application[[Checkout]]
+    end
+    subgraph external_systems["External Systems"]
+        dependency_namespace_com_partner_payment["payment"]
+    end
+    subgraph libraries["Library Layer"]
+        dependency_artifact_postgresql_42_7_3["Postgresql"]
+    end
+    subgraph technology["Technology Layer"]
+        dependency_runtime_java[(Java Runtime)]
+    end
+    system_application -->|uses| dependency_artifact_postgresql_42_7_3
+    system_application -->|uses| dependency_namespace_com_partner_payment
+    person_http_clients -->|uses| system_application
+    dependency_artifact_postgresql_42_7_3 -->|runs on| dependency_runtime_java
+
+%% Container
+graph TD
+    subgraph application["Application Layer"]
+        subgraph runtime_boundary["Runtime Boundary"]
+            container_application_runtime([Checkout Runtime])
+        end
+    end
+    subgraph external_systems["External Systems"]
+        dependency_namespace_com_partner_payment["payment"]
+    end
+    container_application_runtime -->|uses| dependency_namespace_com_partner_payment
+
+%% Component
+graph TD
+    subgraph application["Application Layer"]
+        subgraph container_application_runtime["Checkout Runtime"]
+            component_api([Api])
+            component_service_and_repository([Service and Repository])
+        end
+    end
+    component_api -->|routes to| component_service_and_repository

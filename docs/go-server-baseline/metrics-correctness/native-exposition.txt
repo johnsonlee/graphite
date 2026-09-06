@@ -1,0 +1,261 @@
+# HELP graphite_cypher_queries_active Accepted Cypher queries that have not completed
+# TYPE graphite_cypher_queries_active gauge
+graphite_cypher_queries_active 0
+# HELP graphite_cypher_queries_limit Maximum concurrent Cypher queries
+# TYPE graphite_cypher_queries_limit gauge
+graphite_cypher_queries_limit 4
+# HELP graphite_cypher_queries_rejected_total Cypher queries rejected by the concurrency guard
+# TYPE graphite_cypher_queries_rejected_total counter
+graphite_cypher_queries_rejected_total 2
+# HELP graphite_cypher_query_duration_seconds Cypher query execution time
+# TYPE graphite_cypher_query_duration_seconds histogram
+graphite_cypher_query_duration_seconds_bucket{outcome="success",le="0.01"} 1
+graphite_cypher_query_duration_seconds_bucket{outcome="success",le="0.05"} 1
+graphite_cypher_query_duration_seconds_bucket{outcome="success",le="0.1"} 1
+graphite_cypher_query_duration_seconds_bucket{outcome="success",le="0.5"} 1
+graphite_cypher_query_duration_seconds_bucket{outcome="success",le="1.0"} 1
+graphite_cypher_query_duration_seconds_bucket{outcome="success",le="5.0"} 1
+graphite_cypher_query_duration_seconds_bucket{outcome="success",le="30.0"} 1
+graphite_cypher_query_duration_seconds_bucket{outcome="success",le="120.0"} 1
+graphite_cypher_query_duration_seconds_bucket{outcome="success",le="+Inf"} 1
+graphite_cypher_query_duration_seconds_count{outcome="success"} 1
+graphite_cypher_query_duration_seconds_sum{outcome="success"} 1.67e-07
+graphite_cypher_query_duration_seconds_bucket{outcome="cancelled",le="0.01"} 1
+graphite_cypher_query_duration_seconds_bucket{outcome="cancelled",le="0.05"} 1
+graphite_cypher_query_duration_seconds_bucket{outcome="cancelled",le="0.1"} 1
+graphite_cypher_query_duration_seconds_bucket{outcome="cancelled",le="0.5"} 1
+graphite_cypher_query_duration_seconds_bucket{outcome="cancelled",le="1.0"} 1
+graphite_cypher_query_duration_seconds_bucket{outcome="cancelled",le="5.0"} 1
+graphite_cypher_query_duration_seconds_bucket{outcome="cancelled",le="30.0"} 1
+graphite_cypher_query_duration_seconds_bucket{outcome="cancelled",le="120.0"} 1
+graphite_cypher_query_duration_seconds_bucket{outcome="cancelled",le="+Inf"} 1
+graphite_cypher_query_duration_seconds_count{outcome="cancelled"} 1
+graphite_cypher_query_duration_seconds_sum{outcome="cancelled"} 1.25e-07
+graphite_cypher_query_duration_seconds_bucket{outcome="timeout",le="0.01"} 1
+graphite_cypher_query_duration_seconds_bucket{outcome="timeout",le="0.05"} 1
+graphite_cypher_query_duration_seconds_bucket{outcome="timeout",le="0.1"} 1
+graphite_cypher_query_duration_seconds_bucket{outcome="timeout",le="0.5"} 1
+graphite_cypher_query_duration_seconds_bucket{outcome="timeout",le="1.0"} 1
+graphite_cypher_query_duration_seconds_bucket{outcome="timeout",le="5.0"} 1
+graphite_cypher_query_duration_seconds_bucket{outcome="timeout",le="30.0"} 1
+graphite_cypher_query_duration_seconds_bucket{outcome="timeout",le="120.0"} 1
+graphite_cypher_query_duration_seconds_bucket{outcome="timeout",le="+Inf"} 1
+graphite_cypher_query_duration_seconds_count{outcome="timeout"} 1
+graphite_cypher_query_duration_seconds_sum{outcome="timeout"} 8.3e-08
+graphite_cypher_query_duration_seconds_bucket{outcome="budget_exceeded",le="0.01"} 1
+graphite_cypher_query_duration_seconds_bucket{outcome="budget_exceeded",le="0.05"} 1
+graphite_cypher_query_duration_seconds_bucket{outcome="budget_exceeded",le="0.1"} 1
+graphite_cypher_query_duration_seconds_bucket{outcome="budget_exceeded",le="0.5"} 1
+graphite_cypher_query_duration_seconds_bucket{outcome="budget_exceeded",le="1.0"} 1
+graphite_cypher_query_duration_seconds_bucket{outcome="budget_exceeded",le="5.0"} 1
+graphite_cypher_query_duration_seconds_bucket{outcome="budget_exceeded",le="30.0"} 1
+graphite_cypher_query_duration_seconds_bucket{outcome="budget_exceeded",le="120.0"} 1
+graphite_cypher_query_duration_seconds_bucket{outcome="budget_exceeded",le="+Inf"} 1
+graphite_cypher_query_duration_seconds_count{outcome="budget_exceeded"} 1
+graphite_cypher_query_duration_seconds_sum{outcome="budget_exceeded"} 8.3e-08
+graphite_cypher_query_duration_seconds_bucket{outcome="failed",le="0.01"} 1
+graphite_cypher_query_duration_seconds_bucket{outcome="failed",le="0.05"} 1
+graphite_cypher_query_duration_seconds_bucket{outcome="failed",le="0.1"} 1
+graphite_cypher_query_duration_seconds_bucket{outcome="failed",le="0.5"} 1
+graphite_cypher_query_duration_seconds_bucket{outcome="failed",le="1.0"} 1
+graphite_cypher_query_duration_seconds_bucket{outcome="failed",le="5.0"} 1
+graphite_cypher_query_duration_seconds_bucket{outcome="failed",le="30.0"} 1
+graphite_cypher_query_duration_seconds_bucket{outcome="failed",le="120.0"} 1
+graphite_cypher_query_duration_seconds_bucket{outcome="failed",le="+Inf"} 1
+graphite_cypher_query_duration_seconds_count{outcome="failed"} 1
+graphite_cypher_query_duration_seconds_sum{outcome="failed"} 8.3e-08
+# HELP graphite_cypher_query_duration_seconds_max Maximum Cypher query execution time over the time window
+# TYPE graphite_cypher_query_duration_seconds_max gauge
+graphite_cypher_query_duration_seconds_max{outcome="success"} 1.67e-07
+graphite_cypher_query_duration_seconds_max{outcome="cancelled"} 1.25e-07
+graphite_cypher_query_duration_seconds_max{outcome="timeout"} 8.3e-08
+graphite_cypher_query_duration_seconds_max{outcome="budget_exceeded"} 8.3e-08
+graphite_cypher_query_duration_seconds_max{outcome="failed"} 8.3e-08
+# HELP process_uptime_seconds Uptime of the process
+# TYPE process_uptime_seconds gauge
+process_uptime_seconds 2.7541e-05
+# HELP go_heap_objects_bytes Bytes occupied by live or unswept heap objects
+# TYPE go_heap_objects_bytes gauge
+go_heap_objects_bytes 154240
+# HELP go_heap_allocated_bytes_total Cumulative bytes allocated to the heap
+# TYPE go_heap_allocated_bytes_total counter
+go_heap_allocated_bytes_total 154240
+# HELP go_heap_freed_bytes_total Cumulative bytes freed from the heap
+# TYPE go_heap_freed_bytes_total counter
+go_heap_freed_bytes_total 0
+# HELP go_gc_cycles_total Completed garbage collection cycles
+# TYPE go_gc_cycles_total counter
+go_gc_cycles_total 0
+# HELP go_goroutines Live goroutines
+# TYPE go_goroutines gauge
+go_goroutines 1
+# HELP go_gc_cpu_seconds_total Estimated CPU time spent in garbage collection
+# TYPE go_gc_cpu_seconds_total counter
+go_gc_cpu_seconds_total 0
+# HELP go_gc_pause_bucket_total Cumulative GC pause counts below each inclusive bound in seconds
+# TYPE go_gc_pause_bucket_total counter
+go_gc_pause_bucket_total{le="-5e-324"} 0
+go_gc_pause_bucket_total{le="6.399999999999999e-08"} 0
+go_gc_pause_bucket_total{le="1.2799999999999998e-07"} 0
+go_gc_pause_bucket_total{le="1.9199999999999997e-07"} 0
+go_gc_pause_bucket_total{le="2.5599999999999996e-07"} 0
+go_gc_pause_bucket_total{le="3.1999999999999995e-07"} 0
+go_gc_pause_bucket_total{le="3.8399999999999994e-07"} 0
+go_gc_pause_bucket_total{le="4.4799999999999994e-07"} 0
+go_gc_pause_bucket_total{le="5.119999999999999e-07"} 0
+go_gc_pause_bucket_total{le="6.399999999999999e-07"} 0
+go_gc_pause_bucket_total{le="7.679999999999999e-07"} 0
+go_gc_pause_bucket_total{le="8.959999999999999e-07"} 0
+go_gc_pause_bucket_total{le="1.0239999999999999e-06"} 0
+go_gc_pause_bucket_total{le="1.2799999999999998e-06"} 0
+go_gc_pause_bucket_total{le="1.5359999999999998e-06"} 0
+go_gc_pause_bucket_total{le="1.7919999999999997e-06"} 0
+go_gc_pause_bucket_total{le="2.0479999999999997e-06"} 0
+go_gc_pause_bucket_total{le="2.5599999999999996e-06"} 0
+go_gc_pause_bucket_total{le="3.0719999999999996e-06"} 0
+go_gc_pause_bucket_total{le="3.5839999999999995e-06"} 0
+go_gc_pause_bucket_total{le="4.095999999999999e-06"} 0
+go_gc_pause_bucket_total{le="5.119999999999999e-06"} 0
+go_gc_pause_bucket_total{le="6.143999999999999e-06"} 0
+go_gc_pause_bucket_total{le="7.167999999999999e-06"} 0
+go_gc_pause_bucket_total{le="8.191999999999999e-06"} 0
+go_gc_pause_bucket_total{le="1.0239999999999999e-05"} 0
+go_gc_pause_bucket_total{le="1.2287999999999998e-05"} 0
+go_gc_pause_bucket_total{le="1.4335999999999998e-05"} 0
+go_gc_pause_bucket_total{le="1.6383999999999998e-05"} 0
+go_gc_pause_bucket_total{le="2.0479999999999997e-05"} 0
+go_gc_pause_bucket_total{le="2.4575999999999996e-05"} 0
+go_gc_pause_bucket_total{le="2.8671999999999996e-05"} 0
+go_gc_pause_bucket_total{le="3.2767999999999995e-05"} 0
+go_gc_pause_bucket_total{le="4.0959999999999994e-05"} 0
+go_gc_pause_bucket_total{le="4.915199999999999e-05"} 0
+go_gc_pause_bucket_total{le="5.734399999999999e-05"} 0
+go_gc_pause_bucket_total{le="6.553599999999999e-05"} 0
+go_gc_pause_bucket_total{le="8.191999999999999e-05"} 0
+go_gc_pause_bucket_total{le="9.830399999999999e-05"} 0
+go_gc_pause_bucket_total{le="0.00011468799999999998"} 0
+go_gc_pause_bucket_total{le="0.00013107199999999998"} 0
+go_gc_pause_bucket_total{le="0.00016383999999999998"} 0
+go_gc_pause_bucket_total{le="0.00019660799999999997"} 0
+go_gc_pause_bucket_total{le="0.00022937599999999997"} 0
+go_gc_pause_bucket_total{le="0.00026214399999999996"} 0
+go_gc_pause_bucket_total{le="0.00032767999999999995"} 0
+go_gc_pause_bucket_total{le="0.00039321599999999994"} 0
+go_gc_pause_bucket_total{le="0.00045875199999999993"} 0
+go_gc_pause_bucket_total{le="0.0005242879999999999"} 0
+go_gc_pause_bucket_total{le="0.0006553599999999999"} 0
+go_gc_pause_bucket_total{le="0.0007864319999999999"} 0
+go_gc_pause_bucket_total{le="0.0009175039999999999"} 0
+go_gc_pause_bucket_total{le="0.0010485759999999998"} 0
+go_gc_pause_bucket_total{le="0.0013107199999999998"} 0
+go_gc_pause_bucket_total{le="0.0015728639999999998"} 0
+go_gc_pause_bucket_total{le="0.0018350079999999997"} 0
+go_gc_pause_bucket_total{le="0.0020971519999999997"} 0
+go_gc_pause_bucket_total{le="0.0026214399999999996"} 0
+go_gc_pause_bucket_total{le="0.0031457279999999995"} 0
+go_gc_pause_bucket_total{le="0.0036700159999999995"} 0
+go_gc_pause_bucket_total{le="0.004194303999999999"} 0
+go_gc_pause_bucket_total{le="0.005242879999999999"} 0
+go_gc_pause_bucket_total{le="0.006291455999999999"} 0
+go_gc_pause_bucket_total{le="0.007340031999999999"} 0
+go_gc_pause_bucket_total{le="0.008388607999999999"} 0
+go_gc_pause_bucket_total{le="0.010485759999999998"} 0
+go_gc_pause_bucket_total{le="0.012582911999999998"} 0
+go_gc_pause_bucket_total{le="0.014680063999999998"} 0
+go_gc_pause_bucket_total{le="0.016777215999999998"} 0
+go_gc_pause_bucket_total{le="0.020971519999999997"} 0
+go_gc_pause_bucket_total{le="0.025165823999999996"} 0
+go_gc_pause_bucket_total{le="0.029360127999999996"} 0
+go_gc_pause_bucket_total{le="0.033554431999999995"} 0
+go_gc_pause_bucket_total{le="0.041943039999999994"} 0
+go_gc_pause_bucket_total{le="0.05033164799999999"} 0
+go_gc_pause_bucket_total{le="0.05872025599999999"} 0
+go_gc_pause_bucket_total{le="0.06710886399999999"} 0
+go_gc_pause_bucket_total{le="0.08388607999999999"} 0
+go_gc_pause_bucket_total{le="0.10066329599999999"} 0
+go_gc_pause_bucket_total{le="0.11744051199999998"} 0
+go_gc_pause_bucket_total{le="0.13421772799999998"} 0
+go_gc_pause_bucket_total{le="0.16777215999999998"} 0
+go_gc_pause_bucket_total{le="0.20132659199999997"} 0
+go_gc_pause_bucket_total{le="0.23488102399999997"} 0
+go_gc_pause_bucket_total{le="0.26843545599999996"} 0
+go_gc_pause_bucket_total{le="0.33554431999999995"} 0
+go_gc_pause_bucket_total{le="0.40265318399999994"} 0
+go_gc_pause_bucket_total{le="0.46976204799999993"} 0
+go_gc_pause_bucket_total{le="0.5368709119999999"} 0
+go_gc_pause_bucket_total{le="0.6710886399999999"} 0
+go_gc_pause_bucket_total{le="0.8053063679999999"} 0
+go_gc_pause_bucket_total{le="0.9395240959999999"} 0
+go_gc_pause_bucket_total{le="1.0737418239999998"} 0
+go_gc_pause_bucket_total{le="1.3421772799999998"} 0
+go_gc_pause_bucket_total{le="1.6106127359999998"} 0
+go_gc_pause_bucket_total{le="1.8790481919999997"} 0
+go_gc_pause_bucket_total{le="2.1474836479999997"} 0
+go_gc_pause_bucket_total{le="2.6843545599999996"} 0
+go_gc_pause_bucket_total{le="3.2212254719999995"} 0
+go_gc_pause_bucket_total{le="3.7580963839999995"} 0
+go_gc_pause_bucket_total{le="4.294967295999999"} 0
+go_gc_pause_bucket_total{le="5.368709119999999"} 0
+go_gc_pause_bucket_total{le="6.442450943999999"} 0
+go_gc_pause_bucket_total{le="7.516192767999999"} 0
+go_gc_pause_bucket_total{le="8.589934591999999"} 0
+go_gc_pause_bucket_total{le="10.737418239999998"} 0
+go_gc_pause_bucket_total{le="12.884901887999998"} 0
+go_gc_pause_bucket_total{le="15.032385535999998"} 0
+go_gc_pause_bucket_total{le="17.179869183999998"} 0
+go_gc_pause_bucket_total{le="21.474836479999997"} 0
+go_gc_pause_bucket_total{le="25.769803775999996"} 0
+go_gc_pause_bucket_total{le="30.064771071999996"} 0
+go_gc_pause_bucket_total{le="34.359738367999995"} 0
+go_gc_pause_bucket_total{le="42.949672959999994"} 0
+go_gc_pause_bucket_total{le="51.53960755199999"} 0
+go_gc_pause_bucket_total{le="60.12954214399999"} 0
+go_gc_pause_bucket_total{le="68.71947673599999"} 0
+go_gc_pause_bucket_total{le="85.89934591999999"} 0
+go_gc_pause_bucket_total{le="103.07921510399999"} 0
+go_gc_pause_bucket_total{le="120.25908428799998"} 0
+go_gc_pause_bucket_total{le="137.43895347199998"} 0
+go_gc_pause_bucket_total{le="171.79869183999998"} 0
+go_gc_pause_bucket_total{le="206.15843020799997"} 0
+go_gc_pause_bucket_total{le="240.51816857599997"} 0
+go_gc_pause_bucket_total{le="274.87790694399996"} 0
+go_gc_pause_bucket_total{le="343.59738367999995"} 0
+go_gc_pause_bucket_total{le="412.31686041599994"} 0
+go_gc_pause_bucket_total{le="481.03633715199993"} 0
+go_gc_pause_bucket_total{le="549.7558138879999"} 0
+go_gc_pause_bucket_total{le="687.1947673599999"} 0
+go_gc_pause_bucket_total{le="824.6337208319999"} 0
+go_gc_pause_bucket_total{le="962.0726743039999"} 0
+go_gc_pause_bucket_total{le="1099.5116277759998"} 0
+go_gc_pause_bucket_total{le="1374.3895347199998"} 0
+go_gc_pause_bucket_total{le="1649.2674416639998"} 0
+go_gc_pause_bucket_total{le="1924.1453486079997"} 0
+go_gc_pause_bucket_total{le="2199.0232555519997"} 0
+go_gc_pause_bucket_total{le="2748.7790694399996"} 0
+go_gc_pause_bucket_total{le="3298.5348833279995"} 0
+go_gc_pause_bucket_total{le="3848.2906972159994"} 0
+go_gc_pause_bucket_total{le="4398.046511103999"} 0
+go_gc_pause_bucket_total{le="5497.558138879999"} 0
+go_gc_pause_bucket_total{le="6597.069766655999"} 0
+go_gc_pause_bucket_total{le="7696.581394431999"} 0
+go_gc_pause_bucket_total{le="8796.093022207999"} 0
+go_gc_pause_bucket_total{le="10995.116277759998"} 0
+go_gc_pause_bucket_total{le="13194.139533311998"} 0
+go_gc_pause_bucket_total{le="15393.162788863998"} 0
+go_gc_pause_bucket_total{le="17592.186044415997"} 0
+go_gc_pause_bucket_total{le="21990.232555519997"} 0
+go_gc_pause_bucket_total{le="26388.279066623996"} 0
+go_gc_pause_bucket_total{le="30786.325577727996"} 0
+go_gc_pause_bucket_total{le="35184.372088831995"} 0
+go_gc_pause_bucket_total{le="43980.465111039994"} 0
+go_gc_pause_bucket_total{le="52776.55813324799"} 0
+go_gc_pause_bucket_total{le="61572.65115545599"} 0
+go_gc_pause_bucket_total{le="70368.74417766399"} 0
+go_gc_pause_bucket_total{le="87960.93022207999"} 0
+go_gc_pause_bucket_total{le="105553.11626649598"} 0
+go_gc_pause_bucket_total{le="123145.30231091198"} 0
+go_gc_pause_bucket_total{le="140737.48835532798"} 0
+go_gc_pause_bucket_total{le="+Inf"} 0
+# HELP go_gc_pauses_total Total garbage collection stop-the-world pauses
+# TYPE go_gc_pauses_total counter
+go_gc_pauses_total 0

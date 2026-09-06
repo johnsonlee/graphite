@@ -1,0 +1,56 @@
+%% Context
+graph TD
+    subgraph application["Application Layer"]
+        system_application[[Checkout]]
+    end
+    subgraph external_systems["External Systems"]
+        dependency_namespace_com_partner_service21["service21"]
+        dependency_namespace_com_partner_service17["service17"]
+        dependency_namespace_com_partner_service13["service13"]
+        dependency_namespace_com_partner_service00["service00"]
+        dependency_namespace_com_partner_service01["service01"]
+        dependency_namespace_com_partner_service18["service18"]
+    end
+    subgraph libraries["Library Layer"]
+        dependency_library_commons["Commons"]
+        dependency_library_lucene["Lucene"]
+        dependency_artifact_postgresql_42_7_3["Postgresql"]
+        dependency_artifact_alpha_lib_1_0["Alpha LIB"]
+        dependency_artifact_zeta_lib_1_0["Zeta LIB"]
+    end
+    dependency_library_lucene -->|builds on| dependency_library_commons
+    system_application -->|uses| dependency_library_lucene
+    dependency_library_commons -->|builds on| dependency_artifact_postgresql_42_7_3
+    dependency_artifact_alpha_lib_1_0 -->|builds on| dependency_artifact_postgresql_42_7_3
+    dependency_artifact_zeta_lib_1_0 -->|builds on| dependency_library_lucene
+    system_application -->|uses| dependency_artifact_alpha_lib_1_0
+    system_application -->|uses| dependency_artifact_zeta_lib_1_0
+    system_application -->|uses| dependency_namespace_com_partner_service21
+    system_application -->|uses| dependency_namespace_com_partner_service17
+    system_application -->|uses| dependency_namespace_com_partner_service13
+    system_application -->|uses| dependency_namespace_com_partner_service00
+    system_application -->|uses| dependency_namespace_com_partner_service01
+    system_application -->|uses| dependency_namespace_com_partner_service18
+    graph_note["Mermaid view truncated: 22 edges omitted"]
+
+%% Container
+graph TD
+    subgraph application["Application Layer"]
+        subgraph runtime_boundary["Runtime Boundary"]
+            container_application_runtime([Checkout Runtime])
+        end
+    end
+    subgraph external_systems["External Systems"]
+        dependency_namespace_com_partner_service21["service21"]
+    end
+    container_application_runtime -->|uses| dependency_namespace_com_partner_service21
+
+%% Component
+graph TD
+    subgraph application["Application Layer"]
+        subgraph container_application_runtime["Checkout Runtime"]
+            component_service_and_repository([Service and Repository])
+            component_api([Api])
+        end
+    end
+    component_api -->|routes to| component_service_and_repository

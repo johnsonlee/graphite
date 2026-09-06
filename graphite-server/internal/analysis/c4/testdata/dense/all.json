@@ -1,0 +1,2786 @@
+{
+  "name": "Graphite C4 Workspace",
+  "description": "Structurizr workspace derived from the Graphite code graph",
+  "properties": {
+    "graphite.level": "all",
+    "graphite.availableLevels": "[\n  \"context\",\n  \"container\",\n  \"component\",\n  \"all\"\n]",
+    "graphite.format": "structurizr-workspace"
+  },
+  "model": {
+    "people": [
+      {
+        "id": "person:http-clients",
+        "name": "HTTP Clients",
+        "description": "External clients invoking detected HTTP endpoints",
+        "tags": "Person,Graphite,actor",
+        "properties": {
+          "graphite.type": "person",
+          "graphite.kind": "actor",
+          "graphite.architectureType": "actor",
+          "graphite.responsibility": "Initiates synchronous request flows into the application boundary"
+        },
+        "relationships": [
+          {
+            "id": "rel-1",
+            "destinationId": "system:application",
+            "description": "Invokes Checkout through its HTTP interface",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"endpoints\": 1\n}"
+            }
+          }
+        ],
+        "containers": [],
+        "components": []
+      }
+    ],
+    "softwareSystems": [
+      {
+        "id": "system:application",
+        "name": "Checkout",
+        "description": "Executable software system inferred from the Graphite code graph",
+        "tags": "Software System,Graphite,application",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "application",
+          "graphite.architectureType": "software-system",
+          "graphite.responsibility": "Owns the internal runtime containers and orchestrates the primary execution flows",
+          "graphite.whySelected": "Dominant namespace boundary inferred from internal classes and call-site traffic",
+          "graphite.methods": "28.0",
+          "graphite.endpoints": "1.0",
+          "graphite.classes": "61.0",
+          "graphite.systemBoundary": "com.acme.checkout"
+        },
+        "relationships": [
+          {
+            "id": "rel-2",
+            "destinationId": "dependency:library:commons",
+            "description": "Checkout uses commons",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 2,\n  \"source\": \"artifact-family\",\n  \"confidence\": \"high\",\n  \"artifacts\": [\n    \"commons-io-2.15.0\",\n    \"commons-lang3-3.14.0\"\n  ]\n}",
+              "graphite.weight": "2"
+            }
+          },
+          {
+            "id": "rel-3",
+            "destinationId": "dependency:library:lucene",
+            "description": "Checkout uses lucene",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 2,\n  \"source\": \"artifact-family\",\n  \"confidence\": \"high\",\n  \"artifacts\": [\n    \"lucene-analysis-9.12.0\",\n    \"lucene-core-9.12.0\"\n  ]\n}",
+              "graphite.weight": "2"
+            }
+          },
+          {
+            "id": "rel-4",
+            "destinationId": "dependency:artifact:postgresql-42.7.3",
+            "description": "Checkout uses postgresql-42.7.3",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"artifact\",\n  \"confidence\": \"high\",\n  \"artifacts\": [\n    \"postgresql-42.7.3\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-5",
+            "destinationId": "dependency:artifact:alpha-lib-1.0",
+            "description": "Checkout uses alpha-lib-1.0",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"artifact\",\n  \"confidence\": \"high\",\n  \"artifacts\": [\n    \"alpha-lib-1.0\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-6",
+            "destinationId": "dependency:artifact:zeta-lib-1.0",
+            "description": "Checkout uses zeta-lib-1.0",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"artifact\",\n  \"confidence\": \"high\",\n  \"artifacts\": [\n    \"zeta-lib-1.0\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-7",
+            "destinationId": "dependency:namespace:com.partner.service21",
+            "description": "Checkout uses com.partner.service21",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service21\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-8",
+            "destinationId": "dependency:namespace:com.partner.service17",
+            "description": "Checkout uses com.partner.service17",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service17\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-9",
+            "destinationId": "dependency:namespace:com.partner.service13",
+            "description": "Checkout uses com.partner.service13",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service13\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-10",
+            "destinationId": "dependency:namespace:com.partner.service00",
+            "description": "Checkout uses com.partner.service00",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service00\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-11",
+            "destinationId": "dependency:namespace:com.partner.service01",
+            "description": "Checkout uses com.partner.service01",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service01\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-12",
+            "destinationId": "dependency:namespace:com.partner.service18",
+            "description": "Checkout uses com.partner.service18",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service18\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-13",
+            "destinationId": "dependency:namespace:com.partner.service16",
+            "description": "Checkout uses com.partner.service16",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service16\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-14",
+            "destinationId": "dependency:namespace:com.partner.service12",
+            "description": "Checkout uses com.partner.service12",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service12\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-15",
+            "destinationId": "dependency:namespace:com.partner.service14",
+            "description": "Checkout uses com.partner.service14",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service14\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-16",
+            "destinationId": "dependency:namespace:com.partner.service06",
+            "description": "Checkout uses com.partner.service06",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service06\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-17",
+            "destinationId": "dependency:namespace:com.partner.service04",
+            "description": "Checkout uses com.partner.service04",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service04\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-18",
+            "destinationId": "dependency:namespace:com.partner.service05",
+            "description": "Checkout uses com.partner.service05",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service05\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-19",
+            "destinationId": "dependency:namespace:com.partner.service07",
+            "description": "Checkout uses com.partner.service07",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service07\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-20",
+            "destinationId": "dependency:namespace:com.partner.service11",
+            "description": "Checkout uses com.partner.service11",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service11\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-21",
+            "destinationId": "dependency:namespace:com.partner.service08",
+            "description": "Checkout uses com.partner.service08",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service08\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-22",
+            "destinationId": "dependency:namespace:com.partner.service10",
+            "description": "Checkout uses com.partner.service10",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service10\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-23",
+            "destinationId": "dependency:namespace:com.partner.service09",
+            "description": "Checkout uses com.partner.service09",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service09\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-24",
+            "destinationId": "dependency:namespace:com.partner.service23",
+            "description": "Checkout uses com.partner.service23",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service23\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-25",
+            "destinationId": "dependency:namespace:com.partner.service15",
+            "description": "Checkout uses com.partner.service15",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service15\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-26",
+            "destinationId": "dependency:namespace:com.partner.service03",
+            "description": "Checkout uses com.partner.service03",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service03\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-27",
+            "destinationId": "dependency:namespace:com.partner.service02",
+            "description": "Checkout uses com.partner.service02",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service02\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-28",
+            "destinationId": "dependency:namespace:com.partner.service19",
+            "description": "Checkout uses com.partner.service19",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service19\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-29",
+            "destinationId": "dependency:namespace:com.partner.service20",
+            "description": "Checkout uses com.partner.service20",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service20\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-30",
+            "destinationId": "dependency:namespace:com.partner.payment",
+            "description": "Checkout uses com.partner.payment",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.payment\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-31",
+            "destinationId": "dependency:namespace:com.partner.service22",
+            "description": "Checkout uses com.partner.service22",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service22\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          }
+        ],
+        "containers": [
+          {
+            "id": "container:application-runtime",
+            "name": "Checkout Runtime",
+            "description": "Executable/deployable runtime container inferred from entrypoint, endpoint, and archive evidence",
+            "technology": "JVM bytecode",
+            "tags": "Container,Graphite,application-service",
+            "properties": {
+              "graphite.type": "container",
+              "graphite.kind": "application-service",
+              "graphite.architectureType": "application-service",
+              "graphite.responsibility": "Runs the subject software system and owns the deployable JVM execution boundary",
+              "graphite.whySelected": "Selected from C4 semantics as the executable/deployable JVM runtime boundary; package clusters remain internal capability evidence",
+              "graphite.methods": "28.0",
+              "graphite.callSites": "39.0",
+              "graphite.endpoints": "1.0",
+              "graphite.entrypoints": "[\n  \"/checkout\"\n]",
+              "graphite.packageUnits": "[\n  \"com.acme.checkout\",\n  \"com.acme.checkout.api\",\n  \"com.acme.checkout.island00\",\n  \"com.acme.checkout.island01\",\n  \"com.acme.checkout.island02\",\n  \"com.acme.checkout.island03\",\n  \"com.acme.checkout.island04\",\n  \"com.acme.checkout.island05\",\n  \"com.acme.checkout.island06\",\n  \"com.acme.checkout.island07\",\n  \"com.acme.checkout.island08\",\n  \"com.acme.checkout.island09\",\n  \"com.acme.checkout.island10\",\n  \"com.acme.checkout.island11\",\n  \"com.acme.checkout.island12\",\n  \"com.acme.checkout.island13\",\n  \"com.acme.checkout.island14\",\n  \"com.acme.checkout.island15\",\n  \"com.acme.checkout.island16\",\n  \"com.acme.checkout.island17\",\n  \"com.acme.checkout.island18\",\n  \"com.acme.checkout.island19\",\n  \"com.acme.checkout.island20\",\n  \"com.acme.checkout.island21\",\n  \"com.acme.checkout.island22\",\n  \"com.acme.checkout.island23\",\n  \"com.acme.checkout.repository\",\n  \"com.acme.checkout.service\"\n]",
+              "graphite.primaryClasses": "[\n  \"Application\",\n  \"CheckoutController\",\n  \"OrderRepository\"\n]",
+              "graphite.internalCapabilities": "[\n  {\n    \"name\": \"Api\",\n    \"kind\": \"interface\",\n    \"packageUnits\": [\n      \"com.acme.checkout\",\n      \"com.acme.checkout.api\"\n    ],\n    \"methods\": 2.0,\n    \"callSites\": 3.0,\n    \"endpoints\": 1.0,\n    \"primaryClasses\": [\n      \"Application\",\n      \"CheckoutController\"\n    ],\n    \"whySelected\": \"Grouped from 2 tightly-coupled package unit(s) with visible inbound entrypoints; anchored by com.acme.checkout.api\"\n  },\n  {\n    \"name\": \"Service and Repository\",\n    \"kind\": \"integration\",\n    \"packageUnits\": [\n      \"com.acme.checkout.repository\",\n      \"com.acme.checkout.service\"\n    ],\n    \"methods\": 2.0,\n    \"callSites\": 36.0,\n    \"endpoints\": 0.0,\n    \"primaryClasses\": [\n      \"OrderRepository\",\n      \"CheckoutService\"\n    ],\n    \"whySelected\": \"Grouped from 2 mutually dependent package units around the structural center com.acme.checkout.service\"\n  },\n  {\n    \"name\": \"Island00\",\n    \"kind\": \"capability\",\n    \"packageUnits\": [\n      \"com.acme.checkout.island00\"\n    ],\n    \"methods\": 1.0,\n    \"callSites\": 0.0,\n    \"endpoints\": 0.0,\n    \"primaryClasses\": [\n      \"Capability\"\n    ],\n    \"whySelected\": \"Derived from the dominant internal package unit com.acme.checkout.island00\"\n  },\n  {\n    \"name\": \"Island01\",\n    \"kind\": \"capability\",\n    \"packageUnits\": [\n      \"com.acme.checkout.island01\"\n    ],\n    \"methods\": 1.0,\n    \"callSites\": 0.0,\n    \"endpoints\": 0.0,\n    \"primaryClasses\": [\n      \"Capability\"\n    ],\n    \"whySelected\": \"Derived from the dominant internal package unit com.acme.checkout.island01\"\n  },\n  {\n    \"name\": \"Island02\",\n    \"kind\": \"capability\",\n    \"packageUnits\": [\n      \"com.acme.checkout.island02\"\n    ],\n    \"methods\": 1.0,\n    \"callSites\": 0.0,\n    \"endpoints\": 0.0,\n    \"primaryClasses\": [\n      \"Capability\"\n    ],\n    \"whySelected\": \"Derived from the dominant internal package unit com.acme.checkout.island02\"\n  },\n  {\n    \"name\": \"Island03\",\n    \"kind\": \"capability\",\n    \"packageUnits\": [\n      \"com.acme.checkout.island03\"\n    ],\n    \"methods\": 1.0,\n    \"callSites\": 0.0,\n    \"endpoints\": 0.0,\n    \"primaryClasses\": [\n      \"Capability\"\n    ],\n    \"whySelected\": \"Derived from the dominant internal package unit com.acme.checkout.island03\"\n  },\n  {\n    \"name\": \"Island04\",\n    \"kind\": \"capability\",\n    \"packageUnits\": [\n      \"com.acme.checkout.island04\"\n    ],\n    \"methods\": 1.0,\n    \"callSites\": 0.0,\n    \"endpoints\": 0.0,\n    \"primaryClasses\": [\n      \"Capability\"\n    ],\n    \"whySelected\": \"Derived from the dominant internal package unit com.acme.checkout.island04\"\n  },\n  {\n    \"name\": \"Island05\",\n    \"kind\": \"capability\",\n    \"packageUnits\": [\n      \"com.acme.checkout.island05\"\n    ],\n    \"methods\": 1.0,\n    \"callSites\": 0.0,\n    \"endpoints\": 0.0,\n    \"primaryClasses\": [\n      \"Capability\"\n    ],\n    \"whySelected\": \"Derived from the dominant internal package unit com.acme.checkout.island05\"\n  },\n  {\n    \"name\": \"Island06\",\n    \"kind\": \"capability\",\n    \"packageUnits\": [\n      \"com.acme.checkout.island06\"\n    ],\n    \"methods\": 1.0,\n    \"callSites\": 0.0,\n    \"endpoints\": 0.0,\n    \"primaryClasses\": [\n      \"Capability\"\n    ],\n    \"whySelected\": \"Derived from the dominant internal package unit com.acme.checkout.island06\"\n  },\n  {\n    \"name\": \"Island07\",\n    \"kind\": \"capability\",\n    \"packageUnits\": [\n      \"com.acme.checkout.island07\"\n    ],\n    \"methods\": 1.0,\n    \"callSites\": 0.0,\n    \"endpoints\": 0.0,\n    \"primaryClasses\": [\n      \"Capability\"\n    ],\n    \"whySelected\": \"Derived from the dominant internal package unit com.acme.checkout.island07\"\n  },\n  {\n    \"name\": \"Island08\",\n    \"kind\": \"capability\",\n    \"packageUnits\": [\n      \"com.acme.checkout.island08\"\n    ],\n    \"methods\": 1.0,\n    \"callSites\": 0.0,\n    \"endpoints\": 0.0,\n    \"primaryClasses\": [\n      \"Capability\"\n    ],\n    \"whySelected\": \"Derived from the dominant internal package unit com.acme.checkout.island08\"\n  },\n  {\n    \"name\": \"Island09\",\n    \"kind\": \"capability\",\n    \"packageUnits\": [\n      \"com.acme.checkout.island09\"\n    ],\n    \"methods\": 1.0,\n    \"callSites\": 0.0,\n    \"endpoints\": 0.0,\n    \"primaryClasses\": [\n      \"Capability\"\n    ],\n    \"whySelected\": \"Derived from the dominant internal package unit com.acme.checkout.island09\"\n  },\n  {\n    \"name\": \"Island10\",\n    \"kind\": \"capability\",\n    \"packageUnits\": [\n      \"com.acme.checkout.island10\"\n    ],\n    \"methods\": 1.0,\n    \"callSites\": 0.0,\n    \"endpoints\": 0.0,\n    \"primaryClasses\": [\n      \"Capability\"\n    ],\n    \"whySelected\": \"Derived from the dominant internal package unit com.acme.checkout.island10\"\n  },\n  {\n    \"name\": \"Island11\",\n    \"kind\": \"capability\",\n    \"packageUnits\": [\n      \"com.acme.checkout.island11\"\n    ],\n    \"methods\": 1.0,\n    \"callSites\": 0.0,\n    \"endpoints\": 0.0,\n    \"primaryClasses\": [\n      \"Capability\"\n    ],\n    \"whySelected\": \"Derived from the dominant internal package unit com.acme.checkout.island11\"\n  },\n  {\n    \"name\": \"Island12\",\n    \"kind\": \"capability\",\n    \"packageUnits\": [\n      \"com.acme.checkout.island12\"\n    ],\n    \"methods\": 1.0,\n    \"callSites\": 0.0,\n    \"endpoints\": 0.0,\n    \"primaryClasses\": [\n      \"Capability\"\n    ],\n    \"whySelected\": \"Derived from the dominant internal package unit com.acme.checkout.island12\"\n  },\n  {\n    \"name\": \"Island13\",\n    \"kind\": \"capability\",\n    \"packageUnits\": [\n      \"com.acme.checkout.island13\"\n    ],\n    \"methods\": 1.0,\n    \"callSites\": 0.0,\n    \"endpoints\": 0.0,\n    \"primaryClasses\": [\n      \"Capability\"\n    ],\n    \"whySelected\": \"Derived from the dominant internal package unit com.acme.checkout.island13\"\n  },\n  {\n    \"name\": \"Island14\",\n    \"kind\": \"capability\",\n    \"packageUnits\": [\n      \"com.acme.checkout.island14\"\n    ],\n    \"methods\": 1.0,\n    \"callSites\": 0.0,\n    \"endpoints\": 0.0,\n    \"primaryClasses\": [\n      \"Capability\"\n    ],\n    \"whySelected\": \"Derived from the dominant internal package unit com.acme.checkout.island14\"\n  },\n  {\n    \"name\": \"Island15\",\n    \"kind\": \"capability\",\n    \"packageUnits\": [\n      \"com.acme.checkout.island15\"\n    ],\n    \"methods\": 1.0,\n    \"callSites\": 0.0,\n    \"endpoints\": 0.0,\n    \"primaryClasses\": [\n      \"Capability\"\n    ],\n    \"whySelected\": \"Derived from the dominant internal package unit com.acme.checkout.island15\"\n  },\n  {\n    \"name\": \"Island16\",\n    \"kind\": \"capability\",\n    \"packageUnits\": [\n      \"com.acme.checkout.island16\"\n    ],\n    \"methods\": 1.0,\n    \"callSites\": 0.0,\n    \"endpoints\": 0.0,\n    \"primaryClasses\": [\n      \"Capability\"\n    ],\n    \"whySelected\": \"Derived from the dominant internal package unit com.acme.checkout.island16\"\n  },\n  {\n    \"name\": \"Island17\",\n    \"kind\": \"capability\",\n    \"packageUnits\": [\n      \"com.acme.checkout.island17\"\n    ],\n    \"methods\": 1.0,\n    \"callSites\": 0.0,\n    \"endpoints\": 0.0,\n    \"primaryClasses\": [\n      \"Capability\"\n    ],\n    \"whySelected\": \"Derived from the dominant internal package unit com.acme.checkout.island17\"\n  },\n  {\n    \"name\": \"Island18\",\n    \"kind\": \"capability\",\n    \"packageUnits\": [\n      \"com.acme.checkout.island18\"\n    ],\n    \"methods\": 1.0,\n    \"callSites\": 0.0,\n    \"endpoints\": 0.0,\n    \"primaryClasses\": [\n      \"Capability\"\n    ],\n    \"whySelected\": \"Derived from the dominant internal package unit com.acme.checkout.island18\"\n  },\n  {\n    \"name\": \"Island19\",\n    \"kind\": \"capability\",\n    \"packageUnits\": [\n      \"com.acme.checkout.island19\"\n    ],\n    \"methods\": 1.0,\n    \"callSites\": 0.0,\n    \"endpoints\": 0.0,\n    \"primaryClasses\": [\n      \"Capability\"\n    ],\n    \"whySelected\": \"Derived from the dominant internal package unit com.acme.checkout.island19\"\n  },\n  {\n    \"name\": \"Island20\",\n    \"kind\": \"capability\",\n    \"packageUnits\": [\n      \"com.acme.checkout.island20\"\n    ],\n    \"methods\": 1.0,\n    \"callSites\": 0.0,\n    \"endpoints\": 0.0,\n    \"primaryClasses\": [\n      \"Capability\"\n    ],\n    \"whySelected\": \"Derived from the dominant internal package unit com.acme.checkout.island20\"\n  },\n  {\n    \"name\": \"Island21\",\n    \"kind\": \"capability\",\n    \"packageUnits\": [\n      \"com.acme.checkout.island21\"\n    ],\n    \"methods\": 1.0,\n    \"callSites\": 0.0,\n    \"endpoints\": 0.0,\n    \"primaryClasses\": [\n      \"Capability\"\n    ],\n    \"whySelected\": \"Derived from the dominant internal package unit com.acme.checkout.island21\"\n  },\n  {\n    \"name\": \"Island22\",\n    \"kind\": \"capability\",\n    \"packageUnits\": [\n      \"com.acme.checkout.island22\"\n    ],\n    \"methods\": 1.0,\n    \"callSites\": 0.0,\n    \"endpoints\": 0.0,\n    \"primaryClasses\": [\n      \"Capability\"\n    ],\n    \"whySelected\": \"Derived from the dominant internal package unit com.acme.checkout.island22\"\n  },\n  {\n    \"name\": \"Island23\",\n    \"kind\": \"capability\",\n    \"packageUnits\": [\n      \"com.acme.checkout.island23\"\n    ],\n    \"methods\": 1.0,\n    \"callSites\": 0.0,\n    \"endpoints\": 0.0,\n    \"primaryClasses\": [\n      \"Capability\"\n    ],\n    \"whySelected\": \"Derived from the dominant internal package unit com.acme.checkout.island23\"\n  }\n]"
+            },
+            "relationships": [
+              {
+                "id": "rel-38",
+                "destinationId": "dependency:namespace:com.partner.service21",
+                "description": "Checkout Runtime uses com.partner.service21",
+                "technology": "uses",
+                "tags": "Relationship,Graphite,depends-on",
+                "properties": {
+                  "graphite.view": "container",
+                  "graphite.relationshipKind": "depends-on",
+                  "graphite.evidence": "{\n  \"crossBoundaryCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\"\n}",
+                  "graphite.weight": "1"
+                }
+              },
+              {
+                "id": "rel-39",
+                "destinationId": "dependency:namespace:com.partner.service17",
+                "description": "Checkout Runtime uses com.partner.service17",
+                "technology": "uses",
+                "tags": "Relationship,Graphite,depends-on",
+                "properties": {
+                  "graphite.view": "container",
+                  "graphite.relationshipKind": "depends-on",
+                  "graphite.evidence": "{\n  \"crossBoundaryCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\"\n}",
+                  "graphite.weight": "1"
+                }
+              },
+              {
+                "id": "rel-40",
+                "destinationId": "dependency:namespace:com.partner.service13",
+                "description": "Checkout Runtime uses com.partner.service13",
+                "technology": "uses",
+                "tags": "Relationship,Graphite,depends-on",
+                "properties": {
+                  "graphite.view": "container",
+                  "graphite.relationshipKind": "depends-on",
+                  "graphite.evidence": "{\n  \"crossBoundaryCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\"\n}",
+                  "graphite.weight": "1"
+                }
+              },
+              {
+                "id": "rel-41",
+                "destinationId": "dependency:artifact:postgresql-42.7.3",
+                "description": "Checkout Runtime uses postgresql-42.7.3",
+                "technology": "uses",
+                "tags": "Relationship,Graphite,depends-on",
+                "properties": {
+                  "graphite.view": "container",
+                  "graphite.relationshipKind": "depends-on",
+                  "graphite.evidence": "{\n  \"crossBoundaryCalls\": 1,\n  \"source\": \"artifact\",\n  \"confidence\": \"high\"\n}",
+                  "graphite.weight": "1"
+                }
+              },
+              {
+                "id": "rel-42",
+                "destinationId": "dependency:namespace:com.partner.service00",
+                "description": "Checkout Runtime uses com.partner.service00",
+                "technology": "uses",
+                "tags": "Relationship,Graphite,depends-on",
+                "properties": {
+                  "graphite.view": "container",
+                  "graphite.relationshipKind": "depends-on",
+                  "graphite.evidence": "{\n  \"crossBoundaryCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\"\n}",
+                  "graphite.weight": "1"
+                }
+              },
+              {
+                "id": "rel-43",
+                "destinationId": "dependency:namespace:com.partner.service01",
+                "description": "Checkout Runtime uses com.partner.service01",
+                "technology": "uses",
+                "tags": "Relationship,Graphite,depends-on",
+                "properties": {
+                  "graphite.view": "container",
+                  "graphite.relationshipKind": "depends-on",
+                  "graphite.evidence": "{\n  \"crossBoundaryCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\"\n}",
+                  "graphite.weight": "1"
+                }
+              },
+              {
+                "id": "rel-44",
+                "destinationId": "dependency:artifact:commons-lang3-3.14.0",
+                "description": "Checkout Runtime uses commons-lang3-3.14.0",
+                "technology": "uses",
+                "tags": "Relationship,Graphite,depends-on",
+                "properties": {
+                  "graphite.view": "container",
+                  "graphite.relationshipKind": "depends-on",
+                  "graphite.evidence": "{\n  \"crossBoundaryCalls\": 1,\n  \"source\": \"artifact\",\n  \"confidence\": \"high\"\n}",
+                  "graphite.weight": "1"
+                }
+              },
+              {
+                "id": "rel-45",
+                "destinationId": "dependency:artifact:commons-io-2.15.0",
+                "description": "Checkout Runtime uses commons-io-2.15.0",
+                "technology": "uses",
+                "tags": "Relationship,Graphite,depends-on",
+                "properties": {
+                  "graphite.view": "container",
+                  "graphite.relationshipKind": "depends-on",
+                  "graphite.evidence": "{\n  \"crossBoundaryCalls\": 1,\n  \"source\": \"artifact\",\n  \"confidence\": \"high\"\n}",
+                  "graphite.weight": "1"
+                }
+              },
+              {
+                "id": "rel-46",
+                "destinationId": "dependency:namespace:com.partner.service18",
+                "description": "Checkout Runtime uses com.partner.service18",
+                "technology": "uses",
+                "tags": "Relationship,Graphite,depends-on",
+                "properties": {
+                  "graphite.view": "container",
+                  "graphite.relationshipKind": "depends-on",
+                  "graphite.evidence": "{\n  \"crossBoundaryCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\"\n}",
+                  "graphite.weight": "1"
+                }
+              },
+              {
+                "id": "rel-47",
+                "destinationId": "dependency:namespace:com.partner.service16",
+                "description": "Checkout Runtime uses com.partner.service16",
+                "technology": "uses",
+                "tags": "Relationship,Graphite,depends-on",
+                "properties": {
+                  "graphite.view": "container",
+                  "graphite.relationshipKind": "depends-on",
+                  "graphite.evidence": "{\n  \"crossBoundaryCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\"\n}",
+                  "graphite.weight": "1"
+                }
+              },
+              {
+                "id": "rel-48",
+                "destinationId": "dependency:namespace:com.partner.service12",
+                "description": "Checkout Runtime uses com.partner.service12",
+                "technology": "uses",
+                "tags": "Relationship,Graphite,depends-on",
+                "properties": {
+                  "graphite.view": "container",
+                  "graphite.relationshipKind": "depends-on",
+                  "graphite.evidence": "{\n  \"crossBoundaryCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\"\n}",
+                  "graphite.weight": "1"
+                }
+              },
+              {
+                "id": "rel-49",
+                "destinationId": "dependency:namespace:com.partner.service14",
+                "description": "Checkout Runtime uses com.partner.service14",
+                "technology": "uses",
+                "tags": "Relationship,Graphite,depends-on",
+                "properties": {
+                  "graphite.view": "container",
+                  "graphite.relationshipKind": "depends-on",
+                  "graphite.evidence": "{\n  \"crossBoundaryCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\"\n}",
+                  "graphite.weight": "1"
+                }
+              },
+              {
+                "id": "rel-50",
+                "destinationId": "dependency:namespace:com.partner.service06",
+                "description": "Checkout Runtime uses com.partner.service06",
+                "technology": "uses",
+                "tags": "Relationship,Graphite,depends-on",
+                "properties": {
+                  "graphite.view": "container",
+                  "graphite.relationshipKind": "depends-on",
+                  "graphite.evidence": "{\n  \"crossBoundaryCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\"\n}",
+                  "graphite.weight": "1"
+                }
+              },
+              {
+                "id": "rel-51",
+                "destinationId": "dependency:namespace:com.partner.service04",
+                "description": "Checkout Runtime uses com.partner.service04",
+                "technology": "uses",
+                "tags": "Relationship,Graphite,depends-on",
+                "properties": {
+                  "graphite.view": "container",
+                  "graphite.relationshipKind": "depends-on",
+                  "graphite.evidence": "{\n  \"crossBoundaryCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\"\n}",
+                  "graphite.weight": "1"
+                }
+              },
+              {
+                "id": "rel-52",
+                "destinationId": "dependency:namespace:com.partner.service05",
+                "description": "Checkout Runtime uses com.partner.service05",
+                "technology": "uses",
+                "tags": "Relationship,Graphite,depends-on",
+                "properties": {
+                  "graphite.view": "container",
+                  "graphite.relationshipKind": "depends-on",
+                  "graphite.evidence": "{\n  \"crossBoundaryCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\"\n}",
+                  "graphite.weight": "1"
+                }
+              },
+              {
+                "id": "rel-53",
+                "destinationId": "dependency:namespace:com.partner.service07",
+                "description": "Checkout Runtime uses com.partner.service07",
+                "technology": "uses",
+                "tags": "Relationship,Graphite,depends-on",
+                "properties": {
+                  "graphite.view": "container",
+                  "graphite.relationshipKind": "depends-on",
+                  "graphite.evidence": "{\n  \"crossBoundaryCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\"\n}",
+                  "graphite.weight": "1"
+                }
+              },
+              {
+                "id": "rel-54",
+                "destinationId": "dependency:namespace:com.partner.service11",
+                "description": "Checkout Runtime uses com.partner.service11",
+                "technology": "uses",
+                "tags": "Relationship,Graphite,depends-on",
+                "properties": {
+                  "graphite.view": "container",
+                  "graphite.relationshipKind": "depends-on",
+                  "graphite.evidence": "{\n  \"crossBoundaryCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\"\n}",
+                  "graphite.weight": "1"
+                }
+              },
+              {
+                "id": "rel-55",
+                "destinationId": "dependency:namespace:com.partner.service08",
+                "description": "Checkout Runtime uses com.partner.service08",
+                "technology": "uses",
+                "tags": "Relationship,Graphite,depends-on",
+                "properties": {
+                  "graphite.view": "container",
+                  "graphite.relationshipKind": "depends-on",
+                  "graphite.evidence": "{\n  \"crossBoundaryCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\"\n}",
+                  "graphite.weight": "1"
+                }
+              },
+              {
+                "id": "rel-56",
+                "destinationId": "dependency:namespace:com.partner.service10",
+                "description": "Checkout Runtime uses com.partner.service10",
+                "technology": "uses",
+                "tags": "Relationship,Graphite,depends-on",
+                "properties": {
+                  "graphite.view": "container",
+                  "graphite.relationshipKind": "depends-on",
+                  "graphite.evidence": "{\n  \"crossBoundaryCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\"\n}",
+                  "graphite.weight": "1"
+                }
+              },
+              {
+                "id": "rel-57",
+                "destinationId": "dependency:namespace:com.partner.service09",
+                "description": "Checkout Runtime uses com.partner.service09",
+                "technology": "uses",
+                "tags": "Relationship,Graphite,depends-on",
+                "properties": {
+                  "graphite.view": "container",
+                  "graphite.relationshipKind": "depends-on",
+                  "graphite.evidence": "{\n  \"crossBoundaryCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\"\n}",
+                  "graphite.weight": "1"
+                }
+              },
+              {
+                "id": "rel-58",
+                "destinationId": "dependency:namespace:com.partner.service23",
+                "description": "Checkout Runtime uses com.partner.service23",
+                "technology": "uses",
+                "tags": "Relationship,Graphite,depends-on",
+                "properties": {
+                  "graphite.view": "container",
+                  "graphite.relationshipKind": "depends-on",
+                  "graphite.evidence": "{\n  \"crossBoundaryCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\"\n}",
+                  "graphite.weight": "1"
+                }
+              },
+              {
+                "id": "rel-59",
+                "destinationId": "dependency:namespace:com.partner.service15",
+                "description": "Checkout Runtime uses com.partner.service15",
+                "technology": "uses",
+                "tags": "Relationship,Graphite,depends-on",
+                "properties": {
+                  "graphite.view": "container",
+                  "graphite.relationshipKind": "depends-on",
+                  "graphite.evidence": "{\n  \"crossBoundaryCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\"\n}",
+                  "graphite.weight": "1"
+                }
+              },
+              {
+                "id": "rel-60",
+                "destinationId": "dependency:artifact:lucene-core-9.12.0",
+                "description": "Checkout Runtime uses lucene-core-9.12.0",
+                "technology": "uses",
+                "tags": "Relationship,Graphite,depends-on",
+                "properties": {
+                  "graphite.view": "container",
+                  "graphite.relationshipKind": "depends-on",
+                  "graphite.evidence": "{\n  \"crossBoundaryCalls\": 1,\n  \"source\": \"artifact\",\n  \"confidence\": \"high\"\n}",
+                  "graphite.weight": "1"
+                }
+              },
+              {
+                "id": "rel-61",
+                "destinationId": "dependency:namespace:com.partner.service03",
+                "description": "Checkout Runtime uses com.partner.service03",
+                "technology": "uses",
+                "tags": "Relationship,Graphite,depends-on",
+                "properties": {
+                  "graphite.view": "container",
+                  "graphite.relationshipKind": "depends-on",
+                  "graphite.evidence": "{\n  \"crossBoundaryCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\"\n}",
+                  "graphite.weight": "1"
+                }
+              },
+              {
+                "id": "rel-62",
+                "destinationId": "dependency:namespace:com.partner.service02",
+                "description": "Checkout Runtime uses com.partner.service02",
+                "technology": "uses",
+                "tags": "Relationship,Graphite,depends-on",
+                "properties": {
+                  "graphite.view": "container",
+                  "graphite.relationshipKind": "depends-on",
+                  "graphite.evidence": "{\n  \"crossBoundaryCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\"\n}",
+                  "graphite.weight": "1"
+                }
+              },
+              {
+                "id": "rel-63",
+                "destinationId": "dependency:namespace:com.partner.service19",
+                "description": "Checkout Runtime uses com.partner.service19",
+                "technology": "uses",
+                "tags": "Relationship,Graphite,depends-on",
+                "properties": {
+                  "graphite.view": "container",
+                  "graphite.relationshipKind": "depends-on",
+                  "graphite.evidence": "{\n  \"crossBoundaryCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\"\n}",
+                  "graphite.weight": "1"
+                }
+              },
+              {
+                "id": "rel-64",
+                "destinationId": "dependency:artifact:alpha-lib-1.0",
+                "description": "Checkout Runtime uses alpha-lib-1.0",
+                "technology": "uses",
+                "tags": "Relationship,Graphite,depends-on",
+                "properties": {
+                  "graphite.view": "container",
+                  "graphite.relationshipKind": "depends-on",
+                  "graphite.evidence": "{\n  \"crossBoundaryCalls\": 1,\n  \"source\": \"artifact\",\n  \"confidence\": \"high\"\n}",
+                  "graphite.weight": "1"
+                }
+              },
+              {
+                "id": "rel-65",
+                "destinationId": "dependency:artifact:zeta-lib-1.0",
+                "description": "Checkout Runtime uses zeta-lib-1.0",
+                "technology": "uses",
+                "tags": "Relationship,Graphite,depends-on",
+                "properties": {
+                  "graphite.view": "container",
+                  "graphite.relationshipKind": "depends-on",
+                  "graphite.evidence": "{\n  \"crossBoundaryCalls\": 1,\n  \"source\": \"artifact\",\n  \"confidence\": \"high\"\n}",
+                  "graphite.weight": "1"
+                }
+              },
+              {
+                "id": "rel-66",
+                "destinationId": "dependency:namespace:com.partner.service20",
+                "description": "Checkout Runtime uses com.partner.service20",
+                "technology": "uses",
+                "tags": "Relationship,Graphite,depends-on",
+                "properties": {
+                  "graphite.view": "container",
+                  "graphite.relationshipKind": "depends-on",
+                  "graphite.evidence": "{\n  \"crossBoundaryCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\"\n}",
+                  "graphite.weight": "1"
+                }
+              },
+              {
+                "id": "rel-67",
+                "destinationId": "dependency:namespace:com.partner.payment",
+                "description": "Checkout Runtime uses com.partner.payment",
+                "technology": "uses",
+                "tags": "Relationship,Graphite,depends-on",
+                "properties": {
+                  "graphite.view": "container",
+                  "graphite.relationshipKind": "depends-on",
+                  "graphite.evidence": "{\n  \"crossBoundaryCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\"\n}",
+                  "graphite.weight": "1"
+                }
+              },
+              {
+                "id": "rel-68",
+                "destinationId": "dependency:namespace:com.partner.service22",
+                "description": "Checkout Runtime uses com.partner.service22",
+                "technology": "uses",
+                "tags": "Relationship,Graphite,depends-on",
+                "properties": {
+                  "graphite.view": "container",
+                  "graphite.relationshipKind": "depends-on",
+                  "graphite.evidence": "{\n  \"crossBoundaryCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\"\n}",
+                  "graphite.weight": "1"
+                }
+              },
+              {
+                "id": "rel-69",
+                "destinationId": "dependency:artifact:lucene-analysis-9.12.0",
+                "description": "Checkout Runtime uses lucene-analysis-9.12.0",
+                "technology": "uses",
+                "tags": "Relationship,Graphite,depends-on",
+                "properties": {
+                  "graphite.view": "container",
+                  "graphite.relationshipKind": "depends-on",
+                  "graphite.evidence": "{\n  \"crossBoundaryCalls\": 1,\n  \"source\": \"artifact\",\n  \"confidence\": \"high\"\n}",
+                  "graphite.weight": "1"
+                }
+              },
+              {
+                "id": "rel-70",
+                "destinationId": "dependency:runtime:java",
+                "description": "Checkout Runtime runs on Java Runtime",
+                "technology": "runs-on",
+                "tags": "Relationship,Graphite,runs-on",
+                "properties": {
+                  "graphite.view": "container",
+                  "graphite.relationshipKind": "runs-on",
+                  "graphite.evidence": "{\n  \"crossBoundaryCalls\": 1,\n  \"source\": \"runtime\",\n  \"confidence\": \"high\"\n}",
+                  "graphite.weight": "1"
+                }
+              }
+            ],
+            "containers": [],
+            "components": [
+              {
+                "id": "component:service-and-repository",
+                "name": "Service and Repository",
+                "description": "Connects the Checkout Runtime capability to external collaborators and dependency boundaries",
+                "tags": "Component,Graphite,integration",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "integration",
+                  "graphite.architectureType": "application-service",
+                  "graphite.responsibility": "Connects the Checkout Runtime capability to external collaborators and dependency boundaries",
+                  "graphite.whySelected": "[\n  \"used by neighboring capabilities\",\n  \"external dependency touchpoint\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.repository,com.acme.checkout.service",
+                  "graphite.methods": "2.0",
+                  "graphite.callSites": "36.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.service.CheckoutService\",\n  \"com.acme.checkout.repository.OrderRepository\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.repository\",\n  \"com.acme.checkout.service\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:api",
+                "name": "Api",
+                "description": "Accepts external requests and translates them into internal application operations",
+                "tags": "Component,Graphite,entrypoint",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "entrypoint",
+                  "graphite.architectureType": "application-service",
+                  "graphite.responsibility": "Accepts external requests and translates them into internal application operations",
+                  "graphite.whySelected": "[\n  \"entrypoint-facing capability\",\n  \"depends on neighboring capabilities\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout,com.acme.checkout.api",
+                  "graphite.methods": "2.0",
+                  "graphite.callSites": "3.0",
+                  "graphite.endpoints": "1.0",
+                  "graphite.entrypoints": "[\n  \"/checkout\"\n]",
+                  "graphite.classes": "[\n  \"com.acme.checkout.api.CheckoutController\",\n  \"com.acme.checkout.Application\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout\",\n  \"com.acme.checkout.api\"\n]"
+                },
+                "relationships": [
+                  {
+                    "id": "rel-72",
+                    "destinationId": "component:service-and-repository",
+                    "description": "Api routes work to Service and Repository",
+                    "technology": "routes-to",
+                    "tags": "Relationship,Graphite,routes-to",
+                    "properties": {
+                      "graphite.view": "component",
+                      "graphite.relationshipKind": "routes-to",
+                      "graphite.evidence": "{\n  \"calls\": 1\n}",
+                      "graphite.weight": "1"
+                    }
+                  }
+                ],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island00",
+                "name": "Island00",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island00",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island00.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island00\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island01",
+                "name": "Island01",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island01",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island01.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island01\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island02",
+                "name": "Island02",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island02",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island02.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island02\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island03",
+                "name": "Island03",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island03",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island03.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island03\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island04",
+                "name": "Island04",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island04",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island04.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island04\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island05",
+                "name": "Island05",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island05",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island05.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island05\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island06",
+                "name": "Island06",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island06",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island06.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island06\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island07",
+                "name": "Island07",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island07",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island07.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island07\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island08",
+                "name": "Island08",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island08",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island08.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island08\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island09",
+                "name": "Island09",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island09",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island09.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island09\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island10",
+                "name": "Island10",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island10",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island10.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island10\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island11",
+                "name": "Island11",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island11",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island11.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island11\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island12",
+                "name": "Island12",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island12",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island12.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island12\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island13",
+                "name": "Island13",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island13",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island13.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island13\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island14",
+                "name": "Island14",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island14",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island14.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island14\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island15",
+                "name": "Island15",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island15",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island15.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island15\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island16",
+                "name": "Island16",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island16",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island16.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island16\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island17",
+                "name": "Island17",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island17",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island17.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island17\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island18",
+                "name": "Island18",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island18",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island18.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island18\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island19",
+                "name": "Island19",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island19",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island19.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island19\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island20",
+                "name": "Island20",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island20",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island20.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island20\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island21",
+                "name": "Island21",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island21",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island21.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island21\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island22",
+                "name": "Island22",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island22",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island22.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island22\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island23",
+                "name": "Island23",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island23",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island23.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island23\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              }
+            ]
+          }
+        ],
+        "components": []
+      },
+      {
+        "id": "dependency:library:commons",
+        "name": "commons",
+        "description": "Reusable third-party library capabilities referenced from the subject system",
+        "tags": "Software System,Graphite,library",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "library",
+          "graphite.architectureType": "external-library",
+          "graphite.responsibility": "Provides the Commons third-party library capabilities used by the application"
+        },
+        "relationships": [
+          {
+            "id": "rel-35",
+            "destinationId": "dependency:artifact:postgresql-42.7.3",
+            "description": "commons builds on postgresql-42.7.3",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,builds-on",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "builds-on",
+              "graphite.evidence": "{\n  \"observedReferences\": 2,\n  \"source\": \"artifact-metadata\",\n  \"confidence\": \"high\"\n}",
+              "graphite.weight": "2"
+            }
+          }
+        ],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:library:lucene",
+        "name": "lucene",
+        "description": "Reusable third-party library capabilities referenced from the subject system",
+        "tags": "Software System,Graphite,library",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "library",
+          "graphite.architectureType": "external-library",
+          "graphite.responsibility": "Provides the Lucene third-party library capabilities used by the application"
+        },
+        "relationships": [
+          {
+            "id": "rel-32",
+            "destinationId": "dependency:library:commons",
+            "description": "lucene builds on commons",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,builds-on",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "builds-on",
+              "graphite.evidence": "{\n  \"observedReferences\": 6,\n  \"source\": \"artifact-metadata\",\n  \"confidence\": \"high\"\n}",
+              "graphite.weight": "6"
+            }
+          }
+        ],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:artifact:postgresql-42.7.3",
+        "name": "postgresql-42.7.3",
+        "description": "Reusable third-party library capabilities referenced from the subject system",
+        "tags": "Software System,Graphite,library",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "library",
+          "graphite.architectureType": "external-library",
+          "graphite.responsibility": "Provides reusable library capabilities linked from the application runtime",
+          "graphite.source": "artifact",
+          "graphite.confidence": "high"
+        },
+        "relationships": [
+          {
+            "id": "rel-37",
+            "destinationId": "dependency:runtime:java",
+            "description": "postgresql-42.7.3 runs on Java Runtime",
+            "technology": "runs-on",
+            "tags": "Relationship,Graphite,runs-on",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "runs-on",
+              "graphite.evidence": "{\n  \"source\": \"runtime\",\n  \"kind\": \"runtime\"\n}"
+            }
+          }
+        ],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:artifact:alpha-lib-1.0",
+        "name": "alpha-lib-1.0",
+        "description": "Reusable third-party library capabilities referenced from the subject system",
+        "tags": "Software System,Graphite,library",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "library",
+          "graphite.architectureType": "external-library",
+          "graphite.responsibility": "Provides reusable library capabilities linked from the application runtime",
+          "graphite.source": "artifact",
+          "graphite.confidence": "high"
+        },
+        "relationships": [
+          {
+            "id": "rel-36",
+            "destinationId": "dependency:artifact:postgresql-42.7.3",
+            "description": "alpha-lib-1.0 builds on postgresql-42.7.3",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,builds-on",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "builds-on",
+              "graphite.evidence": "{\n  \"observedReferences\": 2,\n  \"source\": \"artifact-metadata\",\n  \"confidence\": \"high\"\n}",
+              "graphite.weight": "2"
+            }
+          }
+        ],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:artifact:zeta-lib-1.0",
+        "name": "zeta-lib-1.0",
+        "description": "Reusable third-party library capabilities referenced from the subject system",
+        "tags": "Software System,Graphite,library",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "library",
+          "graphite.architectureType": "external-library",
+          "graphite.responsibility": "Provides reusable library capabilities linked from the application runtime",
+          "graphite.source": "artifact",
+          "graphite.confidence": "high"
+        },
+        "relationships": [
+          {
+            "id": "rel-33",
+            "destinationId": "dependency:library:lucene",
+            "description": "zeta-lib-1.0 builds on lucene",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,builds-on",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "builds-on",
+              "graphite.evidence": "{\n  \"observedReferences\": 2,\n  \"source\": \"artifact-metadata\",\n  \"confidence\": \"high\"\n}",
+              "graphite.weight": "2"
+            }
+          },
+          {
+            "id": "rel-34",
+            "destinationId": "dependency:artifact:postgresql-42.7.3",
+            "description": "zeta-lib-1.0 builds on postgresql-42.7.3",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,builds-on",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "builds-on",
+              "graphite.evidence": "{\n  \"observedReferences\": 2,\n  \"source\": \"artifact-metadata\",\n  \"confidence\": \"high\"\n}",
+              "graphite.weight": "2"
+            }
+          }
+        ],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service21",
+        "name": "com.partner.service21",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes",
+          "graphite.source": "namespace",
+          "graphite.confidence": "medium"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service17",
+        "name": "com.partner.service17",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes",
+          "graphite.source": "namespace",
+          "graphite.confidence": "medium"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service13",
+        "name": "com.partner.service13",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes",
+          "graphite.source": "namespace",
+          "graphite.confidence": "medium"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service00",
+        "name": "com.partner.service00",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes",
+          "graphite.source": "namespace",
+          "graphite.confidence": "medium"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service01",
+        "name": "com.partner.service01",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes",
+          "graphite.source": "namespace",
+          "graphite.confidence": "medium"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service18",
+        "name": "com.partner.service18",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes",
+          "graphite.source": "namespace",
+          "graphite.confidence": "medium"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service16",
+        "name": "com.partner.service16",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes",
+          "graphite.source": "namespace",
+          "graphite.confidence": "medium"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service12",
+        "name": "com.partner.service12",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes",
+          "graphite.source": "namespace",
+          "graphite.confidence": "medium"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service14",
+        "name": "com.partner.service14",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes",
+          "graphite.source": "namespace",
+          "graphite.confidence": "medium"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service06",
+        "name": "com.partner.service06",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes",
+          "graphite.source": "namespace",
+          "graphite.confidence": "medium"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service04",
+        "name": "com.partner.service04",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes",
+          "graphite.source": "namespace",
+          "graphite.confidence": "medium"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service05",
+        "name": "com.partner.service05",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes",
+          "graphite.source": "namespace",
+          "graphite.confidence": "medium"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service07",
+        "name": "com.partner.service07",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes",
+          "graphite.source": "namespace",
+          "graphite.confidence": "medium"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service11",
+        "name": "com.partner.service11",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes",
+          "graphite.source": "namespace",
+          "graphite.confidence": "medium"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service08",
+        "name": "com.partner.service08",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes",
+          "graphite.source": "namespace",
+          "graphite.confidence": "medium"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service10",
+        "name": "com.partner.service10",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes",
+          "graphite.source": "namespace",
+          "graphite.confidence": "medium"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service09",
+        "name": "com.partner.service09",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes",
+          "graphite.source": "namespace",
+          "graphite.confidence": "medium"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service23",
+        "name": "com.partner.service23",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes",
+          "graphite.source": "namespace",
+          "graphite.confidence": "medium"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service15",
+        "name": "com.partner.service15",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes",
+          "graphite.source": "namespace",
+          "graphite.confidence": "medium"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service03",
+        "name": "com.partner.service03",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes",
+          "graphite.source": "namespace",
+          "graphite.confidence": "medium"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service02",
+        "name": "com.partner.service02",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes",
+          "graphite.source": "namespace",
+          "graphite.confidence": "medium"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service19",
+        "name": "com.partner.service19",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes",
+          "graphite.source": "namespace",
+          "graphite.confidence": "medium"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service20",
+        "name": "com.partner.service20",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes",
+          "graphite.source": "namespace",
+          "graphite.confidence": "medium"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.payment",
+        "name": "com.partner.payment",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes",
+          "graphite.source": "namespace",
+          "graphite.confidence": "medium"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service22",
+        "name": "com.partner.service22",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes",
+          "graphite.source": "namespace",
+          "graphite.confidence": "medium"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:runtime:java",
+        "name": "Java Runtime",
+        "description": "Language and platform runtime supporting the application and its libraries",
+        "tags": "Software System,Graphite,runtime",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "runtime",
+          "graphite.architectureType": "runtime-platform",
+          "graphite.responsibility": "Provides language and platform runtime services used by the application",
+          "graphite.source": "runtime",
+          "graphite.confidence": "high"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:artifact:commons-lang3-3.14.0",
+        "name": "commons-lang3-3.14.0",
+        "description": "External dependency inferred from code graph evidence",
+        "tags": "Software System,Graphite,External Dependency",
+        "properties": {
+          "graphite.kind": "library",
+          "graphite.architectureType": "external-library",
+          "graphite.source": "artifact",
+          "graphite.confidence": "high",
+          "graphite.responsibility": "Provides reusable library capabilities linked from the application runtime"
+        },
+        "relationships": [
+          {
+            "id": "rel-71",
+            "destinationId": "dependency:runtime:java",
+            "description": "commons-lang3-3.14.0 runs on Java Runtime",
+            "technology": "runs-on",
+            "tags": "Relationship,Graphite,runs-on",
+            "properties": {
+              "graphite.view": "container",
+              "graphite.relationshipKind": "runs-on",
+              "graphite.evidence": "{\n  \"source\": \"runtime\",\n  \"kind\": \"runtime\"\n}"
+            }
+          }
+        ],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:artifact:commons-io-2.15.0",
+        "name": "commons-io-2.15.0",
+        "description": "External dependency inferred from code graph evidence",
+        "tags": "Software System,Graphite,External Dependency",
+        "properties": {
+          "graphite.kind": "library",
+          "graphite.architectureType": "external-library",
+          "graphite.source": "artifact",
+          "graphite.confidence": "high",
+          "graphite.responsibility": "Provides reusable library capabilities linked from the application runtime"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:artifact:lucene-core-9.12.0",
+        "name": "lucene-core-9.12.0",
+        "description": "External dependency inferred from code graph evidence",
+        "tags": "Software System,Graphite,External Dependency",
+        "properties": {
+          "graphite.kind": "library",
+          "graphite.architectureType": "external-library",
+          "graphite.source": "artifact",
+          "graphite.confidence": "high",
+          "graphite.responsibility": "Provides reusable library capabilities linked from the application runtime"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:artifact:lucene-analysis-9.12.0",
+        "name": "lucene-analysis-9.12.0",
+        "description": "External dependency inferred from code graph evidence",
+        "tags": "Software System,Graphite,External Dependency",
+        "properties": {
+          "graphite.kind": "library",
+          "graphite.architectureType": "external-library",
+          "graphite.source": "artifact",
+          "graphite.confidence": "high",
+          "graphite.responsibility": "Provides reusable library capabilities linked from the application runtime"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      }
+    ]
+  },
+  "views": {
+    "systemContextViews": [
+      {
+        "key": "graphite-context",
+        "description": "Graphite-derived C4 system context view",
+        "softwareSystemId": "system:application",
+        "elements": [
+          {
+            "id": "person:http-clients"
+          },
+          {
+            "id": "dependency:library:commons"
+          },
+          {
+            "id": "dependency:library:lucene"
+          },
+          {
+            "id": "dependency:artifact:postgresql-42.7.3"
+          },
+          {
+            "id": "dependency:artifact:alpha-lib-1.0"
+          },
+          {
+            "id": "dependency:artifact:zeta-lib-1.0"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service21"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service17"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service13"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service00"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service01"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service18"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service16"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service12"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service14"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service06"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service04"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service05"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service07"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service11"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service08"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service10"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service09"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service23"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service15"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service03"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service02"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service19"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service20"
+          },
+          {
+            "id": "dependency:namespace:com.partner.payment"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service22"
+          },
+          {
+            "id": "dependency:runtime:java"
+          },
+          {
+            "id": "system:application"
+          }
+        ],
+        "relationships": [
+          {
+            "id": "rel-1"
+          },
+          {
+            "id": "rel-2"
+          },
+          {
+            "id": "rel-3"
+          },
+          {
+            "id": "rel-4"
+          },
+          {
+            "id": "rel-5"
+          },
+          {
+            "id": "rel-6"
+          },
+          {
+            "id": "rel-7"
+          },
+          {
+            "id": "rel-8"
+          },
+          {
+            "id": "rel-9"
+          },
+          {
+            "id": "rel-10"
+          },
+          {
+            "id": "rel-11"
+          },
+          {
+            "id": "rel-12"
+          },
+          {
+            "id": "rel-13"
+          },
+          {
+            "id": "rel-14"
+          },
+          {
+            "id": "rel-15"
+          },
+          {
+            "id": "rel-16"
+          },
+          {
+            "id": "rel-17"
+          },
+          {
+            "id": "rel-18"
+          },
+          {
+            "id": "rel-19"
+          },
+          {
+            "id": "rel-20"
+          },
+          {
+            "id": "rel-21"
+          },
+          {
+            "id": "rel-22"
+          },
+          {
+            "id": "rel-23"
+          },
+          {
+            "id": "rel-24"
+          },
+          {
+            "id": "rel-25"
+          },
+          {
+            "id": "rel-26"
+          },
+          {
+            "id": "rel-27"
+          },
+          {
+            "id": "rel-28"
+          },
+          {
+            "id": "rel-29"
+          },
+          {
+            "id": "rel-30"
+          },
+          {
+            "id": "rel-31"
+          },
+          {
+            "id": "rel-32"
+          },
+          {
+            "id": "rel-33"
+          },
+          {
+            "id": "rel-34"
+          },
+          {
+            "id": "rel-35"
+          },
+          {
+            "id": "rel-36"
+          },
+          {
+            "id": "rel-37"
+          }
+        ],
+        "properties": {
+          "graphite.level": "all"
+        }
+      }
+    ],
+    "containerViews": [
+      {
+        "key": "graphite-container",
+        "description": "Graphite-derived C4 container view",
+        "softwareSystemId": "system:application",
+        "elements": [
+          {
+            "id": "container:application-runtime"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service21"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service17"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service13"
+          },
+          {
+            "id": "dependency:artifact:postgresql-42.7.3"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service00"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service01"
+          },
+          {
+            "id": "dependency:artifact:commons-lang3-3.14.0"
+          },
+          {
+            "id": "dependency:artifact:commons-io-2.15.0"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service18"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service16"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service12"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service14"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service06"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service04"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service05"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service07"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service11"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service08"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service10"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service09"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service23"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service15"
+          },
+          {
+            "id": "dependency:artifact:lucene-core-9.12.0"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service03"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service02"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service19"
+          },
+          {
+            "id": "dependency:artifact:alpha-lib-1.0"
+          },
+          {
+            "id": "dependency:artifact:zeta-lib-1.0"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service20"
+          },
+          {
+            "id": "dependency:namespace:com.partner.payment"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service22"
+          },
+          {
+            "id": "dependency:artifact:lucene-analysis-9.12.0"
+          },
+          {
+            "id": "dependency:runtime:java"
+          },
+          {
+            "id": "person:http-clients"
+          }
+        ],
+        "relationships": [
+          {
+            "id": "rel-38"
+          },
+          {
+            "id": "rel-39"
+          },
+          {
+            "id": "rel-40"
+          },
+          {
+            "id": "rel-41"
+          },
+          {
+            "id": "rel-42"
+          },
+          {
+            "id": "rel-43"
+          },
+          {
+            "id": "rel-44"
+          },
+          {
+            "id": "rel-45"
+          },
+          {
+            "id": "rel-46"
+          },
+          {
+            "id": "rel-47"
+          },
+          {
+            "id": "rel-48"
+          },
+          {
+            "id": "rel-49"
+          },
+          {
+            "id": "rel-50"
+          },
+          {
+            "id": "rel-51"
+          },
+          {
+            "id": "rel-52"
+          },
+          {
+            "id": "rel-53"
+          },
+          {
+            "id": "rel-54"
+          },
+          {
+            "id": "rel-55"
+          },
+          {
+            "id": "rel-56"
+          },
+          {
+            "id": "rel-57"
+          },
+          {
+            "id": "rel-58"
+          },
+          {
+            "id": "rel-59"
+          },
+          {
+            "id": "rel-60"
+          },
+          {
+            "id": "rel-61"
+          },
+          {
+            "id": "rel-62"
+          },
+          {
+            "id": "rel-63"
+          },
+          {
+            "id": "rel-64"
+          },
+          {
+            "id": "rel-65"
+          },
+          {
+            "id": "rel-66"
+          },
+          {
+            "id": "rel-67"
+          },
+          {
+            "id": "rel-68"
+          },
+          {
+            "id": "rel-69"
+          },
+          {
+            "id": "rel-70"
+          },
+          {
+            "id": "rel-37"
+          },
+          {
+            "id": "rel-71"
+          }
+        ],
+        "properties": {
+          "graphite.level": "all",
+          "graphite.systemBoundary": "com.acme.checkout"
+        }
+      }
+    ],
+    "componentViews": [
+      {
+        "key": "graphite-component-container-application-runtime",
+        "description": "Graphite-derived C4 component view for Checkout Runtime",
+        "containerId": "container:application-runtime",
+        "elements": [
+          {
+            "id": "component:service-and-repository"
+          },
+          {
+            "id": "component:api"
+          },
+          {
+            "id": "component:island00"
+          },
+          {
+            "id": "component:island01"
+          },
+          {
+            "id": "component:island02"
+          },
+          {
+            "id": "component:island03"
+          },
+          {
+            "id": "component:island04"
+          },
+          {
+            "id": "component:island05"
+          },
+          {
+            "id": "component:island06"
+          },
+          {
+            "id": "component:island07"
+          },
+          {
+            "id": "component:island08"
+          },
+          {
+            "id": "component:island09"
+          },
+          {
+            "id": "component:island10"
+          },
+          {
+            "id": "component:island11"
+          },
+          {
+            "id": "component:island12"
+          },
+          {
+            "id": "component:island13"
+          },
+          {
+            "id": "component:island14"
+          },
+          {
+            "id": "component:island15"
+          },
+          {
+            "id": "component:island16"
+          },
+          {
+            "id": "component:island17"
+          },
+          {
+            "id": "component:island18"
+          },
+          {
+            "id": "component:island19"
+          },
+          {
+            "id": "component:island20"
+          },
+          {
+            "id": "component:island21"
+          },
+          {
+            "id": "component:island22"
+          },
+          {
+            "id": "component:island23"
+          }
+        ],
+        "relationships": [
+          {
+            "id": "rel-72"
+          }
+        ],
+        "properties": {
+          "graphite.level": "all",
+          "graphite.containerId": "container:application-runtime",
+          "graphite.container": "Checkout Runtime"
+        }
+      }
+    ],
+    "configuration": {
+      "scope": "softwareSystem",
+      "properties": {
+        "graphite.level": "all",
+        "graphite.availableLevels": "[\n  \"context\",\n  \"container\",\n  \"component\",\n  \"all\"\n]"
+      }
+    }
+  }
+}

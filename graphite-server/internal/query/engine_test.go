@@ -53,7 +53,7 @@ func TestNumericEqualityDoesNotLoseLargeIntegers(t *testing.T) {
 	assertResult(t, r, []string{"eq", "greater"}, []map[string]any{{"eq": false, "greater": true}})
 }
 func TestUnsupportedIsRejectedEvenOnEmptyInput(t *testing.T) {
-	for _, source := range []string{"MATCH (n) WHERE n.value =~ '.*' RETURN n", "MATCH (n)-->(m) RETURN m", "UNWIND [] AS n RETURN unknown(n)", "RETURN count(*) + 1", "RETURN 1 SKIP -1", "RETURN 1 / 0", "RETURN $missing"} {
+	for _, source := range []string{"MATCH (n) WHERE n.value =~ '.*' RETURN n", "UNWIND [] AS n RETURN unknown(n)", "RETURN count(*) + 1", "RETURN 1 SKIP -1", "RETURN 1 / 0", "RETURN $missing"} {
 		t.Run(source, func(t *testing.T) {
 			_, err := Execute(context.Background(), nil, source, nil, -1)
 			if err == nil {

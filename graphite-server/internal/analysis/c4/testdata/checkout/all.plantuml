@@ -1,0 +1,50 @@
+' Context
+@startuml
+top to bottom direction
+skinparam shadowing false
+actor "HTTP Clients" as person_http_clients
+package "Application Layer" {
+  rectangle "Checkout" as system_application
+}
+package "External Systems" {
+  component "payment" as dependency_namespace_com_partner_payment
+}
+package "Library Layer" {
+  component "Postgresql" as dependency_artifact_postgresql_42_7_3
+}
+package "Technology Layer" {
+  node "Java Runtime" as dependency_runtime_java
+}
+system_application --> dependency_artifact_postgresql_42_7_3 : uses
+system_application --> dependency_namespace_com_partner_payment : uses
+person_http_clients --> system_application : uses
+dependency_artifact_postgresql_42_7_3 --> dependency_runtime_java : runs on
+@enduml
+
+' Container
+@startuml
+top to bottom direction
+skinparam shadowing false
+package "Application Layer" {
+  package "Runtime Boundary" {
+    component "Checkout Runtime" as container_application_runtime
+  }
+}
+package "External Systems" {
+  component "payment" as dependency_namespace_com_partner_payment
+}
+container_application_runtime --> dependency_namespace_com_partner_payment : uses
+@enduml
+
+' Component
+@startuml
+top to bottom direction
+skinparam shadowing false
+package "Application Layer" {
+  package "Checkout Runtime" {
+    component "Api" as component_api
+    component "Service and Repository" as component_service_and_repository
+  }
+}
+component_api --> component_service_and_repository : routes to
+@enduml

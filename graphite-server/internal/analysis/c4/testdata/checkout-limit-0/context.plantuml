@@ -1,0 +1,9 @@
+@startuml
+top to bottom direction
+skinparam shadowing false
+actor "HTTP Clients" as person_http_clients
+package "Application Layer" {
+  rectangle "Checkout" as system_application
+}
+person_http_clients --> system_application : uses
+@enduml

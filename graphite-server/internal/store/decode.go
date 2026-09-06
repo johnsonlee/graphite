@@ -50,15 +50,17 @@ type Node struct {
 	Profile                    *string
 }
 type Metadata struct {
-	MemberAnnotationOrder map[string][]string
-	MethodList            []MethodDescriptor
-	Methods               map[string]MethodDescriptor
-	Supertypes, Subtypes  map[string][]string
-	EnumValues            map[string][]any
-	ClassOrigins          map[string]string
-	ArtifactDependencies  map[string]map[string]int32
-	MemberAnnotations     map[string]map[string]map[string]any
-	BranchScopes          []BranchScope
+	MemberAnnotationOrder         map[string][]string
+	MethodList                    []MethodDescriptor
+	Methods                       map[string]MethodDescriptor
+	Supertypes, Subtypes          map[string][]string
+	EnumValues                    map[string][]any
+	ClassOrigins                  map[string]string
+	ArtifactDependencies          map[string]map[string]int32
+	ArtifactDependencyOrder       []string
+	ArtifactDependencyTargetOrder map[string][]string
+	MemberAnnotations             map[string]map[string]map[string]any
+	BranchScopes                  []BranchScope
 }
 
 var nodeKinds = [...]string{"IntConstant", "StringConstant", "LongConstant", "FloatConstant", "DoubleConstant", "BooleanConstant", "NullConstant", "EnumConstant", "LocalVariable", "FieldNode", "ParameterNode", "ReturnNode", "CallSiteNode", "AnnotationNode", "ResourceValueNode", "ResourceFileNode"}
@@ -366,6 +368,7 @@ func (d *decoder) metadata() Metadata {
 		m.EnumValues[key] = v
 	}
 	if d.version >= 3 {
+		m.ArtifactDependencyTargetOrder = make(map[string][]string)
 		count = d.count()
 		for i := 0; i < count; i++ {
 			key := d.str()
@@ -376,10 +379,18 @@ func (d *decoder) metadata() Metadata {
 			key := d.str()
 			n := d.count()
 			v := make(map[string]int32, n)
+			order := make([]string, 0, n)
 			for j := 0; j < n; j++ {
 				k := d.str()
+				if _, exists := v[k]; !exists {
+					order = append(order, k)
+				}
 				v[k] = d.i32()
 			}
+			if _, exists := m.ArtifactDependencies[key]; !exists {
+				m.ArtifactDependencyOrder = append(m.ArtifactDependencyOrder, key)
+			}
+			m.ArtifactDependencyTargetOrder[key] = order
 			m.ArtifactDependencies[key] = v
 		}
 	}

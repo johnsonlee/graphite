@@ -1,0 +1,38 @@
+' Context
+@startuml
+top to bottom direction
+skinparam shadowing false
+actor "HTTP Clients" as person_http_clients
+package "Application Layer" {
+  rectangle "Checkout" as system_application
+}
+package "Library Layer" {
+  component "Postgresql" as dependency_artifact_postgresql_42_7_3
+}
+package "Technology Layer" {
+  node "Java Runtime" as dependency_runtime_java
+}
+person_http_clients --> system_application : uses
+dependency_artifact_postgresql_42_7_3 --> dependency_runtime_java : runs on
+@enduml
+
+' Container
+@startuml
+top to bottom direction
+skinparam shadowing false
+package "Application Layer" {
+  package "Runtime Boundary" {
+    component "Checkout Runtime" as container_application_runtime
+  }
+}
+package "External Systems" {
+  component "payment" as dependency_namespace_com_partner_payment
+}
+container_application_runtime --> dependency_namespace_com_partner_payment : uses
+@enduml
+
+' Component
+@startuml
+top to bottom direction
+skinparam shadowing false
+@enduml

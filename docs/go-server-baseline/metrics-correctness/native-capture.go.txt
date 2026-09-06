@@ -1,0 +1,3 @@
+package main
+import("fmt";"net/http/httptest";"github.com/johnsonlee/graphite/graphite-server/internal/server")
+func main(){m:=server.NewPerformanceMetrics(4);m.Reject();m.Reject();for _,o:=range []server.QueryOutcome{server.OutcomeSuccess,server.OutcomeCancelled,server.OutcomeTimeout,server.OutcomeBudgetExceeded,server.OutcomeFailed}{s:=m.Start();m.Stop(s,o)}; w:=httptest.NewRecorder();m.ServeHTTP(w,httptest.NewRequest("GET","/metrics",nil));fmt.Print(w.Body.String())}

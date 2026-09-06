@@ -1,0 +1,14 @@
+[
+  "java",
+  "-Xmx1g",
+  "-jar",
+  "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+  "--data",
+  "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-go-c4-http-s2jrn7_6",
+  "--port",
+  "19841",
+  "--graph",
+  "a:/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-go-c4-http-s2jrn7_6/a",
+  "--graph",
+  "z:/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-go-c4-http-s2jrn7_6/z"
+]

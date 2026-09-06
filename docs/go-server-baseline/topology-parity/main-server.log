@@ -1,0 +1,8 @@
+Loaded graph 'a' from /var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-go-topology-parity-r4hyo5q4/fixture using MAPPED mode
+Loaded graph 'z' from /var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-go-topology-parity-r4hyo5q4/fixture using MAPPED mode
+Web UI: http://localhost:19831
+Data: /var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-go-topology-parity-r4hyo5q4
+Loaded graphs: a, z
+Topology: 2 graphs, 2 relations
+Cypher limits: 4 concurrent, 60000ms maximum timeout
+Press Ctrl+C to stop

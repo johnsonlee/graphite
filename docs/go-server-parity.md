@@ -72,8 +72,8 @@ per-graph columns/counts and optional rows. Fanout defaults per-graph limit to
 it injects/overwrites `graphId` in every row. Mode aliases are `cross_graph`,
 `crossgraph`, `fan-out`, `fan_out`; true values are `true`, `1`, `yes`, `on`.
 
-C4 content types: scoped JSON `application/vnd.structurizr+json`, root JSON
-`application/json`, `text/vnd.mermaid`, `text/vnd.plantuml`, and
+C4 content types: actual main scoped and root JSON both use `application/json`
+(`ctx.json` overwrites the source-declared vendor type; verified by 54 HTTP cases). Text formats use `text/vnd.mermaid`, `text/vnd.plantuml`, and
 `text/vnd.structurizr.dsl`, with UTF-8. Full artifact/manifest/annotation-based
 inference, external-system classification, component/container clustering,
 relationship evidence, stable IDs, diagram cropping and all renderer escaping
@@ -206,3 +206,28 @@ manifest and give each measured revision equivalently prepared copies.
 
 At inventory creation, complete native parity and the 10x P95 target remain
 unproven. This document must not be used as evidence that either is complete.
+
+## Functional follow-up verification
+
+After the frozen first native baseline, the implementation added relationship/path
+execution, transactional topology rebuilding, C4 inference and all renderers,
+OpenAPI aliases, and optional application/HTTP/native runtime metrics. This is a
+functional milestone, not a new performance optimization or acceptance result.
+
+- Relationship/path execution: 62 complete scoped/cross-graph main JVM outputs.
+- C4: six main-produced fixtures, four levels, two load modes; 48 complete
+  workspaces and 144 exact rendered texts. HTTP adds 54 status/content-type/body
+  comparisons, including root grouping and Accept precedence.
+- Topology: complete main response comparison for aggregation, failed-unload
+  rollback and successful replacement; separate source/live verification of
+  explicit stream Content-Length and `application/json;charset=utf-8`.
+- OpenAPI: complete 24-path document equality through a source-launched main
+  builder; source hash drift checks and configurable artifact version.
+- Metrics: all 63 stable application sample identities/values match the main
+  recorder; Prometheus parsing, SLO boundaries, admission/actual worker exit,
+  cancellation/error outcomes and bounded HTTP label tests. Runtime-specific Go
+  metrics replace JVM/Jetty metrics and are documented as a naming difference.
+
+The frozen native64 receipt remains 42/42 fixed queries plus 3/5 extra provenance
+cases; its two known differences are fixed in later source but have not been
+rerun on a new 64-graph binary. These feature additions have no new P95 evidence.

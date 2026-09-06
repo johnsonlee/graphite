@@ -1,0 +1,31 @@
+@startuml
+top to bottom direction
+skinparam shadowing false
+actor "HTTP Clients" as person_http_clients
+package "Application Layer" {
+  rectangle "Checkout" as system_application
+}
+package "External Systems" {
+  component "payment" as dependency_namespace_com_partner_payment
+}
+package "Library Layer" {
+  component "Lucene" as dependency_library_lucene
+  component "Commons" as dependency_library_commons
+  component "Postgresql" as dependency_artifact_postgresql_42_7_3
+  component "Alpha LIB" as dependency_artifact_alpha_lib_1_0
+  component "Zeta LIB" as dependency_artifact_zeta_lib_1_0
+}
+package "Technology Layer" {
+  node "Java Runtime" as dependency_runtime_java
+}
+dependency_library_lucene --> dependency_library_commons : builds on
+system_application --> dependency_library_lucene : uses
+dependency_library_commons --> dependency_artifact_postgresql_42_7_3 : builds on
+dependency_artifact_alpha_lib_1_0 --> dependency_artifact_postgresql_42_7_3 : builds on
+dependency_artifact_zeta_lib_1_0 --> dependency_library_lucene : builds on
+system_application --> dependency_artifact_alpha_lib_1_0 : uses
+system_application --> dependency_artifact_zeta_lib_1_0 : uses
+system_application --> dependency_namespace_com_partner_payment : uses
+person_http_clients --> system_application : uses
+dependency_artifact_postgresql_42_7_3 --> dependency_runtime_java : runs on
+@enduml

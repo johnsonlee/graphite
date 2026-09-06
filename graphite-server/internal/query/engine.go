@@ -120,93 +120,6 @@ func (e evaluator) branch(graph *store.Store, branch cypher.SingleQuery) Result 
 	}
 	return Result{Columns: columns, Rows: rows}
 }
-func (e evaluator) match(graph *store.Store, rows []map[string]any, c cypher.MatchClause) []map[string]any {
-	out := []map[string]any{}
-	for _, row := range rows {
-		matches := []map[string]any{row}
-		for patternIndex, pattern := range c.Patterns {
-			next := []map[string]any{}
-			node := pattern.Nodes[0]
-			for _, r := range matches {
-				if value, bound := r[node.Variable]; node.Variable != "" && bound {
-					if e.matches(value, node, r) {
-						next = append(next, clone(r))
-					}
-					continue
-				}
-				candidates := func(value any) {
-					e.check()
-					bound := clone(r)
-					if node.Variable != "" {
-						bound[node.Variable] = value
-					}
-					if id := valueGraphID(value); id != "" && node.Variable != "" {
-						addProvenance(bound, id)
-					}
-					if e.matches(value, node, bound) {
-						if patternIndex == len(c.Patterns)-1 && c.Where != nil && e.eval(c.Where, bound) != true {
-							return
-						}
-						next = append(next, bound)
-					}
-				}
-				method := false
-				for _, label := range node.Labels {
-					method = method || strings.EqualFold(label, "Method")
-				}
-				sources := e.graphs
-				if !e.cross && graph != nil {
-					sources = []Graph{{Store: graph}}
-				}
-				for _, source := range sources {
-					if method {
-						for _, m := range source.Store.Metadata.MethodList {
-							if e.cross {
-								candidates(qualifiedMethod{source.ID, m})
-							} else {
-								candidates(m)
-							}
-						}
-					} else {
-						for _, id := range source.Store.NodeIDs() {
-							e.check()
-							n, err := source.Store.Node(id)
-							if err != nil {
-								fail(err.Error())
-							}
-							if e.cross {
-								candidates(qualifiedNode{source.ID, source.Store, n})
-							} else {
-								candidates(n)
-							}
-						}
-					}
-				}
-			}
-			matches = next
-		}
-		accepted := 0
-		for _, r := range matches {
-			if c.Where == nil || e.eval(c.Where, r) == true {
-				out = append(out, r)
-				accepted++
-			}
-		}
-		if c.Optional && accepted == 0 {
-			r := clone(row)
-			for _, p := range c.Patterns {
-				v := p.Nodes[0].Variable
-				if v != "" {
-					if _, ok := r[v]; !ok {
-						r[v] = nil
-					}
-				}
-			}
-			out = append(out, r)
-		}
-	}
-	return out
-}
 func (e evaluator) matches(value any, n cypher.NodePattern, row map[string]any) bool {
 	var property func(string) any
 	switch v := value.(type) {
@@ -522,7 +435,7 @@ func validate(q *cypher.Query) {
 					fail("aggregate requires one argument")
 				}
 			} else {
-				supported := map[string]bool{"coalesce": true, "exists": true, "id": true, "elementid": true, "graphid": true, "labels": true, "size": true, "length": true, "head": true, "last": true, "tail": true, "tostring": true, "tointeger": true, "toint": true, "tolower": true, "tolowercase": true}
+				supported := map[string]bool{"coalesce": true, "exists": true, "id": true, "elementid": true, "graphid": true, "labels": true, "size": true, "length": true, "head": true, "last": true, "tail": true, "tostring": true, "tointeger": true, "toint": true, "tolower": true, "tolowercase": true, "type": true, "nodes": true, "relationships": true}
 				if !supported[strings.ToLower(x.Name)] {
 					fail("unsupported function " + x.Name)
 				}
@@ -571,8 +484,10 @@ func validate(q *cypher.Query) {
 			switch c := clause.(type) {
 			case cypher.MatchClause:
 				for _, p := range c.Patterns {
-					if len(p.Relationships) > 0 || p.PathVariable != "" {
-						fail("relationship and path matching is not supported yet")
+					for _, rel := range p.Relationships {
+						for _, value := range rel.Properties {
+							expression(value, false)
+						}
 					}
 					for _, n := range p.Nodes {
 						for _, v := range n.Properties {

@@ -1,0 +1,8 @@
+graph TD
+    subgraph actors["Actors"]
+        person_http_clients([HTTP Clients])
+    end
+    subgraph application["Application Layer"]
+        system_application[[Checkout]]
+    end
+    person_http_clients -->|uses| system_application

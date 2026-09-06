@@ -1,6 +1,5 @@
-// Package c4 contains the native architecture inference model. Its lower layers
-// mirror Graphite's Kotlin C4 implementation; workspace generation and rendering
-// are separate layers and are not implied by these inference primitives.
+// Package c4 infers C4 architecture models from persisted Graphite stores and
+// renders Structurizr workspaces, DSL, Mermaid, and PlantUML.
 package c4
 
 const (

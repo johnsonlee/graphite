@@ -20,7 +20,7 @@ Implemented foundations include native persisted graph decoding; MAPPED, EAGER
 and AUTO node loading; transactional graph replacement with reference-counted
 readers; request concurrency, timeout and socket cancellation; scoped node and
 edge access, subgraphs, annotations, resources, class overview and endpoint discovery; embedded byte-identical Explorer frontend; and native single/cross-graph
-Cypher pipelines with an explicit fanout API. These components are still subject
+Cypher pipelines with an explicit fanout API; relationship/path traversal; transactional topology rebuilding; full C4 inference and JSON/DSL/Mermaid/PlantUML output; OpenAPI aliases; and optional query/HTTP/Go runtime metrics. These components are still subject
 to the complete compatibility matrix in [go-server-parity.md](../docs/go-server-parity.md).
 
 ## Required acceptance
@@ -36,15 +36,33 @@ to the complete compatibility matrix in [go-server-parity.md](../docs/go-server-
   fixture/artifact identities, CPU, RSS, allocation and GC evidence, and report
   cold/warm and concurrency strata separately.
 
-The goal is **not achieved**. Unsupported work still includes relationship/path
-execution in Cypher, Java Pattern semantics, numerous functions/planner shapes,
-topology derivation, C4 inference/renderers, endpoint discovery, overview, OpenAPI and opt-in metrics. Some edge-case value semantics remain incomplete.
-Graph strings/metadata/adjacency are currently heap-backed even in MAPPED mode;
-only node data is memory mapped. There is no validated 10× speedup.
+The goal is **not achieved**. Remaining work includes Java Pattern semantics,
+additional scalar/aggregate functions and expression combinations, planner and
+cache behavior, and JVM string/value/error boundary semantics. See the
+[query](internal/query/README.md) and [C4](internal/analysis/c4/README.md) scope
+records for precise limitations. Graph strings/metadata/adjacency are currently
+heap-backed even in MAPPED mode; only node data is memory mapped. There is no
+validated 10× speedup.
+
+`--topology` accepts a query file or a directory of `.cypher` files. Derived
+relations rebuild transactionally on graph replacement/unload; invalid rules or
+references roll the catalog and topology back together. Snapshots are immutable
+Go objects; main's private memory-mapped topology persistence is not replicated.
+
+`--metrics` enables `/metrics`. Application `graphite_cypher_*` series preserve
+main's outcome tags and SLO bucket identities. Native HTTP durations use
+`graphite_http_request_duration_seconds` with bounded method/route/status labels.
+Go allocation/GC/goroutine series use `go_*` names; JVM/Jetty-specific metrics
+are replaced by native measurements. This runtime-specific naming is an explicit
+observability difference. GC pause counts use cumulative bucket counters because
+Go does not provide their exact sum. Release artifacts may set their version with
+`-ldflags '-X main.version=...'`; unversioned binaries report `unknown`.
 
 ## Evidence and reproduction
 
 - [Store format and JVM parity](internal/store/README.md)
+- [Relationship/path differential oracle](internal/query/README.md)
+- [C4 inference and renderer goldens](internal/analysis/c4/README.md)
 - [Main HTTP oracle](../docs/go-server-baseline/README.md)
 - [HTTP differential and mandatory 64-graph benchmark scripts](scripts/README.md)
 - [Chronological rewrite/performance record](../docs/go-server-optimization-attempts.md)

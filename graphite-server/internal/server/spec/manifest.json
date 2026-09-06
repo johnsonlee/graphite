@@ -1,0 +1,9 @@
+{
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "sourceSha256": {
+    "OpenApiSpecBuilder.kt": "ea8113415352a73fd8ee3802456b181cf74da72b7d590c0560eeae80a32944a7",
+    "ExploreApiFields.kt": "2ea121d404923294f4bbf2eba8f50642d97fb09b7665406fcdbc470393d0328b",
+    "GraphiteVersionProvider.kt": "7f522d2beda441d1ec140521b316f7a6df0ae479ba2787e0049c41f66808d99c"
+  },
+  "version": "Build-time value substituted at response time; unknown for unversioned binaries."
+}

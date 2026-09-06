@@ -22,6 +22,9 @@ import (
 
 type graphSpecs []string
 
+// Set with -ldflags '-X main.version=...' when producing a release artifact.
+var version = "unknown"
+
 func (g *graphSpecs) String() string         { return strings.Join(*g, ",") }
 func (g *graphSpecs) Set(value string) error { *g = append(*g, value); return nil }
 
@@ -38,6 +41,9 @@ func parseConfig(args []string, output io.Writer) (config, error) {
 	var c config
 	f := flag.NewFlagSet("graphite-server", flag.ContinueOnError)
 	f.SetOutput(output)
+	var showVersion bool
+	f.BoolVar(&showVersion, "version", false, "Print version information")
+	f.BoolVar(&showVersion, "V", false, "Print version information")
 	f.StringVar(&c.data, "data", "", "Data directory for relative graph paths")
 	f.StringVar(&c.id, "id", "", "Graph id for positional graph directory")
 	f.StringVar(&c.loadMode, "load-mode", "MAPPED", "Graph load mode: AUTO, EAGER, MAPPED")
@@ -63,7 +69,14 @@ func parseConfig(args []string, output io.Writer) (config, error) {
 		if strings.HasPrefix(a, "-") {
 			options = append(options, a)
 			name := strings.TrimLeft(strings.SplitN(a, "=", 2)[0], "-")
-			if opt := f.Lookup(name); opt != nil && !strings.Contains(a, "=") && name != "metrics" {
+			opt := f.Lookup(name)
+			isBoolean := false
+			if opt != nil {
+				if value, ok := opt.Value.(interface{ IsBoolFlag() bool }); ok {
+					isBoolean = value.IsBoolFlag()
+				}
+			}
+			if opt != nil && !strings.Contains(a, "=") && !isBoolean {
 				if i+1 >= len(args) {
 					return c, fmt.Errorf("flag needs an argument: %s", a)
 				}
@@ -76,6 +89,10 @@ func parseConfig(args []string, output io.Writer) (config, error) {
 	}
 	if err := f.Parse(options); err != nil {
 		return c, err
+	}
+	if showVersion {
+		fmt.Fprintln(output, "graphite "+version)
+		return c, flag.ErrHelp
 	}
 	if len(positionals) > 1 {
 		return c, errors.New("Expected at most one saved graph directory")
@@ -107,13 +124,6 @@ func parseConfig(args []string, output io.Writer) (config, error) {
 			}
 			c.data = filepath.Dir(absolute)
 		}
-	}
-	// Missing implementations remain explicit until their parity gates pass.
-	if c.topology != "" {
-		return c, errors.New("Go topology queries are not implemented yet")
-	}
-	if c.metrics {
-		return c, errors.New("Go Prometheus metrics are not implemented yet")
 	}
 	return c, nil
 }
@@ -169,7 +179,19 @@ func run(ctx context.Context, args []string, stderr io.Writer) error {
 		return err
 	}
 	defer g.Close()
-	s := &server.Server{Registry: r, Guard: g}
+	topologyQueries, err := server.LoadTopologyQueries(c.topology)
+	if err != nil {
+		return err
+	}
+	topology, err := server.NewTopologyService(r, topologyQueries)
+	if err != nil {
+		return err
+	}
+	s := &server.Server{Registry: r, Guard: g, Version: version, Topology: topology}
+	if c.metrics {
+		s.Metrics = server.NewPerformanceMetrics(c.maxConcurrent)
+		g.Metrics = s.Metrics
+	}
 	httpServer := &http.Server{Handler: s.Handler(), ConnContext: server.ConnectionContext}
 	listener, err := net.Listen("tcp", ":"+strconv.Itoa(c.port))
 	if err != nil {

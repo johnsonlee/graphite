@@ -1,0 +1,7 @@
+@startuml
+top to bottom direction
+skinparam shadowing false
+package "Technology Layer" {
+  node "Java Runtime" as dependency_runtime_java
+}
+@enduml

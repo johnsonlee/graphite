@@ -1,0 +1,12 @@
+graph TD
+    subgraph actors["Actors"]
+        person_host_applications([Host Applications])
+    end
+    subgraph libraries["Library Layer"]
+        system_library["Api Library"]
+    end
+    subgraph technology["Technology Layer"]
+        dependency_runtime_java[(Java Runtime)]
+    end
+    person_host_applications -->|uses| system_library
+    system_library -->|runs on| dependency_runtime_java

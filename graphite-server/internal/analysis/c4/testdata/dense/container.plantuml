@@ -1,0 +1,13 @@
+@startuml
+top to bottom direction
+skinparam shadowing false
+package "Application Layer" {
+  package "Runtime Boundary" {
+    component "Checkout Runtime" as container_application_runtime
+  }
+}
+package "External Systems" {
+  component "service21" as dependency_namespace_com_partner_service21
+}
+container_application_runtime --> dependency_namespace_com_partner_service21 : uses
+@enduml

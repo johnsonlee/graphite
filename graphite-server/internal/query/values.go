@@ -90,6 +90,17 @@ func equal(a, b any) any {
 	if a == nil || b == nil {
 		return nil
 	}
+	switch x := a.(type) {
+	case store.Edge:
+		y, ok := b.(store.Edge)
+		return ok && edgeID(x) == edgeID(y)
+	case qualifiedEdge:
+		y, ok := b.(qualifiedEdge)
+		return ok && edgeID(x) == edgeID(y)
+	case pathValue:
+		y, ok := b.(pathValue)
+		return ok && x.Qualified == y.Qualified && x.GraphID == y.GraphID && equal(x.Nodes, y.Nodes) == true && equal(x.Edges, y.Edges) == true
+	}
 	if x, ok := a.(qualifiedNode); ok {
 		y, ok := b.(qualifiedNode)
 		return ok && x.GraphID == y.GraphID && x.Node.ID == y.Node.ID
@@ -204,6 +215,22 @@ func compare(a, b any) int {
 			return 1
 		}
 	}
+	if ar == 2 {
+		x, y := edgeID(a), edgeID(b)
+		if c := compareUTF16(x.GraphID, y.GraphID); c != 0 {
+			return c
+		}
+		if c := compareNumbers(x.From, y.From); c != 0 {
+			return c
+		}
+		if c := compareNumbers(x.To, y.To); c != 0 {
+			return c
+		}
+		return compareUTF16(x.Family, y.Family)
+	}
+	if ar == 4 {
+		return compare(pathElements(a.(pathValue)), pathElements(b.(pathValue)))
+	}
 	if ar == 1 {
 		ag, ai := nodeOrderIdentity(a)
 		bg, bi := nodeOrderIdentity(b)
@@ -273,6 +300,10 @@ func orderRank(value any) int {
 		return 0
 	case store.Node, qualifiedNode:
 		return 1
+	case store.Edge, qualifiedEdge:
+		return 2
+	case pathValue:
+		return 4
 	case []any:
 		return 3
 	case bool:
@@ -329,6 +360,15 @@ func comparableString(value any) string {
 	return scalarString(value)
 }
 func comparePredicate(a, b any) int {
+	if x, ok := a.(qualifiedEdge); ok {
+		if y, ok := b.(qualifiedEdge); ok {
+			if equal(x, y) == true {
+				return 0
+			}
+			return compareUTF16(x.GraphID+":"+edgeString(x.Edge), y.GraphID+":"+edgeString(y.Edge))
+		}
+	}
+
 	if x, ok := a.(qualifiedNode); ok {
 		if y, ok := b.(qualifiedNode); ok {
 			return compareUTF16(x.GraphID+":"+strconv.FormatInt(int64(x.Node.ID), 10), y.GraphID+":"+strconv.FormatInt(int64(y.Node.ID), 10))
@@ -370,6 +410,10 @@ func key(v any) string {
 		return "num:" + r.RatString()
 	}
 	switch x := v.(type) {
+	case store.Edge, qualifiedEdge:
+		return fmt.Sprintf("edge:%#v:%T", edgeID(x), x)
+	case pathValue:
+		return fmt.Sprintf("path:%t:%s:%s:%s", x.Qualified, strconv.Quote(x.GraphID), key(x.Nodes), key(x.Edges))
 	case qualifiedNode:
 		return "qualified-node:" + strconv.Quote(x.GraphID) + ":" + strconv.FormatInt(int64(x.Node.ID), 10)
 	case qualifiedMethod:

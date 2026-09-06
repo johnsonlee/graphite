@@ -1,0 +1,96 @@
+{
+  "name": "Graphite C4 Workspace",
+  "description": "Structurizr workspace derived from the Graphite code graph",
+  "properties": {
+    "graphite.level": "context",
+    "graphite.availableLevels": "[\n  \"context\",\n  \"container\",\n  \"component\",\n  \"all\"\n]",
+    "graphite.format": "structurizr-workspace"
+  },
+  "model": {
+    "people": [
+      {
+        "id": "person:http-clients",
+        "name": "HTTP Clients",
+        "description": "External clients invoking detected HTTP endpoints",
+        "tags": "Person,Graphite,actor",
+        "properties": {
+          "graphite.type": "person",
+          "graphite.kind": "actor",
+          "graphite.architectureType": "actor",
+          "graphite.responsibility": "Initiates synchronous request flows into the application boundary"
+        },
+        "relationships": [
+          {
+            "id": "rel-1",
+            "destinationId": "system:application",
+            "description": "Invokes Checkout through its HTTP interface",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"endpoints\": 1\n}"
+            }
+          }
+        ],
+        "containers": [],
+        "components": []
+      }
+    ],
+    "softwareSystems": [
+      {
+        "id": "system:application",
+        "name": "Checkout",
+        "description": "Executable software system inferred from the Graphite code graph",
+        "tags": "Software System,Graphite,application",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "application",
+          "graphite.architectureType": "software-system",
+          "graphite.responsibility": "Owns the internal runtime containers and orchestrates the primary execution flows",
+          "graphite.whySelected": "Dominant namespace boundary inferred from internal classes and call-site traffic",
+          "graphite.methods": "4.0",
+          "graphite.endpoints": "1.0",
+          "graphite.classes": "7.0"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      }
+    ]
+  },
+  "views": {
+    "systemContextViews": [
+      {
+        "key": "graphite-context",
+        "description": "Graphite-derived C4 system context view",
+        "softwareSystemId": "system:application",
+        "elements": [
+          {
+            "id": "person:http-clients"
+          },
+          {
+            "id": "system:application"
+          }
+        ],
+        "relationships": [
+          {
+            "id": "rel-1"
+          }
+        ],
+        "properties": {
+          "graphite.level": "context"
+        }
+      }
+    ],
+    "containerViews": [],
+    "componentViews": [],
+    "configuration": {
+      "scope": "softwareSystem",
+      "properties": {
+        "graphite.level": "context",
+        "graphite.availableLevels": "[\n  \"context\",\n  \"container\",\n  \"component\",\n  \"all\"\n]"
+      }
+    }
+  }
+}

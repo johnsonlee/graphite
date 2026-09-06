@@ -1,0 +1,818 @@
+{
+  "name": "Graphite C4 Workspace",
+  "description": "Structurizr workspace derived from the Graphite code graph",
+  "properties": {
+    "graphite.level": "all",
+    "graphite.availableLevels": "[\n  \"context\",\n  \"container\",\n  \"component\",\n  \"all\"\n]",
+    "graphite.format": "structurizr-workspace"
+  },
+  "model": {
+    "people": [
+      {
+        "id": "person:http-clients",
+        "name": "HTTP Clients",
+        "description": "External clients invoking detected HTTP endpoints",
+        "tags": "Person,Graphite,actor",
+        "properties": {
+          "graphite.type": "person",
+          "graphite.kind": "actor",
+          "graphite.architectureType": "actor",
+          "graphite.responsibility": "Initiates synchronous request flows into the application boundary"
+        },
+        "relationships": [
+          {
+            "id": "rel-1",
+            "destinationId": "system:application",
+            "description": "Invokes Checkout through its HTTP interface",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"endpoints\": 1\n}"
+            }
+          }
+        ],
+        "containers": [],
+        "components": []
+      }
+    ],
+    "softwareSystems": [
+      {
+        "id": "system:application",
+        "name": "Checkout",
+        "description": "Executable software system inferred from the Graphite code graph",
+        "tags": "Software System,Graphite,application",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "application",
+          "graphite.architectureType": "software-system",
+          "graphite.responsibility": "Owns the internal runtime containers and orchestrates the primary execution flows",
+          "graphite.whySelected": "Dominant namespace boundary inferred from internal classes and call-site traffic",
+          "graphite.methods": "4.0",
+          "graphite.endpoints": "1.0",
+          "graphite.classes": "13.0",
+          "graphite.systemBoundary": "com.acme.checkout"
+        },
+        "relationships": [
+          {
+            "id": "rel-2",
+            "destinationId": "dependency:library:lucene",
+            "description": "Checkout uses lucene",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 2,\n  \"source\": \"artifact-family\",\n  \"confidence\": \"high\",\n  \"artifacts\": [\n    \"lucene-analysis-9.12.0\",\n    \"lucene-core-9.12.0\"\n  ]\n}",
+              "graphite.weight": "2"
+            }
+          },
+          {
+            "id": "rel-3",
+            "destinationId": "dependency:library:commons",
+            "description": "Checkout uses commons",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 2,\n  \"source\": \"artifact-family\",\n  \"confidence\": \"high\",\n  \"artifacts\": [\n    \"commons-io-2.15.0\",\n    \"commons-lang3-3.14.0\"\n  ]\n}",
+              "graphite.weight": "2"
+            }
+          },
+          {
+            "id": "rel-4",
+            "destinationId": "dependency:artifact:postgresql-42.7.3",
+            "description": "Checkout uses postgresql-42.7.3",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"artifact\",\n  \"confidence\": \"high\",\n  \"artifacts\": [\n    \"postgresql-42.7.3\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-5",
+            "destinationId": "dependency:artifact:alpha-lib-1.0",
+            "description": "Checkout uses alpha-lib-1.0",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"artifact\",\n  \"confidence\": \"high\",\n  \"artifacts\": [\n    \"alpha-lib-1.0\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-6",
+            "destinationId": "dependency:artifact:zeta-lib-1.0",
+            "description": "Checkout uses zeta-lib-1.0",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"artifact\",\n  \"confidence\": \"high\",\n  \"artifacts\": [\n    \"zeta-lib-1.0\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-7",
+            "destinationId": "dependency:namespace:com.partner.payment",
+            "description": "Checkout uses com.partner.payment",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.payment\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          }
+        ],
+        "containers": [
+          {
+            "id": "container:application-runtime",
+            "name": "Checkout Runtime",
+            "description": "Executable/deployable runtime container inferred from entrypoint, endpoint, and archive evidence",
+            "technology": "JVM bytecode",
+            "tags": "Container,Graphite,application-service",
+            "properties": {
+              "graphite.type": "container",
+              "graphite.kind": "application-service",
+              "graphite.architectureType": "application-service",
+              "graphite.responsibility": "Runs the subject software system and owns the deployable JVM execution boundary",
+              "graphite.whySelected": "Selected from C4 semantics as the executable/deployable JVM runtime boundary; package clusters remain internal capability evidence",
+              "graphite.methods": "4.0",
+              "graphite.callSites": "15.0",
+              "graphite.endpoints": "1.0",
+              "graphite.entrypoints": "[\n  \"/checkout\"\n]",
+              "graphite.packageUnits": "[\n  \"com.acme.checkout\",\n  \"com.acme.checkout.api\",\n  \"com.acme.checkout.repository\",\n  \"com.acme.checkout.service\"\n]",
+              "graphite.primaryClasses": "[\n  \"Application\",\n  \"CheckoutController\",\n  \"OrderRepository\"\n]",
+              "graphite.internalCapabilities": "[\n  {\n    \"name\": \"Api\",\n    \"kind\": \"interface\",\n    \"packageUnits\": [\n      \"com.acme.checkout\",\n      \"com.acme.checkout.api\"\n    ],\n    \"methods\": 2.0,\n    \"callSites\": 3.0,\n    \"endpoints\": 1.0,\n    \"primaryClasses\": [\n      \"Application\",\n      \"CheckoutController\"\n    ],\n    \"whySelected\": \"Grouped from 2 tightly-coupled package unit(s) with visible inbound entrypoints; anchored by com.acme.checkout.api\"\n  },\n  {\n    \"name\": \"Service and Repository\",\n    \"kind\": \"integration\",\n    \"packageUnits\": [\n      \"com.acme.checkout.repository\",\n      \"com.acme.checkout.service\"\n    ],\n    \"methods\": 2.0,\n    \"callSites\": 12.0,\n    \"endpoints\": 0.0,\n    \"primaryClasses\": [\n      \"OrderRepository\",\n      \"CheckoutService\"\n    ],\n    \"whySelected\": \"Grouped from 2 mutually dependent package units around the structural center com.acme.checkout.service\"\n  }\n]"
+            },
+            "relationships": [
+              {
+                "id": "rel-14",
+                "destinationId": "dependency:namespace:com.partner.payment",
+                "description": "Checkout Runtime uses com.partner.payment",
+                "technology": "uses",
+                "tags": "Relationship,Graphite,depends-on",
+                "properties": {
+                  "graphite.view": "container",
+                  "graphite.relationshipKind": "depends-on",
+                  "graphite.evidence": "{\n  \"crossBoundaryCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\"\n}",
+                  "graphite.weight": "1"
+                }
+              },
+              {
+                "id": "rel-15",
+                "destinationId": "dependency:artifact:lucene-analysis-9.12.0",
+                "description": "Checkout Runtime uses lucene-analysis-9.12.0",
+                "technology": "uses",
+                "tags": "Relationship,Graphite,depends-on",
+                "properties": {
+                  "graphite.view": "container",
+                  "graphite.relationshipKind": "depends-on",
+                  "graphite.evidence": "{\n  \"crossBoundaryCalls\": 1,\n  \"source\": \"artifact\",\n  \"confidence\": \"high\"\n}",
+                  "graphite.weight": "1"
+                }
+              },
+              {
+                "id": "rel-16",
+                "destinationId": "dependency:artifact:lucene-core-9.12.0",
+                "description": "Checkout Runtime uses lucene-core-9.12.0",
+                "technology": "uses",
+                "tags": "Relationship,Graphite,depends-on",
+                "properties": {
+                  "graphite.view": "container",
+                  "graphite.relationshipKind": "depends-on",
+                  "graphite.evidence": "{\n  \"crossBoundaryCalls\": 1,\n  \"source\": \"artifact\",\n  \"confidence\": \"high\"\n}",
+                  "graphite.weight": "1"
+                }
+              },
+              {
+                "id": "rel-17",
+                "destinationId": "dependency:artifact:postgresql-42.7.3",
+                "description": "Checkout Runtime uses postgresql-42.7.3",
+                "technology": "uses",
+                "tags": "Relationship,Graphite,depends-on",
+                "properties": {
+                  "graphite.view": "container",
+                  "graphite.relationshipKind": "depends-on",
+                  "graphite.evidence": "{\n  \"crossBoundaryCalls\": 1,\n  \"source\": \"artifact\",\n  \"confidence\": \"high\"\n}",
+                  "graphite.weight": "1"
+                }
+              },
+              {
+                "id": "rel-18",
+                "destinationId": "dependency:runtime:java",
+                "description": "Checkout Runtime runs on Java Runtime",
+                "technology": "runs-on",
+                "tags": "Relationship,Graphite,runs-on",
+                "properties": {
+                  "graphite.view": "container",
+                  "graphite.relationshipKind": "runs-on",
+                  "graphite.evidence": "{\n  \"crossBoundaryCalls\": 1,\n  \"source\": \"runtime\",\n  \"confidence\": \"high\"\n}",
+                  "graphite.weight": "1"
+                }
+              },
+              {
+                "id": "rel-19",
+                "destinationId": "dependency:artifact:commons-lang3-3.14.0",
+                "description": "Checkout Runtime uses commons-lang3-3.14.0",
+                "technology": "uses",
+                "tags": "Relationship,Graphite,depends-on",
+                "properties": {
+                  "graphite.view": "container",
+                  "graphite.relationshipKind": "depends-on",
+                  "graphite.evidence": "{\n  \"crossBoundaryCalls\": 1,\n  \"source\": \"artifact\",\n  \"confidence\": \"high\"\n}",
+                  "graphite.weight": "1"
+                }
+              },
+              {
+                "id": "rel-20",
+                "destinationId": "dependency:artifact:commons-io-2.15.0",
+                "description": "Checkout Runtime uses commons-io-2.15.0",
+                "technology": "uses",
+                "tags": "Relationship,Graphite,depends-on",
+                "properties": {
+                  "graphite.view": "container",
+                  "graphite.relationshipKind": "depends-on",
+                  "graphite.evidence": "{\n  \"crossBoundaryCalls\": 1,\n  \"source\": \"artifact\",\n  \"confidence\": \"high\"\n}",
+                  "graphite.weight": "1"
+                }
+              },
+              {
+                "id": "rel-21",
+                "destinationId": "dependency:artifact:alpha-lib-1.0",
+                "description": "Checkout Runtime uses alpha-lib-1.0",
+                "technology": "uses",
+                "tags": "Relationship,Graphite,depends-on",
+                "properties": {
+                  "graphite.view": "container",
+                  "graphite.relationshipKind": "depends-on",
+                  "graphite.evidence": "{\n  \"crossBoundaryCalls\": 1,\n  \"source\": \"artifact\",\n  \"confidence\": \"high\"\n}",
+                  "graphite.weight": "1"
+                }
+              },
+              {
+                "id": "rel-22",
+                "destinationId": "dependency:artifact:zeta-lib-1.0",
+                "description": "Checkout Runtime uses zeta-lib-1.0",
+                "technology": "uses",
+                "tags": "Relationship,Graphite,depends-on",
+                "properties": {
+                  "graphite.view": "container",
+                  "graphite.relationshipKind": "depends-on",
+                  "graphite.evidence": "{\n  \"crossBoundaryCalls\": 1,\n  \"source\": \"artifact\",\n  \"confidence\": \"high\"\n}",
+                  "graphite.weight": "1"
+                }
+              }
+            ],
+            "containers": [],
+            "components": [
+              {
+                "id": "component:service-and-repository",
+                "name": "Service and Repository",
+                "description": "Connects the Checkout Runtime capability to external collaborators and dependency boundaries",
+                "tags": "Component,Graphite,integration",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "integration",
+                  "graphite.architectureType": "application-service",
+                  "graphite.responsibility": "Connects the Checkout Runtime capability to external collaborators and dependency boundaries",
+                  "graphite.whySelected": "[\n  \"used by neighboring capabilities\",\n  \"external dependency touchpoint\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.repository,com.acme.checkout.service",
+                  "graphite.methods": "2.0",
+                  "graphite.callSites": "12.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.service.CheckoutService\",\n  \"com.acme.checkout.repository.OrderRepository\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.repository\",\n  \"com.acme.checkout.service\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:api",
+                "name": "Api",
+                "description": "Accepts external requests and translates them into internal application operations",
+                "tags": "Component,Graphite,entrypoint",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "entrypoint",
+                  "graphite.architectureType": "application-service",
+                  "graphite.responsibility": "Accepts external requests and translates them into internal application operations",
+                  "graphite.whySelected": "[\n  \"entrypoint-facing capability\",\n  \"depends on neighboring capabilities\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout,com.acme.checkout.api",
+                  "graphite.methods": "2.0",
+                  "graphite.callSites": "3.0",
+                  "graphite.endpoints": "1.0",
+                  "graphite.entrypoints": "[\n  \"/checkout\"\n]",
+                  "graphite.classes": "[\n  \"com.acme.checkout.api.CheckoutController\",\n  \"com.acme.checkout.Application\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout\",\n  \"com.acme.checkout.api\"\n]"
+                },
+                "relationships": [
+                  {
+                    "id": "rel-24",
+                    "destinationId": "component:service-and-repository",
+                    "description": "Api routes work to Service and Repository",
+                    "technology": "routes-to",
+                    "tags": "Relationship,Graphite,routes-to",
+                    "properties": {
+                      "graphite.view": "component",
+                      "graphite.relationshipKind": "routes-to",
+                      "graphite.evidence": "{\n  \"calls\": 1\n}",
+                      "graphite.weight": "1"
+                    }
+                  }
+                ],
+                "containers": [],
+                "components": []
+              }
+            ]
+          }
+        ],
+        "components": []
+      },
+      {
+        "id": "dependency:library:lucene",
+        "name": "lucene",
+        "description": "Reusable third-party library capabilities referenced from the subject system",
+        "tags": "Software System,Graphite,library",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "library",
+          "graphite.architectureType": "external-library",
+          "graphite.responsibility": "Provides the Lucene third-party library capabilities used by the application"
+        },
+        "relationships": [
+          {
+            "id": "rel-8",
+            "destinationId": "dependency:library:commons",
+            "description": "lucene builds on commons",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,builds-on",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "builds-on",
+              "graphite.evidence": "{\n  \"observedReferences\": 6,\n  \"source\": \"artifact-metadata\",\n  \"confidence\": \"high\"\n}",
+              "graphite.weight": "6"
+            }
+          }
+        ],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:library:commons",
+        "name": "commons",
+        "description": "Reusable third-party library capabilities referenced from the subject system",
+        "tags": "Software System,Graphite,library",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "library",
+          "graphite.architectureType": "external-library",
+          "graphite.responsibility": "Provides the Commons third-party library capabilities used by the application"
+        },
+        "relationships": [
+          {
+            "id": "rel-11",
+            "destinationId": "dependency:artifact:postgresql-42.7.3",
+            "description": "commons builds on postgresql-42.7.3",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,builds-on",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "builds-on",
+              "graphite.evidence": "{\n  \"observedReferences\": 2,\n  \"source\": \"artifact-metadata\",\n  \"confidence\": \"high\"\n}",
+              "graphite.weight": "2"
+            }
+          }
+        ],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:artifact:postgresql-42.7.3",
+        "name": "postgresql-42.7.3",
+        "description": "Reusable third-party library capabilities referenced from the subject system",
+        "tags": "Software System,Graphite,library",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "library",
+          "graphite.architectureType": "external-library",
+          "graphite.responsibility": "Provides reusable library capabilities linked from the application runtime",
+          "graphite.source": "artifact",
+          "graphite.confidence": "high"
+        },
+        "relationships": [
+          {
+            "id": "rel-13",
+            "destinationId": "dependency:runtime:java",
+            "description": "postgresql-42.7.3 runs on Java Runtime",
+            "technology": "runs-on",
+            "tags": "Relationship,Graphite,runs-on",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "runs-on",
+              "graphite.evidence": "{\n  \"source\": \"runtime\",\n  \"kind\": \"runtime\"\n}"
+            }
+          }
+        ],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:artifact:alpha-lib-1.0",
+        "name": "alpha-lib-1.0",
+        "description": "Reusable third-party library capabilities referenced from the subject system",
+        "tags": "Software System,Graphite,library",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "library",
+          "graphite.architectureType": "external-library",
+          "graphite.responsibility": "Provides reusable library capabilities linked from the application runtime",
+          "graphite.source": "artifact",
+          "graphite.confidence": "high"
+        },
+        "relationships": [
+          {
+            "id": "rel-12",
+            "destinationId": "dependency:artifact:postgresql-42.7.3",
+            "description": "alpha-lib-1.0 builds on postgresql-42.7.3",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,builds-on",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "builds-on",
+              "graphite.evidence": "{\n  \"observedReferences\": 2,\n  \"source\": \"artifact-metadata\",\n  \"confidence\": \"high\"\n}",
+              "graphite.weight": "2"
+            }
+          }
+        ],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:artifact:zeta-lib-1.0",
+        "name": "zeta-lib-1.0",
+        "description": "Reusable third-party library capabilities referenced from the subject system",
+        "tags": "Software System,Graphite,library",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "library",
+          "graphite.architectureType": "external-library",
+          "graphite.responsibility": "Provides reusable library capabilities linked from the application runtime",
+          "graphite.source": "artifact",
+          "graphite.confidence": "high"
+        },
+        "relationships": [
+          {
+            "id": "rel-9",
+            "destinationId": "dependency:library:lucene",
+            "description": "zeta-lib-1.0 builds on lucene",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,builds-on",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "builds-on",
+              "graphite.evidence": "{\n  \"observedReferences\": 2,\n  \"source\": \"artifact-metadata\",\n  \"confidence\": \"high\"\n}",
+              "graphite.weight": "2"
+            }
+          },
+          {
+            "id": "rel-10",
+            "destinationId": "dependency:artifact:postgresql-42.7.3",
+            "description": "zeta-lib-1.0 builds on postgresql-42.7.3",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,builds-on",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "builds-on",
+              "graphite.evidence": "{\n  \"observedReferences\": 2,\n  \"source\": \"artifact-metadata\",\n  \"confidence\": \"high\"\n}",
+              "graphite.weight": "2"
+            }
+          }
+        ],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.payment",
+        "name": "com.partner.payment",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes",
+          "graphite.source": "namespace",
+          "graphite.confidence": "medium"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:runtime:java",
+        "name": "Java Runtime",
+        "description": "Language and platform runtime supporting the application and its libraries",
+        "tags": "Software System,Graphite,runtime",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "runtime",
+          "graphite.architectureType": "runtime-platform",
+          "graphite.responsibility": "Provides language and platform runtime services used by the application",
+          "graphite.source": "runtime",
+          "graphite.confidence": "high"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:artifact:lucene-analysis-9.12.0",
+        "name": "lucene-analysis-9.12.0",
+        "description": "External dependency inferred from code graph evidence",
+        "tags": "Software System,Graphite,External Dependency",
+        "properties": {
+          "graphite.kind": "library",
+          "graphite.architectureType": "external-library",
+          "graphite.source": "artifact",
+          "graphite.confidence": "high",
+          "graphite.responsibility": "Provides reusable library capabilities linked from the application runtime"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:artifact:lucene-core-9.12.0",
+        "name": "lucene-core-9.12.0",
+        "description": "External dependency inferred from code graph evidence",
+        "tags": "Software System,Graphite,External Dependency",
+        "properties": {
+          "graphite.kind": "library",
+          "graphite.architectureType": "external-library",
+          "graphite.source": "artifact",
+          "graphite.confidence": "high",
+          "graphite.responsibility": "Provides reusable library capabilities linked from the application runtime"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:artifact:commons-lang3-3.14.0",
+        "name": "commons-lang3-3.14.0",
+        "description": "External dependency inferred from code graph evidence",
+        "tags": "Software System,Graphite,External Dependency",
+        "properties": {
+          "graphite.kind": "library",
+          "graphite.architectureType": "external-library",
+          "graphite.source": "artifact",
+          "graphite.confidence": "high",
+          "graphite.responsibility": "Provides reusable library capabilities linked from the application runtime"
+        },
+        "relationships": [
+          {
+            "id": "rel-23",
+            "destinationId": "dependency:runtime:java",
+            "description": "commons-lang3-3.14.0 runs on Java Runtime",
+            "technology": "runs-on",
+            "tags": "Relationship,Graphite,runs-on",
+            "properties": {
+              "graphite.view": "container",
+              "graphite.relationshipKind": "runs-on",
+              "graphite.evidence": "{\n  \"source\": \"runtime\",\n  \"kind\": \"runtime\"\n}"
+            }
+          }
+        ],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:artifact:commons-io-2.15.0",
+        "name": "commons-io-2.15.0",
+        "description": "External dependency inferred from code graph evidence",
+        "tags": "Software System,Graphite,External Dependency",
+        "properties": {
+          "graphite.kind": "library",
+          "graphite.architectureType": "external-library",
+          "graphite.source": "artifact",
+          "graphite.confidence": "high",
+          "graphite.responsibility": "Provides reusable library capabilities linked from the application runtime"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      }
+    ]
+  },
+  "views": {
+    "systemContextViews": [
+      {
+        "key": "graphite-context",
+        "description": "Graphite-derived C4 system context view",
+        "softwareSystemId": "system:application",
+        "elements": [
+          {
+            "id": "person:http-clients"
+          },
+          {
+            "id": "dependency:library:lucene"
+          },
+          {
+            "id": "dependency:library:commons"
+          },
+          {
+            "id": "dependency:artifact:postgresql-42.7.3"
+          },
+          {
+            "id": "dependency:artifact:alpha-lib-1.0"
+          },
+          {
+            "id": "dependency:artifact:zeta-lib-1.0"
+          },
+          {
+            "id": "dependency:namespace:com.partner.payment"
+          },
+          {
+            "id": "dependency:runtime:java"
+          },
+          {
+            "id": "system:application"
+          }
+        ],
+        "relationships": [
+          {
+            "id": "rel-1"
+          },
+          {
+            "id": "rel-2"
+          },
+          {
+            "id": "rel-3"
+          },
+          {
+            "id": "rel-4"
+          },
+          {
+            "id": "rel-5"
+          },
+          {
+            "id": "rel-6"
+          },
+          {
+            "id": "rel-7"
+          },
+          {
+            "id": "rel-8"
+          },
+          {
+            "id": "rel-9"
+          },
+          {
+            "id": "rel-10"
+          },
+          {
+            "id": "rel-11"
+          },
+          {
+            "id": "rel-12"
+          },
+          {
+            "id": "rel-13"
+          }
+        ],
+        "properties": {
+          "graphite.level": "all"
+        }
+      }
+    ],
+    "containerViews": [
+      {
+        "key": "graphite-container",
+        "description": "Graphite-derived C4 container view",
+        "softwareSystemId": "system:application",
+        "elements": [
+          {
+            "id": "container:application-runtime"
+          },
+          {
+            "id": "dependency:namespace:com.partner.payment"
+          },
+          {
+            "id": "dependency:artifact:lucene-analysis-9.12.0"
+          },
+          {
+            "id": "dependency:artifact:lucene-core-9.12.0"
+          },
+          {
+            "id": "dependency:artifact:postgresql-42.7.3"
+          },
+          {
+            "id": "dependency:runtime:java"
+          },
+          {
+            "id": "dependency:artifact:commons-lang3-3.14.0"
+          },
+          {
+            "id": "dependency:artifact:commons-io-2.15.0"
+          },
+          {
+            "id": "dependency:artifact:alpha-lib-1.0"
+          },
+          {
+            "id": "dependency:artifact:zeta-lib-1.0"
+          },
+          {
+            "id": "person:http-clients"
+          }
+        ],
+        "relationships": [
+          {
+            "id": "rel-14"
+          },
+          {
+            "id": "rel-15"
+          },
+          {
+            "id": "rel-16"
+          },
+          {
+            "id": "rel-17"
+          },
+          {
+            "id": "rel-18"
+          },
+          {
+            "id": "rel-19"
+          },
+          {
+            "id": "rel-20"
+          },
+          {
+            "id": "rel-21"
+          },
+          {
+            "id": "rel-22"
+          },
+          {
+            "id": "rel-13"
+          },
+          {
+            "id": "rel-23"
+          }
+        ],
+        "properties": {
+          "graphite.level": "all",
+          "graphite.systemBoundary": "com.acme.checkout"
+        }
+      }
+    ],
+    "componentViews": [
+      {
+        "key": "graphite-component-container-application-runtime",
+        "description": "Graphite-derived C4 component view for Checkout Runtime",
+        "containerId": "container:application-runtime",
+        "elements": [
+          {
+            "id": "component:service-and-repository"
+          },
+          {
+            "id": "component:api"
+          }
+        ],
+        "relationships": [
+          {
+            "id": "rel-24"
+          }
+        ],
+        "properties": {
+          "graphite.level": "all",
+          "graphite.containerId": "container:application-runtime",
+          "graphite.container": "Checkout Runtime"
+        }
+      }
+    ],
+    "configuration": {
+      "scope": "softwareSystem",
+      "properties": {
+        "graphite.level": "all",
+        "graphite.availableLevels": "[\n  \"context\",\n  \"container\",\n  \"component\",\n  \"all\"\n]"
+      }
+    }
+  }
+}

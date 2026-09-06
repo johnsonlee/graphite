@@ -1,0 +1,30 @@
+' Context
+@startuml
+top to bottom direction
+skinparam shadowing false
+actor "Host Applications" as person_host_applications
+package "Library Layer" {
+  component "Api Library" as system_library
+}
+package "Technology Layer" {
+  node "Java Runtime" as dependency_runtime_java
+}
+person_host_applications --> system_library : uses
+system_library --> dependency_runtime_java : runs on
+@enduml
+
+' Container
+@startuml
+top to bottom direction
+skinparam shadowing false
+actor "Host Applications" as person_host_applications
+package "Technology Layer" {
+  node "Java Runtime" as dependency_runtime_java
+}
+@enduml
+
+' Component
+@startuml
+top to bottom direction
+skinparam shadowing false
+@enduml

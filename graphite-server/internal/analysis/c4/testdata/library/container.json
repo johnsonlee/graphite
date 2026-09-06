@@ -1,0 +1,70 @@
+{
+  "name": "Graphite C4 Workspace",
+  "description": "Structurizr workspace derived from the Graphite code graph",
+  "properties": {
+    "graphite.level": "container",
+    "graphite.availableLevels": "[\n  \"context\",\n  \"container\",\n  \"component\",\n  \"all\"\n]",
+    "graphite.format": "structurizr-workspace"
+  },
+  "model": {
+    "people": [],
+    "softwareSystems": [
+      {
+        "id": "system:subject",
+        "name": "Subject",
+        "description": "Derived from the Graphite code graph",
+        "tags": "Software System,Graphite,Application",
+        "properties": {
+          "graphite.systemBoundary": "com.acme.checkout.api"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:runtime:java",
+        "name": "Java Runtime",
+        "description": "External dependency inferred from code graph evidence",
+        "tags": "Software System,Graphite,External Dependency",
+        "properties": {
+          "graphite.kind": "runtime",
+          "graphite.architectureType": "runtime-platform",
+          "graphite.source": "runtime",
+          "graphite.confidence": "high",
+          "graphite.responsibility": "Provides language and platform runtime services used by the application"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      }
+    ]
+  },
+  "views": {
+    "systemContextViews": [],
+    "containerViews": [
+      {
+        "key": "graphite-container",
+        "description": "Graphite-derived C4 container view",
+        "softwareSystemId": "system:subject",
+        "elements": [
+          {
+            "id": "dependency:runtime:java"
+          }
+        ],
+        "relationships": [],
+        "properties": {
+          "graphite.level": "container",
+          "graphite.systemBoundary": "com.acme.checkout.api"
+        }
+      }
+    ],
+    "componentViews": [],
+    "configuration": {
+      "scope": "softwareSystem",
+      "properties": {
+        "graphite.level": "container",
+        "graphite.availableLevels": "[\n  \"context\",\n  \"container\",\n  \"component\",\n  \"all\"\n]"
+      }
+    }
+  }
+}

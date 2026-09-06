@@ -1,0 +1,152 @@
+{
+  "name": "Graphite C4 Workspace",
+  "description": "Structurizr workspace derived from the Graphite code graph",
+  "properties": {
+    "graphite.level": "all",
+    "graphite.availableLevels": "[\n  \"context\",\n  \"container\",\n  \"component\",\n  \"all\"\n]",
+    "graphite.format": "structurizr-workspace"
+  },
+  "model": {
+    "people": [
+      {
+        "id": "person:host-applications",
+        "name": "Host Applications",
+        "description": "Applications or services that embed and invoke the library",
+        "tags": "Person,Graphite,actor",
+        "properties": {
+          "graphite.type": "person",
+          "graphite.kind": "actor",
+          "graphite.architectureType": "actor",
+          "graphite.responsibility": "Calls into the library and composes it into a larger runnable system"
+        },
+        "relationships": [
+          {
+            "id": "rel-1",
+            "destinationId": "system:library",
+            "description": "Uses Api Library from a host application context",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"role\": \"library-consumer\"\n}"
+            }
+          }
+        ],
+        "containers": [],
+        "components": []
+      }
+    ],
+    "softwareSystems": [
+      {
+        "id": "system:library",
+        "name": "Api Library",
+        "description": "A reusable library artifact inferred from the analyzed code graph",
+        "tags": "Software System,Graphite,library",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "library",
+          "graphite.architectureType": "library",
+          "graphite.responsibility": "Provides reusable capabilities that are linked and invoked by host applications",
+          "graphite.whySelected": "Dominant namespace boundary inferred from internal classes and call-site traffic",
+          "graphite.methods": "1.0",
+          "graphite.endpoints": "0.0",
+          "graphite.classes": "2.0",
+          "graphite.systemBoundary": "com.acme.checkout.api"
+        },
+        "relationships": [
+          {
+            "id": "rel-2",
+            "destinationId": "dependency:runtime:java",
+            "description": "Api Library runs on Java Runtime",
+            "technology": "runs-on",
+            "tags": "Relationship,Graphite,runs-on",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "runs-on",
+              "graphite.evidence": "{\n  \"source\": \"runtime\",\n  \"kind\": \"runtime\"\n}"
+            }
+          }
+        ],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:runtime:java",
+        "name": "Java Runtime",
+        "description": "Language and platform runtime supporting the application and its libraries",
+        "tags": "Software System,Graphite,runtime",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "runtime",
+          "graphite.architectureType": "runtime-platform",
+          "graphite.responsibility": "Provides language and platform runtime services used by the application",
+          "graphite.source": "runtime",
+          "graphite.confidence": "high"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      }
+    ]
+  },
+  "views": {
+    "systemContextViews": [
+      {
+        "key": "graphite-context",
+        "description": "Graphite-derived C4 system context view",
+        "softwareSystemId": "system:library",
+        "elements": [
+          {
+            "id": "person:host-applications"
+          },
+          {
+            "id": "dependency:runtime:java"
+          },
+          {
+            "id": "system:library"
+          }
+        ],
+        "relationships": [
+          {
+            "id": "rel-1"
+          },
+          {
+            "id": "rel-2"
+          }
+        ],
+        "properties": {
+          "graphite.level": "all"
+        }
+      }
+    ],
+    "containerViews": [
+      {
+        "key": "graphite-container",
+        "description": "Graphite-derived C4 container view",
+        "softwareSystemId": "system:library",
+        "elements": [
+          {
+            "id": "dependency:runtime:java"
+          },
+          {
+            "id": "person:host-applications"
+          }
+        ],
+        "relationships": [],
+        "properties": {
+          "graphite.level": "all",
+          "graphite.systemBoundary": "com.acme.checkout.api"
+        }
+      }
+    ],
+    "componentViews": [],
+    "configuration": {
+      "scope": "softwareSystem",
+      "properties": {
+        "graphite.level": "all",
+        "graphite.availableLevels": "[\n  \"context\",\n  \"container\",\n  \"component\",\n  \"all\"\n]"
+      }
+    }
+  }
+}

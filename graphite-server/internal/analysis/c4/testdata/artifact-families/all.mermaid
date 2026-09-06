@@ -1,0 +1,55 @@
+%% Context
+graph TD
+    subgraph actors["Actors"]
+        person_http_clients([HTTP Clients])
+    end
+    subgraph application["Application Layer"]
+        system_application[[Checkout]]
+    end
+    subgraph external_systems["External Systems"]
+        dependency_namespace_com_partner_payment["payment"]
+    end
+    subgraph libraries["Library Layer"]
+        dependency_library_lucene["Lucene"]
+        dependency_library_commons["Commons"]
+        dependency_artifact_postgresql_42_7_3["Postgresql"]
+        dependency_artifact_alpha_lib_1_0["Alpha LIB"]
+        dependency_artifact_zeta_lib_1_0["Zeta LIB"]
+        dependency_artifact_commons_lang3_3_14_0["Commons Lang3"]
+    end
+    subgraph technology["Technology Layer"]
+        dependency_runtime_java[(Java Runtime)]
+    end
+    dependency_library_lucene -->|builds on| dependency_library_commons
+    system_application -->|uses| dependency_library_lucene
+    dependency_library_commons -->|builds on| dependency_artifact_postgresql_42_7_3
+    dependency_artifact_alpha_lib_1_0 -->|builds on| dependency_artifact_postgresql_42_7_3
+    dependency_artifact_zeta_lib_1_0 -->|builds on| dependency_library_lucene
+    system_application -->|uses| dependency_artifact_alpha_lib_1_0
+    system_application -->|uses| dependency_artifact_zeta_lib_1_0
+    system_application -->|uses| dependency_namespace_com_partner_payment
+    person_http_clients -->|uses| system_application
+    dependency_artifact_postgresql_42_7_3 -->|runs on| dependency_runtime_java
+    dependency_artifact_commons_lang3_3_14_0 -->|runs on| dependency_runtime_java
+
+%% Container
+graph TD
+    subgraph application["Application Layer"]
+        subgraph runtime_boundary["Runtime Boundary"]
+            container_application_runtime([Checkout Runtime])
+        end
+    end
+    subgraph external_systems["External Systems"]
+        dependency_namespace_com_partner_payment["payment"]
+    end
+    container_application_runtime -->|uses| dependency_namespace_com_partner_payment
+
+%% Component
+graph TD
+    subgraph application["Application Layer"]
+        subgraph container_application_runtime["Checkout Runtime"]
+            component_service_and_repository([Service and Repository])
+            component_api([Api])
+        end
+    end
+    component_api -->|routes to| component_service_and_repository

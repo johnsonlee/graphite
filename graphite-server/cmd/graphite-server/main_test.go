@@ -1,10 +1,27 @@
 package main
 
 import (
+	"bytes"
+	"errors"
+	"flag"
 	"io"
 	"reflect"
 	"testing"
 )
+
+func TestServeVersionAndOptionalServices(t *testing.T) {
+	for _, option := range []string{"--version", "-V"} {
+		var output bytes.Buffer
+		_, err := parseConfig([]string{option}, &output)
+		if !errors.Is(err, flag.ErrHelp) || output.String() != "graphite "+version+"\n" {
+			t.Fatalf("version %s: %q %v", option, output.String(), err)
+		}
+	}
+	c, err := parseConfig([]string{"--metrics", "--data", "/tmp", "--topology", "/queries"}, io.Discard)
+	if err != nil || !c.metrics || c.topology != "/queries" {
+		t.Fatalf("optional services: %+v %v", c, err)
+	}
+}
 
 func TestServeOptionsAreInterspersedAndRepeatable(t *testing.T) {
 	c, err := parseConfig([]string{"serve", "--id", "app", "/data/app", "--graph", "a:/graphs/a", "--graph=b:graphs/b", "-p", "9090", "--max-concurrent-cypher", "8", "--cypher-max-timeout-ms", "1200", "--cypher-work-budget", "0"}, io.Discard)

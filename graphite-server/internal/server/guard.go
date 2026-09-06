@@ -30,6 +30,8 @@ type Guard struct {
 	active        map[uint64]context.CancelCauseFunc
 	next          uint64
 	closed        bool
+	// Configure before serving requests; nil keeps instrumentation disabled.
+	Metrics *PerformanceMetrics
 }
 
 func NewGuard(maxConcurrent int, maxTimeout time.Duration) (*Guard, error) {
@@ -59,6 +61,7 @@ func (g *Guard) Execute(parent context.Context, clientTimeout *time.Duration, wo
 	}
 	if len(g.active) == g.maxConcurrent {
 		g.mu.Unlock()
+		g.Metrics.Reject()
 		return nil, &QueryError{Message: fmt.Sprintf("Cypher concurrency limit reached (%d active queries); retry later", g.maxConcurrent), Code: "cypher_concurrency_limit", Status: 429}
 	}
 	ctx, cancel := context.WithCancelCause(parent)
@@ -67,8 +70,10 @@ func (g *Guard) Execute(parent context.Context, clientTimeout *time.Duration, wo
 	g.next++
 	id := g.next
 	g.active[id] = cancel
+	started := g.Metrics.Start()
 	g.mu.Unlock()
 	defer func() {
+		panicValue := recover()
 		// Cancellation wins over success, including cancellation during encode.
 		if cause := context.Cause(deadline); cause != nil {
 			value = nil
@@ -83,7 +88,26 @@ func (g *Guard) Execute(parent context.Context, clientTimeout *time.Duration, wo
 		cancel(nil)
 		g.mu.Lock()
 		delete(g.active, id)
+		outcome := OutcomeSuccess
+		if err != nil || panicValue != nil {
+			outcome = OutcomeFailed
+			var qe *QueryError
+			if errors.As(err, &qe) {
+				switch qe.Code {
+				case "cypher_query_timeout":
+					outcome = OutcomeTimeout
+				case "cypher_query_cancelled":
+					outcome = OutcomeCancelled
+				case "cypher_work_budget_exceeded":
+					outcome = OutcomeBudgetExceeded
+				}
+			}
+		}
+		g.Metrics.Stop(started, outcome)
 		g.mu.Unlock()
+		if panicValue != nil {
+			panic(panicValue)
+		}
 	}()
 	if deadline.Err() != nil {
 		return nil, context.Cause(deadline)

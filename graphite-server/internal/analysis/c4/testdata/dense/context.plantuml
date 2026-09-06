@@ -1,0 +1,38 @@
+@startuml
+top to bottom direction
+skinparam shadowing false
+package "Application Layer" {
+  rectangle "Checkout" as system_application
+}
+package "External Systems" {
+  component "service21" as dependency_namespace_com_partner_service21
+  component "service17" as dependency_namespace_com_partner_service17
+  component "service13" as dependency_namespace_com_partner_service13
+  component "service00" as dependency_namespace_com_partner_service00
+  component "service01" as dependency_namespace_com_partner_service01
+  component "service18" as dependency_namespace_com_partner_service18
+}
+package "Library Layer" {
+  component "Commons" as dependency_library_commons
+  component "Lucene" as dependency_library_lucene
+  component "Postgresql" as dependency_artifact_postgresql_42_7_3
+  component "Alpha LIB" as dependency_artifact_alpha_lib_1_0
+  component "Zeta LIB" as dependency_artifact_zeta_lib_1_0
+}
+dependency_library_lucene --> dependency_library_commons : builds on
+system_application --> dependency_library_lucene : uses
+dependency_library_commons --> dependency_artifact_postgresql_42_7_3 : builds on
+dependency_artifact_alpha_lib_1_0 --> dependency_artifact_postgresql_42_7_3 : builds on
+dependency_artifact_zeta_lib_1_0 --> dependency_library_lucene : builds on
+system_application --> dependency_artifact_alpha_lib_1_0 : uses
+system_application --> dependency_artifact_zeta_lib_1_0 : uses
+system_application --> dependency_namespace_com_partner_service21 : uses
+system_application --> dependency_namespace_com_partner_service17 : uses
+system_application --> dependency_namespace_com_partner_service13 : uses
+system_application --> dependency_namespace_com_partner_service00 : uses
+system_application --> dependency_namespace_com_partner_service01 : uses
+system_application --> dependency_namespace_com_partner_service18 : uses
+note as N1
+PlantUML view truncated: 21 edges omitted
+end note
+@enduml

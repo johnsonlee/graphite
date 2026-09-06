@@ -1,0 +1,10 @@
+{
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "purpose": "Correctness only; persisted tiny C4 fixtures",
+  "total": 54,
+  "passed": 54,
+  "failures": [],
+  "nativeBinarySHA256": "c3bf72f7f46c54e4641132ce1569fd6a7fb341be260507f61f7c33f434a7995f",
+  "mainReused": "Exact responses captured in initial-header-mismatch/responses.json; unchanged fixtures and cases",
+  "correction": "Javalin ctx.json returns application/json for both scoped and grouped C4 JSON; initial header mismatch retained"
+}

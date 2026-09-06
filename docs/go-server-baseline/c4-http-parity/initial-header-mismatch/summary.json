@@ -1,0 +1,113 @@
+{
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "purpose": "Tiny persisted C4 fixtures; correctness only, no performance evidence",
+  "total": 54,
+  "passed": 41,
+  "failures": [
+    {
+      "case": {
+        "path": "/api/graphs/a/architecture/c4?level=context&format=json"
+      },
+      "mainContentType": "application/json",
+      "nativeContentType": "application/vnd.structurizr+json; charset=utf-8",
+      "bodyEqual": true
+    },
+    {
+      "case": {
+        "path": "/api/graphs/a/architecture/c4?level=container&format=json"
+      },
+      "mainContentType": "application/json",
+      "nativeContentType": "application/vnd.structurizr+json; charset=utf-8",
+      "bodyEqual": true
+    },
+    {
+      "case": {
+        "path": "/api/graphs/a/architecture/c4?level=component&format=json"
+      },
+      "mainContentType": "application/json",
+      "nativeContentType": "application/vnd.structurizr+json; charset=utf-8",
+      "bodyEqual": true
+    },
+    {
+      "case": {
+        "path": "/api/graphs/a/architecture/c4?level=all&format=json"
+      },
+      "mainContentType": "application/json",
+      "nativeContentType": "application/vnd.structurizr+json; charset=utf-8",
+      "bodyEqual": true
+    },
+    {
+      "case": {
+        "path": "/api/graphs/z/architecture/c4?level=context&format=json"
+      },
+      "mainContentType": "application/json",
+      "nativeContentType": "application/vnd.structurizr+json; charset=utf-8",
+      "bodyEqual": true
+    },
+    {
+      "case": {
+        "path": "/api/graphs/z/architecture/c4?level=container&format=json"
+      },
+      "mainContentType": "application/json",
+      "nativeContentType": "application/vnd.structurizr+json; charset=utf-8",
+      "bodyEqual": true
+    },
+    {
+      "case": {
+        "path": "/api/graphs/z/architecture/c4?level=component&format=json"
+      },
+      "mainContentType": "application/json",
+      "nativeContentType": "application/vnd.structurizr+json; charset=utf-8",
+      "bodyEqual": true
+    },
+    {
+      "case": {
+        "path": "/api/graphs/z/architecture/c4?level=all&format=json"
+      },
+      "mainContentType": "application/json",
+      "nativeContentType": "application/vnd.structurizr+json; charset=utf-8",
+      "bodyEqual": true
+    },
+    {
+      "case": {
+        "path": "/api/architecture/c4?level=context&format=json"
+      },
+      "mainContentType": "application/json",
+      "nativeContentType": "application/json; charset=utf-8",
+      "bodyEqual": true
+    },
+    {
+      "case": {
+        "path": "/api/architecture/c4?level=container&format=json"
+      },
+      "mainContentType": "application/json",
+      "nativeContentType": "application/json; charset=utf-8",
+      "bodyEqual": true
+    },
+    {
+      "case": {
+        "path": "/api/architecture/c4?level=component&format=json"
+      },
+      "mainContentType": "application/json",
+      "nativeContentType": "application/json; charset=utf-8",
+      "bodyEqual": true
+    },
+    {
+      "case": {
+        "path": "/api/architecture/c4?level=all&format=json"
+      },
+      "mainContentType": "application/json",
+      "nativeContentType": "application/json; charset=utf-8",
+      "bodyEqual": true
+    },
+    {
+      "case": {
+        "path": "/api/architecture/c4?format=mermaid",
+        "accept": "application/json"
+      },
+      "mainContentType": "application/json",
+      "nativeContentType": "application/json; charset=utf-8",
+      "bodyEqual": true
+    }
+  ]
+}

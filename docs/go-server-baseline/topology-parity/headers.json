@@ -1,0 +1,56 @@
+{
+  "purpose": "Correctness only, empty catalog topology stream",
+  "commands": {
+    "main": [
+      "java",
+      "-jar",
+      "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "--data",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-topology-headers-j0kte817",
+      "--port",
+      "19851"
+    ],
+    "native": [
+      "/tmp/graphite-server-feature-parity",
+      "--data",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-topology-headers-6hraoib4",
+      "--port",
+      "19852"
+    ]
+  },
+  "results": {
+    "main": {
+      "status": 200,
+      "contentType": "application/json;charset=utf-8",
+      "contentLength": "137",
+      "bodyBytes": 137,
+      "body": {
+        "nodes": [],
+        "edges": [],
+        "graphCount": 0,
+        "relationCount": 0,
+        "matchedRows": 0,
+        "rules": [],
+        "stale": false
+      }
+    },
+    "native": {
+      "status": 200,
+      "contentType": "application/json;charset=utf-8",
+      "contentLength": "137",
+      "bodyBytes": 137,
+      "body": {
+        "nodes": [],
+        "edges": [],
+        "graphCount": 0,
+        "relationCount": 0,
+        "matchedRows": 0,
+        "rules": [],
+        "stale": false
+      }
+    }
+  },
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "nativeBinarySHA256": "ee85f207584d79335837512867eb0da9cec5b2c5d7cb2c6fefc745b960b6e937",
+  "passed": true
+}

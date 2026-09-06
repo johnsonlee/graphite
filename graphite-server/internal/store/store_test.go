@@ -12,6 +12,34 @@ import (
 )
 
 func ptr[T any](v T) *T { return &v }
+
+func TestArtifactDependenciesPreservePersistedMapOrder(t *testing.T) {
+	var b bytes.Buffer
+	// Empty methods/hierarchies/enums/origins, then three ordered dependency
+	// records. Replacing z keeps its outer position and replaces its inner map.
+	values := []int32{0x47524d03, 0, 0, 0, 0, 0, 3,
+		0, 2, 1, 7, 2, 7,
+		1, 1, 3, 2,
+		0, 2, 2, 9, 1, 8,
+		0, 0}
+	for _, value := range values {
+		if err := binary.Write(&b, binary.BigEndian, value); err != nil {
+			t.Fatal(err)
+		}
+	}
+	d := newDecoder(bytes.NewReader(b.Bytes()), int64(b.Len()), []string{"z", "a", "x", "b"})
+	m := d.metadata()
+	if d.err != nil {
+		t.Fatal(d.err)
+	}
+	if !reflect.DeepEqual(m.ArtifactDependencyOrder, []string{"z", "a"}) || !reflect.DeepEqual(m.ArtifactDependencyTargetOrder, map[string][]string{"z": {"x", "a"}, "a": {"b"}}) {
+		t.Fatalf("dependency order: %v %v", m.ArtifactDependencyOrder, m.ArtifactDependencyTargetOrder)
+	}
+	if !reflect.DeepEqual(m.ArtifactDependencies, map[string]map[string]int32{"z": {"x": 9, "a": 8}, "a": {"b": 2}}) {
+		t.Fatalf("dependency values: %v", m.ArtifactDependencies)
+	}
+}
+
 func TestJVMFixtureAllNodesAndMetadata(t *testing.T) {
 	s, err := Open("testdata/jvm-v3")
 	if err != nil {
@@ -36,7 +64,7 @@ func TestJVMFixtureAllNodesAndMetadata(t *testing.T) {
 			t.Errorf("node %d got %#v, want %#v", want.ID, got, want)
 		}
 	}
-	want := Metadata{MemberAnnotationOrder: map[string][]string{"Example#run": {"Annotation"}}, MethodList: []MethodDescriptor{method}, Methods: map[string]MethodDescriptor{"Example.run(int)": method}, Supertypes: map[string][]string{"Example": {"Base"}}, Subtypes: map[string][]string{"Base": {"Example"}}, EnumValues: map[string][]any{"Color#RED": {nested}}, ClassOrigins: map[string]string{"Example": "app.jar"}, ArtifactDependencies: map[string]map[string]int32{"app.jar": {"dependency.jar": 7}}, MemberAnnotations: map[string]map[string]map[string]any{"Example#run": {"Annotation": {"key": nested}}}, BranchScopes: []BranchScope{{24, method, Comparison{2, 0}, []int32{2}, []int32{4}}}}
+	want := Metadata{ArtifactDependencyOrder: []string{"app.jar"}, ArtifactDependencyTargetOrder: map[string][]string{"app.jar": {"dependency.jar"}}, MemberAnnotationOrder: map[string][]string{"Example#run": {"Annotation"}}, MethodList: []MethodDescriptor{method}, Methods: map[string]MethodDescriptor{"Example.run(int)": method}, Supertypes: map[string][]string{"Example": {"Base"}}, Subtypes: map[string][]string{"Base": {"Example"}}, EnumValues: map[string][]any{"Color#RED": {nested}}, ClassOrigins: map[string]string{"Example": "app.jar"}, ArtifactDependencies: map[string]map[string]int32{"app.jar": {"dependency.jar": 7}}, MemberAnnotations: map[string]map[string]map[string]any{"Example#run": {"Annotation": {"key": nested}}}, BranchScopes: []BranchScope{{24, method, Comparison{2, 0}, []int32{2}, []int32{4}}}}
 	if !reflect.DeepEqual(s.Metadata, want) {
 		t.Errorf("metadata got %#v, want %#v", s.Metadata, want)
 	}

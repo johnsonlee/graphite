@@ -27,6 +27,10 @@ const provenanceKey = "\x00graphite.graphIds"
 
 func valueGraphID(value any) string {
 	switch v := value.(type) {
+	case qualifiedEdge:
+		return v.GraphID
+	case pathValue:
+		return v.GraphID
 	case qualifiedNode:
 		return v.GraphID
 	case qualifiedMethod:

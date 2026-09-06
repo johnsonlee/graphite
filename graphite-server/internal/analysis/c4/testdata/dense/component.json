@@ -1,0 +1,784 @@
+{
+  "name": "Graphite C4 Workspace",
+  "description": "Structurizr workspace derived from the Graphite code graph",
+  "properties": {
+    "graphite.level": "component",
+    "graphite.availableLevels": "[\n  \"context\",\n  \"container\",\n  \"component\",\n  \"all\"\n]",
+    "graphite.format": "structurizr-workspace"
+  },
+  "model": {
+    "people": [],
+    "softwareSystems": [
+      {
+        "id": "system:subject",
+        "name": "Subject",
+        "description": "Derived from the Graphite code graph",
+        "tags": "Software System,Graphite,Application",
+        "properties": {},
+        "relationships": [],
+        "containers": [
+          {
+            "id": "container:application-runtime",
+            "name": "Checkout Runtime",
+            "description": "Inferred runtime container synthesized for component view",
+            "technology": "JVM bytecode",
+            "tags": "Container,Graphite,Internal Container",
+            "properties": {},
+            "relationships": [],
+            "containers": [],
+            "components": [
+              {
+                "id": "component:service-and-repository",
+                "name": "Service and Repository",
+                "description": "Connects the Checkout Runtime capability to external collaborators and dependency boundaries",
+                "tags": "Component,Graphite,integration",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "integration",
+                  "graphite.architectureType": "application-service",
+                  "graphite.responsibility": "Connects the Checkout Runtime capability to external collaborators and dependency boundaries",
+                  "graphite.whySelected": "[\n  \"used by neighboring capabilities\",\n  \"external dependency touchpoint\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.repository,com.acme.checkout.service",
+                  "graphite.methods": "2.0",
+                  "graphite.callSites": "36.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.service.CheckoutService\",\n  \"com.acme.checkout.repository.OrderRepository\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.repository\",\n  \"com.acme.checkout.service\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:api",
+                "name": "Api",
+                "description": "Accepts external requests and translates them into internal application operations",
+                "tags": "Component,Graphite,entrypoint",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "entrypoint",
+                  "graphite.architectureType": "application-service",
+                  "graphite.responsibility": "Accepts external requests and translates them into internal application operations",
+                  "graphite.whySelected": "[\n  \"entrypoint-facing capability\",\n  \"depends on neighboring capabilities\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout,com.acme.checkout.api",
+                  "graphite.methods": "2.0",
+                  "graphite.callSites": "3.0",
+                  "graphite.endpoints": "1.0",
+                  "graphite.entrypoints": "[\n  \"/checkout\"\n]",
+                  "graphite.classes": "[\n  \"com.acme.checkout.api.CheckoutController\",\n  \"com.acme.checkout.Application\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout\",\n  \"com.acme.checkout.api\"\n]"
+                },
+                "relationships": [
+                  {
+                    "id": "rel-1",
+                    "destinationId": "component:service-and-repository",
+                    "description": "Api routes work to Service and Repository",
+                    "technology": "routes-to",
+                    "tags": "Relationship,Graphite,routes-to",
+                    "properties": {
+                      "graphite.view": "component",
+                      "graphite.relationshipKind": "routes-to",
+                      "graphite.evidence": "{\n  \"calls\": 1\n}",
+                      "graphite.weight": "1"
+                    }
+                  }
+                ],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island00",
+                "name": "Island00",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island00",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island00.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island00\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island01",
+                "name": "Island01",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island01",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island01.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island01\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island02",
+                "name": "Island02",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island02",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island02.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island02\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island03",
+                "name": "Island03",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island03",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island03.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island03\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island04",
+                "name": "Island04",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island04",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island04.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island04\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island05",
+                "name": "Island05",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island05",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island05.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island05\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island06",
+                "name": "Island06",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island06",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island06.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island06\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island07",
+                "name": "Island07",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island07",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island07.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island07\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island08",
+                "name": "Island08",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island08",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island08.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island08\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island09",
+                "name": "Island09",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island09",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island09.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island09\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island10",
+                "name": "Island10",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island10",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island10.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island10\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island11",
+                "name": "Island11",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island11",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island11.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island11\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island12",
+                "name": "Island12",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island12",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island12.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island12\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island13",
+                "name": "Island13",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island13",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island13.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island13\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island14",
+                "name": "Island14",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island14",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island14.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island14\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island15",
+                "name": "Island15",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island15",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island15.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island15\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island16",
+                "name": "Island16",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island16",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island16.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island16\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island17",
+                "name": "Island17",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island17",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island17.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island17\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island18",
+                "name": "Island18",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island18",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island18.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island18\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island19",
+                "name": "Island19",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island19",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island19.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island19\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island20",
+                "name": "Island20",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island20",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island20.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island20\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island21",
+                "name": "Island21",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island21",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island21.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island21\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island22",
+                "name": "Island22",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island22",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island22.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island22\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              },
+              {
+                "id": "component:island23",
+                "name": "Island23",
+                "description": "Implements a structurally central part of the Checkout Runtime capability",
+                "tags": "Component,Graphite,domain-component",
+                "properties": {
+                  "graphite.type": "component",
+                  "graphite.kind": "domain-component",
+                  "graphite.architectureType": "application-component",
+                  "graphite.responsibility": "Implements a structurally central part of the Checkout Runtime capability",
+                  "graphite.whySelected": "[\n  \"cohesive internal capability\"\n]",
+                  "graphite.container": "Checkout Runtime",
+                  "graphite.containerId": "container:application-runtime",
+                  "graphite.fullName": "com.acme.checkout.island23",
+                  "graphite.methods": "1.0",
+                  "graphite.callSites": "0.0",
+                  "graphite.endpoints": "0.0",
+                  "graphite.classes": "[\n  \"com.acme.checkout.island23.Capability\"\n]",
+                  "graphite.packageUnits": "[\n  \"com.acme.checkout.island23\"\n]"
+                },
+                "relationships": [],
+                "containers": [],
+                "components": []
+              }
+            ]
+          }
+        ],
+        "components": []
+      }
+    ]
+  },
+  "views": {
+    "systemContextViews": [],
+    "containerViews": [],
+    "componentViews": [
+      {
+        "key": "graphite-component-container-application-runtime",
+        "description": "Graphite-derived C4 component view for Checkout Runtime",
+        "containerId": "container:application-runtime",
+        "elements": [
+          {
+            "id": "component:service-and-repository"
+          },
+          {
+            "id": "component:api"
+          },
+          {
+            "id": "component:island00"
+          },
+          {
+            "id": "component:island01"
+          },
+          {
+            "id": "component:island02"
+          },
+          {
+            "id": "component:island03"
+          },
+          {
+            "id": "component:island04"
+          },
+          {
+            "id": "component:island05"
+          },
+          {
+            "id": "component:island06"
+          },
+          {
+            "id": "component:island07"
+          },
+          {
+            "id": "component:island08"
+          },
+          {
+            "id": "component:island09"
+          },
+          {
+            "id": "component:island10"
+          },
+          {
+            "id": "component:island11"
+          },
+          {
+            "id": "component:island12"
+          },
+          {
+            "id": "component:island13"
+          },
+          {
+            "id": "component:island14"
+          },
+          {
+            "id": "component:island15"
+          },
+          {
+            "id": "component:island16"
+          },
+          {
+            "id": "component:island17"
+          },
+          {
+            "id": "component:island18"
+          },
+          {
+            "id": "component:island19"
+          },
+          {
+            "id": "component:island20"
+          },
+          {
+            "id": "component:island21"
+          },
+          {
+            "id": "component:island22"
+          },
+          {
+            "id": "component:island23"
+          }
+        ],
+        "relationships": [
+          {
+            "id": "rel-1"
+          }
+        ],
+        "properties": {
+          "graphite.level": "component",
+          "graphite.containerId": "container:application-runtime",
+          "graphite.container": "Checkout Runtime"
+        }
+      }
+    ],
+    "configuration": {
+      "scope": "softwareSystem",
+      "properties": {
+        "graphite.level": "component",
+        "graphite.availableLevels": "[\n  \"context\",\n  \"container\",\n  \"component\",\n  \"all\"\n]"
+      }
+    }
+  }
+}

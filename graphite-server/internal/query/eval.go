@@ -61,6 +61,21 @@ func (e evaluator) eval(expression cypher.Expr, row map[string]any) any {
 		switch o := obj.(type) {
 		case qualifiedNode, qualifiedMethod:
 			return qualifiedProperty(o, x.Key)
+		case qualifiedEdge:
+			if x.Key == "graphId" {
+				return o.GraphID
+			}
+			return edgeProperty(o.Edge, x.Key)
+		case store.Edge:
+			return edgeProperty(o, x.Key)
+		case pathValue:
+			if x.Key == "length" {
+				return int32(len(o.Edges))
+			}
+			if x.Key == "graphId" && o.Qualified {
+				return o.GraphID
+			}
+			return nil
 		case store.Node:
 			return NodeProperty(o, x.Key)
 		case store.MethodDescriptor:
@@ -437,6 +452,8 @@ func (e evaluator) binary(x cypher.Binary, row map[string]any) any {
 }
 func scalarString(v any) string {
 	switch n := v.(type) {
+	case store.Edge:
+		return edgeString(n)
 	case nil:
 		return "null"
 	case string:
@@ -533,8 +550,43 @@ func (e evaluator) call(name string, args []any) any {
 			return strings.ToLower(value)
 		}
 		return nil
+	case "type":
+		switch edge := v.(type) {
+		case store.Edge:
+			return edgeType(edge)
+		case qualifiedEdge:
+			return edgeType(edge.Edge)
+		}
+		return nil
+	case "nodes", "relationships":
+		if path, ok := v.(pathValue); ok {
+			if name == "nodes" {
+				return path.Nodes
+			}
+			return path.Edges
+		}
+		if list, ok := v.([]any); ok {
+			result := []any{}
+			for _, value := range list {
+				e.check()
+				switch value.(type) {
+				case store.Node, qualifiedNode:
+					if name == "nodes" {
+						result = append(result, value)
+					}
+				case store.Edge, qualifiedEdge:
+					if name == "relationships" {
+						result = append(result, value)
+					}
+				}
+			}
+			return result
+		}
+		return nil
 	case "size", "length":
 		switch v := v.(type) {
+		case pathValue:
+			return int32(len(v.Edges))
 		case string:
 			return int32(len(utf16.Encode([]rune(v))))
 		case []any:

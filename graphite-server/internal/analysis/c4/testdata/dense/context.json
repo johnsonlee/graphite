@@ -1,0 +1,1235 @@
+{
+  "name": "Graphite C4 Workspace",
+  "description": "Structurizr workspace derived from the Graphite code graph",
+  "properties": {
+    "graphite.level": "context",
+    "graphite.availableLevels": "[\n  \"context\",\n  \"container\",\n  \"component\",\n  \"all\"\n]",
+    "graphite.format": "structurizr-workspace"
+  },
+  "model": {
+    "people": [
+      {
+        "id": "person:http-clients",
+        "name": "HTTP Clients",
+        "description": "External clients invoking detected HTTP endpoints",
+        "tags": "Person,Graphite,actor",
+        "properties": {
+          "graphite.type": "person",
+          "graphite.kind": "actor",
+          "graphite.architectureType": "actor",
+          "graphite.responsibility": "Initiates synchronous request flows into the application boundary"
+        },
+        "relationships": [
+          {
+            "id": "rel-1",
+            "destinationId": "system:application",
+            "description": "Invokes Checkout through its HTTP interface",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"endpoints\": 1\n}"
+            }
+          }
+        ],
+        "containers": [],
+        "components": []
+      }
+    ],
+    "softwareSystems": [
+      {
+        "id": "system:application",
+        "name": "Checkout",
+        "description": "Executable software system inferred from the Graphite code graph",
+        "tags": "Software System,Graphite,application",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "application",
+          "graphite.architectureType": "software-system",
+          "graphite.responsibility": "Owns the internal runtime containers and orchestrates the primary execution flows",
+          "graphite.whySelected": "Dominant namespace boundary inferred from internal classes and call-site traffic",
+          "graphite.methods": "28.0",
+          "graphite.endpoints": "1.0",
+          "graphite.classes": "61.0"
+        },
+        "relationships": [
+          {
+            "id": "rel-2",
+            "destinationId": "dependency:library:commons",
+            "description": "Checkout uses commons",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 2,\n  \"source\": \"artifact-family\",\n  \"confidence\": \"high\",\n  \"artifacts\": [\n    \"commons-io-2.15.0\",\n    \"commons-lang3-3.14.0\"\n  ]\n}",
+              "graphite.weight": "2"
+            }
+          },
+          {
+            "id": "rel-3",
+            "destinationId": "dependency:library:lucene",
+            "description": "Checkout uses lucene",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 2,\n  \"source\": \"artifact-family\",\n  \"confidence\": \"high\",\n  \"artifacts\": [\n    \"lucene-analysis-9.12.0\",\n    \"lucene-core-9.12.0\"\n  ]\n}",
+              "graphite.weight": "2"
+            }
+          },
+          {
+            "id": "rel-4",
+            "destinationId": "dependency:artifact:postgresql-42.7.3",
+            "description": "Checkout uses postgresql-42.7.3",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"artifact\",\n  \"confidence\": \"high\",\n  \"artifacts\": [\n    \"postgresql-42.7.3\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-5",
+            "destinationId": "dependency:artifact:alpha-lib-1.0",
+            "description": "Checkout uses alpha-lib-1.0",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"artifact\",\n  \"confidence\": \"high\",\n  \"artifacts\": [\n    \"alpha-lib-1.0\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-6",
+            "destinationId": "dependency:artifact:zeta-lib-1.0",
+            "description": "Checkout uses zeta-lib-1.0",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"artifact\",\n  \"confidence\": \"high\",\n  \"artifacts\": [\n    \"zeta-lib-1.0\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-7",
+            "destinationId": "dependency:namespace:com.partner.service21",
+            "description": "Checkout uses com.partner.service21",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service21\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-8",
+            "destinationId": "dependency:namespace:com.partner.service17",
+            "description": "Checkout uses com.partner.service17",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service17\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-9",
+            "destinationId": "dependency:namespace:com.partner.service13",
+            "description": "Checkout uses com.partner.service13",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service13\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-10",
+            "destinationId": "dependency:namespace:com.partner.service00",
+            "description": "Checkout uses com.partner.service00",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service00\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-11",
+            "destinationId": "dependency:namespace:com.partner.service01",
+            "description": "Checkout uses com.partner.service01",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service01\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-12",
+            "destinationId": "dependency:namespace:com.partner.service18",
+            "description": "Checkout uses com.partner.service18",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service18\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-13",
+            "destinationId": "dependency:namespace:com.partner.service16",
+            "description": "Checkout uses com.partner.service16",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service16\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-14",
+            "destinationId": "dependency:namespace:com.partner.service12",
+            "description": "Checkout uses com.partner.service12",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service12\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-15",
+            "destinationId": "dependency:namespace:com.partner.service14",
+            "description": "Checkout uses com.partner.service14",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service14\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-16",
+            "destinationId": "dependency:namespace:com.partner.service06",
+            "description": "Checkout uses com.partner.service06",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service06\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-17",
+            "destinationId": "dependency:namespace:com.partner.service04",
+            "description": "Checkout uses com.partner.service04",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service04\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-18",
+            "destinationId": "dependency:namespace:com.partner.service05",
+            "description": "Checkout uses com.partner.service05",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service05\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-19",
+            "destinationId": "dependency:namespace:com.partner.service07",
+            "description": "Checkout uses com.partner.service07",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service07\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-20",
+            "destinationId": "dependency:namespace:com.partner.service11",
+            "description": "Checkout uses com.partner.service11",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service11\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-21",
+            "destinationId": "dependency:namespace:com.partner.service08",
+            "description": "Checkout uses com.partner.service08",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service08\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-22",
+            "destinationId": "dependency:namespace:com.partner.service10",
+            "description": "Checkout uses com.partner.service10",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service10\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-23",
+            "destinationId": "dependency:namespace:com.partner.service09",
+            "description": "Checkout uses com.partner.service09",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service09\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-24",
+            "destinationId": "dependency:namespace:com.partner.service23",
+            "description": "Checkout uses com.partner.service23",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service23\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-25",
+            "destinationId": "dependency:namespace:com.partner.service15",
+            "description": "Checkout uses com.partner.service15",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service15\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-26",
+            "destinationId": "dependency:namespace:com.partner.service03",
+            "description": "Checkout uses com.partner.service03",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service03\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-27",
+            "destinationId": "dependency:namespace:com.partner.service02",
+            "description": "Checkout uses com.partner.service02",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service02\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-28",
+            "destinationId": "dependency:namespace:com.partner.service19",
+            "description": "Checkout uses com.partner.service19",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service19\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-29",
+            "destinationId": "dependency:namespace:com.partner.service20",
+            "description": "Checkout uses com.partner.service20",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service20\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-30",
+            "destinationId": "dependency:namespace:com.partner.payment",
+            "description": "Checkout uses com.partner.payment",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.payment\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          },
+          {
+            "id": "rel-31",
+            "destinationId": "dependency:namespace:com.partner.service22",
+            "description": "Checkout uses com.partner.service22",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,uses",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "uses",
+              "graphite.evidence": "{\n  \"crossContainerCalls\": 1,\n  \"source\": \"namespace\",\n  \"confidence\": \"medium\",\n  \"artifacts\": [\n    \"com.partner.service22\"\n  ]\n}",
+              "graphite.weight": "1"
+            }
+          }
+        ],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:library:commons",
+        "name": "commons",
+        "description": "Reusable third-party library capabilities referenced from the subject system",
+        "tags": "Software System,Graphite,library",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "library",
+          "graphite.architectureType": "external-library",
+          "graphite.responsibility": "Provides the Commons third-party library capabilities used by the application"
+        },
+        "relationships": [
+          {
+            "id": "rel-35",
+            "destinationId": "dependency:artifact:postgresql-42.7.3",
+            "description": "commons builds on postgresql-42.7.3",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,builds-on",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "builds-on",
+              "graphite.evidence": "{\n  \"observedReferences\": 2,\n  \"source\": \"artifact-metadata\",\n  \"confidence\": \"high\"\n}",
+              "graphite.weight": "2"
+            }
+          }
+        ],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:library:lucene",
+        "name": "lucene",
+        "description": "Reusable third-party library capabilities referenced from the subject system",
+        "tags": "Software System,Graphite,library",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "library",
+          "graphite.architectureType": "external-library",
+          "graphite.responsibility": "Provides the Lucene third-party library capabilities used by the application"
+        },
+        "relationships": [
+          {
+            "id": "rel-32",
+            "destinationId": "dependency:library:commons",
+            "description": "lucene builds on commons",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,builds-on",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "builds-on",
+              "graphite.evidence": "{\n  \"observedReferences\": 6,\n  \"source\": \"artifact-metadata\",\n  \"confidence\": \"high\"\n}",
+              "graphite.weight": "6"
+            }
+          }
+        ],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:artifact:postgresql-42.7.3",
+        "name": "postgresql-42.7.3",
+        "description": "Reusable third-party library capabilities referenced from the subject system",
+        "tags": "Software System,Graphite,library",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "library",
+          "graphite.architectureType": "external-library",
+          "graphite.responsibility": "Provides reusable library capabilities linked from the application runtime"
+        },
+        "relationships": [
+          {
+            "id": "rel-37",
+            "destinationId": "dependency:runtime:java",
+            "description": "postgresql-42.7.3 runs on Java Runtime",
+            "technology": "runs-on",
+            "tags": "Relationship,Graphite,runs-on",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "runs-on",
+              "graphite.evidence": "{\n  \"source\": \"runtime\",\n  \"kind\": \"runtime\"\n}"
+            }
+          }
+        ],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:artifact:alpha-lib-1.0",
+        "name": "alpha-lib-1.0",
+        "description": "Reusable third-party library capabilities referenced from the subject system",
+        "tags": "Software System,Graphite,library",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "library",
+          "graphite.architectureType": "external-library",
+          "graphite.responsibility": "Provides reusable library capabilities linked from the application runtime"
+        },
+        "relationships": [
+          {
+            "id": "rel-36",
+            "destinationId": "dependency:artifact:postgresql-42.7.3",
+            "description": "alpha-lib-1.0 builds on postgresql-42.7.3",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,builds-on",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "builds-on",
+              "graphite.evidence": "{\n  \"observedReferences\": 2,\n  \"source\": \"artifact-metadata\",\n  \"confidence\": \"high\"\n}",
+              "graphite.weight": "2"
+            }
+          }
+        ],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:artifact:zeta-lib-1.0",
+        "name": "zeta-lib-1.0",
+        "description": "Reusable third-party library capabilities referenced from the subject system",
+        "tags": "Software System,Graphite,library",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "library",
+          "graphite.architectureType": "external-library",
+          "graphite.responsibility": "Provides reusable library capabilities linked from the application runtime"
+        },
+        "relationships": [
+          {
+            "id": "rel-33",
+            "destinationId": "dependency:library:lucene",
+            "description": "zeta-lib-1.0 builds on lucene",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,builds-on",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "builds-on",
+              "graphite.evidence": "{\n  \"observedReferences\": 2,\n  \"source\": \"artifact-metadata\",\n  \"confidence\": \"high\"\n}",
+              "graphite.weight": "2"
+            }
+          },
+          {
+            "id": "rel-34",
+            "destinationId": "dependency:artifact:postgresql-42.7.3",
+            "description": "zeta-lib-1.0 builds on postgresql-42.7.3",
+            "technology": "uses",
+            "tags": "Relationship,Graphite,builds-on",
+            "properties": {
+              "graphite.view": "context",
+              "graphite.relationshipKind": "builds-on",
+              "graphite.evidence": "{\n  \"observedReferences\": 2,\n  \"source\": \"artifact-metadata\",\n  \"confidence\": \"high\"\n}",
+              "graphite.weight": "2"
+            }
+          }
+        ],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service21",
+        "name": "com.partner.service21",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service17",
+        "name": "com.partner.service17",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service13",
+        "name": "com.partner.service13",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service00",
+        "name": "com.partner.service00",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service01",
+        "name": "com.partner.service01",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service18",
+        "name": "com.partner.service18",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service16",
+        "name": "com.partner.service16",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service12",
+        "name": "com.partner.service12",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service14",
+        "name": "com.partner.service14",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service06",
+        "name": "com.partner.service06",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service04",
+        "name": "com.partner.service04",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service05",
+        "name": "com.partner.service05",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service07",
+        "name": "com.partner.service07",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service11",
+        "name": "com.partner.service11",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service08",
+        "name": "com.partner.service08",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service10",
+        "name": "com.partner.service10",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service09",
+        "name": "com.partner.service09",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service23",
+        "name": "com.partner.service23",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service15",
+        "name": "com.partner.service15",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service03",
+        "name": "com.partner.service03",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service02",
+        "name": "com.partner.service02",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service19",
+        "name": "com.partner.service19",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service20",
+        "name": "com.partner.service20",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.payment",
+        "name": "com.partner.payment",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:namespace:com.partner.service22",
+        "name": "com.partner.service22",
+        "description": "External software system candidate inferred from referenced-but-absent classes",
+        "tags": "Software System,Graphite,external-system",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "external-system",
+          "graphite.architectureType": "external-system",
+          "graphite.responsibility": "Represents an inferred external software system boundary grouped from referenced classes"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      },
+      {
+        "id": "dependency:runtime:java",
+        "name": "Java Runtime",
+        "description": "Language and platform runtime supporting the application and its libraries",
+        "tags": "Software System,Graphite,runtime",
+        "properties": {
+          "graphite.type": "softwareSystem",
+          "graphite.kind": "runtime",
+          "graphite.architectureType": "runtime-platform",
+          "graphite.responsibility": "Provides language and platform runtime services used by the application"
+        },
+        "relationships": [],
+        "containers": [],
+        "components": []
+      }
+    ]
+  },
+  "views": {
+    "systemContextViews": [
+      {
+        "key": "graphite-context",
+        "description": "Graphite-derived C4 system context view",
+        "softwareSystemId": "system:application",
+        "elements": [
+          {
+            "id": "person:http-clients"
+          },
+          {
+            "id": "dependency:library:commons"
+          },
+          {
+            "id": "dependency:library:lucene"
+          },
+          {
+            "id": "dependency:artifact:postgresql-42.7.3"
+          },
+          {
+            "id": "dependency:artifact:alpha-lib-1.0"
+          },
+          {
+            "id": "dependency:artifact:zeta-lib-1.0"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service21"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service17"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service13"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service00"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service01"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service18"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service16"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service12"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service14"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service06"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service04"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service05"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service07"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service11"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service08"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service10"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service09"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service23"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service15"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service03"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service02"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service19"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service20"
+          },
+          {
+            "id": "dependency:namespace:com.partner.payment"
+          },
+          {
+            "id": "dependency:namespace:com.partner.service22"
+          },
+          {
+            "id": "dependency:runtime:java"
+          },
+          {
+            "id": "system:application"
+          }
+        ],
+        "relationships": [
+          {
+            "id": "rel-1"
+          },
+          {
+            "id": "rel-2"
+          },
+          {
+            "id": "rel-3"
+          },
+          {
+            "id": "rel-4"
+          },
+          {
+            "id": "rel-5"
+          },
+          {
+            "id": "rel-6"
+          },
+          {
+            "id": "rel-7"
+          },
+          {
+            "id": "rel-8"
+          },
+          {
+            "id": "rel-9"
+          },
+          {
+            "id": "rel-10"
+          },
+          {
+            "id": "rel-11"
+          },
+          {
+            "id": "rel-12"
+          },
+          {
+            "id": "rel-13"
+          },
+          {
+            "id": "rel-14"
+          },
+          {
+            "id": "rel-15"
+          },
+          {
+            "id": "rel-16"
+          },
+          {
+            "id": "rel-17"
+          },
+          {
+            "id": "rel-18"
+          },
+          {
+            "id": "rel-19"
+          },
+          {
+            "id": "rel-20"
+          },
+          {
+            "id": "rel-21"
+          },
+          {
+            "id": "rel-22"
+          },
+          {
+            "id": "rel-23"
+          },
+          {
+            "id": "rel-24"
+          },
+          {
+            "id": "rel-25"
+          },
+          {
+            "id": "rel-26"
+          },
+          {
+            "id": "rel-27"
+          },
+          {
+            "id": "rel-28"
+          },
+          {
+            "id": "rel-29"
+          },
+          {
+            "id": "rel-30"
+          },
+          {
+            "id": "rel-31"
+          },
+          {
+            "id": "rel-32"
+          },
+          {
+            "id": "rel-33"
+          },
+          {
+            "id": "rel-34"
+          },
+          {
+            "id": "rel-35"
+          },
+          {
+            "id": "rel-36"
+          },
+          {
+            "id": "rel-37"
+          }
+        ],
+        "properties": {
+          "graphite.level": "context"
+        }
+      }
+    ],
+    "containerViews": [],
+    "componentViews": [],
+    "configuration": {
+      "scope": "softwareSystem",
+      "properties": {
+        "graphite.level": "context",
+        "graphite.availableLevels": "[\n  \"context\",\n  \"container\",\n  \"component\",\n  \"all\"\n]"
+      }
+    }
+  }
+}
