@@ -1,0 +1,44 @@
+[
+  {
+    "command": [
+      "/opt/homebrew/opt/openjdk@17/bin/java",
+      "-Dfile.encoding=UTF-8",
+      "-Xmx256m",
+      "-XX:ActiveProcessorCount=2",
+      "-cp",
+      "attempt9-work:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "GenericFaultOracle",
+      "graphite-server/internal/query/testdata/generic-distinct/callsites",
+      "graphite-server/internal/query/testdata/generic-distinct/fault-queries.json"
+    ],
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/opt/openjdk@17/bin/java",
+      "-Dfile.encoding=UTF-8",
+      "-Xmx256m",
+      "-XX:ActiveProcessorCount=2",
+      "-cp",
+      "attempt9-work:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "GenericFaultOracle",
+      "graphite-server/internal/query/testdata/generic-distinct/bad-first",
+      "graphite-server/internal/query/testdata/generic-distinct/fault-queries.json"
+    ],
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "/opt/homebrew/opt/openjdk@17/bin/java",
+      "-Dfile.encoding=UTF-8",
+      "-Xmx256m",
+      "-XX:ActiveProcessorCount=2",
+      "-cp",
+      "attempt9-work:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "GenericFaultOracle",
+      "graphite-server/internal/query/testdata/generic-distinct/bad-last",
+      "graphite-server/internal/query/testdata/generic-distinct/fault-queries.json"
+    ],
+    "exitCode": 0
+  }
+]

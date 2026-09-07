@@ -1,0 +1,9 @@
+{
+  "base": "87aaf0ad",
+  "candidate": "/tmp/graphite-go-generic-root-87aaf0ad",
+  "providerPatchSHA256": "0958287aa882135260f018b217577e3ca4c853cba444e66f0faf9bbd882c3226",
+  "rootCorrection": "Java-equivalent UTF16 string encodings must compare equal in genericJavaEqual.",
+  "harnessSHA256": "f31d93baadc9b019fd4f5e42b84570997f599f4a869ad07c83a5939e5830e9a6",
+  "cpuSampling": false,
+  "scope": "Sequential five-query full64 diagnostic; default heap sampling/forced GC outside counters. Background correctness/build work; no overlapping64 run; not HTTP/P95."
+}

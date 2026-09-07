@@ -1,0 +1,15 @@
+{
+  "command": [
+    "/opt/homebrew/opt/openjdk@17/bin/java",
+    "-Dfile.encoding=UTF-8",
+    "-Xmx256m",
+    "-XX:ActiveProcessorCount=2",
+    "-cp",
+    "attempt9-work:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+    "GenericOracle",
+    "graphite-server/internal/query/testdata/generic-distinct/store",
+    "graphite-server/internal/query/testdata/generic-distinct/edge-queries.json"
+  ],
+  "exitCode": 0,
+  "stderr": ""
+}

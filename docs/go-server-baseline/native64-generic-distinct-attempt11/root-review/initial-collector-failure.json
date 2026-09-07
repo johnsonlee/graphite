@@ -1,0 +1,5 @@
+{
+  "error": "FileNotFoundError for provider summarizer metadata base-output-comparison.json; producer emits17 oracle files, not that separate summarizer output.",
+  "correction": "Use the fixed17-file original corpus output manifest and assert the complete current output set, preserving all1048 cases.",
+  "performanceStarted": false
+}

@@ -1,0 +1,42 @@
+[
+  {
+    "file": "bad-first-main-wire.jsonl",
+    "sameBytes": true,
+    "sha256": "9bc6f03296bffc2ea47fc793f753ba42a07c827fff1690ebc34f23dc2e3c4b89"
+  },
+  {
+    "file": "bad-first-main.jsonl",
+    "sameBytes": true,
+    "sha256": "d8d4175034057cf3bf32960ef0f4a75407af509d3a50a7cb364b6790f5bb8a40"
+  },
+  {
+    "file": "bad-last-main-wire.jsonl",
+    "sameBytes": true,
+    "sha256": "a234b7c4bcdacfb826f6562cdbd854d82e7c563cd0a2176ddaaf8e2efe1a4a87"
+  },
+  {
+    "file": "bad-last-main.jsonl",
+    "sameBytes": true,
+    "sha256": "3192f50bacdf79a0caa7649b8cd8069d52e74d5f7b1aaa03edafc811753e2fcd"
+  },
+  {
+    "file": "callsites-main-wire.jsonl",
+    "sameBytes": true,
+    "sha256": "1dac16418973bfe55dabb1a4c8935b9eaba5f7d6fc199f0e765ec80bb95f504e"
+  },
+  {
+    "file": "callsites-main.jsonl",
+    "sameBytes": true,
+    "sha256": "c58e20cd1e3077fedb5632b7ce0b24f55961859d2f7fb93cfeb637e5b78df13b"
+  },
+  {
+    "file": "edge-main.jsonl",
+    "sameBytes": true,
+    "sha256": "0b5022dc32aa80da01cbe7f03410cb21d975ddb669e59e92d6e405be42667d88"
+  },
+  {
+    "file": "main.jsonl",
+    "sameBytes": true,
+    "sha256": "6a8b64fb43e37266602d7944ffba386ad001b7dd9e3b6d46923959ffaf94e057"
+  }
+]

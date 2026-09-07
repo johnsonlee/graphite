@@ -1,0 +1,13 @@
+{
+  "attempts": [
+    {
+      "error": "FileNotFoundError: base-output-comparison.json",
+      "reason": "Provider directory includes separate summarizer output, not emitted by Go tests."
+    },
+    {
+      "error": "AssertionError comparing output set to only17 indexed files",
+      "reason": "Generic tests also emit the full432-case generic-fault-audit.json."
+    }
+  ],
+  "correction": "Compare the original17 files plus the full generic fault audit; require exactly those18 generated files. No benchmark started before these checks."
+}

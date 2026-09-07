@@ -1,0 +1,1 @@
+public class JavaEqualityOracle { public static void main(String[] args) { String a=new String(new char[]{(char)0xd83d,(char)0xde00}); String b=new String(Character.toChars(0x1f600)); System.out.println("{\"equal\":"+a.equals(b)+",\"compare\":"+a.compareTo(b)+",\"codeUnits\":["+(int)a.charAt(0)+","+(int)a.charAt(1)+"]}"); } }

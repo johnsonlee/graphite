@@ -325,3 +325,27 @@ new candidate set, task scheduling or Postings reordering is included.
 `docs/go-server-baseline/native64-findid-attempt10/` retains all commands,
 identities, independent checks, complete responses and raw counters. The rejected
 lazy first-SID hypothesis remains separately preserved as Attempt9.
+
+
+## 2026-09-07 — Attempt 11: bounded generic DISTINCT retention (rejected)
+
+Hypothesis: retain only selected direct-property/literal DISTINCT rows after the
+indexed path declines, using a pull/ack candidate cursor to preserve decoding,
+source consumption, provenance, error and cancellation behavior.
+
+| Item | Evidence / status |
+|---|---|
+| Native base / candidate | `87aaf0ad`; provider patch `0958287aa882135260f018b217577e3ca4c853cba444e66f0faf9bbd882c3226` plus independent Java-equivalent UTF16 string equality correction; production never integrated |
+| Fixture | All64 `/tmp/pr113-exp037-fixture.nXn4fg`; all1,152 files/10,338,207,518bytes and catalog freshly verified per sequential process |
+| Correctness | Provider and root whole-module race/vet; all18 emitted oracle files reproduced; original1,048 cases741 equal/307 existing differences; five diagnostic full responses equal pinned main and each other |
+| Prefix first | Execution+marshal20.189→25.136s; process CPU25.819→141.585s; allocation11,136,134,320→3,869,456,152bytes |
+| Prefix repeat | Execution+marshal11.397→25.175s; process CPU18.144→135.718s; allocation8,549,773,440→1,283,091,992bytes |
+| Controls | Indexed dense first8.631→8.797s, repeat8.799→9.011s; ordinary11.121→11.144s, allocations effectively unchanged. Single-run variations do not establish control-path regressions |
+| Decision | Reject despite allocation reduction: repeated target query takes2.21× elapsed time and7.48× CPU. No rejected production change remains in root |
+| Next hypothesis / limits | Audit per-node pull/ack scheduling without claiming proven cause. No CPU sampler; instrumented co-tenant single observations, not HTTP/P95, peak RSS, or main-relative acceptance |
+
+`docs/go-server-baseline/native64-generic-distinct-attempt11/` preserves the
+provider freeze, independent equality failure/fix, both collector failures,
+complete responses, source identities, counters, commands and rejection.
+No shipping HTTP replay was spent on the rejected candidate. Full compatibility
+and the requested repeated main-relative10x P95 result remain unproven.

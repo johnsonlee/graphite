@@ -1,0 +1,14 @@
+diff --git a/graphite-server/internal/query/engine.go b/graphite-server/internal/query/engine.go
+index fc7c7dbd..0588f369 100644
+--- a/graphite-server/internal/query/engine.go
++++ b/graphite-server/internal/query/engine.go
+@@ -151,6 +151,9 @@ func (e evaluator) branch(graph *store.Store, branch cypher.SingleQuery) Result
+ 	if result, ok := e.indexedDistinct(graph, branch); ok {
+ 		return result
+ 	}
++	if result, ok := e.genericDistinct(graph, branch); ok {
++		return result
++	}
+ 	earlyLimit := e.computeEarlyLimit(branch)
+ 	rows := []map[string]any{{}}
+ 	columns := []string{}

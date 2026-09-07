@@ -1,0 +1,115 @@
+[
+  {
+    "command": [
+      "/opt/homebrew/opt/openjdk@17/bin/javac",
+      "-encoding",
+      "UTF-8",
+      "-cp",
+      "/private/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "-d",
+      "/private/tmp/graphite-go-generic-distinct-attempt11-oracle-reproduction",
+      "/private/tmp/graphite-go-generic-distinct-attempt11-oracle-reproduction/GenerateGeneric.java",
+      "/private/tmp/graphite-go-generic-distinct-attempt11-oracle-reproduction/GenericOracle.java",
+      "/private/tmp/graphite-go-generic-distinct-attempt11-oracle-reproduction/GenericFaultOracle.java"
+    ],
+    "exitCode": 0,
+    "stderr": "Note: Some input files use unchecked or unsafe operations.\nNote: Recompile with -Xlint:unchecked for details.\n"
+  },
+  {
+    "command": [
+      "/opt/homebrew/opt/openjdk@17/bin/java",
+      "-Dfile.encoding=UTF-8",
+      "-Xmx256m",
+      "-XX:ActiveProcessorCount=2",
+      "-cp",
+      "/private/tmp/graphite-go-generic-distinct-attempt11-oracle-reproduction:/private/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "GenerateGeneric",
+      "/private/tmp/graphite-go-generic-distinct-attempt11-oracle-reproduction/store"
+    ],
+    "exitCode": 0,
+    "stderr": ""
+  },
+  {
+    "command": [
+      "/opt/homebrew/opt/openjdk@17/bin/java",
+      "-Dfile.encoding=UTF-8",
+      "-Xmx256m",
+      "-XX:ActiveProcessorCount=2",
+      "-cp",
+      "/private/tmp/graphite-go-generic-distinct-attempt11-oracle-reproduction:/private/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "GenericOracle",
+      "/private/tmp/graphite-go-generic-distinct-attempt11-oracle-reproduction/store",
+      "/private/tmp/graphite-go-generic-distinct-attempt11-oracle-reproduction/queries.json"
+    ],
+    "exitCode": 0,
+    "stderr": ""
+  },
+  {
+    "command": [
+      "/opt/homebrew/opt/openjdk@17/bin/java",
+      "-Dfile.encoding=UTF-8",
+      "-Xmx256m",
+      "-XX:ActiveProcessorCount=2",
+      "-cp",
+      "/private/tmp/graphite-go-generic-distinct-attempt11-oracle-reproduction:/private/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "GenericOracle",
+      "/private/tmp/graphite-go-generic-distinct-attempt11-oracle-reproduction/store",
+      "/private/tmp/graphite-go-generic-distinct-attempt11-oracle-reproduction/edge-queries.json"
+    ],
+    "exitCode": 0,
+    "stderr": ""
+  },
+  {
+    "command": [
+      "/opt/homebrew/opt/openjdk@17/bin/java",
+      "-Dfile.encoding=UTF-8",
+      "-Xmx256m",
+      "-XX:ActiveProcessorCount=2",
+      "-cp",
+      "/private/tmp/graphite-go-generic-distinct-attempt11-oracle-reproduction:/private/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "GenericFaultOracle",
+      "/private/tmp/graphite-go-generic-distinct-attempt11-oracle-reproduction/callsites",
+      "/private/tmp/graphite-go-generic-distinct-attempt11-oracle-reproduction/fault-queries.json"
+    ],
+    "exitCode": 0,
+    "stderr": ""
+  },
+  {
+    "command": [
+      "/opt/homebrew/opt/openjdk@17/bin/java",
+      "-Dfile.encoding=UTF-8",
+      "-Xmx256m",
+      "-XX:ActiveProcessorCount=2",
+      "-cp",
+      "/private/tmp/graphite-go-generic-distinct-attempt11-oracle-reproduction:/private/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "GenericFaultOracle",
+      "/private/tmp/graphite-go-generic-distinct-attempt11-oracle-reproduction/bad-first",
+      "/private/tmp/graphite-go-generic-distinct-attempt11-oracle-reproduction/fault-queries.json"
+    ],
+    "exitCode": 0,
+    "stderr": ""
+  },
+  {
+    "command": [
+      "/opt/homebrew/opt/openjdk@17/bin/java",
+      "-Dfile.encoding=UTF-8",
+      "-Xmx256m",
+      "-XX:ActiveProcessorCount=2",
+      "-cp",
+      "/private/tmp/graphite-go-generic-distinct-attempt11-oracle-reproduction:/private/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "GenericFaultOracle",
+      "/private/tmp/graphite-go-generic-distinct-attempt11-oracle-reproduction/bad-last",
+      "/private/tmp/graphite-go-generic-distinct-attempt11-oracle-reproduction/fault-queries.json"
+    ],
+    "exitCode": 0,
+    "stderr": ""
+  },
+  {
+    "command": [
+      "python3",
+      "/private/tmp/graphite-go-generic-distinct-attempt11-oracle-reproduction/wire_oracles.py"
+    ],
+    "exitCode": 0,
+    "stderr": ""
+  }
+]

@@ -1,0 +1,95 @@
+[
+  {
+    "file": "annotation-after-native.json",
+    "count": 48,
+    "candidateCount": 48,
+    "differentIndices": []
+  },
+  {
+    "file": "annotation-native.json",
+    "count": 48,
+    "candidateCount": 48,
+    "differentIndices": []
+  },
+  {
+    "file": "late-native.json",
+    "count": 6,
+    "candidateCount": 6,
+    "differentIndices": []
+  },
+  {
+    "file": "mixed-native.json",
+    "count": 48,
+    "candidateCount": 48,
+    "differentIndices": []
+  },
+  {
+    "file": "primary-native.json",
+    "count": 432,
+    "candidateCount": 432,
+    "differentIndices": [
+      242,
+      262
+    ]
+  },
+  {
+    "file": "required-missing-identity-native.json",
+    "count": 112,
+    "candidateCount": 112,
+    "differentIndices": []
+  },
+  {
+    "file": "required-missing-index-native.json",
+    "count": 112,
+    "candidateCount": 112,
+    "differentIndices": []
+  },
+  {
+    "file": "required-native.json",
+    "count": 112,
+    "candidateCount": 112,
+    "differentIndices": []
+  },
+  {
+    "file": "source-pairs-native.json",
+    "count": 16,
+    "candidateCount": 16,
+    "differentIndices": []
+  },
+  {
+    "file": "split-bad-callee-native.json",
+    "count": 10,
+    "candidateCount": 10,
+    "differentIndices": []
+  },
+  {
+    "file": "split-bad-count-native.json",
+    "count": 10,
+    "candidateCount": 10,
+    "differentIndices": []
+  },
+  {
+    "file": "split-bad-tag-native.json",
+    "count": 10,
+    "candidateCount": 10,
+    "differentIndices": []
+  },
+  {
+    "file": "split-clean-native.json",
+    "count": 10,
+    "candidateCount": 10,
+    "differentIndices": []
+  },
+  {
+    "file": "split-missing-index-native.json",
+    "count": 10,
+    "candidateCount": 10,
+    "differentIndices": []
+  },
+  {
+    "file": "supplementary-native.json",
+    "count": 64,
+    "candidateCount": 64,
+    "differentIndices": []
+  }
+]

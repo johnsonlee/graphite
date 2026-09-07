@@ -1,0 +1,5 @@
+--- FAIL: TestGenericDistinctJavaEquivalentStringEncodings (0.00s)
+    generic_distinct_equality_integration_test.go:7: identical Java UTF16 units must compare equal: main String.equals true and compareTo 0
+FAIL
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/query	0.248s
+FAIL

@@ -1,0 +1,86 @@
+{
+  "decision": "reject performance candidate; production not integrated",
+  "queries": {
+    "global-wide-distribution-broad-all-64": {
+      "base": {
+        "seconds": 11.120754,
+        "allocationBytes": 5640850408,
+        "cpuSeconds": 11.101773000000001,
+        "numGC": 0,
+        "completeMainOutputEqual": true
+      },
+      "candidate": {
+        "seconds": 11.144350375,
+        "allocationBytes": 5640787552,
+        "cpuSeconds": 11.129219999999968,
+        "numGC": 0,
+        "completeMainOutputEqual": true
+      }
+    },
+    "global-wide-wrapped-case-insensitive-distinct-dense": {
+      "base": {
+        "seconds": 8.631090416,
+        "allocationBytes": 5804021368,
+        "cpuSeconds": 43.559929,
+        "numGC": 1,
+        "completeMainOutputEqual": true
+      },
+      "candidate": {
+        "seconds": 8.796790334,
+        "allocationBytes": 5804017024,
+        "cpuSeconds": 44.64062700000001,
+        "numGC": 1,
+        "completeMainOutputEqual": true
+      }
+    },
+    "global-wide-wrapped-case-insensitive-distinct-dense-repeat": {
+      "base": {
+        "seconds": 8.79942325,
+        "allocationBytes": 367922040,
+        "cpuSeconds": 41.455107999999996,
+        "numGC": 0,
+        "completeMainOutputEqual": true
+      },
+      "candidate": {
+        "seconds": 9.010935,
+        "allocationBytes": 367927496,
+        "cpuSeconds": 42.16204999999995,
+        "numGC": 0,
+        "completeMainOutputEqual": true
+      }
+    },
+    "wrapped-firstLastGraphBimodalClassPrefix": {
+      "base": {
+        "seconds": 20.18869,
+        "allocationBytes": 11136134320,
+        "cpuSeconds": 25.818631999999997,
+        "numGC": 1,
+        "completeMainOutputEqual": true
+      },
+      "candidate": {
+        "seconds": 25.136076875,
+        "allocationBytes": 3869456152,
+        "cpuSeconds": 141.58469200000002,
+        "numGC": 0,
+        "completeMainOutputEqual": true
+      }
+    },
+    "wrapped-firstLastGraphBimodalClassPrefix-repeat": {
+      "base": {
+        "seconds": 11.396647709,
+        "allocationBytes": 8549773440,
+        "cpuSeconds": 18.144108000000003,
+        "numGC": 1,
+        "completeMainOutputEqual": true
+      },
+      "candidate": {
+        "seconds": 25.175200291,
+        "allocationBytes": 1283091992,
+        "cpuSeconds": 135.71840699999998,
+        "numGC": 0,
+        "completeMainOutputEqual": true
+      }
+    }
+  },
+  "limits": "One sequential instrumented five-query run per revision; background correctness/build work; no CPU sampling, no HTTP/P95 or peak RSS claim."
+}

@@ -1,0 +1,91 @@
+ graphite-server/internal/query/engine.go           |   3 +
+ graphite-server/internal/query/generic_distinct.go | 441 +++++++++++++++++++++
+ .../internal/query/generic_distinct_cursor_test.go |  70 ++++
+ .../internal/query/generic_distinct_edges_test.go  | 136 +++++++
+ .../internal/query/generic_distinct_test.go        | 148 +++++++
+ .../internal/query/generic_distinct_values.go      | 144 +++++++
+ .../testdata/generic-distinct/GenerateGeneric.java |  13 +
+ .../generic-distinct/GenericFaultOracle.java       |  21 +
+ .../testdata/generic-distinct/GenericOracle.java   |  21 +
+ .../query/testdata/generic-distinct/README.md      |  94 +++++
+ .../generic-distinct/bad-first-main-wire.jsonl     | 144 +++++++
+ .../testdata/generic-distinct/bad-first-main.jsonl | 144 +++++++
+ .../generic-distinct/bad-first/forward.graph       |   1 +
+ .../generic-distinct/bad-first/forward.offsets     |   1 +
+ .../generic-distinct/bad-first/forward.properties  |  35 ++
+ .../graph.callsite-string-content.identity         |   1 +
+ .../bad-first/graph.callsite-string-index          | Bin 0 -> 676 bytes
+ .../generic-distinct/bad-first/graph.classoverview | Bin 0 -> 64 bytes
+ .../generic-distinct/bad-first/graph.comparisons   | Bin 0 -> 8 bytes
+ .../generic-distinct/bad-first/graph.labelprefix   | Bin 0 -> 368 bytes
+ .../generic-distinct/bad-first/graph.labels        |   0
+ .../generic-distinct/bad-first/graph.metadata      | Bin 0 -> 36 bytes
+ .../generic-distinct/bad-first/graph.nodedata      | Bin 0 -> 220 bytes
+ .../generic-distinct/bad-first/graph.nodeindex     | Bin 0 -> 60 bytes
+ .../generic-distinct/bad-first/graph.nodeoffsets   | Bin 0 -> 736 bytes
+ .../generic-distinct/bad-first/graph.resources     | Bin 0 -> 8 bytes
+ .../generic-distinct/bad-first/graph.strings       | Bin 0 -> 535 bytes
+ .../bad-first/graph.strings.identity               |   2 +
+ .../generic-distinct/bad-first/graph.typeindex     | Bin 0 -> 232 bytes
+ .../generic-distinct/bad-last-main-wire.jsonl      | 144 +++++++
+ .../testdata/generic-distinct/bad-last-main.jsonl  | 144 +++++++
+ .../generic-distinct/bad-last/forward.graph        |   1 +
+ .../generic-distinct/bad-last/forward.offsets      |   1 +
+ .../generic-distinct/bad-last/forward.properties   |  35 ++
+ .../graph.callsite-string-content.identity         |   1 +
+ .../bad-last/graph.callsite-string-index           | Bin 0 -> 676 bytes
+ .../generic-distinct/bad-last/graph.classoverview  | Bin 0 -> 64 bytes
+ .../generic-distinct/bad-last/graph.comparisons    | Bin 0 -> 8 bytes
+ .../generic-distinct/bad-last/graph.labelprefix    | Bin 0 -> 368 bytes
+ .../generic-distinct/bad-last/graph.labels         |   0
+ .../generic-distinct/bad-last/graph.metadata       | Bin 0 -> 36 bytes
+ .../generic-distinct/bad-last/graph.nodedata       | Bin 0 -> 220 bytes
+ .../generic-distinct/bad-last/graph.nodeindex      | Bin 0 -> 60 bytes
+ .../generic-distinct/bad-last/graph.nodeoffsets    | Bin 0 -> 736 bytes
+ .../generic-distinct/bad-last/graph.resources      | Bin 0 -> 8 bytes
+ .../generic-distinct/bad-last/graph.strings        | Bin 0 -> 535 bytes
+ .../bad-last/graph.strings.identity                |   2 +
+ .../generic-distinct/bad-last/graph.typeindex      | Bin 0 -> 232 bytes
+ .../generic-distinct/callsites-main-wire.jsonl     | 144 +++++++
+ .../testdata/generic-distinct/callsites-main.jsonl | 144 +++++++
+ .../generic-distinct/callsites/forward.graph       |   1 +
+ .../generic-distinct/callsites/forward.offsets     |   1 +
+ .../generic-distinct/callsites/forward.properties  |  35 ++
+ .../graph.callsite-string-content.identity         |   1 +
+ .../callsites/graph.callsite-string-index          | Bin 0 -> 676 bytes
+ .../generic-distinct/callsites/graph.classoverview | Bin 0 -> 64 bytes
+ .../generic-distinct/callsites/graph.comparisons   | Bin 0 -> 8 bytes
+ .../generic-distinct/callsites/graph.labelprefix   | Bin 0 -> 368 bytes
+ .../generic-distinct/callsites/graph.labels        |   0
+ .../generic-distinct/callsites/graph.metadata      | Bin 0 -> 36 bytes
+ .../generic-distinct/callsites/graph.nodedata      | Bin 0 -> 220 bytes
+ .../generic-distinct/callsites/graph.nodeindex     | Bin 0 -> 60 bytes
+ .../generic-distinct/callsites/graph.nodeoffsets   | Bin 0 -> 736 bytes
+ .../generic-distinct/callsites/graph.resources     | Bin 0 -> 8 bytes
+ .../generic-distinct/callsites/graph.strings       | Bin 0 -> 535 bytes
+ .../callsites/graph.strings.identity               |   2 +
+ .../generic-distinct/callsites/graph.typeindex     | Bin 0 -> 232 bytes
+ .../testdata/generic-distinct/edge-main.jsonl      | 120 ++++++
+ .../testdata/generic-distinct/edge-queries.json    |  17 +
+ .../testdata/generic-distinct/fault-queries.json   |  38 ++
+ .../query/testdata/generic-distinct/main.jsonl     | 320 +++++++++++++++
+ .../query/testdata/generic-distinct/queries.json   |  42 ++
+ .../query/testdata/generic-distinct/reproduce.py   |  29 ++
+ .../testdata/generic-distinct/store/forward.graph  |   1 +
+ .../generic-distinct/store/forward.offsets         |   1 +
+ .../generic-distinct/store/forward.properties      |  35 ++
+ .../store/graph.callsite-string-content.identity   |   1 +
+ .../generic-distinct/store/graph.classoverview     | Bin 0 -> 16 bytes
+ .../generic-distinct/store/graph.comparisons       | Bin 0 -> 8 bytes
+ .../generic-distinct/store/graph.labelprefix       | Bin 0 -> 76 bytes
+ .../testdata/generic-distinct/store/graph.labels   |   0
+ .../testdata/generic-distinct/store/graph.metadata | Bin 0 -> 36 bytes
+ .../testdata/generic-distinct/store/graph.nodedata | Bin 0 -> 1280 bytes
+ .../generic-distinct/store/graph.nodeindex         | Bin 0 -> 242 bytes
+ .../generic-distinct/store/graph.nodeoffsets       | Bin 0 -> 152 bytes
+ .../generic-distinct/store/graph.resources         | Bin 0 -> 8 bytes
+ .../testdata/generic-distinct/store/graph.strings  | Bin 0 -> 635 bytes
+ .../generic-distinct/store/graph.strings.identity  |   1 +
+ .../generic-distinct/store/graph.typeindex         | Bin 0 -> 288 bytes
+ .../testdata/generic-distinct/wire_oracles.py      |  11 +
+ 90 files changed, 2691 insertions(+)

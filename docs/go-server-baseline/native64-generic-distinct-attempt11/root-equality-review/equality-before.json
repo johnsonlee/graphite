@@ -1,0 +1,12 @@
+{
+  "exitCode": 1,
+  "main": {
+    "equal": true,
+    "compare": 0,
+    "codeUnits": [
+      55357,
+      56832
+    ]
+  },
+  "worktree": "/tmp/graphite-go-generic-root-7cfcc79a"
+}

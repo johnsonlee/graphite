@@ -1,0 +1,5 @@
+=== RUN   TestGenericDistinctFaultOracleAudit
+    generic_distinct_test.go:131: total=432 mainEqual=330 sameAsBase=405
+--- PASS: TestGenericDistinctFaultOracleAudit (2.89s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/query	4.340s

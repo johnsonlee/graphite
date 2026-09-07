@@ -1,0 +1,13 @@
+{
+  "providerManifestSHA256": "617a3e165811bbfc824fc488bf76883c70286ea4f185f3acd1c3bc29311d64a0",
+  "providerSourceFilesVerified": 90,
+  "providerAllGoFilesVerified": 195,
+  "providerEvidenceFilesVerified": 36,
+  "profileSourceFilesUnchanged": {
+    "base": 1615,
+    "candidate": 1705
+  },
+  "bothProcessesExitZero": true,
+  "completeFiveOutputsEqualMainAndEachOther": true,
+  "rootProductionUnchanged": true
+}

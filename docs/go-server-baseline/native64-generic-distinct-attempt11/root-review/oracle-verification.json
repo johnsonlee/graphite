@@ -1,0 +1,27 @@
+{
+  "passed": true,
+  "completeFiles": [
+    "annotation-after-native.json",
+    "annotation-native.json",
+    "late-native.json",
+    "mixed-native.json",
+    "primary-eligibility.json",
+    "primary-native.json",
+    "required-missing-identity-native.json",
+    "required-missing-index-native.json",
+    "required-native.json",
+    "source-pairs-native.json",
+    "split-bad-callee-native.json",
+    "split-bad-count-native.json",
+    "split-bad-tag-native.json",
+    "split-clean-native.json",
+    "split-missing-index-native.json",
+    "supplementary-eligibility.json",
+    "supplementary-native.json",
+    "generic-fault-audit.json"
+  ],
+  "all1048ClassificationsUnchangedFromProvider": true,
+  "mainMatches": 741,
+  "mainDifferences": 307,
+  "genericFaultAuditAlsoIdentical": true
+}
