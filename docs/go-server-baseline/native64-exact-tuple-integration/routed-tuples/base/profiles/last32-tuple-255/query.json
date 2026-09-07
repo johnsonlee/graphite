@@ -1,0 +1,2822 @@
+{
+  "name": "last32-tuple-255",
+  "query": "MATCH (n) WHERE n.graphId IN ['fixture-kotlin-compiler-00', 'fixture-kotlin-compiler-01', 'fixture-kotlin-compiler-02', 'fixture-kotlin-compiler-03', 'fixture-kotlin-compiler-04', 'fixture-kotlin-compiler-05', 'fixture-kotlin-compiler-06', 'fixture-kotlin-compiler-07', 'fixture-kotlin-compiler-08', 'fixture-kotlin-compiler-09', 'fixture-kotlin-compiler-10', 'fixture-kotlin-compiler-11', 'fixture-kotlin-compiler-12', 'fixture-kotlin-compiler-13', 'fixture-kotlin-compiler-14', 'fixture-kotlin-compiler-15', 'fixture-tika-00', 'fixture-tika-01', 'fixture-tika-02', 'fixture-tika-03', 'fixture-tika-04', 'fixture-tika-05', 'fixture-tika-06', 'fixture-tika-07', 'fixture-tika-08', 'fixture-tika-09', 'fixture-tika-10', 'fixture-tika-11', 'fixture-tika-12', 'fixture-tika-13', 'fixture-tika-14', 'fixture-tika-15'] AND (toLower(coalesce(n.caller_class, '')) CONTAINS 'get' OR toLower(coalesce(n.caller_name, '')) CONTAINS 'get' OR toLower(coalesce(n.callee_class, '')) CONTAINS 'get' OR toLower(coalesce(n.callee_name, '')) CONTAINS 'get')\nRETURN DISTINCT n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 255",
+  "source": "Fresh pinned-main HTTP; explicit32-source graphId route over all64 catalog",
+  "expected": {
+    "columns": [
+      "n.caller_class",
+      "n.caller_name",
+      "n.callee_class",
+      "n.callee_name"
+    ],
+    "graphCount": 64,
+    "rowCount": 255,
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.descriptors.ClassDescriptor",
+        "n.callee_name": "getKind",
+        "n.caller_class": "org.jetbrains.kotlin.wasm.resolve.diagnostics.WasmExternalDeclarationChecker",
+        "n.caller_name": "check"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.resolve.checkers.DeclarationCheckerContext",
+        "n.callee_name": "getTrace",
+        "n.caller_class": "org.jetbrains.kotlin.wasm.resolve.diagnostics.WasmExternalDeclarationChecker",
+        "n.caller_name": "check$reportWrongExternalDeclaration"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "java.lang.StringBuilder",
+        "n.callee_name": "\u003cinit\u003e",
+        "n.caller_class": "org.jetbrains.kotlin.wasm.ir.WasmSymbol",
+        "n.caller_name": "getOwner"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "java.lang.StringBuilder",
+        "n.callee_name": "append",
+        "n.caller_class": "org.jetbrains.kotlin.wasm.ir.WasmSymbol",
+        "n.caller_name": "getOwner"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "java.lang.StringBuilder",
+        "n.callee_name": "toString",
+        "n.caller_class": "org.jetbrains.kotlin.wasm.ir.WasmSymbol",
+        "n.caller_name": "getOwner"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "java.lang.Object",
+        "n.callee_name": "toString",
+        "n.caller_class": "org.jetbrains.kotlin.wasm.ir.WasmSymbol",
+        "n.caller_name": "getOwner"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "java.lang.IllegalStateException",
+        "n.callee_name": "\u003cinit\u003e",
+        "n.caller_class": "org.jetbrains.kotlin.wasm.ir.WasmSymbol",
+        "n.caller_name": "getOwner"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.wasm.ir.WasmExpressionBuilder",
+        "n.callee_name": "getNumberOfNestedBlocks",
+        "n.caller_class": "org.jetbrains.kotlin.wasm.ir.WasmExpressionBuilder",
+        "n.caller_name": "buildBlock"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.wasm.ir.WasmExpressionBuilder",
+        "n.callee_name": "getNumberOfNestedBlocks",
+        "n.caller_class": "org.jetbrains.kotlin.wasm.ir.WasmExpressionBuilder",
+        "n.caller_name": "buildBlock$default"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.wasm.ir.WasmExpressionBuilder",
+        "n.callee_name": "getNumberOfNestedBlocks",
+        "n.caller_class": "org.jetbrains.kotlin.wasm.ir.WasmExpressionBuilder",
+        "n.caller_name": "buildLoop"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.wasm.ir.WasmExpressionBuilder",
+        "n.callee_name": "getNumberOfNestedBlocks",
+        "n.caller_class": "org.jetbrains.kotlin.wasm.ir.WasmExpressionBuilder",
+        "n.caller_name": "buildLoop$default"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.wasm.ir.WasmOp",
+        "n.callee_name": "getMnemonic",
+        "n.caller_class": "org.jetbrains.kotlin.wasm.ir.WasmExpressionBuilder",
+        "n.caller_name": "buildInstrWithNoLocation"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.wasm.ir.WasmExpressionBuilder",
+        "n.callee_name": "getNumberOfNestedBlocks",
+        "n.caller_class": "org.jetbrains.kotlin.wasm.ir.WasmExpressionBuilder",
+        "n.caller_name": "buildIf"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.wasm.ir.WasmExpressionBuilder",
+        "n.callee_name": "getNumberOfNestedBlocks",
+        "n.caller_class": "org.jetbrains.kotlin.wasm.ir.WasmExpressionBuilder",
+        "n.caller_name": "buildEnd"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.wasm.ir.WasmExpressionBuilder",
+        "n.callee_name": "getNumberOfNestedBlocks",
+        "n.caller_class": "org.jetbrains.kotlin.wasm.ir.WasmExpressionBuilder",
+        "n.caller_name": "buildBrInstr"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.wasm.ir.WasmExpressionBuilder",
+        "n.callee_name": "getNumberOfNestedBlocks",
+        "n.caller_class": "org.jetbrains.kotlin.wasm.ir.WasmExpressionBuilder",
+        "n.caller_name": "buildBrOnCastInstr"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.wasm.ir.WasmExpressionBuilder",
+        "n.callee_name": "getNumberOfNestedBlocks",
+        "n.caller_class": "org.jetbrains.kotlin.wasm.ir.WasmExpressionBuilder",
+        "n.caller_name": "buildTry"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.wasm.ir.WasmExpressionBuilder",
+        "n.callee_name": "getNumberOfNestedBlocks",
+        "n.caller_class": "org.jetbrains.kotlin.wasm.ir.WasmExpressionBuilder",
+        "n.caller_name": "buildTryTable"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.wasm.ir.WasmExpressionBuilder",
+        "n.callee_name": "getNumberOfNestedBlocks",
+        "n.caller_class": "org.jetbrains.kotlin.wasm.ir.WasmExpressionBuilder",
+        "n.caller_name": "createNewCatchImmediate"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "kotlin.jvm.internal.Intrinsics",
+        "n.callee_name": "checkNotNullParameter",
+        "n.caller_class": "org.jetbrains.kotlin.wasm.ir.WasmExpressionBuilder",
+        "n.caller_name": "buildGetLocal"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.wasm.ir.WasmImmediate$LocalIdx",
+        "n.callee_name": "\u003cinit\u003e",
+        "n.caller_class": "org.jetbrains.kotlin.wasm.ir.WasmExpressionBuilder",
+        "n.caller_name": "buildGetLocal"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.wasm.ir.WasmExpressionBuilder",
+        "n.callee_name": "buildInstr",
+        "n.caller_class": "org.jetbrains.kotlin.wasm.ir.WasmExpressionBuilder",
+        "n.caller_name": "buildGetLocal"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "kotlin.jvm.internal.Intrinsics",
+        "n.callee_name": "checkNotNullParameter",
+        "n.caller_class": "org.jetbrains.kotlin.wasm.ir.WasmExpressionBuilder",
+        "n.caller_name": "buildGetGlobal"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.wasm.ir.WasmImmediate$GlobalIdx",
+        "n.callee_name": "\u003cinit\u003e",
+        "n.caller_class": "org.jetbrains.kotlin.wasm.ir.WasmExpressionBuilder",
+        "n.caller_name": "buildGetGlobal"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.wasm.ir.WasmExpressionBuilder",
+        "n.callee_name": "buildInstr",
+        "n.caller_class": "org.jetbrains.kotlin.wasm.ir.WasmExpressionBuilder",
+        "n.caller_name": "buildGetGlobal"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "kotlin.jvm.internal.Intrinsics",
+        "n.callee_name": "checkNotNullParameter",
+        "n.caller_class": "org.jetbrains.kotlin.wasm.ir.WasmExpressionBuilder",
+        "n.caller_name": "buildStructGet"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.wasm.ir.WasmImmediate$GcType",
+        "n.callee_name": "\u003cinit\u003e",
+        "n.caller_class": "org.jetbrains.kotlin.wasm.ir.WasmExpressionBuilder",
+        "n.caller_name": "buildStructGet"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.wasm.ir.WasmImmediate$StructFieldIdx",
+        "n.callee_name": "\u003cinit\u003e",
+        "n.caller_class": "org.jetbrains.kotlin.wasm.ir.WasmExpressionBuilder",
+        "n.caller_name": "buildStructGet"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.wasm.ir.WasmExpressionBuilder",
+        "n.callee_name": "buildInstr",
+        "n.caller_class": "org.jetbrains.kotlin.wasm.ir.WasmExpressionBuilder",
+        "n.caller_name": "buildStructGet"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.utils.exceptions.KotlinExceptionWithAttachments",
+        "n.callee_name": "getMutableAttachments",
+        "n.caller_class": "org.jetbrains.kotlin.utils.exceptions.KotlinExceptionWithAttachments$Companion",
+        "n.caller_name": "withAttachmentsFrom$util"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.com.intellij.openapi.diagnostic.Attachment",
+        "n.callee_name": "getPath",
+        "n.caller_class": "org.jetbrains.kotlin.utils.exceptions.KotlinExceptionWithAttachments$Companion",
+        "n.caller_name": "withAttachmentsFrom$util"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.com.intellij.openapi.diagnostic.Attachment",
+        "n.callee_name": "getBytes",
+        "n.caller_class": "org.jetbrains.kotlin.utils.exceptions.KotlinExceptionWithAttachments$Companion",
+        "n.caller_name": "copyWithNewName"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.utils.WrappedValues$ThrowableWrapper",
+        "n.callee_name": "getThrowable",
+        "n.caller_class": "org.jetbrains.kotlin.utils.WrappedValues",
+        "n.caller_name": "unescapeThrowable"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.utils.Printer",
+        "n.callee_name": "getCurrentIndent",
+        "n.caller_class": "org.jetbrains.kotlin.utils.SmartPrinter",
+        "n.caller_name": "getCurrentIndent"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.utils.Printer",
+        "n.callee_name": "getCurrentIndentLengthInUnits",
+        "n.caller_class": "org.jetbrains.kotlin.utils.SmartPrinter",
+        "n.caller_name": "getCurrentIndentLengthInUnits"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.utils.Printer",
+        "n.callee_name": "getIndentUnitLength",
+        "n.caller_class": "org.jetbrains.kotlin.utils.SmartPrinter",
+        "n.caller_name": "getIndentUnitLength"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.utils.SmartList$SingletonIteratorBase",
+        "n.callee_name": "getElement",
+        "n.caller_class": "org.jetbrains.kotlin.utils.SmartList$SingletonIteratorBase",
+        "n.caller_name": "next"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.utils.ResolvedDependencies",
+        "n.callee_name": "access$getEMPTY$cp",
+        "n.caller_class": "org.jetbrains.kotlin.utils.ResolvedDependencies$Companion",
+        "n.caller_name": "getEMPTY"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "kotlin.jvm.internal.Intrinsics",
+        "n.callee_name": "checkNotNullParameter",
+        "n.caller_class": "org.jetbrains.kotlin.utils.DummyDelegate",
+        "n.caller_name": "getValue"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.utils.DFS$Neighbors",
+        "n.callee_name": "getNeighbors",
+        "n.caller_class": "org.jetbrains.kotlin.utils.DFS",
+        "n.caller_name": "doDfs"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "java.lang.Thread",
+        "n.callee_name": "getStackTrace",
+        "n.caller_class": "org.jetbrains.kotlin.util.slicedMap.TrackingSlicedMap$TrackableValue",
+        "n.caller_name": "\u003cinit\u003e"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "java.lang.Thread",
+        "n.callee_name": "getName",
+        "n.caller_class": "org.jetbrains.kotlin.util.slicedMap.TrackingSlicedMap$TrackableValue",
+        "n.caller_name": "\u003cinit\u003e"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "java.lang.Object",
+        "n.callee_name": "getClass",
+        "n.caller_class": "org.jetbrains.kotlin.util.slicedMap.TrackingSlicedMap$TrackableValue",
+        "n.caller_name": "equals"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.util.slicedMap.ReadOnlySlice",
+        "n.callee_name": "computeValue",
+        "n.caller_class": "org.jetbrains.kotlin.util.slicedMap.SlicedMap$1",
+        "n.caller_name": "get"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "java.util.Collections",
+        "n.callee_name": "emptySet",
+        "n.caller_class": "org.jetbrains.kotlin.util.slicedMap.SlicedMap$1",
+        "n.caller_name": "getKeys"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.util.slicedMap.WritableSlice",
+        "n.callee_name": "getRewritePolicy",
+        "n.caller_class": "org.jetbrains.kotlin.util.slicedMap.DelegatingSlice",
+        "n.caller_name": "getRewritePolicy"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.util.slicedMap.WritableSlice",
+        "n.callee_name": "getKey",
+        "n.caller_class": "org.jetbrains.kotlin.util.slicedMap.DelegatingSlice",
+        "n.caller_name": "getKey"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.util.slicedMap.DelegatingSlice",
+        "n.callee_name": "$$$reportNull$$$0",
+        "n.caller_class": "org.jetbrains.kotlin.util.slicedMap.DelegatingSlice",
+        "n.caller_name": "getKey"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "java.net.URLClassLoader",
+        "n.callee_name": "getURLs",
+        "n.caller_class": "org.jetbrains.kotlin.util.ServiceLoaderLite",
+        "n.caller_name": "loadImplementations"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "java.nio.file.Paths",
+        "n.callee_name": "get",
+        "n.caller_class": "org.jetbrains.kotlin.util.ServiceLoaderLite",
+        "n.caller_name": "loadImplementations"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "java.net.URL",
+        "n.callee_name": "getProtocol",
+        "n.caller_class": "org.jetbrains.kotlin.util.ServiceLoaderLite",
+        "n.caller_name": "loadImplementations"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.util.ServiceLoaderLite",
+        "n.callee_name": "getClassIdentifier",
+        "n.caller_class": "org.jetbrains.kotlin.util.ServiceLoaderLite",
+        "n.caller_name": "findImplementations"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "kotlin.io.FilesKt",
+        "n.callee_name": "getExtension",
+        "n.caller_class": "org.jetbrains.kotlin.util.ServiceLoaderLite",
+        "n.caller_name": "findImplementations"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "java.util.zip.ZipFile",
+        "n.callee_name": "getEntry",
+        "n.caller_class": "org.jetbrains.kotlin.util.ServiceLoaderLite",
+        "n.caller_name": "findImplementationsInJar"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "java.util.zip.ZipFile",
+        "n.callee_name": "getInputStream",
+        "n.caller_class": "org.jetbrains.kotlin.util.ServiceLoaderLite",
+        "n.caller_name": "findImplementationsInJar"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "java.lang.Class",
+        "n.callee_name": "getName",
+        "n.caller_class": "org.jetbrains.kotlin.util.ServiceLoaderLite",
+        "n.caller_name": "getClassIdentifier"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "kotlin.jvm.internal.Intrinsics",
+        "n.callee_name": "checkNotNullExpressionValue",
+        "n.caller_class": "org.jetbrains.kotlin.util.ServiceLoaderLite",
+        "n.caller_name": "getClassIdentifier"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.descriptors.FunctionDescriptor",
+        "n.callee_name": "getValueParameters",
+        "n.caller_class": "org.jetbrains.kotlin.util.IsKPropertyCheck",
+        "n.caller_name": "check"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "java.util.List",
+        "n.callee_name": "get",
+        "n.caller_class": "org.jetbrains.kotlin.util.IsKPropertyCheck",
+        "n.caller_name": "check"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.resolve.descriptorUtil.DescriptorUtilsKt",
+        "n.callee_name": "getModule",
+        "n.caller_class": "org.jetbrains.kotlin.util.IsKPropertyCheck",
+        "n.caller_name": "check"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.descriptors.ValueParameterDescriptor",
+        "n.callee_name": "getType",
+        "n.caller_class": "org.jetbrains.kotlin.util.IsKPropertyCheck",
+        "n.caller_name": "check"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.builtins.KotlinBuiltIns",
+        "n.callee_name": "getAnyType",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.TypeReconstructionUtil",
+        "n.caller_name": "reconstructBareType"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.resolve.PossiblyBareType",
+        "n.callee_name": "getBareTypeConstructor",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.TypeReconstructionUtil",
+        "n.caller_name": "reconstructBareType"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.TypeConstructor",
+        "n.callee_name": "getParameters",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.TypeReconstructionUtil",
+        "n.caller_name": "reconstructBareType"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.TypeReconstructionResult",
+        "n.callee_name": "getResultingType",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.TypeReconstructionUtil",
+        "n.caller_name": "reconstructBareType"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.psi.KtTypeReference",
+        "n.callee_name": "getText",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.TypeReconstructionUtil",
+        "n.caller_name": "reconstructBareType"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.TypeConstructor",
+        "n.callee_name": "getParameters",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.TypeReconstructionUtil",
+        "n.caller_name": "allStarProjectionsString"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.TypeConstructor",
+        "n.callee_name": "getDeclarationDescriptor",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.TypeReconstructionUtil",
+        "n.caller_name": "allStarProjectionsString"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.descriptors.ClassifierDescriptor",
+        "n.callee_name": "getName",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.TypeReconstructionUtil",
+        "n.caller_name": "allStarProjectionsString"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.expressions.TypeReconstructionUtil",
+        "n.callee_name": "getTypeNameAndStarProjectionsString",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.TypeReconstructionUtil",
+        "n.caller_name": "allStarProjectionsString"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.expressions.TypeReconstructionUtil",
+        "n.callee_name": "$$$reportNull$$$0",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.TypeReconstructionUtil",
+        "n.caller_name": "getTypeNameAndStarProjectionsString"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "java.lang.StringBuilder",
+        "n.callee_name": "\u003cinit\u003e",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.TypeReconstructionUtil",
+        "n.caller_name": "getTypeNameAndStarProjectionsString"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "java.lang.StringBuilder",
+        "n.callee_name": "append",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.TypeReconstructionUtil",
+        "n.caller_name": "getTypeNameAndStarProjectionsString"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "java.lang.StringBuilder",
+        "n.callee_name": "toString",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.TypeReconstructionUtil",
+        "n.caller_name": "getTypeNameAndStarProjectionsString"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "java.lang.StringBuilder",
+        "n.callee_name": "\u003cinit\u003e",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.PatternMatchingTypingVisitor$inferTypeForWhenExpression$resolvedCall$1",
+        "n.caller_name": "get"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "java.lang.StringBuilder",
+        "n.callee_name": "append",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.PatternMatchingTypingVisitor$inferTypeForWhenExpression$resolvedCall$1",
+        "n.caller_name": "get"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "java.lang.StringBuilder",
+        "n.callee_name": "toString",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.PatternMatchingTypingVisitor$inferTypeForWhenExpression$resolvedCall$1",
+        "n.caller_name": "get"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "java.util.List",
+        "n.callee_name": "size",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.PatternMatchingTypingVisitor$inferTypeForWhenExpression$resolvedCall$1",
+        "n.caller_name": "getSize"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.expressions.PatternMatchingTypingVisitor$inferTypeForWhenExpression$resolvedCall$1",
+        "n.callee_name": "get",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.PatternMatchingTypingVisitor$inferTypeForWhenExpression$resolvedCall$1",
+        "n.caller_name": "get"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.expressions.PatternMatchingTypingVisitor$inferTypeForWhenExpression$resolvedCall$1",
+        "n.callee_name": "getSize",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.PatternMatchingTypingVisitor$inferTypeForWhenExpression$resolvedCall$1",
+        "n.caller_name": "size"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.expressions.ExpressionTypingVisitorDispatcher$ForBlock",
+        "n.callee_name": "$$$reportNull$$$0",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.ExpressionTypingVisitorDispatcher$ForBlock",
+        "n.caller_name": "getStatementVisitor"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.com.intellij.psi.impl.source.tree.LeafPsiElement",
+        "n.callee_name": "getElementType",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.DefinitelyNotNullDeprecationKt",
+        "n.caller_name": "reportDeprecatedDefinitelyNotNullSyntax"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.psi.KtTypeReference",
+        "n.callee_name": "getTypeElement",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.DefinitelyNotNullDeprecationKt",
+        "n.caller_name": "reportDeprecatedDefinitelyNotNullSyntax"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.psi.KtPostfixExpression",
+        "n.callee_name": "getOperationToken",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.DefinitelyNotNullDeprecationKt",
+        "n.caller_name": "reportDeprecatedDefinitelyNotNullSyntax"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.psi.Call",
+        "n.callee_name": "getCalleeExpression",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.ControlStructureTypingUtils$3",
+        "n.caller_name": "bindCall"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.resolve.calls.inference.ConstraintSystem",
+        "n.callee_name": "getStatus",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.ControlStructureTypingUtils$3",
+        "n.caller_name": "typeInferenceFailed"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.psi.Call",
+        "n.callee_name": "getCallElement",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.ControlStructureTypingUtils$3",
+        "n.caller_name": "typeInferenceFailed"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.psi.Call",
+        "n.callee_name": "getCalleeExpression",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.ControlStructureTypingUtils$3",
+        "n.caller_name": "typeInferenceFailed"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.com.intellij.psi.util.PsiTreeUtil",
+        "n.callee_name": "getParentOfType",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.ControlStructureTypingUtils$3",
+        "n.caller_name": "typeInferenceFailed"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.psi.KtDeclaration",
+        "n.callee_name": "getText",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.ControlStructureTypingUtils$3",
+        "n.caller_name": "typeInferenceFailed"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.psi.KtExpression",
+        "n.callee_name": "getText",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.ControlStructureTypingUtils$3",
+        "n.caller_name": "typeInferenceFailed"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.resolve.calls.inference.ConstraintsUtil",
+        "n.callee_name": "getDebugMessageForStatus",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.ControlStructureTypingUtils$3",
+        "n.caller_name": "typeInferenceFailed"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.resolve.BindingTrace",
+        "n.callee_name": "getBindingContext",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.ControlStructureTypingUtils$2",
+        "n.caller_name": "checkExpressionType"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.resolve.BindingContextUtils",
+        "n.callee_name": "getRecordedTypeInfo",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.ControlStructureTypingUtils$2",
+        "n.caller_name": "checkExpressionType"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.expressions.KotlinTypeInfo",
+        "n.callee_name": "getType",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.ControlStructureTypingUtils$2",
+        "n.caller_name": "checkExpressionType"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.expressions.KotlinTypeInfo",
+        "n.callee_name": "getDataFlowInfo",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.ControlStructureTypingUtils$2",
+        "n.caller_name": "checkExpressionType"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.com.intellij.openapi.util.Ref",
+        "n.callee_name": "get",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.ControlStructureTypingUtils$2",
+        "n.caller_name": "checkExpressionType"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.psi.KtWhenExpression",
+        "n.callee_name": "getEntries",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.ControlStructureTypingUtils$2",
+        "n.caller_name": "visitWhenExpression"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.psi.KtWhenEntry",
+        "n.callee_name": "getExpression",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.ControlStructureTypingUtils$2",
+        "n.caller_name": "visitWhenExpression"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.psi.KtIfExpression",
+        "n.callee_name": "getThen",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.ControlStructureTypingUtils$2",
+        "n.caller_name": "visitIfExpression"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.psi.KtIfExpression",
+        "n.callee_name": "getElse",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.ControlStructureTypingUtils$2",
+        "n.caller_name": "visitIfExpression"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.psi.KtBlockExpression",
+        "n.callee_name": "getStatements",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.ControlStructureTypingUtils$2",
+        "n.caller_name": "visitBlockExpression"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.psi.KtPsiUtil",
+        "n.callee_name": "getLastStatementInABlock",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.ControlStructureTypingUtils$2",
+        "n.caller_name": "visitBlockExpression"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.psi.KtPostfixExpression",
+        "n.callee_name": "getOperationReference",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.ControlStructureTypingUtils$2",
+        "n.caller_name": "visitPostfixExpression"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.psi.KtSimpleNameExpression",
+        "n.callee_name": "getReferencedNameElementType",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.ControlStructureTypingUtils$2",
+        "n.caller_name": "visitPostfixExpression"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.psi.KtPostfixExpression",
+        "n.callee_name": "getBaseExpression",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.ControlStructureTypingUtils$2",
+        "n.caller_name": "visitPostfixExpression"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.psi.KtBinaryExpression",
+        "n.callee_name": "getOperationReference",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.ControlStructureTypingUtils$2",
+        "n.caller_name": "visitBinaryExpression"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.psi.KtOperationReferenceExpression",
+        "n.callee_name": "getReferencedNameElementType",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.ControlStructureTypingUtils$2",
+        "n.caller_name": "visitBinaryExpression"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.psi.KtBinaryExpression",
+        "n.callee_name": "getLeft",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.ControlStructureTypingUtils$2",
+        "n.caller_name": "visitBinaryExpression"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.psi.KtBinaryExpression",
+        "n.callee_name": "getRight",
+        "n.caller_class": "org.jetbrains.kotlin.types.expressions.ControlStructureTypingUtils$2",
+        "n.caller_name": "visitBinaryExpression"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.error.ErrorUtils",
+        "n.callee_name": "getErrorClass",
+        "n.caller_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.caller_name": "\u003cinit\u003e"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.descriptors.annotations.Annotations$Companion",
+        "n.callee_name": "getEMPTY",
+        "n.caller_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.caller_name": "\u003cinit\u003e"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.error.ErrorEntity",
+        "n.callee_name": "getDebugText",
+        "n.caller_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.caller_name": "\u003cinit\u003e"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.error.ErrorUtils",
+        "n.callee_name": "getErrorPropertyType",
+        "n.caller_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.caller_name": "\u003cinit\u003e"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.descriptors.impl.PropertyDescriptorImpl",
+        "n.callee_name": "getAccessors",
+        "n.caller_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.caller_name": "getAccessors"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "kotlin.jvm.internal.Intrinsics",
+        "n.callee_name": "checkNotNullExpressionValue",
+        "n.caller_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.caller_name": "getAccessors"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.descriptors.impl.PropertyDescriptorImpl",
+        "n.callee_name": "getOriginal",
+        "n.caller_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.caller_name": "getOriginal"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "kotlin.jvm.internal.Intrinsics",
+        "n.callee_name": "checkNotNullExpressionValue",
+        "n.caller_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.caller_name": "getOriginal"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.descriptors.impl.PropertyDescriptorImpl",
+        "n.callee_name": "getOverriddenDescriptors",
+        "n.caller_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.caller_name": "getOverriddenDescriptors"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "kotlin.jvm.internal.Intrinsics",
+        "n.callee_name": "checkNotNullExpressionValue",
+        "n.caller_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.caller_name": "getOverriddenDescriptors"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.descriptors.impl.PropertyDescriptorImpl",
+        "n.callee_name": "getBackingField",
+        "n.caller_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.caller_name": "getBackingField"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.descriptors.impl.PropertyDescriptorImpl",
+        "n.callee_name": "getDelegateField",
+        "n.caller_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.caller_name": "getDelegateField"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.descriptors.impl.PropertyDescriptorImpl",
+        "n.callee_name": "getInType",
+        "n.caller_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.caller_name": "getInType"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.descriptors.impl.PropertyDescriptorImpl",
+        "n.callee_name": "getCompileTimeInitializer",
+        "n.caller_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.caller_name": "getCompileTimeInitializer"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.descriptors.impl.PropertyDescriptorImpl",
+        "n.callee_name": "getType",
+        "n.caller_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.caller_name": "getType"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "kotlin.jvm.internal.Intrinsics",
+        "n.callee_name": "checkNotNullExpressionValue",
+        "n.caller_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.caller_name": "getType"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.descriptors.impl.PropertyDescriptorImpl",
+        "n.callee_name": "getContainingDeclaration",
+        "n.caller_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.caller_name": "getContainingDeclaration"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "kotlin.jvm.internal.Intrinsics",
+        "n.callee_name": "checkNotNullExpressionValue",
+        "n.caller_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.caller_name": "getContainingDeclaration"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.descriptors.impl.PropertyDescriptorImpl",
+        "n.callee_name": "getContextReceiverParameters",
+        "n.caller_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.caller_name": "getContextReceiverParameters"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "kotlin.jvm.internal.Intrinsics",
+        "n.callee_name": "checkNotNullExpressionValue",
+        "n.caller_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.caller_name": "getContextReceiverParameters"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.descriptors.impl.PropertyDescriptorImpl",
+        "n.callee_name": "getExtensionReceiverParameter",
+        "n.caller_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.caller_name": "getExtensionReceiverParameter"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.descriptors.impl.PropertyDescriptorImpl",
+        "n.callee_name": "getDispatchReceiverParameter",
+        "n.caller_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.caller_name": "getDispatchReceiverParameter"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.descriptors.impl.PropertyDescriptorImpl",
+        "n.callee_name": "getTypeParameters",
+        "n.caller_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.caller_name": "getTypeParameters"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "kotlin.jvm.internal.Intrinsics",
+        "n.callee_name": "checkNotNullExpressionValue",
+        "n.caller_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.caller_name": "getTypeParameters"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.descriptors.impl.PropertyDescriptorImpl",
+        "n.callee_name": "getReturnType",
+        "n.caller_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.caller_name": "getReturnType"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.descriptors.impl.PropertyDescriptorImpl",
+        "n.callee_name": "getValueParameters",
+        "n.caller_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.caller_name": "getValueParameters"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "kotlin.jvm.internal.Intrinsics",
+        "n.callee_name": "checkNotNullExpressionValue",
+        "n.caller_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.caller_name": "getValueParameters"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.descriptors.impl.PropertyDescriptorImpl",
+        "n.callee_name": "getUserData",
+        "n.caller_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.caller_name": "getUserData"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.descriptors.impl.PropertyDescriptorImpl",
+        "n.callee_name": "getVisibility",
+        "n.caller_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.caller_name": "getVisibility"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "kotlin.jvm.internal.Intrinsics",
+        "n.callee_name": "checkNotNullExpressionValue",
+        "n.caller_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.caller_name": "getVisibility"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.descriptors.impl.PropertyDescriptorImpl",
+        "n.callee_name": "getName",
+        "n.caller_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.caller_name": "getName"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "kotlin.jvm.internal.Intrinsics",
+        "n.callee_name": "checkNotNullExpressionValue",
+        "n.caller_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.caller_name": "getName"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.descriptors.impl.PropertyDescriptorImpl",
+        "n.callee_name": "getSource",
+        "n.caller_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.caller_name": "getSource"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "kotlin.jvm.internal.Intrinsics",
+        "n.callee_name": "checkNotNullExpressionValue",
+        "n.caller_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.caller_name": "getSource"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.descriptors.impl.PropertyDescriptorImpl",
+        "n.callee_name": "getKind",
+        "n.caller_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.caller_name": "getKind"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "kotlin.jvm.internal.Intrinsics",
+        "n.callee_name": "checkNotNullExpressionValue",
+        "n.caller_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.caller_name": "getKind"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.descriptors.impl.PropertyDescriptorImpl",
+        "n.callee_name": "getModality",
+        "n.caller_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.caller_name": "getModality"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "kotlin.jvm.internal.Intrinsics",
+        "n.callee_name": "checkNotNullExpressionValue",
+        "n.caller_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.caller_name": "getModality"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.descriptors.impl.PropertyDescriptorImpl",
+        "n.callee_name": "getGetter",
+        "n.caller_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.caller_name": "getGetter"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.descriptors.impl.PropertyDescriptorImpl",
+        "n.callee_name": "getSetter",
+        "n.caller_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.caller_name": "getSetter"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.descriptors.impl.PropertyDescriptorImpl",
+        "n.callee_name": "getAnnotations",
+        "n.caller_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.caller_name": "getAnnotations"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "kotlin.jvm.internal.Intrinsics",
+        "n.callee_name": "checkNotNullExpressionValue",
+        "n.caller_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.caller_name": "getAnnotations"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.callee_name": "getOriginal",
+        "n.caller_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.caller_name": "getOriginal"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.callee_name": "getGetter",
+        "n.caller_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.caller_name": "getGetter"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.callee_name": "getSetter",
+        "n.caller_class": "org.jetbrains.kotlin.types.error.ErrorPropertyDescriptor",
+        "n.caller_name": "getSetter"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.checker.TypeIntersector$ResultNullability$START",
+        "n.callee_name": "getResultNullability",
+        "n.caller_class": "org.jetbrains.kotlin.types.checker.TypeIntersector$ResultNullability$START",
+        "n.caller_name": "combine"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContext$DefaultImpls",
+        "n.callee_name": "getTypeParameter",
+        "n.caller_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContextImpl",
+        "n.caller_name": "getTypeParameter"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContext$DefaultImpls",
+        "n.callee_name": "getOriginalTypeVariable",
+        "n.caller_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContextImpl",
+        "n.caller_name": "getOriginalTypeVariable"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContext$DefaultImpls",
+        "n.callee_name": "getArgument",
+        "n.caller_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContextImpl",
+        "n.caller_name": "getArgument"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContext$DefaultImpls",
+        "n.callee_name": "getArguments",
+        "n.caller_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContextImpl",
+        "n.caller_name": "getArguments"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContext$DefaultImpls",
+        "n.callee_name": "getVariance",
+        "n.caller_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContextImpl",
+        "n.caller_name": "getVariance"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContext$DefaultImpls",
+        "n.callee_name": "getType",
+        "n.caller_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContextImpl",
+        "n.caller_name": "getType"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContext$DefaultImpls",
+        "n.callee_name": "getParameter",
+        "n.caller_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContextImpl",
+        "n.caller_name": "getParameter"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContext$DefaultImpls",
+        "n.callee_name": "getParameters",
+        "n.caller_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContextImpl",
+        "n.caller_name": "getParameters"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContext$DefaultImpls",
+        "n.callee_name": "getUpperBound",
+        "n.caller_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContextImpl",
+        "n.caller_name": "getUpperBound"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContext$DefaultImpls",
+        "n.callee_name": "getUpperBounds",
+        "n.caller_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContextImpl",
+        "n.caller_name": "getUpperBounds"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContext$DefaultImpls",
+        "n.callee_name": "getTypeConstructor",
+        "n.caller_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContextImpl",
+        "n.caller_name": "getTypeConstructor"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContext$DefaultImpls",
+        "n.callee_name": "getApproximatedIntegerLiteralType",
+        "n.caller_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContextImpl",
+        "n.caller_name": "getApproximatedIntegerLiteralType"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContext$DefaultImpls",
+        "n.callee_name": "getAttributes",
+        "n.caller_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContextImpl",
+        "n.caller_name": "getAttributes"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContext$DefaultImpls",
+        "n.callee_name": "getAnnotationFirstArgumentValue",
+        "n.caller_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContextImpl",
+        "n.caller_name": "getAnnotationFirstArgumentValue"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContext$DefaultImpls",
+        "n.callee_name": "getTypeParameterClassifier",
+        "n.caller_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContextImpl",
+        "n.caller_name": "getTypeParameterClassifier"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContext$DefaultImpls",
+        "n.callee_name": "getValueClassProperties",
+        "n.caller_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContextImpl",
+        "n.caller_name": "getValueClassProperties"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContext$DefaultImpls",
+        "n.callee_name": "getRepresentativeUpperBound",
+        "n.caller_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContextImpl",
+        "n.caller_name": "getRepresentativeUpperBound"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContext$DefaultImpls",
+        "n.callee_name": "getUnsubstitutedUnderlyingType",
+        "n.caller_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContextImpl",
+        "n.caller_name": "getUnsubstitutedUnderlyingType"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContext$DefaultImpls",
+        "n.callee_name": "getSubstitutedUnderlyingType",
+        "n.caller_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContextImpl",
+        "n.caller_name": "getSubstitutedUnderlyingType"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContext$DefaultImpls",
+        "n.callee_name": "getPrimitiveType",
+        "n.caller_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContextImpl",
+        "n.caller_name": "getPrimitiveType"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContext$DefaultImpls",
+        "n.callee_name": "getPrimitiveArrayType",
+        "n.caller_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContextImpl",
+        "n.caller_name": "getPrimitiveArrayType"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContext$DefaultImpls",
+        "n.callee_name": "getClassFqNameUnsafe",
+        "n.caller_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContextImpl",
+        "n.caller_name": "getClassFqNameUnsafe"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContext$DefaultImpls",
+        "n.callee_name": "getName",
+        "n.caller_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContextImpl",
+        "n.caller_name": "getName"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContext$DefaultImpls",
+        "n.callee_name": "getFunctionTypeFromSupertypes",
+        "n.caller_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContextImpl",
+        "n.caller_name": "getFunctionTypeFromSupertypes"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContext$DefaultImpls",
+        "n.callee_name": "getNonReflectFunctionTypeConstructor",
+        "n.caller_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContextImpl",
+        "n.caller_name": "getNonReflectFunctionTypeConstructor"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContext$DefaultImpls",
+        "n.callee_name": "getReflectFunctionTypeConstructor",
+        "n.caller_class": "org.jetbrains.kotlin.types.checker.ClassicTypeSystemContextImpl",
+        "n.caller_name": "getReflectFunctionTypeConstructor"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "kotlin.jvm.internal.Intrinsics",
+        "n.callee_name": "checkNotNullParameter",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeWithEnhancementKt",
+        "n.caller_name": "getEnhancement"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.TypeWithEnhancement",
+        "n.callee_name": "getEnhancement",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeWithEnhancementKt",
+        "n.caller_name": "getEnhancement"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.TypeProjection",
+        "n.callee_name": "getType",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeWithEnhancementKt",
+        "n.caller_name": "enhanceTypeArguments"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.TypeWithEnhancement",
+        "n.callee_name": "getEnhancement",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeWithEnhancementKt",
+        "n.caller_name": "enhanceTypeArguments"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.TypeWithEnhancementKt",
+        "n.callee_name": "getEnhancementDeeplyInternal",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeWithEnhancementKt",
+        "n.caller_name": "enhanceTypeArguments"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "java.util.List",
+        "n.callee_name": "get",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeWithEnhancementKt",
+        "n.caller_name": "wereTypeArgumentsChanged"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.FlexibleType",
+        "n.callee_name": "getLowerBound",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeWithEnhancementKt",
+        "n.caller_name": "wereTypeArgumentsChanged"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.SimpleType",
+        "n.callee_name": "getArguments",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeWithEnhancementKt",
+        "n.caller_name": "wereTypeArgumentsChanged"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.FlexibleType",
+        "n.callee_name": "getUpperBound",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeWithEnhancementKt",
+        "n.caller_name": "wereTypeArgumentsChanged"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.UnwrappedType",
+        "n.callee_name": "getArguments",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeWithEnhancementKt",
+        "n.caller_name": "wereTypeArgumentsChanged"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.TypeWithEnhancement",
+        "n.callee_name": "getEnhancement",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeWithEnhancementKt",
+        "n.caller_name": "getEnhancementDeeplyInternal"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.KotlinType",
+        "n.callee_name": "getArguments",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeWithEnhancementKt",
+        "n.caller_name": "getEnhancementDeeplyInternal"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.TypeWithEnhancementKt",
+        "n.callee_name": "enhanceTypeArguments",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeWithEnhancementKt",
+        "n.caller_name": "getEnhancementDeeplyInternal"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.FlexibleType",
+        "n.callee_name": "getUpperBound",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeWithEnhancementKt",
+        "n.caller_name": "getEnhancementDeeplyInternal"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.SimpleType",
+        "n.callee_name": "getArguments",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeWithEnhancementKt",
+        "n.caller_name": "getEnhancementDeeplyInternal"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.TypeWithEnhancementKt",
+        "n.callee_name": "wereTypeArgumentsChanged",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeWithEnhancementKt",
+        "n.caller_name": "getEnhancementDeeplyInternal"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.TypeSubstitutionKt",
+        "n.callee_name": "replace$default",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeWithEnhancementKt",
+        "n.caller_name": "getEnhancementDeeplyInternal"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "kotlin.jvm.internal.Intrinsics",
+        "n.callee_name": "checkNotNullParameter",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeWithEnhancementKt",
+        "n.caller_name": "getEnhancementDeeply"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.TypeWithEnhancementKt",
+        "n.callee_name": "getEnhancementDeeplyInternal",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeWithEnhancementKt",
+        "n.caller_name": "getEnhancementDeeply"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.TypeWithEnhancementKt",
+        "n.callee_name": "getEnhancementDeeply",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeWithEnhancementKt",
+        "n.caller_name": "unwrapEnhancementDeeply"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.TypeWithEnhancementKt",
+        "n.callee_name": "getEnhancement",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeWithEnhancementKt",
+        "n.caller_name": "unwrapEnhancement"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.TypeWithEnhancementKt",
+        "n.callee_name": "getEnhancement",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeWithEnhancementKt",
+        "n.caller_name": "inheritEnhancement"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.TypeWithEnhancement",
+        "n.callee_name": "getOrigin",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeWithEnhancementKt",
+        "n.caller_name": "wrapEnhancement"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.IndexedParametersSubstitution",
+        "n.callee_name": "getParameters",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutor",
+        "n.caller_name": "replaceWithNonApproximatingSubstitution"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.IndexedParametersSubstitution",
+        "n.callee_name": "getArguments",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutor",
+        "n.caller_name": "replaceWithNonApproximatingSubstitution"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.SubstitutionWithCapturedTypeApproximation",
+        "n.callee_name": "getSubstitution",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutor",
+        "n.caller_name": "replaceWithContravariantApproximatingSubstitution"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.IndexedParametersSubstitution",
+        "n.callee_name": "getParameters",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutor",
+        "n.caller_name": "replaceWithContravariantApproximatingSubstitution"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.IndexedParametersSubstitution",
+        "n.callee_name": "getArguments",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutor",
+        "n.caller_name": "replaceWithContravariantApproximatingSubstitution"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.KotlinType",
+        "n.callee_name": "getConstructor",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutor",
+        "n.caller_name": "create"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.KotlinType",
+        "n.callee_name": "getArguments",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutor",
+        "n.caller_name": "create"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.TypeSubstitutor",
+        "n.callee_name": "$$$reportNull$$$0",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutor",
+        "n.caller_name": "getSubstitution"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.TypeProjection",
+        "n.callee_name": "getType",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutor",
+        "n.caller_name": "safeSubstitute"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.TypeSubstitutor$SubstitutionException",
+        "n.callee_name": "getMessage",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutor",
+        "n.caller_name": "safeSubstitute"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.TypeSubstitutor",
+        "n.callee_name": "getSubstitution",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutor",
+        "n.caller_name": "substitute"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.TypeProjection",
+        "n.callee_name": "getType",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutor",
+        "n.caller_name": "substitute"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.TypeProjection",
+        "n.callee_name": "getType",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutor",
+        "n.caller_name": "unsafeSubstitute"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.TypeWithEnhancement",
+        "n.callee_name": "getOrigin",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutor",
+        "n.caller_name": "unsafeSubstitute"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.TypeWithEnhancement",
+        "n.callee_name": "getEnhancement",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutor",
+        "n.caller_name": "unsafeSubstitute"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.TypeProjection",
+        "n.callee_name": "getProjectionKind",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutor",
+        "n.caller_name": "unsafeSubstitute"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.TypeSubstitution",
+        "n.callee_name": "get",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutor",
+        "n.caller_name": "unsafeSubstitute"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.FlexibleType",
+        "n.callee_name": "getLowerBound",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutor",
+        "n.caller_name": "unsafeSubstitute"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.FlexibleType",
+        "n.callee_name": "getUpperBound",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutor",
+        "n.caller_name": "unsafeSubstitute"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.TypeCapabilitiesKt",
+        "n.callee_name": "getCustomTypeParameter",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutor",
+        "n.caller_name": "unsafeSubstitute"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.KotlinType",
+        "n.callee_name": "getAnnotations",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutor",
+        "n.caller_name": "unsafeSubstitute"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.KotlinType",
+        "n.callee_name": "getConstructor",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutor",
+        "n.caller_name": "unsafeSubstitute"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.TypeConstructor",
+        "n.callee_name": "getBuiltIns",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutor",
+        "n.caller_name": "unsafeSubstitute"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.builtins.KotlinBuiltIns",
+        "n.callee_name": "getNullableAnyType",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutor",
+        "n.caller_name": "unsafeSubstitute"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.KotlinType",
+        "n.callee_name": "getAnnotations",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutor",
+        "n.caller_name": "projectedTypeForConflictedTypeWithUnsafeVariance"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.TypeProjection",
+        "n.callee_name": "getType",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutor",
+        "n.caller_name": "projectedTypeForConflictedTypeWithUnsafeVariance"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.KotlinType",
+        "n.callee_name": "getConstructor",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutor",
+        "n.caller_name": "projectedTypeForConflictedTypeWithUnsafeVariance"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.checker.NewCapturedTypeConstructor",
+        "n.callee_name": "getProjection",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutor",
+        "n.caller_name": "projectedTypeForConflictedTypeWithUnsafeVariance"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.TypeProjection",
+        "n.callee_name": "getProjectionKind",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutor",
+        "n.caller_name": "projectedTypeForConflictedTypeWithUnsafeVariance"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.descriptors.TypeParameterDescriptor",
+        "n.callee_name": "getVariance",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutor",
+        "n.caller_name": "projectedTypeForConflictedTypeWithUnsafeVariance"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.TypeProjection",
+        "n.callee_name": "getType",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutor",
+        "n.caller_name": "substituteCompoundType"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.TypeProjection",
+        "n.callee_name": "getProjectionKind",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutor",
+        "n.caller_name": "substituteCompoundType"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.KotlinType",
+        "n.callee_name": "getConstructor",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutor",
+        "n.caller_name": "substituteCompoundType"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.TypeConstructor",
+        "n.callee_name": "getDeclarationDescriptor",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutor",
+        "n.caller_name": "substituteCompoundType"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.SpecialTypesKt",
+        "n.callee_name": "getAbbreviation",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutor",
+        "n.caller_name": "substituteCompoundType"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.TypeConstructor",
+        "n.callee_name": "getParameters",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutor",
+        "n.caller_name": "substituteCompoundType"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.KotlinType",
+        "n.callee_name": "getArguments",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutor",
+        "n.caller_name": "substituteCompoundType"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.KotlinType",
+        "n.callee_name": "getAnnotations",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutor",
+        "n.caller_name": "substituteCompoundType"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "java.util.List",
+        "n.callee_name": "get",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutor",
+        "n.caller_name": "substituteTypeArguments"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.descriptors.TypeParameterDescriptor",
+        "n.callee_name": "getVariance",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutor",
+        "n.caller_name": "substituteTypeArguments"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.TypeProjection",
+        "n.callee_name": "getProjectionKind",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutor",
+        "n.caller_name": "substituteTypeArguments"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.TypeProjection",
+        "n.callee_name": "getType",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutor",
+        "n.caller_name": "substituteTypeArguments"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.TypeProjection",
+        "n.callee_name": "getProjectionKind",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutor",
+        "n.caller_name": "combine"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.KotlinType",
+        "n.callee_name": "getArguments",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutionKt",
+        "n.caller_name": "replace"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.KotlinType",
+        "n.callee_name": "getAnnotations",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutionKt",
+        "n.caller_name": "replace"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.KotlinType",
+        "n.callee_name": "getAttributes",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutionKt",
+        "n.caller_name": "replace"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.descriptors.annotations.Annotations$Companion",
+        "n.callee_name": "getEMPTY",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutionKt",
+        "n.caller_name": "replace"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.FlexibleType",
+        "n.callee_name": "getLowerBound",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutionKt",
+        "n.caller_name": "replace"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.FlexibleType",
+        "n.callee_name": "getUpperBound",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutionKt",
+        "n.caller_name": "replace"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-kotlin-compiler-00"
+          ]
+        },
+        "n.callee_class": "org.jetbrains.kotlin.types.KotlinType",
+        "n.callee_name": "getArguments",
+        "n.caller_class": "org.jetbrains.kotlin.types.TypeSubstitutionKt",
+        "n.caller_name": "replace$default"
+      }
+    ]
+  }
+}

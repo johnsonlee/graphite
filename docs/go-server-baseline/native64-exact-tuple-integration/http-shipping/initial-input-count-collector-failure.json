@@ -1,0 +1,4 @@
+{
+  "error": "AssertionError: 140",
+  "reason": "Collector assumed prior241 all-Go-source/test/embed inventory count. go list GoFiles selects current-platform compilation inputs and excludes test/inactive-platform files; it correctly produces140 entries. Preserve actual compiler-selected list plus complete2271-file tested source identity; no source/test change or server run."
+}

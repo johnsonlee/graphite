@@ -1,0 +1,66 @@
+=== RUN   TestExactProjectionThresholdStateMain
+=== RUN   TestExactProjectionThresholdStateMain/n4095-selected256
+=== RUN   TestExactProjectionThresholdStateMain/n4096-selected255
+=== RUN   TestExactProjectionThresholdStateMain/n4096-selected256
+=== RUN   TestExactProjectionThresholdStateMain/built4096-selected256
+--- PASS: TestExactProjectionThresholdStateMain (0.03s)
+    --- PASS: TestExactProjectionThresholdStateMain/n4095-selected256 (0.01s)
+    --- PASS: TestExactProjectionThresholdStateMain/n4096-selected255 (0.01s)
+    --- PASS: TestExactProjectionThresholdStateMain/n4096-selected256 (0.01s)
+    --- PASS: TestExactProjectionThresholdStateMain/built4096-selected256 (0.01s)
+=== RUN   TestExactProjectionBadSIDRollsBack
+--- PASS: TestExactProjectionBadSIDRollsBack (0.00s)
+=== RUN   TestExactProjectionCancellationAndRetry
+=== RUN   TestExactProjectionCancellationAndRetry/check1
+=== RUN   TestExactProjectionCancellationAndRetry/check5
+=== RUN   TestExactProjectionCancellationAndRetry/check80
+=== RUN   TestExactProjectionCancellationAndRetry/check8528
+=== RUN   TestExactProjectionCancellationAndRetry/check8529
+--- PASS: TestExactProjectionCancellationAndRetry (0.03s)
+    --- PASS: TestExactProjectionCancellationAndRetry/check1 (0.00s)
+    --- PASS: TestExactProjectionCancellationAndRetry/check5 (0.00s)
+    --- PASS: TestExactProjectionCancellationAndRetry/check80 (0.00s)
+    --- PASS: TestExactProjectionCancellationAndRetry/check8528 (0.00s)
+    --- PASS: TestExactProjectionCancellationAndRetry/check8529 (0.00s)
+=== RUN   TestExactProjectionConcurrentClose
+--- PASS: TestExactProjectionConcurrentClose (0.00s)
+=== RUN   TestExactProjectionTupleHashMain
+--- PASS: TestExactProjectionTupleHashMain (0.00s)
+=== RUN   TestExactProjectionCollisionAndSIDIdentity
+=== RUN   TestExactProjectionCollisionAndSIDIdentity/hash-collision
+=== RUN   TestExactProjectionCollisionAndSIDIdentity/hash-zero
+=== RUN   TestExactProjectionCollisionAndSIDIdentity/duplicate-SID-values
+=== RUN   TestExactProjectionCollisionAndSIDIdentity/UTF16-equivalent-SIDs
+--- PASS: TestExactProjectionCollisionAndSIDIdentity (0.01s)
+    --- PASS: TestExactProjectionCollisionAndSIDIdentity/hash-collision (0.00s)
+    --- PASS: TestExactProjectionCollisionAndSIDIdentity/hash-zero (0.00s)
+    --- PASS: TestExactProjectionCollisionAndSIDIdentity/duplicate-SID-values (0.00s)
+    --- PASS: TestExactProjectionCollisionAndSIDIdentity/UTF16-equivalent-SIDs (0.00s)
+=== RUN   TestExactProjectionReadOrderErrorsMain
+=== RUN   TestExactProjectionReadOrderErrorsMain/0
+=== RUN   TestExactProjectionReadOrderErrorsMain/1
+=== RUN   TestExactProjectionReadOrderErrorsMain/2
+=== RUN   TestExactProjectionReadOrderErrorsMain/3
+    projection_tuple_test.go:415: error=ArrayIndexOutOfBoundsException (*string)(0x140000261c0) want=ArrayIndexOutOfBoundsException (*string)(nil)
+=== RUN   TestExactProjectionReadOrderErrorsMain/4
+    projection_tuple_test.go:415: error=ArrayIndexOutOfBoundsException (*string)(0x14000026680) want=ArrayIndexOutOfBoundsException (*string)(nil)
+=== RUN   TestExactProjectionReadOrderErrorsMain/5
+    projection_tuple_test.go:415: error=ArrayIndexOutOfBoundsException (*string)(0x140000261e0) want=ArrayIndexOutOfBoundsException (*string)(nil)
+=== RUN   TestExactProjectionReadOrderErrorsMain/6
+    projection_tuple_test.go:415: error=ArrayIndexOutOfBoundsException (*string)(0x140000266a0) want=ArrayIndexOutOfBoundsException (*string)(nil)
+=== RUN   TestExactProjectionReadOrderErrorsMain/7
+    projection_tuple_test.go:415: error=ArrayIndexOutOfBoundsException (*string)(0x140000261f0) want=ArrayIndexOutOfBoundsException (*string)(nil)
+=== RUN   TestExactProjectionReadOrderErrorsMain/8
+--- FAIL: TestExactProjectionReadOrderErrorsMain (0.03s)
+    --- PASS: TestExactProjectionReadOrderErrorsMain/0 (0.00s)
+    --- PASS: TestExactProjectionReadOrderErrorsMain/1 (0.00s)
+    --- PASS: TestExactProjectionReadOrderErrorsMain/2 (0.00s)
+    --- FAIL: TestExactProjectionReadOrderErrorsMain/3 (0.00s)
+    --- FAIL: TestExactProjectionReadOrderErrorsMain/4 (0.00s)
+    --- FAIL: TestExactProjectionReadOrderErrorsMain/5 (0.00s)
+    --- FAIL: TestExactProjectionReadOrderErrorsMain/6 (0.00s)
+    --- FAIL: TestExactProjectionReadOrderErrorsMain/7 (0.00s)
+    --- PASS: TestExactProjectionReadOrderErrorsMain/8 (0.00s)
+FAIL
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/store	0.468s
+FAIL

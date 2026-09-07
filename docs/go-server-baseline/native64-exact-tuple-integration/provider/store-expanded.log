@@ -1,0 +1,40 @@
+=== RUN   TestExactProjectionThresholdStateMain
+=== RUN   TestExactProjectionThresholdStateMain/n4095-selected256
+=== RUN   TestExactProjectionThresholdStateMain/n4096-selected255
+=== RUN   TestExactProjectionThresholdStateMain/n4096-selected256
+=== RUN   TestExactProjectionThresholdStateMain/built4096-selected256
+--- PASS: TestExactProjectionThresholdStateMain (0.03s)
+    --- PASS: TestExactProjectionThresholdStateMain/n4095-selected256 (0.01s)
+    --- PASS: TestExactProjectionThresholdStateMain/n4096-selected255 (0.00s)
+    --- PASS: TestExactProjectionThresholdStateMain/n4096-selected256 (0.01s)
+    --- PASS: TestExactProjectionThresholdStateMain/built4096-selected256 (0.01s)
+=== RUN   TestExactProjectionBadSIDRollsBack
+--- PASS: TestExactProjectionBadSIDRollsBack (0.00s)
+=== RUN   TestExactProjectionCancellationAndRetry
+=== RUN   TestExactProjectionCancellationAndRetry/check1
+=== RUN   TestExactProjectionCancellationAndRetry/check5
+=== RUN   TestExactProjectionCancellationAndRetry/check80
+=== RUN   TestExactProjectionCancellationAndRetry/check8520
+=== RUN   TestExactProjectionCancellationAndRetry/check8521
+--- PASS: TestExactProjectionCancellationAndRetry (0.03s)
+    --- PASS: TestExactProjectionCancellationAndRetry/check1 (0.00s)
+    --- PASS: TestExactProjectionCancellationAndRetry/check5 (0.00s)
+    --- PASS: TestExactProjectionCancellationAndRetry/check80 (0.00s)
+    --- PASS: TestExactProjectionCancellationAndRetry/check8520 (0.00s)
+    --- PASS: TestExactProjectionCancellationAndRetry/check8521 (0.00s)
+=== RUN   TestExactProjectionConcurrentClose
+--- PASS: TestExactProjectionConcurrentClose (0.00s)
+=== RUN   TestExactProjectionTupleHashMain
+--- PASS: TestExactProjectionTupleHashMain (0.00s)
+=== RUN   TestExactProjectionCollisionAndSIDIdentity
+=== RUN   TestExactProjectionCollisionAndSIDIdentity/hash-collision
+=== RUN   TestExactProjectionCollisionAndSIDIdentity/hash-zero
+=== RUN   TestExactProjectionCollisionAndSIDIdentity/duplicate-SID-values
+=== RUN   TestExactProjectionCollisionAndSIDIdentity/UTF16-equivalent-SIDs
+--- PASS: TestExactProjectionCollisionAndSIDIdentity (0.01s)
+    --- PASS: TestExactProjectionCollisionAndSIDIdentity/hash-collision (0.00s)
+    --- PASS: TestExactProjectionCollisionAndSIDIdentity/hash-zero (0.00s)
+    --- PASS: TestExactProjectionCollisionAndSIDIdentity/duplicate-SID-values (0.00s)
+    --- PASS: TestExactProjectionCollisionAndSIDIdentity/UTF16-equivalent-SIDs (0.00s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/store	0.298s

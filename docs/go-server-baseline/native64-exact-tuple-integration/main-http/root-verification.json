@@ -1,0 +1,9 @@
+{
+  "all8CompleteBodiesVerified": true,
+  "original5HistoryOutputsEqual": true,
+  "threshold256RepeatFullEqual": true,
+  "mainPIDExited": 1063,
+  "port18864Free": true,
+  "newExpectedConfigSHA256": "03f2c7d6ff28cf074ed394e2ab7535b4b2d0a701ea4bfcbc80e5a48bed6d1ecd",
+  "scope": "Correctness only; actual main tuple state not directly instrumented."
+}

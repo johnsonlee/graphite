@@ -1,0 +1,23 @@
+{
+  "commands": [
+    {
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./...",
+        "-count=1"
+      ],
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "exitCode": 0
+    }
+  ],
+  "changedFiles": []
+}

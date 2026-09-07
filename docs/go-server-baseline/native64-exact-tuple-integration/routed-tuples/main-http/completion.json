@@ -1,0 +1,11 @@
+{
+  "complete": true,
+  "cases": 6,
+  "explicitSourceRoutes": [
+    32,
+    32
+  ],
+  "newThresholdBodies": 6,
+  "serverExited": true,
+  "forcedKill": false
+}

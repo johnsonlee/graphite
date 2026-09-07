@@ -1,0 +1,9 @@
+wrapped-firstLastGraphBimodalClassPrefix 200 250
+wrapped-firstLastGraphBimodalClassPrefix-repeat 200 250
+global-wide-wrapped-case-insensitive-distinct-dense 200 200
+global-wide-wrapped-case-insensitive-distinct-dense-repeat 200 200
+global-wide-distribution-broad-all-64 200 200
+tuple-threshold255 200 255
+tuple-threshold256 200 256
+tuple-threshold256-repeat 200 256
+Complete: 8 full HTTP bodies; original fixed five preserved; main exited

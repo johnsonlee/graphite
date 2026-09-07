@@ -458,3 +458,33 @@ HTTP evidence and cleanup. Root independently repeated the42 typed response and
 existing ignored build output remain recorded; neither changed production/tests.
 Exact tuples, main lazy candidate capabilities and streaming consumers remain
 separate work; full parity and final benchmark-regression-gate are unproven.
+
+
+### 2026-09-07 follow-up: exact projection tuple compatibility
+
+This functional correction builds main's real retained tuple table at its
+4096-posting/256-selected-value thresholds, before four-column admission. It
+preserves full four-SID consumption, Java hash/probe order, actual structural
+state, clear retention, cancellation rollback/retry and Close cleanup.
+
+| Item | Evidence / status |
+|---|---|
+| Native base / candidate | `06321518`; independent91-file tuple delta `1cec41089f4e897c110822ff7c11bfb44bb2d3cfca7ea6cc398c3eefda98de59`, seven production files; generic synchronous executor and Attempts12/13 preserved |
+| Correctness | Provider and independent actual-main query/hash/error/cache/lifetime checks; root whole-module race/vet on ordinary and combined generic bases. All2271 final source/fixture hashes equal tested combination. Original1048 remains968 full matches/80 unchanged differences |
+| Required behavior |16 full query cases,7 Java hash vectors,9 fresh-JVM SID/read-error cases, ordinary cache threshold956970→1055434→180296; independent concurrent build/clear/Close/cancel tests race×20 |
+| Global64 path discovery | Fresh main and both Go revisions pass eight complete bodies including255/256/repeat, but actual tuple capacities stay0:64 sources select ParallelRaw/mapped view. Preserved as controls, not falsely counted as tuple construction |
+| Routed real64 workload | All64 real graphs loaded; two explicit graphId routes of32 sources cover every graph. Each executes255/256/256-repeat, with six fresh main HTTP bodies. No CPU/scheduler override; all outputs equal. Actual candidate table counts0→31→62, baseline always0 |
+| First32 construction |256 query execute+marshal0.121201→0.649740s; CPU0.577600→3.084234s; allocation76,895,128→263,266,016bytes — explicit construction regression |
+| Last32 construction |256 query0.086002→0.417642s; CPU0.417305→1.948133s; allocation81,912,728→185,396,976bytes — explicit construction regression |
+| Repeated probes | First32:0.120413→0.112753s, allocation76,887,056→48,153,288bytes; last32:0.083148→0.073162s, allocation81,915,720→47,795,600bytes. Single observations, not a general speedup |
+| Shipping HTTP | Three fresh actual command processes pass8+6+42=56 complete typed main bodies/headers/catalog64.140 compiler/embed inputs and2271 source/fixture hashes match root. Default60s/capacity4, no profile helpers; all SIGTERM143/no forced kill/ports released |
+| Fixture safety |1152 real graph files/10,338,207,518bytes. Separate COW main/native/HTTP clones; each run verifies hashes, real Close enabled. Original and clone graph contents remain unchanged after process exit |
+| Decision | Keep required main construction behavior with visible first-construction latency/CPU/allocation cost. Do not substitute a result cache or fake byte accounting to avoid it |
+| Limits | State observer reads pointer/array lengths outside request counters without scanning table contents. Single co-tenant instrumented diagnostics; no CPU sampler, no P95/peak-RSS/main-relative10x claim. JVM budget, warmed-JIT exception messages and broader lifecycle gaps remain |
+
+`docs/go-server-baseline/native64-exact-tuple-integration/` retains provider and
+independent freezes, both root integration checks, non-trigger and routed
+diagnostics, fresh main HTTP bodies, all shipping phases and source/fixture
+identities. Collector/setup failures remain recorded without source/test masking.
+This corrects a functional boundary; overall100% parity and main-relative10x P95
+still require their full independent acceptance evidence.

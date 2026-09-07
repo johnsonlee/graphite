@@ -1,0 +1,30 @@
+diff --git a/tmp/graphite-go-exact-tuple-e348726c/graphite-server/internal/store/store.go b/tmp/graphite-go-tuple-root-082a4736/graphite-server/internal/store/store.go
+index 2bf1ff7e..f0e9d7c7 100644
+--- a/tmp/graphite-go-exact-tuple-e348726c/graphite-server/internal/store/store.go
++++ b/tmp/graphite-go-tuple-root-082a4736/graphite-server/internal/store/store.go
+@@ -2,7 +2,6 @@ package store
+ 
+ import (
+ 	"bufio"
+-	"bytes"
+ 	"errors"
+ 	"fmt"
+ 	"io"
+@@ -285,13 +284,13 @@ func (s *Store) Node(id int32) (Node, error) {
+ 	if !ok {
+ 		return Node{}, fmt.Errorf("%w: %d", ErrNodeNotFound, id)
+ 	}
+-	var reader io.Reader
++	var d *decoder
+ 	if s.mappedData != nil {
+-		reader = bytes.NewReader(s.mappedData[loc.offset:])
++		d = newMappedNodeDecoder(s.mappedData[loc.offset:], s.Strings)
+ 	} else {
+-		reader = bufio.NewReader(io.NewSectionReader(s.file, loc.offset, s.size-loc.offset))
++		reader := bufio.NewReader(io.NewSectionReader(s.file, loc.offset, s.size-loc.offset))
++		d = newDecoder(reader, s.size-loc.offset, s.Strings)
+ 	}
+-	d := newDecoder(reader, s.size-loc.offset, s.Strings)
+ 	d.version = s.FormatVersion
+ 	n := d.node()
+ 	if d.err != nil {

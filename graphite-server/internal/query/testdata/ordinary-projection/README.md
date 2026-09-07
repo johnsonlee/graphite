@@ -40,7 +40,7 @@ The new Annotation corpus has 144 requests: all 84 ordinary-eligible cases match
 
 This is not a claim of 100% parity. Known remaining boundaries include:
 
-* The prior DISTINCT implementation lacks main's separately built exact projection tuple representation. Persisted indexes can build it for sufficiently large selected-value work, retaining `160 + 12 * nextPowerOfTwo(2N)` bytes after temporary storage is released. Ordinary execution must not fabricate that state without the corresponding DISTINCT reads and errors.
+* The subsequent [exact tuple delta](../exact-tuple/README.md) adds the actual DISTINCT tuple representation, corresponding reads/errors and retained state. Its admission and remaining lifecycle boundaries are recorded separately; the ordinary freeze itself did not include that implementation.
 * JVM-global memory-budget admission/eviction and custom JVM system-property overrides have no native-equivalent configuration here. LRU per-cache admission is modeled; global JVM heap-budget denial is not. The old mapped reservation close race is not reproduced or hidden.
 * Native context cancellation has no public analogue of a Java GraphWork callback that merely sets Thread.interrupt and returns. Main can publish a cache after that callback or refresh LRU before a callback throws. The delta does not roll back already-applied effects, but the Java direct-callback oracle is not misrepresented as an end-to-end native cancellation test.
 * General non-CallSite decoding and the explicit declined corpus retain earlier semantic gaps. This delta does not broaden raw projection eligibility to conceal them.

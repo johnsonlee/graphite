@@ -15,6 +15,7 @@ import (
 // All fields share Store.callSiteIndex.mu, including handles retained by active
 // queries after the Store publishes/releases a different index generation.
 type ordinaryIndexState struct {
+	exactTuple    *exactProjectionTupleIndex
 	caches        [3]projectionLRU
 	trigramsReady bool
 	signatures    []uint64

@@ -1,0 +1,26 @@
+[
+  {
+    "cwd": "/tmp/graphite-exact-tuple-independent-review/module",
+    "cmd": "go test -race ./internal/store -run '^TestReviewTuple' -count=20",
+    "log": "independent-race.log",
+    "exitCode": 0
+  },
+  {
+    "cwd": "/tmp/graphite-exact-tuple-independent-review/module",
+    "cmd": "go test -race ./internal/query -run '^(TestExactTupleMainCrossQuery|TestExactTupleProjectionMain|TestExactTupleOrdinaryCacheThresholdMain)$' -count=3",
+    "log": "query-race.log",
+    "exitCode": 0
+  },
+  {
+    "cwd": "/tmp/graphite-exact-tuple-independent-review/module",
+    "cmd": "go vet ./internal/store ./internal/query",
+    "log": "vet.log",
+    "exitCode": 0
+  },
+  {
+    "cwd": "/tmp/graphite-exact-tuple-independent-review/module",
+    "cmd": "go test -race ./internal/store -run '^TestExactProjection' -count=3",
+    "log": "store-oracle-race.log",
+    "exitCode": 0
+  }
+]

@@ -1,0 +1,26 @@
+[
+  {
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x LIMIT 255",
+    "fixture": "n4096",
+    "completeMatch": true,
+    "error": null
+  },
+  {
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x LIMIT 255",
+    "fixture": "bad4096",
+    "completeMatch": true,
+    "error": null
+  },
+  {
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x LIMIT 256",
+    "fixture": "n4096",
+    "completeMatch": true,
+    "error": null
+  },
+  {
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x LIMIT 256",
+    "fixture": "bad4096",
+    "completeMatch": true,
+    "error": "Index 2147483647 out of bounds for length 260"
+  }
+]

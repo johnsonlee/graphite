@@ -128,6 +128,11 @@ func (s *Store) ProjectionStringID(ctx context.Context, id int32, property CallS
 	if err := ctx.Err(); err != nil {
 		return 0, err
 	}
+	return s.projectionStringIDLocked(id, property)
+}
+
+// Caller holds the Store lifetime lock.
+func (s *Store) projectionStringIDLocked(id int32, property CallSiteStringProperty) (int32, error) {
 	offset, err := s.projectionOffsetLocked(id)
 	if err != nil {
 		return 0, err

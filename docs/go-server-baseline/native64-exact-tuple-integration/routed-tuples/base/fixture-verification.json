@@ -1,0 +1,8 @@
+{
+  "verifiedAtUTC": "2026-09-07T02:39:59.632932+00:00",
+  "manifest": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-profile-a7de0bec/fixture-files.json",
+  "manifestSHA256": "3084fd51040494ea79d72022fb46b004b15ac6475b4b4ff748adf8a443edf9cf",
+  "files": 1152,
+  "bytes": 10338207518,
+  "allHashesMatch": true
+}

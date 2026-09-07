@@ -1,0 +1,5 @@
+{
+  "exitCode": 1,
+  "error": "AttributeError: 'list' object has no attribute 'items'",
+  "reason": "Independent tuple manifest uses a list of records, unlike provider mapping; provider hash loop completed before this read-only collector failed."
+}

@@ -1,0 +1,355 @@
+{
+  "passed": true,
+  "completeHTTP200": 56,
+  "phaseCounts": [
+    8,
+    6,
+    42
+  ],
+  "allFullTypedBodiesHeadersAndCatalogsEqual": true,
+  "all140CompilerAndEmbedInputsEqualRoot": true,
+  "all2271SourceAndFixtureInputsEqualRoot": true,
+  "binarySHA256": "42b489a6a495aa4e96af3ed110638d177fc62588a2980c0804cfcac870e88392",
+  "allThreeServersExited143": true,
+  "allPortsFree": true,
+  "noDynamicMasks": true,
+  "checks": [
+    {
+      "phase": "global64",
+      "case": "wrapped-firstLastGraphBimodalClassPrefix",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "global64",
+      "case": "wrapped-firstLastGraphBimodalClassPrefix-repeat",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "global64",
+      "case": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "global64",
+      "case": "global-wide-wrapped-case-insensitive-distinct-dense-repeat",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "global64",
+      "case": "global-wide-distribution-broad-all-64",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "global64",
+      "case": "tuple-threshold255",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "global64",
+      "case": "tuple-threshold256",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "global64",
+      "case": "tuple-threshold256-repeat",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "routed32",
+      "case": "first32-tuple-255",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "routed32",
+      "case": "first32-tuple-256",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "routed32",
+      "case": "first32-tuple-256-repeat",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "routed32",
+      "case": "last32-tuple-255",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "routed32",
+      "case": "last32-tuple-256",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "routed32",
+      "case": "last32-tuple-256-repeat",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "wrapped-zeroHitBroadContains",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "wrapped-denseDistributedMethodContains",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "wrapped-earlyGraphClassPrefix",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "wrapped-middleGraphsClassPrefix",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "wrapped-lateGraphClassPrefix",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "wrapped-broadlyDistributedClassPrefix",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "wrapped-firstLastGraphBimodalClassPrefix",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "wrapped-skewedMixedClassMethodOperator",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-four-properties-zero",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-four-properties-targeted",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-four-properties-dense",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-class-pair-zero",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-class-pair-targeted",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-class-pair-dense",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-name-pair-zero",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-name-pair-targeted",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-name-pair-dense",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-caller-class-zero",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-caller-class-targeted",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-caller-class-dense",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-callee-class-zero",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-callee-class-targeted",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-callee-class-dense",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-provenance-zero",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-provenance-targeted",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-provenance-dense",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-aliased-zero",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-aliased-targeted",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-aliased-dense",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-parameterized-zero",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-parameterized-targeted",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-parameterized-dense",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-wrapped-case-insensitive-zero",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-wrapped-case-insensitive-targeted",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-wrapped-case-insensitive-dense",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-wrapped-case-insensitive-distinct-zero",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-distribution-broad-all-64",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-distribution-localized-early",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-distribution-localized-late",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-distribution-localized-middle",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    }
+  ],
+  "scope": "Independent complete-record verification; no performance/P95 claim."
+}

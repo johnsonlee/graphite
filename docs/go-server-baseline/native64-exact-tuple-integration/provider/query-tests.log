@@ -1,0 +1,14 @@
+=== RUN   TestExactTupleMainCrossQuery
+=== RUN   TestExactTupleMainCrossQuery/0
+=== RUN   TestExactTupleMainCrossQuery/1
+=== RUN   TestExactTupleMainCrossQuery/2
+=== RUN   TestExactTupleMainCrossQuery/3
+--- PASS: TestExactTupleMainCrossQuery (0.14s)
+    --- PASS: TestExactTupleMainCrossQuery/0 (0.04s)
+    --- PASS: TestExactTupleMainCrossQuery/1 (0.03s)
+    --- PASS: TestExactTupleMainCrossQuery/2 (0.03s)
+    --- PASS: TestExactTupleMainCrossQuery/3 (0.03s)
+=== RUN   TestExactTupleOrdinaryCacheThresholdMain
+--- PASS: TestExactTupleOrdinaryCacheThresholdMain (0.03s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/query	0.595s

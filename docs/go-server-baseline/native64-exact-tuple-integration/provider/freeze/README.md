@@ -1,0 +1,11 @@
+# Exact tuple functional delivery
+
+Frozen base: ordinary integration tree `e348726c51bc291bf6978b3ca78aa12525754042` on root `87aaf0ad`. `tuple.patch` is the independent delta against that ordinary tree; `combined.patch` includes ordinary plus tuple against87aaf0ad. This source does not include later rootA12/A13. No commit, root/provider edit,64graph or performance run was made.
+
+The7 production files implement a real retained hash/linear-probe table, full first-CSR/four-SID construction, staged errors and predicate consumption, generation-owned state, context rollback/retry, cache-clear retention and Close cleanup. They are byte-identical to the independently reviewed/tested snapshot; the external review receipt is linked in receipt.json. Detailed semantics, reproduction, known gaps and all new oracle descriptions are in `graphite-server/internal/query/testdata/exact-tuple/README.md` in the source patch.
+
+Final full-module race/vet passed. Original1048 denominator:966complete matches; all580DISTINCT-eligible and122ordinary-eligible still match. The previous82differences are unchanged entry-for-entry. New evidence includes16complete main query cases,7actual Java hash/slot vectors,9fresh-JVM staged-error cases, real ordinary-cache threshold956970→1055434→180296, and cooperative cancellation/Close/retry tests. The independent agent also ran3additional lifecycle tests race×20, all16query/cache assertions race×3, store tests race×3 and vet. A fresh final-source native9-source replay matches all4complete main responses/errors.
+
+The shared-JVM fast-throw mismatch is preserved, not removed: later Java array errors can lose their message under HotSpot compilation. The9fresh-JVM source-order oracles do not claim that warmed-JIT history is emulated. Global JVM admission/configuration and the pre-existing native generation release flags/GraphWork callback scheduling are explicitly outside this delta. No fake reservation or result cache substitutes for the new table.
+
+`source-files.json` hashes all91delta files; `production-files.json` lists exact implementation hashes. The root evidence manifest covers raw before/after failures, source/oracle commands, all original and new results, final race/vet logs, and independent review identity. Previous ordinary and read-only tuple freezes were rehashed and remain unchanged.

@@ -1,0 +1,637 @@
+{
+  "checkedAt": "2026-09-07T02:03:48.537251+00:00",
+  "source": "/tmp/graphite-go-exact-tuple-e348726c/graphite-server",
+  "unchanged": true,
+  "files": [
+    {
+      "path": "cmd/graphite-server/argfiles.go",
+      "sha256": "d23a7a39de1019559294312bf3f6a17028df8c0fea0d27b21ae8881f8999c435",
+      "size": 3242
+    },
+    {
+      "path": "cmd/graphite-server/cli.go",
+      "sha256": "a6448d7eb8e54b111d288f6f8b606bb7ed49be31325cb2f12e31252119ce48e9",
+      "size": 7888
+    },
+    {
+      "path": "cmd/graphite-server/main.go",
+      "sha256": "b950573428f1d6c641d0e22796326b2717c6c3e96815074fe096393c5052290c",
+      "size": 5015
+    },
+    {
+      "path": "cmd/graphite-server/profiling.go",
+      "sha256": "a98075632a3112171694ee7a263ddc14a83dc946606b75096a370a58d5218487",
+      "size": 846
+    },
+    {
+      "path": "cmd/graphite-server/signals.go",
+      "sha256": "6726650c03ac95da4ff58f3fc4c3d03a3047a7fe347dfdb1441d51738374debe",
+      "size": 1765
+    },
+    {
+      "path": "internal/analysis/c4/boundary.go",
+      "sha256": "99eb6c44897cef8d9f333ae216ec6cd8c23b1eec319ccc2463eb54b74ee1f865",
+      "size": 5295
+    },
+    {
+      "path": "internal/analysis/c4/component.go",
+      "sha256": "2c759e2520a637d2e6a61cecca94df15cef656199a415134588228f1d988917f",
+      "size": 8693
+    },
+    {
+      "path": "internal/analysis/c4/container.go",
+      "sha256": "a256bc70b1c9fbbb8a74c330bb36b6729a55097fcf0152a8c4dc466d59811f36",
+      "size": 14093
+    },
+    {
+      "path": "internal/analysis/c4/diagram.go",
+      "sha256": "bad46fe387c0365b3de233beda6b10ffe46bdb6ba280f7561845f991a7db7917",
+      "size": 14447
+    },
+    {
+      "path": "internal/analysis/c4/dsl.go",
+      "sha256": "9e0f4c683e906f8e7ee8a73df61f97d8fd8c6da60637d4092cf6cf6132c45f00",
+      "size": 3306
+    },
+    {
+      "path": "internal/analysis/c4/external.go",
+      "sha256": "137e26d8bb82759bbfd1d4a85023418a33a8d7dd501559493dac6a8e16a860de",
+      "size": 6726
+    },
+    {
+      "path": "internal/analysis/c4/model.go",
+      "sha256": "271a4b5077cf7477d26e22fb0c2b942582ac12215a3b3f141134ed6fabe26c8f",
+      "size": 12666
+    },
+    {
+      "path": "internal/analysis/c4/reachability.go",
+      "sha256": "fc0766e35ed6dee510322b07b39a94d3119eecd803620ebbc689b120d52c6a97",
+      "size": 2683
+    },
+    {
+      "path": "internal/analysis/c4/reduction.go",
+      "sha256": "d8aadb76affa0819ebfb82fd75004ca251ab9004a36ccea71a862a028f8a63b3",
+      "size": 2991
+    },
+    {
+      "path": "internal/analysis/c4/subject.go",
+      "sha256": "c897a15ad60a1725d60d93f3b62224aab34e38e06ce26f990141fd60e22c284b",
+      "size": 5781
+    },
+    {
+      "path": "internal/analysis/c4/support.go",
+      "sha256": "c268e89a78a3ed571017657a5a6aa14be87773a95a9867501c8a56c28b935ee6",
+      "size": 3136
+    },
+    {
+      "path": "internal/analysis/c4/types.go",
+      "sha256": "b2fe69c4884db292bd4457adbcf8064284642731980d06c8ea236e8d2de1de41",
+      "size": 7934
+    },
+    {
+      "path": "internal/analysis/c4/workspace.go",
+      "sha256": "39c8b7f6292d4c20b0d37c2585ede7b57ce11c453d19ab09bf7e4d161cbc5816",
+      "size": 15932
+    },
+    {
+      "path": "internal/analysis/c4/workspace_strings.go",
+      "sha256": "f9ae6e7a2f123c46f8856f88dcc2632e2877ff2eaade867c69246d3ba3db4d9f",
+      "size": 5078
+    },
+    {
+      "path": "internal/analysis/endpoints.go",
+      "sha256": "7ba0b2694dae2c64a166e94f6dc1836e70e474d318363ddb9d3b17a33388423d",
+      "size": 4297
+    },
+    {
+      "path": "internal/cypher/antlr.go",
+      "sha256": "fcf081a4325a5910ec7d0576acd8921e7467f5793b8a98ce6a82d0ce6dbf694e",
+      "size": 18585
+    },
+    {
+      "path": "internal/cypher/ast.go",
+      "sha256": "5190ce32842975638038412ad573f4288757c14b6ad4f9261fe52a2c17d2c9ef",
+      "size": 3821
+    },
+    {
+      "path": "internal/cypher/cmd/normalize/main.go",
+      "sha256": "5cfcfbc1e567789941b0abfa726bc467da1779aed4e135ea372cf4378124b574",
+      "size": 1242
+    },
+    {
+      "path": "internal/cypher/context.go",
+      "sha256": "aa8b30b6259cdfd52a2b0fad5db635fe07433351e8a212faf9421ce7b9d036fa",
+      "size": 1307
+    },
+    {
+      "path": "internal/cypher/generated/cypher_lexer.go",
+      "sha256": "4e88ac836d40e3bf1cdf76bd7abefbdcb52f83e6df6658b2ed4e79b7780ca17c",
+      "size": 33797
+    },
+    {
+      "path": "internal/cypher/generated/cypher_parser.go",
+      "sha256": "f2fb5b7dc99d4981b3671df48959d8ddda88d798a0b184977b20e60f61be2e19",
+      "size": 366915
+    },
+    {
+      "path": "internal/cypher/generated/cypherparser_base_visitor.go",
+      "sha256": "b1e2e0c6cb062612f4e91be7e2d31363cfb7f257dd96a9f8120a95eaf83e03a2",
+      "size": 13848
+    },
+    {
+      "path": "internal/cypher/generated/cypherparser_visitor.go",
+      "sha256": "811339a54d13b8694bfea0f6e9c7a1fd2c2044c9622d4e2a854be448512c5c0c",
+      "size": 13449
+    },
+    {
+      "path": "internal/cypher/java_input.go",
+      "sha256": "bcbaa46890568b9c5c4903e6d288166a07cf9b701f98420cb2a0b8a7c12675b6",
+      "size": 2294
+    },
+    {
+      "path": "internal/cypher/number_literal.go",
+      "sha256": "564ac166502a9ef72a4aed737ccc5d905052f301c50448cdfb832ffd31c08b79",
+      "size": 912
+    },
+    {
+      "path": "internal/cypher/string_literal.go",
+      "sha256": "796cbf344726e2ff6184778e69e0c0accf9045187646ff89af4b4411d5071190",
+      "size": 1734
+    },
+    {
+      "path": "internal/javamath/fdlibm.go",
+      "sha256": "a84afd0919cb2a1a58f247e956104fe3d9e34e43b312d6ca422f10cfcfaf0945",
+      "size": 9194
+    },
+    {
+      "path": "internal/javamath/reduction.go",
+      "sha256": "6ef8099ecb57d9bcf73cef7c69ae79688f4634c1ebb809ddcc492a80bce7f38b",
+      "size": 6440
+    },
+    {
+      "path": "internal/javamath/sincos.go",
+      "sha256": "b56c4d357ca5c74dbd53330fb3e77b122457a4e13491d02391f769c44413e9d4",
+      "size": 2767
+    },
+    {
+      "path": "internal/javamath/tan.go",
+      "sha256": "535cbd4134f75f05b611fd218d8e55573b51b3403fedb9c1555be195146d1622",
+      "size": 1967
+    },
+    {
+      "path": "internal/javaregex/advanced.go",
+      "sha256": "e80ddc525d398f2993923d6847669733c9f8639cfed4d770539bf7cbdd6347e6",
+      "size": 5093
+    },
+    {
+      "path": "internal/javaregex/match.go",
+      "sha256": "3a9f7a36b31b3c4b1c417f86802f7dde9b33d7a5c9709a02f9a76f8df5f4f7ac",
+      "size": 6245
+    },
+    {
+      "path": "internal/javaregex/parse.go",
+      "sha256": "aaaa16381b837a364f7d33a6a0f5516fbf10351d5e9df34f60a70dd9567ea3f5",
+      "size": 16254
+    },
+    {
+      "path": "internal/javaregex/regex.go",
+      "sha256": "3e87294e867c0bafafbcffa5977af69c4ec611de790887c5f174ec16db724ff3",
+      "size": 4365
+    },
+    {
+      "path": "internal/javaregex/unicode.go",
+      "sha256": "f026bd8303907723a5acac161c3bc00ab20203400b6313f42408436fcafc77b1",
+      "size": 10404
+    },
+    {
+      "path": "internal/javastring/char.go",
+      "sha256": "ba061de047626885734ab40dbf9159b62c490ad177951e166c1d1cc2f7dd0e5f",
+      "size": 2154
+    },
+    {
+      "path": "internal/javastring/char_generated.go",
+      "sha256": "467e19df5828c6f6df165fbc4947edc88d8e56fe3770ef0631e98d15ab381f6f",
+      "size": 39729
+    },
+    {
+      "path": "internal/javastring/unicode.go",
+      "sha256": "56aa5e18232264f35aabea2cf0f22958acf8402344c4cd9f357b206f1e22d07b",
+      "size": 3794
+    },
+    {
+      "path": "internal/javastring/unicode_generated.go",
+      "sha256": "58dee198f80fb337e2cb82839a8374a1f7bca32abc42725a08ace08667fee19d",
+      "size": 181863
+    },
+    {
+      "path": "internal/javastring/utf16.go",
+      "sha256": "acafb0dc4fae8955117f49b96bfb63034b5dc53f6400f82a9b370e7f520c5981",
+      "size": 2119
+    },
+    {
+      "path": "internal/profiling/report.go",
+      "sha256": "56d8733c08cbc7973d053285c9d8db7677fca4e265f36ccc99312a9a8a1cfed2",
+      "size": 4144
+    },
+    {
+      "path": "internal/profiling/session.go",
+      "sha256": "93515c63b31395cb38c43cb7c2bdcbb348774b21baf974d6eb4ecbcaf91a9179",
+      "size": 1989
+    },
+    {
+      "path": "internal/query/aggregation.go",
+      "sha256": "5200db487be93bb137de761c49bdb3091084d796b0897b695840eff33f7f9710",
+      "size": 4049
+    },
+    {
+      "path": "internal/query/candidate.go",
+      "sha256": "e84e32589c490ab13d155416987e3df5314078f45e2d3dba2f6e14d4b83f275c",
+      "size": 1479
+    },
+    {
+      "path": "internal/query/columns.go",
+      "sha256": "3aad9203b91a106cf357a7e81e58699240bc6666c14e54905d0ecd671982acc3",
+      "size": 2604
+    },
+    {
+      "path": "internal/query/count.go",
+      "sha256": "5d2b576845e05acccccb5913beefe210b972114c19b2a2c53d8a3b8681e13aed",
+      "size": 581
+    },
+    {
+      "path": "internal/query/cross.go",
+      "sha256": "c815b99ea24c66b65ffd4a8ed3fa77dfaf36c85263d163096b3e2df9ac676492",
+      "size": 1824
+    },
+    {
+      "path": "internal/query/distinct_string_id.go",
+      "sha256": "27480147a00d731c9d5452e9a6113a93eeefc4c8c729b3c0f50e0e74f47b17b4",
+      "size": 898
+    },
+    {
+      "path": "internal/query/early_match.go",
+      "sha256": "298c3629ddae98b9333db3dd0688ca4d53b99960f6d272282ee216cabcc3721c",
+      "size": 4418
+    },
+    {
+      "path": "internal/query/engine.go",
+      "sha256": "2f05b487eded309e672dc4370a7b583d156e753e1b032c42b707e13745c8beb8",
+      "size": 14305
+    },
+    {
+      "path": "internal/query/eval.go",
+      "sha256": "e754d78ef80945dcdcac904bc15647939c0fda1566522be1922ae08ad1d96717",
+      "size": 14144
+    },
+    {
+      "path": "internal/query/function_properties.go",
+      "sha256": "1195addcabde70d13a6fcc358897be1a1fcfb874286b84e5fa5a367ef275bbea",
+      "size": 2924
+    },
+    {
+      "path": "internal/query/functions.go",
+      "sha256": "796fe8140b5f5c8b64f1d240c39120ef07fb0240c217f627cd0e18c658107096",
+      "size": 8698
+    },
+    {
+      "path": "internal/query/indexed_distinct.go",
+      "sha256": "7dac3137908c8291fb32f06e0b1284c347a6afc0331ba611b722b4373e942ee8",
+      "size": 25118
+    },
+    {
+      "path": "internal/query/indexed_distinct_plan.go",
+      "sha256": "37be958d3659f21cf57fcd4017b3f3cddd73f652171266adb8d7d2a32efe4155",
+      "size": 9120
+    },
+    {
+      "path": "internal/query/indexed_tuple.go",
+      "sha256": "879942530889a66c2626cdf8a335a28c4c57894382f63ac1d43deb52d0269736",
+      "size": 2212
+    },
+    {
+      "path": "internal/query/java_string.go",
+      "sha256": "317e2cff94ee476958d9f12d837a6235b2abec46acf8b7f88c1c89375f70c4f3",
+      "size": 2963
+    },
+    {
+      "path": "internal/query/jvm_float.go",
+      "sha256": "8e652d32a31155dffed21e727be7728161cf0a8845b2e8fed53474400950d394",
+      "size": 7266
+    },
+    {
+      "path": "internal/query/limit_zero.go",
+      "sha256": "0dfe7393f03624c63a3d05eabf72484735b6e3602750af1a62446ffe0433cb8d",
+      "size": 2027
+    },
+    {
+      "path": "internal/query/materialize.go",
+      "sha256": "340d69524aa325b1fedc7a021ca24f2752a4e03572816a6b9cfe481d7a87a1f3",
+      "size": 3974
+    },
+    {
+      "path": "internal/query/node_error.go",
+      "sha256": "4aa92a4a2052140c4ff631504db7692a4181d3cfb75d6d62973356a4007541bf",
+      "size": 839
+    },
+    {
+      "path": "internal/query/object_string.go",
+      "sha256": "fccde562ba016561d37845d499351664736e154e67965194006bc331f0c2fc7c",
+      "size": 5316
+    },
+    {
+      "path": "internal/query/ordinary_cache.go",
+      "sha256": "e45af3e4c6897f3ffbd20a8173dc82bca7aaaca9c05a0cae9af37efa9e2487f7",
+      "size": 4482
+    },
+    {
+      "path": "internal/query/ordinary_leading.go",
+      "sha256": "dae1e7a02b804eef32c813114ec863bd13c00f2e9c55102651536f9dacdb420c",
+      "size": 2885
+    },
+    {
+      "path": "internal/query/ordinary_parallel.go",
+      "sha256": "8aa3b4c9ff5e0184b1dc4b45785b08f0b15d4ac0f1c3f5ed8f27a5668abf05d2",
+      "size": 7457
+    },
+    {
+      "path": "internal/query/ordinary_projection.go",
+      "sha256": "0095c4e23f1a63892bfb183aaeb9be3bb9495e038613a82ab4be5aa845c2d312",
+      "size": 15825
+    },
+    {
+      "path": "internal/query/output_object.go",
+      "sha256": "e1a9cc04e0c91d3355cd874d2df87682578986cf7a283cb6ba1c3851ebb4c994",
+      "size": 2824
+    },
+    {
+      "path": "internal/query/properties.go",
+      "sha256": "12de265f4bbfa5bdb500f7a99ac7c4124a4084523aec1c18706637000be531be",
+      "size": 3221
+    },
+    {
+      "path": "internal/query/regex.go",
+      "sha256": "4ec60a52f63822cb5350b07330ee2c7235276ca02c4b7356a648a167978b6df4",
+      "size": 4053
+    },
+    {
+      "path": "internal/query/relationships.go",
+      "sha256": "62bd9d60a9ca5deff48c18bc515e77d6d43f6492c86708f8dd270b3e59991220",
+      "size": 5406
+    },
+    {
+      "path": "internal/query/row_order.go",
+      "sha256": "d67935abc7f8777b512c2a0aaf534cd82451e39582c490460a4cd275847cecc6",
+      "size": 2892
+    },
+    {
+      "path": "internal/query/scan.go",
+      "sha256": "bd4edd9fed796e474e2f9155d423f549bf44283444d34483448da2271dfc5962",
+      "size": 2262
+    },
+    {
+      "path": "internal/query/string_candidates.go",
+      "sha256": "c9be5b7067c83744e625eddd3a80aa03db24a57c9c5297884a4039be83d24bf3",
+      "size": 10098
+    },
+    {
+      "path": "internal/query/traversal.go",
+      "sha256": "c83f3122a4ab61a9433323c3466c64612e2df7e1db703b989df8f5c98f9f0a33",
+      "size": 12888
+    },
+    {
+      "path": "internal/query/values.go",
+      "sha256": "c77ed3536aa23d44a54cd0e7450d1e251794abfb0cb78fee6146ad39c19f9bd4",
+      "size": 9868
+    },
+    {
+      "path": "internal/server/architecture.go",
+      "sha256": "e196382bebcad89741d697426e961a7013f81a3064004f7b35e7ec3911b7f62f",
+      "size": 3735
+    },
+    {
+      "path": "internal/server/connection.go",
+      "sha256": "8888bf292041d6e04ff8ab5c98c1a9fc717262fecd887b2fe392a24b611c46fc",
+      "size": 1585
+    },
+    {
+      "path": "internal/server/cross.go",
+      "sha256": "5965f85a3a08b0b8fe4a5e8b3cc111b1ac1d19f3734c57a325e217e85ea0a7cb",
+      "size": 7367
+    },
+    {
+      "path": "internal/server/cypher.go",
+      "sha256": "7b7e1f9db87eb310070063c2c7cb29fdcc7e139f787d56240c5b76d86ffb1ef4",
+      "size": 2918
+    },
+    {
+      "path": "internal/server/gson_json.go",
+      "sha256": "c5209928475228b87f7f4e5b97ebbd8bb3463a73eb608693d1758b3d195e2c19",
+      "size": 12846
+    },
+    {
+      "path": "internal/server/gson_json_wire.go",
+      "sha256": "4d5b3ce3dff7cedc70d9cc5abc0124915446a83c4767df8a27ae3ecc298ab55f",
+      "size": 3133
+    },
+    {
+      "path": "internal/server/guard.go",
+      "sha256": "eff7dc8861931bf72fc08da3c6f517854eb87138f0f8e4f9db7db14304e28ee0",
+      "size": 3819
+    },
+    {
+      "path": "internal/server/http.go",
+      "sha256": "5a84f9413a31ee04be4d96604127459657224ccb173e8400a99f4c8b2b8f2647",
+      "size": 10448
+    },
+    {
+      "path": "internal/server/http_metrics.go",
+      "sha256": "5d6c3d9ea4355e632c649b0f19e4a6c9648508071d034464bda0f17accfd9d7e",
+      "size": 1398
+    },
+    {
+      "path": "internal/server/json_input.go",
+      "sha256": "19f235da658ca19bf71d4c4fd304106face6feff056ebe3a1ee76d8dad268692",
+      "size": 2183
+    },
+    {
+      "path": "internal/server/metrics.go",
+      "sha256": "59758ecb3f4992d4bc2d290852c0e18670e6de8d90a80a5647b341f89d9d0935",
+      "size": 10285
+    },
+    {
+      "path": "internal/server/native.go",
+      "sha256": "a6601f40b39be4d4594d1c67fa5faf6df3618832292021d0d61176d28adb7d3d",
+      "size": 3838
+    },
+    {
+      "path": "internal/server/node_error.go",
+      "sha256": "edc403e5f97e020acd7470179a841b35dc0ccd80afab9ebbc1841519d0951783",
+      "size": 699
+    },
+    {
+      "path": "internal/server/registry.go",
+      "sha256": "6ed7bdc6914f087f7569d3100ac25e71b33d018f1e9ae24379ebd194f44c04b0",
+      "size": 7140
+    },
+    {
+      "path": "internal/server/resources.go",
+      "sha256": "1dca2cb4985dc57a50863958d741cedfa96ecb329c2b148b4cac9eb7c918dc4b",
+      "size": 4967
+    },
+    {
+      "path": "internal/server/spec.go",
+      "sha256": "98216788b0c38cef2f588707938c498e358628373b75d6794bc717ff6caed4e1",
+      "size": 714
+    },
+    {
+      "path": "internal/server/topology.go",
+      "sha256": "e8c92d9649ad07165e450bc78a5d944e82184df3784da887962f029fb056e41b",
+      "size": 9841
+    },
+    {
+      "path": "internal/server/traversal.go",
+      "sha256": "ede89e7a3bcf9498b270b85d8b72973d1b35596b74a7744f2e4130f937ed6148",
+      "size": 4227
+    },
+    {
+      "path": "internal/server/views.go",
+      "sha256": "acf8b1bc7833d7ce28767e1cac3b2761ad3eaea0753bedb79b249472b45ad384",
+      "size": 1950
+    },
+    {
+      "path": "internal/store/bvgraph.go",
+      "sha256": "50117b8cc6e3c7ef0589ce2881ff806b69c2186c886a1b21a11cfd1ac9554d91",
+      "size": 7384
+    },
+    {
+      "path": "internal/store/bvgraph_coding.go",
+      "sha256": "41f9f3d2487e8fca3fdc8b2b1afb51013ffada41d0925aed78177e5b990a1205",
+      "size": 3805
+    },
+    {
+      "path": "internal/store/callsite_index.go",
+      "sha256": "261c68b290c72ebb4a5548588e934fcb7bee4cac8d1357021c90552116fd54dc",
+      "size": 13214
+    },
+    {
+      "path": "internal/store/callsite_strings.go",
+      "sha256": "8532bd1f0e6fbc7dad98c41db36221955ef986f7a780c7cc3233728bc45c86c8",
+      "size": 5070
+    },
+    {
+      "path": "internal/store/callsite_trigrams.go",
+      "sha256": "8a8e6bb7e129e40c180e8465cef3c93df27ffebbed52a0d9a6503d4f61d35e2f",
+      "size": 2497
+    },
+    {
+      "path": "internal/store/candidate_certificate.go",
+      "sha256": "49bf7397cca779b3cb576fa3f03dcbe329f373945fc4f3582e98a9e5582e7290",
+      "size": 4179
+    },
+    {
+      "path": "internal/store/decode.go",
+      "sha256": "2f6fe1c3a6c16de5d43369dfd7aab9eea46a924001760f2b7dd158180a48af35",
+      "size": 10373
+    },
+    {
+      "path": "internal/store/distinct_projection.go",
+      "sha256": "16aecc62a95195f1e8e4e9f02f38d88a0d254ac3d052560d082a90659e0bff4d",
+      "size": 13235
+    },
+    {
+      "path": "internal/store/edges.go",
+      "sha256": "72b711add5f9902a3607bb14852bafc1ee6984a41971c3ec4b2eb41baaed5161",
+      "size": 2964
+    },
+    {
+      "path": "internal/store/java_serialization.go",
+      "sha256": "55d05fe638ffa3d15b3195b28f25d1460fbca5816ddacaa16a79bfb39355d919",
+      "size": 3572
+    },
+    {
+      "path": "internal/store/mmap_other.go",
+      "sha256": "3d651ae17b183d14a561edd749a672ba5f90ff4df05f0abe21729cf337b339fc",
+      "size": 273
+    },
+    {
+      "path": "internal/store/mmap_unix.go",
+      "sha256": "167e0b9510b857e72da094151c51095593f6d3bfd0153c103f6198d25223c0f7",
+      "size": 362
+    },
+    {
+      "path": "internal/store/node_error.go",
+      "sha256": "6d696d33b1138cb3e265274869b45bc0687782d0e3a20b77867f7f7a47e80091",
+      "size": 413
+    },
+    {
+      "path": "internal/store/ordinary_projection.go",
+      "sha256": "a337a47ad844f18974bdc56a133ec3c27e7fb7a739c00393fefdb48e3830963f",
+      "size": 5156
+    },
+    {
+      "path": "internal/store/overview.go",
+      "sha256": "d58d0245e3851a1798476c24725fa4aade99cfb2d74df833bd4e81755d46eb06",
+      "size": 6059
+    },
+    {
+      "path": "internal/store/projection_cache.go",
+      "sha256": "471854e1e62fb5b84bbacced302c409d19fafa717c2711de116f708bbc2d7164",
+      "size": 4541
+    },
+    {
+      "path": "internal/store/projection_node.go",
+      "sha256": "fda887a49466b5c9c9663d1af76932df5df7cfd22849c867ce85fb0cc3577842",
+      "size": 2983
+    },
+    {
+      "path": "internal/store/projection_persistence.go",
+      "sha256": "38237f08a74ba5001008ea9e82de070a7d65b11299c092940898db394cd523db",
+      "size": 6053
+    },
+    {
+      "path": "internal/store/projection_tuple.go",
+      "sha256": "774c58e036fbd32d44c677de7ade623252ad8acd0aa32d7a65c790ac74b699ce",
+      "size": 7665
+    },
+    {
+      "path": "internal/store/query_order.go",
+      "sha256": "3b315e521f7239f373354a8a7fc97ea862ac33555204c5669829ff0d936ac7c8",
+      "size": 889
+    },
+    {
+      "path": "internal/store/resources.go",
+      "sha256": "5b00d4751c0c12f1ccad2e749c4514b13d5a941389984250f7d070827ddc027d",
+      "size": 4679
+    },
+    {
+      "path": "internal/store/store.go",
+      "sha256": "ede0fda58efcd2cfb4a2c66976b5ad8f3abf914ad0b26419a5b5d1b34454646a",
+      "size": 8387
+    },
+    {
+      "path": "internal/store/string_encoding.go",
+      "sha256": "2669e879b371187381377ae69b34ad9346989db134954f1e41aa663f87c03de7",
+      "size": 2178
+    },
+    {
+      "path": "internal/store/string_reference_error.go",
+      "sha256": "7104e1e458334d692147c6d4e609842ae0da59cb4f186cdf25ac230ee0cb830c",
+      "size": 380
+    },
+    {
+      "path": "internal/store/strings.go",
+      "sha256": "350c5197a45f4b9f71a333f3b2cf60dc21b4814ff3fe4ecc8d4d2b52b4755e36",
+      "size": 4636
+    },
+    {
+      "path": "internal/store/trigram_certificate.go",
+      "sha256": "5868a1a37ad31a9b3f8f6441fc12fdd91327f85960f0307bbfa28d33330b3bac",
+      "size": 3632
+    },
+    {
+      "path": "internal/web/assets.go",
+      "sha256": "897726fb9b96e2dd9fdc8821b7c5ccbee49bd53a5e66e38f97a8600fd650492e",
+      "size": 287
+    }
+  ]
+}

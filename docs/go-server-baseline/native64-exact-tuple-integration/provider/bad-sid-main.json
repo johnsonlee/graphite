@@ -1,0 +1,173 @@
+[
+  {
+    "property": 0,
+    "sid": -1,
+    "badRead": false,
+    "before": {
+      "tuple": false,
+      "enabled": true,
+      "reservationClosed": false,
+      "bytes": 81832
+    },
+    "errorClass": "ArrayIndexOutOfBoundsException",
+    "error": "Index -1 out of bounds for length 260",
+    "after": {
+      "tuple": false,
+      "enabled": true,
+      "reservationClosed": false,
+      "bytes": 81832
+    }
+  },
+  {
+    "property": 0,
+    "sid": 2147483647,
+    "badRead": false,
+    "before": {
+      "bytes": 81832,
+      "reservationClosed": false,
+      "enabled": true,
+      "tuple": false
+    },
+    "errorClass": "ArrayIndexOutOfBoundsException",
+    "error": "Index 2147483647 out of bounds for length 260",
+    "after": {
+      "bytes": 81832,
+      "reservationClosed": false,
+      "enabled": true,
+      "tuple": false
+    }
+  },
+  {
+    "property": 1,
+    "sid": -1,
+    "badRead": false,
+    "before": {
+      "tuple": false,
+      "enabled": true,
+      "reservationClosed": false,
+      "bytes": 81832
+    },
+    "errorClass": "ArrayIndexOutOfBoundsException",
+    "error": "Index -1 out of bounds for length 260",
+    "after": {
+      "tuple": false,
+      "enabled": true,
+      "reservationClosed": false,
+      "bytes": 81832
+    }
+  },
+  {
+    "property": 1,
+    "sid": 2147483647,
+    "badRead": false,
+    "before": {
+      "tuple": false,
+      "enabled": true,
+      "reservationClosed": false,
+      "bytes": 81832
+    },
+    "errorClass": "ArrayIndexOutOfBoundsException",
+    "error": "Index 2147483647 out of bounds for length 260",
+    "after": {
+      "tuple": false,
+      "enabled": true,
+      "reservationClosed": false,
+      "bytes": 81832
+    }
+  },
+  {
+    "property": 2,
+    "sid": -1,
+    "badRead": false,
+    "before": {
+      "tuple": false,
+      "enabled": true,
+      "reservationClosed": false,
+      "bytes": 81832
+    },
+    "errorClass": "ArrayIndexOutOfBoundsException",
+    "error": "Index -1 out of bounds for length 260",
+    "after": {
+      "tuple": false,
+      "enabled": true,
+      "reservationClosed": false,
+      "bytes": 81832
+    }
+  },
+  {
+    "property": 2,
+    "sid": 2147483647,
+    "badRead": false,
+    "before": {
+      "bytes": 81832,
+      "reservationClosed": false,
+      "enabled": true,
+      "tuple": false
+    },
+    "errorClass": "ArrayIndexOutOfBoundsException",
+    "error": "Index 2147483647 out of bounds for length 260",
+    "after": {
+      "bytes": 81832,
+      "reservationClosed": false,
+      "enabled": true,
+      "tuple": false
+    }
+  },
+  {
+    "property": 3,
+    "sid": -1,
+    "badRead": false,
+    "before": {
+      "enabled": true,
+      "reservationClosed": false,
+      "bytes": 81832,
+      "tuple": false
+    },
+    "errorClass": "ArrayIndexOutOfBoundsException",
+    "error": "Index -1 out of bounds for length 260",
+    "after": {
+      "enabled": true,
+      "reservationClosed": false,
+      "bytes": 81832,
+      "tuple": false
+    }
+  },
+  {
+    "property": 3,
+    "sid": 2147483647,
+    "badRead": false,
+    "before": {
+      "bytes": 81832,
+      "reservationClosed": false,
+      "enabled": true,
+      "tuple": false
+    },
+    "errorClass": "ArrayIndexOutOfBoundsException",
+    "error": "Index 2147483647 out of bounds for length 260",
+    "after": {
+      "bytes": 81832,
+      "reservationClosed": false,
+      "enabled": true,
+      "tuple": false
+    }
+  },
+  {
+    "property": 0,
+    "sid": -1,
+    "badRead": true,
+    "before": {
+      "tuple": false,
+      "enabled": true,
+      "reservationClosed": false,
+      "bytes": 81832
+    },
+    "errorClass": "IndexOutOfBoundsException",
+    "error": null,
+    "after": {
+      "tuple": false,
+      "enabled": true,
+      "reservationClosed": false,
+      "bytes": 81832
+    }
+  }
+]

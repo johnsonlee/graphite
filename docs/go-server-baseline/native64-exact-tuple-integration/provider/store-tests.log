@@ -1,0 +1,28 @@
+=== RUN   TestExactProjectionThresholdStateMain
+=== RUN   TestExactProjectionThresholdStateMain/n4095Ā
+=== RUN   TestExactProjectionThresholdStateMain/n4096ÿ
+=== RUN   TestExactProjectionThresholdStateMain/n4096Ā
+=== RUN   TestExactProjectionThresholdStateMain/built4096Ā
+--- PASS: TestExactProjectionThresholdStateMain (0.03s)
+    --- PASS: TestExactProjectionThresholdStateMain/n4095Ā (0.01s)
+    --- PASS: TestExactProjectionThresholdStateMain/n4096ÿ (0.01s)
+    --- PASS: TestExactProjectionThresholdStateMain/n4096Ā (0.01s)
+    --- PASS: TestExactProjectionThresholdStateMain/built4096Ā (0.01s)
+=== RUN   TestExactProjectionBadSIDRollsBack
+--- PASS: TestExactProjectionBadSIDRollsBack (0.01s)
+=== RUN   TestExactProjectionCancellationAndRetry
+=== RUN   TestExactProjectionCancellationAndRetry/\x01
+=== RUN   TestExactProjectionCancellationAndRetry/\x05
+=== RUN   TestExactProjectionCancellationAndRetry/P
+=== RUN   TestExactProjectionCancellationAndRetry/ⅈ
+=== RUN   TestExactProjectionCancellationAndRetry/ⅉ
+--- PASS: TestExactProjectionCancellationAndRetry (0.02s)
+    --- PASS: TestExactProjectionCancellationAndRetry/\x01 (0.00s)
+    --- PASS: TestExactProjectionCancellationAndRetry/\x05 (0.00s)
+    --- PASS: TestExactProjectionCancellationAndRetry/P (0.00s)
+    --- PASS: TestExactProjectionCancellationAndRetry/ⅈ (0.00s)
+    --- PASS: TestExactProjectionCancellationAndRetry/ⅉ (0.00s)
+=== RUN   TestExactProjectionConcurrentClose
+--- PASS: TestExactProjectionConcurrentClose (0.00s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/store	0.386s

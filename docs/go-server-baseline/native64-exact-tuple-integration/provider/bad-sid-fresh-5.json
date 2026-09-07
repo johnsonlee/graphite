@@ -1,0 +1,21 @@
+[
+  {
+    "property": 2,
+    "sid": 2147483647,
+    "badRead": false,
+    "before": {
+      "bytes": 81832,
+      "reservationClosed": false,
+      "enabled": true,
+      "tuple": false
+    },
+    "errorClass": "ArrayIndexOutOfBoundsException",
+    "error": "Index 2147483647 out of bounds for length 260",
+    "after": {
+      "bytes": 81832,
+      "reservationClosed": false,
+      "enabled": true,
+      "tuple": false
+    }
+  }
+]

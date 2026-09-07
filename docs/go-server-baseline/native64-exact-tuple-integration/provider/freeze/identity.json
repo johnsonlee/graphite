@@ -1,0 +1,10 @@
+{
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "mainJarSHA256": "91c3a1d154ca96004c55df195d9f752e077cab3e33ca1570b2c88b872d9bc34d",
+  "mainTupleSourceSHA256": "c1c4f07d818a4a25f712ad25094b30723fa25fa7531f424b2391bba792938a77",
+  "nativeModuleSHA256": "f6e6d88bd6fd905ebf229be49fa18c72371e30b1cfb80c2d7e3d194160bdf0b0",
+  "goVersion": "go version go1.22.0 darwin/arm64",
+  "javaVersion": "openjdk version \"17.0.18\" 2026-01-20\nOpenJDK Runtime Environment Homebrew (build 17.0.18+0)\nOpenJDK 64-Bit Server VM Homebrew (build 17.0.18+0, mixed mode, sharing)\n",
+  "frozenInputAuditManifestSHA256": "c8b1529eb4908fcae68f4074836663879d330dfa47fb2417d2218c480082f2d1",
+  "independentReviewManifestSHA256": "f0bf8579de48527a8dffa9c9b8458e8a7e9507f701ca2fbc521ddd8940536141"
+}

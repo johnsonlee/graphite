@@ -1,0 +1,17 @@
+{
+  "verifiedUTC": "2026-09-07T02:49:27.938720+00:00",
+  "afterAllThreeServerExits": true,
+  "results": {
+    "original": {
+      "files": 1152,
+      "allHashesMatch": true,
+      "noExtraGraphFiles": true
+    },
+    "shippingClone": {
+      "files": 1152,
+      "allHashesMatch": true,
+      "noExtraGraphFiles": true
+    }
+  },
+  "actualCloseAndPersistenceEnabled": true
+}

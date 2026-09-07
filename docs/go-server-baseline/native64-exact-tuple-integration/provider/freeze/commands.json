@@ -1,0 +1,233 @@
+[
+  {
+    "cwd": "/tmp/graphite-go-exact-tuple-e348726c/graphite-server",
+    "argv": [
+      "go",
+      "test",
+      "-race",
+      "./...",
+      "-count=1"
+    ],
+    "env": {
+      "ORDINARY_HISTORY_OUTPUT": "/tmp/graphite-go-exact-tuple-e348726c-evidence/ordinary-final",
+      "INDEXED_DISTINCT_OUTPUT": "/tmp/graphite-go-exact-tuple-e348726c-evidence/indexed-final"
+    },
+    "exitCode": 0,
+    "log": "race-final.log"
+  },
+  {
+    "cwd": "/tmp/graphite-go-exact-tuple-e348726c/graphite-server",
+    "argv": [
+      "go",
+      "vet",
+      "./..."
+    ],
+    "exitCode": 0,
+    "log": "vet-final.log"
+  },
+  {
+    "cwd": "/tmp/graphite-go-exact-tuple-e348726c-evidence/native",
+    "argv": [
+      "go",
+      "run",
+      ".",
+      "/tmp/graphite-main-exact-tuple-audit/fixtures",
+      "../query-native-nine-final.json",
+      "9"
+    ],
+    "exitCode": 0,
+    "log": "native-nine-final.log"
+  },
+  {
+    "argv": [
+      "/opt/homebrew/opt/openjdk@17/bin/java",
+      "-Dfile.encoding=UTF-8",
+      "-Xmx256m",
+      "-XX:ActiveProcessorCount=2",
+      "-cp",
+      "/tmp/graphite-go-exact-tuple-e348726c-evidence:/tmp/graphite-main-exact-tuple-audit:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "TupleCacheOracle",
+      "/tmp/graphite-main-exact-tuple-audit/fixtures/n4096",
+      "/tmp/graphite-go-exact-tuple-e348726c-evidence/cache-main.json"
+    ],
+    "exitCode": 0
+  },
+  {
+    "argv": [
+      "/opt/homebrew/opt/openjdk@17/bin/java",
+      "-Dfile.encoding=UTF-8",
+      "-Xmx256m",
+      "-cp",
+      "/tmp/graphite-go-exact-tuple-e348726c-evidence:/tmp/graphite-main-exact-tuple-audit:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "TupleProjectionOracle",
+      "/tmp/graphite-main-exact-tuple-audit/fixtures",
+      "/tmp/graphite-go-exact-tuple-e348726c-evidence/projection-main.json"
+    ],
+    "exitCode": 0,
+    "log": "projection-main.log"
+  },
+  {
+    "argv": [
+      "/opt/homebrew/opt/openjdk@17/bin/java",
+      "-Xmx256m",
+      "-cp",
+      "/tmp/graphite-go-exact-tuple-e348726c-evidence:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "TupleHashOracle",
+      "/tmp/graphite-go-exact-tuple-e348726c-evidence/hash-main.json"
+    ],
+    "exitCode": 0
+  },
+  {
+    "argv": [
+      "/opt/homebrew/opt/openjdk@17/bin/java",
+      "-Xmx256m",
+      "-XX:ActiveProcessorCount=2",
+      "-cp",
+      "/tmp/graphite-go-exact-tuple-e348726c-evidence:/tmp/graphite-main-exact-tuple-audit:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "TupleBadSIDOracle",
+      "/tmp/graphite-main-exact-tuple-audit/fixtures/n4096",
+      "/tmp/graphite-go-exact-tuple-e348726c-evidence/bad-sid-fixtures",
+      "/tmp/graphite-go-exact-tuple-e348726c-evidence/bad-sid-fresh-0.json",
+      "0"
+    ],
+    "exitCode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/opt/homebrew/opt/openjdk@17/bin/java",
+      "-Xmx256m",
+      "-XX:ActiveProcessorCount=2",
+      "-cp",
+      "/tmp/graphite-go-exact-tuple-e348726c-evidence:/tmp/graphite-main-exact-tuple-audit:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "TupleBadSIDOracle",
+      "/tmp/graphite-main-exact-tuple-audit/fixtures/n4096",
+      "/tmp/graphite-go-exact-tuple-e348726c-evidence/bad-sid-fixtures",
+      "/tmp/graphite-go-exact-tuple-e348726c-evidence/bad-sid-fresh-1.json",
+      "1"
+    ],
+    "exitCode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/opt/homebrew/opt/openjdk@17/bin/java",
+      "-Xmx256m",
+      "-XX:ActiveProcessorCount=2",
+      "-cp",
+      "/tmp/graphite-go-exact-tuple-e348726c-evidence:/tmp/graphite-main-exact-tuple-audit:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "TupleBadSIDOracle",
+      "/tmp/graphite-main-exact-tuple-audit/fixtures/n4096",
+      "/tmp/graphite-go-exact-tuple-e348726c-evidence/bad-sid-fixtures",
+      "/tmp/graphite-go-exact-tuple-e348726c-evidence/bad-sid-fresh-2.json",
+      "2"
+    ],
+    "exitCode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/opt/homebrew/opt/openjdk@17/bin/java",
+      "-Xmx256m",
+      "-XX:ActiveProcessorCount=2",
+      "-cp",
+      "/tmp/graphite-go-exact-tuple-e348726c-evidence:/tmp/graphite-main-exact-tuple-audit:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "TupleBadSIDOracle",
+      "/tmp/graphite-main-exact-tuple-audit/fixtures/n4096",
+      "/tmp/graphite-go-exact-tuple-e348726c-evidence/bad-sid-fixtures",
+      "/tmp/graphite-go-exact-tuple-e348726c-evidence/bad-sid-fresh-3.json",
+      "3"
+    ],
+    "exitCode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/opt/homebrew/opt/openjdk@17/bin/java",
+      "-Xmx256m",
+      "-XX:ActiveProcessorCount=2",
+      "-cp",
+      "/tmp/graphite-go-exact-tuple-e348726c-evidence:/tmp/graphite-main-exact-tuple-audit:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "TupleBadSIDOracle",
+      "/tmp/graphite-main-exact-tuple-audit/fixtures/n4096",
+      "/tmp/graphite-go-exact-tuple-e348726c-evidence/bad-sid-fixtures",
+      "/tmp/graphite-go-exact-tuple-e348726c-evidence/bad-sid-fresh-4.json",
+      "4"
+    ],
+    "exitCode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/opt/homebrew/opt/openjdk@17/bin/java",
+      "-Xmx256m",
+      "-XX:ActiveProcessorCount=2",
+      "-cp",
+      "/tmp/graphite-go-exact-tuple-e348726c-evidence:/tmp/graphite-main-exact-tuple-audit:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "TupleBadSIDOracle",
+      "/tmp/graphite-main-exact-tuple-audit/fixtures/n4096",
+      "/tmp/graphite-go-exact-tuple-e348726c-evidence/bad-sid-fixtures",
+      "/tmp/graphite-go-exact-tuple-e348726c-evidence/bad-sid-fresh-5.json",
+      "5"
+    ],
+    "exitCode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/opt/homebrew/opt/openjdk@17/bin/java",
+      "-Xmx256m",
+      "-XX:ActiveProcessorCount=2",
+      "-cp",
+      "/tmp/graphite-go-exact-tuple-e348726c-evidence:/tmp/graphite-main-exact-tuple-audit:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "TupleBadSIDOracle",
+      "/tmp/graphite-main-exact-tuple-audit/fixtures/n4096",
+      "/tmp/graphite-go-exact-tuple-e348726c-evidence/bad-sid-fixtures",
+      "/tmp/graphite-go-exact-tuple-e348726c-evidence/bad-sid-fresh-6.json",
+      "6"
+    ],
+    "exitCode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/opt/homebrew/opt/openjdk@17/bin/java",
+      "-Xmx256m",
+      "-XX:ActiveProcessorCount=2",
+      "-cp",
+      "/tmp/graphite-go-exact-tuple-e348726c-evidence:/tmp/graphite-main-exact-tuple-audit:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "TupleBadSIDOracle",
+      "/tmp/graphite-main-exact-tuple-audit/fixtures/n4096",
+      "/tmp/graphite-go-exact-tuple-e348726c-evidence/bad-sid-fixtures",
+      "/tmp/graphite-go-exact-tuple-e348726c-evidence/bad-sid-fresh-7.json",
+      "7"
+    ],
+    "exitCode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/opt/homebrew/opt/openjdk@17/bin/java",
+      "-Xmx256m",
+      "-XX:ActiveProcessorCount=2",
+      "-cp",
+      "/tmp/graphite-go-exact-tuple-e348726c-evidence:/tmp/graphite-main-exact-tuple-audit:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "TupleBadSIDOracle",
+      "/tmp/graphite-main-exact-tuple-audit/fixtures/n4096",
+      "/tmp/graphite-go-exact-tuple-e348726c-evidence/bad-sid-fixtures",
+      "/tmp/graphite-go-exact-tuple-e348726c-evidence/bad-sid-fresh-8.json",
+      "8"
+    ],
+    "exitCode": 0,
+    "stdout": "",
+    "stderr": ""
+  }
+]

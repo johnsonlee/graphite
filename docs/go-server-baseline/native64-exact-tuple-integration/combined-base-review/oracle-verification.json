@@ -1,0 +1,811 @@
+{
+  "artifacts": [
+    {
+      "group": "indexed-native",
+      "file": "annotation-after-native.json",
+      "wholeEqual": true
+    },
+    {
+      "group": "indexed-native",
+      "file": "annotation-native.json",
+      "wholeEqual": true
+    },
+    {
+      "group": "indexed-native",
+      "file": "generic-fault-audit.json",
+      "wholeEqual": true
+    },
+    {
+      "group": "indexed-native",
+      "file": "late-native.json",
+      "wholeEqual": true
+    },
+    {
+      "group": "indexed-native",
+      "file": "mixed-native.json",
+      "wholeEqual": true
+    },
+    {
+      "group": "indexed-native",
+      "file": "primary-eligibility.json",
+      "wholeEqual": true
+    },
+    {
+      "group": "indexed-native",
+      "file": "primary-native.json",
+      "wholeEqual": true
+    },
+    {
+      "group": "indexed-native",
+      "file": "required-missing-identity-native.json",
+      "wholeEqual": true
+    },
+    {
+      "group": "indexed-native",
+      "file": "required-missing-index-native.json",
+      "wholeEqual": true
+    },
+    {
+      "group": "indexed-native",
+      "file": "required-native.json",
+      "wholeEqual": true
+    },
+    {
+      "group": "indexed-native",
+      "file": "source-pairs-eligibility.json",
+      "wholeEqual": true
+    },
+    {
+      "group": "indexed-native",
+      "file": "source-pairs-native.json",
+      "wholeEqual": true
+    },
+    {
+      "group": "indexed-native",
+      "file": "split-bad-callee-native.json",
+      "wholeEqual": true
+    },
+    {
+      "group": "indexed-native",
+      "file": "split-bad-count-native.json",
+      "wholeEqual": true
+    },
+    {
+      "group": "indexed-native",
+      "file": "split-bad-tag-native.json",
+      "wholeEqual": true
+    },
+    {
+      "group": "indexed-native",
+      "file": "split-clean-native.json",
+      "wholeEqual": true
+    },
+    {
+      "group": "indexed-native",
+      "file": "split-missing-index-native.json",
+      "wholeEqual": true
+    },
+    {
+      "group": "indexed-native",
+      "file": "supplementary-eligibility.json",
+      "wholeEqual": true
+    },
+    {
+      "group": "indexed-native",
+      "file": "supplementary-native.json",
+      "wholeEqual": true
+    },
+    {
+      "group": "ordinary-native",
+      "file": "annotation-after-classification.json",
+      "wholeEqual": true
+    },
+    {
+      "group": "ordinary-native",
+      "file": "annotation-after-native.json",
+      "wholeEqual": true
+    },
+    {
+      "group": "ordinary-native",
+      "file": "annotation-classification.json",
+      "wholeEqual": true
+    },
+    {
+      "group": "ordinary-native",
+      "file": "annotation-native.json",
+      "wholeEqual": true
+    },
+    {
+      "group": "ordinary-native",
+      "file": "cache-threshold-native.json",
+      "wholeEqual": true
+    },
+    {
+      "group": "ordinary-native",
+      "file": "dense-callee-sid-missing-native.json",
+      "wholeEqual": true
+    },
+    {
+      "group": "ordinary-native",
+      "file": "dense-callee-sid-native.json",
+      "wholeEqual": true
+    },
+    {
+      "group": "ordinary-native",
+      "file": "dense-clean-missing-native.json",
+      "wholeEqual": true
+    },
+    {
+      "group": "ordinary-native",
+      "file": "dense-clean-native.json",
+      "wholeEqual": true
+    },
+    {
+      "group": "ordinary-native",
+      "file": "dense-return-sid-missing-native.json",
+      "wholeEqual": true
+    },
+    {
+      "group": "ordinary-native",
+      "file": "dense-return-sid-native.json",
+      "wholeEqual": true
+    },
+    {
+      "group": "ordinary-native",
+      "file": "history-native.json",
+      "wholeEqual": true
+    },
+    {
+      "group": "ordinary-native",
+      "file": "mixed-classification.json",
+      "wholeEqual": true
+    },
+    {
+      "group": "ordinary-native",
+      "file": "mixed-native.json",
+      "wholeEqual": true
+    },
+    {
+      "group": "ordinary-native",
+      "file": "rolling-native.json",
+      "wholeEqual": false
+    },
+    {
+      "group": "ordinary-native",
+      "file": "wide-history-native.json",
+      "wholeEqual": true
+    }
+  ],
+  "all48RollingFullResponsesEqual": true,
+  "speculative40SourceStateDifferences": [
+    {
+      "path": [
+        9,
+        "targets",
+        0,
+        "after",
+        3,
+        "mappedView"
+      ],
+      "base": false,
+      "candidate": true
+    },
+    {
+      "path": [
+        9,
+        "targets",
+        0,
+        "after",
+        4,
+        "mappedView"
+      ],
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": [
+        9,
+        "targets",
+        0,
+        "after",
+        6,
+        "mappedView"
+      ],
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": [
+        9,
+        "targets",
+        0,
+        "after",
+        7,
+        "mappedView"
+      ],
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": [
+        9,
+        "targets",
+        1,
+        "after",
+        5,
+        "mappedView"
+      ],
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": [
+        9,
+        "targets",
+        1,
+        "after",
+        6,
+        "mappedView"
+      ],
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": [
+        9,
+        "targets",
+        1,
+        "after",
+        8,
+        "mappedView"
+      ],
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": [
+        9,
+        "targets",
+        1,
+        "before",
+        3,
+        "mappedView"
+      ],
+      "base": false,
+      "candidate": true
+    },
+    {
+      "path": [
+        9,
+        "targets",
+        1,
+        "before",
+        4,
+        "mappedView"
+      ],
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": [
+        9,
+        "targets",
+        1,
+        "before",
+        6,
+        "mappedView"
+      ],
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": [
+        9,
+        "targets",
+        1,
+        "before",
+        7,
+        "mappedView"
+      ],
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": [
+        9,
+        "targets",
+        2,
+        "before",
+        5,
+        "mappedView"
+      ],
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": [
+        9,
+        "targets",
+        2,
+        "before",
+        6,
+        "mappedView"
+      ],
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": [
+        9,
+        "targets",
+        2,
+        "before",
+        8,
+        "mappedView"
+      ],
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": [
+        10,
+        "targets",
+        0,
+        "after",
+        3,
+        "mappedView"
+      ],
+      "base": false,
+      "candidate": true
+    },
+    {
+      "path": [
+        10,
+        "targets",
+        0,
+        "after",
+        5,
+        "mappedView"
+      ],
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": [
+        10,
+        "targets",
+        1,
+        "before",
+        3,
+        "mappedView"
+      ],
+      "base": false,
+      "candidate": true
+    },
+    {
+      "path": [
+        10,
+        "targets",
+        1,
+        "before",
+        5,
+        "mappedView"
+      ],
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": [
+        11,
+        "targets",
+        0,
+        "after",
+        2,
+        "mappedView"
+      ],
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": [
+        11,
+        "targets",
+        0,
+        "after",
+        4,
+        "mappedView"
+      ],
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": [
+        11,
+        "targets",
+        0,
+        "after",
+        5,
+        "mappedView"
+      ],
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": [
+        11,
+        "targets",
+        0,
+        "after",
+        6,
+        "mappedView"
+      ],
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": [
+        11,
+        "targets",
+        0,
+        "after",
+        7,
+        "mappedView"
+      ],
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": [
+        11,
+        "targets",
+        1,
+        "after",
+        2,
+        "mappedView"
+      ],
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": [
+        11,
+        "targets",
+        1,
+        "after",
+        4,
+        "mappedView"
+      ],
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": [
+        11,
+        "targets",
+        1,
+        "after",
+        5,
+        "mappedView"
+      ],
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": [
+        11,
+        "targets",
+        1,
+        "after",
+        6,
+        "mappedView"
+      ],
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": [
+        11,
+        "targets",
+        1,
+        "after",
+        7,
+        "mappedView"
+      ],
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": [
+        11,
+        "targets",
+        1,
+        "before",
+        2,
+        "mappedView"
+      ],
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": [
+        11,
+        "targets",
+        1,
+        "before",
+        4,
+        "mappedView"
+      ],
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": [
+        11,
+        "targets",
+        1,
+        "before",
+        5,
+        "mappedView"
+      ],
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": [
+        11,
+        "targets",
+        1,
+        "before",
+        6,
+        "mappedView"
+      ],
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": [
+        11,
+        "targets",
+        1,
+        "before",
+        7,
+        "mappedView"
+      ],
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": [
+        11,
+        "targets",
+        2,
+        "after",
+        4,
+        "mappedView"
+      ],
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": [
+        11,
+        "targets",
+        2,
+        "after",
+        5,
+        "mappedView"
+      ],
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": [
+        11,
+        "targets",
+        2,
+        "after",
+        6,
+        "mappedView"
+      ],
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": [
+        11,
+        "targets",
+        2,
+        "after",
+        7,
+        "mappedView"
+      ],
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": [
+        11,
+        "targets",
+        2,
+        "before",
+        2,
+        "mappedView"
+      ],
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": [
+        11,
+        "targets",
+        2,
+        "before",
+        4,
+        "mappedView"
+      ],
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": [
+        11,
+        "targets",
+        2,
+        "before",
+        5,
+        "mappedView"
+      ],
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": [
+        11,
+        "targets",
+        2,
+        "before",
+        6,
+        "mappedView"
+      ],
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": [
+        11,
+        "targets",
+        2,
+        "before",
+        7,
+        "mappedView"
+      ],
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": [
+        12,
+        "targets",
+        0,
+        "after",
+        8,
+        "mappedView"
+      ],
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": [
+        12,
+        "targets",
+        1,
+        "before",
+        8,
+        "mappedView"
+      ],
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": [
+        13,
+        "targets",
+        0,
+        "after",
+        7,
+        "mappedView"
+      ],
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": [
+        13,
+        "targets",
+        0,
+        "after",
+        8,
+        "mappedView"
+      ],
+      "base": false,
+      "candidate": true
+    },
+    {
+      "path": [
+        13,
+        "targets",
+        1,
+        "after",
+        9,
+        "mappedView"
+      ],
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": [
+        13,
+        "targets",
+        1,
+        "before",
+        7,
+        "mappedView"
+      ],
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": [
+        13,
+        "targets",
+        1,
+        "before",
+        8,
+        "mappedView"
+      ],
+      "base": false,
+      "candidate": true
+    },
+    {
+      "path": [
+        13,
+        "targets",
+        2,
+        "after",
+        9,
+        "mappedView"
+      ],
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": [
+        13,
+        "targets",
+        2,
+        "after",
+        10,
+        "mappedView"
+      ],
+      "base": false,
+      "candidate": true
+    },
+    {
+      "path": [
+        13,
+        "targets",
+        2,
+        "before",
+        9,
+        "mappedView"
+      ],
+      "base": true,
+      "candidate": false
+    }
+  ],
+  "originalDenominator": 1048,
+  "fullEqual": 968,
+  "remainingDifferencesUnchanged": 80,
+  "genericFault432Unchanged": true,
+  "newTupleQueriesAndCacheAndStoreOracles": "asserted by full module tests"
+}

@@ -1,0 +1,46 @@
+{
+  "checkedAt": "2026-09-07T02:05:19.069671+00:00",
+  "authorFreeze": "/tmp/graphite-go-exact-tuple-e348726c-evidence/freeze",
+  "finalTree": "8976475a658130ac3184049e92afcafb746e44ea",
+  "effectiveBase": "e348726c51bc291bf6978b3ca78aa12525754042",
+  "patchSha256": "1cec41089f4e897c110822ff7c11bfb44bb2d3cfca7ea6cc398c3eefda98de59",
+  "productionFilesManifestSha256": "8e3a4dc1f13ebff25476708f539a126f3fe05c5ac0a11901e7eca388ff0dfc45",
+  "allSevenProductionFilesMatch": true,
+  "files": [
+    {
+      "path": "graphite-server/internal/query/indexed_distinct.go",
+      "sha256": "7dac3137908c8291fb32f06e0b1284c347a6afc0331ba611b722b4373e942ee8",
+      "snapshotEqualsFinal": true
+    },
+    {
+      "path": "graphite-server/internal/query/indexed_tuple.go",
+      "sha256": "879942530889a66c2626cdf8a335a28c4c57894382f63ac1d43deb52d0269736",
+      "snapshotEqualsFinal": true
+    },
+    {
+      "path": "graphite-server/internal/store/distinct_projection.go",
+      "sha256": "16aecc62a95195f1e8e4e9f02f38d88a0d254ac3d052560d082a90659e0bff4d",
+      "snapshotEqualsFinal": true
+    },
+    {
+      "path": "graphite-server/internal/store/projection_cache.go",
+      "sha256": "471854e1e62fb5b84bbacced302c409d19fafa717c2711de116f708bbc2d7164",
+      "snapshotEqualsFinal": true
+    },
+    {
+      "path": "graphite-server/internal/store/projection_persistence.go",
+      "sha256": "38237f08a74ba5001008ea9e82de070a7d65b11299c092940898db394cd523db",
+      "snapshotEqualsFinal": true
+    },
+    {
+      "path": "graphite-server/internal/store/projection_tuple.go",
+      "sha256": "774c58e036fbd32d44c677de7ade623252ad8acd0aa32d7a65c790ac74b699ce",
+      "snapshotEqualsFinal": true
+    },
+    {
+      "path": "graphite-server/internal/store/store.go",
+      "sha256": "ede0fda58efcd2cfb4a2c66976b5ad8f3abf914ad0b26419a5b5d1b34454646a",
+      "snapshotEqualsFinal": true
+    }
+  ]
+}

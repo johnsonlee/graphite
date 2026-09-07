@@ -1,0 +1,8 @@
+{
+  "providerEvidenceVerified": 353,
+  "independentFilesVerified": 10,
+  "deltaFiles": 91,
+  "differentFromAuthor": [
+    "graphite-server/internal/store/store.go"
+  ]
+}

@@ -1,0 +1,91 @@
+{
+  "allEightFullMainBodiesEqual": true,
+  "actualStates": {
+    "base": {
+      "wrapped-firstLastGraphBimodalClassPrefix": {
+        "retainedIndexes": 0,
+        "mappedViews": 0,
+        "actualTupleCapacity": 0
+      },
+      "wrapped-firstLastGraphBimodalClassPrefix-repeat": {
+        "retainedIndexes": 0,
+        "mappedViews": 0,
+        "actualTupleCapacity": 0
+      },
+      "global-wide-wrapped-case-insensitive-distinct-dense": {
+        "retainedIndexes": 0,
+        "mappedViews": 64,
+        "actualTupleCapacity": 0
+      },
+      "global-wide-wrapped-case-insensitive-distinct-dense-repeat": {
+        "retainedIndexes": 0,
+        "mappedViews": 64,
+        "actualTupleCapacity": 0
+      },
+      "global-wide-distribution-broad-all-64": {
+        "retainedIndexes": 0,
+        "mappedViews": 64,
+        "actualTupleCapacity": 0
+      },
+      "tuple-threshold255": {
+        "retainedIndexes": 0,
+        "mappedViews": 64,
+        "actualTupleCapacity": 0
+      },
+      "tuple-threshold256": {
+        "retainedIndexes": 0,
+        "mappedViews": 64,
+        "actualTupleCapacity": 0
+      },
+      "tuple-threshold256-repeat": {
+        "retainedIndexes": 0,
+        "mappedViews": 64,
+        "actualTupleCapacity": 0
+      }
+    },
+    "candidate": {
+      "wrapped-firstLastGraphBimodalClassPrefix": {
+        "retainedIndexes": 0,
+        "mappedViews": 0,
+        "actualTupleCapacity": 0
+      },
+      "wrapped-firstLastGraphBimodalClassPrefix-repeat": {
+        "retainedIndexes": 0,
+        "mappedViews": 0,
+        "actualTupleCapacity": 0
+      },
+      "global-wide-wrapped-case-insensitive-distinct-dense": {
+        "retainedIndexes": 0,
+        "mappedViews": 64,
+        "actualTupleCapacity": 0
+      },
+      "global-wide-wrapped-case-insensitive-distinct-dense-repeat": {
+        "retainedIndexes": 0,
+        "mappedViews": 64,
+        "actualTupleCapacity": 0
+      },
+      "global-wide-distribution-broad-all-64": {
+        "retainedIndexes": 0,
+        "mappedViews": 64,
+        "actualTupleCapacity": 0
+      },
+      "tuple-threshold255": {
+        "retainedIndexes": 0,
+        "mappedViews": 64,
+        "actualTupleCapacity": 0
+      },
+      "tuple-threshold256": {
+        "retainedIndexes": 0,
+        "mappedViews": 64,
+        "actualTupleCapacity": 0
+      },
+      "tuple-threshold256-repeat": {
+        "retainedIndexes": 0,
+        "mappedViews": 64,
+        "actualTupleCapacity": 0
+      }
+    }
+  },
+  "conclusion": "SourceCount>=40 with Limit below CallSite count selects ParallelRaw/mapped view. LIMIT256 alone does not exercise retained exact tuples. Keep as all64 correctness/control evidence, not tuple-construction performance evidence.",
+  "next": "Two query graphId routes of32 sources each over the same all64 catalog; each 255/256/repeat to trigger real retained tuple construction without overriding scheduler/config."
+}

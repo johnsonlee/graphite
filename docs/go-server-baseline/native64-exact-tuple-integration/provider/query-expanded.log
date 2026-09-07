@@ -1,0 +1,40 @@
+=== RUN   TestExactTupleMainCrossQuery
+=== RUN   TestExactTupleMainCrossQuery/0
+=== RUN   TestExactTupleMainCrossQuery/1
+=== RUN   TestExactTupleMainCrossQuery/2
+=== RUN   TestExactTupleMainCrossQuery/3
+--- PASS: TestExactTupleMainCrossQuery (0.14s)
+    --- PASS: TestExactTupleMainCrossQuery/0 (0.05s)
+    --- PASS: TestExactTupleMainCrossQuery/1 (0.03s)
+    --- PASS: TestExactTupleMainCrossQuery/2 (0.03s)
+    --- PASS: TestExactTupleMainCrossQuery/3 (0.03s)
+=== RUN   TestExactTupleProjectionMain
+=== RUN   TestExactTupleProjectionMain/0
+=== RUN   TestExactTupleProjectionMain/1
+=== RUN   TestExactTupleProjectionMain/2
+=== RUN   TestExactTupleProjectionMain/3
+=== RUN   TestExactTupleProjectionMain/4
+=== RUN   TestExactTupleProjectionMain/5
+=== RUN   TestExactTupleProjectionMain/6
+=== RUN   TestExactTupleProjectionMain/7
+=== RUN   TestExactTupleProjectionMain/8
+=== RUN   TestExactTupleProjectionMain/9
+=== RUN   TestExactTupleProjectionMain/10
+=== RUN   TestExactTupleProjectionMain/11
+--- PASS: TestExactTupleProjectionMain (0.45s)
+    --- PASS: TestExactTupleProjectionMain/0 (0.05s)
+    --- PASS: TestExactTupleProjectionMain/1 (0.04s)
+    --- PASS: TestExactTupleProjectionMain/2 (0.05s)
+    --- PASS: TestExactTupleProjectionMain/3 (0.04s)
+    --- PASS: TestExactTupleProjectionMain/4 (0.04s)
+    --- PASS: TestExactTupleProjectionMain/5 (0.03s)
+    --- PASS: TestExactTupleProjectionMain/6 (0.03s)
+    --- PASS: TestExactTupleProjectionMain/7 (0.03s)
+    --- PASS: TestExactTupleProjectionMain/8 (0.03s)
+    --- PASS: TestExactTupleProjectionMain/9 (0.03s)
+    --- PASS: TestExactTupleProjectionMain/10 (0.03s)
+    --- PASS: TestExactTupleProjectionMain/11 (0.03s)
+=== RUN   TestExactTupleOrdinaryCacheThresholdMain
+--- PASS: TestExactTupleOrdinaryCacheThresholdMain (0.02s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/query	0.945s

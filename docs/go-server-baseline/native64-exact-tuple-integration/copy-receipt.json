@@ -1,0 +1,28 @@
+{
+  "provider": {
+    "source": "/tmp/graphite-go-exact-tuple-e348726c-evidence",
+    "copiedFiles": 350,
+    "verifiedExternalCompiledFiles": {
+      "TupleBadSIDOracle.class": "cd7a5ea5f33f05098ee9c4c86b7a2055ef158cad324ed7862c1c4598772ccf00",
+      "TupleProjectionOracle.class": "b782ebb42e02fd4f01035552da268c117f449850b18b03116ab644a69b9d5da6",
+      "TupleCacheOracle.class": "b8ca2deec7d6bf908a2d71c18c0af37d444e67b25d1f6cd1e7ee153685d0e9f5",
+      "TupleHashOracle.class": "9c77089b1fb7163b0859ccd319c6e95fe8deabcadeedc6d02a14f42ffd8cf82f"
+    }
+  },
+  "independent": {
+    "source": "/tmp/graphite-exact-tuple-independent-review",
+    "copiedFiles": 11,
+    "scope": "All independent review manifest entries and manifest itself. Full duplicate module is reconstructible from pinned base+author patch and snapshot.json; only the independent additional test is retained under module/.",
+    "allManifestEntriesVerified": true
+  },
+  "ordinary-base-review": {
+    "source": "/tmp/graphite-tuple-root-review-082a4736",
+    "copiedFiles": 72,
+    "verifiedExternalCompiledFiles": {}
+  },
+  "combined-base-review": {
+    "source": "/tmp/graphite-tuple-sync-root-review-082a4736",
+    "copiedFiles": 73,
+    "verifiedExternalCompiledFiles": {}
+  }
+}

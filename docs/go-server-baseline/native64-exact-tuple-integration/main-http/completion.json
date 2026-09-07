@@ -1,0 +1,8 @@
+{
+  "complete": true,
+  "cases": 8,
+  "oldFiveFullBodiesEqual": true,
+  "newThresholdBodies": 3,
+  "serverExited": true,
+  "forcedKill": false
+}

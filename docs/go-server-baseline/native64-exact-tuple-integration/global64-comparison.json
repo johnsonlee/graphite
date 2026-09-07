@@ -1,0 +1,145 @@
+{
+  "queries": {
+    "wrapped-firstLastGraphBimodalClassPrefix": {
+      "base": {
+        "seconds": 10.06363,
+        "allocationBytes": 1837237624,
+        "cpuSeconds": 55.446588999999996,
+        "numGC": 0,
+        "fullMainOutputEqual": true
+      },
+      "candidate": {
+        "seconds": 10.112451959,
+        "allocationBytes": 1837226680,
+        "cpuSeconds": 55.653032,
+        "numGC": 0,
+        "fullMainOutputEqual": true
+      }
+    },
+    "wrapped-firstLastGraphBimodalClassPrefix-repeat": {
+      "base": {
+        "seconds": 2.188870625,
+        "allocationBytes": 1054269960,
+        "cpuSeconds": 14.620849000000003,
+        "numGC": 0,
+        "fullMainOutputEqual": true
+      },
+      "candidate": {
+        "seconds": 2.173195083,
+        "allocationBytes": 1054275768,
+        "cpuSeconds": 14.47793700000001,
+        "numGC": 0,
+        "fullMainOutputEqual": true
+      }
+    },
+    "global-wide-wrapped-case-insensitive-distinct-dense": {
+      "base": {
+        "seconds": 4.366229875,
+        "allocationBytes": 5804037840,
+        "cpuSeconds": 20.760118999999975,
+        "numGC": 0,
+        "fullMainOutputEqual": true
+      },
+      "candidate": {
+        "seconds": 4.157489334,
+        "allocationBytes": 5804021896,
+        "cpuSeconds": 19.539249000000005,
+        "numGC": 0,
+        "fullMainOutputEqual": true
+      }
+    },
+    "global-wide-wrapped-case-insensitive-distinct-dense-repeat": {
+      "base": {
+        "seconds": 4.24689875,
+        "allocationBytes": 367935112,
+        "cpuSeconds": 19.741141,
+        "numGC": 0,
+        "fullMainOutputEqual": true
+      },
+      "candidate": {
+        "seconds": 4.379780209,
+        "allocationBytes": 367946472,
+        "cpuSeconds": 20.125333000000012,
+        "numGC": 0,
+        "fullMainOutputEqual": true
+      }
+    },
+    "global-wide-distribution-broad-all-64": {
+      "base": {
+        "seconds": 0.001819375,
+        "allocationBytes": 1631776,
+        "cpuSeconds": 0.0018529999999934432,
+        "numGC": 0,
+        "fullMainOutputEqual": true
+      },
+      "candidate": {
+        "seconds": 0.001800333,
+        "allocationBytes": 1631568,
+        "cpuSeconds": 0.0018339999999756884,
+        "numGC": 0,
+        "fullMainOutputEqual": true
+      }
+    },
+    "tuple-threshold255": {
+      "base": {
+        "seconds": 4.117921416,
+        "allocationBytes": 384876584,
+        "cpuSeconds": 19.156707999999988,
+        "numGC": 0,
+        "fullMainOutputEqual": true
+      },
+      "candidate": {
+        "seconds": 4.150347916,
+        "allocationBytes": 384867448,
+        "cpuSeconds": 19.322254000000008,
+        "numGC": 0,
+        "fullMainOutputEqual": true
+      }
+    },
+    "tuple-threshold256": {
+      "base": {
+        "seconds": 4.120411833,
+        "allocationBytes": 385157984,
+        "cpuSeconds": 19.172301000000004,
+        "numGC": 0,
+        "fullMainOutputEqual": true
+      },
+      "candidate": {
+        "seconds": 4.10847375,
+        "allocationBytes": 385149456,
+        "cpuSeconds": 19.03654099999997,
+        "numGC": 0,
+        "fullMainOutputEqual": true
+      }
+    },
+    "tuple-threshold256-repeat": {
+      "base": {
+        "seconds": 4.184118833,
+        "allocationBytes": 385147512,
+        "cpuSeconds": 19.454889999999992,
+        "numGC": 0,
+        "fullMainOutputEqual": true
+      },
+      "candidate": {
+        "seconds": 4.12073875,
+        "allocationBytes": 385149912,
+        "cpuSeconds": 19.182634000000032,
+        "numGC": 0,
+        "fullMainOutputEqual": true
+      }
+    }
+  },
+  "verification": {
+    "base": {
+      "sourceFilesUnchanged": 2189,
+      "binarySHA256": "bdcc99d82b1dc4c43375d313ecccbbd4e15f71e2d5aeef5efb8078cc467a0caf",
+      "exitCode": 0
+    },
+    "candidate": {
+      "sourceFilesUnchanged": 2274,
+      "binarySHA256": "d85df22104d27d059dd43334a71d943d5b22bb4894c26abc95526f10e22a6d3e",
+      "exitCode": 0
+    }
+  },
+  "scope": "Global64 correctness/controls only: actual tuple capacities remain zero. Not tuple-construction performance evidence."
+}

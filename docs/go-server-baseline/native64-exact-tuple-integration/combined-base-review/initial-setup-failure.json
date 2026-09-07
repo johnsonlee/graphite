@@ -1,0 +1,4 @@
+{
+  "reason": "Worktree add returned live session37094; dependent apply was incorrectly attempted before checkout terminal and hit index.lock. No patch applied. Subsequent test wrapper lacked source.json and did not start tests. Original checkout session subsequently returned exit0; clean status verified before retry.",
+  "productionOrTestChangesToAccommodateFailure": false
+}

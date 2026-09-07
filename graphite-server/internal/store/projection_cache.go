@@ -155,6 +155,9 @@ func (i *DistinctStringIndex) ProjectionPlannerBytes(ctx context.Context) (int64
 		}
 	}
 	if i.ordinary != nil {
+		if table := i.ordinary.exactTuple; table != nil {
+			bytes += 160 + 12*int64(len(table.nodes))
+		}
 		for _, cache := range i.ordinary.caches {
 			bytes += cache.bytes
 		}

@@ -1,0 +1,30 @@
+{
+  "decision": "Keep functional tuple construction with explicit first-construction cost",
+  "base": "06321518",
+  "sourceAndFixtureFilesEqualFullModuleTestedCandidate": 2271,
+  "fullModuleRaceVetPassed": true,
+  "originalCorpus": {
+    "total": 1048,
+    "fullEqual": 968,
+    "remainingUnchanged": 80
+  },
+  "global64MainBodiesPerRuntime": 8,
+  "global64DidNotTriggerTuple": true,
+  "routedMainBodiesPerRuntime": 6,
+  "routedActualTableCounts": [
+    0,
+    31,
+    62
+  ],
+  "sourceRoutingCoversAll64Graphs": true,
+  "shippingHTTP200FullTypedBodiesEqual": 56,
+  "shippingPhaseCounts": [
+    8,
+    6,
+    42
+  ],
+  "allThreeServersExitedAndPortsFree": true,
+  "allOriginalAndCloneGraphFilesUnchanged": true,
+  "shippingBinarySHA256": "42b489a6a495aa4e96af3ed110638d177fc62588a2980c0804cfcac870e88392",
+  "fullGoalEstablished": false
+}

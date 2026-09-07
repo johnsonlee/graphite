@@ -1,0 +1,26 @@
+[
+  {
+    "name": "base",
+    "command": [
+      "python3",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-exact-tuple-integration/run-profile.py",
+      "--worktree",
+      "/tmp/graphite-go-tuple-base-06321518",
+      "--out",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-exact-tuple-integration/base"
+    ],
+    "exitCode": 0
+  },
+  {
+    "name": "candidate",
+    "command": [
+      "python3",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-exact-tuple-integration/run-profile.py",
+      "--worktree",
+      "/tmp/graphite-go-tuple-root-06321518",
+      "--out",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-exact-tuple-integration/candidate"
+    ],
+    "exitCode": 0
+  }
+]

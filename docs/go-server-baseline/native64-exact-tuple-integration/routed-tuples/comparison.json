@@ -1,0 +1,137 @@
+{
+  "queries": {
+    "first32-tuple-255": {
+      "base": {
+        "seconds": 2.7073745000000002,
+        "allocationBytes": 2254876408,
+        "cpuSeconds": 12.747556999999999,
+        "numGC": 0,
+        "fullMainOutputEqual": true,
+        "actualTupleTablesAfter": 0,
+        "actualTupleCapacityAfter": 0
+      },
+      "candidate": {
+        "seconds": 2.765019292,
+        "allocationBytes": 2254871680,
+        "cpuSeconds": 13.104999000000005,
+        "numGC": 0,
+        "fullMainOutputEqual": true,
+        "actualTupleTablesAfter": 0,
+        "actualTupleCapacityAfter": 0
+      }
+    },
+    "first32-tuple-256": {
+      "base": {
+        "seconds": 0.12120075,
+        "allocationBytes": 76895128,
+        "cpuSeconds": 0.5776000000000003,
+        "numGC": 0,
+        "fullMainOutputEqual": true,
+        "actualTupleTablesAfter": 0,
+        "actualTupleCapacityAfter": 0
+      },
+      "candidate": {
+        "seconds": 0.649740041,
+        "allocationBytes": 263266016,
+        "cpuSeconds": 3.084234000000001,
+        "numGC": 0,
+        "fullMainOutputEqual": true,
+        "actualTupleTablesAfter": 31,
+        "actualTupleCapacityAfter": 8126464
+      }
+    },
+    "first32-tuple-256-repeat": {
+      "base": {
+        "seconds": 0.120412959,
+        "allocationBytes": 76887056,
+        "cpuSeconds": 0.607283000000002,
+        "numGC": 0,
+        "fullMainOutputEqual": true,
+        "actualTupleTablesAfter": 0,
+        "actualTupleCapacityAfter": 0
+      },
+      "candidate": {
+        "seconds": 0.112752916,
+        "allocationBytes": 48153288,
+        "cpuSeconds": 0.5357540000000056,
+        "numGC": 0,
+        "fullMainOutputEqual": true,
+        "actualTupleTablesAfter": 31,
+        "actualTupleCapacityAfter": 8126464
+      }
+    },
+    "last32-tuple-255": {
+      "base": {
+        "seconds": 1.736962917,
+        "allocationBytes": 3449741496,
+        "cpuSeconds": 8.371591999999996,
+        "numGC": 0,
+        "fullMainOutputEqual": true,
+        "actualTupleTablesAfter": 0,
+        "actualTupleCapacityAfter": 0
+      },
+      "candidate": {
+        "seconds": 1.736216458,
+        "allocationBytes": 3449737648,
+        "cpuSeconds": 8.330629999999989,
+        "numGC": 0,
+        "fullMainOutputEqual": true,
+        "actualTupleTablesAfter": 31,
+        "actualTupleCapacityAfter": 8126464
+      }
+    },
+    "last32-tuple-256": {
+      "base": {
+        "seconds": 0.086001625,
+        "allocationBytes": 81912728,
+        "cpuSeconds": 0.4173050000000007,
+        "numGC": 0,
+        "fullMainOutputEqual": true,
+        "actualTupleTablesAfter": 0,
+        "actualTupleCapacityAfter": 0
+      },
+      "candidate": {
+        "seconds": 0.417642084,
+        "allocationBytes": 185396976,
+        "cpuSeconds": 1.9481329999999897,
+        "numGC": 0,
+        "fullMainOutputEqual": true,
+        "actualTupleTablesAfter": 62,
+        "actualTupleCapacityAfter": 12713984
+      }
+    },
+    "last32-tuple-256-repeat": {
+      "base": {
+        "seconds": 0.083148292,
+        "allocationBytes": 81915720,
+        "cpuSeconds": 0.4225619999999992,
+        "numGC": 0,
+        "fullMainOutputEqual": true,
+        "actualTupleTablesAfter": 0,
+        "actualTupleCapacityAfter": 0
+      },
+      "candidate": {
+        "seconds": 0.073162291,
+        "allocationBytes": 47795600,
+        "cpuSeconds": 0.3535490000000161,
+        "numGC": 0,
+        "fullMainOutputEqual": true,
+        "actualTupleTablesAfter": 62,
+        "actualTupleCapacityAfter": 12713984
+      }
+    }
+  },
+  "verification": {
+    "base": {
+      "sourceFilesUnchanged": 2189,
+      "binarySHA256": "bdcc99d82b1dc4c43375d313ecccbbd4e15f71e2d5aeef5efb8078cc467a0caf",
+      "exitCode": 0
+    },
+    "candidate": {
+      "sourceFilesUnchanged": 2274,
+      "binarySHA256": "d85df22104d27d059dd43334a71d943d5b22bb4894c26abc95526f10e22a6d3e",
+      "exitCode": 0
+    }
+  },
+  "scope": "Same complete64 real graph catalog; two explicit graphId routes of32 sources, six ordered queries. Actual state reader outside counters proves construction. Single diagnostics, not HTTP/P95 or main-relative latency acceptance."
+}

@@ -1,0 +1,57 @@
+{
+  "createdAt": "2026-09-07T02:05:19.070657+00:00",
+  "verdict": "No new blocking defect found in bounded source and independent correctness review; explicit parity gaps retained",
+  "authorSevenProductionHashesMatch": true,
+  "files": [
+    {
+      "path": "README.md",
+      "sha256": "7bf9c9e3f5fe51002a00809f75cdb00ce1a57219b6ba69df513e39ad2ed0fb6a",
+      "size": 6582
+    },
+    {
+      "path": "author-freeze-check.json",
+      "sha256": "dc06784fb359f63752c446016871e63e49de7881a48ed6f21e197f10dae62e75",
+      "size": 1884
+    },
+    {
+      "path": "commands.json",
+      "sha256": "62c74faf76cec14308f31d1744d3b1aa1fb37d42d72390e2bd74895e98e53928",
+      "size": 877
+    },
+    {
+      "path": "independent-race.log",
+      "sha256": "58937b6c94db9679bd30514d6c63d343a140035f96ca569f17e1ea3ba5f9ba77",
+      "size": 74
+    },
+    {
+      "path": "production-source-check.json",
+      "sha256": "4f3ed205617c98b2080c4cb392020d047f6342b0729c2c22dbad83bf15b3e1e4",
+      "size": 20861
+    },
+    {
+      "path": "query-race.log",
+      "sha256": "3401fe20e192013467ed758b98cacc76025496ac2de02418c96b3b54cba8bd8b",
+      "size": 75
+    },
+    {
+      "path": "snapshot.json",
+      "sha256": "630620eab0b99d405309f030e884c2124b60efd602a7fe4e400fb7e21817dc54",
+      "size": 441411
+    },
+    {
+      "path": "store-oracle-race.log",
+      "sha256": "88442249855047f383dcadc5f5424678362c7a350b51e42a492389ab695a9839",
+      "size": 74
+    },
+    {
+      "path": "vet.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 0
+    },
+    {
+      "path": "module/internal/store/projection_tuple_review_test.go",
+      "sha256": "07d9aa15ff16b6349ef35f34bcd9a9d4cdf701bb07dd88cc7c8bec082560909b",
+      "size": 4255
+    }
+  ]
+}

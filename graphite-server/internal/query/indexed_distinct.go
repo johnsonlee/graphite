@@ -529,6 +529,10 @@ func (e evaluator) distinctSourceHits(source Graph, plan *indexedDistinctPlan, s
 		for _, row := range e.distinctRawRows(source, index, plan, selectedKeys, selectedRows) {
 			hits[distinctVisibleKey(row.row)] = true
 		}
+	} else if exact, handled := e.distinctExactTupleHits(source, index, plan, selectedRows); handled {
+		for key := range exact {
+			hits[key] = true
+		}
 	} else {
 		for _, target := range selectedRows {
 			e.check()
