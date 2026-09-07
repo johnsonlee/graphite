@@ -1,0 +1,13 @@
+=== RUN   TestWantedFirstSIDAndExactWTF8
+--- PASS: TestWantedFirstSIDAndExactWTF8 (0.00s)
+=== RUN   TestOnlyRequestedKeysAndSourceLocalIDs
+--- PASS: TestOnlyRequestedKeysAndSourceLocalIDs (0.00s)
+=== RUN   TestAliasedTargetsAndPropertyOrder
+--- PASS: TestAliasedTargetsAndPropertyOrder (0.00s)
+=== RUN   TestEagerBatchCanMaskEarlierPostingsError
+    sid_test.go:175: old=bad first Postings; eager-before-Postings=context canceled; lazy-at-original-lookup=bad first Postings
+--- PASS: TestEagerBatchCanMaskEarlierPostingsError (0.00s)
+=== RUN   TestCachedLookupsStillObserveCancellation
+--- PASS: TestCachedLookupsStillObserveCancellation (0.00s)
+PASS
+ok  	graphite-selected-sid-audit	1.455s

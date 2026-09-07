@@ -1,0 +1,16 @@
+=== RUN   TestDistinctTargetStringsFirstSIDWTF8AndWantedOnly
+--- PASS: TestDistinctTargetStringsFirstSIDWTF8AndWantedOnly (0.00s)
+=== RUN   TestDistinctTargetStringsAliasesNullAndSourceLocality
+--- PASS: TestDistinctTargetStringsAliasesNullAndSourceLocality (0.00s)
+=== RUN   TestDistinctTargetStringsCachedAndMissingCancellation
+--- PASS: TestDistinctTargetStringsCachedAndMissingCancellation (0.00s)
+=== RUN   TestDistinctTargetStringsEmptyTableAndNoRawColumns
+--- PASS: TestDistinctTargetStringsEmptyTableAndNoRawColumns (0.00s)
+=== RUN   TestDistinctTargetStringsLateLookupDoesNotPreemptActualPostingsError
+    distinct_target_strings_integration_test.go:160: mask0: first Postings=store is closed; later lookup=context canceled
+    distinct_target_strings_integration_test.go:160: mask1023: first Postings=store is closed; later lookup=context canceled
+--- PASS: TestDistinctTargetStringsLateLookupDoesNotPreemptActualPostingsError (0.00s)
+=== RUN   TestDistinctTargetStringsPollingContinuesAcrossForwardCursor
+--- PASS: TestDistinctTargetStringsPollingContinuesAcrossForwardCursor (0.00s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/query	1.281s

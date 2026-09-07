@@ -1,0 +1,87 @@
+{
+  "status": "validation complete; candidate superseded by root requested main binary-search direction; no performance run",
+  "base": "eebec091ae34bbfa9656d730b8f07ddc34967136",
+  "sourceFiles": {
+    "graphite-server/internal/query/indexed_distinct.go": "0dc864503b713d6e7c3b2bca1f97fe095cfe598dd231af6872f661d27eec0d30",
+    "graphite-server/internal/query/distinct_target_strings.go": "8b3895930c6b484329d3afe268dab52b21ad8200551e7de53a77946fe12a2d5b",
+    "graphite-server/internal/query/distinct_target_strings_integration_test.go": "ab91aa0cd5e8e435b173da2ae4089f979654aa0cc6f976b6ddbc4275fcbe388d"
+  },
+  "sourceOwnership": "root two production files remained read-only; storage agent added only the integration test and this evidence directory",
+  "validation": {
+    "targetedRaceTests": 6,
+    "moduleRace": true,
+    "moduleVet": true,
+    "completeOracleFilesCompared": 17,
+    "oracleComparisons": [
+      {
+        "file": "annotation-after-native.json",
+        "completeJSONEqual": true
+      },
+      {
+        "file": "annotation-native.json",
+        "completeJSONEqual": true
+      },
+      {
+        "file": "late-native.json",
+        "completeJSONEqual": true
+      },
+      {
+        "file": "mixed-native.json",
+        "completeJSONEqual": true
+      },
+      {
+        "file": "primary-eligibility.json",
+        "completeJSONEqual": true
+      },
+      {
+        "file": "primary-native.json",
+        "completeJSONEqual": true
+      },
+      {
+        "file": "required-missing-identity-native.json",
+        "completeJSONEqual": true
+      },
+      {
+        "file": "required-missing-index-native.json",
+        "completeJSONEqual": true
+      },
+      {
+        "file": "required-native.json",
+        "completeJSONEqual": true
+      },
+      {
+        "file": "source-pairs-native.json",
+        "completeJSONEqual": true
+      },
+      {
+        "file": "split-bad-callee-native.json",
+        "completeJSONEqual": true
+      },
+      {
+        "file": "split-bad-count-native.json",
+        "completeJSONEqual": true
+      },
+      {
+        "file": "split-bad-tag-native.json",
+        "completeJSONEqual": true
+      },
+      {
+        "file": "split-clean-native.json",
+        "completeJSONEqual": true
+      },
+      {
+        "file": "split-missing-index-native.json",
+        "completeJSONEqual": true
+      },
+      {
+        "file": "supplementary-eligibility.json",
+        "completeJSONEqual": true
+      },
+      {
+        "file": "supplementary-native.json",
+        "completeJSONEqual": true
+      }
+    ]
+  },
+  "scope": "Preserves existing Go first-linear lookup, including its already documented main duplicate/unsorted difference; no claim that all existing1048 oracle pairs match main."
+}

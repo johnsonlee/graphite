@@ -278,3 +278,25 @@ Raw sampled and non-CPU-sampled controls are respectively in
 `docs/go-server-baseline/native64-distinct-profile-f9dc0aac/` and
 `docs/go-server-baseline/native64-distinct-no-cpu-profile/`. Neither supports
 completion of the requested 10x main-relative P95 goal.
+
+
+## 2026-09-07 — Attempt 9: lazy selected-string SID cursor (rejected before measurement)
+
+Hypothesis: replace repeated target/property full-table searches with one lazy
+per-source cursor, retaining only wanted strings and preserving first-SID lookup.
+The candidate changed two lookup sites plus a helper, but no production changes
+from this attempt were integrated.
+
+| Item | Evidence / status |
+|---|---|
+| Base / candidate | `eebec091`; isolated `/tmp/graphite-go-selected-sid-eebec091`; rejected source/patch and hashes retained |
+| Real fixture motivating work | All64 `/tmp/pr113-exp037-fixture.nXn4fg`; prior `bb961cd8`→`f9dc0aac` diagnostic preserved separately |
+| Correctness | Six actual-helper race tests; independent whole-module race/vet; all17 original oracle JSON files unchanged, preserving739/1048 overall matches |
+| New main evidence | Actual pinned-main loaded StringTable.findId returns midpoint SID1 for[a,a,a] and misses a in[b,a]; current Go first-match and the lazy candidate differ |
+| Latency / CPU / memory | Not measured; no synthetic performance substitute and no new64 run |
+| Decision | Reject before performance testing. A direct port of main's loaded-table UTF16 binary search can remove the scan and resolve these accepted-table lookup differences. It is a separate hypothesis |
+
+`docs/go-server-baseline/selected-sid-lazy-attempt9/` preserves the design,
+actual main tables/results, unintegrated candidate and completed independent
+checks. The initial design remains explicitly about the superseded first-SID
+contract; it is not relabelled as evidence for the binary-search replacement.

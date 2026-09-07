@@ -1,0 +1,25 @@
+{
+  "goSourceRevision": "f9dc0aac1c1026797cc749f6ba8901ca6a0e0267",
+  "goSourceHashes": {
+    "graphite-server/internal/query/indexed_distinct.go": "505ea902f587992eb17866ef815d246243c9b36c68a85ea5433e24fac2a1ab08",
+    "graphite-server/internal/query/indexed_distinct_plan.go": "37be958d3659f21cf57fcd4017b3f3cddd73f652171266adb8d7d2a32efe4155",
+    "graphite-server/internal/query/eval.go": "e754d78ef80945dcdcac904bc15647939c0fda1566522be1922ae08ad1d96717",
+    "graphite-server/internal/store/distinct_projection.go": "4d7d7978131d1643e94ab99a8d24b8283f189421c6de6faa728746d98ba80279"
+  },
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "mainJar": "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+  "mainJarSHA256": "91c3a1d154ca96004c55df195d9f752e077cab3e33ca1570b2c88b872d9bc34d",
+  "mainSourceHashes": {
+    "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/StringTable.kt": "d7dd6b85cce88f9202ce1e2b4087a0e6ac07211d1e52758f4964be48f2df18a8",
+    "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndex.kt": "c1c4f07d818a4a25f712ad25094b30723fa25fa7531f424b2391bba792938a77"
+  },
+  "goVersion": "go version go1.22.0 darwin/arm64",
+  "results": {
+    "goModelRace": true,
+    "goModelTests": 5,
+    "mainActualMethodCases": 3,
+    "mainAssertions": true
+  },
+  "productionEdits": false,
+  "performanceRun": false
+}

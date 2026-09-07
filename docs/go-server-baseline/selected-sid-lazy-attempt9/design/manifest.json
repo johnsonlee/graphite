@@ -1,0 +1,16 @@
+{
+  "files": {
+    "FindIdOracle.class": "1ef4ebe2aa98770f58338288b917501573be8fa33a3ad8552c3e8ce038ecb00b",
+    "FindIdOracle.java": "c17bf11e2c84c38abe492e4f0f8d41098a0105b9e2c973a2d8bf693983d273e5",
+    "README.md": "1be82d6c8f92611217349480c3c5e9efa5e0e9ff5ddd31df8c06be2a325b7442",
+    "correctness.log": "8364ac3b1e31a8e1a9629ac0418bbc519443aff38e4a2b36d49f59807390e5e0",
+    "go.mod": "fd4f417b8ae3a9511a58b3f3fd5c4000d4ad7f4b701aad802ec535d32c30c13a",
+    "identity.json": "27f687c7d1a459bbd167e57f7be4758edda42baf73cc2799f65774687db7443c",
+    "main-findid.jsonl": "7ca02c2b342cb63c53d41e9b4cf00d30fe3591d135da6ae87e57e7ae48dc6c85",
+    "main-findid.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "sid_test.go": "a041878f9638e207d4d291b1f1c94058e285ad4410e185a205a2b306b871ab37",
+    "table-0/graph.strings": "84d5c1797880f6ca58457d857334c33ab9dba4af6b2072e3bd05a1d5bb7d961c",
+    "table-1/graph.strings": "67a38a463328a0f5e07f096fa947b83f9cc982a423876dc711f02eac6da47ac2",
+    "table-2/graph.strings": "bf667a8afe15287a697523cc5c3d9edf990dc5b81b59545ad84f42b16ca60ec5"
+  }
+}

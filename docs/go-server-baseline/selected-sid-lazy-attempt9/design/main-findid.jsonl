@@ -1,0 +1,3 @@
+{"case":0,"hits":[{"nativeFirstSID":0,"text":"a","mainSID":1},{"nativeFirstSID":0,"text":"a","mainSID":1},{"nativeFirstSID":0,"text":"a","mainSID":1}],"strings":["a","a","a"]}
+{"case":1,"hits":[{"nativeFirstSID":0,"text":"b","mainSID":0},{"nativeFirstSID":1,"text":"a","mainSID":-1}],"strings":["b","a"]}
+{"case":2,"hits":[{"nativeFirstSID":0,"text":"","mainSID":0},{"nativeFirstSID":1,"text":"?","mainSID":1},{"nativeFirstSID":2,"text":"a","mainSID":2},{"nativeFirstSID":3,"text":"\ud800","mainSID":3},{"nativeFirstSID":4,"text":"\ud83d\ude00","mainSID":4},{"nativeFirstSID":5,"text":"\ue000","mainSID":5}],"strings":["","?","a","\ud800","\ud83d\ude00","\ue000"]}

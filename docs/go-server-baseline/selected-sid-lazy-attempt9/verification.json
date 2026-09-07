@@ -1,0 +1,12 @@
+{
+  "base": "eebec091ae34bbfa9656d730b8f07ddc34967136",
+  "reviewManifestSHA256": "656ef8e1aa57b9bffa4087ca752446054ba1dc78ec1c2d46fb4ca028e9ed0385",
+  "designManifestSHA256": "a062a54b55a344ab5336b368fde0b84bc2615cdf1dabe3ffdc878ccdfd31b8e9",
+  "allFrozenFilesVerified": true,
+  "omittedBuildArtifact": {
+    "path": "/tmp/graphite-selected-sid-audit/FindIdOracle.class",
+    "sha256": "1ef4ebe2aa98770f58338288b917501573be8fa33a3ad8552c3e8ce038ecb00b"
+  },
+  "productionIntegrated": false,
+  "real64PerformanceRun": false
+}

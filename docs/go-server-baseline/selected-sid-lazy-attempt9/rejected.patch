@@ -1,0 +1,54 @@
+diff --git a/graphite-server/internal/query/indexed_distinct.go b/graphite-server/internal/query/indexed_distinct.go
+index fa4013af..82d5c752 100644
+--- a/graphite-server/internal/query/indexed_distinct.go
++++ b/graphite-server/internal/query/indexed_distinct.go
+@@ -513,6 +513,7 @@ func (e evaluator) distinctSourceHits(source Graph, plan *indexedDistinctPlan, s
+ 			hits[distinctVisibleKey(row.row)] = true
+ 		}
+ 	} else {
++		strings := newDistinctTargetStrings(source.Store.Strings, plan, selectedRows, e.check, 1023)
+ 		for _, target := range selectedRows {
+ 			e.check()
+ 			targetIDs := make([]int32, len(plan.properties))
+@@ -541,16 +542,7 @@ func (e evaluator) distinctSourceHits(source Graph, plan *indexedDistinctPlan, s
+ 					valid = false
+ 					break
+ 				}
+-				sid := int32(-1)
+-				for j, s := range source.Store.Strings {
+-					if j&1023 == 0 {
+-						e.check()
+-					}
+-					if s == text {
+-						sid = int32(j)
+-						break
+-					}
+-				}
++				sid := strings.find(text)
+ 				if sid < 0 {
+ 					valid = false
+ 					break
+@@ -767,6 +759,7 @@ func (e evaluator) distinctRawRows(source Graph, index *store.DistinctStringInde
+ 	var selectedIDs map[string]bool
+ 	if selected != nil {
+ 		selectedIDs = map[string]bool{}
++		strings := newDistinctTargetStrings(source.Store.Strings, plan, targets, e.check, 0)
+ 		for _, target := range targets {
+ 			values := make([]any, len(plan.properties))
+ 			valid := true
+@@ -787,14 +780,7 @@ func (e evaluator) distinctRawRows(source Graph, index *store.DistinctStringInde
+ 					valid = false
+ 					break
+ 				}
+-				sid := int32(-1)
+-				for j, s := range source.Store.Strings {
+-					e.check()
+-					if s == text {
+-						sid = int32(j)
+-						break
+-					}
+-				}
++				sid := strings.find(text)
+ 				if sid < 0 {
+ 					valid = false
+ 					break
