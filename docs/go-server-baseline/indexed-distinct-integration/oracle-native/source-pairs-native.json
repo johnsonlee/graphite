@@ -1,0 +1,164 @@
+[
+  {
+    "badFirst": false,
+    "error": "CypherException",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "limit-direct",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+  },
+  {
+    "badFirst": false,
+    "columns": [
+      "x"
+    ],
+    "name": "distinct-direct",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        },
+        "x": "other"
+      }
+    ]
+  },
+  {
+    "badFirst": false,
+    "error": "CypherException",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "limit-id-function",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN id(n) AS x LIMIT 1"
+  },
+  {
+    "badFirst": false,
+    "error": "CypherException",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "distinct-id-function",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT id(n) AS x LIMIT 1"
+  },
+  {
+    "badFirst": false,
+    "error": "CypherException",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "limit-throw-projection",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN substring(n.caller_name,'bad') AS x LIMIT 1"
+  },
+  {
+    "badFirst": false,
+    "error": "CypherException",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "where-no-hit",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'absent' RETURN n.caller_name AS x LIMIT 1"
+  },
+  {
+    "badFirst": false,
+    "error": "CypherException",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "where-graph-scope",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId='a' RETURN n.caller_name AS x LIMIT 1"
+  },
+  {
+    "badFirst": false,
+    "columns": [
+      "x",
+      "graph"
+    ],
+    "name": "distinct-graph",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x,n.graphId AS graph LIMIT 1",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "graph": "a",
+        "x": "other"
+      }
+    ]
+  },
+  {
+    "badFirst": true,
+    "error": "CypherException",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "limit-direct",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+  },
+  {
+    "badFirst": true,
+    "columns": [
+      "x"
+    ],
+    "name": "distinct-direct",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        },
+        "x": "other"
+      }
+    ]
+  },
+  {
+    "badFirst": true,
+    "error": "CypherException",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "limit-id-function",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN id(n) AS x LIMIT 1"
+  },
+  {
+    "badFirst": true,
+    "error": "CypherException",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "distinct-id-function",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT id(n) AS x LIMIT 1"
+  },
+  {
+    "badFirst": true,
+    "error": "CypherException",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "limit-throw-projection",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN substring(n.caller_name,'bad') AS x LIMIT 1"
+  },
+  {
+    "badFirst": true,
+    "error": "CypherException",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "where-no-hit",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'absent' RETURN n.caller_name AS x LIMIT 1"
+  },
+  {
+    "badFirst": true,
+    "error": "CypherException",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "where-graph-scope",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId='a' RETURN n.caller_name AS x LIMIT 1"
+  },
+  {
+    "badFirst": true,
+    "columns": [
+      "x",
+      "graph"
+    ],
+    "name": "distinct-graph",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x,n.graphId AS graph LIMIT 1",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "graph": "a",
+        "x": "other"
+      }
+    ]
+  }
+]

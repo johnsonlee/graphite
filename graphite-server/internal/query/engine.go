@@ -132,7 +132,7 @@ func executeSources(ctx context.Context, graph *store.Store, graphs []Graph, cro
 				result.Rows[index] = row
 			}
 		}
-		if cross {
+		if cross || len(ids) > 0 {
 			if _, present := row["$metadata"]; len(ids) > 0 || !present {
 				row["$metadata"] = map[string]any{"graphIds": ids}
 			}
@@ -147,6 +147,9 @@ func (e evaluator) branch(graph *store.Store, branch cypher.SingleQuery) Result 
 	e.check()
 	if empty, ok := filteredLiteralEmpty(branch); ok {
 		return empty
+	}
+	if result, ok := e.indexedDistinct(graph, branch); ok {
+		return result
 	}
 	earlyLimit := e.computeEarlyLimit(branch)
 	rows := []map[string]any{{}}

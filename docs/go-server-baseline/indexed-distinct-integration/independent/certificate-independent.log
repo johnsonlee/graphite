@@ -1,0 +1,4 @@
+=== RUN   TestDistinctIntegrationRawIdentityDoesNotCertifyNode
+--- PASS: TestDistinctIntegrationRawIdentityDoesNotCertifyNode (0.00s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/store	1.432s

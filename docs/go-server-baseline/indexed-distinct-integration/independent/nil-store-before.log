@@ -1,0 +1,33 @@
+--- FAIL: TestDistinctIntegrationEmptyStore (0.01s)
+panic: runtime error: invalid memory address or nil pointer dereference [recovered]
+	panic: runtime error: invalid memory address or nil pointer dereference [recovered]
+	panic: runtime error: invalid memory address or nil pointer dereference
+[signal SIGSEGV: segmentation violation code=0x2 addr=0xe8 pc=0x102c3ec18]
+
+goroutine 34 [running]:
+testing.tRunner.func1.2({0x102d5e4c0, 0x10320d780})
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/testing/testing.go:1631 +0x1c4
+testing.tRunner.func1()
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/testing/testing.go:1634 +0x33c
+panic({0x102d5e4c0?, 0x10320d780?})
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/panic.go:770 +0x124
+github.com/johnsonlee/graphite/graphite-server/internal/query.executeSources.func1()
+	/private/tmp/graphite-go-distinct-integration-1d23843a/graphite-server/internal/query/engine.go:51 +0x1ec
+panic({0x102d5e4c0?, 0x10320d780?})
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/panic.go:770 +0x124
+github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.indexedDistinct({0x0, {0x102dc8f20, 0x10328aa80}, 0x0, {0x0, 0x0, 0x0}, 0x0, 0x0, 0x140003884a0}, ...)
+	/private/tmp/graphite-go-distinct-integration-1d23843a/graphite-server/internal/query/indexed_distinct.go:73 +0x228
+github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.branch({0x0, {0x102dc8f20, 0x10328aa80}, 0x0, {0x0, 0x0, 0x0}, 0x0, 0x0, 0x140003884a0}, ...)
+	/private/tmp/graphite-go-distinct-integration-1d23843a/graphite-server/internal/query/engine.go:151 +0x124
+github.com/johnsonlee/graphite/graphite-server/internal/query.executeSources({0x102dc8f20, 0x10328aa80}, 0x0, {0x0, 0x0, 0x0}, 0x0, {0x102cab1b0, 0x60}, 0x0, ...)
+	/private/tmp/graphite-go-distinct-integration-1d23843a/graphite-server/internal/query/engine.go:81 +0x578
+github.com/johnsonlee/graphite/graphite-server/internal/query.Execute(...)
+	/private/tmp/graphite-go-distinct-integration-1d23843a/graphite-server/internal/query/engine.go:25
+github.com/johnsonlee/graphite/graphite-server/internal/query.TestDistinctIntegrationEmptyStore(0x14000132680)
+	/private/tmp/graphite-go-distinct-integration-1d23843a/graphite-server/internal/query/distinct_integration_test.go:11 +0x60
+testing.tRunner(0x14000132680, 0x102dc5a90)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/testing/testing.go:1689 +0xec
+created by testing.(*T).Run in goroutine 1
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/testing/testing.go:1742 +0x318
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/query	0.245s
+FAIL

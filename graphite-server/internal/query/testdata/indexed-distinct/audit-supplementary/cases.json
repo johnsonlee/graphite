@@ -1,0 +1,34 @@
+[
+  {
+    "name": "distinct-skip-zero",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x SKIP 0 LIMIT 1"
+  },
+  {
+    "name": "distinct-skip-one",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x SKIP 1 LIMIT 1"
+  },
+  {
+    "name": "distinct-order",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x ORDER BY x LIMIT 1"
+  },
+  {
+    "name": "distinct-null-class",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.class AS x LIMIT 1"
+  },
+  {
+    "name": "exists-guard",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND exists(n.caller_name) RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "lower-coalesce",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.caller_name,'')) CONTAINS 'other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "empty-coalesce",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.caller_name,'')) CONTAINS '' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "metadata-alias",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS `$metadata` LIMIT 1"
+  }
+]

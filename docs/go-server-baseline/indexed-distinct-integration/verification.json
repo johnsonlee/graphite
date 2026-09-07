@@ -1,0 +1,46 @@
+{
+  "runs": [
+    {
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./..."
+      ],
+      "exitCode": 0,
+      "log": "race.log"
+    },
+    {
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "exitCode": 0,
+      "log": "vet.log"
+    }
+  ],
+  "completeOracleFilesEqualToIndependentFreeze": [
+    "annotation-after-native.json",
+    "annotation-native.json",
+    "late-native.json",
+    "mixed-native.json",
+    "primary-eligibility.json",
+    "primary-native.json",
+    "required-missing-identity-native.json",
+    "required-missing-index-native.json",
+    "required-native.json",
+    "source-pairs-native.json",
+    "split-bad-callee-native.json",
+    "split-bad-count-native.json",
+    "split-bad-tag-native.json",
+    "split-clean-native.json",
+    "split-missing-index-native.json",
+    "supplementary-eligibility.json",
+    "supplementary-native.json"
+  ],
+  "pairCount": 1048,
+  "eligibleEqual": 580,
+  "declinedEqual": 159,
+  "declinedDifferences": 309
+}

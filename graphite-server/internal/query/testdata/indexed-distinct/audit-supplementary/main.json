@@ -1,0 +1,1130 @@
+[
+  {
+    "name": "distinct-skip-zero",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x SKIP 0 LIMIT 1",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        }
+      }
+    ],
+    "fixture": "clean"
+  },
+  {
+    "name": "distinct-skip-zero",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x SKIP 0 LIMIT 1",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ],
+    "fixture": "clean"
+  },
+  {
+    "name": "distinct-skip-one",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x SKIP 1 LIMIT 1",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [],
+    "fixture": "clean"
+  },
+  {
+    "name": "distinct-skip-one",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x SKIP 1 LIMIT 1",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [],
+    "fixture": "clean"
+  },
+  {
+    "name": "distinct-order",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x ORDER BY x LIMIT 1",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other"
+      }
+    ],
+    "fixture": "clean"
+  },
+  {
+    "name": "distinct-order",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x ORDER BY x LIMIT 1",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ],
+    "fixture": "clean"
+  },
+  {
+    "name": "distinct-null-class",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.class AS x LIMIT 1",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": null,
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        }
+      }
+    ],
+    "fixture": "clean"
+  },
+  {
+    "name": "distinct-null-class",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.class AS x LIMIT 1",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": null,
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ],
+    "fixture": "clean"
+  },
+  {
+    "name": "exists-guard",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND exists(n.caller_name) RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        }
+      }
+    ],
+    "fixture": "clean"
+  },
+  {
+    "name": "exists-guard",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND exists(n.caller_name) RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ],
+    "fixture": "clean"
+  },
+  {
+    "name": "lower-coalesce",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.caller_name,'')) CONTAINS 'other' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        }
+      }
+    ],
+    "fixture": "clean"
+  },
+  {
+    "name": "lower-coalesce",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.caller_name,'')) CONTAINS 'other' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ],
+    "fixture": "clean"
+  },
+  {
+    "name": "empty-coalesce",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.caller_name,'')) CONTAINS '' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "caller"
+      }
+    ],
+    "fixture": "clean"
+  },
+  {
+    "name": "empty-coalesce",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.caller_name,'')) CONTAINS '' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "caller",
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ],
+    "fixture": "clean"
+  },
+  {
+    "name": "metadata-alias",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS `$metadata` LIMIT 1",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "$metadata"
+    ],
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        }
+      }
+    ],
+    "fixture": "clean"
+  },
+  {
+    "name": "metadata-alias",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS `$metadata` LIMIT 1",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "$metadata"
+    ],
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ],
+    "fixture": "clean"
+  },
+  {
+    "name": "distinct-skip-zero",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x SKIP 0 LIMIT 1",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        }
+      }
+    ],
+    "fixture": "bad-first-unmatched"
+  },
+  {
+    "name": "distinct-skip-zero",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x SKIP 0 LIMIT 1",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ],
+    "fixture": "bad-first-unmatched"
+  },
+  {
+    "name": "distinct-skip-one",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x SKIP 1 LIMIT 1",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [],
+    "fixture": "bad-first-unmatched"
+  },
+  {
+    "name": "distinct-skip-one",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x SKIP 1 LIMIT 1",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [],
+    "fixture": "bad-first-unmatched"
+  },
+  {
+    "name": "distinct-order",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x ORDER BY x LIMIT 1",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other"
+      }
+    ],
+    "fixture": "bad-first-unmatched"
+  },
+  {
+    "name": "distinct-order",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x ORDER BY x LIMIT 1",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ],
+    "fixture": "bad-first-unmatched"
+  },
+  {
+    "name": "distinct-null-class",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.class AS x LIMIT 1",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": null,
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        }
+      }
+    ],
+    "fixture": "bad-first-unmatched"
+  },
+  {
+    "name": "distinct-null-class",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.class AS x LIMIT 1",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": null,
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ],
+    "fixture": "bad-first-unmatched"
+  },
+  {
+    "name": "exists-guard",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND exists(n.caller_name) RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        }
+      }
+    ],
+    "fixture": "bad-first-unmatched"
+  },
+  {
+    "name": "exists-guard",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND exists(n.caller_name) RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ],
+    "fixture": "bad-first-unmatched"
+  },
+  {
+    "name": "lower-coalesce",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.caller_name,'')) CONTAINS 'other' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        }
+      }
+    ],
+    "fixture": "bad-first-unmatched"
+  },
+  {
+    "name": "lower-coalesce",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.caller_name,'')) CONTAINS 'other' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ],
+    "fixture": "bad-first-unmatched"
+  },
+  {
+    "name": "empty-coalesce",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.caller_name,'')) CONTAINS '' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": false,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "fixture": "bad-first-unmatched"
+  },
+  {
+    "name": "empty-coalesce",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.caller_name,'')) CONTAINS '' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": true,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "fixture": "bad-first-unmatched"
+  },
+  {
+    "name": "metadata-alias",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS `$metadata` LIMIT 1",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "$metadata"
+    ],
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        }
+      }
+    ],
+    "fixture": "bad-first-unmatched"
+  },
+  {
+    "name": "metadata-alias",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS `$metadata` LIMIT 1",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "$metadata"
+    ],
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ],
+    "fixture": "bad-first-unmatched"
+  },
+  {
+    "name": "distinct-skip-zero",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x SKIP 0 LIMIT 1",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        }
+      }
+    ],
+    "fixture": "bad-last-unmatched"
+  },
+  {
+    "name": "distinct-skip-zero",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x SKIP 0 LIMIT 1",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ],
+    "fixture": "bad-last-unmatched"
+  },
+  {
+    "name": "distinct-skip-one",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x SKIP 1 LIMIT 1",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [],
+    "fixture": "bad-last-unmatched"
+  },
+  {
+    "name": "distinct-skip-one",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x SKIP 1 LIMIT 1",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [],
+    "fixture": "bad-last-unmatched"
+  },
+  {
+    "name": "distinct-order",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x ORDER BY x LIMIT 1",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other"
+      }
+    ],
+    "fixture": "bad-last-unmatched"
+  },
+  {
+    "name": "distinct-order",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x ORDER BY x LIMIT 1",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ],
+    "fixture": "bad-last-unmatched"
+  },
+  {
+    "name": "distinct-null-class",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.class AS x LIMIT 1",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": null,
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        }
+      }
+    ],
+    "fixture": "bad-last-unmatched"
+  },
+  {
+    "name": "distinct-null-class",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.class AS x LIMIT 1",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": null,
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ],
+    "fixture": "bad-last-unmatched"
+  },
+  {
+    "name": "exists-guard",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND exists(n.caller_name) RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        }
+      }
+    ],
+    "fixture": "bad-last-unmatched"
+  },
+  {
+    "name": "exists-guard",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND exists(n.caller_name) RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ],
+    "fixture": "bad-last-unmatched"
+  },
+  {
+    "name": "lower-coalesce",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.caller_name,'')) CONTAINS 'other' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        }
+      }
+    ],
+    "fixture": "bad-last-unmatched"
+  },
+  {
+    "name": "lower-coalesce",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.caller_name,'')) CONTAINS 'other' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ],
+    "fixture": "bad-last-unmatched"
+  },
+  {
+    "name": "empty-coalesce",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.caller_name,'')) CONTAINS '' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "caller"
+      }
+    ],
+    "fixture": "bad-last-unmatched"
+  },
+  {
+    "name": "empty-coalesce",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.caller_name,'')) CONTAINS '' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": true,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "fixture": "bad-last-unmatched"
+  },
+  {
+    "name": "metadata-alias",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS `$metadata` LIMIT 1",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "$metadata"
+    ],
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        }
+      }
+    ],
+    "fixture": "bad-last-unmatched"
+  },
+  {
+    "name": "metadata-alias",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS `$metadata` LIMIT 1",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "$metadata"
+    ],
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ],
+    "fixture": "bad-last-unmatched"
+  },
+  {
+    "name": "distinct-skip-zero",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x SKIP 0 LIMIT 1",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        }
+      }
+    ],
+    "fixture": "bad-matched"
+  },
+  {
+    "name": "distinct-skip-zero",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x SKIP 0 LIMIT 1",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ],
+    "fixture": "bad-matched"
+  },
+  {
+    "name": "distinct-skip-one",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x SKIP 1 LIMIT 1",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [],
+    "fixture": "bad-matched"
+  },
+  {
+    "name": "distinct-skip-one",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x SKIP 1 LIMIT 1",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [],
+    "fixture": "bad-matched"
+  },
+  {
+    "name": "distinct-order",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x ORDER BY x LIMIT 1",
+    "cross": false,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "fixture": "bad-matched"
+  },
+  {
+    "name": "distinct-order",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x ORDER BY x LIMIT 1",
+    "cross": true,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "fixture": "bad-matched"
+  },
+  {
+    "name": "distinct-null-class",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.class AS x LIMIT 1",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": null,
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        }
+      }
+    ],
+    "fixture": "bad-matched"
+  },
+  {
+    "name": "distinct-null-class",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.class AS x LIMIT 1",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": null,
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ],
+    "fixture": "bad-matched"
+  },
+  {
+    "name": "exists-guard",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND exists(n.caller_name) RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        }
+      }
+    ],
+    "fixture": "bad-matched"
+  },
+  {
+    "name": "exists-guard",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND exists(n.caller_name) RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ],
+    "fixture": "bad-matched"
+  },
+  {
+    "name": "lower-coalesce",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.caller_name,'')) CONTAINS 'other' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        }
+      }
+    ],
+    "fixture": "bad-matched"
+  },
+  {
+    "name": "lower-coalesce",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.caller_name,'')) CONTAINS 'other' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ],
+    "fixture": "bad-matched"
+  },
+  {
+    "name": "empty-coalesce",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.caller_name,'')) CONTAINS '' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "caller"
+      }
+    ],
+    "fixture": "bad-matched"
+  },
+  {
+    "name": "empty-coalesce",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.caller_name,'')) CONTAINS '' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": true,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "fixture": "bad-matched"
+  },
+  {
+    "name": "metadata-alias",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS `$metadata` LIMIT 1",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "$metadata"
+    ],
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        }
+      }
+    ],
+    "fixture": "bad-matched"
+  },
+  {
+    "name": "metadata-alias",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS `$metadata` LIMIT 1",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "$metadata"
+    ],
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ],
+    "fixture": "bad-matched"
+  }
+]

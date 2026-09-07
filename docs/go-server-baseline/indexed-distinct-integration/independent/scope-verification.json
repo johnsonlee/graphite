@@ -1,0 +1,10 @@
+{
+  "modifiedPaths": 527,
+  "onlyAdditionsBeyondContract": [
+    "graphite-server/internal/query/distinct_integration_test.go",
+    "graphite-server/internal/query/distinct_tasks_integration_test.go",
+    "graphite-server/internal/server/distinct_error_integration_test.go",
+    "graphite-server/internal/store/distinct_certificate_integration_test.go"
+  ],
+  "noUnrelatedProductionChanges": true
+}

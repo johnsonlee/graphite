@@ -1,0 +1,198 @@
+[
+  {
+    "mutation": "node-tag-255",
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx256m",
+      "-cp",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-distinct-required-uk6gjfp1/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "PlannerOracle",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-distinct-required-uk6gjfp1/node-tag-255",
+      "/private/tmp/graphite-go-indexed-distinct-bbdfae2a/graphite-server/internal/query/testdata/indexed-distinct/required-cases.json",
+      "/private/tmp/graphite-go-indexed-distinct-bbdfae2a/graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-identity/node-tag-255.json"
+    ],
+    "exitCode": 0
+  },
+  {
+    "mutation": "node-id-999",
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx256m",
+      "-cp",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-distinct-required-uk6gjfp1/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "PlannerOracle",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-distinct-required-uk6gjfp1/node-id-999",
+      "/private/tmp/graphite-go-indexed-distinct-bbdfae2a/graphite-server/internal/query/testdata/indexed-distinct/required-cases.json",
+      "/private/tmp/graphite-go-indexed-distinct-bbdfae2a/graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-identity/node-id-999.json"
+    ],
+    "exitCode": 0
+  },
+  {
+    "mutation": "caller-count-minus-one",
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx256m",
+      "-cp",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-distinct-required-uk6gjfp1/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "PlannerOracle",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-distinct-required-uk6gjfp1/caller-count-minus-one",
+      "/private/tmp/graphite-go-indexed-distinct-bbdfae2a/graphite-server/internal/query/testdata/indexed-distinct/required-cases.json",
+      "/private/tmp/graphite-go-indexed-distinct-bbdfae2a/graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-identity/caller-count-minus-one.json"
+    ],
+    "exitCode": 0
+  },
+  {
+    "mutation": "caller-count-max",
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx256m",
+      "-cp",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-distinct-required-uk6gjfp1/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "PlannerOracle",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-distinct-required-uk6gjfp1/caller-count-max",
+      "/private/tmp/graphite-go-indexed-distinct-bbdfae2a/graphite-server/internal/query/testdata/indexed-distinct/required-cases.json",
+      "/private/tmp/graphite-go-indexed-distinct-bbdfae2a/graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-identity/caller-count-max.json"
+    ],
+    "exitCode": 0
+  },
+  {
+    "mutation": "caller-count-outside",
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx256m",
+      "-cp",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-distinct-required-uk6gjfp1/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "PlannerOracle",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-distinct-required-uk6gjfp1/caller-count-outside",
+      "/private/tmp/graphite-go-indexed-distinct-bbdfae2a/graphite-server/internal/query/testdata/indexed-distinct/required-cases.json",
+      "/private/tmp/graphite-go-indexed-distinct-bbdfae2a/graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-identity/caller-count-outside.json"
+    ],
+    "exitCode": 0
+  },
+  {
+    "mutation": "caller-name-sid-max",
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx256m",
+      "-cp",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-distinct-required-uk6gjfp1/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "PlannerOracle",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-distinct-required-uk6gjfp1/caller-name-sid-max",
+      "/private/tmp/graphite-go-indexed-distinct-bbdfae2a/graphite-server/internal/query/testdata/indexed-distinct/required-cases.json",
+      "/private/tmp/graphite-go-indexed-distinct-bbdfae2a/graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-identity/caller-name-sid-max.json"
+    ],
+    "exitCode": 0
+  },
+  {
+    "mutation": "caller-name-sid-minus-one",
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx256m",
+      "-cp",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-distinct-required-uk6gjfp1/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "PlannerOracle",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-distinct-required-uk6gjfp1/caller-name-sid-minus-one",
+      "/private/tmp/graphite-go-indexed-distinct-bbdfae2a/graphite-server/internal/query/testdata/indexed-distinct/required-cases.json",
+      "/private/tmp/graphite-go-indexed-distinct-bbdfae2a/graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-identity/caller-name-sid-minus-one.json"
+    ],
+    "exitCode": 0
+  },
+  {
+    "mutation": "callee-class-sid-max",
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx256m",
+      "-cp",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-distinct-required-uk6gjfp1/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "PlannerOracle",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-distinct-required-uk6gjfp1/callee-class-sid-max",
+      "/private/tmp/graphite-go-indexed-distinct-bbdfae2a/graphite-server/internal/query/testdata/indexed-distinct/required-cases.json",
+      "/private/tmp/graphite-go-indexed-distinct-bbdfae2a/graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-identity/callee-class-sid-max.json"
+    ],
+    "exitCode": 0
+  },
+  {
+    "mutation": "callee-class-sid-minus-one",
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx256m",
+      "-cp",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-distinct-required-uk6gjfp1/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "PlannerOracle",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-distinct-required-uk6gjfp1/callee-class-sid-minus-one",
+      "/private/tmp/graphite-go-indexed-distinct-bbdfae2a/graphite-server/internal/query/testdata/indexed-distinct/required-cases.json",
+      "/private/tmp/graphite-go-indexed-distinct-bbdfae2a/graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-identity/callee-class-sid-minus-one.json"
+    ],
+    "exitCode": 0
+  },
+  {
+    "mutation": "offset-missing",
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx256m",
+      "-cp",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-distinct-required-uk6gjfp1/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "PlannerOracle",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-distinct-required-uk6gjfp1/offset-missing",
+      "/private/tmp/graphite-go-indexed-distinct-bbdfae2a/graphite-server/internal/query/testdata/indexed-distinct/required-cases.json",
+      "/private/tmp/graphite-go-indexed-distinct-bbdfae2a/graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-identity/offset-missing.json"
+    ],
+    "exitCode": 0
+  },
+  {
+    "mutation": "offset-outside",
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx256m",
+      "-cp",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-distinct-required-uk6gjfp1/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "PlannerOracle",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-distinct-required-uk6gjfp1/offset-outside",
+      "/private/tmp/graphite-go-indexed-distinct-bbdfae2a/graphite-server/internal/query/testdata/indexed-distinct/required-cases.json",
+      "/private/tmp/graphite-go-indexed-distinct-bbdfae2a/graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-identity/offset-outside.json"
+    ],
+    "exitCode": 0
+  },
+  {
+    "mutation": "offset-int-overflow",
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx256m",
+      "-cp",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-distinct-required-uk6gjfp1/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "PlannerOracle",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-distinct-required-uk6gjfp1/offset-int-overflow",
+      "/private/tmp/graphite-go-indexed-distinct-bbdfae2a/graphite-server/internal/query/testdata/indexed-distinct/required-cases.json",
+      "/private/tmp/graphite-go-indexed-distinct-bbdfae2a/graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-identity/offset-int-overflow.json"
+    ],
+    "exitCode": 0
+  },
+  {
+    "mutation": "offset-other-node",
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx256m",
+      "-cp",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-distinct-required-uk6gjfp1/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "PlannerOracle",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-distinct-required-uk6gjfp1/offset-other-node",
+      "/private/tmp/graphite-go-indexed-distinct-bbdfae2a/graphite-server/internal/query/testdata/indexed-distinct/required-cases.json",
+      "/private/tmp/graphite-go-indexed-distinct-bbdfae2a/graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-identity/offset-other-node.json"
+    ],
+    "exitCode": 0
+  },
+  {
+    "mutation": "core-return-sid-max",
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx256m",
+      "-cp",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-distinct-required-uk6gjfp1/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "PlannerOracle",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-distinct-required-uk6gjfp1/core-return-sid-max",
+      "/private/tmp/graphite-go-indexed-distinct-bbdfae2a/graphite-server/internal/query/testdata/indexed-distinct/required-cases.json",
+      "/private/tmp/graphite-go-indexed-distinct-bbdfae2a/graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-identity/core-return-sid-max.json"
+    ],
+    "exitCode": 0
+  }
+]

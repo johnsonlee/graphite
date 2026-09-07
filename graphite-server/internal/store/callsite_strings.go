@@ -139,15 +139,31 @@ func (s *Store) callSiteContentIdentity(ctx context.Context, closing <-chan stru
 		if err := indexCheck(ctx, closing); err != nil {
 			return [32]byte{}, err
 		}
-		raw, err := s.RawCallSiteStringIDs(ctx, nodeID)
-		if err != nil {
-			return [32]byte{}, err
+		var ids [4]int32
+		var offset int64
+		if s.Mode == "MAPPED" {
+			var err error
+			ids, err = s.ProjectionStringIDs(ctx, nodeID)
+			if err != nil {
+				return [32]byte{}, err
+			}
+			offset, err = s.ProjectionNodeOrder(ctx, nodeID)
+			if err != nil {
+				return [32]byte{}, err
+			}
+		} else {
+			raw, err := s.RawCallSiteStringIDs(ctx, nodeID)
+			if err != nil {
+				return [32]byte{}, err
+			}
+			ids, offset = raw.StringIDs, raw.Offset
 		}
+
 		binary.BigEndian.PutUint32(word[:4], uint32(nodeID))
 		digest.Write(word[:4])
-		binary.BigEndian.PutUint64(word[:], uint64(raw.Offset))
+		binary.BigEndian.PutUint64(word[:], uint64(offset))
 		digest.Write(word[:])
-		for _, id := range raw.StringIDs {
+		for _, id := range ids {
 			binary.BigEndian.PutUint32(word[:4], uint32(id))
 			digest.Write(word[:4])
 		}

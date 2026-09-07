@@ -291,7 +291,7 @@ func TestCallSiteIndexMissingCanAppear(t *testing.T) {
 	}
 	requireIndex(t, s)
 }
-func TestCallSiteRawCoreErrorIsNotOptional(t *testing.T) {
+func TestCallSiteIndexIdentityUsesRawOffsetsBeforeCoreConsumption(t *testing.T) {
 	dir := copyIndexFixture(t)
 	s := openIndexFixture(t, dir, "MAPPED")
 	offset := s.locations[17].offset
@@ -310,11 +310,14 @@ func TestCallSiteRawCoreErrorIsNotOptional(t *testing.T) {
 	}
 	s = openIndexFixture(t, dir, "MAPPED")
 	_, ok, err := s.TryCallSiteStringIndex(context.Background())
-	if ok || !errors.Is(err, ErrInvalidGraphData) {
-		t.Fatalf("core damage available=%v err=%v", ok, err)
+	if ok || err != nil {
+		t.Fatalf("changed raw identity available=%v err=%v", ok, err)
 	}
-	if s.callSiteIndex.unavailable || s.callSiteIndex.view != nil {
-		t.Fatal("core failure cached as optional unavailability")
+	if !s.callSiteIndex.unavailable || s.callSiteIndex.view != nil {
+		t.Fatal("identity mismatch must reject optional persisted index")
+	}
+	if _, err := s.RawCallSiteStringIDs(context.Background(), 17); !errors.Is(err, ErrInvalidGraphData) {
+		t.Fatalf("strict core consumption=%v", err)
 	}
 }
 

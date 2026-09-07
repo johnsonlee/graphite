@@ -1,0 +1,32 @@
+[
+  {
+    "name": "graph",
+    "sources": 9,
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x,n.graphId AS g LIMIT 1"
+  },
+  {
+    "name": "caller",
+    "sources": 9,
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "null-graph",
+    "sources": 9,
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.class AS x,n.graphId AS g LIMIT 1"
+  },
+  {
+    "name": "graph",
+    "sources": 40,
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x,n.graphId AS g LIMIT 1"
+  },
+  {
+    "name": "caller",
+    "sources": 40,
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "null-graph",
+    "sources": 40,
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.class AS x,n.graphId AS g LIMIT 1"
+  }
+]

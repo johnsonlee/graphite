@@ -1,0 +1,2708 @@
+{
+  "createdAt": "2026-09-06T23:28:43.247050+00:00",
+  "base": "bbdfae2a07b629c40d1ef0db6d156bff500989c9",
+  "main": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "worktree": "/private/tmp/graphite-go-indexed-distinct-bbdfae2a",
+  "patchSha256": "5fee9b67291155baddb3a1db4889d0980e299bd1a0c4a5c7923ee671267fa787",
+  "scope": "Main indexed DISTINCT string projection functional compatibility; no ordinary projection and no performance claim",
+  "files": [
+    {
+      "path": "graphite-server/internal/query/engine.go",
+      "bytes": 14226,
+      "sha256": "c1a085598a2f3447f2f57e206e3b0b9da2d4f6e9246671b38b0510af0872e3de"
+    },
+    {
+      "path": "graphite-server/internal/query/eval.go",
+      "bytes": 14144,
+      "sha256": "e754d78ef80945dcdcac904bc15647939c0fda1566522be1922ae08ad1d96717"
+    },
+    {
+      "path": "graphite-server/internal/query/indexed_distinct.go",
+      "bytes": 24608,
+      "sha256": "82271f7c8a3498e3004a244bd32a7ab239baca75f570c5ab367212b79db7adff"
+    },
+    {
+      "path": "graphite-server/internal/query/indexed_distinct_plan.go",
+      "bytes": 9120,
+      "sha256": "37be958d3659f21cf57fcd4017b3f3cddd73f652171266adb8d7d2a32efe4155"
+    },
+    {
+      "path": "graphite-server/internal/query/indexed_distinct_test.go",
+      "bytes": 14142,
+      "sha256": "abb1a8ea0aa92ee84fefc0d32e19167eaa3ac7154321e3c05d3ce7d300ee0a66"
+    },
+    {
+      "path": "graphite-server/internal/query/string_candidates_test.go",
+      "bytes": 20808,
+      "sha256": "9a6a14ebccf3dda07de7ff5da0d4c09ebc5d08bb4a4c3e81c7a56a066e718850"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/GenerateSplit.java",
+      "bytes": 859,
+      "sha256": "dbad2f17f1040f079b8857e856842342f6a3c76e017c824eb9128e799922ac19"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/PlannerOracle.java",
+      "bytes": 2098,
+      "sha256": "2c1e5ce7e92c571f8ceaae33d785e16aa386d7da56ab055d9bd12be68474ec03"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/README.md",
+      "bytes": 10556,
+      "sha256": "226837a50a3c285bee7849d71444983f2c5672c1657388d6696834c119f97b51"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/SourcesOracle.java",
+      "bytes": 1579,
+      "sha256": "3080decdc6844847b374436f91f31bfd49e0e5e7fe8c6b2ef5a94bbce74d7b4f"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/additional-cases.json",
+      "bytes": 5742,
+      "sha256": "44a88a4959d1305d902955cc2fb9341b0f7290be8984c6d5d7d0650fd5bda55b"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/additional-commands.json",
+      "bytes": 2427,
+      "sha256": "326827a47dedf2ed0b201802a96c820f4c43b0504f1523850ad08b8c083ba346"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/annotation-after-main.json",
+      "bytes": 35460,
+      "sha256": "14b76f673c3c0fb1836e790013af1653b0aba87fbbd13719ca9b0d01c69c4509"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/annotation-after-main.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/annotation-after-wire-main.json",
+      "bytes": 34598,
+      "sha256": "0b24f7bc5f1fbf33cb04dbc11facf81aa9ec83573ebf31d2bf66e28c464cc93d"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/annotation-after/forward.graph",
+      "bytes": 19,
+      "sha256": "a06b43d6cbce4500b78b1cae88235ac2ff26e9c3f4f2ef63a7a73bf4ac2ff2cd"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/annotation-after/forward.offsets",
+      "bytes": 57,
+      "sha256": "feee71d2abc095ff45a953f52d5348d725cb0ce7a4c1133d7181e42b76468453"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/annotation-after/forward.properties",
+      "bytes": 622,
+      "sha256": "ffd621df1d05f2573a08fc97331ba669c45e3127a8e796b1849484ec6f9ab5bf"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/annotation-after/graph.classoverview",
+      "bytes": 64,
+      "sha256": "e097b1b3f1c5ce4795f30a46ecec7729f9ef4ea559092d2eac6639ac58530b7f"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/annotation-after/graph.comparisons",
+      "bytes": 8,
+      "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/annotation-after/graph.labelprefix",
+      "bytes": 608,
+      "sha256": "4beb641f77c3df2749a5dffc0a23f4270dc4b94e1e940287fc3ebfa05b720662"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/annotation-after/graph.labels",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/annotation-after/graph.metadata",
+      "bytes": 36,
+      "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/annotation-after/graph.nodedata",
+      "bytes": 273,
+      "sha256": "395d8a6a48933878b4398b1ea2eda9d34f5fa6e7fc5aa3756f6d4a5c16c77c0a"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/annotation-after/graph.nodeindex",
+      "bytes": 86,
+      "sha256": "48f314f462ebf6f019ce2d7a6fb37094a1d511aba0aba68153951e21928b30e2"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/annotation-after/graph.nodeoffsets",
+      "bytes": 1216,
+      "sha256": "c59522354816f210c045575bd5df96565b8aede86e01d712f47db56eae4bb550"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/annotation-after/graph.resources",
+      "bytes": 8,
+      "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/annotation-after/graph.strings",
+      "bytes": 639,
+      "sha256": "c91fb0be379ae506c3ca85b12d248ec330f36798f52488ec6b1df0cad0890456"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/annotation-after/graph.strings.identity",
+      "bytes": 32,
+      "sha256": "16ed36c9387a79f50d2021aca79b72e0cda08100fb2016dc5a9cb28f880474ff"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/annotation-after/graph.typeindex",
+      "bytes": 240,
+      "sha256": "abd3aec9e0083003de752ef8ff08175a675efc9e4d3d78d215c738973b60fcd8"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/annotation-main.json",
+      "bytes": 35468,
+      "sha256": "56ca6ec6f383f340aff79ac334cb417f5db0634867e3a896c53adb43c1a1874f"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/annotation-main.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/annotation-wire-main.json",
+      "bytes": 34606,
+      "sha256": "b95949cc085d7b85971c617dbf5f851c54e95fc94eef7c1233521f8afcb35b12"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/audit-primary/cases.json",
+      "bytes": 8570,
+      "sha256": "89489f117a055e0d293c993749fd0e80c4a067348259190ea84b5fdbbef046d5"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/audit-primary/main.json",
+      "bytes": 170240,
+      "sha256": "bbe33c0b32f77341c7773e6c306ffb11c8ce90c7c578ba0851b33ceffca9dfdb"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/audit-primary/native-before.json",
+      "bytes": 153129,
+      "sha256": "3239137f90fc82aa9b42ea1d8c549dee0effe8bb20a627ceb6bdfd5d50bfcda0"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/audit-source-pairs/cases.json",
+      "bytes": 1166,
+      "sha256": "98d7b3f1803947c764f9d00c2c745234665d1d2c349c7726707c2d5412892fdc"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/audit-source-pairs/main.json",
+      "bytes": 5286,
+      "sha256": "4c1c392ec010ee45302b0653b582e8eb57a1c140e45b106c420cdd11ce5833b6"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/audit-source-pairs/native-before.json",
+      "bytes": 4305,
+      "sha256": "2e3d964fd910b3f98a1a0a5ce125a5e412397eb8af94fa62d21144f1f1c75b39"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/audit-supplementary/cases.json",
+      "bytes": 1259,
+      "sha256": "371490ce8951a53af9d8c8426ec8461b60cd07c3e9b27a1f2213e6dbed7f21e6"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/audit-supplementary/main.json",
+      "bytes": 24529,
+      "sha256": "e12d2a09b3be18375a428887e22f920d91361848c159796b2e069913ef5692e8"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/audit-supplementary/native-before.json",
+      "bytes": 21630,
+      "sha256": "c87e954dd2c6ae5045cf00d440e97aa7bbaca7c0200f63e5fe9ebdd21cd2efb1"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/capture-additional.py",
+      "bytes": 1684,
+      "sha256": "a7b6e8990145623eaed67c584e74bd339ac16dae2ff90d15e1de04ec820e3340"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/capture-late.py",
+      "bytes": 1621,
+      "sha256": "3c79b11c45e6f12d6b731915dd9c1a5f435f70bee93e7afd92e3fc9174b8d4dc"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/capture-required.py",
+      "bytes": 1948,
+      "sha256": "ae2a50f56ebe49435be2eb0b6da809315992555240374765f751bda0bd72b415"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/capture-split.py",
+      "bytes": 2618,
+      "sha256": "9149e9c9f114a7ccce22ef3281364592a410874a89009904b87a34fb9b93a7ae"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/late-cases.json",
+      "bytes": 930,
+      "sha256": "3d6e2270b79923ee42e37ea954f88cc12b9d9fa4e41a7d8a75a08a3478e23b2a"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/late-command.json",
+      "bytes": 814,
+      "sha256": "168b1c071cb0e7c4b823d0f4840f7c1c1d28d3d7d7728808db9437670b5a6e41"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/late-main.json",
+      "bytes": 1976,
+      "sha256": "9080c71cf4082b6136c09e9ff1b56a620dd59aad62a01309fd110ed8f34126a2"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/late-main.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/make-annotation-after.py",
+      "bytes": 1327,
+      "sha256": "a6f771af623cd2c8d0cd405495d08f2061eb01cb4569bd4be26fbe7be2dc4d91"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/mixed-main.json",
+      "bytes": 29616,
+      "sha256": "4dccfedae61a5672e8d2ffa954f11ed99c98279a4bdd7ee3b5a9be041444a5eb"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/mixed-main.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/mixed-wire-main.json",
+      "bytes": 28754,
+      "sha256": "b0396c049ac0ff6c16c02f6723045658934cd4eb931951ed0abcd7b7fde7cf14"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-final-extended/annotation-after-native.json",
+      "bytes": 34590,
+      "sha256": "d9d5a2bf4ef573f75cae34d9e5d5fff5941bf29af93d0e97ca301a7871bbece0"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-final-extended/annotation-native.json",
+      "bytes": 34598,
+      "sha256": "6f56ae01e2f4149f959a1f10290e70e5a347af697d210859b85902244a916aed"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-final-extended/mixed-native.json",
+      "bytes": 28746,
+      "sha256": "114d94abea54aa36cd40a32f881e4bf3014167d31ef678dc83ef28dcc22dbfac"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-final-extended/primary-native.json",
+      "bytes": 159177,
+      "sha256": "6db4aa802be2be1e8f0b5fda7a54c4b6b2e88c2f8e7ebbd260ca532a4113c463"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-final-extended/required-missing-identity-native.json",
+      "bytes": 42025,
+      "sha256": "fa7e6ff32f74410593471ed4b137628d9f20d30798ca388cf397f81021dc9bad"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-final-extended/required-missing-index-native.json",
+      "bytes": 41647,
+      "sha256": "3ac51f08eb2f4ca63449c1a35ead4e7910cb72d580b798d68ccd747db6fee63d"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-final-extended/required-native.json",
+      "bytes": 44651,
+      "sha256": "c4edae9b06d42b06d86085fa3a20d99ca32d796f00a8e1ff5c071348460117e0"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-final-extended/source-pairs-native.json",
+      "bytes": 4721,
+      "sha256": "073809a357d6d80beb0a3d59bb49718626e71e706c92e071a34960a38b9f12e1"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-final-extended/split-bad-callee-native.json",
+      "bytes": 7164,
+      "sha256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-final-extended/split-bad-count-native.json",
+      "bytes": 7164,
+      "sha256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-final-extended/split-bad-tag-native.json",
+      "bytes": 7164,
+      "sha256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-final-extended/split-clean-native.json",
+      "bytes": 7164,
+      "sha256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-final-extended/split-missing-index-native.json",
+      "bytes": 7164,
+      "sha256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-final-extended/supplementary-native.json",
+      "bytes": 24263,
+      "sha256": "d1306f211061769b9f5fb1c677082813d34218883c8027d9e59b1159dc603a8b"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-final/annotation-native.json",
+      "bytes": 34598,
+      "sha256": "6f56ae01e2f4149f959a1f10290e70e5a347af697d210859b85902244a916aed"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-final/mixed-native.json",
+      "bytes": 28746,
+      "sha256": "114d94abea54aa36cd40a32f881e4bf3014167d31ef678dc83ef28dcc22dbfac"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-final/primary-native.json",
+      "bytes": 159177,
+      "sha256": "6db4aa802be2be1e8f0b5fda7a54c4b6b2e88c2f8e7ebbd260ca532a4113c463"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-final/required-missing-identity-native.json",
+      "bytes": 42025,
+      "sha256": "fa7e6ff32f74410593471ed4b137628d9f20d30798ca388cf397f81021dc9bad"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-final/required-missing-index-native.json",
+      "bytes": 41647,
+      "sha256": "3ac51f08eb2f4ca63449c1a35ead4e7910cb72d580b798d68ccd747db6fee63d"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-final/required-native.json",
+      "bytes": 44651,
+      "sha256": "c4edae9b06d42b06d86085fa3a20d99ca32d796f00a8e1ff5c071348460117e0"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-final/source-pairs-native.json",
+      "bytes": 4721,
+      "sha256": "073809a357d6d80beb0a3d59bb49718626e71e706c92e071a34960a38b9f12e1"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-final/split-bad-callee-native.json",
+      "bytes": 7164,
+      "sha256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-final/split-bad-count-native.json",
+      "bytes": 7164,
+      "sha256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-final/split-bad-tag-native.json",
+      "bytes": 7164,
+      "sha256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-final/split-clean-native.json",
+      "bytes": 7164,
+      "sha256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-final/split-missing-index-native.json",
+      "bytes": 7164,
+      "sha256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-final/supplementary-native.json",
+      "bytes": 24263,
+      "sha256": "d1306f211061769b9f5fb1c677082813d34218883c8027d9e59b1159dc603a8b"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-initial/primary-native.json",
+      "bytes": 151025,
+      "sha256": "36b360740d2ef24f3989050fd2b38c7369b19366ad6a423b257d9dccf03d155d"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-initial/required-missing-index-native.json",
+      "bytes": 34591,
+      "sha256": "1d7be5e5b6d72df0f42aeea7c24630c33e673ec87c6d5ba99d402e582fe8b2e6"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-initial/required-native.json",
+      "bytes": 34215,
+      "sha256": "aaa97b7fbb7c1b422faadd7cedecc7c1fa3594c01cea08739c824e0551f1e50c"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-initial/supplementary-native.json",
+      "bytes": 20327,
+      "sha256": "56059654d2807132c3be010794e4c9fa341c804849669fcdf39e34785aa104cc"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass12/annotation-native.json",
+      "bytes": 34598,
+      "sha256": "6f56ae01e2f4149f959a1f10290e70e5a347af697d210859b85902244a916aed"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass12/mixed-native.json",
+      "bytes": 28746,
+      "sha256": "114d94abea54aa36cd40a32f881e4bf3014167d31ef678dc83ef28dcc22dbfac"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass12/primary-native.json",
+      "bytes": 159177,
+      "sha256": "6db4aa802be2be1e8f0b5fda7a54c4b6b2e88c2f8e7ebbd260ca532a4113c463"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass12/required-missing-identity-native.json",
+      "bytes": 42025,
+      "sha256": "fa7e6ff32f74410593471ed4b137628d9f20d30798ca388cf397f81021dc9bad"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass12/required-missing-index-native.json",
+      "bytes": 41647,
+      "sha256": "3ac51f08eb2f4ca63449c1a35ead4e7910cb72d580b798d68ccd747db6fee63d"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass12/required-native.json",
+      "bytes": 44651,
+      "sha256": "c4edae9b06d42b06d86085fa3a20d99ca32d796f00a8e1ff5c071348460117e0"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass12/source-pairs-native.json",
+      "bytes": 4721,
+      "sha256": "073809a357d6d80beb0a3d59bb49718626e71e706c92e071a34960a38b9f12e1"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass12/split-bad-callee-native.json",
+      "bytes": 7164,
+      "sha256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass12/split-bad-count-native.json",
+      "bytes": 7164,
+      "sha256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass12/split-bad-tag-native.json",
+      "bytes": 7164,
+      "sha256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass12/split-clean-native.json",
+      "bytes": 7164,
+      "sha256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass12/split-missing-index-native.json",
+      "bytes": 7164,
+      "sha256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass12/supplementary-native.json",
+      "bytes": 24263,
+      "sha256": "d1306f211061769b9f5fb1c677082813d34218883c8027d9e59b1159dc603a8b"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass2/primary-native.json",
+      "bytes": 159177,
+      "sha256": "6db4aa802be2be1e8f0b5fda7a54c4b6b2e88c2f8e7ebbd260ca532a4113c463"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass2/required-missing-index-native.json",
+      "bytes": 41569,
+      "sha256": "37ebe32dee3b97ac6c51c7c42588448ce3e61f9c554c043507f6b028687de096"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass2/required-native.json",
+      "bytes": 44955,
+      "sha256": "3bff1657be1512265d17690d4c8d6ef7ef334a1250a79625f186e4fd3e4f9f45"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass2/supplementary-native.json",
+      "bytes": 24263,
+      "sha256": "d1306f211061769b9f5fb1c677082813d34218883c8027d9e59b1159dc603a8b"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass3/primary-native.json",
+      "bytes": 159177,
+      "sha256": "6db4aa802be2be1e8f0b5fda7a54c4b6b2e88c2f8e7ebbd260ca532a4113c463"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass3/required-missing-index-native.json",
+      "bytes": 41647,
+      "sha256": "3ac51f08eb2f4ca63449c1a35ead4e7910cb72d580b798d68ccd747db6fee63d"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass3/required-native.json",
+      "bytes": 44651,
+      "sha256": "c4edae9b06d42b06d86085fa3a20d99ca32d796f00a8e1ff5c071348460117e0"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass3/supplementary-native.json",
+      "bytes": 24263,
+      "sha256": "d1306f211061769b9f5fb1c677082813d34218883c8027d9e59b1159dc603a8b"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass4/annotation-native.json",
+      "bytes": 34598,
+      "sha256": "6f56ae01e2f4149f959a1f10290e70e5a347af697d210859b85902244a916aed"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass4/mixed-native.json",
+      "bytes": 28746,
+      "sha256": "114d94abea54aa36cd40a32f881e4bf3014167d31ef678dc83ef28dcc22dbfac"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass4/primary-native.json",
+      "bytes": 159177,
+      "sha256": "6db4aa802be2be1e8f0b5fda7a54c4b6b2e88c2f8e7ebbd260ca532a4113c463"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass4/required-missing-index-native.json",
+      "bytes": 41647,
+      "sha256": "3ac51f08eb2f4ca63449c1a35ead4e7910cb72d580b798d68ccd747db6fee63d"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass4/required-native.json",
+      "bytes": 44651,
+      "sha256": "c4edae9b06d42b06d86085fa3a20d99ca32d796f00a8e1ff5c071348460117e0"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass4/supplementary-native.json",
+      "bytes": 24263,
+      "sha256": "d1306f211061769b9f5fb1c677082813d34218883c8027d9e59b1159dc603a8b"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass5/annotation-native.json",
+      "bytes": 34598,
+      "sha256": "6f56ae01e2f4149f959a1f10290e70e5a347af697d210859b85902244a916aed"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass5/mixed-native.json",
+      "bytes": 28746,
+      "sha256": "114d94abea54aa36cd40a32f881e4bf3014167d31ef678dc83ef28dcc22dbfac"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass5/primary-native.json",
+      "bytes": 159177,
+      "sha256": "6db4aa802be2be1e8f0b5fda7a54c4b6b2e88c2f8e7ebbd260ca532a4113c463"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass5/required-missing-index-native.json",
+      "bytes": 41647,
+      "sha256": "3ac51f08eb2f4ca63449c1a35ead4e7910cb72d580b798d68ccd747db6fee63d"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass5/required-native.json",
+      "bytes": 44651,
+      "sha256": "c4edae9b06d42b06d86085fa3a20d99ca32d796f00a8e1ff5c071348460117e0"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass5/supplementary-native.json",
+      "bytes": 24263,
+      "sha256": "d1306f211061769b9f5fb1c677082813d34218883c8027d9e59b1159dc603a8b"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass6/annotation-native.json",
+      "bytes": 34598,
+      "sha256": "6f56ae01e2f4149f959a1f10290e70e5a347af697d210859b85902244a916aed"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass6/mixed-native.json",
+      "bytes": 28746,
+      "sha256": "114d94abea54aa36cd40a32f881e4bf3014167d31ef678dc83ef28dcc22dbfac"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass6/primary-native.json",
+      "bytes": 159177,
+      "sha256": "6db4aa802be2be1e8f0b5fda7a54c4b6b2e88c2f8e7ebbd260ca532a4113c463"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass6/required-missing-index-native.json",
+      "bytes": 41647,
+      "sha256": "3ac51f08eb2f4ca63449c1a35ead4e7910cb72d580b798d68ccd747db6fee63d"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass6/required-native.json",
+      "bytes": 44651,
+      "sha256": "c4edae9b06d42b06d86085fa3a20d99ca32d796f00a8e1ff5c071348460117e0"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass6/supplementary-native.json",
+      "bytes": 24263,
+      "sha256": "d1306f211061769b9f5fb1c677082813d34218883c8027d9e59b1159dc603a8b"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass7/annotation-native.json",
+      "bytes": 34598,
+      "sha256": "6f56ae01e2f4149f959a1f10290e70e5a347af697d210859b85902244a916aed"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass7/mixed-native.json",
+      "bytes": 28746,
+      "sha256": "114d94abea54aa36cd40a32f881e4bf3014167d31ef678dc83ef28dcc22dbfac"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass7/primary-native.json",
+      "bytes": 159177,
+      "sha256": "6db4aa802be2be1e8f0b5fda7a54c4b6b2e88c2f8e7ebbd260ca532a4113c463"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass7/required-missing-identity-native.json",
+      "bytes": 41647,
+      "sha256": "3ac51f08eb2f4ca63449c1a35ead4e7910cb72d580b798d68ccd747db6fee63d"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass7/required-missing-index-native.json",
+      "bytes": 41647,
+      "sha256": "3ac51f08eb2f4ca63449c1a35ead4e7910cb72d580b798d68ccd747db6fee63d"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass7/required-native.json",
+      "bytes": 44651,
+      "sha256": "c4edae9b06d42b06d86085fa3a20d99ca32d796f00a8e1ff5c071348460117e0"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass7/source-pairs-native.json",
+      "bytes": 4721,
+      "sha256": "073809a357d6d80beb0a3d59bb49718626e71e706c92e071a34960a38b9f12e1"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass7/supplementary-native.json",
+      "bytes": 24263,
+      "sha256": "d1306f211061769b9f5fb1c677082813d34218883c8027d9e59b1159dc603a8b"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass8/annotation-native.json",
+      "bytes": 34598,
+      "sha256": "6f56ae01e2f4149f959a1f10290e70e5a347af697d210859b85902244a916aed"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass8/mixed-native.json",
+      "bytes": 28746,
+      "sha256": "114d94abea54aa36cd40a32f881e4bf3014167d31ef678dc83ef28dcc22dbfac"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass8/primary-native.json",
+      "bytes": 159177,
+      "sha256": "6db4aa802be2be1e8f0b5fda7a54c4b6b2e88c2f8e7ebbd260ca532a4113c463"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass8/required-missing-identity-native.json",
+      "bytes": 42025,
+      "sha256": "fa7e6ff32f74410593471ed4b137628d9f20d30798ca388cf397f81021dc9bad"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass8/required-missing-index-native.json",
+      "bytes": 41647,
+      "sha256": "3ac51f08eb2f4ca63449c1a35ead4e7910cb72d580b798d68ccd747db6fee63d"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass8/required-native.json",
+      "bytes": 44651,
+      "sha256": "c4edae9b06d42b06d86085fa3a20d99ca32d796f00a8e1ff5c071348460117e0"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass8/source-pairs-native.json",
+      "bytes": 4721,
+      "sha256": "073809a357d6d80beb0a3d59bb49718626e71e706c92e071a34960a38b9f12e1"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/native-pass8/supplementary-native.json",
+      "bytes": 24263,
+      "sha256": "d1306f211061769b9f5fb1c677082813d34218883c8027d9e59b1159dc603a8b"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-cases.json",
+      "bytes": 586,
+      "sha256": "3ac341ed306fd41cb48b2403d262dd79c8344d3a63d494355ccd3a4115668f05"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-commands-missing-identity.json",
+      "bytes": 11965,
+      "sha256": "f21cd713ac65d595b0a8401b990c6e2054b3598da3eb293eeae2cec666efdb4f"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-commands-missing-index.json",
+      "bytes": 11923,
+      "sha256": "fe35eef04b19f19d1bc21b66ba27b37a60bc4725917fcdb3e02490abfd7ce27b"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-commands.json",
+      "bytes": 11727,
+      "sha256": "47376254b01dca2b89c56ebb2a8009801a9afd999e02e328cc9ff47dc6cdf1ae"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-main-missing-identity.json",
+      "bytes": 42025,
+      "sha256": "0912c422ca245c410fdc9befe0e41f3a46353533bfa3936c65804d729206b8f5"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-main-missing-index.json",
+      "bytes": 41647,
+      "sha256": "ef9d0d46bb0dad183a0e7ac4a4971b7a2d53c5cdf191f409c31419beec83c3e2"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-main.json",
+      "bytes": 44651,
+      "sha256": "80a3d6eb86235f3d2c5e0dadd1801064a8f7ff624959f861934a81ec021ddd28"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-mutations.json",
+      "bytes": 1895,
+      "sha256": "8b8904edcc1f25bf65f8cc9b40b24a56ccb71a3bd44d6654e96797b2792a8047"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-identity/callee-class-sid-max.json",
+      "bytes": 2901,
+      "sha256": "e60c41f636bf1c1e34a0e1c4a056309169e7c532bf26acbcdf0088859b2c30ba"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-identity/callee-class-sid-max.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-identity/callee-class-sid-minus-one.json",
+      "bytes": 2749,
+      "sha256": "281120f957310c3a80221421397cf2514a313f1c3d0ff42e57cee8443c0b0125"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-identity/callee-class-sid-minus-one.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-identity/caller-count-max.json",
+      "bytes": 3401,
+      "sha256": "be246b32303e824a03c04879360ca92dbf2eade1fb19ad1b04234bf88b374eb0"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-identity/caller-count-max.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-identity/caller-count-minus-one.json",
+      "bytes": 3401,
+      "sha256": "be246b32303e824a03c04879360ca92dbf2eade1fb19ad1b04234bf88b374eb0"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-identity/caller-count-minus-one.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-identity/caller-count-outside.json",
+      "bytes": 2109,
+      "sha256": "e2ce2ff1dfef631c9a3a68d47d31583ac9282904ae6e3706eb7fefeebbb3d9d7"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-identity/caller-count-outside.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-identity/caller-name-sid-max.json",
+      "bytes": 2477,
+      "sha256": "970dfc50b06ec502bcb6906e0a2b13a7e30fb1e7fea8ffaef401574ee8e9278e"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-identity/caller-name-sid-max.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-identity/caller-name-sid-minus-one.json",
+      "bytes": 2413,
+      "sha256": "90bac2f9c2448c77a8257ebd5b86dd39abd32ecee2dd7100d212685a6608bab5"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-identity/caller-name-sid-minus-one.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-identity/core-return-sid-max.json",
+      "bytes": 3423,
+      "sha256": "e42f942273ee39b860e7ec2626e5f98eb3981be60733796388f8dc988893ee25"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-identity/core-return-sid-max.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-identity/node-id-999.json",
+      "bytes": 3423,
+      "sha256": "e42f942273ee39b860e7ec2626e5f98eb3981be60733796388f8dc988893ee25"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-identity/node-id-999.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-identity/node-tag-255.json",
+      "bytes": 3423,
+      "sha256": "e42f942273ee39b860e7ec2626e5f98eb3981be60733796388f8dc988893ee25"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-identity/node-tag-255.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-identity/offset-int-overflow.json",
+      "bytes": 2109,
+      "sha256": "e2ce2ff1dfef631c9a3a68d47d31583ac9282904ae6e3706eb7fefeebbb3d9d7"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-identity/offset-int-overflow.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-identity/offset-missing.json",
+      "bytes": 2109,
+      "sha256": "e2ce2ff1dfef631c9a3a68d47d31583ac9282904ae6e3706eb7fefeebbb3d9d7"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-identity/offset-missing.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-identity/offset-other-node.json",
+      "bytes": 3425,
+      "sha256": "cac7d2064f87761097c9ab565f4102c9d04c5af726b685e61d3aa1f5692a517b"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-identity/offset-other-node.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-identity/offset-outside.json",
+      "bytes": 2109,
+      "sha256": "e2ce2ff1dfef631c9a3a68d47d31583ac9282904ae6e3706eb7fefeebbb3d9d7"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-identity/offset-outside.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-index/callee-class-sid-max.json",
+      "bytes": 2690,
+      "sha256": "ecd6ac95d96f2fcbb224dfb59317a63e0c6eabcbfb921461bcd8fbc4b0322f6a"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-index/callee-class-sid-max.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-index/callee-class-sid-minus-one.json",
+      "bytes": 2582,
+      "sha256": "1e9a98fcfe11951f4f1d5cbdc15f5a9962a8461d990acf5ec1657302e89e9c89"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-index/callee-class-sid-minus-one.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-index/caller-count-max.json",
+      "bytes": 3401,
+      "sha256": "be246b32303e824a03c04879360ca92dbf2eade1fb19ad1b04234bf88b374eb0"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-index/caller-count-max.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-index/caller-count-minus-one.json",
+      "bytes": 3401,
+      "sha256": "be246b32303e824a03c04879360ca92dbf2eade1fb19ad1b04234bf88b374eb0"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-index/caller-count-minus-one.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-index/caller-count-outside.json",
+      "bytes": 2109,
+      "sha256": "e2ce2ff1dfef631c9a3a68d47d31583ac9282904ae6e3706eb7fefeebbb3d9d7"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-index/caller-count-outside.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-index/caller-name-sid-max.json",
+      "bytes": 2477,
+      "sha256": "970dfc50b06ec502bcb6906e0a2b13a7e30fb1e7fea8ffaef401574ee8e9278e"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-index/caller-name-sid-max.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-index/caller-name-sid-minus-one.json",
+      "bytes": 2413,
+      "sha256": "90bac2f9c2448c77a8257ebd5b86dd39abd32ecee2dd7100d212685a6608bab5"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-index/caller-name-sid-minus-one.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-index/core-return-sid-max.json",
+      "bytes": 3423,
+      "sha256": "e42f942273ee39b860e7ec2626e5f98eb3981be60733796388f8dc988893ee25"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-index/core-return-sid-max.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-index/node-id-999.json",
+      "bytes": 3423,
+      "sha256": "e42f942273ee39b860e7ec2626e5f98eb3981be60733796388f8dc988893ee25"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-index/node-id-999.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-index/node-tag-255.json",
+      "bytes": 3423,
+      "sha256": "e42f942273ee39b860e7ec2626e5f98eb3981be60733796388f8dc988893ee25"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-index/node-tag-255.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-index/offset-int-overflow.json",
+      "bytes": 2109,
+      "sha256": "e2ce2ff1dfef631c9a3a68d47d31583ac9282904ae6e3706eb7fefeebbb3d9d7"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-index/offset-int-overflow.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-index/offset-missing.json",
+      "bytes": 2109,
+      "sha256": "e2ce2ff1dfef631c9a3a68d47d31583ac9282904ae6e3706eb7fefeebbb3d9d7"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-index/offset-missing.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-index/offset-other-node.json",
+      "bytes": 3425,
+      "sha256": "cac7d2064f87761097c9ab565f4102c9d04c5af726b685e61d3aa1f5692a517b"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-index/offset-other-node.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-index/offset-outside.json",
+      "bytes": 2109,
+      "sha256": "e2ce2ff1dfef631c9a3a68d47d31583ac9282904ae6e3706eb7fefeebbb3d9d7"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle-missing-index/offset-outside.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle/callee-class-sid-max.json",
+      "bytes": 2901,
+      "sha256": "e60c41f636bf1c1e34a0e1c4a056309169e7c532bf26acbcdf0088859b2c30ba"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle/callee-class-sid-max.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle/callee-class-sid-minus-one.json",
+      "bytes": 3375,
+      "sha256": "0994df97f37586de21f9b924294a24b54ec1b1145200abdac5c8c7510ea4099a"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle/callee-class-sid-minus-one.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle/caller-count-max.json",
+      "bytes": 3401,
+      "sha256": "be246b32303e824a03c04879360ca92dbf2eade1fb19ad1b04234bf88b374eb0"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle/caller-count-max.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle/caller-count-minus-one.json",
+      "bytes": 3401,
+      "sha256": "be246b32303e824a03c04879360ca92dbf2eade1fb19ad1b04234bf88b374eb0"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle/caller-count-minus-one.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle/caller-count-outside.json",
+      "bytes": 2669,
+      "sha256": "dd6a8d054a4940b621f29c78700654fe06285a340fea55b49144b8e07676d855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle/caller-count-outside.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle/caller-name-sid-max.json",
+      "bytes": 2919,
+      "sha256": "3129c219512d4ddb67ec4097517a97be9c000ed68b88d0d8d88642ece8bb871d"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle/caller-name-sid-max.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle/caller-name-sid-minus-one.json",
+      "bytes": 3411,
+      "sha256": "a3af84d53fde6e6b3e96898207168478876cc4d9cea86f74d8c07f4e6ee7acb7"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle/caller-name-sid-minus-one.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle/core-return-sid-max.json",
+      "bytes": 3423,
+      "sha256": "e42f942273ee39b860e7ec2626e5f98eb3981be60733796388f8dc988893ee25"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle/core-return-sid-max.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle/node-id-999.json",
+      "bytes": 3423,
+      "sha256": "e42f942273ee39b860e7ec2626e5f98eb3981be60733796388f8dc988893ee25"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle/node-id-999.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle/node-tag-255.json",
+      "bytes": 3423,
+      "sha256": "e42f942273ee39b860e7ec2626e5f98eb3981be60733796388f8dc988893ee25"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle/node-tag-255.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle/offset-int-overflow.json",
+      "bytes": 2109,
+      "sha256": "e2ce2ff1dfef631c9a3a68d47d31583ac9282904ae6e3706eb7fefeebbb3d9d7"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle/offset-int-overflow.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle/offset-missing.json",
+      "bytes": 2109,
+      "sha256": "e2ce2ff1dfef631c9a3a68d47d31583ac9282904ae6e3706eb7fefeebbb3d9d7"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle/offset-missing.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle/offset-other-node.json",
+      "bytes": 3425,
+      "sha256": "cac7d2064f87761097c9ab565f4102c9d04c5af726b685e61d3aa1f5692a517b"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle/offset-other-node.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle/offset-outside.json",
+      "bytes": 2109,
+      "sha256": "e2ce2ff1dfef631c9a3a68d47d31583ac9282904ae6e3706eb7fefeebbb3d9d7"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required-oracle/offset-outside.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/callee-class-sid-max/forward.graph",
+      "bytes": 12,
+      "sha256": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/callee-class-sid-max/forward.offsets",
+      "bytes": 35,
+      "sha256": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/callee-class-sid-max/forward.properties",
+      "bytes": 620,
+      "sha256": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/callee-class-sid-max/graph.callsite-string-content.identity",
+      "bytes": 32,
+      "sha256": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/callee-class-sid-max/graph.callsite-string-index",
+      "bytes": 676,
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/callee-class-sid-max/graph.classoverview",
+      "bytes": 64,
+      "sha256": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/callee-class-sid-max/graph.comparisons",
+      "bytes": 8,
+      "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/callee-class-sid-max/graph.labelprefix",
+      "bytes": 368,
+      "sha256": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/callee-class-sid-max/graph.labels",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/callee-class-sid-max/graph.metadata",
+      "bytes": 36,
+      "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/callee-class-sid-max/graph.nodedata",
+      "bytes": 220,
+      "sha256": "5692afec024496b2f5c15c563449268d1f7291bd41503c6ed8f6745215b0a583"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/callee-class-sid-max/graph.nodeindex",
+      "bytes": 60,
+      "sha256": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/callee-class-sid-max/graph.nodeoffsets",
+      "bytes": 736,
+      "sha256": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/callee-class-sid-max/graph.resources",
+      "bytes": 8,
+      "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/callee-class-sid-max/graph.strings",
+      "bytes": 535,
+      "sha256": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/callee-class-sid-max/graph.strings.identity",
+      "bytes": 32,
+      "sha256": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/callee-class-sid-max/graph.typeindex",
+      "bytes": 232,
+      "sha256": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/callee-class-sid-minus-one/forward.graph",
+      "bytes": 12,
+      "sha256": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/callee-class-sid-minus-one/forward.offsets",
+      "bytes": 35,
+      "sha256": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/callee-class-sid-minus-one/forward.properties",
+      "bytes": 620,
+      "sha256": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/callee-class-sid-minus-one/graph.callsite-string-content.identity",
+      "bytes": 32,
+      "sha256": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/callee-class-sid-minus-one/graph.callsite-string-index",
+      "bytes": 676,
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/callee-class-sid-minus-one/graph.classoverview",
+      "bytes": 64,
+      "sha256": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/callee-class-sid-minus-one/graph.comparisons",
+      "bytes": 8,
+      "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/callee-class-sid-minus-one/graph.labelprefix",
+      "bytes": 368,
+      "sha256": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/callee-class-sid-minus-one/graph.labels",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/callee-class-sid-minus-one/graph.metadata",
+      "bytes": 36,
+      "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/callee-class-sid-minus-one/graph.nodedata",
+      "bytes": 220,
+      "sha256": "63fc4456a2158f840267802225c809d81376561013fe8ff3c3761e672b8026ae"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/callee-class-sid-minus-one/graph.nodeindex",
+      "bytes": 60,
+      "sha256": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/callee-class-sid-minus-one/graph.nodeoffsets",
+      "bytes": 736,
+      "sha256": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/callee-class-sid-minus-one/graph.resources",
+      "bytes": 8,
+      "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/callee-class-sid-minus-one/graph.strings",
+      "bytes": 535,
+      "sha256": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/callee-class-sid-minus-one/graph.strings.identity",
+      "bytes": 32,
+      "sha256": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/callee-class-sid-minus-one/graph.typeindex",
+      "bytes": 232,
+      "sha256": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-max/forward.graph",
+      "bytes": 12,
+      "sha256": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-max/forward.offsets",
+      "bytes": 35,
+      "sha256": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-max/forward.properties",
+      "bytes": 620,
+      "sha256": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-max/graph.callsite-string-content.identity",
+      "bytes": 32,
+      "sha256": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-max/graph.callsite-string-index",
+      "bytes": 676,
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-max/graph.classoverview",
+      "bytes": 64,
+      "sha256": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-max/graph.comparisons",
+      "bytes": 8,
+      "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-max/graph.labelprefix",
+      "bytes": 368,
+      "sha256": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-max/graph.labels",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-max/graph.metadata",
+      "bytes": 36,
+      "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-max/graph.nodedata",
+      "bytes": 220,
+      "sha256": "574eb1006f1e02724ddf7e3a94593c09179a4825bda3694d04dae8c51ffe83c8"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-max/graph.nodeindex",
+      "bytes": 60,
+      "sha256": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-max/graph.nodeoffsets",
+      "bytes": 736,
+      "sha256": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-max/graph.resources",
+      "bytes": 8,
+      "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-max/graph.strings",
+      "bytes": 535,
+      "sha256": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-max/graph.strings.identity",
+      "bytes": 32,
+      "sha256": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-max/graph.typeindex",
+      "bytes": 232,
+      "sha256": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-minus-one/forward.graph",
+      "bytes": 12,
+      "sha256": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-minus-one/forward.offsets",
+      "bytes": 35,
+      "sha256": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-minus-one/forward.properties",
+      "bytes": 620,
+      "sha256": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-minus-one/graph.callsite-string-content.identity",
+      "bytes": 32,
+      "sha256": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-minus-one/graph.callsite-string-index",
+      "bytes": 676,
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-minus-one/graph.classoverview",
+      "bytes": 64,
+      "sha256": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-minus-one/graph.comparisons",
+      "bytes": 8,
+      "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-minus-one/graph.labelprefix",
+      "bytes": 368,
+      "sha256": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-minus-one/graph.labels",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-minus-one/graph.metadata",
+      "bytes": 36,
+      "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-minus-one/graph.nodedata",
+      "bytes": 220,
+      "sha256": "ecf790af8bc90aab0c498b7397a7294a19c4777c9c6fddd4a7e37394480ef0ad"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-minus-one/graph.nodeindex",
+      "bytes": 60,
+      "sha256": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-minus-one/graph.nodeoffsets",
+      "bytes": 736,
+      "sha256": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-minus-one/graph.resources",
+      "bytes": 8,
+      "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-minus-one/graph.strings",
+      "bytes": 535,
+      "sha256": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-minus-one/graph.strings.identity",
+      "bytes": 32,
+      "sha256": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-minus-one/graph.typeindex",
+      "bytes": 232,
+      "sha256": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-outside/forward.graph",
+      "bytes": 12,
+      "sha256": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-outside/forward.offsets",
+      "bytes": 35,
+      "sha256": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-outside/forward.properties",
+      "bytes": 620,
+      "sha256": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-outside/graph.callsite-string-content.identity",
+      "bytes": 32,
+      "sha256": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-outside/graph.callsite-string-index",
+      "bytes": 676,
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-outside/graph.classoverview",
+      "bytes": 64,
+      "sha256": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-outside/graph.comparisons",
+      "bytes": 8,
+      "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-outside/graph.labelprefix",
+      "bytes": 368,
+      "sha256": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-outside/graph.labels",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-outside/graph.metadata",
+      "bytes": 36,
+      "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-outside/graph.nodedata",
+      "bytes": 220,
+      "sha256": "c100564154a35413df606e405d069c4df560ed9e5e3840cacce41c234e71ae86"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-outside/graph.nodeindex",
+      "bytes": 60,
+      "sha256": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-outside/graph.nodeoffsets",
+      "bytes": 736,
+      "sha256": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-outside/graph.resources",
+      "bytes": 8,
+      "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-outside/graph.strings",
+      "bytes": 535,
+      "sha256": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-outside/graph.strings.identity",
+      "bytes": 32,
+      "sha256": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-count-outside/graph.typeindex",
+      "bytes": 232,
+      "sha256": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-name-sid-max/forward.graph",
+      "bytes": 12,
+      "sha256": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-name-sid-max/forward.offsets",
+      "bytes": 35,
+      "sha256": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-name-sid-max/forward.properties",
+      "bytes": 620,
+      "sha256": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-name-sid-max/graph.callsite-string-content.identity",
+      "bytes": 32,
+      "sha256": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-name-sid-max/graph.callsite-string-index",
+      "bytes": 676,
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-name-sid-max/graph.classoverview",
+      "bytes": 64,
+      "sha256": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-name-sid-max/graph.comparisons",
+      "bytes": 8,
+      "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-name-sid-max/graph.labelprefix",
+      "bytes": 368,
+      "sha256": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-name-sid-max/graph.labels",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-name-sid-max/graph.metadata",
+      "bytes": 36,
+      "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-name-sid-max/graph.nodedata",
+      "bytes": 220,
+      "sha256": "39b555426d08ccae3793b2bacf7426c761d956190e5261bb6065f3f6992fc4f5"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-name-sid-max/graph.nodeindex",
+      "bytes": 60,
+      "sha256": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-name-sid-max/graph.nodeoffsets",
+      "bytes": 736,
+      "sha256": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-name-sid-max/graph.resources",
+      "bytes": 8,
+      "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-name-sid-max/graph.strings",
+      "bytes": 535,
+      "sha256": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-name-sid-max/graph.strings.identity",
+      "bytes": 32,
+      "sha256": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-name-sid-max/graph.typeindex",
+      "bytes": 232,
+      "sha256": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-name-sid-minus-one/forward.graph",
+      "bytes": 12,
+      "sha256": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-name-sid-minus-one/forward.offsets",
+      "bytes": 35,
+      "sha256": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-name-sid-minus-one/forward.properties",
+      "bytes": 620,
+      "sha256": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-name-sid-minus-one/graph.callsite-string-content.identity",
+      "bytes": 32,
+      "sha256": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-name-sid-minus-one/graph.callsite-string-index",
+      "bytes": 676,
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-name-sid-minus-one/graph.classoverview",
+      "bytes": 64,
+      "sha256": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-name-sid-minus-one/graph.comparisons",
+      "bytes": 8,
+      "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-name-sid-minus-one/graph.labelprefix",
+      "bytes": 368,
+      "sha256": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-name-sid-minus-one/graph.labels",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-name-sid-minus-one/graph.metadata",
+      "bytes": 36,
+      "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-name-sid-minus-one/graph.nodedata",
+      "bytes": 220,
+      "sha256": "1045a457ce4157c742ed69d36521e26fd44eea985c60ef45aec4c141027677b3"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-name-sid-minus-one/graph.nodeindex",
+      "bytes": 60,
+      "sha256": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-name-sid-minus-one/graph.nodeoffsets",
+      "bytes": 736,
+      "sha256": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-name-sid-minus-one/graph.resources",
+      "bytes": 8,
+      "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-name-sid-minus-one/graph.strings",
+      "bytes": 535,
+      "sha256": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-name-sid-minus-one/graph.strings.identity",
+      "bytes": 32,
+      "sha256": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/caller-name-sid-minus-one/graph.typeindex",
+      "bytes": 232,
+      "sha256": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/core-return-sid-max/forward.graph",
+      "bytes": 12,
+      "sha256": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/core-return-sid-max/forward.offsets",
+      "bytes": 35,
+      "sha256": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/core-return-sid-max/forward.properties",
+      "bytes": 620,
+      "sha256": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/core-return-sid-max/graph.callsite-string-content.identity",
+      "bytes": 32,
+      "sha256": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/core-return-sid-max/graph.callsite-string-index",
+      "bytes": 676,
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/core-return-sid-max/graph.classoverview",
+      "bytes": 64,
+      "sha256": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/core-return-sid-max/graph.comparisons",
+      "bytes": 8,
+      "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/core-return-sid-max/graph.labelprefix",
+      "bytes": 368,
+      "sha256": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/core-return-sid-max/graph.labels",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/core-return-sid-max/graph.metadata",
+      "bytes": 36,
+      "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/core-return-sid-max/graph.nodedata",
+      "bytes": 220,
+      "sha256": "9727c0bb15ff09833a7d051df8eecca190e98f0338a045929d7f865d933318d8"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/core-return-sid-max/graph.nodeindex",
+      "bytes": 60,
+      "sha256": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/core-return-sid-max/graph.nodeoffsets",
+      "bytes": 736,
+      "sha256": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/core-return-sid-max/graph.resources",
+      "bytes": 8,
+      "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/core-return-sid-max/graph.strings",
+      "bytes": 535,
+      "sha256": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/core-return-sid-max/graph.strings.identity",
+      "bytes": 32,
+      "sha256": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/core-return-sid-max/graph.typeindex",
+      "bytes": 232,
+      "sha256": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/node-id-999/forward.graph",
+      "bytes": 12,
+      "sha256": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/node-id-999/forward.offsets",
+      "bytes": 35,
+      "sha256": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/node-id-999/forward.properties",
+      "bytes": 620,
+      "sha256": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/node-id-999/graph.callsite-string-content.identity",
+      "bytes": 32,
+      "sha256": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/node-id-999/graph.callsite-string-index",
+      "bytes": 676,
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/node-id-999/graph.classoverview",
+      "bytes": 64,
+      "sha256": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/node-id-999/graph.comparisons",
+      "bytes": 8,
+      "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/node-id-999/graph.labelprefix",
+      "bytes": 368,
+      "sha256": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/node-id-999/graph.labels",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/node-id-999/graph.metadata",
+      "bytes": 36,
+      "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/node-id-999/graph.nodedata",
+      "bytes": 220,
+      "sha256": "351cfd52f8abeb32ad0c4d386d1167dcd1f070c84dc63e73623511c7e5389aa8"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/node-id-999/graph.nodeindex",
+      "bytes": 60,
+      "sha256": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/node-id-999/graph.nodeoffsets",
+      "bytes": 736,
+      "sha256": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/node-id-999/graph.resources",
+      "bytes": 8,
+      "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/node-id-999/graph.strings",
+      "bytes": 535,
+      "sha256": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/node-id-999/graph.strings.identity",
+      "bytes": 32,
+      "sha256": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/node-id-999/graph.typeindex",
+      "bytes": 232,
+      "sha256": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/node-tag-255/forward.graph",
+      "bytes": 12,
+      "sha256": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/node-tag-255/forward.offsets",
+      "bytes": 35,
+      "sha256": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/node-tag-255/forward.properties",
+      "bytes": 620,
+      "sha256": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/node-tag-255/graph.callsite-string-content.identity",
+      "bytes": 32,
+      "sha256": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/node-tag-255/graph.callsite-string-index",
+      "bytes": 676,
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/node-tag-255/graph.classoverview",
+      "bytes": 64,
+      "sha256": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/node-tag-255/graph.comparisons",
+      "bytes": 8,
+      "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/node-tag-255/graph.labelprefix",
+      "bytes": 368,
+      "sha256": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/node-tag-255/graph.labels",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/node-tag-255/graph.metadata",
+      "bytes": 36,
+      "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/node-tag-255/graph.nodedata",
+      "bytes": 220,
+      "sha256": "05cef5789411b018b6044747976f25b198cb994b3cc4c341007040f9aaa677e6"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/node-tag-255/graph.nodeindex",
+      "bytes": 60,
+      "sha256": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/node-tag-255/graph.nodeoffsets",
+      "bytes": 736,
+      "sha256": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/node-tag-255/graph.resources",
+      "bytes": 8,
+      "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/node-tag-255/graph.strings",
+      "bytes": 535,
+      "sha256": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/node-tag-255/graph.strings.identity",
+      "bytes": 32,
+      "sha256": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/node-tag-255/graph.typeindex",
+      "bytes": 232,
+      "sha256": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-int-overflow/forward.graph",
+      "bytes": 12,
+      "sha256": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-int-overflow/forward.offsets",
+      "bytes": 35,
+      "sha256": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-int-overflow/forward.properties",
+      "bytes": 620,
+      "sha256": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-int-overflow/graph.callsite-string-content.identity",
+      "bytes": 32,
+      "sha256": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-int-overflow/graph.callsite-string-index",
+      "bytes": 676,
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-int-overflow/graph.classoverview",
+      "bytes": 64,
+      "sha256": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-int-overflow/graph.comparisons",
+      "bytes": 8,
+      "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-int-overflow/graph.labelprefix",
+      "bytes": 368,
+      "sha256": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-int-overflow/graph.labels",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-int-overflow/graph.metadata",
+      "bytes": 36,
+      "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-int-overflow/graph.nodedata",
+      "bytes": 220,
+      "sha256": "f0a4462a820a7daa557704796992c79b9ddafcb80475aaafa020592cb4e19e1a"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-int-overflow/graph.nodeindex",
+      "bytes": 60,
+      "sha256": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-int-overflow/graph.nodeoffsets",
+      "bytes": 736,
+      "sha256": "53219174757202777cd8067105e39400ccccd3b34e982092e8d81c67e79c8200"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-int-overflow/graph.resources",
+      "bytes": 8,
+      "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-int-overflow/graph.strings",
+      "bytes": 535,
+      "sha256": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-int-overflow/graph.strings.identity",
+      "bytes": 32,
+      "sha256": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-int-overflow/graph.typeindex",
+      "bytes": 232,
+      "sha256": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-missing/forward.graph",
+      "bytes": 12,
+      "sha256": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-missing/forward.offsets",
+      "bytes": 35,
+      "sha256": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-missing/forward.properties",
+      "bytes": 620,
+      "sha256": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-missing/graph.callsite-string-content.identity",
+      "bytes": 32,
+      "sha256": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-missing/graph.callsite-string-index",
+      "bytes": 676,
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-missing/graph.classoverview",
+      "bytes": 64,
+      "sha256": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-missing/graph.comparisons",
+      "bytes": 8,
+      "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-missing/graph.labelprefix",
+      "bytes": 368,
+      "sha256": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-missing/graph.labels",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-missing/graph.metadata",
+      "bytes": 36,
+      "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-missing/graph.nodedata",
+      "bytes": 220,
+      "sha256": "f0a4462a820a7daa557704796992c79b9ddafcb80475aaafa020592cb4e19e1a"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-missing/graph.nodeindex",
+      "bytes": 60,
+      "sha256": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-missing/graph.nodeoffsets",
+      "bytes": 736,
+      "sha256": "953376d19e0cf303ebde35d3ca3c7c87e53f565787312431080325ea8d5d9939"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-missing/graph.resources",
+      "bytes": 8,
+      "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-missing/graph.strings",
+      "bytes": 535,
+      "sha256": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-missing/graph.strings.identity",
+      "bytes": 32,
+      "sha256": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-missing/graph.typeindex",
+      "bytes": 232,
+      "sha256": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-other-node/forward.graph",
+      "bytes": 12,
+      "sha256": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-other-node/forward.offsets",
+      "bytes": 35,
+      "sha256": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-other-node/forward.properties",
+      "bytes": 620,
+      "sha256": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-other-node/graph.callsite-string-content.identity",
+      "bytes": 32,
+      "sha256": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-other-node/graph.callsite-string-index",
+      "bytes": 676,
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-other-node/graph.classoverview",
+      "bytes": 64,
+      "sha256": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-other-node/graph.comparisons",
+      "bytes": 8,
+      "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-other-node/graph.labelprefix",
+      "bytes": 368,
+      "sha256": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-other-node/graph.labels",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-other-node/graph.metadata",
+      "bytes": 36,
+      "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-other-node/graph.nodedata",
+      "bytes": 220,
+      "sha256": "f0a4462a820a7daa557704796992c79b9ddafcb80475aaafa020592cb4e19e1a"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-other-node/graph.nodeindex",
+      "bytes": 60,
+      "sha256": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-other-node/graph.nodeoffsets",
+      "bytes": 736,
+      "sha256": "76d436c90c89f7f5ffffcea88f801ea4e85d2d2d9158ee7137ca07e3f940aa0f"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-other-node/graph.resources",
+      "bytes": 8,
+      "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-other-node/graph.strings",
+      "bytes": 535,
+      "sha256": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-other-node/graph.strings.identity",
+      "bytes": 32,
+      "sha256": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-other-node/graph.typeindex",
+      "bytes": 232,
+      "sha256": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-outside/forward.graph",
+      "bytes": 12,
+      "sha256": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-outside/forward.offsets",
+      "bytes": 35,
+      "sha256": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-outside/forward.properties",
+      "bytes": 620,
+      "sha256": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-outside/graph.callsite-string-content.identity",
+      "bytes": 32,
+      "sha256": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-outside/graph.callsite-string-index",
+      "bytes": 676,
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-outside/graph.classoverview",
+      "bytes": 64,
+      "sha256": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-outside/graph.comparisons",
+      "bytes": 8,
+      "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-outside/graph.labelprefix",
+      "bytes": 368,
+      "sha256": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-outside/graph.labels",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-outside/graph.metadata",
+      "bytes": 36,
+      "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-outside/graph.nodedata",
+      "bytes": 220,
+      "sha256": "f0a4462a820a7daa557704796992c79b9ddafcb80475aaafa020592cb4e19e1a"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-outside/graph.nodeindex",
+      "bytes": 60,
+      "sha256": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-outside/graph.nodeoffsets",
+      "bytes": 736,
+      "sha256": "5ecb0980d8717fc6443cd8bb7e510ede615bcd591ba543c0d03caffdaca90b52"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-outside/graph.resources",
+      "bytes": 8,
+      "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-outside/graph.strings",
+      "bytes": 535,
+      "sha256": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-outside/graph.strings.identity",
+      "bytes": 32,
+      "sha256": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/required/offset-outside/graph.typeindex",
+      "bytes": 232,
+      "sha256": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/split-bad-callee-main.json",
+      "bytes": 7304,
+      "sha256": "f08a321fbe5181af142a8e31b02cf4c657540469378a4f0e580fa62e5d143ebd"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/split-bad-callee-main.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/split-bad-count-main.json",
+      "bytes": 7304,
+      "sha256": "f08a321fbe5181af142a8e31b02cf4c657540469378a4f0e580fa62e5d143ebd"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/split-bad-count-main.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/split-bad-tag-main.json",
+      "bytes": 7304,
+      "sha256": "f08a321fbe5181af142a8e31b02cf4c657540469378a4f0e580fa62e5d143ebd"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/split-bad-tag-main.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/split-cases.json",
+      "bytes": 1640,
+      "sha256": "2e973a4c502c2c99db0c6f4ffc22efe84aa6af361a0bd13fc88fe61e54b7f91d"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/split-clean-main.json",
+      "bytes": 7304,
+      "sha256": "f08a321fbe5181af142a8e31b02cf4c657540469378a4f0e580fa62e5d143ebd"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/split-clean-main.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/split-clean/forward.graph",
+      "bytes": 512,
+      "sha256": "9f56cda75fefeab90f6fa5d5ddc9601544b121732c5ecccab32e631060453a5d"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/split-clean/forward.offsets",
+      "bytes": 1537,
+      "sha256": "5ca6a2ad660de7622d28338d3f0e00aa785875e414cccd4295d03379064aad10"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/split-clean/forward.properties",
+      "bytes": 624,
+      "sha256": "1f2001d571bc36868311c103999868d420cce3708e78debd6a7b2b3b0c4dbee8"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/split-clean/graph.callsite-string-content.identity",
+      "bytes": 32,
+      "sha256": "c6ea3b2e0686e1f14b72d2a851eb803c44a395a8717431e01d2914d8a934fe14"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/split-clean/graph.callsite-string-index",
+      "bytes": 66148,
+      "sha256": "532b818238cc5644178153625693f26fc00265f310d3ff50680ceceb7d76fc8a"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/split-clean/graph.classoverview",
+      "bytes": 64,
+      "sha256": "e0c7264d40c04999fe6f423d29d7bef919bf26016800b052f43aeceecf0b34ce"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/split-clean/graph.comparisons",
+      "bytes": 8,
+      "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/split-clean/graph.labelprefix",
+      "bytes": 16388,
+      "sha256": "b815d7028f96923cddafd95a57213c77ad0d693121ad04f59ac1273c04510f21"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/split-clean/graph.labels",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/split-clean/graph.metadata",
+      "bytes": 36,
+      "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/split-clean/graph.nodedata",
+      "bytes": 217096,
+      "sha256": "250353ecaef83a0bca677bb20ccbb6bf1a3106afde7b6a9cb35bf8e1c0ecab4c"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/split-clean/graph.nodeindex",
+      "bytes": 53256,
+      "sha256": "04fffc0b1dee776a23adb215b5ae32b68baefa2ae7f79b9393f37150c3672e65"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/split-clean/graph.nodeoffsets",
+      "bytes": 32776,
+      "sha256": "d9fa08ae91468388341a040cfae0bb8d43356afd811b7a2e25ad48c610059bf4"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/split-clean/graph.resources",
+      "bytes": 8,
+      "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/split-clean/graph.strings",
+      "bytes": 535,
+      "sha256": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/split-clean/graph.strings.identity",
+      "bytes": 32,
+      "sha256": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/split-clean/graph.typeindex",
+      "bytes": 16600,
+      "sha256": "df3e7bdff3836b511e6077a73036ce3e7608b339912d54c38c4e92bf54637fb8"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/split-commands.json",
+      "bytes": 3960,
+      "sha256": "2993df7b3d8da0e627b7dd56e89a381daf9806c3e5f30d4e122c5968e2faf1cb"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/split-missing-index-main.json",
+      "bytes": 7304,
+      "sha256": "f08a321fbe5181af142a8e31b02cf4c657540469378a4f0e580fa62e5d143ebd"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/split-missing-index-main.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/summarize.py",
+      "bytes": 2238,
+      "sha256": "e2cfdece89539c68965bc31a356b1a390146c798a7bfb777a333e3f35ee99457"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/verification-native/annotation-after-native.json",
+      "bytes": 34590,
+      "sha256": "d9d5a2bf4ef573f75cae34d9e5d5fff5941bf29af93d0e97ca301a7871bbece0"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/verification-native/annotation-native.json",
+      "bytes": 34598,
+      "sha256": "6f56ae01e2f4149f959a1f10290e70e5a347af697d210859b85902244a916aed"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/verification-native/late-native.json",
+      "bytes": 1886,
+      "sha256": "ecee3443a9b07b945d278f9a5d3af3717ac4624950438f299db9ff0b87f1b2ae"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/verification-native/mixed-native.json",
+      "bytes": 28746,
+      "sha256": "114d94abea54aa36cd40a32f881e4bf3014167d31ef678dc83ef28dcc22dbfac"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/verification-native/primary-eligibility.json",
+      "bytes": 49343,
+      "sha256": "2e5b8537f2e4754aa497edc8d502889edfec8b400b1bf56efcf60f3102d4fc48"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/verification-native/primary-native.json",
+      "bytes": 159177,
+      "sha256": "6db4aa802be2be1e8f0b5fda7a54c4b6b2e88c2f8e7ebbd260ca532a4113c463"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/verification-native/required-missing-identity-native.json",
+      "bytes": 42025,
+      "sha256": "fa7e6ff32f74410593471ed4b137628d9f20d30798ca388cf397f81021dc9bad"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/verification-native/required-missing-index-native.json",
+      "bytes": 41647,
+      "sha256": "3ac51f08eb2f4ca63449c1a35ead4e7910cb72d580b798d68ccd747db6fee63d"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/verification-native/required-native.json",
+      "bytes": 44651,
+      "sha256": "c4edae9b06d42b06d86085fa3a20d99ca32d796f00a8e1ff5c071348460117e0"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/verification-native/source-pairs-native.json",
+      "bytes": 4721,
+      "sha256": "073809a357d6d80beb0a3d59bb49718626e71e706c92e071a34960a38b9f12e1"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/verification-native/split-bad-callee-native.json",
+      "bytes": 7164,
+      "sha256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/verification-native/split-bad-count-native.json",
+      "bytes": 7164,
+      "sha256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/verification-native/split-bad-tag-native.json",
+      "bytes": 7164,
+      "sha256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/verification-native/split-clean-native.json",
+      "bytes": 7164,
+      "sha256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/verification-native/split-missing-index-native.json",
+      "bytes": 7164,
+      "sha256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/verification-native/supplementary-eligibility.json",
+      "bytes": 7251,
+      "sha256": "302430e5f3d35e9844328c42bd2a8c057c0264b16898a797986b5cf747be9699"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/verification-native/supplementary-native.json",
+      "bytes": 24263,
+      "sha256": "d1306f211061769b9f5fb1c677082813d34218883c8027d9e59b1159dc603a8b"
+    },
+    {
+      "path": "graphite-server/internal/query/testdata/indexed-distinct/verification-summary.json",
+      "bytes": 222589,
+      "sha256": "43685f3b63f05ce1be77558ecc047cd9f5c003de8f55ce7770c08b155405173e"
+    },
+    {
+      "path": "graphite-server/internal/store/callsite_index_test.go",
+      "bytes": 16319,
+      "sha256": "eef8fda9c611aa9ff4680d11b8a02cb98897b535dc35076a6e3b5d460828349b"
+    },
+    {
+      "path": "graphite-server/internal/store/callsite_strings.go",
+      "bytes": 5070,
+      "sha256": "8532bd1f0e6fbc7dad98c41db36221955ef986f7a780c7cc3233728bc45c86c8"
+    },
+    {
+      "path": "graphite-server/internal/store/distinct_projection.go",
+      "bytes": 12104,
+      "sha256": "4d7d7978131d1643e94ab99a8d24b8283f189421c6de6faa728746d98ba80279"
+    },
+    {
+      "path": "graphite-server/internal/store/distinct_projection_test.go",
+      "bytes": 3804,
+      "sha256": "8e33a6b44813557b5a8abb4e35902dc4a81981b59e3d8fdf30b653486f359bf0"
+    },
+    {
+      "path": "graphite-server/internal/store/store.go",
+      "bytes": 8187,
+      "sha256": "a5a61c32d1b20f42540d0451b941f3adfc0788dec71d998b5204ffa13f843803"
+    }
+  ],
+  "verification": {
+    "total": 1048,
+    "comparison": {
+      "equal": 739,
+      "both-success-difference": 7,
+      "both-error-difference": 180,
+      "main-success-native-error": 122
+    },
+    "eligible": {
+      "equal": 580
+    },
+    "declined": {
+      "equal": 159,
+      "both-success-difference": 7,
+      "both-error-difference": 180,
+      "main-success-native-error": 122
+    }
+  },
+  "checks": [
+    {
+      "command": "INDEXED_DISTINCT_OUTPUT=testdata/indexed-distinct/verification-native go test -race ./...",
+      "exitCode": 0,
+      "log": "go-test-race.log"
+    },
+    {
+      "command": "go vet ./...",
+      "exitCode": 0,
+      "log": "go-vet.log"
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0
+    }
+  ],
+  "sharedDependencies": [
+    "query/engine.go: DISTINCT branch and raw single provenance materialization",
+    "query/eval.go: nullable Java error messages with existing HTTP fallback",
+    "store/store.go: DISTINCT state plus release on Close",
+    "store/callsite_strings.go: MAPPED missing-identity hash consumes four raw SIDs and mapped offsets, while A6 full-node certificate remains intact"
+  ],
+  "productionFiles": [
+    {
+      "path": "graphite-server/internal/query/engine.go",
+      "bytes": 14226,
+      "sha256": "c1a085598a2f3447f2f57e206e3b0b9da2d4f6e9246671b38b0510af0872e3de"
+    },
+    {
+      "path": "graphite-server/internal/query/eval.go",
+      "bytes": 14144,
+      "sha256": "e754d78ef80945dcdcac904bc15647939c0fda1566522be1922ae08ad1d96717"
+    },
+    {
+      "path": "graphite-server/internal/query/indexed_distinct.go",
+      "bytes": 24608,
+      "sha256": "82271f7c8a3498e3004a244bd32a7ab239baca75f570c5ab367212b79db7adff"
+    },
+    {
+      "path": "graphite-server/internal/query/indexed_distinct_plan.go",
+      "bytes": 9120,
+      "sha256": "37be958d3659f21cf57fcd4017b3f3cddd73f652171266adb8d7d2a32efe4155"
+    },
+    {
+      "path": "graphite-server/internal/store/callsite_strings.go",
+      "bytes": 5070,
+      "sha256": "8532bd1f0e6fbc7dad98c41db36221955ef986f7a780c7cc3233728bc45c86c8"
+    },
+    {
+      "path": "graphite-server/internal/store/distinct_projection.go",
+      "bytes": 12104,
+      "sha256": "4d7d7978131d1643e94ab99a8d24b8283f189421c6de6faa728746d98ba80279"
+    },
+    {
+      "path": "graphite-server/internal/store/store.go",
+      "bytes": 8187,
+      "sha256": "a5a61c32d1b20f42540d0451b941f3adfc0788dec71d998b5204ffa13f843803"
+    }
+  ],
+  "limits": [
+    "309 declined corpus mismatches retained and not claimed fixed",
+    "Ordinary indexed projection and retained-history behavior remain disabled",
+    "No real64 or performance run in this worktree",
+    "Custom JVM runtime property overrides are not mapped in this functional change"
+  ]
+}

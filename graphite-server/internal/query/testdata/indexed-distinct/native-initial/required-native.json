@@ -1,0 +1,1010 @@
+[
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "node-tag-255",
+    "name": "caller",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "node-tag-255",
+    "name": "caller",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "node-tag-255",
+    "name": "callee",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.callee_class AS x LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "node-tag-255",
+    "name": "callee",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.callee_class AS x LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "node-tag-255",
+    "name": "four",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_class AS a,n.caller_name AS b,n.callee_class AS c,n.callee_name AS d LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "node-tag-255",
+    "name": "four",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_class AS a,n.caller_name AS b,n.callee_class AS c,n.callee_name AS d LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "node-tag-255",
+    "name": "null-graph",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.class AS x,n.graphId AS graph LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "node-tag-255",
+    "name": "null-graph",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.class AS x,n.graphId AS graph LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "node-id-999",
+    "name": "caller",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "node-id-999",
+    "name": "caller",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "node-id-999",
+    "name": "callee",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.callee_class AS x LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "node-id-999",
+    "name": "callee",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.callee_class AS x LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "node-id-999",
+    "name": "four",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_class AS a,n.caller_name AS b,n.callee_class AS c,n.callee_name AS d LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "node-id-999",
+    "name": "four",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_class AS a,n.caller_name AS b,n.callee_class AS c,n.callee_name AS d LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "node-id-999",
+    "name": "null-graph",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.class AS x,n.graphId AS graph LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "node-id-999",
+    "name": "null-graph",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.class AS x,n.graphId AS graph LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "caller-count-minus-one",
+    "name": "caller",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "caller-count-minus-one",
+    "name": "caller",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "caller-count-minus-one",
+    "name": "callee",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.callee_class AS x LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "caller-count-minus-one",
+    "name": "callee",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.callee_class AS x LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "caller-count-minus-one",
+    "name": "four",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_class AS a,n.caller_name AS b,n.callee_class AS c,n.callee_name AS d LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "caller-count-minus-one",
+    "name": "four",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_class AS a,n.caller_name AS b,n.callee_class AS c,n.callee_name AS d LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "caller-count-minus-one",
+    "name": "null-graph",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.class AS x,n.graphId AS graph LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "caller-count-minus-one",
+    "name": "null-graph",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.class AS x,n.graphId AS graph LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "caller-count-max",
+    "name": "caller",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "caller-count-max",
+    "name": "caller",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "caller-count-max",
+    "name": "callee",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.callee_class AS x LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "caller-count-max",
+    "name": "callee",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.callee_class AS x LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "caller-count-max",
+    "name": "four",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_class AS a,n.caller_name AS b,n.callee_class AS c,n.callee_name AS d LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "caller-count-max",
+    "name": "four",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_class AS a,n.caller_name AS b,n.callee_class AS c,n.callee_name AS d LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "caller-count-max",
+    "name": "null-graph",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.class AS x,n.graphId AS graph LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "caller-count-max",
+    "name": "null-graph",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.class AS x,n.graphId AS graph LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "caller-count-outside",
+    "name": "caller",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "caller-count-outside",
+    "name": "caller",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": null,
+    "mutation": "caller-count-outside",
+    "name": "callee",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.callee_class AS x LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": null,
+    "mutation": "caller-count-outside",
+    "name": "callee",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.callee_class AS x LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": null,
+    "mutation": "caller-count-outside",
+    "name": "four",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_class AS a,n.caller_name AS b,n.callee_class AS c,n.callee_name AS d LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": null,
+    "mutation": "caller-count-outside",
+    "name": "four",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_class AS a,n.caller_name AS b,n.callee_class AS c,n.callee_name AS d LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "caller-count-outside",
+    "name": "null-graph",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.class AS x,n.graphId AS graph LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "caller-count-outside",
+    "name": "null-graph",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.class AS x,n.graphId AS graph LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mutation": "caller-name-sid-max",
+    "name": "caller",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mutation": "caller-name-sid-max",
+    "name": "caller",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "caller-name-sid-max",
+    "name": "callee",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.callee_class AS x LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "caller-name-sid-max",
+    "name": "callee",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.callee_class AS x LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mutation": "caller-name-sid-max",
+    "name": "four",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_class AS a,n.caller_name AS b,n.callee_class AS c,n.callee_name AS d LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mutation": "caller-name-sid-max",
+    "name": "four",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_class AS a,n.caller_name AS b,n.callee_class AS c,n.callee_name AS d LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "caller-name-sid-max",
+    "name": "null-graph",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.class AS x,n.graphId AS graph LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "caller-name-sid-max",
+    "name": "null-graph",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.class AS x,n.graphId AS graph LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "caller-name-sid-minus-one",
+    "name": "caller",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "caller-name-sid-minus-one",
+    "name": "caller",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "caller-name-sid-minus-one",
+    "name": "callee",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.callee_class AS x LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "caller-name-sid-minus-one",
+    "name": "callee",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.callee_class AS x LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "caller-name-sid-minus-one",
+    "name": "four",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_class AS a,n.caller_name AS b,n.callee_class AS c,n.callee_name AS d LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "caller-name-sid-minus-one",
+    "name": "four",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_class AS a,n.caller_name AS b,n.callee_class AS c,n.callee_name AS d LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "caller-name-sid-minus-one",
+    "name": "null-graph",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.class AS x,n.graphId AS graph LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "caller-name-sid-minus-one",
+    "name": "null-graph",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.class AS x,n.graphId AS graph LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "callee-class-sid-max",
+    "name": "caller",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "callee-class-sid-max",
+    "name": "caller",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mutation": "callee-class-sid-max",
+    "name": "callee",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.callee_class AS x LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mutation": "callee-class-sid-max",
+    "name": "callee",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.callee_class AS x LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mutation": "callee-class-sid-max",
+    "name": "four",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_class AS a,n.caller_name AS b,n.callee_class AS c,n.callee_name AS d LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mutation": "callee-class-sid-max",
+    "name": "four",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_class AS a,n.caller_name AS b,n.callee_class AS c,n.callee_name AS d LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "callee-class-sid-max",
+    "name": "null-graph",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.class AS x,n.graphId AS graph LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "callee-class-sid-max",
+    "name": "null-graph",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.class AS x,n.graphId AS graph LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "callee-class-sid-minus-one",
+    "name": "caller",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "callee-class-sid-minus-one",
+    "name": "caller",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "callee-class-sid-minus-one",
+    "name": "callee",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.callee_class AS x LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "callee-class-sid-minus-one",
+    "name": "callee",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.callee_class AS x LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "callee-class-sid-minus-one",
+    "name": "four",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_class AS a,n.caller_name AS b,n.callee_class AS c,n.callee_name AS d LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "callee-class-sid-minus-one",
+    "name": "four",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_class AS a,n.caller_name AS b,n.callee_class AS c,n.callee_name AS d LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "callee-class-sid-minus-one",
+    "name": "null-graph",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.class AS x,n.graphId AS graph LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "callee-class-sid-minus-one",
+    "name": "null-graph",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.class AS x,n.graphId AS graph LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "ArrayIndexOutOfBoundsException",
+    "message": "Index 17 out of bounds for length 9",
+    "mutation": "offset-missing",
+    "name": "caller",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "ArrayIndexOutOfBoundsException",
+    "message": "Index 17 out of bounds for length 9",
+    "mutation": "offset-missing",
+    "name": "caller",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "ArrayIndexOutOfBoundsException",
+    "message": "Index 17 out of bounds for length 9",
+    "mutation": "offset-missing",
+    "name": "callee",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.callee_class AS x LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "ArrayIndexOutOfBoundsException",
+    "message": "Index 17 out of bounds for length 9",
+    "mutation": "offset-missing",
+    "name": "callee",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.callee_class AS x LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "ArrayIndexOutOfBoundsException",
+    "message": "Index 17 out of bounds for length 9",
+    "mutation": "offset-missing",
+    "name": "four",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_class AS a,n.caller_name AS b,n.callee_class AS c,n.callee_name AS d LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "ArrayIndexOutOfBoundsException",
+    "message": "Index 17 out of bounds for length 9",
+    "mutation": "offset-missing",
+    "name": "four",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_class AS a,n.caller_name AS b,n.callee_class AS c,n.callee_name AS d LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "ArrayIndexOutOfBoundsException",
+    "message": "Index 17 out of bounds for length 9",
+    "mutation": "offset-missing",
+    "name": "null-graph",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.class AS x,n.graphId AS graph LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "ArrayIndexOutOfBoundsException",
+    "message": "Index 17 out of bounds for length 9",
+    "mutation": "offset-missing",
+    "name": "null-graph",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.class AS x,n.graphId AS graph LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": null,
+    "mutation": "offset-outside",
+    "name": "caller",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": null,
+    "mutation": "offset-outside",
+    "name": "caller",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": null,
+    "mutation": "offset-outside",
+    "name": "callee",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.callee_class AS x LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": null,
+    "mutation": "offset-outside",
+    "name": "callee",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.callee_class AS x LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": null,
+    "mutation": "offset-outside",
+    "name": "four",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_class AS a,n.caller_name AS b,n.callee_class AS c,n.callee_name AS d LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": null,
+    "mutation": "offset-outside",
+    "name": "four",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_class AS a,n.caller_name AS b,n.callee_class AS c,n.callee_name AS d LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": null,
+    "mutation": "offset-outside",
+    "name": "null-graph",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.class AS x,n.graphId AS graph LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": null,
+    "mutation": "offset-outside",
+    "name": "null-graph",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.class AS x,n.graphId AS graph LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": null,
+    "mutation": "offset-int-overflow",
+    "name": "caller",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": null,
+    "mutation": "offset-int-overflow",
+    "name": "caller",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": null,
+    "mutation": "offset-int-overflow",
+    "name": "callee",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.callee_class AS x LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": null,
+    "mutation": "offset-int-overflow",
+    "name": "callee",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.callee_class AS x LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": null,
+    "mutation": "offset-int-overflow",
+    "name": "four",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_class AS a,n.caller_name AS b,n.callee_class AS c,n.callee_name AS d LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": null,
+    "mutation": "offset-int-overflow",
+    "name": "four",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_class AS a,n.caller_name AS b,n.callee_class AS c,n.callee_name AS d LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": null,
+    "mutation": "offset-int-overflow",
+    "name": "null-graph",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.class AS x,n.graphId AS graph LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": null,
+    "mutation": "offset-int-overflow",
+    "name": "null-graph",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.class AS x,n.graphId AS graph LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "offset-other-node",
+    "name": "caller",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "offset-other-node",
+    "name": "caller",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "offset-other-node",
+    "name": "callee",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.callee_class AS x LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "offset-other-node",
+    "name": "callee",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.callee_class AS x LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "offset-other-node",
+    "name": "four",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_class AS a,n.caller_name AS b,n.callee_class AS c,n.callee_name AS d LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "offset-other-node",
+    "name": "four",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_class AS a,n.caller_name AS b,n.callee_class AS c,n.callee_name AS d LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "offset-other-node",
+    "name": "null-graph",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.class AS x,n.graphId AS graph LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "offset-other-node",
+    "name": "null-graph",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.class AS x,n.graphId AS graph LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "core-return-sid-max",
+    "name": "caller",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "core-return-sid-max",
+    "name": "caller",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "core-return-sid-max",
+    "name": "callee",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.callee_class AS x LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "core-return-sid-max",
+    "name": "callee",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.callee_class AS x LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "core-return-sid-max",
+    "name": "four",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_class AS a,n.caller_name AS b,n.callee_class AS c,n.callee_name AS d LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "core-return-sid-max",
+    "name": "four",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_class AS a,n.caller_name AS b,n.callee_class AS c,n.callee_name AS d LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "core-return-sid-max",
+    "name": "null-graph",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.class AS x,n.graphId AS graph LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "message": "unsupported value type []int32",
+    "mutation": "core-return-sid-max",
+    "name": "null-graph",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.class AS x,n.graphId AS graph LIMIT 1"
+  }
+]

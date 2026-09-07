@@ -1,0 +1,34 @@
+[
+  {
+    "name": "limit-direct",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "distinct-direct",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "limit-id-function",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN id(n) AS x LIMIT 1"
+  },
+  {
+    "name": "distinct-id-function",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT id(n) AS x LIMIT 1"
+  },
+  {
+    "name": "limit-throw-projection",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN substring(n.caller_name,'bad') AS x LIMIT 1"
+  },
+  {
+    "name": "where-no-hit",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'absent' RETURN n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "where-graph-scope",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId='a' RETURN n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "distinct-graph",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x,n.graphId AS graph LIMIT 1"
+  }
+]

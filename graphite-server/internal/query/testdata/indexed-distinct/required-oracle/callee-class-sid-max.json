@@ -1,0 +1,115 @@
+[
+  {
+    "name": "caller",
+    "query": "MATCH (n) WHERE n.caller_name\u003d\u0027other\u0027 RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "caller",
+    "query": "MATCH (n) WHERE n.caller_name\u003d\u0027other\u0027 RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "callee",
+    "query": "MATCH (n) WHERE n.caller_name\u003d\u0027other\u0027 RETURN DISTINCT n.callee_class AS x LIMIT 1",
+    "cross": false,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "callee",
+    "query": "MATCH (n) WHERE n.caller_name\u003d\u0027other\u0027 RETURN DISTINCT n.callee_class AS x LIMIT 1",
+    "cross": true,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "four",
+    "query": "MATCH (n) WHERE n.caller_name\u003d\u0027other\u0027 RETURN DISTINCT n.caller_class AS a,n.caller_name AS b,n.callee_class AS c,n.callee_name AS d LIMIT 1",
+    "cross": false,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "four",
+    "query": "MATCH (n) WHERE n.caller_name\u003d\u0027other\u0027 RETURN DISTINCT n.caller_class AS a,n.caller_name AS b,n.callee_class AS c,n.callee_name AS d LIMIT 1",
+    "cross": true,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "null-graph",
+    "query": "MATCH (n) WHERE n.caller_name\u003d\u0027other\u0027 RETURN DISTINCT n.class AS x,n.graphId AS graph LIMIT 1",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x",
+      "graph"
+    ],
+    "rows": [
+      {
+        "x": null,
+        "graph": "single",
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "null-graph",
+    "query": "MATCH (n) WHERE n.caller_name\u003d\u0027other\u0027 RETURN DISTINCT n.class AS x,n.graphId AS graph LIMIT 1",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x",
+      "graph"
+    ],
+    "rows": [
+      {
+        "x": null,
+        "graph": "a",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ]
+  }
+]

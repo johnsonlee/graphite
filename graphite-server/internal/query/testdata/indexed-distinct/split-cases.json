@@ -1,0 +1,52 @@
+[
+  {
+    "name": "caller",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "sources": 9
+  },
+  {
+    "name": "tuple",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x,n.callee_name AS y LIMIT 2",
+    "sources": 9
+  },
+  {
+    "name": "graph",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x,n.graphId AS g LIMIT 1",
+    "sources": 9
+  },
+  {
+    "name": "skip",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x,n.callee_name AS y SKIP 1 LIMIT 1",
+    "sources": 9
+  },
+  {
+    "name": "nohit",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'absent-long-needle-for-preflight' RETURN DISTINCT n.callee_name AS x LIMIT 1",
+    "sources": 9
+  },
+  {
+    "name": "caller",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "sources": 40
+  },
+  {
+    "name": "tuple",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x,n.callee_name AS y LIMIT 2",
+    "sources": 40
+  },
+  {
+    "name": "graph",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x,n.graphId AS g LIMIT 1",
+    "sources": 40
+  },
+  {
+    "name": "skip",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x,n.callee_name AS y SKIP 1 LIMIT 1",
+    "sources": 40
+  },
+  {
+    "name": "nohit",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'absent-long-needle-for-preflight' RETURN DISTINCT n.callee_name AS x LIMIT 1",
+    "sources": 40
+  }
+]

@@ -1,0 +1,6 @@
+=== RUN   TestDistinctIntegrationRawIdentityDoesNotCertifyNode
+    distinct_certificate_integration_test.go:45: actual node consumption lost typed tag error: *errors.errorString node index mismatch for 17
+--- FAIL: TestDistinctIntegrationRawIdentityDoesNotCertifyNode (0.00s)
+FAIL
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/store	0.354s
+FAIL

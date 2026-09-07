@@ -1,0 +1,707 @@
+[
+  {
+    "columns": [
+      "x"
+    ],
+    "cross": false,
+    "empty": false,
+    "fixture": "clean",
+    "name": "distinct-skip-zero",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x SKIP 0 LIMIT 1",
+    "rows": [
+      {
+        "x": "other"
+      }
+    ]
+  },
+  {
+    "columns": [
+      "x"
+    ],
+    "cross": true,
+    "empty": false,
+    "fixture": "clean",
+    "name": "distinct-skip-zero",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x SKIP 0 LIMIT 1",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        },
+        "x": "other"
+      }
+    ]
+  },
+  {
+    "columns": [
+      "x"
+    ],
+    "cross": false,
+    "empty": false,
+    "fixture": "clean",
+    "name": "distinct-skip-one",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x SKIP 1 LIMIT 1",
+    "rows": []
+  },
+  {
+    "columns": [
+      "x"
+    ],
+    "cross": true,
+    "empty": false,
+    "fixture": "clean",
+    "name": "distinct-skip-one",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x SKIP 1 LIMIT 1",
+    "rows": []
+  },
+  {
+    "columns": [
+      "x"
+    ],
+    "cross": false,
+    "empty": false,
+    "fixture": "clean",
+    "name": "distinct-order",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x ORDER BY x LIMIT 1",
+    "rows": [
+      {
+        "x": "other"
+      }
+    ]
+  },
+  {
+    "columns": [
+      "x"
+    ],
+    "cross": true,
+    "empty": false,
+    "fixture": "clean",
+    "name": "distinct-order",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x ORDER BY x LIMIT 1",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        },
+        "x": "other"
+      }
+    ]
+  },
+  {
+    "columns": [
+      "x"
+    ],
+    "cross": false,
+    "empty": false,
+    "fixture": "clean",
+    "name": "distinct-null-class",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.class AS x LIMIT 1",
+    "rows": [
+      {
+        "x": null
+      }
+    ]
+  },
+  {
+    "columns": [
+      "x"
+    ],
+    "cross": true,
+    "empty": false,
+    "fixture": "clean",
+    "name": "distinct-null-class",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.class AS x LIMIT 1",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        },
+        "x": null
+      }
+    ]
+  },
+  {
+    "columns": [
+      "x"
+    ],
+    "cross": false,
+    "empty": false,
+    "fixture": "clean",
+    "name": "exists-guard",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND exists(n.caller_name) RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "rows": [
+      {
+        "x": "other"
+      }
+    ]
+  },
+  {
+    "columns": [
+      "x"
+    ],
+    "cross": true,
+    "empty": false,
+    "fixture": "clean",
+    "name": "exists-guard",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND exists(n.caller_name) RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        },
+        "x": "other"
+      }
+    ]
+  },
+  {
+    "columns": [
+      "x"
+    ],
+    "cross": false,
+    "empty": false,
+    "fixture": "clean",
+    "name": "lower-coalesce",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.caller_name,'')) CONTAINS 'other' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "rows": [
+      {
+        "x": "other"
+      }
+    ]
+  },
+  {
+    "columns": [
+      "x"
+    ],
+    "cross": true,
+    "empty": false,
+    "fixture": "clean",
+    "name": "lower-coalesce",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.caller_name,'')) CONTAINS 'other' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        },
+        "x": "other"
+      }
+    ]
+  },
+  {
+    "columns": [
+      "x"
+    ],
+    "cross": false,
+    "empty": false,
+    "fixture": "clean",
+    "name": "empty-coalesce",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.caller_name,'')) CONTAINS '' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "rows": [
+      {
+        "x": "caller"
+      }
+    ]
+  },
+  {
+    "columns": [
+      "x"
+    ],
+    "cross": true,
+    "empty": false,
+    "fixture": "clean",
+    "name": "empty-coalesce",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.caller_name,'')) CONTAINS '' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        },
+        "x": "caller"
+      }
+    ]
+  },
+  {
+    "columns": [
+      "$metadata"
+    ],
+    "cross": false,
+    "empty": false,
+    "fixture": "clean",
+    "name": "metadata-alias",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS `$metadata` LIMIT 1",
+    "rows": [
+      {
+        "$metadata": "other"
+      }
+    ]
+  },
+  {
+    "columns": [
+      "$metadata"
+    ],
+    "cross": true,
+    "empty": false,
+    "fixture": "clean",
+    "name": "metadata-alias",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS `$metadata` LIMIT 1",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-first-unmatched",
+    "message": "node 17: string index 2147483647 outside table of 9",
+    "name": "distinct-skip-zero",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x SKIP 0 LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-first-unmatched",
+    "message": "node 17: string index 2147483647 outside table of 9",
+    "name": "distinct-skip-zero",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x SKIP 0 LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-first-unmatched",
+    "message": "node 17: string index 2147483647 outside table of 9",
+    "name": "distinct-skip-one",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x SKIP 1 LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-first-unmatched",
+    "message": "node 17: string index 2147483647 outside table of 9",
+    "name": "distinct-skip-one",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x SKIP 1 LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-first-unmatched",
+    "message": "node 17: string index 2147483647 outside table of 9",
+    "name": "distinct-order",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x ORDER BY x LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-first-unmatched",
+    "message": "node 17: string index 2147483647 outside table of 9",
+    "name": "distinct-order",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x ORDER BY x LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-first-unmatched",
+    "message": "node 17: string index 2147483647 outside table of 9",
+    "name": "distinct-null-class",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.class AS x LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-first-unmatched",
+    "message": "node 17: string index 2147483647 outside table of 9",
+    "name": "distinct-null-class",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.class AS x LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-first-unmatched",
+    "message": "node 17: string index 2147483647 outside table of 9",
+    "name": "exists-guard",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND exists(n.caller_name) RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-first-unmatched",
+    "message": "node 17: string index 2147483647 outside table of 9",
+    "name": "exists-guard",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND exists(n.caller_name) RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-first-unmatched",
+    "message": "node 17: string index 2147483647 outside table of 9",
+    "name": "lower-coalesce",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.caller_name,'')) CONTAINS 'other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-first-unmatched",
+    "message": "node 17: string index 2147483647 outside table of 9",
+    "name": "lower-coalesce",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.caller_name,'')) CONTAINS 'other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-first-unmatched",
+    "message": "node 17: string index 2147483647 outside table of 9",
+    "name": "empty-coalesce",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.caller_name,'')) CONTAINS '' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-first-unmatched",
+    "message": "node 17: string index 2147483647 outside table of 9",
+    "name": "empty-coalesce",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.caller_name,'')) CONTAINS '' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-first-unmatched",
+    "message": "node 17: string index 2147483647 outside table of 9",
+    "name": "metadata-alias",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS `$metadata` LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-first-unmatched",
+    "message": "node 17: string index 2147483647 outside table of 9",
+    "name": "metadata-alias",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS `$metadata` LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-last-unmatched",
+    "message": "node 90: string index 2147483647 outside table of 9",
+    "name": "distinct-skip-zero",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x SKIP 0 LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-last-unmatched",
+    "message": "node 90: string index 2147483647 outside table of 9",
+    "name": "distinct-skip-zero",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x SKIP 0 LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-last-unmatched",
+    "message": "node 90: string index 2147483647 outside table of 9",
+    "name": "distinct-skip-one",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x SKIP 1 LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-last-unmatched",
+    "message": "node 90: string index 2147483647 outside table of 9",
+    "name": "distinct-skip-one",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x SKIP 1 LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-last-unmatched",
+    "message": "node 90: string index 2147483647 outside table of 9",
+    "name": "distinct-order",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x ORDER BY x LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-last-unmatched",
+    "message": "node 90: string index 2147483647 outside table of 9",
+    "name": "distinct-order",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x ORDER BY x LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-last-unmatched",
+    "message": "node 90: string index 2147483647 outside table of 9",
+    "name": "distinct-null-class",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.class AS x LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-last-unmatched",
+    "message": "node 90: string index 2147483647 outside table of 9",
+    "name": "distinct-null-class",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.class AS x LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-last-unmatched",
+    "message": "node 90: string index 2147483647 outside table of 9",
+    "name": "exists-guard",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND exists(n.caller_name) RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-last-unmatched",
+    "message": "node 90: string index 2147483647 outside table of 9",
+    "name": "exists-guard",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND exists(n.caller_name) RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-last-unmatched",
+    "message": "node 90: string index 2147483647 outside table of 9",
+    "name": "lower-coalesce",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.caller_name,'')) CONTAINS 'other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-last-unmatched",
+    "message": "node 90: string index 2147483647 outside table of 9",
+    "name": "lower-coalesce",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.caller_name,'')) CONTAINS 'other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-last-unmatched",
+    "message": "node 90: string index 2147483647 outside table of 9",
+    "name": "empty-coalesce",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.caller_name,'')) CONTAINS '' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-last-unmatched",
+    "message": "node 90: string index 2147483647 outside table of 9",
+    "name": "empty-coalesce",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.caller_name,'')) CONTAINS '' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-last-unmatched",
+    "message": "node 90: string index 2147483647 outside table of 9",
+    "name": "metadata-alias",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS `$metadata` LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-last-unmatched",
+    "message": "node 90: string index 2147483647 outside table of 9",
+    "name": "metadata-alias",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS `$metadata` LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-matched",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "distinct-skip-zero",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x SKIP 0 LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-matched",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "distinct-skip-zero",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x SKIP 0 LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-matched",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "distinct-skip-one",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x SKIP 1 LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-matched",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "distinct-skip-one",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x SKIP 1 LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-matched",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "distinct-order",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x ORDER BY x LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-matched",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "distinct-order",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x ORDER BY x LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-matched",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "distinct-null-class",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.class AS x LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-matched",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "distinct-null-class",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.class AS x LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-matched",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "exists-guard",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND exists(n.caller_name) RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-matched",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "exists-guard",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND exists(n.caller_name) RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-matched",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "lower-coalesce",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.caller_name,'')) CONTAINS 'other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-matched",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "lower-coalesce",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.caller_name,'')) CONTAINS 'other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-matched",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "empty-coalesce",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.caller_name,'')) CONTAINS '' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-matched",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "empty-coalesce",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.caller_name,'')) CONTAINS '' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "cross": false,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-matched",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "metadata-alias",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS `$metadata` LIMIT 1"
+  },
+  {
+    "cross": true,
+    "empty": false,
+    "error": "CypherException",
+    "fixture": "bad-matched",
+    "message": "node 2: string index 2147483647 outside table of 9",
+    "name": "metadata-alias",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS `$metadata` LIMIT 1"
+  }
+]

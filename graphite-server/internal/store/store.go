@@ -26,6 +26,7 @@ type Store struct {
 	callSiteIndex      callSiteIndexState
 	candidateProof     candidateCertificateState
 	trigramProof       candidateCertificateState
+	distinctProjection distinctProjectionState
 	overview           lazyClassOverview
 	Mode               string
 	mappedData         []byte
@@ -242,6 +243,7 @@ func (s *Store) Close() error {
 		return nil
 	}
 	st.closed = true
+	s.distinctProjection = distinctProjectionState{}
 	if st.closing != nil {
 		close(st.closing)
 	}

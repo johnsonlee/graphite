@@ -1,0 +1,128 @@
+[
+  {
+    "name": "annotation-direct",
+    "query": "MATCH (odd) WHERE odd.caller_class CONTAINS 'Other' RETURN DISTINCT odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "eligible": true
+  },
+  {
+    "name": "annotation-lower",
+    "query": "MATCH (odd) WHERE toLower(coalesce(odd.caller_class,'')) CONTAINS 'other' RETURN DISTINCT odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "eligible": true
+  },
+  {
+    "name": "four-or",
+    "query": "MATCH (odd) WHERE toLower(coalesce(odd.caller_class,'')) CONTAINS 'other' OR toLower(coalesce(odd.caller_name,'')) CONTAINS 'other' OR toLower(coalesce(odd.callee_class,'')) CONTAINS 'other' OR toLower(coalesce(odd.callee_name,'')) CONTAINS 'other' RETURN DISTINCT odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "eligible": true
+  },
+  {
+    "name": "mixed-class-name",
+    "query": "MATCH (odd) WHERE odd.caller_class CONTAINS 'Other' OR odd.name CONTAINS 'sample' OR odd.class CONTAINS 'Mark' RETURN DISTINCT odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "eligible": true
+  },
+  {
+    "name": "node-label",
+    "query": "MATCH (odd:Node) WHERE odd.caller_class CONTAINS 'Other' RETURN DISTINCT odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "eligible": true
+  },
+  {
+    "name": "callsite-label",
+    "query": "MATCH (odd:CallSite) WHERE odd.caller_class CONTAINS 'Other' RETURN DISTINCT odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "eligible": true
+  },
+  {
+    "name": "in",
+    "query": "MATCH (odd) WHERE odd.caller_class IN ['Other','example.Other'] RETURN DISTINCT odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "eligible": true
+  },
+  {
+    "name": "exists",
+    "query": "MATCH (odd) WHERE exists(odd.caller_class) AND odd.caller_class CONTAINS 'Other' RETURN DISTINCT odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "eligible": true
+  },
+  {
+    "name": "parameter",
+    "query": "MATCH (odd) WHERE odd.caller_class CONTAINS $term RETURN DISTINCT odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "eligible": true,
+    "params": {
+      "term": "Other"
+    }
+  },
+  {
+    "name": "scope",
+    "query": "MATCH (odd) WHERE odd.caller_class CONTAINS 'Other' AND odd.graphId='a' RETURN DISTINCT odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "eligible": true
+  },
+  {
+    "name": "graph-function-scope",
+    "query": "MATCH (odd) WHERE odd.caller_class CONTAINS 'Other' AND graphId(odd) IN ['a','b'] RETURN DISTINCT odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "eligible": true
+  },
+  {
+    "name": "scope-skip-decline",
+    "query": "MATCH (odd) WHERE odd.caller_class CONTAINS 'Other' AND odd.graphId='a' RETURN DISTINCT odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z SKIP 1 LIMIT 10",
+    "eligible": false
+  },
+  {
+    "name": "skip",
+    "query": "MATCH (odd) WHERE odd.caller_class CONTAINS 'Other' RETURN DISTINCT odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z SKIP 1 LIMIT 10",
+    "eligible": true
+  },
+  {
+    "name": "metadata-alias",
+    "query": "MATCH (odd) WHERE odd.caller_class CONTAINS 'Other' RETURN DISTINCT odd.caller_class AS `$metadata` LIMIT 10",
+    "eligible": true
+  },
+  {
+    "name": "duplicate-alias",
+    "query": "MATCH (odd) WHERE odd.caller_class CONTAINS 'Other' RETURN DISTINCT odd.caller_class AS x,odd.caller_name AS x LIMIT 10",
+    "eligible": true
+  },
+  {
+    "name": "nulls-graph",
+    "query": "MATCH (odd) WHERE odd.caller_class CONTAINS 'Other' RETURN DISTINCT odd.class AS x,odd.name AS y,odd.graphId AS z LIMIT 10",
+    "eligible": true
+  },
+  {
+    "name": "null-term-decline",
+    "query": "MATCH (odd) WHERE odd.caller_class CONTAINS $term RETURN DISTINCT odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "eligible": false,
+    "params": {
+      "term": null
+    }
+  },
+  {
+    "name": "empty-wrapper-decline",
+    "query": "MATCH (odd) WHERE toLower(coalesce(odd.caller_class,'')) CONTAINS '' RETURN DISTINCT odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "eligible": false
+  },
+  {
+    "name": "eager-extra-decline",
+    "query": "MATCH (odd) WHERE toLower(odd.caller_class,substring('x','bad')) CONTAINS 'other' RETURN DISTINCT odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "eligible": false
+  },
+  {
+    "name": "cast-wrapper-decline",
+    "query": "MATCH (odd) WHERE toLower(toString(odd.caller_class)) CONTAINS 'other' RETURN DISTINCT odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "eligible": false
+  },
+  {
+    "name": "order-decline",
+    "query": "MATCH (odd) WHERE odd.caller_class CONTAINS 'Other' RETURN DISTINCT odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z ORDER BY x LIMIT 10",
+    "eligible": false
+  },
+  {
+    "name": "inline-decline",
+    "query": "MATCH (odd {caller_class:'example.Other'}) WHERE odd.caller_class CONTAINS 'Other' RETURN DISTINCT odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "eligible": false
+  },
+  {
+    "name": "optional-decline",
+    "query": "OPTIONAL MATCH (odd) WHERE odd.caller_class CONTAINS 'Other' RETURN DISTINCT odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "eligible": false
+  },
+  {
+    "name": "wide-limit",
+    "query": "MATCH (odd) WHERE odd.caller_class CONTAINS 'Other' RETURN DISTINCT odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 1",
+    "eligible": true
+  }
+]

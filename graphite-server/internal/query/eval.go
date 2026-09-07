@@ -12,12 +12,24 @@ import (
 )
 
 type Error struct {
-	Message string
-	Class   string
+	Message     string
+	Class       string
+	NullMessage bool
 }
 
-func (e *Error) Error() string { return e.Message }
-func fail(message string)      { panic(&Error{Message: message, Class: "CypherException"}) }
+func (e *Error) Error() string {
+	if e.NullMessage {
+		return "Query execution failed"
+	}
+	return e.Message
+}
+func (e *Error) JavaMessage() any {
+	if e.NullMessage {
+		return nil
+	}
+	return e.Message
+}
+func fail(message string) { panic(&Error{Message: message, Class: "CypherException"}) }
 
 type evaluator struct {
 	indexFirst bool

@@ -1,0 +1,100 @@
+[
+  {
+    "name": "node-tag-255",
+    "file": "graph.nodedata",
+    "byteOffset": 69,
+    "format": ">B",
+    "value": 255
+  },
+  {
+    "name": "node-id-999",
+    "file": "graph.nodedata",
+    "byteOffset": 65,
+    "format": ">i",
+    "value": 999
+  },
+  {
+    "name": "caller-count-minus-one",
+    "file": "graph.nodedata",
+    "byteOffset": 78,
+    "format": ">i",
+    "value": -1
+  },
+  {
+    "name": "caller-count-max",
+    "file": "graph.nodedata",
+    "byteOffset": 78,
+    "format": ">i",
+    "value": 2147483647
+  },
+  {
+    "name": "caller-count-outside",
+    "file": "graph.nodedata",
+    "byteOffset": 78,
+    "format": ">i",
+    "value": 1000
+  },
+  {
+    "name": "caller-name-sid-max",
+    "file": "graph.nodedata",
+    "byteOffset": 74,
+    "format": ">i",
+    "value": 2147483647
+  },
+  {
+    "name": "caller-name-sid-minus-one",
+    "file": "graph.nodedata",
+    "byteOffset": 74,
+    "format": ">i",
+    "value": -1
+  },
+  {
+    "name": "callee-class-sid-max",
+    "file": "graph.nodedata",
+    "byteOffset": 86,
+    "format": ">i",
+    "value": 2147483647
+  },
+  {
+    "name": "callee-class-sid-minus-one",
+    "file": "graph.nodedata",
+    "byteOffset": 86,
+    "format": ">i",
+    "value": -1
+  },
+  {
+    "name": "offset-missing",
+    "file": "graph.nodeoffsets",
+    "byteOffset": 24,
+    "format": ">q",
+    "value": 0
+  },
+  {
+    "name": "offset-outside",
+    "file": "graph.nodeoffsets",
+    "byteOffset": 24,
+    "format": ">q",
+    "value": 1001
+  },
+  {
+    "name": "offset-int-overflow",
+    "file": "graph.nodeoffsets",
+    "byteOffset": 24,
+    "format": ">q",
+    "value": 2147483648
+  },
+  {
+    "name": "offset-other-node",
+    "file": "graph.nodeoffsets",
+    "byteOffset": 24,
+    "format": ">q",
+    "value": 9
+  },
+  {
+    "name": "core-return-sid-max",
+    "file": "graph.nodedata",
+    "byteOffset": 98,
+    "format": ">i",
+    "value": 2147483647
+  }
+]

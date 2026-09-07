@@ -1,0 +1,25 @@
+{
+  "baseCommit": "1d23843ac1e79e00bacd87befa60980b65181293",
+  "oracleTotal": 1048,
+  "oracleEqual": 739,
+  "eligibleEqual": 580,
+  "declinedEqual": 159,
+  "declinedDifferences": 309,
+  "allNativeOracleArtifactsUnchangedFromContract": true,
+  "httpCases": 42,
+  "allHTTP200AndMainEqual": true,
+  "dynamicMasks": 0,
+  "defaultServerTimeoutMillis": 60000,
+  "port": 18858,
+  "fullModuleRace": "passed",
+  "fullModuleVet": "passed",
+  "preservedProductionFiles": {
+    "graphite-server/internal/javastring/unicode.go": "56aa5e18232264f35aabea2cf0f22958acf8402344c4cd9f357b206f1e22d07b",
+    "graphite-server/internal/query/string_candidates.go": "c9be5b7067c83744e625eddd3a80aa03db24a57c9c5297884a4039be83d24bf3",
+    "graphite-server/internal/store/candidate_certificate.go": "49bf7397cca779b3cb576fa3f03dcbe329f373945fc4f3582e98a9e5582e7290",
+    "graphite-server/internal/store/trigram_certificate.go": "5868a1a37ad31a9b3f8f6441fc12fdd91327f85960f0307bbfa28d33330b3bac"
+  },
+  "binarySourcesUnchangedDuringReplay": true,
+  "binarySHA256": "943b07be4192978b307f72f1d403ea4db5c485fe8b3072d52ba457de573543e4",
+  "noP95Claim": true
+}

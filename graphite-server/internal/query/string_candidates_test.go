@@ -493,6 +493,40 @@ func TestStringCandidateCorruptBaselinePreservation(t *testing.T) {
 	if err = json.Unmarshal(raw, &cases); err != nil {
 		t.Fatal(err)
 	}
+	// This feature intentionally repairs the indexed DISTINCT projection entries
+	// in the historical native baseline; preserve every declined entry unchanged.
+	mainCases := append(cases[:0:0], cases...)
+	mainCases = mainCases[:0]
+	for _, fixture := range []string{"clean", "bad-first-unmatched", "bad-last-unmatched", "bad-matched"} {
+		mainBytes, err := os.ReadFile("testdata/candidate-index/" + fixture + "-main.json")
+		if err != nil {
+			t.Fatal(err)
+		}
+		loaded := append(cases[:0:0], cases...)
+		if err = json.Unmarshal(mainBytes, &loaded); err != nil {
+			t.Fatal(err)
+		}
+		for i := range loaded {
+			loaded[i].Fixture = fixture
+		}
+		mainCases = append(mainCases, loaded...)
+	}
+	for i, c := range cases {
+		ast, parseErr := cypher.Parse(c.Query)
+		if parseErr != nil {
+			t.Fatal(parseErr)
+		}
+		e := evaluator{ctx: context.Background(), cross: c.Cross}
+		if e.compileIndexedDistinct(ast.Branches[0]) == nil {
+			continue
+		}
+		for _, m := range mainCases {
+			if m.Fixture == c.Fixture && m.Name == c.Name && m.Cross == c.Cross {
+				cases[i] = m
+				break
+			}
+		}
+	}
 	for _, fixture := range []string{"clean", "bad-first-unmatched", "bad-last-unmatched", "bad-matched"} {
 		g := candidateGraph(t, fixture)
 		for _, c := range cases {

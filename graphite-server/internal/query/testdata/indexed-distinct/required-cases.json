@@ -1,0 +1,18 @@
+[
+  {
+    "name": "caller",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "callee",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.callee_class AS x LIMIT 1"
+  },
+  {
+    "name": "four",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_class AS a,n.caller_name AS b,n.callee_class AS c,n.callee_name AS d LIMIT 1"
+  },
+  {
+    "name": "null-graph",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.class AS x,n.graphId AS graph LIMIT 1"
+  }
+]

@@ -1,0 +1,224 @@
+[
+  {
+    "name": "untyped-raw",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN id(n) AS id"
+  },
+  {
+    "name": "untyped-raw-throwing-projection",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+  },
+  {
+    "name": "untyped-wrapped",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN id(n) AS id"
+  },
+  {
+    "name": "untyped-wrapped-throwing-projection",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+  },
+  {
+    "name": "typed-raw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN id(n) AS id"
+  },
+  {
+    "name": "typed-raw-throwing-projection",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+  },
+  {
+    "name": "typed-wrapped",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN id(n) AS id"
+  },
+  {
+    "name": "typed-wrapped-throwing-projection",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+  },
+  {
+    "name": "fourfields-raw-distinct-limit",
+    "query": "MATCH (n) WHERE n.caller_class CONTAINS 'other' OR n.caller_name CONTAINS 'other' OR n.callee_class CONTAINS 'other' OR n.callee_name CONTAINS 'other' RETURN DISTINCT n.caller_class AS caller_class,n.caller_name AS caller_name,n.callee_class AS callee_class,n.callee_name AS callee_name LIMIT 1000"
+  },
+  {
+    "name": "fourfields-wrapped-distinct-limit",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_class,''))) CONTAINS 'other' OR toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' OR toLower(toString(coalesce(n.callee_class,''))) CONTAINS 'other' OR toLower(toString(coalesce(n.callee_name,''))) CONTAINS 'other' RETURN DISTINCT n.caller_class AS caller_class,n.caller_name AS caller_name,n.callee_class AS callee_class,n.callee_name AS callee_name LIMIT 1000"
+  },
+  {
+    "name": "limit-direct",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "distinct-direct",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "limit-direct-id",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x LIMIT 1"
+  },
+  {
+    "name": "distinct-direct-id",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1"
+  },
+  {
+    "name": "limit-id-function",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN id(n) AS x LIMIT 1"
+  },
+  {
+    "name": "distinct-id-function",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT id(n) AS x LIMIT 1"
+  },
+  {
+    "name": "limit-graph-id",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.graphId AS x LIMIT 1"
+  },
+  {
+    "name": "distinct-graph-id",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.graphId AS x LIMIT 1"
+  },
+  {
+    "name": "limit-null-name",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.name AS x LIMIT 1"
+  },
+  {
+    "name": "distinct-null-name",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.name AS x LIMIT 1"
+  },
+  {
+    "name": "limit-whole",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n AS x LIMIT 1"
+  },
+  {
+    "name": "distinct-whole",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n AS x LIMIT 1"
+  },
+  {
+    "name": "limit-literal",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN 1 AS x LIMIT 1"
+  },
+  {
+    "name": "distinct-literal",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT 1 AS x LIMIT 1"
+  },
+  {
+    "name": "limit-wrapped",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN toString(n.caller_name) AS x LIMIT 1"
+  },
+  {
+    "name": "distinct-wrapped",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT toString(n.caller_name) AS x LIMIT 1"
+  },
+  {
+    "name": "limit-expression",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name+'' AS x LIMIT 1"
+  },
+  {
+    "name": "distinct-expression",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name+'' AS x LIMIT 1"
+  },
+  {
+    "name": "limit-throw-projection",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN substring(n.caller_name,'bad') AS x LIMIT 1"
+  },
+  {
+    "name": "distinct-throw-projection",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT substring(n.caller_name,'bad') AS x LIMIT 1"
+  },
+  {
+    "name": "no-limit",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x"
+  },
+  {
+    "name": "distinct-no-limit",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x"
+  },
+  {
+    "name": "skip",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 0 LIMIT 1"
+  },
+  {
+    "name": "skip-one",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 1 LIMIT 1"
+  },
+  {
+    "name": "order",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x LIMIT 1"
+  },
+  {
+    "name": "order-desc",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x DESC LIMIT 1"
+  },
+  {
+    "name": "order-source",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY n.caller_name LIMIT 1"
+  },
+  {
+    "name": "order-throw",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY substring('x','bad') LIMIT 1"
+  },
+  {
+    "name": "where-lower",
+    "query": "MATCH (n) WHERE toLower(n.caller_name) CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "where-wrapped",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "where-and-true",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND true RETURN n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "where-and-throw",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND substring('x','bad')='x' RETURN n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "where-or-throw",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' OR substring('x','bad')='x' RETURN n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "where-no-hit",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'absent' RETURN n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "where-eager-extra",
+    "query": "MATCH (n) WHERE toString(n.caller_name,substring('x','bad')) CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "where-graph-scope",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId='a' RETURN n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "param-needle",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS $term RETURN n.caller_name AS x LIMIT 1",
+    "params": {
+      "term": "other"
+    }
+  },
+  {
+    "name": "param-limit",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT $limit",
+    "params": {
+      "limit": 1
+    }
+  },
+  {
+    "name": "expression-limit",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1+0"
+  },
+  {
+    "name": "zero-skips-throw",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN substring(n.caller_name,'bad') AS x LIMIT 0"
+  },
+  {
+    "name": "inline",
+    "query": "MATCH (n {caller_name:'other'}) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "optional",
+    "query": "OPTIONAL MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "count",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN count(n) AS x LIMIT 1"
+  },
+  {
+    "name": "distinct-graph",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x,n.graphId AS graph LIMIT 1"
+  }
+]
