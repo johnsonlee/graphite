@@ -431,6 +431,7 @@ open class MethodDiscoveryCompatibilityBenchmark {
         legacyMethodsRoute = rawRequest(legacyPath(services.first().fixture.className, 0)).code == HTTP_OK
         writeCompatibilityManifest()
         quiesceBeforeMeasurement()
+        verifyCpuAccounting()
     }
 
     @TearDown
@@ -785,31 +786,29 @@ open class MethodDiscoveryCompatibilityBenchmark {
     }
 
     private fun measure(counters: MethodCompatibilityCounters, action: () -> Long): Long {
-        val threads = java.lang.management.ManagementFactory.getThreadMXBean()
-        check(threads.isThreadCpuTimeSupported && threads.isThreadCpuTimeEnabled) {
-            "Thread CPU time is not supported on this JVM; the request-serving CPU row cannot be measured"
-        }
-        val beforeIds = threads.allThreadIds.toSortedSet()
+        val beforeInternal = internalThreadCpuNanos()
         val beforeCpu = processCpuTimeNanos()
-        val beforeThreadCpu = javaThreadCpuTimeNanos(threads)
         val beforeGcTime = gcTimeMillis()
         val beforeJit = jitTimeMillis()
         val beforeRss = residentSetBytes()
         val bytes = action()
         val afterRss = residentSetBytes()
-        val afterThreadCpu = javaThreadCpuTimeNanos(threads)
-        val afterIds = threads.allThreadIds.toSortedSet()
+        val afterCpu = processCpuTimeNanos()
+        val afterInternal = internalThreadCpuNanos()
         counters.requestsSucceeded++
         counters.responseBytes += bytes
-        counters.processCpuNanos = (processCpuTimeNanos() - beforeCpu).coerceAtLeast(0L)
-        // CPU of the Java threads that serve the request (client, Jetty workers, scan pools),
-        // which excludes the concurrent collector and compiler threads that make the process
-        // figure swing between runs of identical code; the two remainders are reported next to it.
-        // A thread that was alive at the start and is gone at the end took its CPU with it, so
-        // the row fails closed instead of under-reporting.
-        val ended = beforeIds - afterIds
-        check(ended.isEmpty()) { "Java threads ended inside the measured window: $ended" }
-        counters.javaThreadCpuNanos = (afterThreadCpu - beforeThreadCpu).coerceAtLeast(0L)
+        counters.processCpuNanos = (afterCpu - beforeCpu).coerceAtLeast(0L)
+        // The process figure counts every thread that ran in the window, including one that was
+        // created and joined inside it. The CPU of the JVM's own threads (collectors, compilers,
+        // the VM and service threads) is read per native thread from /proc and subtracted, so the
+        // remainder is the CPU of the Java threads that served the request, whatever their
+        // lifetime. An internal thread that appears inside the window counts in full; one that
+        // disappears inside it was idle before the JVM retired it, so its unread share is bounded
+        // by the retirement idle time and is reported as a count rather than dropped silently.
+        val internalCpu = afterInternal.entries.sumOf { (tid, cpu) -> cpu - (beforeInternal[tid] ?: 0L) }
+        counters.jvmInternalCpuNanos = internalCpu.coerceAtLeast(0L)
+        counters.jvmInternalThreadsEnded = beforeInternal.keys.count { it !in afterInternal }.toLong()
+        counters.javaThreadCpuNanos = (counters.processCpuNanos - counters.jvmInternalCpuNanos).coerceAtLeast(0L)
         counters.gcTimeMillis = (gcTimeMillis() - beforeGcTime).coerceAtLeast(0L)
         counters.jitTimeMillis = (jitTimeMillis() - beforeJit).coerceAtLeast(0L)
         counters.residentSetBeforeBytes = beforeRss
@@ -817,6 +816,64 @@ open class MethodDiscoveryCompatibilityBenchmark {
         counters.residentSetDeltaBytes = (afterRss - beforeRss).coerceAtLeast(0L)
         counters.graphCount = graphCount.toLong()
         return bytes
+    }
+
+    /**
+     * CPU time of the JVM's internal native threads, keyed by native thread id, from the kernel's
+     * per-thread scheduler accounting. Fails closed when the accounting is unavailable, since the
+     * request-serving CPU row cannot be derived without it.
+     */
+    private fun internalThreadCpuNanos(): Map<Long, Long> {
+        val tasks = Path.of("/proc/self/task")
+        check(Files.isDirectory(tasks)) { "Per-thread CPU accounting is unavailable: $tasks is missing" }
+        val result = HashMap<Long, Long>()
+        Files.newDirectoryStream(tasks).use { entries ->
+            for (task in entries) {
+                val tid = task.fileName.toString().toLongOrNull() ?: continue
+                val name = runCatching { Files.readString(task.resolve("comm")).trim() }.getOrNull() ?: continue
+                if (!isJvmInternalThread(name)) continue
+                val schedstat = runCatching { Files.readString(task.resolve("schedstat")) }.getOrNull() ?: continue
+                val onCpuNanos = schedstat.trim().split(' ').firstOrNull()?.toLongOrNull()
+                    ?: error("Unreadable scheduler accounting for thread $tid ($name): $schedstat")
+                result[tid] = onCpuNanos
+            }
+        }
+        check(result.isNotEmpty()) { "No JVM-internal thread found under $tasks; the accounting contract does not hold" }
+        return result
+    }
+
+    private fun isJvmInternalThread(name: String): Boolean =
+        JVM_INTERNAL_THREAD_NAMES.any { prefix -> name.startsWith(prefix) }
+
+    /**
+     * Runtime contract check for the CPU accounting, run once in trial setup: an action that
+     * creates, runs and joins a CPU-bound worker entirely inside the measured window must be
+     * charged that worker's CPU. Fails closed so a JVM or kernel on which the accounting does not
+     * hold cannot publish a request-serving CPU row.
+     */
+    private fun verifyCpuAccounting() {
+        val counters = MethodCompatibilityCounters()
+        val workerCpu = java.util.concurrent.atomic.AtomicLong()
+        measure(counters) {
+            val worker = Thread {
+                val threads = java.lang.management.ManagementFactory.getThreadMXBean()
+                val start = System.nanoTime()
+                var sink = 0L
+                while (System.nanoTime() - start < CPU_ACCOUNTING_WORKER_NANOS) sink += sink xor System.nanoTime()
+                workerCpu.set(threads.currentThreadCpuTime)
+                if (sink == Long.MIN_VALUE) println(sink)
+            }
+            worker.start()
+            worker.join()
+            0L
+        }
+        val expected = workerCpu.get()
+        check(expected > 0L) { "The accounting check worker recorded no CPU time" }
+        check(counters.javaThreadCpuNanos >= expected * CPU_ACCOUNTING_MIN_SHARE_PERCENT / PERCENT) {
+            "Request-serving CPU accounting missed a worker that lived inside the window: " +
+                "worker ${expected} ns, accounted ${counters.javaThreadCpuNanos} ns, " +
+                "process ${counters.processCpuNanos} ns, internal ${counters.jvmInternalCpuNanos} ns"
+        }
     }
 
     private fun writeCompatibilityManifest() {
@@ -915,15 +972,6 @@ open class MethodDiscoveryCompatibilityBenchmark {
     private fun com.sun.management.GarbageCollectionNotificationInfo.isYoungCollection(): Boolean =
         gcAction == END_OF_MINOR_GC
 
-    private fun javaThreadCpuTimeNanos(threads: java.lang.management.ThreadMXBean): Long {
-        var total = 0L
-        for (id in threads.allThreadIds) {
-            val cpu = threads.getThreadCpuTime(id)
-            if (cpu > 0L) total += cpu
-        }
-        return total
-    }
-
     private fun gcTimeMillis(): Long = java.lang.management.ManagementFactory.getGarbageCollectorMXBeans()
         .sumOf { it.collectionTime.coerceAtLeast(0L) }
 
@@ -978,6 +1026,12 @@ open class MethodBenchmarkCompatibilityCounters {
 
     @JvmField
     var javaThreadCpuNanos: Long = 0
+
+    @JvmField
+    var jvmInternalCpuNanos: Long = 0
+
+    @JvmField
+    var jvmInternalThreadsEnded: Long = 0
 
     @JvmField
     var gcTimeMillis: Long = 0
@@ -1928,3 +1982,28 @@ private const val EXPLICIT_GC_CONCURRENT_OPTION = "ExplicitGCInvokesConcurrent"
 private const val EXPLICIT_GC_CAUSE = "System.gc()"
 private const val END_OF_MAJOR_GC = "end of major GC"
 private const val END_OF_MINOR_GC = "end of minor GC"
+private const val CPU_ACCOUNTING_WORKER_NANOS = 200_000_000L
+private const val CPU_ACCOUNTING_MIN_SHARE_PERCENT = 90L
+private const val PERCENT = 100L
+
+/** Native names of HotSpot's own threads: collectors, compilers, the VM thread and its services. */
+private val JVM_INTERNAL_THREAD_NAMES = listOf(
+    "VM Thread",
+    "VM Periodic Tas",
+    "Service Thread",
+    "Monitor Deflati",
+    "Sweeper thread",
+    "Attach Listener",
+    "C1 CompilerThre",
+    "C2 CompilerThre",
+    "GC Thread#",
+    "G1 ",
+    "ZWorker",
+    "ZDirector",
+    "ZDriver",
+    "ZStat",
+    "ZUncommitter",
+    "Shenandoah",
+    "Parallel GC",
+    "Concurrent Mark"
+)
