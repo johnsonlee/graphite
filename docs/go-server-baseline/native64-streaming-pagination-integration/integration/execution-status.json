@@ -1,0 +1,8 @@
+{
+  "baseline-query": 0,
+  "initial-full-module-race": 1,
+  "initial-failure": "archive missing external OpenAPI Kotlin source; query passed",
+  "final-full-module-race": 0,
+  "final-vet": 0,
+  "go": "go1.22.0 darwin/arm64"
+}

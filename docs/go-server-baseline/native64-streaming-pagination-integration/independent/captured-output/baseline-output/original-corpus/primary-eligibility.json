@@ -1,0 +1,3026 @@
+[
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "untyped-raw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "untyped-raw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "untyped-raw-throwing-projection",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "untyped-raw-throwing-projection",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "untyped-wrapped",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "untyped-wrapped",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "untyped-wrapped-throwing-projection",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "untyped-wrapped-throwing-projection",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "typed-raw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "typed-raw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "typed-raw-throwing-projection",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "typed-raw-throwing-projection",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "typed-wrapped",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "typed-wrapped",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "typed-wrapped-throwing-projection",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "typed-wrapped-throwing-projection",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "fixture": "clean",
+    "name": "fourfields-raw-distinct-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "fixture": "clean",
+    "name": "fourfields-raw-distinct-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "fourfields-wrapped-distinct-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "fourfields-wrapped-distinct-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "limit-direct",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "limit-direct",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "fixture": "clean",
+    "name": "distinct-direct",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "fixture": "clean",
+    "name": "distinct-direct",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "limit-direct-id",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "limit-direct-id",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "distinct-direct-id",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "distinct-direct-id",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "limit-id-function",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "limit-id-function",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "distinct-id-function",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "distinct-id-function",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "limit-graph-id",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "limit-graph-id",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "fixture": "clean",
+    "name": "distinct-graph-id",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "fixture": "clean",
+    "name": "distinct-graph-id",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "limit-null-name",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "limit-null-name",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "fixture": "clean",
+    "name": "distinct-null-name",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "fixture": "clean",
+    "name": "distinct-null-name",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "limit-whole",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "limit-whole",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "distinct-whole",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "distinct-whole",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "limit-literal",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "limit-literal",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "distinct-literal",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "distinct-literal",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "limit-wrapped",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "limit-wrapped",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "distinct-wrapped",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "distinct-wrapped",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "limit-expression",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "limit-expression",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "distinct-expression",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "distinct-expression",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "limit-throw-projection",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "limit-throw-projection",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "distinct-throw-projection",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "distinct-throw-projection",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "no-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "no-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "distinct-no-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "distinct-no-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "skip",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "skip",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "skip-one",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "skip-one",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "order",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "order",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "order-desc",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "order-desc",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "order-source",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "order-source",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "order-throw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "order-throw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "where-lower",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "where-lower",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "where-wrapped",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "where-wrapped",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "where-and-true",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "where-and-true",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "where-and-throw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "where-and-throw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "where-or-throw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "where-or-throw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "where-no-hit",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "where-no-hit",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "where-eager-extra",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "where-eager-extra",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "where-graph-scope",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "where-graph-scope",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "param-needle",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "param-needle",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "param-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "param-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "expression-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "expression-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "zero-skips-throw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "zero-skips-throw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "inline",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "inline",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "optional",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "optional",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "count",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "count",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "fixture": "clean",
+    "name": "distinct-graph",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "fixture": "clean",
+    "name": "distinct-graph",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "untyped-raw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "untyped-raw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "untyped-raw-throwing-projection",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "untyped-raw-throwing-projection",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "untyped-wrapped",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "untyped-wrapped",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "untyped-wrapped-throwing-projection",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "untyped-wrapped-throwing-projection",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "typed-raw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "typed-raw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "typed-raw-throwing-projection",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "typed-raw-throwing-projection",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "typed-wrapped",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "typed-wrapped",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "typed-wrapped-throwing-projection",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "typed-wrapped-throwing-projection",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "fixture": "bad-first-unmatched",
+    "name": "fourfields-raw-distinct-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "fixture": "bad-first-unmatched",
+    "name": "fourfields-raw-distinct-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "fourfields-wrapped-distinct-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "fourfields-wrapped-distinct-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "limit-direct",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "limit-direct",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "fixture": "bad-first-unmatched",
+    "name": "distinct-direct",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "fixture": "bad-first-unmatched",
+    "name": "distinct-direct",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "limit-direct-id",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "limit-direct-id",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "distinct-direct-id",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "distinct-direct-id",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "limit-id-function",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "limit-id-function",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "distinct-id-function",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "distinct-id-function",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "limit-graph-id",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "limit-graph-id",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "fixture": "bad-first-unmatched",
+    "name": "distinct-graph-id",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "fixture": "bad-first-unmatched",
+    "name": "distinct-graph-id",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "limit-null-name",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "limit-null-name",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "fixture": "bad-first-unmatched",
+    "name": "distinct-null-name",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "fixture": "bad-first-unmatched",
+    "name": "distinct-null-name",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "limit-whole",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "limit-whole",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "distinct-whole",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "distinct-whole",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "limit-literal",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "limit-literal",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "distinct-literal",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "distinct-literal",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "limit-wrapped",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "limit-wrapped",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "distinct-wrapped",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "distinct-wrapped",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "limit-expression",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "limit-expression",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "distinct-expression",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "distinct-expression",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "limit-throw-projection",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "limit-throw-projection",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "distinct-throw-projection",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "distinct-throw-projection",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "no-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "no-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "distinct-no-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "distinct-no-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "skip",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "skip",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "skip-one",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "skip-one",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "order",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "order",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "order-desc",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "order-desc",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "order-source",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "order-source",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "order-throw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "order-throw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "where-lower",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "where-lower",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "where-wrapped",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "where-wrapped",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "where-and-true",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "where-and-true",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "where-and-throw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "where-and-throw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "where-or-throw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "where-or-throw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "where-no-hit",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "where-no-hit",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "where-eager-extra",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "where-eager-extra",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "where-graph-scope",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "where-graph-scope",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "param-needle",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "param-needle",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "param-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "param-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "expression-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "expression-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "zero-skips-throw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "zero-skips-throw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "inline",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "inline",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "optional",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "optional",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "count",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "count",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "fixture": "bad-first-unmatched",
+    "name": "distinct-graph",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "fixture": "bad-first-unmatched",
+    "name": "distinct-graph",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "untyped-raw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "untyped-raw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "untyped-raw-throwing-projection",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "untyped-raw-throwing-projection",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "untyped-wrapped",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "untyped-wrapped",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "untyped-wrapped-throwing-projection",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "untyped-wrapped-throwing-projection",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "typed-raw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "typed-raw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "typed-raw-throwing-projection",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "typed-raw-throwing-projection",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "typed-wrapped",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "typed-wrapped",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "typed-wrapped-throwing-projection",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "typed-wrapped-throwing-projection",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "fixture": "bad-last-unmatched",
+    "name": "fourfields-raw-distinct-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "fixture": "bad-last-unmatched",
+    "name": "fourfields-raw-distinct-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "fourfields-wrapped-distinct-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "fourfields-wrapped-distinct-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "limit-direct",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "limit-direct",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "fixture": "bad-last-unmatched",
+    "name": "distinct-direct",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "fixture": "bad-last-unmatched",
+    "name": "distinct-direct",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "limit-direct-id",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "limit-direct-id",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "distinct-direct-id",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "distinct-direct-id",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "limit-id-function",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "limit-id-function",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "distinct-id-function",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "distinct-id-function",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "limit-graph-id",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "limit-graph-id",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "fixture": "bad-last-unmatched",
+    "name": "distinct-graph-id",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "fixture": "bad-last-unmatched",
+    "name": "distinct-graph-id",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "limit-null-name",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "limit-null-name",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "fixture": "bad-last-unmatched",
+    "name": "distinct-null-name",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "fixture": "bad-last-unmatched",
+    "name": "distinct-null-name",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "limit-whole",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "limit-whole",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "distinct-whole",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "distinct-whole",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "limit-literal",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "limit-literal",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "distinct-literal",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "distinct-literal",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "limit-wrapped",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "limit-wrapped",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "distinct-wrapped",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "distinct-wrapped",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "limit-expression",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "limit-expression",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "distinct-expression",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "distinct-expression",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "limit-throw-projection",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "limit-throw-projection",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "distinct-throw-projection",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "distinct-throw-projection",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "no-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "no-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "distinct-no-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "distinct-no-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "skip",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "skip",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "skip-one",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "skip-one",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "order",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "order",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "order-desc",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "order-desc",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "order-source",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "order-source",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "order-throw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "order-throw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "where-lower",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "where-lower",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "where-wrapped",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "where-wrapped",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "where-and-true",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "where-and-true",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "where-and-throw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "where-and-throw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "where-or-throw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "where-or-throw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "where-no-hit",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "where-no-hit",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "where-eager-extra",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "where-eager-extra",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "where-graph-scope",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "where-graph-scope",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "param-needle",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "param-needle",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "param-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "param-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "expression-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "expression-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "zero-skips-throw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "zero-skips-throw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "inline",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "inline",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "optional",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "optional",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "count",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "count",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "fixture": "bad-last-unmatched",
+    "name": "distinct-graph",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "fixture": "bad-last-unmatched",
+    "name": "distinct-graph",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "untyped-raw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "untyped-raw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "untyped-raw-throwing-projection",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "untyped-raw-throwing-projection",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "untyped-wrapped",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "untyped-wrapped",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "untyped-wrapped-throwing-projection",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "untyped-wrapped-throwing-projection",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "typed-raw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "typed-raw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "typed-raw-throwing-projection",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "typed-raw-throwing-projection",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "typed-wrapped",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "typed-wrapped",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "typed-wrapped-throwing-projection",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "typed-wrapped-throwing-projection",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "fixture": "bad-matched",
+    "name": "fourfields-raw-distinct-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "fixture": "bad-matched",
+    "name": "fourfields-raw-distinct-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "fourfields-wrapped-distinct-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "fourfields-wrapped-distinct-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "limit-direct",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "limit-direct",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "fixture": "bad-matched",
+    "name": "distinct-direct",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "fixture": "bad-matched",
+    "name": "distinct-direct",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "limit-direct-id",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "limit-direct-id",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "distinct-direct-id",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "distinct-direct-id",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "limit-id-function",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "limit-id-function",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "distinct-id-function",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "distinct-id-function",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "limit-graph-id",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "limit-graph-id",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "fixture": "bad-matched",
+    "name": "distinct-graph-id",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "fixture": "bad-matched",
+    "name": "distinct-graph-id",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "limit-null-name",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "limit-null-name",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "fixture": "bad-matched",
+    "name": "distinct-null-name",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "fixture": "bad-matched",
+    "name": "distinct-null-name",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "limit-whole",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "limit-whole",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "distinct-whole",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "distinct-whole",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "limit-literal",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "limit-literal",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "distinct-literal",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "distinct-literal",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "limit-wrapped",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "limit-wrapped",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "distinct-wrapped",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "distinct-wrapped",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "limit-expression",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "limit-expression",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "distinct-expression",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "distinct-expression",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "limit-throw-projection",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "limit-throw-projection",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "distinct-throw-projection",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "distinct-throw-projection",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "no-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "no-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "distinct-no-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "distinct-no-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "skip",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "skip",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "skip-one",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "skip-one",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "order",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "order",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "order-desc",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "order-desc",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "order-source",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "order-source",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "order-throw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "order-throw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "where-lower",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "where-lower",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "where-wrapped",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "where-wrapped",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "where-and-true",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "where-and-true",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "where-and-throw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "where-and-throw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "where-or-throw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "where-or-throw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "where-no-hit",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "where-no-hit",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "where-eager-extra",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "where-eager-extra",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "where-graph-scope",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "where-graph-scope",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "param-needle",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "param-needle",
+    "ordinaryEligible": true
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "param-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "param-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "expression-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "expression-limit",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "zero-skips-throw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "zero-skips-throw",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "inline",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "inline",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "optional",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "optional",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "count",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "count",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "fixture": "bad-matched",
+    "name": "distinct-graph",
+    "ordinaryEligible": false
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "fixture": "bad-matched",
+    "name": "distinct-graph",
+    "ordinaryEligible": false
+  }
+]

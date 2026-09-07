@@ -1,0 +1,43 @@
+{
+  "cwd": "/tmp/graphite-streaming-b-independent-review/module",
+  "commands": [
+    {
+      "command": "go test -race ./internal/query -run '^TestReviewBFinalSortCancellation$' -count=1 -v",
+      "exit": 1,
+      "log": "cancel-before.log",
+      "source": "initial plus observer"
+    },
+    {
+      "command": "go test -race ./internal/query -run '^TestReviewBFinalSortCancellation$' -count=10 -v",
+      "exit": 0,
+      "log": "cancel-after.log",
+      "source": "final plus observer"
+    },
+    {
+      "command": "INDEXED_DISTINCT_OUTPUT=.../native go test -race ./internal/query -run '^TestStreaming' -count=1 -v",
+      "exit": 0,
+      "log": "streaming-race.log",
+      "source": "final plus observer"
+    },
+    {
+      "command": "INDEXED_DISTINCT_OUTPUT=.../native-exact go test -race ./internal/query -run '^TestStreaming' -count=1",
+      "exit": 0,
+      "log": "streaming-final-exact-race.log",
+      "source": "exact final"
+    },
+    {
+      "command": "go vet ./internal/query",
+      "exit": 0,
+      "log": "vet-final-exact.log",
+      "source": "exact final"
+    },
+    {
+      "command": "python3 verify.py",
+      "exit": 0
+    },
+    {
+      "command": "python3 numeric-spelling-audit.py",
+      "exit": 0
+    }
+  ]
+}

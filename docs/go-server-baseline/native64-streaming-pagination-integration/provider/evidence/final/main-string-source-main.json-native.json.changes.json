@@ -1,0 +1,3326 @@
+[
+  {
+    "before": {
+      "spec": {
+        "fixtures": [
+          "valid-tag"
+        ],
+        "name": "valid-tag/40/CONTAINS 'other'/False",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1",
+        "sources": 40
+      },
+      "targets": [
+        {
+          "after": [
+            {
+              "id": "g0",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g1",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g2",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g3",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g4",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g5",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g6",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g7",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g8",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g9",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g10",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g11",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g12",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g13",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g14",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g15",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g16",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g17",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g18",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g19",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g20",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g21",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g22",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g23",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g24",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g25",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g26",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g27",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g28",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g29",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g30",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g31",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g32",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g33",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g34",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g35",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g36",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g37",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g38",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g39",
+              "mappedView": false,
+              "retained": false
+            }
+          ],
+          "before": [
+            {
+              "id": "g0",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g1",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g2",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g3",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g4",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g5",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g6",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g7",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g8",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g9",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g10",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g11",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g12",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g13",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g14",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g15",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g16",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g17",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g18",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g19",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g20",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g21",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g22",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g23",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g24",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g25",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g26",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g27",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g28",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g29",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g30",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g31",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g32",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g33",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g34",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g35",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g36",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g37",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g38",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g39",
+              "mappedView": false,
+              "retained": false
+            }
+          ],
+          "error": "ClassCastException",
+          "message": "Cannot cast io.johnsonlee.graphite.core.IntConstant to io.johnsonlee.graphite.core.CallSiteNode",
+          "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1"
+        },
+        {
+          "after": [
+            {
+              "id": "g0",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g1",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g2",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g3",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g4",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g5",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g6",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g7",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g8",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g9",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g10",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g11",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g12",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g13",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g14",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g15",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g16",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g17",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g18",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g19",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g20",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g21",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g22",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g23",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g24",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g25",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g26",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g27",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g28",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g29",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g30",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g31",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g32",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g33",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g34",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g35",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g36",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g37",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g38",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g39",
+              "mappedView": false,
+              "retained": false
+            }
+          ],
+          "before": [
+            {
+              "id": "g0",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g1",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g2",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g3",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g4",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g5",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g6",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g7",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g8",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g9",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g10",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g11",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g12",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g13",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g14",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g15",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g16",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g17",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g18",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g19",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g20",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g21",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g22",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g23",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g24",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g25",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g26",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g27",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g28",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g29",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g30",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g31",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g32",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g33",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g34",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g35",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g36",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g37",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g38",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g39",
+              "mappedView": false,
+              "retained": false
+            }
+          ],
+          "error": "ClassCastException",
+          "message": "Cannot cast io.johnsonlee.graphite.core.IntConstant to io.johnsonlee.graphite.core.CallSiteNode",
+          "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1"
+        }
+      ]
+    },
+    "after": {
+      "spec": {
+        "fixtures": [
+          "valid-tag"
+        ],
+        "name": "valid-tag/40/CONTAINS 'other'/False",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1",
+        "sources": 40
+      },
+      "targets": [
+        {
+          "after": [
+            {
+              "id": "g0",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g1",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g2",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g3",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g4",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g5",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g6",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g7",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g8",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g9",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g10",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g11",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g12",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g13",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g14",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g15",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g16",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g17",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g18",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g19",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g20",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g21",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g22",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g23",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g24",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g25",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g26",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g27",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g28",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g29",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g30",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g31",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g32",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g33",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g34",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g35",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g36",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g37",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g38",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g39",
+              "mappedView": false,
+              "retained": false
+            }
+          ],
+          "before": [
+            {
+              "id": "g0",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g1",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g2",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g3",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g4",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g5",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g6",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g7",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g8",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g9",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g10",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g11",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g12",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g13",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g14",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g15",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g16",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g17",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g18",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g19",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g20",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g21",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g22",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g23",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g24",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g25",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g26",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g27",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g28",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g29",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g30",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g31",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g32",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g33",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g34",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g35",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g36",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g37",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g38",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g39",
+              "mappedView": false,
+              "retained": false
+            }
+          ],
+          "error": "ClassCastException",
+          "message": "Cannot cast io.johnsonlee.graphite.core.IntConstant to io.johnsonlee.graphite.core.CallSiteNode",
+          "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1"
+        },
+        {
+          "after": [
+            {
+              "id": "g0",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g1",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g2",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g3",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g4",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g5",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g6",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g7",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g8",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g9",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g10",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g11",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g12",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g13",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g14",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g15",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g16",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g17",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g18",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g19",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g20",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g21",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g22",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g23",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g24",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g25",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g26",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g27",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g28",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g29",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g30",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g31",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g32",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g33",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g34",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g35",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g36",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g37",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g38",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g39",
+              "mappedView": false,
+              "retained": false
+            }
+          ],
+          "before": [
+            {
+              "id": "g0",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g1",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g2",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g3",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g4",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g5",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g6",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g7",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g8",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g9",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g10",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g11",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g12",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g13",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g14",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g15",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g16",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g17",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g18",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g19",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g20",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g21",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g22",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g23",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g24",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g25",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g26",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g27",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g28",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g29",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g30",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g31",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g32",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g33",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g34",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g35",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g36",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g37",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g38",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g39",
+              "mappedView": false,
+              "retained": false
+            }
+          ],
+          "error": "ClassCastException",
+          "message": "Cannot cast io.johnsonlee.graphite.core.IntConstant to io.johnsonlee.graphite.core.CallSiteNode",
+          "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1"
+        }
+      ]
+    }
+  },
+  {
+    "before": {
+      "spec": {
+        "fixtures": [
+          "unknown-tag"
+        ],
+        "name": "unknown-tag/40",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1",
+        "sources": 40
+      },
+      "targets": [
+        {
+          "after": [
+            {
+              "id": "g0",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g1",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g2",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g3",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g4",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g5",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g6",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g7",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g8",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g9",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g10",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g11",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g12",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g13",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g14",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g15",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g16",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g17",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g18",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g19",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g20",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g21",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g22",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g23",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g24",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g25",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g26",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g27",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g28",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g29",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g30",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g31",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g32",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g33",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g34",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g35",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g36",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g37",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g38",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g39",
+              "mappedView": false,
+              "retained": false
+            }
+          ],
+          "before": [
+            {
+              "id": "g0",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g1",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g2",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g3",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g4",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g5",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g6",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g7",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g8",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g9",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g10",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g11",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g12",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g13",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g14",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g15",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g16",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g17",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g18",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g19",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g20",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g21",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g22",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g23",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g24",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g25",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g26",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g27",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g28",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g29",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g30",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g31",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g32",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g33",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g34",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g35",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g36",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g37",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g38",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g39",
+              "mappedView": false,
+              "retained": false
+            }
+          ],
+          "error": "IllegalArgumentException",
+          "message": "Unknown node tag: 127",
+          "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1"
+        },
+        {
+          "after": [
+            {
+              "id": "g0",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g1",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g2",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g3",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g4",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g5",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g6",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g7",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g8",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g9",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g10",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g11",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g12",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g13",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g14",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g15",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g16",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g17",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g18",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g19",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g20",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g21",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g22",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g23",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g24",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g25",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g26",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g27",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g28",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g29",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g30",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g31",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g32",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g33",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g34",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g35",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g36",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g37",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g38",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g39",
+              "mappedView": false,
+              "retained": false
+            }
+          ],
+          "before": [
+            {
+              "id": "g0",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g1",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g2",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g3",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g4",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g5",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g6",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g7",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g8",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g9",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g10",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g11",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g12",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g13",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g14",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g15",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g16",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g17",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g18",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g19",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g20",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g21",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g22",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g23",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g24",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g25",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g26",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g27",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g28",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g29",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g30",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g31",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g32",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g33",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g34",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g35",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g36",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g37",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g38",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g39",
+              "mappedView": false,
+              "retained": false
+            }
+          ],
+          "error": "IllegalArgumentException",
+          "message": "Unknown node tag: 127",
+          "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1"
+        }
+      ]
+    },
+    "after": {
+      "spec": {
+        "fixtures": [
+          "unknown-tag"
+        ],
+        "name": "unknown-tag/40",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1",
+        "sources": 40
+      },
+      "targets": [
+        {
+          "after": [
+            {
+              "id": "g0",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g1",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g2",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g3",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g4",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g5",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g6",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g7",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g8",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g9",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g10",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g11",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g12",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g13",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g14",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g15",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g16",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g17",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g18",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g19",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g20",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g21",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g22",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g23",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g24",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g25",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g26",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g27",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g28",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g29",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g30",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g31",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g32",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g33",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g34",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g35",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g36",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g37",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g38",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g39",
+              "mappedView": false,
+              "retained": false
+            }
+          ],
+          "before": [
+            {
+              "id": "g0",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g1",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g2",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g3",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g4",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g5",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g6",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g7",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g8",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g9",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g10",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g11",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g12",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g13",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g14",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g15",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g16",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g17",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g18",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g19",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g20",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g21",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g22",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g23",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g24",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g25",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g26",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g27",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g28",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g29",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g30",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g31",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g32",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g33",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g34",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g35",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g36",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g37",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g38",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g39",
+              "mappedView": false,
+              "retained": false
+            }
+          ],
+          "error": "IllegalArgumentException",
+          "message": "Unknown node tag: 127",
+          "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1"
+        },
+        {
+          "after": [
+            {
+              "id": "g0",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g1",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g2",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g3",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g4",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g5",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g6",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g7",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g8",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g9",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g10",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g11",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g12",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g13",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g14",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g15",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g16",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g17",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g18",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g19",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g20",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g21",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g22",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g23",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g24",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g25",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g26",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g27",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g28",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g29",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g30",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g31",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g32",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g33",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g34",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g35",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g36",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g37",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g38",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g39",
+              "mappedView": false,
+              "retained": false
+            }
+          ],
+          "before": [
+            {
+              "id": "g0",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g1",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g2",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g3",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g4",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g5",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g6",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g7",
+              "mappedView": true,
+              "retained": false
+            },
+            {
+              "id": "g8",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g9",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g10",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g11",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g12",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g13",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g14",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g15",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g16",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g17",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g18",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g19",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g20",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g21",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g22",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g23",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g24",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g25",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g26",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g27",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g28",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g29",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g30",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g31",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g32",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g33",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g34",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g35",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g36",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g37",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g38",
+              "mappedView": false,
+              "retained": false
+            },
+            {
+              "id": "g39",
+              "mappedView": false,
+              "retained": false
+            }
+          ],
+          "error": "IllegalArgumentException",
+          "message": "Unknown node tag: 127",
+          "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1"
+        }
+      ]
+    }
+  }
+]

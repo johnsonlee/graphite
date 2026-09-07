@@ -1,0 +1,27 @@
+import json,pathlib,hashlib,collections,re
+r=pathlib.Path(__file__).resolve().parent
+src=r/'module/internal/query/testdata/indexed-distinct'
+pairs={'primary':'audit-primary/main.json','supplementary':'audit-supplementary/main.json','source-pairs':'audit-source-pairs/main.json','late':'late-main.json'}
+for v in ['clean','bad-callee','bad-count','bad-tag','missing-index']:pairs['split-'+v]='split-'+v+'-main.json'
+for v in ['','-missing-index','-missing-identity']:pairs['required'+v]='required-main'+v+'.json'
+for v in ['annotation','annotation-after','mixed']:pairs[v]=v+'-wire-main.json'
+def equal(a,b):
+ if type(a)!=type(b): return False
+ if isinstance(a,dict): return a.keys()==b.keys() and all(equal(a[k],b[k]) for k in a)
+ if isinstance(a,list): return len(a)==len(b) and all(equal(x,y) for x,y in zip(a,b))
+ return a==b
+records=[]
+for suite,path in pairs.items():
+ main=json.loads((src/path).read_text());base=json.loads((r/'captured-output/baseline-output/original-corpus'/(suite+'-native.json')).read_text());candidate=json.loads((r/'captured-output/final-output/original-corpus'/(suite+'-native.json')).read_text())
+ assert len(main)==len(base)==len(candidate)
+ for i,(a,b,c) in enumerate(zip(main,base,candidate)):
+  # These records include case identity; compare the same complete wire response envelope as existing audit.
+  keys=['columns','rows','error','message']
+  response=lambda x:{k:x[k] for k in keys if k in x}
+  a,b,c=map(response,(a,b,c))
+  if not equal(b,c): assert equal(a,c),(suite,i,'changed response does not match main')
+  kind='equal' if equal(a,c) else 'main-success-native-error' if 'error' not in a and 'error' in c else 'both-error-difference' if 'error' in a and 'error' in c else 'both-success-difference'
+  records.append({'suite':suite,'index':i,'comparison':kind,'main':a,'base':b,'candidate':c})
+report={'total':len(records),'comparison':dict(collections.Counter(x['comparison'] for x in records)),'baseCandidateEqual':sum(equal(x['base'],x['candidate']) for x in records),'baselineMainEqual':sum(equal(x['base'],x['main']) for x in records),'records':records}
+(r/'original1048-comparison.json').write_text(json.dumps(report,indent=2)+'\n')
+print(json.dumps({k:v for k,v in report.items() if k!='records'},indent=2))

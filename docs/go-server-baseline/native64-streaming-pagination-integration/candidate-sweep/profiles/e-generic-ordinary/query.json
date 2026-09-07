@@ -1,0 +1,234 @@
+{
+  "name": "e-generic-ordinary",
+  "query": "MATCH (n:CallSiteNode) WHERE toString(toString(n.caller_name)) CONTAINS 'get' RETURN [n.caller_class, n.caller_name] AS value LIMIT 20",
+  "source": "Fresh pinned-main all64 HTTP capture for lazy filtered integration",
+  "expected": {
+    "columns": [
+      "value"
+    ],
+    "graphCount": 64,
+    "rowCount": 20,
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "value": [
+          "org.ccil.cowan.tagsoup.Schema",
+          "getElementType"
+        ]
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "value": [
+          "org.ccil.cowan.tagsoup.Schema",
+          "getElementType"
+        ]
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "value": [
+          "org.ccil.cowan.tagsoup.Schema",
+          "getEntity"
+        ]
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "value": [
+          "org.apache.http.conn.ssl.AbstractVerifier",
+          "getCNs"
+        ]
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "value": [
+          "org.apache.http.conn.ssl.AbstractVerifier",
+          "getCNs"
+        ]
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "value": [
+          "org.apache.http.conn.ssl.AbstractVerifier",
+          "getCNs"
+        ]
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "value": [
+          "org.apache.http.conn.ssl.AbstractVerifier",
+          "getCNs"
+        ]
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "value": [
+          "org.apache.http.conn.ssl.AbstractVerifier",
+          "getCNs"
+        ]
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "value": [
+          "org.apache.http.conn.ssl.AbstractVerifier",
+          "getCNs"
+        ]
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "value": [
+          "org.apache.http.conn.ssl.AbstractVerifier",
+          "getDNSSubjectAlts"
+        ]
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "value": [
+          "org.apache.http.conn.ssl.AbstractVerifier",
+          "getDNSSubjectAlts"
+        ]
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "value": [
+          "org.apache.http.conn.ssl.AbstractVerifier",
+          "getDNSSubjectAlts"
+        ]
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "value": [
+          "org.apache.http.conn.ssl.AbstractVerifier",
+          "getDNSSubjectAlts"
+        ]
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "value": [
+          "org.apache.http.conn.ssl.AbstractVerifier",
+          "getDNSSubjectAlts"
+        ]
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "value": [
+          "org.apache.http.conn.ssl.AbstractVerifier",
+          "getDNSSubjectAlts"
+        ]
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "value": [
+          "org.apache.http.conn.ssl.AbstractVerifier",
+          "getDNSSubjectAlts"
+        ]
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "value": [
+          "org.apache.http.conn.ssl.AbstractVerifier",
+          "getDNSSubjectAlts"
+        ]
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "value": [
+          "org.apache.http.conn.ssl.AbstractVerifier",
+          "getDNSSubjectAlts"
+        ]
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "value": [
+          "org.apache.http.conn.ssl.AbstractVerifier",
+          "getDNSSubjectAlts"
+        ]
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "value": [
+          "org.apache.http.conn.ssl.AbstractVerifier",
+          "getDNSSubjectAlts"
+        ]
+      }
+    ]
+  }
+}

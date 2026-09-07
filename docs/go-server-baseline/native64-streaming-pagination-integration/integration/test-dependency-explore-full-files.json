@@ -1,0 +1,295 @@
+{
+  "revision": "62b92d2061b72150d76767cd07c18e351dddc7a3",
+  "files": [
+    {
+      "path": "graphite-explore/Dockerfile",
+      "sha256": "16a2ccc055ffe0e1e030f6e107c0cde4b735b0e77d232e10156610af8bf39d79",
+      "gitBlob": "becb40d2cc1a90944cb7365185e91562c63e208c"
+    },
+    {
+      "path": "graphite-explore/build.gradle.kts",
+      "sha256": "32314e0798479cacdd2c52665998c801a8606d1e66b5f9ef75dd0d09d7897eca",
+      "gitBlob": "1daabe8d157428d327809d006efad53cb78bb71f"
+    },
+    {
+      "path": "graphite-explore/src/jmh/kotlin/io/johnsonlee/graphite/cli/CypherCapacityBenchmark.kt",
+      "sha256": "dd4c829134941d2f47d2f957f920316b66be02c95cc07c0161d74b02dcee7ef4",
+      "gitBlob": "44fb442069e409db99c5702546a7e6897dc254a3"
+    },
+    {
+      "path": "graphite-explore/src/jmh/kotlin/io/johnsonlee/graphite/cli/CypherHttpBenchmark.kt",
+      "sha256": "dda743d6f4de7eefa77eb587b848267ae87e2dc8b96019752b494c2ade1e7ab6",
+      "gitBlob": "089dee79888fa02b82cb74be660cdd0da67eefad"
+    },
+    {
+      "path": "graphite-explore/src/jmh/kotlin/io/johnsonlee/graphite/cli/ExplorerMemoryBenchmark.kt",
+      "sha256": "3946fcfbdfb644ef061ef68fbaedeed929218b852341c43c0f210fabff699d72",
+      "gitBlob": "8a58b5bf862eef8a2fecb843502054982525750e"
+    },
+    {
+      "path": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/CypherClientCancellation.kt",
+      "sha256": "769bbeab66a2296e79cff3496e89cef274b91c28ad9d40d1d4ad2871a3644725",
+      "gitBlob": "fe7203e668bf9d9ab3f1ece2afa70a013225b458"
+    },
+    {
+      "path": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/CypherQueryGuard.kt",
+      "sha256": "8741d452aff5187a010d8fd020c4bcb65f0296f6cc740eb212623dfa70bf20e6",
+      "gitBlob": "48ce3d03bdee4754538156e2605a44f3ea65b2bc"
+    },
+    {
+      "path": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/CypherResponseSerializer.kt",
+      "sha256": "7583797a23d21580fccb051a8c0f595bb07e8056bf8920ed881d2e85796fe6d2",
+      "gitBlob": "916161f0ee39487ea8c3c0b606b8691db516d9a7"
+    },
+    {
+      "path": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/EndpointExtractor.kt",
+      "sha256": "585593900d3bef81f382fae70e07892f120ddd9bb58fc655d70808d29ce78eec",
+      "gitBlob": "5bb913081999b7e9b2e5a1e099dda2688eeb25a0"
+    },
+    {
+      "path": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/ExploreApiFields.kt",
+      "sha256": "2ea121d404923294f4bbf2eba8f50642d97fb09b7665406fcdbc470393d0328b",
+      "gitBlob": "f9bcb400f0befb879d7ff6388aff6d5f5692fd35"
+    },
+    {
+      "path": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/ExploreCommand.kt",
+      "sha256": "b2aa69d3d0f7cca4db158fee9bacea27b7a3c939e0fb36ecf32e892ed896c054",
+      "gitBlob": "66b6d18fe8b1fa506789779a6bdd996d3a4e911f"
+    },
+    {
+      "path": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/ExploreMain.kt",
+      "sha256": "48eac98b4f80962266b14fa8cc6a599b9eca4d52a5c6629fc64dfb680b0e3a0b",
+      "gitBlob": "63494137e0afbf53f2e89a9e584d852b39ec862f"
+    },
+    {
+      "path": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/ExploreRoutes.kt",
+      "sha256": "7a5c032a5113f59fc92bd3b91cb28fd3564702fb41320dfcd38cf3bb4cf251da",
+      "gitBlob": "f5009aa05665034c7ecc2b516d526109f8b8b1df"
+    },
+    {
+      "path": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/GraphRegistry.kt",
+      "sha256": "c01cbb8a4a143ad64c8b472f3b9392cda158e320ca75fe850d4430fc7739908d",
+      "gitBlob": "25316ae1f0ce0b2701461af8e0b6d8f8ea2997cb"
+    },
+    {
+      "path": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/GraphiteVersionProvider.kt",
+      "sha256": "7f522d2beda441d1ec140521b316f7a6df0ae479ba2787e0049c41f66808d99c",
+      "gitBlob": "1fdad1acc188f4b4e460202d810345c2ea0292c3"
+    },
+    {
+      "path": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/Helpers.kt",
+      "sha256": "43753a6f94daa444914e5fcd595f590b33ad9bb75a27fb3f9f8f82becb9e0edd",
+      "gitBlob": "f6465b3df70eff8c4aaaad9b63086762468f071b"
+    },
+    {
+      "path": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/NativeServerLauncher.kt",
+      "sha256": "7f6640a63db34689dd6dd15b3a2f86a52e3f0c760bc844f6b49dcca85ee288de",
+      "gitBlob": "8b90dba78d1acb997c422bad7896260d793c84e6"
+    },
+    {
+      "path": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/OpenApiSpecBuilder.kt",
+      "sha256": "ea8113415352a73fd8ee3802456b181cf74da72b7d590c0560eeae80a32944a7",
+      "gitBlob": "e099160f03c84274bba1c3a80c9455627990fe22"
+    },
+    {
+      "path": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/ServerPerformanceMetrics.kt",
+      "sha256": "62502dd02c626bb4e9c924934d00871b45e93b775fad4e3182a93d63453432f3",
+      "gitBlob": "b8f72c3e32586e65adecf410b602d19709457c84"
+    },
+    {
+      "path": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/TopologyGraph.kt",
+      "sha256": "bc843b91d6102b7a250b156104f9f291547e31f0da27e4fd890005f39c460209",
+      "gitBlob": "fd0f0342bb34d462df6b89eeb122a00993ce206e"
+    },
+    {
+      "path": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/TopologyStore.kt",
+      "sha256": "9f3896e4a9da5c0b557f244d1b5ecf0ba26c2af99c81a4c854cca67178f56745",
+      "gitBlob": "074483380f4d65e96fc2a8968e682a1f4d1e0f53"
+    },
+    {
+      "path": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/c4/C4ArchitectureService.kt",
+      "sha256": "3ac9b1f818d63ae73f2f1955778de4f4ab4735ae0db616e5acfc348f565ee188",
+      "gitBlob": "74da396d26f0036ef2adaa02c13d07d1a8dde60c"
+    },
+    {
+      "path": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/c4/C4InferenceConstants.kt",
+      "sha256": "5dca9805ebaa30110585643c07715ee9c117c7740e12e3fd688339d420d81ff9",
+      "gitBlob": "8ceb8dc18177a17b1ce40648e06489720f008c20"
+    },
+    {
+      "path": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/c4/C4MermaidRenderer.kt",
+      "sha256": "114861ef4de7750df709f3e8ca403b453a078d5ec3d6f4efe7b356f36357b414",
+      "gitBlob": "9bdce04d522e73b2387b98160d103b560812fa9e"
+    },
+    {
+      "path": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/c4/C4Metadata.kt",
+      "sha256": "d04e430911bc297294b4bd2cea8acb87b275eb9f625bcc6096782846e6a95f64",
+      "gitBlob": "dfdd7185f5d6397e93fddb3773c7334ad5086362"
+    },
+    {
+      "path": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/c4/C4ModelConstants.kt",
+      "sha256": "ad32db11c2cd2344e2f4425c803a5c1937e95e10a9533ce163de9263a818b576",
+      "gitBlob": "5f72301ec1e2646c899b185207aa0bf7c390453c"
+    },
+    {
+      "path": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/c4/C4ModelInferer.kt",
+      "sha256": "cbbd5c2af4236a7f4e9430d510ee8ddcfc67565b573d2df229f8568e4eecef7e",
+      "gitBlob": "c876c4c2661563048ff7ba24e7427b1b3dcdadaf"
+    },
+    {
+      "path": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/c4/C4PlantUmlRenderer.kt",
+      "sha256": "4bf75eb95de962ba361fc901f151ba0e036a400cdaf8d4db3180a8be2b8f57bd",
+      "gitBlob": "25ddeb2f5b73c1b3705359124a8eb5df2f19e6f9"
+    },
+    {
+      "path": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/c4/C4RenderingPlan.kt",
+      "sha256": "4a3d79ce91f4697ab708eeb0b45f7a1ab78c6d39bda421dd8f6736659fa4e3c0",
+      "gitBlob": "29dbe1ec093cccb60e398a1242e7db20910b868f"
+    },
+    {
+      "path": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/c4/C4StructurizrDslRenderer.kt",
+      "sha256": "142cf3f0b896f84466b945df1281b04739722e2026231e77aae67bf0f4526cfd",
+      "gitBlob": "55c16aa61630ac3d7e8bef17fbcfe938978d6299"
+    },
+    {
+      "path": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/c4/C4StructurizrMapper.kt",
+      "sha256": "2fdb5d7011cc082932b8c026bda8adceafcd9cac9d19c3a6deadd65b98de2d66",
+      "gitBlob": "89c67827dcd8a59c6aaa0557597b58ff4dddf624"
+    },
+    {
+      "path": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/c4/C4StructurizrModel.kt",
+      "sha256": "9b926bf1ea9a8f5c2b8eff5aef3f2831b6359c74a036083205388e8ab20a34f6",
+      "gitBlob": "7186baf3476196bc3b57cc6aad1f41b60c0b50a6"
+    },
+    {
+      "path": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/c4/C4Support.kt",
+      "sha256": "32ccb4b388aed65c60bf9940191aa666a5624faf45ee8b8064507a9e0e6f9022",
+      "gitBlob": "c4166fcd35f09a22c5aa591d7483cf062f2d2cca"
+    },
+    {
+      "path": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/c4/C4TextDiagramRenderer.kt",
+      "sha256": "7d8a966f81af9ee0839c398d82f66ebce46c291001749fcf223d8df3431e3b6b",
+      "gitBlob": "c15179ca578135b1ee09a8566886052fb1ebbfbc"
+    },
+    {
+      "path": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/c4/C4Types.kt",
+      "sha256": "e2b3cbdda2ac014a7d6fde07687585705d5c4687bde9547e9683d2a177c6f57f",
+      "gitBlob": "13674efb0ac4e5054c2e3f560f9803cabfed6fb9"
+    },
+    {
+      "path": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/c4/C4WireCodec.kt",
+      "sha256": "6f2db7cbb89fa49b36b9d976cc53b9f0db3e49d20b304ad5ac5599150057a89f",
+      "gitBlob": "83c9d74c834df09b68fb69d670658dc423fc1839"
+    },
+    {
+      "path": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/c4/ComponentSelector.kt",
+      "sha256": "041cbe3781c7292a97ceff18fd41cc8f98a824f7814d07d998bd4689ea2006c2",
+      "gitBlob": "caaa83f8fc3d25a3abee032350290024a073d39e"
+    },
+    {
+      "path": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/c4/ContainerClusterer.kt",
+      "sha256": "8d88704008756523eda0d81556dcf00d3e8b3cd8cf1fc5ecce66cf4b7ed513c4",
+      "gitBlob": "cb19f693a84477b0dcac3951623a3ea0688ed709"
+    },
+    {
+      "path": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/c4/ExternalSystemClassifier.kt",
+      "sha256": "8def9b1e26778d3f48f5dd4294605e2099c54151b8cdc90d0125170cbdf2236d",
+      "gitBlob": "4f28e47ac67a6be677e0f81e8dec42299e13a4fa"
+    },
+    {
+      "path": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/c4/SubjectDetector.kt",
+      "sha256": "50f99ed4fbf15b7d47c336b5304f092942e2c847841bf6f1b8a251c40580ef71",
+      "gitBlob": "74ba4ca53939f4ed8ec69153b35c4e0d2d0e2991"
+    },
+    {
+      "path": "graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/c4/SystemBoundaryDetector.kt",
+      "sha256": "02ae98a8ac9c95b0fee202b844327f7a7fbc620d0bccf587cdfeff1e1ff5ec83",
+      "gitBlob": "60821e1dd6656a1f464eb250e9b7d8eabbeef466"
+    },
+    {
+      "path": "graphite-explore/src/main/resources/web/app.js",
+      "sha256": "46f17018780bb99d69122edfd9ab26419c4013fa96c3ea6404c80ef43da1a8cb",
+      "gitBlob": "90973b6ad9729919403c17c475182986843e566e"
+    },
+    {
+      "path": "graphite-explore/src/main/resources/web/index.html",
+      "sha256": "cde253d3a96ba6fa9562bacdd43373fc1b6a73f73feddacb637a8a2421d61057",
+      "gitBlob": "274b409391f3d171fd47525173e55e206ad47204"
+    },
+    {
+      "path": "graphite-explore/src/main/resources/web/style.css",
+      "sha256": "fc3c32e70df3f3fe3864eea6b431a36a8d837adbe505f715fbc8f9aaf452abcd",
+      "gitBlob": "8de8e81919b9fd3c98e364425acf11abb3beda26"
+    },
+    {
+      "path": "graphite-explore/src/main/resources/web/ui-state.js",
+      "sha256": "9f84675e7e61e7fe47d13a21e7a8c34bec7e866ff050f6d32ce8f6f9a5b1781c",
+      "gitBlob": "ee51c966683f9464661d13ba450bd626164c5b32"
+    },
+    {
+      "path": "graphite-explore/src/test/js/ui-state.test.js",
+      "sha256": "bb54b81d891ef9ecd72ccf6f8a940c282ab9ac72dd5b82c0143af047b6b4aea0",
+      "gitBlob": "a096f558524b872057a03bb938db1a7855ce4e30"
+    },
+    {
+      "path": "graphite-explore/src/test/kotlin/io/johnsonlee/graphite/cli/CypherCancellationContractTest.kt",
+      "sha256": "c01197ee16b47f2da36fed6e2b4e49be96c59659327b538a9ef7b85ad1bd40c1",
+      "gitBlob": "8cd51d6f7cae7d56f13674d5aebbda5fc88a5553"
+    },
+    {
+      "path": "graphite-explore/src/test/kotlin/io/johnsonlee/graphite/cli/CypherClientCancellationTest.kt",
+      "sha256": "c3d2f9dcbebb69c5bafda57da2e70682ead95d38351520ed6d139b637ef423f8",
+      "gitBlob": "0c938ce6a0e306f0e7780e06fb3f705e7e9518b9"
+    },
+    {
+      "path": "graphite-explore/src/test/kotlin/io/johnsonlee/graphite/cli/CypherQueryGuardTest.kt",
+      "sha256": "c696ca5de22b0754ded20741b872abc768fb8b1db8b2574ffcd095377738538f",
+      "gitBlob": "09357f2ea9afc220c8f9c2fc67a77b1d58246cfd"
+    },
+    {
+      "path": "graphite-explore/src/test/kotlin/io/johnsonlee/graphite/cli/ExploreCommandTest.kt",
+      "sha256": "c414fbf2a5a5fc856ef8a63944c3a7edfa381eb4ef2729cc371aea7b585a723c",
+      "gitBlob": "fbd2dd5f19a5ba890b0736ed2e4a67dfcd14aa88"
+    },
+    {
+      "path": "graphite-explore/src/test/kotlin/io/johnsonlee/graphite/cli/HelpersTest.kt",
+      "sha256": "889ae460ae22150a669fdb13d74dc536472ef252c7cc83eee698fde552a036ac",
+      "gitBlob": "b42d5e395c4f88a0332b3231982e5db3b860beb8"
+    },
+    {
+      "path": "graphite-explore/src/test/kotlin/io/johnsonlee/graphite/cli/NativeServerLauncherTest.kt",
+      "sha256": "51bb6b1bb8ed8c58180b64f5be9b8965f2a90c5ee5991e6caa79063bf980a6ad",
+      "gitBlob": "42802cf4474566015d43d6a047e9f06a8effe806"
+    },
+    {
+      "path": "graphite-explore/src/test/kotlin/io/johnsonlee/graphite/cli/ServerPerformanceMetricsTest.kt",
+      "sha256": "2ac358b5a76448965c2ccc45d37fcaac6f5115d318f1c3702973d839347e642f",
+      "gitBlob": "3c2099a13f34c8869f7b7400e2a16b7331fe8783"
+    },
+    {
+      "path": "graphite-explore/src/test/kotlin/io/johnsonlee/graphite/cli/TopologyGraphTest.kt",
+      "sha256": "522f2a05e685b3be099c475b97eb81480f2b4511463138f9221df31505e1ff00",
+      "gitBlob": "a5db5568820f9d5a8d1991bdf6f99c60ae4cbdcb"
+    },
+    {
+      "path": "graphite-explore/src/test/kotlin/io/johnsonlee/graphite/cli/TopologyStoreTest.kt",
+      "sha256": "f4e36a9b778ab820f9161a6e0b3e08ceac5110a60a1e90654bd1d6c82f932430",
+      "gitBlob": "b41c2b2319962c784b9f1be202a96098f6b7a5c0"
+    },
+    {
+      "path": "graphite-explore/src/test/kotlin/io/johnsonlee/graphite/cli/c4/C4InferenceTest.kt",
+      "sha256": "20030722c0f1d51520d2779fc8f891dc786150eb812ab91cffef40f7bf0d9582",
+      "gitBlob": "94ac4c6b26516e411772e5c0c9e20bcd703d9b0c"
+    },
+    {
+      "path": "graphite-explore/src/test/native-launcher/child.go",
+      "sha256": "c2e4eaed452846d30f68ae03be2f9c64c15030ce3ccddf49036bd0ae2ac672ab",
+      "gitBlob": "2ed40d8928e56819836ce19346fae2a8d637d1ef"
+    },
+    {
+      "path": "graphite-explore/src/test/native-launcher/verify.py",
+      "sha256": "0df4dabc181c198432975d6e78a386b6c18d0bd5387d99b72942d5026e5caf7a",
+      "gitBlob": "a2e4d888895dc81fcdae2649b8f0ba0ae01a6831"
+    }
+  ]
+}

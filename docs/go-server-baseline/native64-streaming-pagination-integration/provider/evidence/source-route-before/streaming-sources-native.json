@@ -1,0 +1,789 @@
+[
+  {
+    "badAt": 1,
+    "count": 2,
+    "fixture": "bad-matched",
+    "history": [
+      {
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "g0"
+              ]
+            },
+            "x": 41
+          }
+        ]
+      }
+    ],
+    "name": "skip-late-2",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x SKIP 1 LIMIT 1"
+  },
+  {
+    "badAt": 1,
+    "count": 2,
+    "fixture": "bad-matched",
+    "history": [
+      {
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)"
+      }
+    ],
+    "name": "distinct-late-2",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x SKIP 0 LIMIT 1"
+  },
+  {
+    "badAt": 1,
+    "count": 2,
+    "fixture": "bad-matched",
+    "history": [
+      {
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)"
+      }
+    ],
+    "name": "order-late-2",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY x SKIP 0 LIMIT 1"
+  },
+  {
+    "count": 2,
+    "history": [
+      {
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "g1"
+              ]
+            },
+            "x": 41
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "g0"
+              ]
+            },
+            "x": 2
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "g0"
+              ]
+            },
+            "x": 41
+          }
+        ]
+      },
+      {
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "g1"
+              ]
+            },
+            "x": 41
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "g0"
+              ]
+            },
+            "x": 2
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "g0"
+              ]
+            },
+            "x": 41
+          }
+        ]
+      }
+    ],
+    "mode": "MAPPED",
+    "name": "order-ties-2-MAPPED",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY 0 SKIP 1 LIMIT 3",
+    "repeat": 2,
+    "reverseIDs": true
+  },
+  {
+    "count": 2,
+    "history": [
+      {
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "g1"
+              ]
+            },
+            "x": 41
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "g0"
+              ]
+            },
+            "x": 2
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "g0"
+              ]
+            },
+            "x": 41
+          }
+        ]
+      },
+      {
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "g1"
+              ]
+            },
+            "x": 41
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "g0"
+              ]
+            },
+            "x": 2
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "g0"
+              ]
+            },
+            "x": 41
+          }
+        ]
+      }
+    ],
+    "mode": "EAGER",
+    "name": "order-ties-2-EAGER",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY 0 SKIP 1 LIMIT 3",
+    "repeat": 2,
+    "reverseIDs": true
+  },
+  {
+    "badAt": 8,
+    "count": 9,
+    "fixture": "bad-matched",
+    "history": [
+      {
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "g0"
+              ]
+            },
+            "x": 41
+          }
+        ]
+      }
+    ],
+    "name": "skip-late-9",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x SKIP 1 LIMIT 1"
+  },
+  {
+    "badAt": 8,
+    "count": 9,
+    "fixture": "bad-matched",
+    "history": [
+      {
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)"
+      }
+    ],
+    "name": "distinct-late-9",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x SKIP 0 LIMIT 1"
+  },
+  {
+    "badAt": 8,
+    "count": 9,
+    "fixture": "bad-matched",
+    "history": [
+      {
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)"
+      }
+    ],
+    "name": "order-late-9",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY x SKIP 0 LIMIT 1"
+  },
+  {
+    "count": 9,
+    "history": [
+      {
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "g8"
+              ]
+            },
+            "x": 41
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "g7"
+              ]
+            },
+            "x": 2
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "g7"
+              ]
+            },
+            "x": 41
+          }
+        ]
+      },
+      {
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "g8"
+              ]
+            },
+            "x": 41
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "g7"
+              ]
+            },
+            "x": 2
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "g7"
+              ]
+            },
+            "x": 41
+          }
+        ]
+      }
+    ],
+    "mode": "MAPPED",
+    "name": "order-ties-9-MAPPED",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY 0 SKIP 1 LIMIT 3",
+    "repeat": 2,
+    "reverseIDs": true
+  },
+  {
+    "count": 9,
+    "history": [
+      {
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "g8"
+              ]
+            },
+            "x": 41
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "g7"
+              ]
+            },
+            "x": 2
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "g7"
+              ]
+            },
+            "x": 41
+          }
+        ]
+      },
+      {
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "g8"
+              ]
+            },
+            "x": 41
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "g7"
+              ]
+            },
+            "x": 2
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "g7"
+              ]
+            },
+            "x": 41
+          }
+        ]
+      }
+    ],
+    "mode": "EAGER",
+    "name": "order-ties-9-EAGER",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY 0 SKIP 1 LIMIT 3",
+    "repeat": 2,
+    "reverseIDs": true
+  },
+  {
+    "badAt": 39,
+    "count": 40,
+    "fixture": "bad-matched",
+    "history": [
+      {
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "g0"
+              ]
+            },
+            "x": 41
+          }
+        ]
+      }
+    ],
+    "name": "skip-late-40",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x SKIP 1 LIMIT 1"
+  },
+  {
+    "badAt": 39,
+    "count": 40,
+    "fixture": "bad-matched",
+    "history": [
+      {
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)"
+      }
+    ],
+    "name": "distinct-late-40",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x SKIP 0 LIMIT 1"
+  },
+  {
+    "badAt": 39,
+    "count": 40,
+    "fixture": "bad-matched",
+    "history": [
+      {
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)"
+      }
+    ],
+    "name": "order-late-40",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY x SKIP 0 LIMIT 1"
+  },
+  {
+    "count": 40,
+    "history": [
+      {
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "g39"
+              ]
+            },
+            "x": 41
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "g38"
+              ]
+            },
+            "x": 2
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "g38"
+              ]
+            },
+            "x": 41
+          }
+        ]
+      },
+      {
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "g39"
+              ]
+            },
+            "x": 41
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "g38"
+              ]
+            },
+            "x": 2
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "g38"
+              ]
+            },
+            "x": 41
+          }
+        ]
+      }
+    ],
+    "mode": "MAPPED",
+    "name": "order-ties-40-MAPPED",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY 0 SKIP 1 LIMIT 3",
+    "repeat": 2,
+    "reverseIDs": true
+  },
+  {
+    "count": 40,
+    "history": [
+      {
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "g39"
+              ]
+            },
+            "x": 41
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "g38"
+              ]
+            },
+            "x": 2
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "g38"
+              ]
+            },
+            "x": 41
+          }
+        ]
+      },
+      {
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "g39"
+              ]
+            },
+            "x": 41
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "g38"
+              ]
+            },
+            "x": 2
+          },
+          {
+            "$metadata": {
+              "graphIds": [
+                "g38"
+              ]
+            },
+            "x": 41
+          }
+        ]
+      }
+    ],
+    "mode": "EAGER",
+    "name": "order-ties-40-EAGER",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY 0 SKIP 1 LIMIT 3",
+    "repeat": 2,
+    "reverseIDs": true
+  },
+  {
+    "badAt": 0,
+    "count": 2,
+    "fixture": "offset-negative-90",
+    "history": [
+      {
+        "error": "IndexOutOfBoundsException",
+        "message": null
+      },
+      {
+        "error": "IndexOutOfBoundsException",
+        "message": null
+      }
+    ],
+    "name": "route-offset-2-False",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId = 'g0' RETURN n.id AS x SKIP 0 LIMIT 1",
+    "repeat": 2
+  },
+  {
+    "badAt": 0,
+    "count": 2,
+    "fixture": "offset-negative-90",
+    "history": [
+      {
+        "error": "IndexOutOfBoundsException",
+        "message": null
+      },
+      {
+        "error": "IndexOutOfBoundsException",
+        "message": null
+      }
+    ],
+    "name": "route-offset-2-True",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId = 'g0' RETURN n.id AS x ORDER BY x SKIP 0 LIMIT 1",
+    "repeat": 2
+  },
+  {
+    "badAt": 0,
+    "count": 40,
+    "fixture": "offset-negative-90",
+    "history": [
+      {
+        "error": "IndexOutOfBoundsException",
+        "message": null
+      },
+      {
+        "error": "IndexOutOfBoundsException",
+        "message": null
+      }
+    ],
+    "name": "route-offset-40-False",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId = 'g0' RETURN n.id AS x SKIP 0 LIMIT 1",
+    "repeat": 2
+  },
+  {
+    "badAt": 0,
+    "count": 40,
+    "fixture": "offset-negative-90",
+    "history": [
+      {
+        "error": "IndexOutOfBoundsException",
+        "message": null
+      },
+      {
+        "error": "IndexOutOfBoundsException",
+        "message": null
+      }
+    ],
+    "name": "route-offset-40-True",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId = 'g0' RETURN n.id AS x ORDER BY x SKIP 0 LIMIT 1",
+    "repeat": 2
+  },
+  {
+    "badAt": 8,
+    "count": 9,
+    "fixture": "bad-matched",
+    "history": [
+      {
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "g0"
+              ]
+            },
+            "x": 41
+          }
+        ]
+      }
+    ],
+    "missingIndex": true,
+    "name": "skip-missing-sidecar",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x SKIP 1 LIMIT 1"
+  },
+  {
+    "badAt": 8,
+    "count": 9,
+    "fixture": "bad-matched",
+    "history": [
+      {
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)"
+      }
+    ],
+    "missingIndex": true,
+    "name": "distinct-missing-sidecar",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x SKIP 0 LIMIT 1"
+  },
+  {
+    "badAt": 8,
+    "count": 9,
+    "fixture": "bad-matched",
+    "history": [
+      {
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)"
+      }
+    ],
+    "missingIndex": true,
+    "name": "order-missing-sidecar",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY x SKIP 0 LIMIT 1"
+  },
+  {
+    "badAt": 1,
+    "count": 2,
+    "fixture": "bad-matched",
+    "history": [
+      {
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)"
+      }
+    ],
+    "name": "route-in",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId IN ['g0'] RETURN n.id AS x ORDER BY x SKIP 0 LIMIT 1"
+  },
+  {
+    "badAt": 1,
+    "count": 2,
+    "fixture": "bad-matched",
+    "history": [
+      {
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)"
+      }
+    ],
+    "name": "route-or-residual",
+    "query": "MATCH (n) WHERE (n.graphId = 'g0' AND n.caller_name CONTAINS 'other') OR (n.graphId = 'g0' AND n.caller_name STARTS WITH 'oth') RETURN n.id AS x ORDER BY x SKIP 0 LIMIT 1"
+  },
+  {
+    "badAt": 1,
+    "count": 2,
+    "fixture": "bad-matched",
+    "history": [
+      {
+        "columns": [
+          "x"
+        ],
+        "rows": []
+      }
+    ],
+    "name": "route-conflict",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId='g0' AND graphId(n)='g1' RETURN n.id AS x ORDER BY x SKIP 0 LIMIT 1"
+  },
+  {
+    "badAt": 1,
+    "count": 2,
+    "fixture": "bad-matched",
+    "history": [
+      {
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)"
+      }
+    ],
+    "name": "route-empty",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId IN [] RETURN n.id AS x ORDER BY x SKIP 0 LIMIT 1"
+  },
+  {
+    "badAt": 1,
+    "count": 2,
+    "fixture": "bad-matched",
+    "history": [
+      {
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)"
+      }
+    ],
+    "name": "route-unknown-or",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND (n.graphId='g0' OR true) RETURN n.id AS x ORDER BY x SKIP 0 LIMIT 1"
+  },
+  {
+    "badAt": 1,
+    "count": 2,
+    "fixture": "bad-matched",
+    "history": [
+      {
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)"
+      }
+    ],
+    "name": "route-inline",
+    "query": "MATCH (n:CallSiteNode {graphId:'g0'}) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY x SKIP 0 LIMIT 1"
+  }
+]

@@ -1,0 +1,15 @@
+{
+  "createdUTC": "2026-09-07T04:12:53.351276+00:00",
+  "base": "62b92d20",
+  "clones": {
+    "main": "/tmp/graphite-pagination-main-real64-62b92d20",
+    "native": "/tmp/graphite-pagination-native-real64-62b92d20",
+    "http": "/tmp/graphite-pagination-http-real64-62b92d20"
+  },
+  "worktrees": {
+    "base": "/tmp/graphite-go-pagination-base-62b92d20",
+    "candidate": "/tmp/graphite-go-pagination-candidate-62b92d20",
+    "http": "/tmp/graphite-go-pagination-http-62b92d20"
+  },
+  "worktreeScope": "Partial checkout of fixed base graphite-server and graphite-explore; module and external OpenAPI references retained; other root files intentionally absent."
+}

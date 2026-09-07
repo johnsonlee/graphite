@@ -1,0 +1,478 @@
+[
+  {
+    "fixture": "clean",
+    "path": "graph.resources",
+    "javaSHA": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17",
+    "sourceSHA": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17",
+    "equal": true
+  },
+  {
+    "fixture": "clean",
+    "path": "graph.strings.identity",
+    "javaSHA": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb",
+    "sourceSHA": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb",
+    "equal": true
+  },
+  {
+    "fixture": "clean",
+    "path": "graph.nodedata",
+    "javaSHA": "f0a4462a820a7daa557704796992c79b9ddafcb80475aaafa020592cb4e19e1a",
+    "sourceSHA": "f0a4462a820a7daa557704796992c79b9ddafcb80475aaafa020592cb4e19e1a",
+    "equal": true
+  },
+  {
+    "fixture": "clean",
+    "path": "graph.callsite-string-content.identity",
+    "javaSHA": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0",
+    "sourceSHA": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0",
+    "equal": true
+  },
+  {
+    "fixture": "clean",
+    "path": "graph.strings",
+    "javaSHA": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b",
+    "sourceSHA": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b",
+    "equal": true
+  },
+  {
+    "fixture": "clean",
+    "path": "forward.graph",
+    "javaSHA": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4",
+    "sourceSHA": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4",
+    "equal": true
+  },
+  {
+    "fixture": "clean",
+    "path": "forward.properties",
+    "javaSHA": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc",
+    "sourceSHA": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc",
+    "equal": true
+  },
+  {
+    "fixture": "clean",
+    "path": "graph.comparisons",
+    "javaSHA": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8",
+    "sourceSHA": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8",
+    "equal": true
+  },
+  {
+    "fixture": "clean",
+    "path": "graph.labels",
+    "javaSHA": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "sourceSHA": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "equal": true
+  },
+  {
+    "fixture": "clean",
+    "path": "graph.labelprefix",
+    "javaSHA": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23",
+    "sourceSHA": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23",
+    "equal": true
+  },
+  {
+    "fixture": "clean",
+    "path": "graph.typeindex",
+    "javaSHA": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849",
+    "sourceSHA": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849",
+    "equal": true
+  },
+  {
+    "fixture": "clean",
+    "path": "graph.nodeoffsets",
+    "javaSHA": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf",
+    "sourceSHA": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf",
+    "equal": true
+  },
+  {
+    "fixture": "clean",
+    "path": "graph.callsite-string-index",
+    "javaSHA": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+    "sourceSHA": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+    "equal": true
+  },
+  {
+    "fixture": "clean",
+    "path": "graph.metadata",
+    "javaSHA": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb",
+    "sourceSHA": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb",
+    "equal": true
+  },
+  {
+    "fixture": "clean",
+    "path": "forward.offsets",
+    "javaSHA": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458",
+    "sourceSHA": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458",
+    "equal": true
+  },
+  {
+    "fixture": "clean",
+    "path": "graph.nodeindex",
+    "javaSHA": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c",
+    "sourceSHA": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c",
+    "equal": true
+  },
+  {
+    "fixture": "clean",
+    "path": "graph.classoverview",
+    "javaSHA": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea",
+    "sourceSHA": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea",
+    "equal": true
+  },
+  {
+    "fixture": "bad-first-unmatched",
+    "path": "graph.resources",
+    "javaSHA": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17",
+    "sourceSHA": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17",
+    "equal": true
+  },
+  {
+    "fixture": "bad-first-unmatched",
+    "path": "graph.strings.identity",
+    "javaSHA": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb",
+    "sourceSHA": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb",
+    "equal": true
+  },
+  {
+    "fixture": "bad-first-unmatched",
+    "path": "graph.nodedata",
+    "javaSHA": "6b1bdab184bcef434610d15ea5ffbb6c1d410943dce553ca440a12470b170ae1",
+    "sourceSHA": "6b1bdab184bcef434610d15ea5ffbb6c1d410943dce553ca440a12470b170ae1",
+    "equal": true
+  },
+  {
+    "fixture": "bad-first-unmatched",
+    "path": "graph.callsite-string-content.identity",
+    "javaSHA": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0",
+    "sourceSHA": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0",
+    "equal": true
+  },
+  {
+    "fixture": "bad-first-unmatched",
+    "path": "graph.strings",
+    "javaSHA": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b",
+    "sourceSHA": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b",
+    "equal": true
+  },
+  {
+    "fixture": "bad-first-unmatched",
+    "path": "forward.graph",
+    "javaSHA": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4",
+    "sourceSHA": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4",
+    "equal": true
+  },
+  {
+    "fixture": "bad-first-unmatched",
+    "path": "forward.properties",
+    "javaSHA": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc",
+    "sourceSHA": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc",
+    "equal": true
+  },
+  {
+    "fixture": "bad-first-unmatched",
+    "path": "graph.comparisons",
+    "javaSHA": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8",
+    "sourceSHA": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8",
+    "equal": true
+  },
+  {
+    "fixture": "bad-first-unmatched",
+    "path": "graph.labels",
+    "javaSHA": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "sourceSHA": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "equal": true
+  },
+  {
+    "fixture": "bad-first-unmatched",
+    "path": "graph.labelprefix",
+    "javaSHA": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23",
+    "sourceSHA": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23",
+    "equal": true
+  },
+  {
+    "fixture": "bad-first-unmatched",
+    "path": "graph.typeindex",
+    "javaSHA": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849",
+    "sourceSHA": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849",
+    "equal": true
+  },
+  {
+    "fixture": "bad-first-unmatched",
+    "path": "graph.nodeoffsets",
+    "javaSHA": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf",
+    "sourceSHA": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf",
+    "equal": true
+  },
+  {
+    "fixture": "bad-first-unmatched",
+    "path": "graph.callsite-string-index",
+    "javaSHA": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+    "sourceSHA": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+    "equal": true
+  },
+  {
+    "fixture": "bad-first-unmatched",
+    "path": "graph.metadata",
+    "javaSHA": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb",
+    "sourceSHA": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb",
+    "equal": true
+  },
+  {
+    "fixture": "bad-first-unmatched",
+    "path": "forward.offsets",
+    "javaSHA": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458",
+    "sourceSHA": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458",
+    "equal": true
+  },
+  {
+    "fixture": "bad-first-unmatched",
+    "path": "graph.nodeindex",
+    "javaSHA": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c",
+    "sourceSHA": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c",
+    "equal": true
+  },
+  {
+    "fixture": "bad-first-unmatched",
+    "path": "graph.classoverview",
+    "javaSHA": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea",
+    "sourceSHA": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea",
+    "equal": true
+  },
+  {
+    "fixture": "bad-last-unmatched",
+    "path": "graph.resources",
+    "javaSHA": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17",
+    "sourceSHA": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17",
+    "equal": true
+  },
+  {
+    "fixture": "bad-last-unmatched",
+    "path": "graph.strings.identity",
+    "javaSHA": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb",
+    "sourceSHA": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb",
+    "equal": true
+  },
+  {
+    "fixture": "bad-last-unmatched",
+    "path": "graph.nodedata",
+    "javaSHA": "f5654334c848b77e8fe24e527fb2348e5d2a4943f84ffeb75446bacc3bac9052",
+    "sourceSHA": "f5654334c848b77e8fe24e527fb2348e5d2a4943f84ffeb75446bacc3bac9052",
+    "equal": true
+  },
+  {
+    "fixture": "bad-last-unmatched",
+    "path": "graph.callsite-string-content.identity",
+    "javaSHA": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0",
+    "sourceSHA": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0",
+    "equal": true
+  },
+  {
+    "fixture": "bad-last-unmatched",
+    "path": "graph.strings",
+    "javaSHA": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b",
+    "sourceSHA": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b",
+    "equal": true
+  },
+  {
+    "fixture": "bad-last-unmatched",
+    "path": "forward.graph",
+    "javaSHA": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4",
+    "sourceSHA": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4",
+    "equal": true
+  },
+  {
+    "fixture": "bad-last-unmatched",
+    "path": "forward.properties",
+    "javaSHA": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc",
+    "sourceSHA": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc",
+    "equal": true
+  },
+  {
+    "fixture": "bad-last-unmatched",
+    "path": "graph.comparisons",
+    "javaSHA": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8",
+    "sourceSHA": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8",
+    "equal": true
+  },
+  {
+    "fixture": "bad-last-unmatched",
+    "path": "graph.labels",
+    "javaSHA": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "sourceSHA": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "equal": true
+  },
+  {
+    "fixture": "bad-last-unmatched",
+    "path": "graph.labelprefix",
+    "javaSHA": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23",
+    "sourceSHA": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23",
+    "equal": true
+  },
+  {
+    "fixture": "bad-last-unmatched",
+    "path": "graph.typeindex",
+    "javaSHA": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849",
+    "sourceSHA": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849",
+    "equal": true
+  },
+  {
+    "fixture": "bad-last-unmatched",
+    "path": "graph.nodeoffsets",
+    "javaSHA": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf",
+    "sourceSHA": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf",
+    "equal": true
+  },
+  {
+    "fixture": "bad-last-unmatched",
+    "path": "graph.callsite-string-index",
+    "javaSHA": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+    "sourceSHA": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+    "equal": true
+  },
+  {
+    "fixture": "bad-last-unmatched",
+    "path": "graph.metadata",
+    "javaSHA": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb",
+    "sourceSHA": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb",
+    "equal": true
+  },
+  {
+    "fixture": "bad-last-unmatched",
+    "path": "forward.offsets",
+    "javaSHA": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458",
+    "sourceSHA": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458",
+    "equal": true
+  },
+  {
+    "fixture": "bad-last-unmatched",
+    "path": "graph.nodeindex",
+    "javaSHA": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c",
+    "sourceSHA": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c",
+    "equal": true
+  },
+  {
+    "fixture": "bad-last-unmatched",
+    "path": "graph.classoverview",
+    "javaSHA": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea",
+    "sourceSHA": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea",
+    "equal": true
+  },
+  {
+    "fixture": "bad-matched",
+    "path": "graph.resources",
+    "javaSHA": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17",
+    "sourceSHA": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17",
+    "equal": true
+  },
+  {
+    "fixture": "bad-matched",
+    "path": "graph.strings.identity",
+    "javaSHA": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb",
+    "sourceSHA": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb",
+    "equal": true
+  },
+  {
+    "fixture": "bad-matched",
+    "path": "graph.nodedata",
+    "javaSHA": "9727c0bb15ff09833a7d051df8eecca190e98f0338a045929d7f865d933318d8",
+    "sourceSHA": "9727c0bb15ff09833a7d051df8eecca190e98f0338a045929d7f865d933318d8",
+    "equal": true
+  },
+  {
+    "fixture": "bad-matched",
+    "path": "graph.callsite-string-content.identity",
+    "javaSHA": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0",
+    "sourceSHA": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0",
+    "equal": true
+  },
+  {
+    "fixture": "bad-matched",
+    "path": "graph.strings",
+    "javaSHA": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b",
+    "sourceSHA": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b",
+    "equal": true
+  },
+  {
+    "fixture": "bad-matched",
+    "path": "forward.graph",
+    "javaSHA": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4",
+    "sourceSHA": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4",
+    "equal": true
+  },
+  {
+    "fixture": "bad-matched",
+    "path": "forward.properties",
+    "javaSHA": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc",
+    "sourceSHA": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc",
+    "equal": true
+  },
+  {
+    "fixture": "bad-matched",
+    "path": "graph.comparisons",
+    "javaSHA": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8",
+    "sourceSHA": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8",
+    "equal": true
+  },
+  {
+    "fixture": "bad-matched",
+    "path": "graph.labels",
+    "javaSHA": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "sourceSHA": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "equal": true
+  },
+  {
+    "fixture": "bad-matched",
+    "path": "graph.labelprefix",
+    "javaSHA": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23",
+    "sourceSHA": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23",
+    "equal": true
+  },
+  {
+    "fixture": "bad-matched",
+    "path": "graph.typeindex",
+    "javaSHA": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849",
+    "sourceSHA": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849",
+    "equal": true
+  },
+  {
+    "fixture": "bad-matched",
+    "path": "graph.nodeoffsets",
+    "javaSHA": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf",
+    "sourceSHA": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf",
+    "equal": true
+  },
+  {
+    "fixture": "bad-matched",
+    "path": "graph.callsite-string-index",
+    "javaSHA": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+    "sourceSHA": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+    "equal": true
+  },
+  {
+    "fixture": "bad-matched",
+    "path": "graph.metadata",
+    "javaSHA": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb",
+    "sourceSHA": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb",
+    "equal": true
+  },
+  {
+    "fixture": "bad-matched",
+    "path": "forward.offsets",
+    "javaSHA": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458",
+    "sourceSHA": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458",
+    "equal": true
+  },
+  {
+    "fixture": "bad-matched",
+    "path": "graph.nodeindex",
+    "javaSHA": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c",
+    "sourceSHA": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c",
+    "equal": true
+  },
+  {
+    "fixture": "bad-matched",
+    "path": "graph.classoverview",
+    "javaSHA": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea",
+    "sourceSHA": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea",
+    "equal": true
+  }
+]

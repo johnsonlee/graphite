@@ -1,0 +1,652 @@
+[
+  {
+    "before": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-first-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "skip",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 0 LIMIT 1"
+    },
+    "after": {
+      "columns": [
+        "x"
+      ],
+      "cross": false,
+      "empty": false,
+      "fixture": "bad-first-unmatched",
+      "name": "skip",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 0 LIMIT 1",
+      "rows": [
+        {
+          "x": "other"
+        }
+      ]
+    }
+  },
+  {
+    "before": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-first-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "skip",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 0 LIMIT 1"
+    },
+    "after": {
+      "columns": [
+        "x"
+      ],
+      "cross": true,
+      "empty": false,
+      "fixture": "bad-first-unmatched",
+      "name": "skip",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 0 LIMIT 1",
+      "rows": [
+        {
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          },
+          "x": "other"
+        }
+      ]
+    }
+  },
+  {
+    "before": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-first-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "skip-one",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 1 LIMIT 1"
+    },
+    "after": {
+      "columns": [
+        "x"
+      ],
+      "cross": false,
+      "empty": false,
+      "fixture": "bad-first-unmatched",
+      "name": "skip-one",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 1 LIMIT 1",
+      "rows": [
+        {
+          "x": "other"
+        }
+      ]
+    }
+  },
+  {
+    "before": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-first-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "skip-one",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 1 LIMIT 1"
+    },
+    "after": {
+      "columns": [
+        "x"
+      ],
+      "cross": true,
+      "empty": false,
+      "fixture": "bad-first-unmatched",
+      "name": "skip-one",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 1 LIMIT 1",
+      "rows": [
+        {
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          },
+          "x": "other"
+        }
+      ]
+    }
+  },
+  {
+    "before": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-first-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x LIMIT 1"
+    },
+    "after": {
+      "columns": [
+        "x"
+      ],
+      "cross": false,
+      "empty": false,
+      "fixture": "bad-first-unmatched",
+      "name": "order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x LIMIT 1",
+      "rows": [
+        {
+          "x": "other"
+        }
+      ]
+    }
+  },
+  {
+    "before": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-first-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x LIMIT 1"
+    },
+    "after": {
+      "columns": [
+        "x"
+      ],
+      "cross": true,
+      "empty": false,
+      "fixture": "bad-first-unmatched",
+      "name": "order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x LIMIT 1",
+      "rows": [
+        {
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          },
+          "x": "other"
+        }
+      ]
+    }
+  },
+  {
+    "before": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-first-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "order-desc",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x DESC LIMIT 1"
+    },
+    "after": {
+      "columns": [
+        "x"
+      ],
+      "cross": false,
+      "empty": false,
+      "fixture": "bad-first-unmatched",
+      "name": "order-desc",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x DESC LIMIT 1",
+      "rows": [
+        {
+          "x": "other"
+        }
+      ]
+    }
+  },
+  {
+    "before": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-first-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "order-desc",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x DESC LIMIT 1"
+    },
+    "after": {
+      "columns": [
+        "x"
+      ],
+      "cross": true,
+      "empty": false,
+      "fixture": "bad-first-unmatched",
+      "name": "order-desc",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x DESC LIMIT 1",
+      "rows": [
+        {
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          },
+          "x": "other"
+        }
+      ]
+    }
+  },
+  {
+    "before": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-first-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "order-source",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY n.caller_name LIMIT 1"
+    },
+    "after": {
+      "columns": [
+        "x"
+      ],
+      "cross": false,
+      "empty": false,
+      "fixture": "bad-first-unmatched",
+      "name": "order-source",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY n.caller_name LIMIT 1",
+      "rows": [
+        {
+          "x": "other"
+        }
+      ]
+    }
+  },
+  {
+    "before": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-first-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "order-source",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY n.caller_name LIMIT 1"
+    },
+    "after": {
+      "columns": [
+        "x"
+      ],
+      "cross": true,
+      "empty": false,
+      "fixture": "bad-first-unmatched",
+      "name": "order-source",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY n.caller_name LIMIT 1",
+      "rows": [
+        {
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          },
+          "x": "other"
+        }
+      ]
+    }
+  },
+  {
+    "before": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-first-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "order-throw",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY substring('x','bad') LIMIT 1"
+    },
+    "after": {
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "fixture": "bad-first-unmatched",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "order-throw",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY substring('x','bad') LIMIT 1"
+    }
+  },
+  {
+    "before": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-first-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "order-throw",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY substring('x','bad') LIMIT 1"
+    },
+    "after": {
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "fixture": "bad-first-unmatched",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "order-throw",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY substring('x','bad') LIMIT 1"
+    }
+  },
+  {
+    "before": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "skip",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 0 LIMIT 1"
+    },
+    "after": {
+      "columns": [
+        "x"
+      ],
+      "cross": false,
+      "empty": false,
+      "fixture": "bad-last-unmatched",
+      "name": "skip",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 0 LIMIT 1",
+      "rows": [
+        {
+          "x": "other"
+        }
+      ]
+    }
+  },
+  {
+    "before": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "skip",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 0 LIMIT 1"
+    },
+    "after": {
+      "columns": [
+        "x"
+      ],
+      "cross": true,
+      "empty": false,
+      "fixture": "bad-last-unmatched",
+      "name": "skip",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 0 LIMIT 1",
+      "rows": [
+        {
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          },
+          "x": "other"
+        }
+      ]
+    }
+  },
+  {
+    "before": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "skip-one",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 1 LIMIT 1"
+    },
+    "after": {
+      "columns": [
+        "x"
+      ],
+      "cross": false,
+      "empty": false,
+      "fixture": "bad-last-unmatched",
+      "name": "skip-one",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 1 LIMIT 1",
+      "rows": [
+        {
+          "x": "other"
+        }
+      ]
+    }
+  },
+  {
+    "before": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "skip-one",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 1 LIMIT 1"
+    },
+    "after": {
+      "columns": [
+        "x"
+      ],
+      "cross": true,
+      "empty": false,
+      "fixture": "bad-last-unmatched",
+      "name": "skip-one",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 1 LIMIT 1",
+      "rows": [
+        {
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          },
+          "x": "other"
+        }
+      ]
+    }
+  },
+  {
+    "before": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x LIMIT 1"
+    },
+    "after": {
+      "columns": [
+        "x"
+      ],
+      "cross": false,
+      "empty": false,
+      "fixture": "bad-last-unmatched",
+      "name": "order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x LIMIT 1",
+      "rows": [
+        {
+          "x": "other"
+        }
+      ]
+    }
+  },
+  {
+    "before": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x LIMIT 1"
+    },
+    "after": {
+      "columns": [
+        "x"
+      ],
+      "cross": true,
+      "empty": false,
+      "fixture": "bad-last-unmatched",
+      "name": "order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x LIMIT 1",
+      "rows": [
+        {
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          },
+          "x": "other"
+        }
+      ]
+    }
+  },
+  {
+    "before": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "order-desc",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x DESC LIMIT 1"
+    },
+    "after": {
+      "columns": [
+        "x"
+      ],
+      "cross": false,
+      "empty": false,
+      "fixture": "bad-last-unmatched",
+      "name": "order-desc",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x DESC LIMIT 1",
+      "rows": [
+        {
+          "x": "other"
+        }
+      ]
+    }
+  },
+  {
+    "before": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "order-desc",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x DESC LIMIT 1"
+    },
+    "after": {
+      "columns": [
+        "x"
+      ],
+      "cross": true,
+      "empty": false,
+      "fixture": "bad-last-unmatched",
+      "name": "order-desc",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x DESC LIMIT 1",
+      "rows": [
+        {
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          },
+          "x": "other"
+        }
+      ]
+    }
+  },
+  {
+    "before": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "order-source",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY n.caller_name LIMIT 1"
+    },
+    "after": {
+      "columns": [
+        "x"
+      ],
+      "cross": false,
+      "empty": false,
+      "fixture": "bad-last-unmatched",
+      "name": "order-source",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY n.caller_name LIMIT 1",
+      "rows": [
+        {
+          "x": "other"
+        }
+      ]
+    }
+  },
+  {
+    "before": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "order-source",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY n.caller_name LIMIT 1"
+    },
+    "after": {
+      "columns": [
+        "x"
+      ],
+      "cross": true,
+      "empty": false,
+      "fixture": "bad-last-unmatched",
+      "name": "order-source",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY n.caller_name LIMIT 1",
+      "rows": [
+        {
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          },
+          "x": "other"
+        }
+      ]
+    }
+  },
+  {
+    "before": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "order-throw",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY substring('x','bad') LIMIT 1"
+    },
+    "after": {
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "fixture": "bad-last-unmatched",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "order-throw",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY substring('x','bad') LIMIT 1"
+    }
+  },
+  {
+    "before": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "order-throw",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY substring('x','bad') LIMIT 1"
+    },
+    "after": {
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "fixture": "bad-last-unmatched",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "order-throw",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY substring('x','bad') LIMIT 1"
+    }
+  }
+]

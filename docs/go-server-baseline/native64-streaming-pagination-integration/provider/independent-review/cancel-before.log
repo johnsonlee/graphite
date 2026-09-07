@@ -1,0 +1,7 @@
+=== RUN   TestReviewBFinalSortCancellation
+    review_b_cancel_test.go:40: unexpected completed result after cancel: {Columns:[x] Rows:[map[x:1] map[x:2] map[x:3]] rawColumns:[] rawRowKeys:[]}
+    review_b_cancel_test.go:53: final sort ignored real cancellation: <nil>
+--- FAIL: TestReviewBFinalSortCancellation (0.01s)
+FAIL
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/query	0.822s
+FAIL

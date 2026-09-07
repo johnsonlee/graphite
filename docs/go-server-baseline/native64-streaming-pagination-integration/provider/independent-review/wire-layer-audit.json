@@ -1,0 +1,50 @@
+[
+  {
+    "main": "bad-last-unmatched-MAPPED-main.json",
+    "wire": "bad-last-unmatched-MAPPED-wire.json",
+    "count": 96,
+    "changedLeaves": []
+  },
+  {
+    "main": "bad-matched-unknown-main.json",
+    "wire": "bad-matched-unknown-wire.json",
+    "count": 12,
+    "changedLeaves": []
+  },
+  {
+    "main": "clean-EAGER-main.json",
+    "wire": "clean-EAGER-wire.json",
+    "count": 96,
+    "changedLeaves": []
+  },
+  {
+    "main": "clean-MAPPED-main.json",
+    "wire": "clean-MAPPED-wire.json",
+    "count": 96,
+    "changedLeaves": []
+  },
+  {
+    "main": "sources-main.json",
+    "wire": "sources-wire.json",
+    "count": 28,
+    "changedLeaves": []
+  },
+  {
+    "main": "bad-first-unmatched-MAPPED-main.json",
+    "wire": "bad-first-unmatched-MAPPED-wire.json",
+    "count": 96,
+    "changedLeaves": []
+  },
+  {
+    "main": "clean-unknown-main.json",
+    "wire": "clean-unknown-wire.json",
+    "count": 12,
+    "changedLeaves": []
+  },
+  {
+    "main": "bad-matched-MAPPED-main.json",
+    "wire": "bad-matched-MAPPED-wire.json",
+    "count": 96,
+    "changedLeaves": []
+  }
+]

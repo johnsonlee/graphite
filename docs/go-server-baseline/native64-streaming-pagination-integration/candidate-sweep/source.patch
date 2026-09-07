@@ -1,0 +1,24 @@
+diff --git a/graphite-server/internal/query/engine.go b/graphite-server/internal/query/engine.go
+index 9b449394..1e3f6267 100644
+--- a/graphite-server/internal/query/engine.go
++++ b/graphite-server/internal/query/engine.go
+@@ -154,12 +154,17 @@ func (e evaluator) branch(graph *store.Store, branch cypher.SingleQuery) Result
+ 	if result, ok := e.indexedDistinct(graph, branch); ok {
+ 		return result
+ 	}
+-	if result, ok := e.genericDistinct(graph, branch); ok {
+-		return result
++	if !hasStreamingPagination(branch) {
++		if result, ok := e.genericDistinct(graph, branch); ok {
++			return result
++		}
+ 	}
+ 	if result, ok := e.lazyFiltered(graph, branch); ok {
+ 		return result
+ 	}
++	if result, ok := e.streamingPagination(graph, branch); ok {
++		return result
++	}
+ 	earlyLimit := e.computeEarlyLimit(branch)
+ 	rows := []map[string]any{{}}
+ 	columns := []string{}

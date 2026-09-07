@@ -1,0 +1,59 @@
+{
+  "productionFiles": 3,
+  "exactAuthorSHA": true,
+  "artifacts": [
+    {
+      "file": "streaming-bad-first-unmatched-MAPPED-native.json",
+      "equalWithoutObserver": true,
+      "entries": 96
+    },
+    {
+      "file": "streaming-bad-last-unmatched-MAPPED-native.json",
+      "equalWithoutObserver": true,
+      "entries": 96
+    },
+    {
+      "file": "streaming-bad-matched-MAPPED-native.json",
+      "equalWithoutObserver": true,
+      "entries": 96
+    },
+    {
+      "file": "streaming-clean-EAGER-native.json",
+      "equalWithoutObserver": true,
+      "entries": 96
+    },
+    {
+      "file": "streaming-clean-MAPPED-native.json",
+      "equalWithoutObserver": true,
+      "entries": 96
+    },
+    {
+      "file": "streaming-design-native.json",
+      "equalWithoutObserver": true,
+      "entries": 53
+    },
+    {
+      "file": "streaming-sources-native.json",
+      "equalWithoutObserver": true,
+      "entries": 28
+    },
+    {
+      "file": "streaming-unknown-bad-matched-native.json",
+      "equalWithoutObserver": true,
+      "entries": 12
+    },
+    {
+      "file": "streaming-unknown-clean-native.json",
+      "equalWithoutObserver": true,
+      "entries": 12
+    }
+  ],
+  "mainCompleteResponseCount": 595,
+  "design": 53,
+  "designDeclineControls": 4,
+  "actualMainCorpus": 480,
+  "unknownLabel": 24,
+  "sourceHistoryCases": 28,
+  "sourceHistoryResponses": 38,
+  "normalization": "none; all JSON value types strict; number values compared numerically (0 and 0.0 share JSON number type); arrays ordered; lexical numeric differences separately retained; object member ordering not significant"
+}

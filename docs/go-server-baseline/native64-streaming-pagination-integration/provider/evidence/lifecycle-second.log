@@ -1,0 +1,4 @@
+# github.com/johnsonlee/graphite/graphite-server/internal/query [github.com/johnsonlee/graphite/graphite-server/internal/query.test]
+internal/query/streaming_pagination.go:105:10: multiple-value e.project(nil, p.projection) (value of type ([]map[string]any, []string)) in single-value context
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/query [build failed]
+FAIL

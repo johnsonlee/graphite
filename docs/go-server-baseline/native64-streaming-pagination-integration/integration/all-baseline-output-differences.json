@@ -1,0 +1,3014 @@
+[
+  {
+    "file": "history/annotation-after-classification.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "history/annotation-after-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "history/annotation-classification.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "history/annotation-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "history/cache-threshold-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "history/dense-callee-sid-missing-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "history/dense-callee-sid-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "history/dense-clean-missing-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "history/dense-clean-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "history/dense-return-sid-missing-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "history/dense-return-sid-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "history/history-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "history/mixed-classification.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "history/mixed-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "history/required/callee-class-sid-max-missing-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "history/required/callee-class-sid-max-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "history/required/callee-class-sid-minus-one-missing-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "history/required/callee-class-sid-minus-one-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "history/required/caller-count-max-missing-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "history/required/caller-count-max-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "history/required/caller-count-minus-one-missing-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "history/required/caller-count-minus-one-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "history/required/caller-count-outside-missing-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "history/required/caller-count-outside-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "history/required/caller-name-sid-max-missing-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "history/required/caller-name-sid-max-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "history/required/caller-name-sid-minus-one-missing-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "history/required/caller-name-sid-minus-one-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "history/required/core-return-sid-max-missing-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "history/required/core-return-sid-max-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "history/required/node-id-999-missing-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "history/required/node-id-999-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "history/required/node-tag-255-missing-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "history/required/node-tag-255-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "history/required/offset-int-overflow-missing-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "history/required/offset-int-overflow-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "history/required/offset-missing-missing-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "history/required/offset-missing-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "history/required/offset-other-node-missing-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "history/required/offset-other-node-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "history/required/offset-outside-missing-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "history/required/offset-outside-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "history/rolling-native.json",
+    "equal": false,
+    "differences": [
+      {
+        "path": "$[9].targets[0].after[7].mappedView",
+        "base": true,
+        "candidate": false
+      },
+      {
+        "path": "$[9].targets[1].before[7].mappedView",
+        "base": true,
+        "candidate": false
+      },
+      {
+        "path": "$[10].targets[0].after[2].mappedView",
+        "base": true,
+        "candidate": false
+      },
+      {
+        "path": "$[10].targets[0].after[5].mappedView",
+        "base": true,
+        "candidate": false
+      },
+      {
+        "path": "$[10].targets[0].after[7].mappedView",
+        "base": true,
+        "candidate": false
+      },
+      {
+        "path": "$[10].targets[1].after[2].mappedView",
+        "base": true,
+        "candidate": false
+      },
+      {
+        "path": "$[10].targets[1].after[5].mappedView",
+        "base": true,
+        "candidate": false
+      },
+      {
+        "path": "$[10].targets[1].after[7].mappedView",
+        "base": true,
+        "candidate": false
+      },
+      {
+        "path": "$[10].targets[1].before[2].mappedView",
+        "base": true,
+        "candidate": false
+      },
+      {
+        "path": "$[10].targets[1].before[5].mappedView",
+        "base": true,
+        "candidate": false
+      },
+      {
+        "path": "$[10].targets[1].before[7].mappedView",
+        "base": true,
+        "candidate": false
+      },
+      {
+        "path": "$[10].targets[2].before[2].mappedView",
+        "base": true,
+        "candidate": false
+      },
+      {
+        "path": "$[10].targets[2].before[5].mappedView",
+        "base": true,
+        "candidate": false
+      },
+      {
+        "path": "$[10].targets[2].before[7].mappedView",
+        "base": true,
+        "candidate": false
+      },
+      {
+        "path": "$[11].targets[0].after[4].mappedView",
+        "base": true,
+        "candidate": false
+      },
+      {
+        "path": "$[11].targets[1].after[3].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[11].targets[1].after[5].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[11].targets[1].after[7].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[11].targets[1].before[4].mappedView",
+        "base": true,
+        "candidate": false
+      },
+      {
+        "path": "$[11].targets[2].after[3].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[11].targets[2].after[5].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[11].targets[2].after[7].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[11].targets[2].before[3].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[11].targets[2].before[5].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[11].targets[2].before[7].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[12].targets[2].after[9].mappedView",
+        "base": false,
+        "candidate": true
+      }
+    ]
+  },
+  {
+    "file": "history/wide-history-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "original-corpus/annotation-after-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "original-corpus/annotation-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "original-corpus/generic-fault-audit.json",
+    "equal": false,
+    "differences": [
+      {
+        "path": "$[164].base.columns",
+        "base": null,
+        "candidate": [
+          "n.graph_id",
+          "id"
+        ]
+      },
+      {
+        "path": "$[164].base.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[164].base.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[164].base.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[164].candidate.columns",
+        "base": null,
+        "candidate": [
+          "n.graph_id",
+          "id"
+        ]
+      },
+      {
+        "path": "$[164].candidate.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[164].candidate.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[164].candidate.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[164].mainEqual",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[167].base.columns",
+        "base": null,
+        "candidate": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ]
+      },
+      {
+        "path": "$[167].base.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[167].base.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[167].base.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[167].candidate.columns",
+        "base": null,
+        "candidate": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ]
+      },
+      {
+        "path": "$[167].candidate.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[167].candidate.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[167].candidate.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[167].mainEqual",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[170].base.columns",
+        "base": null,
+        "candidate": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ]
+      },
+      {
+        "path": "$[170].base.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[170].base.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[170].base.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[170].candidate.columns",
+        "base": null,
+        "candidate": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ]
+      },
+      {
+        "path": "$[170].candidate.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[170].candidate.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[170].candidate.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[170].mainEqual",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[200].base.columns",
+        "base": null,
+        "candidate": [
+          "n.graph_id",
+          "id"
+        ]
+      },
+      {
+        "path": "$[200].base.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[200].base.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[200].base.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[200].candidate.columns",
+        "base": null,
+        "candidate": [
+          "n.graph_id",
+          "id"
+        ]
+      },
+      {
+        "path": "$[200].candidate.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[200].candidate.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[200].candidate.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[200].mainEqual",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[203].base.columns",
+        "base": null,
+        "candidate": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ]
+      },
+      {
+        "path": "$[203].base.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[203].base.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[203].base.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[203].candidate.columns",
+        "base": null,
+        "candidate": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ]
+      },
+      {
+        "path": "$[203].candidate.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[203].candidate.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[203].candidate.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[203].mainEqual",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[206].base.columns",
+        "base": null,
+        "candidate": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ]
+      },
+      {
+        "path": "$[206].base.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[206].base.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[206].base.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[206].candidate.columns",
+        "base": null,
+        "candidate": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ]
+      },
+      {
+        "path": "$[206].candidate.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[206].candidate.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[206].candidate.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[206].mainEqual",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[236].base.columns",
+        "base": null,
+        "candidate": [
+          "n.graph_id",
+          "id"
+        ]
+      },
+      {
+        "path": "$[236].base.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[236].base.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[236].base.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[236].candidate.columns",
+        "base": null,
+        "candidate": [
+          "n.graph_id",
+          "id"
+        ]
+      },
+      {
+        "path": "$[236].candidate.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[236].candidate.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[236].candidate.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[236].mainEqual",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[239].base.columns",
+        "base": null,
+        "candidate": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ]
+      },
+      {
+        "path": "$[239].base.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[239].base.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[239].base.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[239].candidate.columns",
+        "base": null,
+        "candidate": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ]
+      },
+      {
+        "path": "$[239].candidate.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[239].candidate.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[239].candidate.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[239].mainEqual",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[242].base.columns",
+        "base": null,
+        "candidate": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ]
+      },
+      {
+        "path": "$[242].base.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[242].base.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[242].base.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[242].candidate.columns",
+        "base": null,
+        "candidate": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ]
+      },
+      {
+        "path": "$[242].candidate.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[242].candidate.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[242].candidate.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[242].mainEqual",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[272].base.columns",
+        "base": null,
+        "candidate": [
+          "n.graph_id",
+          "id"
+        ]
+      },
+      {
+        "path": "$[272].base.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[272].base.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[272].base.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[272].candidate.columns",
+        "base": null,
+        "candidate": [
+          "n.graph_id",
+          "id"
+        ]
+      },
+      {
+        "path": "$[272].candidate.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[272].candidate.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[272].candidate.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[272].mainEqual",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[275].base.columns",
+        "base": null,
+        "candidate": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ]
+      },
+      {
+        "path": "$[275].base.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[275].base.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[275].base.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[275].candidate.columns",
+        "base": null,
+        "candidate": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ]
+      },
+      {
+        "path": "$[275].candidate.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[275].candidate.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[275].candidate.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[275].mainEqual",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[278].base.columns",
+        "base": null,
+        "candidate": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ]
+      },
+      {
+        "path": "$[278].base.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[278].base.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[278].base.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[278].candidate.columns",
+        "base": null,
+        "candidate": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ]
+      },
+      {
+        "path": "$[278].candidate.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[278].candidate.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[278].candidate.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[278].mainEqual",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[290].base.columns",
+        "base": null,
+        "candidate": [
+          "n.graph_id",
+          "id"
+        ]
+      },
+      {
+        "path": "$[290].base.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[290].base.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[290].base.rows",
+        "base": null,
+        "candidate": [
+          {
+            "id": 2,
+            "n.graph_id": null
+          }
+        ]
+      },
+      {
+        "path": "$[290].sameAsBase",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[293].base.columns",
+        "base": null,
+        "candidate": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ]
+      },
+      {
+        "path": "$[293].base.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[293].base.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[293].base.rows",
+        "base": null,
+        "candidate": [
+          {
+            "callee": "other",
+            "caller": "example.Other",
+            "n.graph_id": null
+          }
+        ]
+      },
+      {
+        "path": "$[293].sameAsBase",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[296].base.columns",
+        "base": null,
+        "candidate": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ]
+      },
+      {
+        "path": "$[296].base.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[296].base.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[296].base.rows",
+        "base": null,
+        "candidate": [
+          {
+            "id": 2,
+            "n.graphId": null,
+            "n.graph_id": null
+          }
+        ]
+      },
+      {
+        "path": "$[296].sameAsBase",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[299].base.columns",
+        "base": null,
+        "candidate": [
+          "n.graph_id",
+          "id"
+        ]
+      },
+      {
+        "path": "$[299].base.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[299].base.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[299].base.rows",
+        "base": null,
+        "candidate": [
+          {
+            "id": 2,
+            "n.graph_id": null
+          }
+        ]
+      },
+      {
+        "path": "$[299].sameAsBase",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[302].base.columns",
+        "base": null,
+        "candidate": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ]
+      },
+      {
+        "path": "$[302].base.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[302].base.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[302].base.rows",
+        "base": null,
+        "candidate": [
+          {
+            "callee": "other",
+            "caller": "example.Other",
+            "n.graph_id": null
+          }
+        ]
+      },
+      {
+        "path": "$[302].sameAsBase",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[305].base.columns",
+        "base": null,
+        "candidate": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ]
+      },
+      {
+        "path": "$[305].base.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[305].base.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[305].base.rows",
+        "base": null,
+        "candidate": [
+          {
+            "id": 2,
+            "n.graphId": null,
+            "n.graph_id": null
+          }
+        ]
+      },
+      {
+        "path": "$[305].sameAsBase",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[308].base.columns",
+        "base": null,
+        "candidate": [
+          "n.graph_id",
+          "id"
+        ]
+      },
+      {
+        "path": "$[308].base.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[308].base.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[308].base.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[308].candidate.columns",
+        "base": null,
+        "candidate": [
+          "n.graph_id",
+          "id"
+        ]
+      },
+      {
+        "path": "$[308].candidate.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[308].candidate.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[308].candidate.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[308].mainEqual",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[311].base.columns",
+        "base": null,
+        "candidate": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ]
+      },
+      {
+        "path": "$[311].base.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[311].base.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[311].base.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[311].candidate.columns",
+        "base": null,
+        "candidate": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ]
+      },
+      {
+        "path": "$[311].candidate.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[311].candidate.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[311].candidate.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[311].mainEqual",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[314].base.columns",
+        "base": null,
+        "candidate": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ]
+      },
+      {
+        "path": "$[314].base.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[314].base.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[314].base.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[314].candidate.columns",
+        "base": null,
+        "candidate": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ]
+      },
+      {
+        "path": "$[314].candidate.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[314].candidate.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[314].candidate.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[314].mainEqual",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[317].base.columns",
+        "base": null,
+        "candidate": [
+          "n.graph_id",
+          "id"
+        ]
+      },
+      {
+        "path": "$[317].base.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[317].base.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[317].base.rows",
+        "base": null,
+        "candidate": [
+          {
+            "id": 41,
+            "n.graph_id": null
+          }
+        ]
+      },
+      {
+        "path": "$[317].sameAsBase",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[320].base.columns",
+        "base": null,
+        "candidate": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ]
+      },
+      {
+        "path": "$[320].base.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[320].base.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[320].base.rows",
+        "base": null,
+        "candidate": [
+          {
+            "callee": "invoke",
+            "caller": "example.Other",
+            "n.graph_id": null
+          }
+        ]
+      },
+      {
+        "path": "$[320].sameAsBase",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[323].base.columns",
+        "base": null,
+        "candidate": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ]
+      },
+      {
+        "path": "$[323].base.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[323].base.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[323].base.rows",
+        "base": null,
+        "candidate": [
+          {
+            "id": 41,
+            "n.graphId": null,
+            "n.graph_id": null
+          }
+        ]
+      },
+      {
+        "path": "$[323].sameAsBase",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[344].base.columns",
+        "base": null,
+        "candidate": [
+          "n.graph_id",
+          "id"
+        ]
+      },
+      {
+        "path": "$[344].base.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[344].base.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[344].base.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[344].candidate.columns",
+        "base": null,
+        "candidate": [
+          "n.graph_id",
+          "id"
+        ]
+      },
+      {
+        "path": "$[344].candidate.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[344].candidate.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[344].candidate.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[344].mainEqual",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[347].base.columns",
+        "base": null,
+        "candidate": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ]
+      },
+      {
+        "path": "$[347].base.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[347].base.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[347].base.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[347].candidate.columns",
+        "base": null,
+        "candidate": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ]
+      },
+      {
+        "path": "$[347].candidate.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[347].candidate.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[347].candidate.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[347].mainEqual",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[350].base.columns",
+        "base": null,
+        "candidate": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ]
+      },
+      {
+        "path": "$[350].base.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[350].base.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[350].base.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[350].candidate.columns",
+        "base": null,
+        "candidate": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ]
+      },
+      {
+        "path": "$[350].candidate.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[350].candidate.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[350].candidate.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[350].mainEqual",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[380].base.columns",
+        "base": null,
+        "candidate": [
+          "n.graph_id",
+          "id"
+        ]
+      },
+      {
+        "path": "$[380].base.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[380].base.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[380].base.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[380].candidate.columns",
+        "base": null,
+        "candidate": [
+          "n.graph_id",
+          "id"
+        ]
+      },
+      {
+        "path": "$[380].candidate.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[380].candidate.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[380].candidate.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[380].mainEqual",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[383].base.columns",
+        "base": null,
+        "candidate": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ]
+      },
+      {
+        "path": "$[383].base.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[383].base.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[383].base.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[383].candidate.columns",
+        "base": null,
+        "candidate": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ]
+      },
+      {
+        "path": "$[383].candidate.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[383].candidate.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[383].candidate.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[383].mainEqual",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[386].base.columns",
+        "base": null,
+        "candidate": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ]
+      },
+      {
+        "path": "$[386].base.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[386].base.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[386].base.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[386].candidate.columns",
+        "base": null,
+        "candidate": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ]
+      },
+      {
+        "path": "$[386].candidate.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[386].candidate.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[386].candidate.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[386].mainEqual",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[416].base.columns",
+        "base": null,
+        "candidate": [
+          "n.graph_id",
+          "id"
+        ]
+      },
+      {
+        "path": "$[416].base.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[416].base.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[416].base.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[416].candidate.columns",
+        "base": null,
+        "candidate": [
+          "n.graph_id",
+          "id"
+        ]
+      },
+      {
+        "path": "$[416].candidate.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[416].candidate.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[416].candidate.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[416].mainEqual",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[419].base.columns",
+        "base": null,
+        "candidate": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ]
+      },
+      {
+        "path": "$[419].base.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[419].base.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[419].base.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[419].candidate.columns",
+        "base": null,
+        "candidate": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ]
+      },
+      {
+        "path": "$[419].candidate.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[419].candidate.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[419].candidate.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[419].mainEqual",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[422].base.columns",
+        "base": null,
+        "candidate": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ]
+      },
+      {
+        "path": "$[422].base.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[422].base.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[422].base.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[422].candidate.columns",
+        "base": null,
+        "candidate": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ]
+      },
+      {
+        "path": "$[422].candidate.error",
+        "base": "IllegalArgumentException",
+        "candidate": null
+      },
+      {
+        "path": "$[422].candidate.message",
+        "base": "Unknown node tag: -1",
+        "candidate": null
+      },
+      {
+        "path": "$[422].candidate.rows",
+        "base": null,
+        "candidate": []
+      },
+      {
+        "path": "$[422].mainEqual",
+        "base": false,
+        "candidate": true
+      }
+    ]
+  },
+  {
+    "file": "original-corpus/late-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "original-corpus/lazy-filtered-480.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "original-corpus/main-string-source-main.json-native.json",
+    "equal": false,
+    "differences": [
+      {
+        "path": "$[10].targets[0].after[0].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[10].targets[0].after[1].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[10].targets[0].after[2].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[10].targets[0].after[4].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[10].targets[0].after[5].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[10].targets[0].after[7].mappedView",
+        "base": true,
+        "candidate": false
+      },
+      {
+        "path": "$[10].targets[1].after[0].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[10].targets[1].after[1].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[10].targets[1].after[2].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[10].targets[1].after[4].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[10].targets[1].after[5].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[10].targets[1].after[7].mappedView",
+        "base": true,
+        "candidate": false
+      },
+      {
+        "path": "$[10].targets[1].before[0].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[10].targets[1].before[1].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[10].targets[1].before[2].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[10].targets[1].before[4].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[10].targets[1].before[5].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[10].targets[1].before[7].mappedView",
+        "base": true,
+        "candidate": false
+      },
+      {
+        "path": "$[14].targets[0].after[0].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[14].targets[0].after[1].mappedView",
+        "base": true,
+        "candidate": false
+      },
+      {
+        "path": "$[14].targets[0].after[3].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[14].targets[0].after[4].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[14].targets[0].after[5].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[14].targets[0].after[6].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[14].targets[1].after[0].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[14].targets[1].after[3].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[14].targets[1].after[4].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[14].targets[1].after[5].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[14].targets[1].after[6].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[14].targets[1].before[0].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[14].targets[1].before[1].mappedView",
+        "base": true,
+        "candidate": false
+      },
+      {
+        "path": "$[14].targets[1].before[3].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[14].targets[1].before[4].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[14].targets[1].before[5].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[14].targets[1].before[6].mappedView",
+        "base": false,
+        "candidate": true
+      }
+    ]
+  },
+  {
+    "file": "original-corpus/main-string-source-offset-main.json-native.json",
+    "equal": false,
+    "differences": [
+      {
+        "path": "$[5].targets[0].after[0].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[5].targets[0].after[2].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[5].targets[0].after[3].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[5].targets[0].after[4].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[5].targets[0].after[6].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[5].targets[1].after[0].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[5].targets[1].after[2].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[5].targets[1].after[3].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[5].targets[1].after[4].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[5].targets[1].after[6].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[5].targets[1].before[0].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[5].targets[1].before[2].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[5].targets[1].before[3].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[5].targets[1].before[4].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[5].targets[1].before[6].mappedView",
+        "base": false,
+        "candidate": true
+      }
+    ]
+  },
+  {
+    "file": "original-corpus/main-string-source-property-main.json-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "original-corpus/mixed-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "original-corpus/primary-eligibility.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "original-corpus/primary-native.json",
+    "equal": false,
+    "differences": [
+      {
+        "path": "$[172].columns",
+        "base": null,
+        "candidate": [
+          "x"
+        ]
+      },
+      {
+        "path": "$[172].error",
+        "base": "IndexOutOfBoundsException",
+        "candidate": null
+      },
+      {
+        "path": "$[172].message",
+        "base": "Index (2147483647) is greater than or equal to list size (9)",
+        "candidate": null
+      },
+      {
+        "path": "$[172].rows",
+        "base": null,
+        "candidate": [
+          {
+            "x": "other"
+          }
+        ]
+      },
+      {
+        "path": "$[173].columns",
+        "base": null,
+        "candidate": [
+          "x"
+        ]
+      },
+      {
+        "path": "$[173].error",
+        "base": "IndexOutOfBoundsException",
+        "candidate": null
+      },
+      {
+        "path": "$[173].message",
+        "base": "Index (2147483647) is greater than or equal to list size (9)",
+        "candidate": null
+      },
+      {
+        "path": "$[173].rows",
+        "base": null,
+        "candidate": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            },
+            "x": "other"
+          }
+        ]
+      },
+      {
+        "path": "$[174].columns",
+        "base": null,
+        "candidate": [
+          "x"
+        ]
+      },
+      {
+        "path": "$[174].error",
+        "base": "IndexOutOfBoundsException",
+        "candidate": null
+      },
+      {
+        "path": "$[174].message",
+        "base": "Index (2147483647) is greater than or equal to list size (9)",
+        "candidate": null
+      },
+      {
+        "path": "$[174].rows",
+        "base": null,
+        "candidate": [
+          {
+            "x": "other"
+          }
+        ]
+      },
+      {
+        "path": "$[175].columns",
+        "base": null,
+        "candidate": [
+          "x"
+        ]
+      },
+      {
+        "path": "$[175].error",
+        "base": "IndexOutOfBoundsException",
+        "candidate": null
+      },
+      {
+        "path": "$[175].message",
+        "base": "Index (2147483647) is greater than or equal to list size (9)",
+        "candidate": null
+      },
+      {
+        "path": "$[175].rows",
+        "base": null,
+        "candidate": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            },
+            "x": "other"
+          }
+        ]
+      },
+      {
+        "path": "$[176].columns",
+        "base": null,
+        "candidate": [
+          "x"
+        ]
+      },
+      {
+        "path": "$[176].error",
+        "base": "IndexOutOfBoundsException",
+        "candidate": null
+      },
+      {
+        "path": "$[176].message",
+        "base": "Index (2147483647) is greater than or equal to list size (9)",
+        "candidate": null
+      },
+      {
+        "path": "$[176].rows",
+        "base": null,
+        "candidate": [
+          {
+            "x": "other"
+          }
+        ]
+      },
+      {
+        "path": "$[177].columns",
+        "base": null,
+        "candidate": [
+          "x"
+        ]
+      },
+      {
+        "path": "$[177].error",
+        "base": "IndexOutOfBoundsException",
+        "candidate": null
+      },
+      {
+        "path": "$[177].message",
+        "base": "Index (2147483647) is greater than or equal to list size (9)",
+        "candidate": null
+      },
+      {
+        "path": "$[177].rows",
+        "base": null,
+        "candidate": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            },
+            "x": "other"
+          }
+        ]
+      },
+      {
+        "path": "$[178].columns",
+        "base": null,
+        "candidate": [
+          "x"
+        ]
+      },
+      {
+        "path": "$[178].error",
+        "base": "IndexOutOfBoundsException",
+        "candidate": null
+      },
+      {
+        "path": "$[178].message",
+        "base": "Index (2147483647) is greater than or equal to list size (9)",
+        "candidate": null
+      },
+      {
+        "path": "$[178].rows",
+        "base": null,
+        "candidate": [
+          {
+            "x": "other"
+          }
+        ]
+      },
+      {
+        "path": "$[179].columns",
+        "base": null,
+        "candidate": [
+          "x"
+        ]
+      },
+      {
+        "path": "$[179].error",
+        "base": "IndexOutOfBoundsException",
+        "candidate": null
+      },
+      {
+        "path": "$[179].message",
+        "base": "Index (2147483647) is greater than or equal to list size (9)",
+        "candidate": null
+      },
+      {
+        "path": "$[179].rows",
+        "base": null,
+        "candidate": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            },
+            "x": "other"
+          }
+        ]
+      },
+      {
+        "path": "$[180].columns",
+        "base": null,
+        "candidate": [
+          "x"
+        ]
+      },
+      {
+        "path": "$[180].error",
+        "base": "IndexOutOfBoundsException",
+        "candidate": null
+      },
+      {
+        "path": "$[180].message",
+        "base": "Index (2147483647) is greater than or equal to list size (9)",
+        "candidate": null
+      },
+      {
+        "path": "$[180].rows",
+        "base": null,
+        "candidate": [
+          {
+            "x": "other"
+          }
+        ]
+      },
+      {
+        "path": "$[181].columns",
+        "base": null,
+        "candidate": [
+          "x"
+        ]
+      },
+      {
+        "path": "$[181].error",
+        "base": "IndexOutOfBoundsException",
+        "candidate": null
+      },
+      {
+        "path": "$[181].message",
+        "base": "Index (2147483647) is greater than or equal to list size (9)",
+        "candidate": null
+      },
+      {
+        "path": "$[181].rows",
+        "base": null,
+        "candidate": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            },
+            "x": "other"
+          }
+        ]
+      },
+      {
+        "path": "$[182].error",
+        "base": "IndexOutOfBoundsException",
+        "candidate": "ClassCastException"
+      },
+      {
+        "path": "$[182].message",
+        "base": "Index (2147483647) is greater than or equal to list size (9)",
+        "candidate": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')"
+      },
+      {
+        "path": "$[183].error",
+        "base": "IndexOutOfBoundsException",
+        "candidate": "ClassCastException"
+      },
+      {
+        "path": "$[183].message",
+        "base": "Index (2147483647) is greater than or equal to list size (9)",
+        "candidate": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')"
+      },
+      {
+        "path": "$[280].columns",
+        "base": null,
+        "candidate": [
+          "x"
+        ]
+      },
+      {
+        "path": "$[280].error",
+        "base": "IndexOutOfBoundsException",
+        "candidate": null
+      },
+      {
+        "path": "$[280].message",
+        "base": "Index (2147483647) is greater than or equal to list size (9)",
+        "candidate": null
+      },
+      {
+        "path": "$[280].rows",
+        "base": null,
+        "candidate": [
+          {
+            "x": "other"
+          }
+        ]
+      },
+      {
+        "path": "$[281].columns",
+        "base": null,
+        "candidate": [
+          "x"
+        ]
+      },
+      {
+        "path": "$[281].error",
+        "base": "IndexOutOfBoundsException",
+        "candidate": null
+      },
+      {
+        "path": "$[281].message",
+        "base": "Index (2147483647) is greater than or equal to list size (9)",
+        "candidate": null
+      },
+      {
+        "path": "$[281].rows",
+        "base": null,
+        "candidate": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            },
+            "x": "other"
+          }
+        ]
+      },
+      {
+        "path": "$[282].columns",
+        "base": null,
+        "candidate": [
+          "x"
+        ]
+      },
+      {
+        "path": "$[282].error",
+        "base": "IndexOutOfBoundsException",
+        "candidate": null
+      },
+      {
+        "path": "$[282].message",
+        "base": "Index (2147483647) is greater than or equal to list size (9)",
+        "candidate": null
+      },
+      {
+        "path": "$[282].rows",
+        "base": null,
+        "candidate": [
+          {
+            "x": "other"
+          }
+        ]
+      },
+      {
+        "path": "$[283].columns",
+        "base": null,
+        "candidate": [
+          "x"
+        ]
+      },
+      {
+        "path": "$[283].error",
+        "base": "IndexOutOfBoundsException",
+        "candidate": null
+      },
+      {
+        "path": "$[283].message",
+        "base": "Index (2147483647) is greater than or equal to list size (9)",
+        "candidate": null
+      },
+      {
+        "path": "$[283].rows",
+        "base": null,
+        "candidate": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            },
+            "x": "other"
+          }
+        ]
+      },
+      {
+        "path": "$[284].columns",
+        "base": null,
+        "candidate": [
+          "x"
+        ]
+      },
+      {
+        "path": "$[284].error",
+        "base": "IndexOutOfBoundsException",
+        "candidate": null
+      },
+      {
+        "path": "$[284].message",
+        "base": "Index (2147483647) is greater than or equal to list size (9)",
+        "candidate": null
+      },
+      {
+        "path": "$[284].rows",
+        "base": null,
+        "candidate": [
+          {
+            "x": "other"
+          }
+        ]
+      },
+      {
+        "path": "$[285].columns",
+        "base": null,
+        "candidate": [
+          "x"
+        ]
+      },
+      {
+        "path": "$[285].error",
+        "base": "IndexOutOfBoundsException",
+        "candidate": null
+      },
+      {
+        "path": "$[285].message",
+        "base": "Index (2147483647) is greater than or equal to list size (9)",
+        "candidate": null
+      },
+      {
+        "path": "$[285].rows",
+        "base": null,
+        "candidate": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            },
+            "x": "other"
+          }
+        ]
+      },
+      {
+        "path": "$[286].columns",
+        "base": null,
+        "candidate": [
+          "x"
+        ]
+      },
+      {
+        "path": "$[286].error",
+        "base": "IndexOutOfBoundsException",
+        "candidate": null
+      },
+      {
+        "path": "$[286].message",
+        "base": "Index (2147483647) is greater than or equal to list size (9)",
+        "candidate": null
+      },
+      {
+        "path": "$[286].rows",
+        "base": null,
+        "candidate": [
+          {
+            "x": "other"
+          }
+        ]
+      },
+      {
+        "path": "$[287].columns",
+        "base": null,
+        "candidate": [
+          "x"
+        ]
+      },
+      {
+        "path": "$[287].error",
+        "base": "IndexOutOfBoundsException",
+        "candidate": null
+      },
+      {
+        "path": "$[287].message",
+        "base": "Index (2147483647) is greater than or equal to list size (9)",
+        "candidate": null
+      },
+      {
+        "path": "$[287].rows",
+        "base": null,
+        "candidate": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            },
+            "x": "other"
+          }
+        ]
+      },
+      {
+        "path": "$[288].columns",
+        "base": null,
+        "candidate": [
+          "x"
+        ]
+      },
+      {
+        "path": "$[288].error",
+        "base": "IndexOutOfBoundsException",
+        "candidate": null
+      },
+      {
+        "path": "$[288].message",
+        "base": "Index (2147483647) is greater than or equal to list size (9)",
+        "candidate": null
+      },
+      {
+        "path": "$[288].rows",
+        "base": null,
+        "candidate": [
+          {
+            "x": "other"
+          }
+        ]
+      },
+      {
+        "path": "$[289].columns",
+        "base": null,
+        "candidate": [
+          "x"
+        ]
+      },
+      {
+        "path": "$[289].error",
+        "base": "IndexOutOfBoundsException",
+        "candidate": null
+      },
+      {
+        "path": "$[289].message",
+        "base": "Index (2147483647) is greater than or equal to list size (9)",
+        "candidate": null
+      },
+      {
+        "path": "$[289].rows",
+        "base": null,
+        "candidate": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            },
+            "x": "other"
+          }
+        ]
+      },
+      {
+        "path": "$[290].error",
+        "base": "IndexOutOfBoundsException",
+        "candidate": "ClassCastException"
+      },
+      {
+        "path": "$[290].message",
+        "base": "Index (2147483647) is greater than or equal to list size (9)",
+        "candidate": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')"
+      },
+      {
+        "path": "$[291].error",
+        "base": "IndexOutOfBoundsException",
+        "candidate": "ClassCastException"
+      },
+      {
+        "path": "$[291].message",
+        "base": "Index (2147483647) is greater than or equal to list size (9)",
+        "candidate": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')"
+      }
+    ]
+  },
+  {
+    "file": "original-corpus/required-missing-identity-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "original-corpus/required-missing-index-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "original-corpus/required-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "original-corpus/source-pairs-eligibility.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "original-corpus/source-pairs-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "original-corpus/split-bad-callee-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "original-corpus/split-bad-count-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "original-corpus/split-bad-tag-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "original-corpus/split-clean-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "original-corpus/split-missing-index-native.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "original-corpus/supplementary-eligibility.json",
+    "equal": true,
+    "differences": []
+  },
+  {
+    "file": "original-corpus/supplementary-native.json",
+    "equal": false,
+    "differences": [
+      {
+        "path": "$[20].columns",
+        "base": null,
+        "candidate": [
+          "x"
+        ]
+      },
+      {
+        "path": "$[20].error",
+        "base": "IndexOutOfBoundsException",
+        "candidate": null
+      },
+      {
+        "path": "$[20].message",
+        "base": "Index (2147483647) is greater than or equal to list size (9)",
+        "candidate": null
+      },
+      {
+        "path": "$[20].rows",
+        "base": null,
+        "candidate": [
+          {
+            "x": "other"
+          }
+        ]
+      },
+      {
+        "path": "$[21].columns",
+        "base": null,
+        "candidate": [
+          "x"
+        ]
+      },
+      {
+        "path": "$[21].error",
+        "base": "IndexOutOfBoundsException",
+        "candidate": null
+      },
+      {
+        "path": "$[21].message",
+        "base": "Index (2147483647) is greater than or equal to list size (9)",
+        "candidate": null
+      },
+      {
+        "path": "$[21].rows",
+        "base": null,
+        "candidate": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "a",
+                "b"
+              ]
+            },
+            "x": "other"
+          }
+        ]
+      },
+      {
+        "path": "$[36].columns",
+        "base": null,
+        "candidate": [
+          "x"
+        ]
+      },
+      {
+        "path": "$[36].error",
+        "base": "IndexOutOfBoundsException",
+        "candidate": null
+      },
+      {
+        "path": "$[36].message",
+        "base": "Index (2147483647) is greater than or equal to list size (9)",
+        "candidate": null
+      },
+      {
+        "path": "$[36].rows",
+        "base": null,
+        "candidate": [
+          {
+            "x": "other"
+          }
+        ]
+      },
+      {
+        "path": "$[37].columns",
+        "base": null,
+        "candidate": [
+          "x"
+        ]
+      },
+      {
+        "path": "$[37].error",
+        "base": "IndexOutOfBoundsException",
+        "candidate": null
+      },
+      {
+        "path": "$[37].message",
+        "base": "Index (2147483647) is greater than or equal to list size (9)",
+        "candidate": null
+      },
+      {
+        "path": "$[37].rows",
+        "base": null,
+        "candidate": [
+          {
+            "$metadata": {
+              "graphIds": [
+                "a",
+                "b"
+              ]
+            },
+            "x": "other"
+          }
+        ]
+      }
+    ]
+  }
+]

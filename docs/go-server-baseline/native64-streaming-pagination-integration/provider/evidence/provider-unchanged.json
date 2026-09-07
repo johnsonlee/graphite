@@ -1,0 +1,21 @@
+{
+  "graphite-server/internal/query/generic_distinct.go": true,
+  "graphite-server/internal/query/generic_distinct_values.go": true,
+  "graphite-server/internal/query/main_string_candidates.go": true,
+  "graphite-server/internal/query/main_string_mapped.go": true,
+  "graphite-server/internal/query/main_string_postings.go": true,
+  "graphite-server/internal/query/main_string_source.go": true,
+  "graphite-server/internal/query/ordinary_cache.go": true,
+  "graphite-server/internal/query/ordinary_leading.go": true,
+  "graphite-server/internal/query/ordinary_parallel.go": true,
+  "graphite-server/internal/query/ordinary_projection.go": true,
+  "graphite-server/internal/store/callsite_index.go": true,
+  "graphite-server/internal/store/distinct_projection.go": true,
+  "graphite-server/internal/store/main_callsite_index.go": true,
+  "graphite-server/internal/store/main_posting_range.go": true,
+  "graphite-server/internal/store/projection_property.go": true,
+  "graphite-server/internal/store/store.go": true,
+  "graphite-server/internal/query/lazy_filtered.go": true,
+  "graphite-server/internal/query/lazy_filtered_candidates.go": true,
+  "graphite-server/internal/query/lazy_filtered_plan.go": true
+}

@@ -1,0 +1,23 @@
+{
+  "baseline1048Equal": 1016,
+  "candidate1048Equal": 1044,
+  "repaired": 28,
+  "remaining": 4,
+  "genericFaultDenominator": 432,
+  "genericFaultBaseEqual": 408,
+  "genericFaultCandidateEqual": 432,
+  "genericFaultChangedRecords": 33,
+  "baselineArtifacts": 67,
+  "unchangedArtifacts": 61,
+  "internalMappedViewOnlyArtifacts": [
+    "history/rolling-native.json",
+    "original-corpus/main-string-source-main.json-native.json",
+    "original-corpus/main-string-source-offset-main.json-native.json"
+  ],
+  "internalMappedViewLeaves": 76,
+  "bCompleteJSONValueResponses": 595,
+  "numericSpellings": 166,
+  "moduleFiles": 2433,
+  "externalExploreFiles": 58,
+  "productionChanged": false
+}

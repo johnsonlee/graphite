@@ -1,0 +1,2997 @@
+{
+  "total": 1048,
+  "baseline": {
+    "equal": 968,
+    "main-success-native-error": 56,
+    "both-error-difference": 20,
+    "both-success-difference": 4
+  },
+  "final": {
+    "equal": 994,
+    "main-success-native-error": 34,
+    "both-error-difference": 16,
+    "both-success-difference": 4
+  },
+  "newlyMainEqual": 26,
+  "remaining": [
+    {
+      "suite": "primary",
+      "name": "skip",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 0 LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    {
+      "suite": "primary",
+      "name": "skip",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 0 LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    {
+      "suite": "primary",
+      "name": "skip-one",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 1 LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    {
+      "suite": "primary",
+      "name": "skip-one",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 1 LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    {
+      "suite": "primary",
+      "name": "order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    {
+      "suite": "primary",
+      "name": "order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    {
+      "suite": "primary",
+      "name": "order-desc",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x DESC LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    {
+      "suite": "primary",
+      "name": "order-desc",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x DESC LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    {
+      "suite": "primary",
+      "name": "order-source",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY n.caller_name LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    {
+      "suite": "primary",
+      "name": "order-source",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY n.caller_name LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    {
+      "suite": "primary",
+      "name": "order-throw",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY substring('x','bad') LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "both-error-difference"
+    },
+    {
+      "suite": "primary",
+      "name": "order-throw",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY substring('x','bad') LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "both-error-difference"
+    },
+    {
+      "suite": "primary",
+      "name": "where-and-true",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND true RETURN n.caller_name AS x LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    {
+      "suite": "primary",
+      "name": "where-and-true",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND true RETURN n.caller_name AS x LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    {
+      "suite": "primary",
+      "name": "where-and-throw",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND substring('x','bad')='x' RETURN n.caller_name AS x LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "both-error-difference"
+    },
+    {
+      "suite": "primary",
+      "name": "where-and-throw",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND substring('x','bad')='x' RETURN n.caller_name AS x LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "both-error-difference"
+    },
+    {
+      "suite": "primary",
+      "name": "untyped-raw-throwing-projection",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure",
+      "fixture": "bad-last-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "both-error-difference"
+    },
+    {
+      "suite": "primary",
+      "name": "untyped-raw-throwing-projection",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure",
+      "fixture": "bad-last-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "both-error-difference"
+    },
+    {
+      "suite": "primary",
+      "name": "untyped-wrapped-throwing-projection",
+      "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure",
+      "fixture": "bad-last-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "both-error-difference"
+    },
+    {
+      "suite": "primary",
+      "name": "untyped-wrapped-throwing-projection",
+      "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure",
+      "fixture": "bad-last-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "both-error-difference"
+    },
+    {
+      "suite": "primary",
+      "name": "typed-raw-throwing-projection",
+      "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure",
+      "fixture": "bad-last-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "both-error-difference"
+    },
+    {
+      "suite": "primary",
+      "name": "typed-raw-throwing-projection",
+      "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure",
+      "fixture": "bad-last-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "both-error-difference"
+    },
+    {
+      "suite": "primary",
+      "name": "typed-wrapped-throwing-projection",
+      "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure",
+      "fixture": "bad-last-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "both-error-difference"
+    },
+    {
+      "suite": "primary",
+      "name": "typed-wrapped-throwing-projection",
+      "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure",
+      "fixture": "bad-last-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "both-error-difference"
+    },
+    {
+      "suite": "primary",
+      "name": "skip",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 0 LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    {
+      "suite": "primary",
+      "name": "skip",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 0 LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    {
+      "suite": "primary",
+      "name": "skip-one",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 1 LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    {
+      "suite": "primary",
+      "name": "skip-one",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 1 LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    {
+      "suite": "primary",
+      "name": "order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    {
+      "suite": "primary",
+      "name": "order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    {
+      "suite": "primary",
+      "name": "order-desc",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x DESC LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    {
+      "suite": "primary",
+      "name": "order-desc",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x DESC LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    {
+      "suite": "primary",
+      "name": "order-source",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY n.caller_name LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    {
+      "suite": "primary",
+      "name": "order-source",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY n.caller_name LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    {
+      "suite": "primary",
+      "name": "order-throw",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY substring('x','bad') LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "both-error-difference"
+    },
+    {
+      "suite": "primary",
+      "name": "order-throw",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY substring('x','bad') LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "both-error-difference"
+    },
+    {
+      "suite": "primary",
+      "name": "where-wrapped",
+      "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    {
+      "suite": "primary",
+      "name": "where-wrapped",
+      "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    {
+      "suite": "primary",
+      "name": "where-and-true",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND true RETURN n.caller_name AS x LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    {
+      "suite": "primary",
+      "name": "where-and-true",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND true RETURN n.caller_name AS x LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    {
+      "suite": "primary",
+      "name": "inline",
+      "query": "MATCH (n {caller_name:'other'}) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    {
+      "suite": "primary",
+      "name": "inline",
+      "query": "MATCH (n {caller_name:'other'}) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    {
+      "suite": "primary",
+      "name": "where-and-throw",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND substring('x','bad')='x' RETURN n.caller_name AS x LIMIT 1",
+      "fixture": "bad-matched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "both-error-difference"
+    },
+    {
+      "suite": "primary",
+      "name": "where-and-throw",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND substring('x','bad')='x' RETURN n.caller_name AS x LIMIT 1",
+      "fixture": "bad-matched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "both-error-difference"
+    },
+    {
+      "suite": "supplementary",
+      "name": "distinct-order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x ORDER BY x LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    {
+      "suite": "supplementary",
+      "name": "distinct-order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x ORDER BY x LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    {
+      "suite": "supplementary",
+      "name": "distinct-order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x ORDER BY x LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    {
+      "suite": "supplementary",
+      "name": "distinct-order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x ORDER BY x LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    {
+      "suite": "supplementary",
+      "name": "empty-coalesce",
+      "query": "MATCH (n) WHERE toLower(coalesce(n.caller_name,'')) CONTAINS '' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    {
+      "suite": "supplementary",
+      "name": "empty-coalesce",
+      "query": "MATCH (n) WHERE toLower(coalesce(n.caller_name,'')) CONTAINS '' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+      "fixture": "bad-matched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    {
+      "suite": "annotation",
+      "name": "empty-wrapper-decline",
+      "query": "MATCH (odd) WHERE toLower(coalesce(odd.caller_class,'')) CONTAINS '' RETURN DISTINCT odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+      "fixture": null,
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "both-success-difference"
+    },
+    {
+      "suite": "annotation",
+      "name": "empty-wrapper-decline",
+      "query": "MATCH (odd) WHERE toLower(coalesce(odd.caller_class,'')) CONTAINS '' RETURN DISTINCT odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+      "fixture": null,
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "both-success-difference"
+    },
+    {
+      "suite": "mixed",
+      "name": "empty-wrapper-decline",
+      "query": "MATCH (odd) WHERE toLower(coalesce(odd.caller_class,'')) CONTAINS '' RETURN DISTINCT odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+      "fixture": null,
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "both-success-difference"
+    },
+    {
+      "suite": "mixed",
+      "name": "empty-wrapper-decline",
+      "query": "MATCH (odd) WHERE toLower(coalesce(odd.caller_class,'')) CONTAINS '' RETURN DISTINCT odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+      "fixture": null,
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "both-success-difference"
+    }
+  ],
+  "changes": [
+    {
+      "index": 134,
+      "before": {
+        "suite": "primary",
+        "name": "distinct-direct-id",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1",
+        "fixture": "bad-first-unmatched",
+        "cross": false,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "main-success-native-error"
+      },
+      "after": {
+        "suite": "primary",
+        "name": "distinct-direct-id",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1",
+        "fixture": "bad-first-unmatched",
+        "cross": false,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "equal"
+      }
+    },
+    {
+      "index": 135,
+      "before": {
+        "suite": "primary",
+        "name": "distinct-direct-id",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1",
+        "fixture": "bad-first-unmatched",
+        "cross": true,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "main-success-native-error"
+      },
+      "after": {
+        "suite": "primary",
+        "name": "distinct-direct-id",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1",
+        "fixture": "bad-first-unmatched",
+        "cross": true,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "equal"
+      }
+    },
+    {
+      "index": 138,
+      "before": {
+        "suite": "primary",
+        "name": "distinct-id-function",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT id(n) AS x LIMIT 1",
+        "fixture": "bad-first-unmatched",
+        "cross": false,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "main-success-native-error"
+      },
+      "after": {
+        "suite": "primary",
+        "name": "distinct-id-function",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT id(n) AS x LIMIT 1",
+        "fixture": "bad-first-unmatched",
+        "cross": false,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "equal"
+      }
+    },
+    {
+      "index": 139,
+      "before": {
+        "suite": "primary",
+        "name": "distinct-id-function",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT id(n) AS x LIMIT 1",
+        "fixture": "bad-first-unmatched",
+        "cross": true,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "main-success-native-error"
+      },
+      "after": {
+        "suite": "primary",
+        "name": "distinct-id-function",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT id(n) AS x LIMIT 1",
+        "fixture": "bad-first-unmatched",
+        "cross": true,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "equal"
+      }
+    },
+    {
+      "index": 150,
+      "before": {
+        "suite": "primary",
+        "name": "distinct-whole",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n AS x LIMIT 1",
+        "fixture": "bad-first-unmatched",
+        "cross": false,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "main-success-native-error"
+      },
+      "after": {
+        "suite": "primary",
+        "name": "distinct-whole",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n AS x LIMIT 1",
+        "fixture": "bad-first-unmatched",
+        "cross": false,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "equal"
+      }
+    },
+    {
+      "index": 151,
+      "before": {
+        "suite": "primary",
+        "name": "distinct-whole",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n AS x LIMIT 1",
+        "fixture": "bad-first-unmatched",
+        "cross": true,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "main-success-native-error"
+      },
+      "after": {
+        "suite": "primary",
+        "name": "distinct-whole",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n AS x LIMIT 1",
+        "fixture": "bad-first-unmatched",
+        "cross": true,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "equal"
+      }
+    },
+    {
+      "index": 154,
+      "before": {
+        "suite": "primary",
+        "name": "distinct-literal",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT 1 AS x LIMIT 1",
+        "fixture": "bad-first-unmatched",
+        "cross": false,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "main-success-native-error"
+      },
+      "after": {
+        "suite": "primary",
+        "name": "distinct-literal",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT 1 AS x LIMIT 1",
+        "fixture": "bad-first-unmatched",
+        "cross": false,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "equal"
+      }
+    },
+    {
+      "index": 155,
+      "before": {
+        "suite": "primary",
+        "name": "distinct-literal",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT 1 AS x LIMIT 1",
+        "fixture": "bad-first-unmatched",
+        "cross": true,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "main-success-native-error"
+      },
+      "after": {
+        "suite": "primary",
+        "name": "distinct-literal",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT 1 AS x LIMIT 1",
+        "fixture": "bad-first-unmatched",
+        "cross": true,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "equal"
+      }
+    },
+    {
+      "index": 158,
+      "before": {
+        "suite": "primary",
+        "name": "distinct-wrapped",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT toString(n.caller_name) AS x LIMIT 1",
+        "fixture": "bad-first-unmatched",
+        "cross": false,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "main-success-native-error"
+      },
+      "after": {
+        "suite": "primary",
+        "name": "distinct-wrapped",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT toString(n.caller_name) AS x LIMIT 1",
+        "fixture": "bad-first-unmatched",
+        "cross": false,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "equal"
+      }
+    },
+    {
+      "index": 159,
+      "before": {
+        "suite": "primary",
+        "name": "distinct-wrapped",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT toString(n.caller_name) AS x LIMIT 1",
+        "fixture": "bad-first-unmatched",
+        "cross": true,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "main-success-native-error"
+      },
+      "after": {
+        "suite": "primary",
+        "name": "distinct-wrapped",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT toString(n.caller_name) AS x LIMIT 1",
+        "fixture": "bad-first-unmatched",
+        "cross": true,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "equal"
+      }
+    },
+    {
+      "index": 162,
+      "before": {
+        "suite": "primary",
+        "name": "distinct-expression",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name+'' AS x LIMIT 1",
+        "fixture": "bad-first-unmatched",
+        "cross": false,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "main-success-native-error"
+      },
+      "after": {
+        "suite": "primary",
+        "name": "distinct-expression",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name+'' AS x LIMIT 1",
+        "fixture": "bad-first-unmatched",
+        "cross": false,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "equal"
+      }
+    },
+    {
+      "index": 163,
+      "before": {
+        "suite": "primary",
+        "name": "distinct-expression",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name+'' AS x LIMIT 1",
+        "fixture": "bad-first-unmatched",
+        "cross": true,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "main-success-native-error"
+      },
+      "after": {
+        "suite": "primary",
+        "name": "distinct-expression",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name+'' AS x LIMIT 1",
+        "fixture": "bad-first-unmatched",
+        "cross": true,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "equal"
+      }
+    },
+    {
+      "index": 166,
+      "before": {
+        "suite": "primary",
+        "name": "distinct-throw-projection",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT substring(n.caller_name,'bad') AS x LIMIT 1",
+        "fixture": "bad-first-unmatched",
+        "cross": false,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "both-error-difference"
+      },
+      "after": {
+        "suite": "primary",
+        "name": "distinct-throw-projection",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT substring(n.caller_name,'bad') AS x LIMIT 1",
+        "fixture": "bad-first-unmatched",
+        "cross": false,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "equal"
+      }
+    },
+    {
+      "index": 167,
+      "before": {
+        "suite": "primary",
+        "name": "distinct-throw-projection",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT substring(n.caller_name,'bad') AS x LIMIT 1",
+        "fixture": "bad-first-unmatched",
+        "cross": true,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "both-error-difference"
+      },
+      "after": {
+        "suite": "primary",
+        "name": "distinct-throw-projection",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT substring(n.caller_name,'bad') AS x LIMIT 1",
+        "fixture": "bad-first-unmatched",
+        "cross": true,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "equal"
+      }
+    },
+    {
+      "index": 243,
+      "before": {
+        "suite": "primary",
+        "name": "distinct-direct-id",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1",
+        "fixture": "bad-last-unmatched",
+        "cross": true,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "main-success-native-error"
+      },
+      "after": {
+        "suite": "primary",
+        "name": "distinct-direct-id",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1",
+        "fixture": "bad-last-unmatched",
+        "cross": true,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "equal"
+      }
+    },
+    {
+      "index": 246,
+      "before": {
+        "suite": "primary",
+        "name": "distinct-id-function",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT id(n) AS x LIMIT 1",
+        "fixture": "bad-last-unmatched",
+        "cross": false,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "main-success-native-error"
+      },
+      "after": {
+        "suite": "primary",
+        "name": "distinct-id-function",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT id(n) AS x LIMIT 1",
+        "fixture": "bad-last-unmatched",
+        "cross": false,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "equal"
+      }
+    },
+    {
+      "index": 247,
+      "before": {
+        "suite": "primary",
+        "name": "distinct-id-function",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT id(n) AS x LIMIT 1",
+        "fixture": "bad-last-unmatched",
+        "cross": true,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "main-success-native-error"
+      },
+      "after": {
+        "suite": "primary",
+        "name": "distinct-id-function",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT id(n) AS x LIMIT 1",
+        "fixture": "bad-last-unmatched",
+        "cross": true,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "equal"
+      }
+    },
+    {
+      "index": 258,
+      "before": {
+        "suite": "primary",
+        "name": "distinct-whole",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n AS x LIMIT 1",
+        "fixture": "bad-last-unmatched",
+        "cross": false,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "main-success-native-error"
+      },
+      "after": {
+        "suite": "primary",
+        "name": "distinct-whole",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n AS x LIMIT 1",
+        "fixture": "bad-last-unmatched",
+        "cross": false,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "equal"
+      }
+    },
+    {
+      "index": 259,
+      "before": {
+        "suite": "primary",
+        "name": "distinct-whole",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n AS x LIMIT 1",
+        "fixture": "bad-last-unmatched",
+        "cross": true,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "main-success-native-error"
+      },
+      "after": {
+        "suite": "primary",
+        "name": "distinct-whole",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n AS x LIMIT 1",
+        "fixture": "bad-last-unmatched",
+        "cross": true,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "equal"
+      }
+    },
+    {
+      "index": 263,
+      "before": {
+        "suite": "primary",
+        "name": "distinct-literal",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT 1 AS x LIMIT 1",
+        "fixture": "bad-last-unmatched",
+        "cross": true,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "main-success-native-error"
+      },
+      "after": {
+        "suite": "primary",
+        "name": "distinct-literal",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT 1 AS x LIMIT 1",
+        "fixture": "bad-last-unmatched",
+        "cross": true,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "equal"
+      }
+    },
+    {
+      "index": 266,
+      "before": {
+        "suite": "primary",
+        "name": "distinct-wrapped",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT toString(n.caller_name) AS x LIMIT 1",
+        "fixture": "bad-last-unmatched",
+        "cross": false,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "main-success-native-error"
+      },
+      "after": {
+        "suite": "primary",
+        "name": "distinct-wrapped",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT toString(n.caller_name) AS x LIMIT 1",
+        "fixture": "bad-last-unmatched",
+        "cross": false,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "equal"
+      }
+    },
+    {
+      "index": 267,
+      "before": {
+        "suite": "primary",
+        "name": "distinct-wrapped",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT toString(n.caller_name) AS x LIMIT 1",
+        "fixture": "bad-last-unmatched",
+        "cross": true,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "main-success-native-error"
+      },
+      "after": {
+        "suite": "primary",
+        "name": "distinct-wrapped",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT toString(n.caller_name) AS x LIMIT 1",
+        "fixture": "bad-last-unmatched",
+        "cross": true,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "equal"
+      }
+    },
+    {
+      "index": 270,
+      "before": {
+        "suite": "primary",
+        "name": "distinct-expression",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name+'' AS x LIMIT 1",
+        "fixture": "bad-last-unmatched",
+        "cross": false,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "main-success-native-error"
+      },
+      "after": {
+        "suite": "primary",
+        "name": "distinct-expression",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name+'' AS x LIMIT 1",
+        "fixture": "bad-last-unmatched",
+        "cross": false,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "equal"
+      }
+    },
+    {
+      "index": 271,
+      "before": {
+        "suite": "primary",
+        "name": "distinct-expression",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name+'' AS x LIMIT 1",
+        "fixture": "bad-last-unmatched",
+        "cross": true,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "main-success-native-error"
+      },
+      "after": {
+        "suite": "primary",
+        "name": "distinct-expression",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name+'' AS x LIMIT 1",
+        "fixture": "bad-last-unmatched",
+        "cross": true,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "equal"
+      }
+    },
+    {
+      "index": 274,
+      "before": {
+        "suite": "primary",
+        "name": "distinct-throw-projection",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT substring(n.caller_name,'bad') AS x LIMIT 1",
+        "fixture": "bad-last-unmatched",
+        "cross": false,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "both-error-difference"
+      },
+      "after": {
+        "suite": "primary",
+        "name": "distinct-throw-projection",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT substring(n.caller_name,'bad') AS x LIMIT 1",
+        "fixture": "bad-last-unmatched",
+        "cross": false,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "equal"
+      }
+    },
+    {
+      "index": 275,
+      "before": {
+        "suite": "primary",
+        "name": "distinct-throw-projection",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT substring(n.caller_name,'bad') AS x LIMIT 1",
+        "fixture": "bad-last-unmatched",
+        "cross": true,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "both-error-difference"
+      },
+      "after": {
+        "suite": "primary",
+        "name": "distinct-throw-projection",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT substring(n.caller_name,'bad') AS x LIMIT 1",
+        "fixture": "bad-last-unmatched",
+        "cross": true,
+        "sources": null,
+        "priorDistinctEligible": false,
+        "ordinaryEligible": false,
+        "comparison": "equal"
+      }
+    }
+  ],
+  "A28": [
+    {
+      "id": 1,
+      "suite": "primary",
+      "index": 134,
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": false,
+      "baselineEqual": false,
+      "finalEqual": true
+    },
+    {
+      "id": 2,
+      "suite": "primary",
+      "index": 135,
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": true,
+      "baselineEqual": false,
+      "finalEqual": true
+    },
+    {
+      "id": 3,
+      "suite": "primary",
+      "index": 138,
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT id(n) AS x LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": false,
+      "baselineEqual": false,
+      "finalEqual": true
+    },
+    {
+      "id": 4,
+      "suite": "primary",
+      "index": 139,
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT id(n) AS x LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": true,
+      "baselineEqual": false,
+      "finalEqual": true
+    },
+    {
+      "id": 5,
+      "suite": "primary",
+      "index": 150,
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n AS x LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": false,
+      "baselineEqual": false,
+      "finalEqual": true
+    },
+    {
+      "id": 6,
+      "suite": "primary",
+      "index": 151,
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n AS x LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": true,
+      "baselineEqual": false,
+      "finalEqual": true
+    },
+    {
+      "id": 7,
+      "suite": "primary",
+      "index": 154,
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT 1 AS x LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": false,
+      "baselineEqual": false,
+      "finalEqual": true
+    },
+    {
+      "id": 8,
+      "suite": "primary",
+      "index": 155,
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT 1 AS x LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": true,
+      "baselineEqual": false,
+      "finalEqual": true
+    },
+    {
+      "id": 9,
+      "suite": "primary",
+      "index": 158,
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT toString(n.caller_name) AS x LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": false,
+      "baselineEqual": false,
+      "finalEqual": true
+    },
+    {
+      "id": 10,
+      "suite": "primary",
+      "index": 159,
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT toString(n.caller_name) AS x LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": true,
+      "baselineEqual": false,
+      "finalEqual": true
+    },
+    {
+      "id": 11,
+      "suite": "primary",
+      "index": 162,
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name+'' AS x LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": false,
+      "baselineEqual": false,
+      "finalEqual": true
+    },
+    {
+      "id": 12,
+      "suite": "primary",
+      "index": 163,
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name+'' AS x LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": true,
+      "baselineEqual": false,
+      "finalEqual": true
+    },
+    {
+      "id": 13,
+      "suite": "primary",
+      "index": 166,
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT substring(n.caller_name,'bad') AS x LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": false,
+      "baselineEqual": false,
+      "finalEqual": true
+    },
+    {
+      "id": 14,
+      "suite": "primary",
+      "index": 167,
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT substring(n.caller_name,'bad') AS x LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": true,
+      "baselineEqual": false,
+      "finalEqual": true
+    },
+    {
+      "id": 39,
+      "suite": "primary",
+      "index": 242,
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": false,
+      "baselineEqual": true,
+      "finalEqual": true
+    },
+    {
+      "id": 40,
+      "suite": "primary",
+      "index": 243,
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": true,
+      "baselineEqual": false,
+      "finalEqual": true
+    },
+    {
+      "id": 41,
+      "suite": "primary",
+      "index": 246,
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT id(n) AS x LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": false,
+      "baselineEqual": false,
+      "finalEqual": true
+    },
+    {
+      "id": 42,
+      "suite": "primary",
+      "index": 247,
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT id(n) AS x LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": true,
+      "baselineEqual": false,
+      "finalEqual": true
+    },
+    {
+      "id": 43,
+      "suite": "primary",
+      "index": 258,
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n AS x LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": false,
+      "baselineEqual": false,
+      "finalEqual": true
+    },
+    {
+      "id": 44,
+      "suite": "primary",
+      "index": 259,
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n AS x LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": true,
+      "baselineEqual": false,
+      "finalEqual": true
+    },
+    {
+      "id": 45,
+      "suite": "primary",
+      "index": 262,
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT 1 AS x LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": false,
+      "baselineEqual": true,
+      "finalEqual": true
+    },
+    {
+      "id": 46,
+      "suite": "primary",
+      "index": 263,
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT 1 AS x LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": true,
+      "baselineEqual": false,
+      "finalEqual": true
+    },
+    {
+      "id": 47,
+      "suite": "primary",
+      "index": 266,
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT toString(n.caller_name) AS x LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": false,
+      "baselineEqual": false,
+      "finalEqual": true
+    },
+    {
+      "id": 48,
+      "suite": "primary",
+      "index": 267,
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT toString(n.caller_name) AS x LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": true,
+      "baselineEqual": false,
+      "finalEqual": true
+    },
+    {
+      "id": 49,
+      "suite": "primary",
+      "index": 270,
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name+'' AS x LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": false,
+      "baselineEqual": false,
+      "finalEqual": true
+    },
+    {
+      "id": 50,
+      "suite": "primary",
+      "index": 271,
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name+'' AS x LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": true,
+      "baselineEqual": false,
+      "finalEqual": true
+    },
+    {
+      "id": 51,
+      "suite": "primary",
+      "index": 274,
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT substring(n.caller_name,'bad') AS x LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": false,
+      "baselineEqual": false,
+      "finalEqual": true
+    },
+    {
+      "id": 52,
+      "suite": "primary",
+      "index": 275,
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT substring(n.caller_name,'bad') AS x LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": true,
+      "baselineEqual": false,
+      "finalEqual": true
+    }
+  ],
+  "history": [
+    {
+      "file": "annotation-after-classification.json",
+      "completeEqual": true,
+      "differences": []
+    },
+    {
+      "file": "annotation-after-native.json",
+      "completeEqual": true,
+      "differences": []
+    },
+    {
+      "file": "annotation-classification.json",
+      "completeEqual": true,
+      "differences": []
+    },
+    {
+      "file": "annotation-native.json",
+      "completeEqual": true,
+      "differences": []
+    },
+    {
+      "file": "cache-threshold-native.json",
+      "completeEqual": true,
+      "differences": []
+    },
+    {
+      "file": "dense-callee-sid-missing-native.json",
+      "completeEqual": true,
+      "differences": []
+    },
+    {
+      "file": "dense-callee-sid-native.json",
+      "completeEqual": true,
+      "differences": []
+    },
+    {
+      "file": "dense-clean-missing-native.json",
+      "completeEqual": true,
+      "differences": []
+    },
+    {
+      "file": "dense-clean-native.json",
+      "completeEqual": true,
+      "differences": []
+    },
+    {
+      "file": "dense-return-sid-missing-native.json",
+      "completeEqual": true,
+      "differences": []
+    },
+    {
+      "file": "dense-return-sid-native.json",
+      "completeEqual": true,
+      "differences": []
+    },
+    {
+      "file": "history-native.json",
+      "completeEqual": true,
+      "differences": []
+    },
+    {
+      "file": "mixed-classification.json",
+      "completeEqual": true,
+      "differences": []
+    },
+    {
+      "file": "mixed-native.json",
+      "completeEqual": true,
+      "differences": []
+    },
+    {
+      "file": "required/callee-class-sid-max-missing-native.json",
+      "completeEqual": true,
+      "differences": []
+    },
+    {
+      "file": "required/callee-class-sid-max-native.json",
+      "completeEqual": true,
+      "differences": []
+    },
+    {
+      "file": "required/callee-class-sid-minus-one-missing-native.json",
+      "completeEqual": true,
+      "differences": []
+    },
+    {
+      "file": "required/callee-class-sid-minus-one-native.json",
+      "completeEqual": true,
+      "differences": []
+    },
+    {
+      "file": "required/caller-count-max-missing-native.json",
+      "completeEqual": true,
+      "differences": []
+    },
+    {
+      "file": "required/caller-count-max-native.json",
+      "completeEqual": true,
+      "differences": []
+    },
+    {
+      "file": "required/caller-count-minus-one-missing-native.json",
+      "completeEqual": true,
+      "differences": []
+    },
+    {
+      "file": "required/caller-count-minus-one-native.json",
+      "completeEqual": true,
+      "differences": []
+    },
+    {
+      "file": "required/caller-count-outside-missing-native.json",
+      "completeEqual": true,
+      "differences": []
+    },
+    {
+      "file": "required/caller-count-outside-native.json",
+      "completeEqual": true,
+      "differences": []
+    },
+    {
+      "file": "required/caller-name-sid-max-missing-native.json",
+      "completeEqual": true,
+      "differences": []
+    },
+    {
+      "file": "required/caller-name-sid-max-native.json",
+      "completeEqual": true,
+      "differences": []
+    },
+    {
+      "file": "required/caller-name-sid-minus-one-missing-native.json",
+      "completeEqual": true,
+      "differences": []
+    },
+    {
+      "file": "required/caller-name-sid-minus-one-native.json",
+      "completeEqual": true,
+      "differences": []
+    },
+    {
+      "file": "required/core-return-sid-max-missing-native.json",
+      "completeEqual": true,
+      "differences": []
+    },
+    {
+      "file": "required/core-return-sid-max-native.json",
+      "completeEqual": true,
+      "differences": []
+    },
+    {
+      "file": "required/node-id-999-missing-native.json",
+      "completeEqual": true,
+      "differences": []
+    },
+    {
+      "file": "required/node-id-999-native.json",
+      "completeEqual": true,
+      "differences": []
+    },
+    {
+      "file": "required/node-tag-255-missing-native.json",
+      "completeEqual": true,
+      "differences": []
+    },
+    {
+      "file": "required/node-tag-255-native.json",
+      "completeEqual": true,
+      "differences": []
+    },
+    {
+      "file": "required/offset-int-overflow-missing-native.json",
+      "completeEqual": true,
+      "differences": []
+    },
+    {
+      "file": "required/offset-int-overflow-native.json",
+      "completeEqual": true,
+      "differences": []
+    },
+    {
+      "file": "required/offset-missing-missing-native.json",
+      "completeEqual": true,
+      "differences": []
+    },
+    {
+      "file": "required/offset-missing-native.json",
+      "completeEqual": true,
+      "differences": []
+    },
+    {
+      "file": "required/offset-other-node-missing-native.json",
+      "completeEqual": true,
+      "differences": []
+    },
+    {
+      "file": "required/offset-other-node-native.json",
+      "completeEqual": true,
+      "differences": []
+    },
+    {
+      "file": "required/offset-outside-missing-native.json",
+      "completeEqual": true,
+      "differences": []
+    },
+    {
+      "file": "required/offset-outside-native.json",
+      "completeEqual": true,
+      "differences": []
+    },
+    {
+      "file": "rolling-native.json",
+      "completeEqual": false,
+      "differences": [
+        {
+          "path": "/9/targets/0/after/3/mappedView",
+          "before": false,
+          "after": true
+        },
+        {
+          "path": "/9/targets/0/after/4/mappedView",
+          "before": true,
+          "after": false
+        },
+        {
+          "path": "/9/targets/0/after/7/mappedView",
+          "before": false,
+          "after": true
+        },
+        {
+          "path": "/9/targets/0/after/8/mappedView",
+          "before": true,
+          "after": false
+        },
+        {
+          "path": "/9/targets/1/after/3/mappedView",
+          "before": false,
+          "after": true
+        },
+        {
+          "path": "/9/targets/1/after/5/mappedView",
+          "before": false,
+          "after": true
+        },
+        {
+          "path": "/9/targets/1/after/7/mappedView",
+          "before": false,
+          "after": true
+        },
+        {
+          "path": "/9/targets/1/before/3/mappedView",
+          "before": false,
+          "after": true
+        },
+        {
+          "path": "/9/targets/1/before/4/mappedView",
+          "before": true,
+          "after": false
+        },
+        {
+          "path": "/9/targets/1/before/7/mappedView",
+          "before": false,
+          "after": true
+        },
+        {
+          "path": "/9/targets/1/before/8/mappedView",
+          "before": true,
+          "after": false
+        },
+        {
+          "path": "/9/targets/2/after/3/mappedView",
+          "before": false,
+          "after": true
+        },
+        {
+          "path": "/9/targets/2/after/5/mappedView",
+          "before": false,
+          "after": true
+        },
+        {
+          "path": "/9/targets/2/after/7/mappedView",
+          "before": false,
+          "after": true
+        },
+        {
+          "path": "/9/targets/2/before/3/mappedView",
+          "before": false,
+          "after": true
+        },
+        {
+          "path": "/9/targets/2/before/5/mappedView",
+          "before": false,
+          "after": true
+        },
+        {
+          "path": "/9/targets/2/before/7/mappedView",
+          "before": false,
+          "after": true
+        },
+        {
+          "path": "/10/targets/0/after/3/mappedView",
+          "before": false,
+          "after": true
+        },
+        {
+          "path": "/10/targets/0/after/4/mappedView",
+          "before": true,
+          "after": false
+        },
+        {
+          "path": "/10/targets/0/after/5/mappedView",
+          "before": true,
+          "after": false
+        },
+        {
+          "path": "/10/targets/0/after/8/mappedView",
+          "before": true,
+          "after": false
+        },
+        {
+          "path": "/10/targets/1/after/3/mappedView",
+          "before": false,
+          "after": true
+        },
+        {
+          "path": "/10/targets/1/after/4/mappedView",
+          "before": true,
+          "after": false
+        },
+        {
+          "path": "/10/targets/1/after/5/mappedView",
+          "before": true,
+          "after": false
+        },
+        {
+          "path": "/10/targets/1/before/3/mappedView",
+          "before": false,
+          "after": true
+        },
+        {
+          "path": "/10/targets/1/before/4/mappedView",
+          "before": true,
+          "after": false
+        },
+        {
+          "path": "/10/targets/1/before/5/mappedView",
+          "before": true,
+          "after": false
+        },
+        {
+          "path": "/10/targets/1/before/8/mappedView",
+          "before": true,
+          "after": false
+        },
+        {
+          "path": "/10/targets/2/after/3/mappedView",
+          "before": false,
+          "after": true
+        },
+        {
+          "path": "/10/targets/2/after/4/mappedView",
+          "before": true,
+          "after": false
+        },
+        {
+          "path": "/10/targets/2/before/3/mappedView",
+          "before": false,
+          "after": true
+        },
+        {
+          "path": "/10/targets/2/before/4/mappedView",
+          "before": true,
+          "after": false
+        },
+        {
+          "path": "/10/targets/2/before/5/mappedView",
+          "before": true,
+          "after": false
+        },
+        {
+          "path": "/11/targets/0/after/4/mappedView",
+          "before": true,
+          "after": false
+        },
+        {
+          "path": "/11/targets/0/after/6/mappedView",
+          "before": true,
+          "after": false
+        },
+        {
+          "path": "/11/targets/0/after/7/mappedView",
+          "before": true,
+          "after": false
+        },
+        {
+          "path": "/11/targets/1/after/3/mappedView",
+          "before": false,
+          "after": true
+        },
+        {
+          "path": "/11/targets/1/after/6/mappedView",
+          "before": true,
+          "after": false
+        },
+        {
+          "path": "/11/targets/1/before/4/mappedView",
+          "before": true,
+          "after": false
+        },
+        {
+          "path": "/11/targets/1/before/6/mappedView",
+          "before": true,
+          "after": false
+        },
+        {
+          "path": "/11/targets/1/before/7/mappedView",
+          "before": true,
+          "after": false
+        },
+        {
+          "path": "/11/targets/2/after/3/mappedView",
+          "before": false,
+          "after": true
+        },
+        {
+          "path": "/11/targets/2/before/3/mappedView",
+          "before": false,
+          "after": true
+        },
+        {
+          "path": "/11/targets/2/before/6/mappedView",
+          "before": true,
+          "after": false
+        },
+        {
+          "path": "/12/targets/0/after/9/mappedView",
+          "before": true,
+          "after": false
+        },
+        {
+          "path": "/12/targets/1/after/9/mappedView",
+          "before": true,
+          "after": false
+        },
+        {
+          "path": "/12/targets/1/before/9/mappedView",
+          "before": true,
+          "after": false
+        },
+        {
+          "path": "/12/targets/2/after/9/mappedView",
+          "before": true,
+          "after": false
+        },
+        {
+          "path": "/12/targets/2/before/9/mappedView",
+          "before": true,
+          "after": false
+        },
+        {
+          "path": "/13/targets/2/after/9/mappedView",
+          "before": false,
+          "after": true
+        }
+      ]
+    },
+    {
+      "file": "wide-history-native.json",
+      "completeEqual": true,
+      "differences": []
+    }
+  ],
+  "newOracle": [
+    {
+      "file": "main.json",
+      "name": "valid-tag/1/= 'other'/False",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 1.0,
+          "after": 1
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "main.json",
+      "name": "valid-tag/1/= 'other'/True",
+      "responses": 3,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 1.0,
+          "after": 1
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "main.json",
+      "name": "valid-tag/1/CONTAINS 'other'/False",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 1.0,
+          "after": 1
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "main.json",
+      "name": "valid-tag/1/CONTAINS 'other'/True",
+      "responses": 3,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 1.0,
+          "after": 1
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "main.json",
+      "name": "valid-tag/2/= 'other'/False",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 2.0,
+          "after": 2
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "main.json",
+      "name": "valid-tag/2/= 'other'/True",
+      "responses": 3,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 2.0,
+          "after": 2
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "main.json",
+      "name": "valid-tag/2/CONTAINS 'other'/False",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 2.0,
+          "after": 2
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "main.json",
+      "name": "valid-tag/2/CONTAINS 'other'/True",
+      "responses": 3,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 2.0,
+          "after": 2
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "main.json",
+      "name": "valid-tag/40/= 'other'/False",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 40.0,
+          "after": 40
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "main.json",
+      "name": "valid-tag/40/= 'other'/True",
+      "responses": 3,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 40.0,
+          "after": 40
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "main.json",
+      "name": "valid-tag/40/CONTAINS 'other'/False",
+      "responses": 2,
+      "nativeCompleteStateEqual": false,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 40.0,
+          "after": 40
+        },
+        {
+          "path": "/targets/0/after/2/mappedView",
+          "before": true,
+          "after": false
+        },
+        {
+          "path": "/targets/0/after/6/mappedView",
+          "before": true,
+          "after": false
+        },
+        {
+          "path": "/targets/1/after/2/mappedView",
+          "before": true,
+          "after": false
+        },
+        {
+          "path": "/targets/1/after/6/mappedView",
+          "before": true,
+          "after": false
+        },
+        {
+          "path": "/targets/1/before/2/mappedView",
+          "before": true,
+          "after": false
+        },
+        {
+          "path": "/targets/1/before/6/mappedView",
+          "before": true,
+          "after": false
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "main.json",
+      "name": "valid-tag/40/CONTAINS 'other'/True",
+      "responses": 3,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 40.0,
+          "after": 40
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "main.json",
+      "name": "unknown-tag/1",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 1.0,
+          "after": 1
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "main.json",
+      "name": "unknown-tag/2",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 2.0,
+          "after": 2
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "main.json",
+      "name": "unknown-tag/40",
+      "responses": 2,
+      "nativeCompleteStateEqual": false,
+      "mainRepeatCompleteStateEqual": false,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 40.0,
+          "after": 40
+        },
+        {
+          "path": "/targets/0/after/1/mappedView",
+          "before": true,
+          "after": false
+        },
+        {
+          "path": "/targets/0/after/3/mappedView",
+          "before": true,
+          "after": false
+        },
+        {
+          "path": "/targets/0/after/7/mappedView",
+          "before": false,
+          "after": true
+        },
+        {
+          "path": "/targets/1/after/1/mappedView",
+          "before": true,
+          "after": false
+        },
+        {
+          "path": "/targets/1/after/3/mappedView",
+          "before": true,
+          "after": false
+        },
+        {
+          "path": "/targets/1/after/7/mappedView",
+          "before": false,
+          "after": true
+        },
+        {
+          "path": "/targets/1/before/1/mappedView",
+          "before": true,
+          "after": false
+        },
+        {
+          "path": "/targets/1/before/3/mappedView",
+          "before": true,
+          "after": false
+        },
+        {
+          "path": "/targets/1/before/7/mappedView",
+          "before": false,
+          "after": true
+        }
+      ],
+      "mainRepeatDifferences": [
+        {
+          "path": "/targets/0/after/7/mappedView",
+          "before": false,
+          "after": true
+        },
+        {
+          "path": "/targets/1/after/7/mappedView",
+          "before": false,
+          "after": true
+        },
+        {
+          "path": "/targets/1/before/7/mappedView",
+          "before": false,
+          "after": true
+        }
+      ]
+    },
+    {
+      "file": "main.json",
+      "name": "source-order/clean,bad-matched",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 2.0,
+          "after": 2
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "main.json",
+      "name": "source-order/bad-matched,clean",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 2.0,
+          "after": 2
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "main.json",
+      "name": "clean/n AS x, n.id AS id",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 2.0,
+          "after": 2
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "main.json",
+      "name": "clean/n AS x, 1 AS x",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 2.0,
+          "after": 2
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "main.json",
+      "name": "clean/[n,n.id] AS x",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 2.0,
+          "after": 2
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "main.json",
+      "name": "clean/substring(n.caller_name,'bad') AS x, 1 AS x",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 2.0,
+          "after": 2
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "main.json",
+      "name": "bad-first-unmatched/n AS x, n.id AS id",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 2.0,
+          "after": 2
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "main.json",
+      "name": "bad-first-unmatched/n AS x, 1 AS x",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 2.0,
+          "after": 2
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "main.json",
+      "name": "bad-first-unmatched/[n,n.id] AS x",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 2.0,
+          "after": 2
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "main.json",
+      "name": "bad-first-unmatched/substring(n.caller_name,'bad') AS x, 1 AS x",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 2.0,
+          "after": 2
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "main.json",
+      "name": "bad-last-unmatched/n AS x, n.id AS id",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 2.0,
+          "after": 2
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "main.json",
+      "name": "bad-last-unmatched/n AS x, 1 AS x",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 2.0,
+          "after": 2
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "main.json",
+      "name": "bad-last-unmatched/[n,n.id] AS x",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 2.0,
+          "after": 2
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "main.json",
+      "name": "bad-last-unmatched/substring(n.caller_name,'bad') AS x, 1 AS x",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 2.0,
+          "after": 2
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "main.json",
+      "name": "bad-matched/n AS x, n.id AS id",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 2.0,
+          "after": 2
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "main.json",
+      "name": "bad-matched/n AS x, 1 AS x",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 2.0,
+          "after": 2
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "main.json",
+      "name": "bad-matched/[n,n.id] AS x",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 2.0,
+          "after": 2
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "main.json",
+      "name": "bad-matched/substring(n.caller_name,'bad') AS x, 1 AS x",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 2.0,
+          "after": 2
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "main.json",
+      "name": "annotation/n AS x, n.id AS id",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 2.0,
+          "after": 2
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "main.json",
+      "name": "annotation/n AS x, 1 AS x",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 2.0,
+          "after": 2
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "main.json",
+      "name": "annotation/[n,n.id] AS x",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 2.0,
+          "after": 2
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "main.json",
+      "name": "annotation/substring(n.caller_name,'bad') AS x, 1 AS x",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 2.0,
+          "after": 2
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "main.json",
+      "name": "mixed/n AS x, n.id AS id",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 2.0,
+          "after": 2
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "main.json",
+      "name": "mixed/n AS x, 1 AS x",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 2.0,
+          "after": 2
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "main.json",
+      "name": "mixed/[n,n.id] AS x",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 2.0,
+          "after": 2
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "main.json",
+      "name": "mixed/substring(n.caller_name,'bad') AS x, 1 AS x",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 2.0,
+          "after": 2
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "property-main.json",
+      "name": "enum-type/RED",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 1.0,
+          "after": 1
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "property-main.json",
+      "name": "enum-type/missing",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 1.0,
+          "after": 1
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "property-main.json",
+      "name": "local-type/x",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 1.0,
+          "after": 1
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "property-main.json",
+      "name": "local-type/missing",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 1.0,
+          "after": 1
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "property-main.json",
+      "name": "field-type/field",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 1.0,
+          "after": 1
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "property-main.json",
+      "name": "field-type/missing",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 1.0,
+          "after": 1
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "property-main.json",
+      "name": "annotation-head-error",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 1.0,
+          "after": 1
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "property-main.json",
+      "name": "invalid-needed-name-SID",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 1.0,
+          "after": 1
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "property-main.json",
+      "name": "invalid-name-SID-after-true-class",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 1.0,
+          "after": 1
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "property-main.json",
+      "name": "all-type-name-merge",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 1.0,
+          "after": 1
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "property-main.json",
+      "name": "all-type-name-merge-cross",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 2.0,
+          "after": 2
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "offset-main.json",
+      "name": "offset-negative-90/1",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 1.0,
+          "after": 1
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "offset-main.json",
+      "name": "offset-negative-90/2",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 2.0,
+          "after": 2
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "offset-main.json",
+      "name": "offset-negative-90/40",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 40.0,
+          "after": 40
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "offset-main.json",
+      "name": "offset-negative-2/1",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 1.0,
+          "after": 1
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "offset-main.json",
+      "name": "offset-negative-2/2",
+      "responses": 2,
+      "nativeCompleteStateEqual": true,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 2.0,
+          "after": 2
+        }
+      ],
+      "mainRepeatDifferences": []
+    },
+    {
+      "file": "offset-main.json",
+      "name": "offset-negative-2/40",
+      "responses": 2,
+      "nativeCompleteStateEqual": false,
+      "mainRepeatCompleteStateEqual": true,
+      "nativeStateDifferences": [
+        {
+          "path": "/spec/sources",
+          "before": 40.0,
+          "after": 40
+        },
+        {
+          "path": "/targets/0/after/0/mappedView",
+          "before": true,
+          "after": false
+        },
+        {
+          "path": "/targets/1/before/0/mappedView",
+          "before": true,
+          "after": false
+        }
+      ],
+      "mainRepeatDifferences": []
+    }
+  ],
+  "notes": [
+    "All response comparisons retain complete rows/columns/error/message.",
+    "The baseline already fixed two of original group A; this source fixes the other 26.",
+    "Mapped-view publication after speculative task cancellation is not deterministic; raw state differences are preserved."
+  ]
+}

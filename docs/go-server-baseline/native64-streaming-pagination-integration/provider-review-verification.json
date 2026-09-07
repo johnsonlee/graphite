@@ -1,0 +1,12 @@
+[
+  {
+    "component": "provider",
+    "manifestSHA256": "facc3a03563df49c99128e583d2fb7befe6b1301fe1e009b1890ed5e8f7385be",
+    "verifiedAndCopiedFiles": 647
+  },
+  {
+    "component": "independent",
+    "manifestSHA256": "4576f3e31d2b418e8057ecced57be6d26e048bcaa5032ad4348e414e129e0469",
+    "verifiedAndCopiedFiles": 306
+  }
+]

@@ -1,0 +1,111 @@
+{
+  "source": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-lazy-filtered-integration/http-shipping/lazy-main.json",
+  "sha256": "69842417619547b7611ad5a66e46a5b34e3b2ddce5b35a88ed515cac8ff07e5d",
+  "evidence": [
+    {
+      "case": "wrapped-firstLastGraphBimodalClassPrefix",
+      "rows": [
+        {
+          "caller": "com.google.android.mms.util.PduCache",
+          "callerMethod": "purge",
+          "callee": "android.content.UriMatcher",
+          "calleeMethod": "match",
+          "$metadata": {
+            "graphIds": [
+              "fixture-android-00"
+            ]
+          }
+        },
+        {
+          "caller": "com.google.android.mms.util.PduCache",
+          "callerMethod": "purge",
+          "callee": "android.content.ContentUris",
+          "calleeMethod": "parseId",
+          "$metadata": {
+            "graphIds": [
+              "fixture-android-00"
+            ]
+          }
+        },
+        {
+          "caller": "com.google.android.mms.util.PduCache",
+          "callerMethod": "purge",
+          "callee": "android.net.Uri",
+          "calleeMethod": "getLastPathSegment",
+          "$metadata": {
+            "graphIds": [
+              "fixture-android-00"
+            ]
+          }
+        },
+        {
+          "caller": "com.google.android.mms.util.PduCache",
+          "callerMethod": "purge",
+          "callee": "android.net.Uri",
+          "calleeMethod": "withAppendedPath",
+          "$metadata": {
+            "graphIds": [
+              "fixture-android-00"
+            ]
+          }
+        },
+        {
+          "caller": "com.google.android.mms.util.PduCache",
+          "callerMethod": "normalizeKey",
+          "callee": "android.content.UriMatcher",
+          "calleeMethod": "match",
+          "$metadata": {
+            "graphIds": [
+              "fixture-android-00"
+            ]
+          }
+        },
+        {
+          "caller": "com.google.android.mms.util.PduCache",
+          "callerMethod": "normalizeKey",
+          "callee": "android.net.Uri",
+          "calleeMethod": "getLastPathSegment",
+          "$metadata": {
+            "graphIds": [
+              "fixture-android-00"
+            ]
+          }
+        },
+        {
+          "caller": "com.google.android.mms.util.PduCache",
+          "callerMethod": "normalizeKey",
+          "callee": "android.net.Uri",
+          "calleeMethod": "withAppendedPath",
+          "$metadata": {
+            "graphIds": [
+              "fixture-android-00"
+            ]
+          }
+        },
+        {
+          "caller": "com.google.android.mms.util.PduCache",
+          "callerMethod": "<clinit>",
+          "callee": "android.content.UriMatcher",
+          "calleeMethod": "<init>",
+          "$metadata": {
+            "graphIds": [
+              "fixture-android-00"
+            ]
+          }
+        },
+        {
+          "caller": "com.google.android.mms.util.PduCache",
+          "callerMethod": "<clinit>",
+          "callee": "android.content.UriMatcher",
+          "calleeMethod": "addURI",
+          "$metadata": {
+            "graphIds": [
+              "fixture-android-00"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "getPredicate": "Existing CDE13 c-necessary-ordinary uses caller_name CONTAINS get; original fixed64 catalogs contain fixture-android-00."
+}

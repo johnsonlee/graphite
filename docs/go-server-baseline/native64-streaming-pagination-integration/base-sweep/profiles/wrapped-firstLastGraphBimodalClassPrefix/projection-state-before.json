@@ -1,0 +1,322 @@
+{
+  "fixture-android-00": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-android-01": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-android-02": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-android-03": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-android-04": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-android-05": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-android-06": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-android-07": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-android-08": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-android-09": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-android-10": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-android-11": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-android-12": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-android-13": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-android-14": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-android-15": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-hive-00": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-hive-01": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-hive-02": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-hive-03": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-hive-04": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-hive-05": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-hive-06": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-hive-07": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-hive-08": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-hive-09": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-hive-10": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-hive-11": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-hive-12": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-hive-13": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-hive-14": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-hive-15": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-kotlin-compiler-00": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-kotlin-compiler-01": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-kotlin-compiler-02": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-kotlin-compiler-03": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-kotlin-compiler-04": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-kotlin-compiler-05": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-kotlin-compiler-06": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-kotlin-compiler-07": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-kotlin-compiler-08": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-kotlin-compiler-09": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-kotlin-compiler-10": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-kotlin-compiler-11": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-kotlin-compiler-12": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-kotlin-compiler-13": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-kotlin-compiler-14": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-kotlin-compiler-15": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-tika-00": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-tika-01": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-tika-02": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-tika-03": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-tika-04": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-tika-05": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-tika-06": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-tika-07": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-tika-08": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-tika-09": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-tika-10": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-tika-11": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-tika-12": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-tika-13": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-tika-14": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  },
+  "fixture-tika-15": {
+    "mappedView": false,
+    "retainedIndex": false,
+    "tupleCapacity": 0
+  }
+}

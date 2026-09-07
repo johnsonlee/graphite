@@ -1,0 +1,674 @@
+[
+  {
+    "base": {
+      "suite": "primary",
+      "name": "skip",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 0 LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    "candidate": {
+      "suite": "primary",
+      "name": "skip",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 0 LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "equal"
+    }
+  },
+  {
+    "base": {
+      "suite": "primary",
+      "name": "skip",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 0 LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    "candidate": {
+      "suite": "primary",
+      "name": "skip",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 0 LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "equal"
+    }
+  },
+  {
+    "base": {
+      "suite": "primary",
+      "name": "skip-one",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 1 LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    "candidate": {
+      "suite": "primary",
+      "name": "skip-one",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 1 LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "equal"
+    }
+  },
+  {
+    "base": {
+      "suite": "primary",
+      "name": "skip-one",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 1 LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    "candidate": {
+      "suite": "primary",
+      "name": "skip-one",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 1 LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "equal"
+    }
+  },
+  {
+    "base": {
+      "suite": "primary",
+      "name": "order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    "candidate": {
+      "suite": "primary",
+      "name": "order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "equal"
+    }
+  },
+  {
+    "base": {
+      "suite": "primary",
+      "name": "order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    "candidate": {
+      "suite": "primary",
+      "name": "order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "equal"
+    }
+  },
+  {
+    "base": {
+      "suite": "primary",
+      "name": "order-desc",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x DESC LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    "candidate": {
+      "suite": "primary",
+      "name": "order-desc",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x DESC LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "equal"
+    }
+  },
+  {
+    "base": {
+      "suite": "primary",
+      "name": "order-desc",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x DESC LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    "candidate": {
+      "suite": "primary",
+      "name": "order-desc",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x DESC LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "equal"
+    }
+  },
+  {
+    "base": {
+      "suite": "primary",
+      "name": "order-source",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY n.caller_name LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    "candidate": {
+      "suite": "primary",
+      "name": "order-source",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY n.caller_name LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "equal"
+    }
+  },
+  {
+    "base": {
+      "suite": "primary",
+      "name": "order-source",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY n.caller_name LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    "candidate": {
+      "suite": "primary",
+      "name": "order-source",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY n.caller_name LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "equal"
+    }
+  },
+  {
+    "base": {
+      "suite": "primary",
+      "name": "order-throw",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY substring('x','bad') LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "both-error-difference"
+    },
+    "candidate": {
+      "suite": "primary",
+      "name": "order-throw",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY substring('x','bad') LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "equal"
+    }
+  },
+  {
+    "base": {
+      "suite": "primary",
+      "name": "order-throw",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY substring('x','bad') LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "both-error-difference"
+    },
+    "candidate": {
+      "suite": "primary",
+      "name": "order-throw",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY substring('x','bad') LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "equal"
+    }
+  },
+  {
+    "base": {
+      "suite": "primary",
+      "name": "skip",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 0 LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    "candidate": {
+      "suite": "primary",
+      "name": "skip",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 0 LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "equal"
+    }
+  },
+  {
+    "base": {
+      "suite": "primary",
+      "name": "skip",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 0 LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    "candidate": {
+      "suite": "primary",
+      "name": "skip",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 0 LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "equal"
+    }
+  },
+  {
+    "base": {
+      "suite": "primary",
+      "name": "skip-one",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 1 LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    "candidate": {
+      "suite": "primary",
+      "name": "skip-one",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 1 LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "equal"
+    }
+  },
+  {
+    "base": {
+      "suite": "primary",
+      "name": "skip-one",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 1 LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    "candidate": {
+      "suite": "primary",
+      "name": "skip-one",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 1 LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "equal"
+    }
+  },
+  {
+    "base": {
+      "suite": "primary",
+      "name": "order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    "candidate": {
+      "suite": "primary",
+      "name": "order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "equal"
+    }
+  },
+  {
+    "base": {
+      "suite": "primary",
+      "name": "order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    "candidate": {
+      "suite": "primary",
+      "name": "order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "equal"
+    }
+  },
+  {
+    "base": {
+      "suite": "primary",
+      "name": "order-desc",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x DESC LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    "candidate": {
+      "suite": "primary",
+      "name": "order-desc",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x DESC LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "equal"
+    }
+  },
+  {
+    "base": {
+      "suite": "primary",
+      "name": "order-desc",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x DESC LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    "candidate": {
+      "suite": "primary",
+      "name": "order-desc",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x DESC LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "equal"
+    }
+  },
+  {
+    "base": {
+      "suite": "primary",
+      "name": "order-source",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY n.caller_name LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    "candidate": {
+      "suite": "primary",
+      "name": "order-source",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY n.caller_name LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "equal"
+    }
+  },
+  {
+    "base": {
+      "suite": "primary",
+      "name": "order-source",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY n.caller_name LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    "candidate": {
+      "suite": "primary",
+      "name": "order-source",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY n.caller_name LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "equal"
+    }
+  },
+  {
+    "base": {
+      "suite": "primary",
+      "name": "order-throw",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY substring('x','bad') LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "both-error-difference"
+    },
+    "candidate": {
+      "suite": "primary",
+      "name": "order-throw",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY substring('x','bad') LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "equal"
+    }
+  },
+  {
+    "base": {
+      "suite": "primary",
+      "name": "order-throw",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY substring('x','bad') LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "both-error-difference"
+    },
+    "candidate": {
+      "suite": "primary",
+      "name": "order-throw",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY substring('x','bad') LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "equal"
+    }
+  },
+  {
+    "base": {
+      "suite": "supplementary",
+      "name": "distinct-order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x ORDER BY x LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    "candidate": {
+      "suite": "supplementary",
+      "name": "distinct-order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x ORDER BY x LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "equal"
+    }
+  },
+  {
+    "base": {
+      "suite": "supplementary",
+      "name": "distinct-order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x ORDER BY x LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    "candidate": {
+      "suite": "supplementary",
+      "name": "distinct-order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x ORDER BY x LIMIT 1",
+      "fixture": "bad-first-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "equal"
+    }
+  },
+  {
+    "base": {
+      "suite": "supplementary",
+      "name": "distinct-order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x ORDER BY x LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    "candidate": {
+      "suite": "supplementary",
+      "name": "distinct-order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x ORDER BY x LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": false,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "equal"
+    }
+  },
+  {
+    "base": {
+      "suite": "supplementary",
+      "name": "distinct-order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x ORDER BY x LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "main-success-native-error"
+    },
+    "candidate": {
+      "suite": "supplementary",
+      "name": "distinct-order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x ORDER BY x LIMIT 1",
+      "fixture": "bad-last-unmatched",
+      "cross": true,
+      "sources": null,
+      "priorDistinctEligible": false,
+      "ordinaryEligible": false,
+      "comparison": "equal"
+    }
+  }
+]

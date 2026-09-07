@@ -1,0 +1,925 @@
+[
+  {
+    "cross": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "skip-source-order",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x SKIP 1 LIMIT 1"
+  },
+  {
+    "cross": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "skip-source-order",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x SKIP 1 LIMIT 1"
+  },
+  {
+    "cross": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "distinct-skip-id",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x SKIP 0 LIMIT 1"
+  },
+  {
+    "cross": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "distinct-skip-id",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x SKIP 0 LIMIT 1"
+  },
+  {
+    "cross": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "distinct-skip-whole",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n AS x SKIP 0 LIMIT 1"
+  },
+  {
+    "cross": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "distinct-skip-whole",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n AS x SKIP 0 LIMIT 1"
+  },
+  {
+    "cross": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "distinct-skip-nested",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT {node:n,list:[n,n.id]} AS x SKIP 0 LIMIT 1"
+  },
+  {
+    "cross": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "distinct-skip-nested",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT {node:n,list:[n,n.id]} AS x SKIP 0 LIMIT 1"
+  },
+  {
+    "columns": [
+      "x"
+    ],
+    "cross": false,
+    "mode": "MAPPED",
+    "name": "distinct-skip-string",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x SKIP 0 LIMIT 1",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        },
+        "x": "other"
+      }
+    ]
+  },
+  {
+    "columns": [
+      "x"
+    ],
+    "cross": true,
+    "mode": "MAPPED",
+    "name": "distinct-skip-string",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x SKIP 0 LIMIT 1",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        },
+        "x": "other"
+      }
+    ]
+  },
+  {
+    "cross": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "distinct-skip-expression",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id+0 AS x SKIP 0 LIMIT 1"
+  },
+  {
+    "cross": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "distinct-skip-expression",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id+0 AS x SKIP 0 LIMIT 1"
+  },
+  {
+    "cross": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "skip-before-error",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN CASE WHEN n.id=2 THEN substring('x','bad') ELSE n.id END AS x SKIP 1 LIMIT 1"
+  },
+  {
+    "cross": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "skip-before-error",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN CASE WHEN n.id=2 THEN substring('x','bad') ELSE n.id END AS x SKIP 1 LIMIT 1"
+  },
+  {
+    "cross": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "order-id",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY n.id DESC LIMIT 1"
+  },
+  {
+    "cross": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "order-id",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY n.id DESC LIMIT 1"
+  },
+  {
+    "cross": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "order-tie-skip",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY 0 SKIP 1 LIMIT 2"
+  },
+  {
+    "cross": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "order-tie-skip",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY 0 SKIP 1 LIMIT 2"
+  },
+  {
+    "cross": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "order-mixed-composite",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY n.graphId DESC,n.id ASC SKIP 1 LIMIT 3"
+  },
+  {
+    "cross": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "order-mixed-composite",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY n.graphId DESC,n.id ASC SKIP 1 LIMIT 3"
+  },
+  {
+    "cross": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "order-null",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY null,n.id DESC LIMIT 3"
+  },
+  {
+    "cross": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "order-null",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY null,n.id DESC LIMIT 3"
+  },
+  {
+    "cross": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "order-undefined-variable",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY missing LIMIT 2"
+  },
+  {
+    "cross": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "order-undefined-variable",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY missing LIMIT 2"
+  },
+  {
+    "cross": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "order-alias-shadows-source",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS n ORDER BY n.id DESC LIMIT 2"
+  },
+  {
+    "cross": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "order-alias-shadows-source",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS n ORDER BY n.id DESC LIMIT 2"
+  },
+  {
+    "cross": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "order-duplicate-alias",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x,n.caller_name AS x ORDER BY x LIMIT 3"
+  },
+  {
+    "cross": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "order-duplicate-alias",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x,n.caller_name AS x ORDER BY x LIMIT 3"
+  },
+  {
+    "cross": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "order-metadata-alias",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS `$metadata` ORDER BY n.id DESC SKIP 1 LIMIT 2"
+  },
+  {
+    "cross": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "order-metadata-alias",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS `$metadata` ORDER BY n.id DESC SKIP 1 LIMIT 2"
+  },
+  {
+    "cross": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "order-whole-nodes",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n AS x ORDER BY x DESC SKIP 1 LIMIT 2"
+  },
+  {
+    "cross": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "order-whole-nodes",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n AS x ORDER BY x DESC SKIP 1 LIMIT 2"
+  },
+  {
+    "cross": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "order-nested-maps",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN {id:n.id,node:n} AS x ORDER BY x DESC LIMIT 2"
+  },
+  {
+    "cross": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "order-nested-maps",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN {id:n.id,node:n} AS x ORDER BY x DESC LIMIT 2"
+  },
+  {
+    "cross": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "distinct-order-id",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x ORDER BY n.id DESC LIMIT 1"
+  },
+  {
+    "cross": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "distinct-order-id",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x ORDER BY n.id DESC LIMIT 1"
+  },
+  {
+    "cross": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "distinct-order-overwritten",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x,1 AS x ORDER BY CASE WHEN n.id=2 THEN 0 ELSE substring('x','bad') END LIMIT 1"
+  },
+  {
+    "cross": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "distinct-order-overwritten",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x,1 AS x ORDER BY CASE WHEN n.id=2 THEN 0 ELSE substring('x','bad') END LIMIT 1"
+  },
+  {
+    "cross": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "distinct-order-duplicate-projects",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT CASE WHEN n.id=2 THEN 1 ELSE substring('x','bad') END AS x ORDER BY 0 LIMIT 1"
+  },
+  {
+    "cross": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "distinct-order-duplicate-projects",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT CASE WHEN n.id=2 THEN 1 ELSE substring('x','bad') END AS x ORDER BY 0 LIMIT 1"
+  },
+  {
+    "cross": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "distinct-metadata-alias",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT 1 AS `$metadata` ORDER BY n.id LIMIT 1"
+  },
+  {
+    "cross": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "distinct-metadata-alias",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT 1 AS `$metadata` ORDER BY n.id LIMIT 1"
+  },
+  {
+    "cross": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "distinct-numeric-boxes",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT CASE WHEN n.id=2 THEN 1 ELSE 1.0 END AS x ORDER BY n.id LIMIT 3"
+  },
+  {
+    "cross": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "distinct-numeric-boxes",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT CASE WHEN n.id=2 THEN 1 ELSE 1.0 END AS x ORDER BY n.id LIMIT 3"
+  },
+  {
+    "cross": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "distinct-numeric-zeros",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT CASE WHEN n.id=2 THEN 0.0 ELSE -0.0 END AS x ORDER BY n.id LIMIT 3"
+  },
+  {
+    "cross": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "distinct-numeric-zeros",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT CASE WHEN n.id=2 THEN 0.0 ELSE -0.0 END AS x ORDER BY n.id LIMIT 3"
+  },
+  {
+    "cross": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "distinct-numeric-lists",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT CASE WHEN n.id=2 THEN [1] ELSE [1.0] END AS x ORDER BY n.id LIMIT 3"
+  },
+  {
+    "cross": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "distinct-numeric-lists",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT CASE WHEN n.id=2 THEN [1] ELSE [1.0] END AS x ORDER BY n.id LIMIT 3"
+  },
+  {
+    "cross": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "distinct-order-maps",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT {v:1} AS x ORDER BY CASE WHEN n.id=2 THEN 0 ELSE substring('x','bad') END LIMIT 1"
+  },
+  {
+    "cross": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "distinct-order-maps",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT {v:1} AS x ORDER BY CASE WHEN n.id=2 THEN 0 ELSE substring('x','bad') END LIMIT 1"
+  },
+  {
+    "cross": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "skip-parameter-ignored",
+    "params": {
+      "limit": 1,
+      "skip": 100,
+      "zero": 0
+    },
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x SKIP $skip LIMIT 1"
+  },
+  {
+    "cross": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "skip-parameter-ignored",
+    "params": {
+      "limit": 1,
+      "skip": 100,
+      "zero": 0
+    },
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x SKIP $skip LIMIT 1"
+  },
+  {
+    "cross": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "skip-arithmetic-ignored",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x SKIP 1+1 LIMIT 1"
+  },
+  {
+    "cross": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "skip-arithmetic-ignored",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x SKIP 1+1 LIMIT 1"
+  },
+  {
+    "cross": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "skip-negative-syntax-ignored",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x SKIP -1 LIMIT 1"
+  },
+  {
+    "cross": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "skip-negative-syntax-ignored",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x SKIP -1 LIMIT 1"
+  },
+  {
+    "cross": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "skip-throw-ignored",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x SKIP substring('x','bad') LIMIT 1"
+  },
+  {
+    "cross": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "skip-throw-ignored",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x SKIP substring('x','bad') LIMIT 1"
+  },
+  {
+    "cross": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "skip-string-zero",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x SKIP 'bad' LIMIT 1"
+  },
+  {
+    "cross": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "skip-string-zero",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x SKIP 'bad' LIMIT 1"
+  },
+  {
+    "cross": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "count-overflow",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x SKIP 2147483647 LIMIT 1"
+  },
+  {
+    "cross": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "count-overflow",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x SKIP 2147483647 LIMIT 1"
+  },
+  {
+    "cross": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "limit-wrapped-negative",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN substring('x','bad') AS x ORDER BY n.id LIMIT 2147483648"
+  },
+  {
+    "cross": true,
+    "error": "OutOfMemoryError",
+    "message": "Requested array size exceeds VM limit",
+    "mode": "MAPPED",
+    "name": "limit-wrapped-negative",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN substring('x','bad') AS x ORDER BY n.id LIMIT 2147483648"
+  },
+  {
+    "cross": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "limit-fraction",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY x SKIP 1.9 LIMIT 1.9"
+  },
+  {
+    "cross": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "limit-fraction",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY x SKIP 1.9 LIMIT 1.9"
+  },
+  {
+    "columns": [
+      "x"
+    ],
+    "cross": false,
+    "mode": "MAPPED",
+    "name": "zero-before-order",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN substring('x','bad') AS x ORDER BY substring('x','bad') LIMIT 0",
+    "rows": []
+  },
+  {
+    "columns": [
+      "x"
+    ],
+    "cross": true,
+    "mode": "MAPPED",
+    "name": "zero-before-order",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN substring('x','bad') AS x ORDER BY substring('x','bad') LIMIT 0",
+    "rows": []
+  },
+  {
+    "cross": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "limit-parameter-declines",
+    "params": {
+      "limit": 1,
+      "skip": 100,
+      "zero": 0
+    },
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY x DESC LIMIT $limit"
+  },
+  {
+    "cross": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "limit-parameter-declines",
+    "params": {
+      "limit": 1,
+      "skip": 100,
+      "zero": 0
+    },
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY x DESC LIMIT $limit"
+  },
+  {
+    "cross": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "limit-parameter-zero-projects",
+    "params": {
+      "limit": 1,
+      "skip": 100,
+      "zero": 0
+    },
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN substring('x','bad') AS x SKIP 0 LIMIT $zero"
+  },
+  {
+    "cross": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "limit-parameter-zero-projects",
+    "params": {
+      "limit": 1,
+      "skip": 100,
+      "zero": 0
+    },
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN substring('x','bad') AS x SKIP 0 LIMIT $zero"
+  },
+  {
+    "cross": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "required-and",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' AND n.id=41 RETURN n.id AS x ORDER BY x DESC SKIP 0 LIMIT 2"
+  },
+  {
+    "cross": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "required-and",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' AND n.id=41 RETURN n.id AS x ORDER BY x DESC SKIP 0 LIMIT 2"
+  },
+  {
+    "cross": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "required-and-throw",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' AND substring('x','bad')='x' RETURN n.id AS x ORDER BY x DESC SKIP 0 LIMIT 2"
+  },
+  {
+    "cross": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "required-and-throw",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' AND substring('x','bad')='x' RETURN n.id AS x ORDER BY x DESC SKIP 0 LIMIT 2"
+  },
+  {
+    "cross": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "rank-choice",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'Acme' AND n.caller_name='other' RETURN n.id AS x ORDER BY x DESC SKIP 0 LIMIT 2"
+  },
+  {
+    "cross": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "rank-choice",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'Acme' AND n.caller_name='other' RETURN n.id AS x ORDER BY x DESC SKIP 0 LIMIT 2"
+  },
+  {
+    "cross": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "quoted-regex",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name =~ '.*\\\\Qother\\\\E.*' RETURN n.id AS x ORDER BY x DESC SKIP 0 LIMIT 2"
+  },
+  {
+    "cross": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "quoted-regex",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name =~ '.*\\\\Qother\\\\E.*' RETURN n.id AS x ORDER BY x DESC SKIP 0 LIMIT 2"
+  },
+  {
+    "columns": [
+      "x"
+    ],
+    "cross": false,
+    "mode": "MAPPED",
+    "name": "scope-a",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' AND n.graphId='a' RETURN n.id AS x ORDER BY x DESC SKIP 0 LIMIT 2",
+    "rows": []
+  },
+  {
+    "cross": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "scope-a",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' AND n.graphId='a' RETURN n.id AS x ORDER BY x DESC SKIP 0 LIMIT 2"
+  },
+  {
+    "columns": [
+      "x"
+    ],
+    "cross": false,
+    "mode": "MAPPED",
+    "name": "scope-b",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.graphId='b' AND n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY x DESC SKIP 0 LIMIT 2",
+    "rows": []
+  },
+  {
+    "cross": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "scope-b",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.graphId='b' AND n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY x DESC SKIP 0 LIMIT 2"
+  },
+  {
+    "columns": [
+      "x"
+    ],
+    "cross": false,
+    "mode": "MAPPED",
+    "name": "scope-missing",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.graphId='missing' AND n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY x DESC SKIP 0 LIMIT 2",
+    "rows": []
+  },
+  {
+    "columns": [
+      "x"
+    ],
+    "cross": true,
+    "mode": "MAPPED",
+    "name": "scope-missing",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.graphId='missing' AND n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY x DESC SKIP 0 LIMIT 2",
+    "rows": []
+  },
+  {
+    "cross": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "generic-inline",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode {caller_name:'other'}) WHERE n.id\u003e=0 RETURN 1 AS x ORDER BY x SKIP 1 LIMIT 1"
+  },
+  {
+    "cross": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "generic-inline",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode {caller_name:'other'}) WHERE n.id\u003e=0 RETURN 1 AS x ORDER BY x SKIP 1 LIMIT 1"
+  },
+  {
+    "cross": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "generic-label-unknown",
+    "params": {},
+    "query": "MATCH (n:AbsentType) WHERE n.id\u003e=0 RETURN 1 AS x ORDER BY x SKIP 1 LIMIT 1"
+  },
+  {
+    "cross": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "generic-label-unknown",
+    "params": {},
+    "query": "MATCH (n:AbsentType) WHERE n.id\u003e=0 RETURN 1 AS x ORDER BY x SKIP 1 LIMIT 1"
+  },
+  {
+    "cross": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "generic-anonymous",
+    "params": {},
+    "query": "MATCH (:CallSiteNode) WHERE true RETURN 1 AS x ORDER BY x SKIP 1 LIMIT 1"
+  },
+  {
+    "cross": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "generic-anonymous",
+    "params": {},
+    "query": "MATCH (:CallSiteNode) WHERE true RETURN 1 AS x ORDER BY x SKIP 1 LIMIT 1"
+  },
+  {
+    "cross": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "generic-supertype",
+    "params": {},
+    "query": "MATCH (n:Node) WHERE n.id\u003e=0 RETURN 1 AS x ORDER BY x SKIP 1 LIMIT 1"
+  },
+  {
+    "cross": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "generic-supertype",
+    "params": {},
+    "query": "MATCH (n:Node) WHERE n.id\u003e=0 RETURN 1 AS x ORDER BY x SKIP 1 LIMIT 1"
+  },
+  {
+    "cross": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "eviction-rechecks",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.id\u003e=0 RETURN DISTINCT CASE WHEN n.id IN [17,90] THEN 'A' ELSE 'B' END AS x ORDER BY CASE WHEN n.id=17 THEN 10 WHEN n.id=90 THEN substring('x','bad') ELSE 0 END LIMIT 1"
+  },
+  {
+    "cross": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "mode": "MAPPED",
+    "name": "eviction-rechecks",
+    "params": {},
+    "query": "MATCH (n:CallSiteNode) WHERE n.id\u003e=0 RETURN DISTINCT CASE WHEN n.id IN [17,90] THEN 'A' ELSE 'B' END AS x ORDER BY CASE WHEN n.id=17 THEN 10 WHEN n.id=90 THEN substring('x','bad') ELSE 0 END LIMIT 1"
+  }
+]

@@ -1,0 +1,50 @@
+{
+  "baseCommit": "87aaf0ad39c89189d52c859672e5420b26c3f5e9",
+  "baseSourceTree": "baf9ae489cae2477bc52c7a83561cfd0ff449560",
+  "requiredCDETree": "faf2bee8fe4fc845442cf775f212cd70b0a96bbd",
+  "mainCommit": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "mainJarSHA256": "91c3a1d154ca96004c55df195d9f752e077cab3e33ca1570b2c88b872d9bc34d",
+  "productionManifestSHA256": "6ceffad6c8bf19f3d93f6db878d20a37c71e727d8c10eaa40435abd3342a2389",
+  "cwd": "/tmp/graphite-go-streaming-pagination-87aaf0ad/graphite-server",
+  "commands": [
+    {
+      "argv": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "./..."
+      ],
+      "env": {
+        "INDEXED_DISTINCT_OUTPUT": "/tmp/graphite-go-streaming-pagination-87aaf0ad/streaming-pagination-review/final-comparator/original-corpus",
+        "ORDINARY_HISTORY_OUTPUT": "/tmp/graphite-go-streaming-pagination-87aaf0ad/streaming-pagination-review/final-comparator/history"
+      },
+      "log": "module-race-final-comparator.log",
+      "exitCode": 0
+    },
+    {
+      "argv": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "log": "module-vet-final-comparator.log",
+      "exitCode": 0
+    },
+    {
+      "argv": [
+        "go",
+        "test",
+        "-race",
+        "./internal/query",
+        "-run",
+        "TestStreamingPagination(HeapAndFinalSortCancellation|WaveFailureCancellationJoin)",
+        "-count=10"
+      ],
+      "log": "targeted-cancel-final.log",
+      "exitCode": 0
+    }
+  ],
+  "scope": "tiny-fixture correctness only; no benchmark or64runtime",
+  "coTenancy": "Parent was independently preparing/running real-data verification; no timing conclusions are drawn from these commands."
+}

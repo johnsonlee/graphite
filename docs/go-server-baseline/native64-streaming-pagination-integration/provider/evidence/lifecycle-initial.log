@@ -1,0 +1,4 @@
+# github.com/johnsonlee/graphite/graphite-server/internal/query [github.com/johnsonlee/graphite/graphite-server/internal/query.test]
+internal/query/streaming_lifecycle_test.go:53:24: property.Name undefined (type cypher.Property has no field or method Name)
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/query [build failed]
+FAIL

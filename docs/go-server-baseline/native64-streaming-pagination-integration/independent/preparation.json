@@ -1,0 +1,26 @@
+{
+  "root": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite",
+  "pinnedRootRevision": "2ab90cdc11477166fcd84c63c1af03041bd7f940",
+  "rootHeadAtCapture": "2ab90cdc11477166fcd84c63c1af03041bd7f940",
+  "archiveSHA256": "f0c0e3c1c10be7e44e6d2d23f885e89cdc1ffb3fb2616bf39eadf4000f4f642e",
+  "stagedA15": {
+    "graphite-server/internal/query/generic_distinct.go": "2827c1baaad96a832ca2502c6d9e7bcceb4fb20a39ed50d9c8deb4d699b117f1",
+    "graphite-server/internal/query/generic_distinct_binding_test.go": "d53b68498c1229ff01fa348c9fd31aa763966ebe943708e76c4227b31c8db431"
+  },
+  "stagedPatchSHA256": "a2c0457f6c732f136711b58b2f5a73622d072de7882cd1258e236cd8fde30ef1",
+  "inputs": [
+    {
+      "name": "author",
+      "path": "/tmp/graphite-go-streaming-pagination-freeze",
+      "manifestSHA256": "facc3a03563df49c99128e583d2fb7befe6b1301fe1e009b1890ed5e8f7385be",
+      "count": 647
+    },
+    {
+      "name": "review",
+      "path": "/tmp/graphite-streaming-b-independent-review",
+      "manifestSHA256": "ed5b0904c023e67037b63dfcffa61f6eb6929e9ba050a08067eb9755b6c75c5e",
+      "count": 73
+    }
+  ],
+  "sourceFileCount": 2402
+}

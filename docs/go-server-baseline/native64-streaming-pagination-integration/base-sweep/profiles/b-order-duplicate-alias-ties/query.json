@@ -1,0 +1,79 @@
+{
+  "name": "b-order-duplicate-alias-ties",
+  "query": "MATCH (n:CallSiteNode) WHERE n.caller_class = 'com.google.android.mms.util.PduCache' RETURN n.caller_name AS x, n.callee_name AS x ORDER BY x SKIP 2 LIMIT 8",
+  "source": "Pinned-main real64 B pagination HTTP oracle; duplicate alias overwrite; tied callee names",
+  "expected": {
+    "columns": [
+      "x",
+      "x"
+    ],
+    "graphCount": 64,
+    "rowCount": 8,
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "x": "\u003cinit\u003e"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "x": "\u003cinit\u003e"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "x": "\u003cinit\u003e"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "x": "\u003cinit\u003e"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "x": "\u003cinit\u003e"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "x": "\u003cinit\u003e"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "x": "\u003cinit\u003e"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "x": "add"
+      }
+    ]
+  }
+}

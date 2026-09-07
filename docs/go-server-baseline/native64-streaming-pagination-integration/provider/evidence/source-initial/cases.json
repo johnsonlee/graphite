@@ -1,0 +1,169 @@
+[
+  {
+    "name": "skip-late-2",
+    "count": 2,
+    "badAt": 1,
+    "fixture": "bad-matched",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x SKIP 1 LIMIT 1"
+  },
+  {
+    "name": "distinct-late-2",
+    "count": 2,
+    "badAt": 1,
+    "fixture": "bad-matched",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x SKIP 0 LIMIT 1"
+  },
+  {
+    "name": "order-late-2",
+    "count": 2,
+    "badAt": 1,
+    "fixture": "bad-matched",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY x SKIP 0 LIMIT 1"
+  },
+  {
+    "name": "order-ties-2-MAPPED",
+    "count": 2,
+    "mode": "MAPPED",
+    "reverseIDs": true,
+    "repeat": 2,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY 0 SKIP 1 LIMIT 3"
+  },
+  {
+    "name": "order-ties-2-EAGER",
+    "count": 2,
+    "mode": "EAGER",
+    "reverseIDs": true,
+    "repeat": 2,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY 0 SKIP 1 LIMIT 3"
+  },
+  {
+    "name": "skip-late-9",
+    "count": 9,
+    "badAt": 8,
+    "fixture": "bad-matched",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x SKIP 1 LIMIT 1"
+  },
+  {
+    "name": "distinct-late-9",
+    "count": 9,
+    "badAt": 8,
+    "fixture": "bad-matched",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x SKIP 0 LIMIT 1"
+  },
+  {
+    "name": "order-late-9",
+    "count": 9,
+    "badAt": 8,
+    "fixture": "bad-matched",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY x SKIP 0 LIMIT 1"
+  },
+  {
+    "name": "order-ties-9-MAPPED",
+    "count": 9,
+    "mode": "MAPPED",
+    "reverseIDs": true,
+    "repeat": 2,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY 0 SKIP 1 LIMIT 3"
+  },
+  {
+    "name": "order-ties-9-EAGER",
+    "count": 9,
+    "mode": "EAGER",
+    "reverseIDs": true,
+    "repeat": 2,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY 0 SKIP 1 LIMIT 3"
+  },
+  {
+    "name": "skip-late-40",
+    "count": 40,
+    "badAt": 39,
+    "fixture": "bad-matched",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x SKIP 1 LIMIT 1"
+  },
+  {
+    "name": "distinct-late-40",
+    "count": 40,
+    "badAt": 39,
+    "fixture": "bad-matched",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x SKIP 0 LIMIT 1"
+  },
+  {
+    "name": "order-late-40",
+    "count": 40,
+    "badAt": 39,
+    "fixture": "bad-matched",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY x SKIP 0 LIMIT 1"
+  },
+  {
+    "name": "order-ties-40-MAPPED",
+    "count": 40,
+    "mode": "MAPPED",
+    "reverseIDs": true,
+    "repeat": 2,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY 0 SKIP 1 LIMIT 3"
+  },
+  {
+    "name": "order-ties-40-EAGER",
+    "count": 40,
+    "mode": "EAGER",
+    "reverseIDs": true,
+    "repeat": 2,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY 0 SKIP 1 LIMIT 3"
+  },
+  {
+    "name": "route-offset-2-False",
+    "count": 2,
+    "badAt": 0,
+    "fixture": "offset-negative-90",
+    "repeat": 2,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId = 'g0' RETURN n.id AS x SKIP 0 LIMIT 1"
+  },
+  {
+    "name": "route-offset-2-True",
+    "count": 2,
+    "badAt": 0,
+    "fixture": "offset-negative-90",
+    "repeat": 2,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId = 'g0' RETURN n.id AS x ORDER BY x SKIP 0 LIMIT 1"
+  },
+  {
+    "name": "route-offset-40-False",
+    "count": 40,
+    "badAt": 0,
+    "fixture": "offset-negative-90",
+    "repeat": 2,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId = 'g0' RETURN n.id AS x SKIP 0 LIMIT 1"
+  },
+  {
+    "name": "route-offset-40-True",
+    "count": 40,
+    "badAt": 0,
+    "fixture": "offset-negative-90",
+    "repeat": 2,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId = 'g0' RETURN n.id AS x ORDER BY x SKIP 0 LIMIT 1"
+  },
+  {
+    "name": "skip-missing-sidecar",
+    "count": 9,
+    "badAt": 8,
+    "fixture": "bad-matched",
+    "missingIndex": true,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x SKIP 1 LIMIT 1"
+  },
+  {
+    "name": "distinct-missing-sidecar",
+    "count": 9,
+    "badAt": 8,
+    "fixture": "bad-matched",
+    "missingIndex": true,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x SKIP 0 LIMIT 1"
+  },
+  {
+    "name": "order-missing-sidecar",
+    "count": 9,
+    "badAt": 8,
+    "fixture": "bad-matched",
+    "missingIndex": true,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY x SKIP 0 LIMIT 1"
+  }
+]

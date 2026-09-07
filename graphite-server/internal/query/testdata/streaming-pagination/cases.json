@@ -1,0 +1,209 @@
+[
+  {
+    "name": "skip-source-order",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x SKIP 1 LIMIT 1"
+  },
+  {
+    "name": "distinct-skip-id",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x SKIP 0 LIMIT 1"
+  },
+  {
+    "name": "distinct-skip-whole",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n AS x SKIP 0 LIMIT 1"
+  },
+  {
+    "name": "distinct-skip-nested",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT {node:n,list:[n,n.id]} AS x SKIP 0 LIMIT 1"
+  },
+  {
+    "name": "distinct-skip-string",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x SKIP 0 LIMIT 1"
+  },
+  {
+    "name": "distinct-skip-expression",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id+0 AS x SKIP 0 LIMIT 1"
+  },
+  {
+    "name": "skip-before-error",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN CASE WHEN n.id=2 THEN substring('x','bad') ELSE n.id END AS x SKIP 1 LIMIT 1"
+  },
+  {
+    "name": "order-id",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY n.id DESC LIMIT 1"
+  },
+  {
+    "name": "order-tie-skip",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY 0 SKIP 1 LIMIT 2"
+  },
+  {
+    "name": "order-mixed-composite",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY n.graphId DESC,n.id ASC SKIP 1 LIMIT 3"
+  },
+  {
+    "name": "order-null",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY null,n.id DESC LIMIT 3"
+  },
+  {
+    "name": "order-undefined-variable",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY missing LIMIT 2"
+  },
+  {
+    "name": "order-alias-shadows-source",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS n ORDER BY n.id DESC LIMIT 2"
+  },
+  {
+    "name": "order-duplicate-alias",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x,n.caller_name AS x ORDER BY x LIMIT 3"
+  },
+  {
+    "name": "order-metadata-alias",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS `$metadata` ORDER BY n.id DESC SKIP 1 LIMIT 2"
+  },
+  {
+    "name": "order-whole-nodes",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n AS x ORDER BY x DESC SKIP 1 LIMIT 2"
+  },
+  {
+    "name": "order-nested-maps",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN {id:n.id,node:n} AS x ORDER BY x DESC LIMIT 2"
+  },
+  {
+    "name": "distinct-order-id",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x ORDER BY n.id DESC LIMIT 1"
+  },
+  {
+    "name": "distinct-order-overwritten",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x,1 AS x ORDER BY CASE WHEN n.id=2 THEN 0 ELSE substring('x','bad') END LIMIT 1"
+  },
+  {
+    "name": "distinct-order-duplicate-projects",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT CASE WHEN n.id=2 THEN 1 ELSE substring('x','bad') END AS x ORDER BY 0 LIMIT 1"
+  },
+  {
+    "name": "distinct-metadata-alias",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT 1 AS `$metadata` ORDER BY n.id LIMIT 1"
+  },
+  {
+    "name": "distinct-numeric-boxes",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT CASE WHEN n.id=2 THEN 1 ELSE 1.0 END AS x ORDER BY n.id LIMIT 3"
+  },
+  {
+    "name": "distinct-numeric-zeros",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT CASE WHEN n.id=2 THEN 0.0 ELSE -0.0 END AS x ORDER BY n.id LIMIT 3"
+  },
+  {
+    "name": "distinct-numeric-lists",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT CASE WHEN n.id=2 THEN [1] ELSE [1.0] END AS x ORDER BY n.id LIMIT 3"
+  },
+  {
+    "name": "distinct-order-maps",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT {v:1} AS x ORDER BY CASE WHEN n.id=2 THEN 0 ELSE substring('x','bad') END LIMIT 1"
+  },
+  {
+    "name": "skip-parameter-ignored",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x SKIP $skip LIMIT 1",
+    "params": {
+      "skip": 100,
+      "limit": 1,
+      "zero": 0
+    }
+  },
+  {
+    "name": "skip-arithmetic-ignored",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x SKIP 1+1 LIMIT 1"
+  },
+  {
+    "name": "skip-negative-syntax-ignored",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x SKIP -1 LIMIT 1"
+  },
+  {
+    "name": "skip-throw-ignored",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x SKIP substring('x','bad') LIMIT 1"
+  },
+  {
+    "name": "skip-string-zero",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x SKIP 'bad' LIMIT 1"
+  },
+  {
+    "name": "count-overflow",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x SKIP 2147483647 LIMIT 1"
+  },
+  {
+    "name": "limit-wrapped-negative",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN substring('x','bad') AS x ORDER BY n.id LIMIT 2147483648"
+  },
+  {
+    "name": "limit-fraction",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY x SKIP 1.9 LIMIT 1.9"
+  },
+  {
+    "name": "zero-before-order",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN substring('x','bad') AS x ORDER BY substring('x','bad') LIMIT 0"
+  },
+  {
+    "name": "limit-parameter-declines",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY x DESC LIMIT $limit",
+    "params": {
+      "skip": 100,
+      "limit": 1,
+      "zero": 0
+    }
+  },
+  {
+    "name": "limit-parameter-zero-projects",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN substring('x','bad') AS x SKIP 0 LIMIT $zero",
+    "params": {
+      "skip": 100,
+      "limit": 1,
+      "zero": 0
+    }
+  },
+  {
+    "name": "required-and",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' AND n.id=41 RETURN n.id AS x ORDER BY x DESC SKIP 0 LIMIT 2"
+  },
+  {
+    "name": "required-and-throw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' AND substring('x','bad')='x' RETURN n.id AS x ORDER BY x DESC SKIP 0 LIMIT 2"
+  },
+  {
+    "name": "rank-choice",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS 'Acme' AND n.caller_name='other' RETURN n.id AS x ORDER BY x DESC SKIP 0 LIMIT 2"
+  },
+  {
+    "name": "quoted-regex",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name =~ '.*\\\\Qother\\\\E.*' RETURN n.id AS x ORDER BY x DESC SKIP 0 LIMIT 2"
+  },
+  {
+    "name": "scope-a",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' AND n.graphId='a' RETURN n.id AS x ORDER BY x DESC SKIP 0 LIMIT 2"
+  },
+  {
+    "name": "scope-b",
+    "query": "MATCH (n:CallSiteNode) WHERE n.graphId='b' AND n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY x DESC SKIP 0 LIMIT 2"
+  },
+  {
+    "name": "scope-missing",
+    "query": "MATCH (n:CallSiteNode) WHERE n.graphId='missing' AND n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY x DESC SKIP 0 LIMIT 2"
+  },
+  {
+    "name": "generic-inline",
+    "query": "MATCH (n:CallSiteNode {caller_name:'other'}) WHERE n.id>=0 RETURN 1 AS x ORDER BY x SKIP 1 LIMIT 1"
+  },
+  {
+    "name": "generic-label-unknown",
+    "query": "MATCH (n:AbsentType) WHERE n.id>=0 RETURN 1 AS x ORDER BY x SKIP 1 LIMIT 1"
+  },
+  {
+    "name": "generic-anonymous",
+    "query": "MATCH (:CallSiteNode) WHERE true RETURN 1 AS x ORDER BY x SKIP 1 LIMIT 1"
+  },
+  {
+    "name": "generic-supertype",
+    "query": "MATCH (n:Node) WHERE n.id>=0 RETURN 1 AS x ORDER BY x SKIP 1 LIMIT 1"
+  },
+  {
+    "name": "eviction-rechecks",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id>=0 RETURN DISTINCT CASE WHEN n.id IN [17,90] THEN 'A' ELSE 'B' END AS x ORDER BY CASE WHEN n.id=17 THEN 10 WHEN n.id=90 THEN substring('x','bad') ELSE 0 END LIMIT 1"
+  }
+]

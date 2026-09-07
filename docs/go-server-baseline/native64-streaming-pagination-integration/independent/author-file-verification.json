@@ -1,0 +1,2590 @@
+[
+  {
+    "path": "README.md",
+    "matches": true
+  },
+  {
+    "path": "archive-receipt.json",
+    "matches": true
+  },
+  {
+    "path": "complete-from-87aaf0ad.patch",
+    "matches": true
+  },
+  {
+    "path": "complete-from-main-source.patch",
+    "matches": true
+  },
+  {
+    "path": "delta-files.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/actual-initial/streaming-bad-first-unmatched-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/actual-initial/streaming-bad-last-unmatched-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/actual-initial/streaming-bad-matched-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/actual-initial/streaming-clean-EAGER-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/actual-initial/streaming-clean-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/actual-initial.log",
+    "matches": true
+  },
+  {
+    "path": "evidence/actual-second/streaming-bad-first-unmatched-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/actual-second/streaming-bad-last-unmatched-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/actual-second/streaming-bad-matched-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/actual-second/streaming-clean-EAGER-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/actual-second/streaming-clean-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/actual-second/streaming-design-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/actual-second.log",
+    "matches": true
+  },
+  {
+    "path": "evidence/actual-third/streaming-bad-first-unmatched-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/actual-third/streaming-bad-last-unmatched-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/actual-third/streaming-bad-matched-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/actual-third/streaming-clean-EAGER-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/actual-third/streaming-clean-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/actual-third/streaming-design-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/actual-third.log",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-README.md",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-consumer.patch",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-corpus/annotation-after-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-corpus/annotation-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-corpus/generic-fault-audit.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-corpus/late-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-corpus/lazy-filtered-480.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-corpus/main-string-source-main.json-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-corpus/main-string-source-offset-main.json-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-corpus/main-string-source-property-main.json-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-corpus/mixed-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-corpus/primary-eligibility.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-corpus/primary-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-corpus/required-missing-identity-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-corpus/required-missing-index-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-corpus/required-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-corpus/source-pairs-eligibility.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-corpus/source-pairs-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-corpus/split-bad-callee-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-corpus/split-bad-count-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-corpus/split-bad-tag-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-corpus/split-clean-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-corpus/split-missing-index-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-corpus/supplementary-eligibility.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-corpus/supplementary-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-dependency-snapshot.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-manifest.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-original/original-corpus/annotation-after-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-original/original-corpus/annotation-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-original/original-corpus/generic-fault-audit.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-original/original-corpus/late-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-original/original-corpus/lazy-filtered-480.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-original/original-corpus/main-string-source-main.json-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-original/original-corpus/main-string-source-offset-main.json-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-original/original-corpus/main-string-source-property-main.json-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-original/original-corpus/mixed-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-original/original-corpus/primary-eligibility.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-original/original-corpus/primary-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-original/original-corpus/required-missing-identity-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-original/original-corpus/required-missing-index-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-original/original-corpus/required-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-original/original-corpus/source-pairs-eligibility.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-original/original-corpus/source-pairs-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-original/original-corpus/split-bad-callee-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-original/original-corpus/split-bad-count-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-original/original-corpus/split-bad-tag-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-original/original-corpus/split-clean-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-original/original-corpus/split-missing-index-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-original/original-corpus/supplementary-eligibility.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-original/original-corpus/supplementary-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/cde-original/original-summary.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/history/annotation-after-classification.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/history/annotation-after-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/history/annotation-classification.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/history/annotation-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/history/cache-threshold-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/history/dense-callee-sid-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/history/dense-callee-sid-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/history/dense-clean-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/history/dense-clean-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/history/dense-return-sid-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/history/dense-return-sid-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/history/history-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/history/mixed-classification.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/history/mixed-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/history/required/callee-class-sid-max-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/history/required/callee-class-sid-max-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/history/required/callee-class-sid-minus-one-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/history/required/callee-class-sid-minus-one-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/history/required/caller-count-max-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/history/required/caller-count-max-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/history/required/caller-count-minus-one-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/history/required/caller-count-minus-one-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/history/required/caller-count-outside-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/history/required/caller-count-outside-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/history/required/caller-name-sid-max-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/history/required/caller-name-sid-max-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/history/required/caller-name-sid-minus-one-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/history/required/caller-name-sid-minus-one-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/history/required/core-return-sid-max-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/history/required/core-return-sid-max-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/history/required/node-id-999-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/history/required/node-id-999-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/history/required/node-tag-255-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/history/required/node-tag-255-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/history/required/offset-int-overflow-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/history/required/offset-int-overflow-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/history/required/offset-missing-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/history/required/offset-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/history/required/offset-other-node-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/history/required/offset-other-node-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/history/required/offset-outside-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/history/required/offset-outside-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/history/rolling-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/history/wide-history-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/main-source-manifest.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/main-source-production.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/original-corpus/annotation-after-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/original-corpus/annotation-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/original-corpus/generic-fault-audit.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/original-corpus/late-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/original-corpus/main-string-source-main.json-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/original-corpus/main-string-source-offset-main.json-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/original-corpus/main-string-source-property-main.json-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/original-corpus/mixed-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/original-corpus/primary-eligibility.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/original-corpus/primary-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/original-corpus/required-missing-identity-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/original-corpus/required-missing-index-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/original-corpus/required-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/original-corpus/source-pairs-eligibility.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/original-corpus/source-pairs-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/original-corpus/split-bad-callee-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/original-corpus/split-bad-count-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/original-corpus/split-bad-tag-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/original-corpus/split-clean-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/original-corpus/split-missing-index-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/original-corpus/supplementary-eligibility.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/original-corpus/supplementary-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/baseline/results.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/commands-final.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/history/annotation-after-classification.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/history/annotation-after-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/history/annotation-classification.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/history/annotation-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/history/cache-threshold-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/history/dense-callee-sid-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/history/dense-callee-sid-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/history/dense-clean-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/history/dense-clean-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/history/dense-return-sid-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/history/dense-return-sid-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/history/history-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/history/mixed-classification.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/history/mixed-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/history/required/callee-class-sid-max-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/history/required/callee-class-sid-max-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/history/required/callee-class-sid-minus-one-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/history/required/callee-class-sid-minus-one-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/history/required/caller-count-max-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/history/required/caller-count-max-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/history/required/caller-count-minus-one-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/history/required/caller-count-minus-one-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/history/required/caller-count-outside-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/history/required/caller-count-outside-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/history/required/caller-name-sid-max-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/history/required/caller-name-sid-max-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/history/required/caller-name-sid-minus-one-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/history/required/caller-name-sid-minus-one-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/history/required/core-return-sid-max-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/history/required/core-return-sid-max-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/history/required/node-id-999-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/history/required/node-id-999-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/history/required/node-tag-255-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/history/required/node-tag-255-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/history/required/offset-int-overflow-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/history/required/offset-int-overflow-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/history/required/offset-missing-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/history/required/offset-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/history/required/offset-other-node-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/history/required/offset-other-node-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/history/required/offset-outside-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/history/required/offset-outside-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/history/rolling-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/history/wide-history-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/original-corpus/annotation-after-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/original-corpus/annotation-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/original-corpus/generic-fault-audit.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/original-corpus/late-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/original-corpus/lazy-filtered-480.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/original-corpus/main-string-source-main.json-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/original-corpus/main-string-source-offset-main.json-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/original-corpus/main-string-source-property-main.json-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/original-corpus/mixed-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/original-corpus/primary-eligibility.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/original-corpus/primary-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/original-corpus/required-missing-identity-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/original-corpus/required-missing-index-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/original-corpus/required-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/original-corpus/source-pairs-eligibility.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/original-corpus/source-pairs-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/original-corpus/split-bad-callee-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/original-corpus/split-bad-count-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/original-corpus/split-bad-tag-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/original-corpus/split-clean-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/original-corpus/split-missing-index-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/original-corpus/streaming-bad-first-unmatched-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/original-corpus/streaming-bad-last-unmatched-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/original-corpus/streaming-bad-matched-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/original-corpus/streaming-clean-EAGER-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/original-corpus/streaming-clean-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/original-corpus/streaming-design-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/original-corpus/streaming-sources-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/original-corpus/streaming-unknown-bad-matched-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/original-corpus/streaming-unknown-clean-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/original-corpus/supplementary-eligibility.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/comparator-poll/original-corpus/supplementary-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/design-initial-interruption.txt",
+    "matches": true
+  },
+  {
+    "path": "evidence/design-initial.log",
+    "matches": true
+  },
+  {
+    "path": "evidence/design-second/streaming-design-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/design-second.log",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/b28-repaired.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/cde-file-comparison.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/generic-fault-audit.json.changes.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/generic-fault-audit.json.field-diff.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/history/annotation-after-classification.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/history/annotation-after-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/history/annotation-classification.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/history/annotation-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/history/cache-threshold-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/history/dense-callee-sid-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/history/dense-callee-sid-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/history/dense-clean-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/history/dense-clean-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/history/dense-return-sid-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/history/dense-return-sid-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/history/history-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/history/mixed-classification.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/history/mixed-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/history/required/callee-class-sid-max-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/history/required/callee-class-sid-max-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/history/required/callee-class-sid-minus-one-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/history/required/callee-class-sid-minus-one-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/history/required/caller-count-max-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/history/required/caller-count-max-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/history/required/caller-count-minus-one-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/history/required/caller-count-minus-one-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/history/required/caller-count-outside-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/history/required/caller-count-outside-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/history/required/caller-name-sid-max-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/history/required/caller-name-sid-max-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/history/required/caller-name-sid-minus-one-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/history/required/caller-name-sid-minus-one-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/history/required/core-return-sid-max-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/history/required/core-return-sid-max-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/history/required/node-id-999-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/history/required/node-id-999-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/history/required/node-tag-255-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/history/required/node-tag-255-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/history/required/offset-int-overflow-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/history/required/offset-int-overflow-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/history/required/offset-missing-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/history/required/offset-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/history/required/offset-other-node-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/history/required/offset-other-node-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/history/required/offset-outside-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/history/required/offset-outside-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/history/rolling-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/history/wide-history-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/main-string-source-main.json-native.json.changes.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/main-string-source-main.json-native.json.field-diff.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/original-corpus/annotation-after-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/original-corpus/annotation-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/original-corpus/generic-fault-audit.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/original-corpus/late-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/original-corpus/lazy-filtered-480.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/original-corpus/main-string-source-main.json-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/original-corpus/main-string-source-offset-main.json-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/original-corpus/main-string-source-property-main.json-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/original-corpus/mixed-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/original-corpus/primary-eligibility.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/original-corpus/primary-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/original-corpus/required-missing-identity-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/original-corpus/required-missing-index-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/original-corpus/required-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/original-corpus/source-pairs-eligibility.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/original-corpus/source-pairs-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/original-corpus/split-bad-callee-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/original-corpus/split-bad-count-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/original-corpus/split-bad-tag-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/original-corpus/split-clean-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/original-corpus/split-missing-index-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/original-corpus/streaming-bad-first-unmatched-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/original-corpus/streaming-bad-last-unmatched-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/original-corpus/streaming-bad-matched-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/original-corpus/streaming-clean-EAGER-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/original-corpus/streaming-clean-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/original-corpus/streaming-design-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/original-corpus/streaming-sources-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/original-corpus/streaming-unknown-bad-matched-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/original-corpus/streaming-unknown-clean-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/original-corpus/supplementary-eligibility.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/original-corpus/supplementary-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final/original-summary.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/b28-repaired.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/corpus-comparison.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/generic-fault-audit.json.changes.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/history/annotation-after-classification.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/history/annotation-after-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/history/annotation-classification.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/history/annotation-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/history/cache-threshold-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/history/dense-callee-sid-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/history/dense-callee-sid-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/history/dense-clean-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/history/dense-clean-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/history/dense-return-sid-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/history/dense-return-sid-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/history/history-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/history/mixed-classification.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/history/mixed-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/history/required/callee-class-sid-max-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/history/required/callee-class-sid-max-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/history/required/callee-class-sid-minus-one-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/history/required/callee-class-sid-minus-one-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/history/required/caller-count-max-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/history/required/caller-count-max-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/history/required/caller-count-minus-one-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/history/required/caller-count-minus-one-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/history/required/caller-count-outside-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/history/required/caller-count-outside-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/history/required/caller-name-sid-max-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/history/required/caller-name-sid-max-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/history/required/caller-name-sid-minus-one-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/history/required/caller-name-sid-minus-one-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/history/required/core-return-sid-max-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/history/required/core-return-sid-max-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/history/required/node-id-999-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/history/required/node-id-999-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/history/required/node-tag-255-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/history/required/node-tag-255-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/history/required/offset-int-overflow-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/history/required/offset-int-overflow-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/history/required/offset-missing-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/history/required/offset-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/history/required/offset-other-node-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/history/required/offset-other-node-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/history/required/offset-outside-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/history/required/offset-outside-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/history/rolling-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/history/wide-history-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/history-file-comparison.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/main-string-source-main.json-native.json.changes.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/original-corpus/annotation-after-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/original-corpus/annotation-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/original-corpus/generic-fault-audit.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/original-corpus/late-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/original-corpus/lazy-filtered-480.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/original-corpus/main-string-source-main.json-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/original-corpus/main-string-source-offset-main.json-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/original-corpus/main-string-source-property-main.json-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/original-corpus/mixed-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/original-corpus/primary-eligibility.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/original-corpus/primary-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/original-corpus/required-missing-identity-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/original-corpus/required-missing-index-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/original-corpus/required-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/original-corpus/source-pairs-eligibility.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/original-corpus/source-pairs-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/original-corpus/split-bad-callee-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/original-corpus/split-bad-count-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/original-corpus/split-bad-tag-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/original-corpus/split-clean-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/original-corpus/split-missing-index-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/original-corpus/streaming-bad-first-unmatched-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/original-corpus/streaming-bad-last-unmatched-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/original-corpus/streaming-bad-matched-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/original-corpus/streaming-clean-EAGER-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/original-corpus/streaming-clean-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/original-corpus/streaming-design-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/original-corpus/streaming-sources-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/original-corpus/streaming-unknown-bad-matched-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/original-corpus/streaming-unknown-clean-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/original-corpus/supplementary-eligibility.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/original-corpus/supplementary-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/original-summary.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/primary-native.json.changes.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/final-comparator/supplementary-native.json.changes.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/freeze.py",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/history/annotation-after-classification.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/history/annotation-after-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/history/annotation-classification.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/history/annotation-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/history/cache-threshold-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/history/dense-callee-sid-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/history/dense-callee-sid-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/history/dense-clean-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/history/dense-clean-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/history/dense-return-sid-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/history/dense-return-sid-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/history/history-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/history/mixed-classification.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/history/mixed-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/history/required/callee-class-sid-max-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/history/required/callee-class-sid-max-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/history/required/callee-class-sid-minus-one-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/history/required/callee-class-sid-minus-one-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/history/required/caller-count-max-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/history/required/caller-count-max-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/history/required/caller-count-minus-one-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/history/required/caller-count-minus-one-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/history/required/caller-count-outside-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/history/required/caller-count-outside-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/history/required/caller-name-sid-max-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/history/required/caller-name-sid-max-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/history/required/caller-name-sid-minus-one-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/history/required/caller-name-sid-minus-one-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/history/required/core-return-sid-max-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/history/required/core-return-sid-max-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/history/required/node-id-999-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/history/required/node-id-999-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/history/required/node-tag-255-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/history/required/node-tag-255-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/history/required/offset-int-overflow-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/history/required/offset-int-overflow-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/history/required/offset-missing-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/history/required/offset-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/history/required/offset-other-node-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/history/required/offset-other-node-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/history/required/offset-outside-missing-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/history/required/offset-outside-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/history/rolling-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/history/wide-history-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/original-corpus/annotation-after-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/original-corpus/annotation-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/original-corpus/generic-fault-audit.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/original-corpus/late-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/original-corpus/lazy-filtered-480.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/original-corpus/main-string-source-main.json-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/original-corpus/main-string-source-offset-main.json-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/original-corpus/main-string-source-property-main.json-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/original-corpus/mixed-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/original-corpus/primary-eligibility.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/original-corpus/primary-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/original-corpus/required-missing-identity-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/original-corpus/required-missing-index-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/original-corpus/required-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/original-corpus/source-pairs-eligibility.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/original-corpus/source-pairs-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/original-corpus/split-bad-callee-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/original-corpus/split-bad-count-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/original-corpus/split-bad-tag-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/original-corpus/split-clean-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/original-corpus/split-missing-index-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/original-corpus/streaming-bad-first-unmatched-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/original-corpus/streaming-bad-last-unmatched-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/original-corpus/streaming-bad-matched-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/original-corpus/streaming-clean-EAGER-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/original-corpus/streaming-clean-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/original-corpus/streaming-design-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/original-corpus/streaming-sources-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/original-corpus/supplementary-eligibility.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/original-corpus/supplementary-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/full-first/original-summary.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/go-version.txt",
+    "matches": true
+  },
+  {
+    "path": "evidence/initial/original-corpus/annotation-after-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/initial/original-corpus/annotation-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/initial/original-corpus/generic-fault-audit.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/initial/original-corpus/late-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/initial/original-corpus/main-string-source-main.json-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/initial/original-corpus/main-string-source-offset-main.json-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/initial/original-corpus/main-string-source-property-main.json-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/initial/original-corpus/mixed-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/initial/original-corpus/primary-eligibility.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/initial/original-corpus/primary-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/initial/original-corpus/required-missing-identity-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/initial/original-corpus/required-missing-index-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/initial/original-corpus/required-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/initial/original-corpus/source-pairs-eligibility.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/initial/original-corpus/source-pairs-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/initial/original-corpus/split-bad-callee-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/initial/original-corpus/split-bad-count-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/initial/original-corpus/split-bad-tag-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/initial/original-corpus/split-clean-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/initial/original-corpus/split-missing-index-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/initial/original-corpus/supplementary-eligibility.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/initial/original-corpus/supplementary-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/initial/original-summary.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/initial-query.log",
+    "matches": true
+  },
+  {
+    "path": "evidence/jvm/bad-first-unmatched-MAPPED.log",
+    "matches": true
+  },
+  {
+    "path": "evidence/jvm/bad-last-unmatched-MAPPED.log",
+    "matches": true
+  },
+  {
+    "path": "evidence/jvm/bad-matched-MAPPED.log",
+    "matches": true
+  },
+  {
+    "path": "evidence/jvm/bad-matched-unknown.log",
+    "matches": true
+  },
+  {
+    "path": "evidence/jvm/capacity/CapacityOracle.java",
+    "matches": true
+  },
+  {
+    "path": "evidence/jvm/capacity/main-default.txt",
+    "matches": true
+  },
+  {
+    "path": "evidence/jvm/capacity/main-uncompressed.txt",
+    "matches": true
+  },
+  {
+    "path": "evidence/jvm/capacity/replay-commands.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/jvm/capacity/replay-compile.log",
+    "matches": true
+  },
+  {
+    "path": "evidence/jvm/capacity/replay-default.txt",
+    "matches": true
+  },
+  {
+    "path": "evidence/jvm/capacity/replay-uncompressed.txt",
+    "matches": true
+  },
+  {
+    "path": "evidence/jvm/clean-EAGER.log",
+    "matches": true
+  },
+  {
+    "path": "evidence/jvm/clean-MAPPED.log",
+    "matches": true
+  },
+  {
+    "path": "evidence/jvm/clean-unknown.log",
+    "matches": true
+  },
+  {
+    "path": "evidence/jvm/commands.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/jvm/fixture-receipt.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/jvm/run-sources.py",
+    "matches": true
+  },
+  {
+    "path": "evidence/jvm/run-unknown.py",
+    "matches": true
+  },
+  {
+    "path": "evidence/jvm/sources-command-0.log",
+    "matches": true
+  },
+  {
+    "path": "evidence/jvm/sources-command-1.log",
+    "matches": true
+  },
+  {
+    "path": "evidence/jvm/sources-commands.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/jvm/sources-initial-close-interface-error.log",
+    "matches": true
+  },
+  {
+    "path": "evidence/jvm/unknown-commands.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/lifecycle-first/streaming-bad-first-unmatched-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/lifecycle-first/streaming-bad-last-unmatched-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/lifecycle-first/streaming-bad-matched-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/lifecycle-first/streaming-clean-EAGER-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/lifecycle-first/streaming-clean-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/lifecycle-first/streaming-design-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/lifecycle-first/streaming-sources-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/lifecycle-first.log",
+    "matches": true
+  },
+  {
+    "path": "evidence/lifecycle-fourth/streaming-bad-first-unmatched-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/lifecycle-fourth/streaming-bad-last-unmatched-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/lifecycle-fourth/streaming-bad-matched-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/lifecycle-fourth/streaming-clean-EAGER-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/lifecycle-fourth/streaming-clean-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/lifecycle-fourth/streaming-design-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/lifecycle-fourth/streaming-sources-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/lifecycle-fourth.log",
+    "matches": true
+  },
+  {
+    "path": "evidence/lifecycle-initial.log",
+    "matches": true
+  },
+  {
+    "path": "evidence/lifecycle-second.log",
+    "matches": true
+  },
+  {
+    "path": "evidence/lifecycle-third.log",
+    "matches": true
+  },
+  {
+    "path": "evidence/module-race-comparator.log",
+    "matches": true
+  },
+  {
+    "path": "evidence/module-race-final-comparator.log",
+    "matches": true
+  },
+  {
+    "path": "evidence/module-race-final.log",
+    "matches": true
+  },
+  {
+    "path": "evidence/module-race-first.log",
+    "matches": true
+  },
+  {
+    "path": "evidence/module-vet-comparator.log",
+    "matches": true
+  },
+  {
+    "path": "evidence/module-vet-final-comparator.log",
+    "matches": true
+  },
+  {
+    "path": "evidence/module-vet-final.log",
+    "matches": true
+  },
+  {
+    "path": "evidence/module-vet-first.log",
+    "matches": true
+  },
+  {
+    "path": "evidence/oracle-denominators.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/production-files-before-comparator.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/production-files.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/provider-unchanged.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/source-initial/cases.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/source-initial/main-wire.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/source-initial/streaming-sources-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/source-initial.log",
+    "matches": true
+  },
+  {
+    "path": "evidence/source-route-after/streaming-bad-first-unmatched-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/source-route-after/streaming-bad-last-unmatched-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/source-route-after/streaming-bad-matched-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/source-route-after/streaming-clean-EAGER-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/source-route-after/streaming-clean-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/source-route-after/streaming-design-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/source-route-after/streaming-sources-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/source-route-after.log",
+    "matches": true
+  },
+  {
+    "path": "evidence/source-route-before/streaming-sources-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/source-route-before.log",
+    "matches": true
+  },
+  {
+    "path": "evidence/targeted-cancel-final.log",
+    "matches": true
+  },
+  {
+    "path": "evidence/targeted-race-first.log",
+    "matches": true
+  },
+  {
+    "path": "evidence/unknown-first/streaming-unknown-bad-matched-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/unknown-first/streaming-unknown-clean-native.json",
+    "matches": true
+  },
+  {
+    "path": "evidence/unknown-first.log",
+    "matches": true
+  },
+  {
+    "path": "evidence/verify-final.py",
+    "matches": true
+  },
+  {
+    "path": "incremental-from-cde.patch",
+    "matches": true
+  },
+  {
+    "path": "independent-review/README.md",
+    "matches": true
+  },
+  {
+    "path": "independent-review/author-production-files.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/cancel-after.log",
+    "matches": true
+  },
+  {
+    "path": "independent-review/cancel-before.log",
+    "matches": true
+  },
+  {
+    "path": "independent-review/commands.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/comparator-overlay.go.txt",
+    "matches": true
+  },
+  {
+    "path": "independent-review/final-production.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/final-source/internal/query/engine.go",
+    "matches": true
+  },
+  {
+    "path": "independent-review/final-source/internal/query/streaming_order.go",
+    "matches": true
+  },
+  {
+    "path": "independent-review/final-source/internal/query/streaming_pagination.go",
+    "matches": true
+  },
+  {
+    "path": "independent-review/initial-production.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/initial-source/engine.go",
+    "matches": true
+  },
+  {
+    "path": "independent-review/initial-source/streaming_order.go",
+    "matches": true
+  },
+  {
+    "path": "independent-review/initial-source/streaming_pagination.go",
+    "matches": true
+  },
+  {
+    "path": "independent-review/main-source/CypherExecutor.kt",
+    "matches": true
+  },
+  {
+    "path": "independent-review/main-source/QueryPipeline.kt",
+    "matches": true
+  },
+  {
+    "path": "independent-review/manifest.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/native/streaming-bad-first-unmatched-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/native/streaming-bad-last-unmatched-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/native/streaming-bad-matched-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/native/streaming-clean-EAGER-native.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/native/streaming-clean-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/native/streaming-design-native.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/native/streaming-sources-native.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/native/streaming-unknown-bad-matched-native.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/native/streaming-unknown-clean-native.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/native-exact/streaming-bad-first-unmatched-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/native-exact/streaming-bad-last-unmatched-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/native-exact/streaming-bad-matched-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/native-exact/streaming-clean-EAGER-native.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/native-exact/streaming-clean-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/native-exact/streaming-design-native.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/native-exact/streaming-sources-native.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/native-exact/streaming-unknown-bad-matched-native.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/native-exact/streaming-unknown-clean-native.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/numeric-spelling-audit.py",
+    "matches": true
+  },
+  {
+    "path": "independent-review/numeric-spelling-differences.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/oracle/StreamingOracle.java",
+    "matches": true
+  },
+  {
+    "path": "independent-review/oracle/StreamingPaginationOracle.java",
+    "matches": true
+  },
+  {
+    "path": "independent-review/oracle/StreamingSourcesOracle.java",
+    "matches": true
+  },
+  {
+    "path": "independent-review/oracle/bad-first-unmatched-MAPPED-main.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/oracle/bad-first-unmatched-MAPPED-wire.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/oracle/bad-last-unmatched-MAPPED-main.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/oracle/bad-last-unmatched-MAPPED-wire.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/oracle/bad-matched-MAPPED-main.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/oracle/bad-matched-MAPPED-wire.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/oracle/bad-matched-unknown-main.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/oracle/bad-matched-unknown-wire.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/oracle/cases.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/oracle/clean-EAGER-main.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/oracle/clean-EAGER-wire.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/oracle/clean-MAPPED-main.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/oracle/clean-MAPPED-wire.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/oracle/clean-unknown-main.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/oracle/clean-unknown-wire.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/oracle/design-cases.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/oracle/design-main.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/oracle/design-repeat.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/oracle/source-cases.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/oracle/sources-main.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/oracle/sources-wire.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/oracle/unknown-cases.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/review_b_cancel_test.go.txt",
+    "matches": true
+  },
+  {
+    "path": "independent-review/streaming-final-exact-race.log",
+    "matches": true
+  },
+  {
+    "path": "independent-review/streaming-race.log",
+    "matches": true
+  },
+  {
+    "path": "independent-review/tests/streaming_lifecycle_test.go",
+    "matches": true
+  },
+  {
+    "path": "independent-review/tests/streaming_pagination_test.go",
+    "matches": true
+  },
+  {
+    "path": "independent-review/tests/streaming_sources_test.go",
+    "matches": true
+  },
+  {
+    "path": "independent-review/verification.json",
+    "matches": true
+  },
+  {
+    "path": "independent-review/verify-strict-python-types.py",
+    "matches": true
+  },
+  {
+    "path": "independent-review/verify.py",
+    "matches": true
+  },
+  {
+    "path": "independent-review/vet-final-exact.log",
+    "matches": true
+  },
+  {
+    "path": "independent-review/vet.log",
+    "matches": true
+  },
+  {
+    "path": "independent-review/wire-layer-audit.json",
+    "matches": true
+  },
+  {
+    "path": "module-files.json",
+    "matches": true
+  },
+  {
+    "path": "module-source.tar.gz",
+    "matches": true
+  },
+  {
+    "path": "production-files.json",
+    "matches": true
+  },
+  {
+    "path": "tree.txt",
+    "matches": true
+  }
+]

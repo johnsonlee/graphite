@@ -1,0 +1,18 @@
+{
+  "verifiedUTC": "2026-09-07T04:29:07.121615+00:00",
+  "afterBothServersExited": true,
+  "checks": [
+    {
+      "root": "/tmp/pr113-exp037-fixture.nXn4fg",
+      "files": 1152,
+      "allHashesMatch": true,
+      "noExtraGraphFiles": true
+    },
+    {
+      "root": "/tmp/graphite-pagination-http-real64-62b92d20",
+      "files": 1152,
+      "allHashesMatch": true,
+      "noExtraGraphFiles": true
+    }
+  ]
+}

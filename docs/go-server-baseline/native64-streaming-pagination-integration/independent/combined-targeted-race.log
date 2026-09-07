@@ -1,0 +1,60 @@
+=== RUN   TestGenericProjectionBindingRetainsOwnedValues
+--- PASS: TestGenericProjectionBindingRetainsOwnedValues (0.01s)
+=== RUN   TestGenericProjectionBindingPanicAndSelectedAlias
+--- PASS: TestGenericProjectionBindingPanicAndSelectedAlias (0.01s)
+=== RUN   TestGenericProjectionBindingCancellationJoinsAndClears
+--- PASS: TestGenericProjectionBindingCancellationJoinsAndClears (0.00s)
+=== RUN   TestExactTupleMainCrossQuery
+=== RUN   TestExactTupleMainCrossQuery/0
+=== RUN   TestExactTupleMainCrossQuery/1
+=== RUN   TestExactTupleMainCrossQuery/2
+=== RUN   TestExactTupleMainCrossQuery/3
+--- PASS: TestExactTupleMainCrossQuery (1.31s)
+    --- PASS: TestExactTupleMainCrossQuery/0 (0.33s)
+    --- PASS: TestExactTupleMainCrossQuery/1 (0.33s)
+    --- PASS: TestExactTupleMainCrossQuery/2 (0.33s)
+    --- PASS: TestExactTupleMainCrossQuery/3 (0.31s)
+=== RUN   TestExactTupleProjectionMain
+=== RUN   TestExactTupleProjectionMain/0
+=== RUN   TestExactTupleProjectionMain/1
+=== RUN   TestExactTupleProjectionMain/2
+=== RUN   TestExactTupleProjectionMain/3
+=== RUN   TestExactTupleProjectionMain/4
+=== RUN   TestExactTupleProjectionMain/5
+=== RUN   TestExactTupleProjectionMain/6
+=== RUN   TestExactTupleProjectionMain/7
+=== RUN   TestExactTupleProjectionMain/8
+=== RUN   TestExactTupleProjectionMain/9
+=== RUN   TestExactTupleProjectionMain/10
+=== RUN   TestExactTupleProjectionMain/11
+--- PASS: TestExactTupleProjectionMain (5.10s)
+    --- PASS: TestExactTupleProjectionMain/0 (0.48s)
+    --- PASS: TestExactTupleProjectionMain/1 (0.45s)
+    --- PASS: TestExactTupleProjectionMain/2 (0.49s)
+    --- PASS: TestExactTupleProjectionMain/3 (0.47s)
+    --- PASS: TestExactTupleProjectionMain/4 (0.39s)
+    --- PASS: TestExactTupleProjectionMain/5 (0.37s)
+    --- PASS: TestExactTupleProjectionMain/6 (0.36s)
+    --- PASS: TestExactTupleProjectionMain/7 (0.34s)
+    --- PASS: TestExactTupleProjectionMain/8 (0.48s)
+    --- PASS: TestExactTupleProjectionMain/9 (0.45s)
+    --- PASS: TestExactTupleProjectionMain/10 (0.38s)
+    --- PASS: TestExactTupleProjectionMain/11 (0.39s)
+=== RUN   TestExactTupleOrdinaryCacheThresholdMain
+--- PASS: TestExactTupleOrdinaryCacheThresholdMain (0.28s)
+=== RUN   TestStreamingPaginationWaveFailureCancellationJoin
+=== RUN   TestStreamingPaginationWaveFailureCancellationJoin/source
+=== RUN   TestStreamingPaginationWaveFailureCancellationJoin/request
+=== RUN   TestStreamingPaginationWaveFailureCancellationJoin/projection
+--- PASS: TestStreamingPaginationWaveFailureCancellationJoin (0.01s)
+    --- PASS: TestStreamingPaginationWaveFailureCancellationJoin/source (0.00s)
+    --- PASS: TestStreamingPaginationWaveFailureCancellationJoin/request (0.00s)
+    --- PASS: TestStreamingPaginationWaveFailureCancellationJoin/projection (0.00s)
+=== RUN   TestStreamingPaginationHeapAndFinalSortCancellation
+=== RUN   TestStreamingPaginationHeapAndFinalSortCancellation/heap
+=== RUN   TestStreamingPaginationHeapAndFinalSortCancellation/sort
+--- PASS: TestStreamingPaginationHeapAndFinalSortCancellation (0.00s)
+    --- PASS: TestStreamingPaginationHeapAndFinalSortCancellation/heap (0.00s)
+    --- PASS: TestStreamingPaginationHeapAndFinalSortCancellation/sort (0.00s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/query	8.001s

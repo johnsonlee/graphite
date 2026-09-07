@@ -1,0 +1,1 @@
+Initial final assertion compared a path->SHA object with the earlier module-relative path->{sha256,bytes} object. It failed before patch/archive/summary creation, changed no source. Corrected comparison below checks both size and SHA for all2433files.

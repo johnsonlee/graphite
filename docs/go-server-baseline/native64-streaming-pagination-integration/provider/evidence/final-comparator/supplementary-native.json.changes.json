@@ -1,0 +1,118 @@
+[
+  {
+    "before": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-first-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "distinct-order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x ORDER BY x LIMIT 1"
+    },
+    "after": {
+      "columns": [
+        "x"
+      ],
+      "cross": false,
+      "empty": false,
+      "fixture": "bad-first-unmatched",
+      "name": "distinct-order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x ORDER BY x LIMIT 1",
+      "rows": [
+        {
+          "x": "other"
+        }
+      ]
+    }
+  },
+  {
+    "before": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-first-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "distinct-order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x ORDER BY x LIMIT 1"
+    },
+    "after": {
+      "columns": [
+        "x"
+      ],
+      "cross": true,
+      "empty": false,
+      "fixture": "bad-first-unmatched",
+      "name": "distinct-order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x ORDER BY x LIMIT 1",
+      "rows": [
+        {
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          },
+          "x": "other"
+        }
+      ]
+    }
+  },
+  {
+    "before": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "distinct-order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x ORDER BY x LIMIT 1"
+    },
+    "after": {
+      "columns": [
+        "x"
+      ],
+      "cross": false,
+      "empty": false,
+      "fixture": "bad-last-unmatched",
+      "name": "distinct-order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x ORDER BY x LIMIT 1",
+      "rows": [
+        {
+          "x": "other"
+        }
+      ]
+    }
+  },
+  {
+    "before": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "distinct-order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x ORDER BY x LIMIT 1"
+    },
+    "after": {
+      "columns": [
+        "x"
+      ],
+      "cross": true,
+      "empty": false,
+      "fixture": "bad-last-unmatched",
+      "name": "distinct-order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x ORDER BY x LIMIT 1",
+      "rows": [
+        {
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          },
+          "x": "other"
+        }
+      ]
+    }
+  }
+]

@@ -1,0 +1,58 @@
+package query
+
+import (
+	"context"
+	"errors"
+	"github.com/johnsonlee/graphite/graphite-server/internal/store"
+	"testing"
+	"time"
+)
+
+// The only overlay hook observes a real comparator boundary; it does not implement cancellation.
+func TestReviewBFinalSortCancellation(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	e := evaluator{ctx: ctx}
+	p := streamingTestPlan(t, e, "MATCH (n:CallSiteNode) WHERE true RETURN n.id AS x ORDER BY x SKIP 0 LIMIT 3")
+	entered := make(chan struct{})
+	done := make(chan any, 1)
+	eof, observed := false, false
+	reviewComparisonHook = func() {
+		if eof && !observed {
+			observed = true
+			close(entered)
+			<-ctx.Done()
+		}
+	}
+	defer func() { reviewComparisonHook = nil }()
+	nextID := int32(3)
+	go func() {
+		done <- findIDCaught(func() {
+			result := e.streamingOrderedRows(p, func(context.Context) (map[string]any, bool) {
+				if nextID == 0 {
+					eof = true
+					return nil, false
+				}
+				n := store.Node{ID: nextID, Kind: "CallSiteNode"}
+				nextID--
+				return map[string]any{"n": n}, true
+			})
+			t.Logf("unexpected completed result after cancel: %+v", result)
+		})
+	}()
+	select {
+	case <-entered:
+	case <-time.After(5 * time.Second):
+		t.Fatal("sort boundary not reached")
+	}
+	cancel()
+	select {
+	case failure := <-done:
+		err, ok := failure.(error)
+		if !ok || !errors.Is(err, context.Canceled) {
+			t.Fatalf("final sort ignored real cancellation: %#v", failure)
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("sorting owner not joined")
+	}
+}

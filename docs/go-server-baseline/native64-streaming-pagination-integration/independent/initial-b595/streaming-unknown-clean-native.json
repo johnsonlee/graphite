@@ -1,0 +1,130 @@
+[
+  {
+    "cross": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+    "mode": "MAPPED",
+    "name": "skip-expression",
+    "params": {},
+    "query": "MATCH (n:AbsentType) WHERE true RETURN 1 AS x ORDER BY x SKIP substring('x','bad') LIMIT 1"
+  },
+  {
+    "cross": true,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+    "mode": "MAPPED",
+    "name": "skip-expression",
+    "params": {},
+    "query": "MATCH (n:AbsentType) WHERE true RETURN 1 AS x ORDER BY x SKIP substring('x','bad') LIMIT 1"
+  },
+  {
+    "cross": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -1 is less than zero.",
+    "mode": "MAPPED",
+    "name": "skip-parameter-negative",
+    "params": {
+      "s": -1
+    },
+    "query": "MATCH (n:AbsentType) WHERE true RETURN 1 AS x ORDER BY x SKIP $s LIMIT 1"
+  },
+  {
+    "cross": true,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -1 is less than zero.",
+    "mode": "MAPPED",
+    "name": "skip-parameter-negative",
+    "params": {
+      "s": -1
+    },
+    "query": "MATCH (n:AbsentType) WHERE true RETURN 1 AS x ORDER BY x SKIP $s LIMIT 1"
+  },
+  {
+    "cross": false,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -1 is less than zero.",
+    "mode": "MAPPED",
+    "name": "skip-expression-negative",
+    "params": {},
+    "query": "MATCH (n:AbsentType) WHERE true RETURN 1 AS x ORDER BY x SKIP -1 LIMIT 1"
+  },
+  {
+    "cross": true,
+    "error": "IllegalArgumentException",
+    "message": "Requested element count -1 is less than zero.",
+    "mode": "MAPPED",
+    "name": "skip-expression-negative",
+    "params": {},
+    "query": "MATCH (n:AbsentType) WHERE true RETURN 1 AS x ORDER BY x SKIP -1 LIMIT 1"
+  },
+  {
+    "columns": [
+      "x"
+    ],
+    "cross": false,
+    "mode": "MAPPED",
+    "name": "skip-string",
+    "params": {},
+    "query": "MATCH (n:AbsentType) WHERE true RETURN 1 AS x ORDER BY x SKIP 'bad' LIMIT 1",
+    "rows": []
+  },
+  {
+    "columns": [
+      "x"
+    ],
+    "cross": true,
+    "mode": "MAPPED",
+    "name": "skip-string",
+    "params": {},
+    "query": "MATCH (n:AbsentType) WHERE true RETURN 1 AS x ORDER BY x SKIP 'bad' LIMIT 1",
+    "rows": []
+  },
+  {
+    "columns": [
+      "x"
+    ],
+    "cross": false,
+    "mode": "MAPPED",
+    "name": "skip-parameter-valid",
+    "params": {
+      "s": 1
+    },
+    "query": "MATCH (n:AbsentType) WHERE true RETURN 1 AS x ORDER BY x SKIP $s LIMIT 1",
+    "rows": []
+  },
+  {
+    "columns": [
+      "x"
+    ],
+    "cross": true,
+    "mode": "MAPPED",
+    "name": "skip-parameter-valid",
+    "params": {
+      "s": 1
+    },
+    "query": "MATCH (n:AbsentType) WHERE true RETURN 1 AS x ORDER BY x SKIP $s LIMIT 1",
+    "rows": []
+  },
+  {
+    "columns": [
+      "x"
+    ],
+    "cross": false,
+    "mode": "MAPPED",
+    "name": "limit-capacity",
+    "params": {},
+    "query": "MATCH (n:AbsentType) WHERE true RETURN 1 AS x ORDER BY x SKIP 0 LIMIT 2147483647",
+    "rows": []
+  },
+  {
+    "columns": [
+      "x"
+    ],
+    "cross": true,
+    "mode": "MAPPED",
+    "name": "limit-capacity",
+    "params": {},
+    "query": "MATCH (n:AbsentType) WHERE true RETURN 1 AS x ORDER BY x SKIP 0 LIMIT 2147483647",
+    "rows": []
+  }
+]

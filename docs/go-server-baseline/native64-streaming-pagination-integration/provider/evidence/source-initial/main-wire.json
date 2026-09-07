@@ -1,0 +1,709 @@
+[
+  {
+    "name": "skip-late-2",
+    "count": 2.0,
+    "badAt": 1.0,
+    "fixture": "bad-matched",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x SKIP 1 LIMIT 1",
+    "history": [
+      {
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": 41,
+            "$metadata": {
+              "graphIds": [
+                "g0"
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "distinct-late-2",
+    "count": 2.0,
+    "badAt": 1.0,
+    "fixture": "bad-matched",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.id AS x SKIP 0 LIMIT 1",
+    "history": [
+      {
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)"
+      }
+    ]
+  },
+  {
+    "name": "order-late-2",
+    "count": 2.0,
+    "badAt": 1.0,
+    "fixture": "bad-matched",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x ORDER BY x SKIP 0 LIMIT 1",
+    "history": [
+      {
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)"
+      }
+    ]
+  },
+  {
+    "name": "order-ties-2-MAPPED",
+    "count": 2.0,
+    "mode": "MAPPED",
+    "reverseIDs": true,
+    "repeat": 2.0,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x ORDER BY 0 SKIP 1 LIMIT 3",
+    "history": [
+      {
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": 41,
+            "$metadata": {
+              "graphIds": [
+                "g1"
+              ]
+            }
+          },
+          {
+            "x": 2,
+            "$metadata": {
+              "graphIds": [
+                "g0"
+              ]
+            }
+          },
+          {
+            "x": 41,
+            "$metadata": {
+              "graphIds": [
+                "g0"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": 41,
+            "$metadata": {
+              "graphIds": [
+                "g1"
+              ]
+            }
+          },
+          {
+            "x": 2,
+            "$metadata": {
+              "graphIds": [
+                "g0"
+              ]
+            }
+          },
+          {
+            "x": 41,
+            "$metadata": {
+              "graphIds": [
+                "g0"
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "order-ties-2-EAGER",
+    "count": 2.0,
+    "mode": "EAGER",
+    "reverseIDs": true,
+    "repeat": 2.0,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x ORDER BY 0 SKIP 1 LIMIT 3",
+    "history": [
+      {
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": 41,
+            "$metadata": {
+              "graphIds": [
+                "g1"
+              ]
+            }
+          },
+          {
+            "x": 2,
+            "$metadata": {
+              "graphIds": [
+                "g0"
+              ]
+            }
+          },
+          {
+            "x": 41,
+            "$metadata": {
+              "graphIds": [
+                "g0"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": 41,
+            "$metadata": {
+              "graphIds": [
+                "g1"
+              ]
+            }
+          },
+          {
+            "x": 2,
+            "$metadata": {
+              "graphIds": [
+                "g0"
+              ]
+            }
+          },
+          {
+            "x": 41,
+            "$metadata": {
+              "graphIds": [
+                "g0"
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "skip-late-9",
+    "count": 9.0,
+    "badAt": 8.0,
+    "fixture": "bad-matched",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x SKIP 1 LIMIT 1",
+    "history": [
+      {
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": 41,
+            "$metadata": {
+              "graphIds": [
+                "g0"
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "distinct-late-9",
+    "count": 9.0,
+    "badAt": 8.0,
+    "fixture": "bad-matched",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.id AS x SKIP 0 LIMIT 1",
+    "history": [
+      {
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)"
+      }
+    ]
+  },
+  {
+    "name": "order-late-9",
+    "count": 9.0,
+    "badAt": 8.0,
+    "fixture": "bad-matched",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x ORDER BY x SKIP 0 LIMIT 1",
+    "history": [
+      {
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)"
+      }
+    ]
+  },
+  {
+    "name": "order-ties-9-MAPPED",
+    "count": 9.0,
+    "mode": "MAPPED",
+    "reverseIDs": true,
+    "repeat": 2.0,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x ORDER BY 0 SKIP 1 LIMIT 3",
+    "history": [
+      {
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": 41,
+            "$metadata": {
+              "graphIds": [
+                "g8"
+              ]
+            }
+          },
+          {
+            "x": 2,
+            "$metadata": {
+              "graphIds": [
+                "g7"
+              ]
+            }
+          },
+          {
+            "x": 41,
+            "$metadata": {
+              "graphIds": [
+                "g7"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": 41,
+            "$metadata": {
+              "graphIds": [
+                "g8"
+              ]
+            }
+          },
+          {
+            "x": 2,
+            "$metadata": {
+              "graphIds": [
+                "g7"
+              ]
+            }
+          },
+          {
+            "x": 41,
+            "$metadata": {
+              "graphIds": [
+                "g7"
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "order-ties-9-EAGER",
+    "count": 9.0,
+    "mode": "EAGER",
+    "reverseIDs": true,
+    "repeat": 2.0,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x ORDER BY 0 SKIP 1 LIMIT 3",
+    "history": [
+      {
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": 41,
+            "$metadata": {
+              "graphIds": [
+                "g8"
+              ]
+            }
+          },
+          {
+            "x": 2,
+            "$metadata": {
+              "graphIds": [
+                "g7"
+              ]
+            }
+          },
+          {
+            "x": 41,
+            "$metadata": {
+              "graphIds": [
+                "g7"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": 41,
+            "$metadata": {
+              "graphIds": [
+                "g8"
+              ]
+            }
+          },
+          {
+            "x": 2,
+            "$metadata": {
+              "graphIds": [
+                "g7"
+              ]
+            }
+          },
+          {
+            "x": 41,
+            "$metadata": {
+              "graphIds": [
+                "g7"
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "skip-late-40",
+    "count": 40.0,
+    "badAt": 39.0,
+    "fixture": "bad-matched",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x SKIP 1 LIMIT 1",
+    "history": [
+      {
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": 41,
+            "$metadata": {
+              "graphIds": [
+                "g0"
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "distinct-late-40",
+    "count": 40.0,
+    "badAt": 39.0,
+    "fixture": "bad-matched",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.id AS x SKIP 0 LIMIT 1",
+    "history": [
+      {
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)"
+      }
+    ]
+  },
+  {
+    "name": "order-late-40",
+    "count": 40.0,
+    "badAt": 39.0,
+    "fixture": "bad-matched",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x ORDER BY x SKIP 0 LIMIT 1",
+    "history": [
+      {
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)"
+      }
+    ]
+  },
+  {
+    "name": "order-ties-40-MAPPED",
+    "count": 40.0,
+    "mode": "MAPPED",
+    "reverseIDs": true,
+    "repeat": 2.0,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x ORDER BY 0 SKIP 1 LIMIT 3",
+    "history": [
+      {
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": 41,
+            "$metadata": {
+              "graphIds": [
+                "g39"
+              ]
+            }
+          },
+          {
+            "x": 2,
+            "$metadata": {
+              "graphIds": [
+                "g38"
+              ]
+            }
+          },
+          {
+            "x": 41,
+            "$metadata": {
+              "graphIds": [
+                "g38"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": 41,
+            "$metadata": {
+              "graphIds": [
+                "g39"
+              ]
+            }
+          },
+          {
+            "x": 2,
+            "$metadata": {
+              "graphIds": [
+                "g38"
+              ]
+            }
+          },
+          {
+            "x": 41,
+            "$metadata": {
+              "graphIds": [
+                "g38"
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "order-ties-40-EAGER",
+    "count": 40.0,
+    "mode": "EAGER",
+    "reverseIDs": true,
+    "repeat": 2.0,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x ORDER BY 0 SKIP 1 LIMIT 3",
+    "history": [
+      {
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": 41,
+            "$metadata": {
+              "graphIds": [
+                "g39"
+              ]
+            }
+          },
+          {
+            "x": 2,
+            "$metadata": {
+              "graphIds": [
+                "g38"
+              ]
+            }
+          },
+          {
+            "x": 41,
+            "$metadata": {
+              "graphIds": [
+                "g38"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": 41,
+            "$metadata": {
+              "graphIds": [
+                "g39"
+              ]
+            }
+          },
+          {
+            "x": 2,
+            "$metadata": {
+              "graphIds": [
+                "g38"
+              ]
+            }
+          },
+          {
+            "x": 41,
+            "$metadata": {
+              "graphIds": [
+                "g38"
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "route-offset-2-False",
+    "count": 2.0,
+    "badAt": 0.0,
+    "fixture": "offset-negative-90",
+    "repeat": 2.0,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND n.graphId \u003d \u0027g0\u0027 RETURN n.id AS x SKIP 0 LIMIT 1",
+    "history": [
+      {
+        "error": "IndexOutOfBoundsException",
+        "message": null
+      },
+      {
+        "error": "IndexOutOfBoundsException",
+        "message": null
+      }
+    ]
+  },
+  {
+    "name": "route-offset-2-True",
+    "count": 2.0,
+    "badAt": 0.0,
+    "fixture": "offset-negative-90",
+    "repeat": 2.0,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND n.graphId \u003d \u0027g0\u0027 RETURN n.id AS x ORDER BY x SKIP 0 LIMIT 1",
+    "history": [
+      {
+        "error": "IndexOutOfBoundsException",
+        "message": null
+      },
+      {
+        "error": "IndexOutOfBoundsException",
+        "message": null
+      }
+    ]
+  },
+  {
+    "name": "route-offset-40-False",
+    "count": 40.0,
+    "badAt": 0.0,
+    "fixture": "offset-negative-90",
+    "repeat": 2.0,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND n.graphId \u003d \u0027g0\u0027 RETURN n.id AS x SKIP 0 LIMIT 1",
+    "history": [
+      {
+        "error": "IndexOutOfBoundsException",
+        "message": null
+      },
+      {
+        "error": "IndexOutOfBoundsException",
+        "message": null
+      }
+    ]
+  },
+  {
+    "name": "route-offset-40-True",
+    "count": 40.0,
+    "badAt": 0.0,
+    "fixture": "offset-negative-90",
+    "repeat": 2.0,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND n.graphId \u003d \u0027g0\u0027 RETURN n.id AS x ORDER BY x SKIP 0 LIMIT 1",
+    "history": [
+      {
+        "error": "IndexOutOfBoundsException",
+        "message": null
+      },
+      {
+        "error": "IndexOutOfBoundsException",
+        "message": null
+      }
+    ]
+  },
+  {
+    "name": "skip-missing-sidecar",
+    "count": 9.0,
+    "badAt": 8.0,
+    "fixture": "bad-matched",
+    "missingIndex": true,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x SKIP 1 LIMIT 1",
+    "history": [
+      {
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": 41,
+            "$metadata": {
+              "graphIds": [
+                "g0"
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "distinct-missing-sidecar",
+    "count": 9.0,
+    "badAt": 8.0,
+    "fixture": "bad-matched",
+    "missingIndex": true,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.id AS x SKIP 0 LIMIT 1",
+    "history": [
+      {
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)"
+      }
+    ]
+  },
+  {
+    "name": "order-missing-sidecar",
+    "count": 9.0,
+    "badAt": 8.0,
+    "fixture": "bad-matched",
+    "missingIndex": true,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x ORDER BY x SKIP 0 LIMIT 1",
+    "history": [
+      {
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)"
+      }
+    ]
+  }
+]

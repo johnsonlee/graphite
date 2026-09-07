@@ -1,0 +1,1 @@
+First design harness run interrupted with Ctrl-C: its barrier asked streamingOrderParallelism on a no-ORDER query and waited for a source that ordinary LIMIT correctly never requested. Fixed the helper to explicitly return serial for no ORDER, then retained all53 cases. No query performance inference.

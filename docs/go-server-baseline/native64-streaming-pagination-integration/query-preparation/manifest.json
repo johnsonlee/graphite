@@ -1,0 +1,28 @@
+{
+  "files": {
+    "README.md": {
+      "sha256": "a0683b4ece67e7fed6e10211bab13736a74771bbe5b0a595ce9237a10494182e",
+      "bytes": 2029
+    },
+    "admission.json": {
+      "sha256": "7f7f4db090cb9d6c9223d7801decabf47d94cb1df04066b84961c23456462bc7",
+      "bytes": 3833
+    },
+    "admission.log": {
+      "sha256": "138052888f143f7eaf421db4cb67c17fbd95653e1dc88549e9bd4163b401f627",
+      "bytes": 74
+    },
+    "draft-cases.json": {
+      "sha256": "e74dbf8a370590d3f9959fda3c8adebd1604721e6870ef7ae53dd984e2ed07bb",
+      "bytes": 3053
+    },
+    "grounding.json": {
+      "sha256": "81d5a82f9fd9172e54eb0af8839e16d5452007e8bffa06057be2b481e8194bfb",
+      "bytes": 3376
+    },
+    "real64_b_admission_test.go": {
+      "sha256": "4f71cb51d2c003e4fd7f1999007c7a1b26684f7d7d453e35ab5d198311ecc543",
+      "bytes": 2310
+    }
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "exactFiles": {
+    "annotation-after-native.json": true,
+    "annotation-native.json": true,
+    "generic-fault-audit.json": false,
+    "late-native.json": true,
+    "lazy-filtered-480.json": true,
+    "main-string-source-main.json-native.json": false,
+    "main-string-source-offset-main.json-native.json": true,
+    "main-string-source-property-main.json-native.json": true,
+    "mixed-native.json": true,
+    "primary-eligibility.json": true,
+    "primary-native.json": false,
+    "required-missing-identity-native.json": true,
+    "required-missing-index-native.json": true,
+    "required-native.json": true,
+    "source-pairs-eligibility.json": true,
+    "source-pairs-native.json": true,
+    "split-bad-callee-native.json": true,
+    "split-bad-count-native.json": true,
+    "split-bad-tag-native.json": true,
+    "split-clean-native.json": true,
+    "split-missing-index-native.json": true,
+    "supplementary-eligibility.json": true,
+    "supplementary-native.json": false
+  },
+  "changedFiles": [
+    "generic-fault-audit.json",
+    "main-string-source-main.json-native.json",
+    "primary-native.json",
+    "supplementary-native.json"
+  ],
+  "original": {
+    "equal": 1044,
+    "both-success-difference": 4
+  },
+  "genericFault": {
+    "total": 432,
+    "beforeEqual": 408,
+    "afterEqual": 432
+  }
+}

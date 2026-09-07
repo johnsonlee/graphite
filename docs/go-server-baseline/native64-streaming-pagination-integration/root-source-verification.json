@@ -1,0 +1,7 @@
+{
+  "verifiedUTC": "2026-09-07T04:29:35.659072+00:00",
+  "base": "62b92d20",
+  "patchSHA256": "58f4e291d0a429d0f2f7a7e01cd78557ce164b041a01ce8ef63e3e3cf29b56a6",
+  "all2433InputsMatchIndependentFullModuleAndHTTPTestedCandidate": true,
+  "excludedExistingIgnoredBinary": "graphite-server/graphite-server"
+}

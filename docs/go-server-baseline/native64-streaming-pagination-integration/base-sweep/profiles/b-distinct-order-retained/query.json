@@ -1,0 +1,22 @@
+{
+  "name": "b-distinct-order-retained",
+  "query": "MATCH (n:CallSiteNode) WHERE n.caller_class = 'com.google.android.mms.util.PduCache' RETURN DISTINCT n.caller_class AS caller ORDER BY caller SKIP 0 LIMIT 2",
+  "source": "Pinned-main real64 B pagination HTTP oracle; one visible class repeated; retained duplicates merge provenance",
+  "expected": {
+    "columns": [
+      "caller"
+    ],
+    "graphCount": 64,
+    "rowCount": 1,
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "caller": "com.google.android.mms.util.PduCache"
+      }
+    ]
+  }
+}

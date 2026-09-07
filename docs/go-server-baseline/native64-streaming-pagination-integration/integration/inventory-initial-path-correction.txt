@@ -1,0 +1,1 @@
+Initial inventory script used Path(".").parent without resolving it and could not find integration/baseline-source-files.json. No source writes occurred; rerun with Path.cwd() succeeded. Git apply had already exited0; check and apply logs retained.

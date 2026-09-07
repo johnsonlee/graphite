@@ -1,0 +1,125 @@
+[
+  {
+    "name": "skip-before-projection",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id >= 0 RETURN CASE WHEN n.id=17 THEN substring('x','bad') ELSE n.id END AS x SKIP 1 LIMIT 1"
+  },
+  {
+    "name": "skip-zero-projects-first",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id >= 0 RETURN CASE WHEN n.id=17 THEN substring('x','bad') ELSE n.id END AS x SKIP 0 LIMIT 1"
+  },
+  {
+    "name": "skip-parameter-ignored",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id >= 0 RETURN n.id AS x SKIP $skip LIMIT 1",
+    "params": {
+      "skip": 1
+    }
+  },
+  {
+    "name": "skip-throwing-expression-ignored",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id >= 0 RETURN n.id AS x SKIP substring('x','bad') LIMIT 1"
+  },
+  {
+    "name": "skip-add-expression-ignored",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id >= 0 RETURN n.id AS x SKIP 1+1 LIMIT 1"
+  },
+  {
+    "name": "skip-string-literal-converts-zero",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id >= 0 RETURN n.id AS x SKIP 'bad' LIMIT 1"
+  },
+  {
+    "name": "skip-unary-negative-ignored",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id >= 0 RETURN n.id AS x SKIP -1 LIMIT 1"
+  },
+  {
+    "name": "limit-zero-skips-everything",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id >= 0 RETURN substring('x','bad') AS x ORDER BY substring('x','bad') SKIP 1 LIMIT 0",
+    "failAt": 1
+  },
+  {
+    "name": "negative-skip-with-zero-limit",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id >= 0 RETURN substring('x','bad') AS x SKIP -1 LIMIT 0",
+    "failAt": 1
+  },
+  {
+    "name": "retained-overflow-fallback",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id >= 0 RETURN n.id AS x SKIP 2147483647 LIMIT 1"
+  },
+  {
+    "name": "generic-stop-before-late-read",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id >= 0 RETURN n.id AS x LIMIT 1",
+    "failAt": 4
+  },
+  {
+    "name": "order-consumes-late-read",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id >= 0 RETURN n.id AS x ORDER BY x LIMIT 1",
+    "failAt": 4
+  },
+  {
+    "name": "order-projection-before-later-read",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id >= 0 RETURN substring('x','bad') AS x ORDER BY x LIMIT 1",
+    "failAt": 4
+  },
+  {
+    "name": "unbounded-projects-before-later-read",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id >= 0 RETURN substring('x','bad') AS x",
+    "failAt": 4
+  },
+  {
+    "name": "order-evaluates-discarded-rows",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id >= 0 RETURN n.id AS x ORDER BY CASE WHEN n.id=90 THEN substring('x','bad') ELSE 0 END LIMIT 1"
+  },
+  {
+    "name": "order-ties-preserve-encounter",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id >= 0 RETURN n.id AS x ORDER BY 0 SKIP 1 LIMIT 2"
+  },
+  {
+    "name": "order-source-property",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id >= 0 RETURN n.id AS x ORDER BY n.id DESC LIMIT 2"
+  },
+  {
+    "name": "order-alias-shadow",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id >= 0 RETURN n.id AS n ORDER BY n.id LIMIT 2"
+  },
+  {
+    "name": "distinct-skips-duplicate-order",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id >= 0 RETURN DISTINCT 1 AS x ORDER BY CASE WHEN n.id=17 THEN 0 ELSE substring('x','bad') END LIMIT 1"
+  },
+  {
+    "name": "distinct-still-projects-duplicate",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id >= 0 RETURN DISTINCT CASE WHEN n.id=17 THEN 1 ELSE substring('x','bad') END AS x ORDER BY 0 LIMIT 1"
+  },
+  {
+    "name": "distinct-eviction-rechecks-order",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id >= 0 RETURN DISTINCT CASE WHEN n.id IN [17,90] THEN 'A' ELSE 'B' END AS x ORDER BY CASE WHEN n.id=17 THEN 10 WHEN n.id=90 THEN substring('x','bad') ELSE 0 END LIMIT 1"
+  },
+  {
+    "name": "distinct-order-duplicate-still-decodes",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id >= 0 RETURN DISTINCT 1 AS x ORDER BY 0 LIMIT 1",
+    "failAt": 4
+  },
+  {
+    "name": "distinct-skip-scope-stop",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id >= 0 RETURN DISTINCT n.caller_name AS x SKIP 1 LIMIT 1",
+    "failAt": 4
+  },
+  {
+    "name": "late-duplicate-provenance-order-skipped",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id=17 RETURN DISTINCT 1 AS x ORDER BY CASE WHEN n.graphId='a' THEN 0 ELSE substring('x','bad') END LIMIT 1",
+    "crossOnly": true
+  },
+  {
+    "name": "direct-skip",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x SKIP 1 LIMIT 1",
+    "capabilities": true
+  },
+  {
+    "name": "direct-order",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY x DESC LIMIT 1",
+    "capabilities": true
+  },
+  {
+    "name": "direct-order-throw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x ORDER BY substring(n.caller_name,'bad') LIMIT 1",
+    "capabilities": true
+  }
+]

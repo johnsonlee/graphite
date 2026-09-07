@@ -1,0 +1,294 @@
+[
+  {
+    "path": "README.md",
+    "matches": true
+  },
+  {
+    "path": "author-production-files.json",
+    "matches": true
+  },
+  {
+    "path": "cancel-after.log",
+    "matches": true
+  },
+  {
+    "path": "cancel-before.log",
+    "matches": true
+  },
+  {
+    "path": "commands.json",
+    "matches": true
+  },
+  {
+    "path": "comparator-overlay.go.txt",
+    "matches": true
+  },
+  {
+    "path": "final-production.json",
+    "matches": true
+  },
+  {
+    "path": "final-source/internal/query/engine.go",
+    "matches": true
+  },
+  {
+    "path": "final-source/internal/query/streaming_order.go",
+    "matches": true
+  },
+  {
+    "path": "final-source/internal/query/streaming_pagination.go",
+    "matches": true
+  },
+  {
+    "path": "initial-production.json",
+    "matches": true
+  },
+  {
+    "path": "initial-source/engine.go",
+    "matches": true
+  },
+  {
+    "path": "initial-source/streaming_order.go",
+    "matches": true
+  },
+  {
+    "path": "initial-source/streaming_pagination.go",
+    "matches": true
+  },
+  {
+    "path": "main-source/CypherExecutor.kt",
+    "matches": true
+  },
+  {
+    "path": "main-source/QueryPipeline.kt",
+    "matches": true
+  },
+  {
+    "path": "native/streaming-bad-first-unmatched-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "native/streaming-bad-last-unmatched-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "native/streaming-bad-matched-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "native/streaming-clean-EAGER-native.json",
+    "matches": true
+  },
+  {
+    "path": "native/streaming-clean-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "native/streaming-design-native.json",
+    "matches": true
+  },
+  {
+    "path": "native/streaming-sources-native.json",
+    "matches": true
+  },
+  {
+    "path": "native/streaming-unknown-bad-matched-native.json",
+    "matches": true
+  },
+  {
+    "path": "native/streaming-unknown-clean-native.json",
+    "matches": true
+  },
+  {
+    "path": "native-exact/streaming-bad-first-unmatched-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "native-exact/streaming-bad-last-unmatched-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "native-exact/streaming-bad-matched-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "native-exact/streaming-clean-EAGER-native.json",
+    "matches": true
+  },
+  {
+    "path": "native-exact/streaming-clean-MAPPED-native.json",
+    "matches": true
+  },
+  {
+    "path": "native-exact/streaming-design-native.json",
+    "matches": true
+  },
+  {
+    "path": "native-exact/streaming-sources-native.json",
+    "matches": true
+  },
+  {
+    "path": "native-exact/streaming-unknown-bad-matched-native.json",
+    "matches": true
+  },
+  {
+    "path": "native-exact/streaming-unknown-clean-native.json",
+    "matches": true
+  },
+  {
+    "path": "numeric-spelling-audit.py",
+    "matches": true
+  },
+  {
+    "path": "numeric-spelling-differences.json",
+    "matches": true
+  },
+  {
+    "path": "oracle/StreamingOracle.java",
+    "matches": true
+  },
+  {
+    "path": "oracle/StreamingPaginationOracle.java",
+    "matches": true
+  },
+  {
+    "path": "oracle/StreamingSourcesOracle.java",
+    "matches": true
+  },
+  {
+    "path": "oracle/bad-first-unmatched-MAPPED-main.json",
+    "matches": true
+  },
+  {
+    "path": "oracle/bad-first-unmatched-MAPPED-wire.json",
+    "matches": true
+  },
+  {
+    "path": "oracle/bad-last-unmatched-MAPPED-main.json",
+    "matches": true
+  },
+  {
+    "path": "oracle/bad-last-unmatched-MAPPED-wire.json",
+    "matches": true
+  },
+  {
+    "path": "oracle/bad-matched-MAPPED-main.json",
+    "matches": true
+  },
+  {
+    "path": "oracle/bad-matched-MAPPED-wire.json",
+    "matches": true
+  },
+  {
+    "path": "oracle/bad-matched-unknown-main.json",
+    "matches": true
+  },
+  {
+    "path": "oracle/bad-matched-unknown-wire.json",
+    "matches": true
+  },
+  {
+    "path": "oracle/cases.json",
+    "matches": true
+  },
+  {
+    "path": "oracle/clean-EAGER-main.json",
+    "matches": true
+  },
+  {
+    "path": "oracle/clean-EAGER-wire.json",
+    "matches": true
+  },
+  {
+    "path": "oracle/clean-MAPPED-main.json",
+    "matches": true
+  },
+  {
+    "path": "oracle/clean-MAPPED-wire.json",
+    "matches": true
+  },
+  {
+    "path": "oracle/clean-unknown-main.json",
+    "matches": true
+  },
+  {
+    "path": "oracle/clean-unknown-wire.json",
+    "matches": true
+  },
+  {
+    "path": "oracle/design-cases.json",
+    "matches": true
+  },
+  {
+    "path": "oracle/design-main.json",
+    "matches": true
+  },
+  {
+    "path": "oracle/design-repeat.json",
+    "matches": true
+  },
+  {
+    "path": "oracle/source-cases.json",
+    "matches": true
+  },
+  {
+    "path": "oracle/sources-main.json",
+    "matches": true
+  },
+  {
+    "path": "oracle/sources-wire.json",
+    "matches": true
+  },
+  {
+    "path": "oracle/unknown-cases.json",
+    "matches": true
+  },
+  {
+    "path": "review_b_cancel_test.go.txt",
+    "matches": true
+  },
+  {
+    "path": "streaming-final-exact-race.log",
+    "matches": true
+  },
+  {
+    "path": "streaming-race.log",
+    "matches": true
+  },
+  {
+    "path": "tests/streaming_lifecycle_test.go",
+    "matches": true
+  },
+  {
+    "path": "tests/streaming_pagination_test.go",
+    "matches": true
+  },
+  {
+    "path": "tests/streaming_sources_test.go",
+    "matches": true
+  },
+  {
+    "path": "verification.json",
+    "matches": true
+  },
+  {
+    "path": "verify-strict-python-types.py",
+    "matches": true
+  },
+  {
+    "path": "verify.py",
+    "matches": true
+  },
+  {
+    "path": "vet-final-exact.log",
+    "matches": true
+  },
+  {
+    "path": "vet.log",
+    "matches": true
+  },
+  {
+    "path": "wire-layer-audit.json",
+    "matches": true
+  }
+]

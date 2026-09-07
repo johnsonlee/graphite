@@ -1,0 +1,2556 @@
+[
+  {
+    "before": {
+      "base": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "sources": 1
+      },
+      "candidate": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "sources": 1
+      },
+      "fixture": "bad-first",
+      "main": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 1
+      },
+      "mainEqual": false,
+      "sameAsBase": true
+    },
+    "after": {
+      "base": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 1
+      },
+      "candidate": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 1
+      },
+      "fixture": "bad-first",
+      "main": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 1
+      },
+      "mainEqual": true,
+      "sameAsBase": true
+    }
+  },
+  {
+    "before": {
+      "base": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "sources": 1
+      },
+      "candidate": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "sources": 1
+      },
+      "fixture": "bad-first",
+      "main": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 1
+      },
+      "mainEqual": false,
+      "sameAsBase": true
+    },
+    "after": {
+      "base": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 1
+      },
+      "candidate": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 1
+      },
+      "fixture": "bad-first",
+      "main": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 1
+      },
+      "mainEqual": true,
+      "sameAsBase": true
+    }
+  },
+  {
+    "before": {
+      "base": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "sources": 1
+      },
+      "candidate": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "sources": 1
+      },
+      "fixture": "bad-first",
+      "main": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 1
+      },
+      "mainEqual": false,
+      "sameAsBase": true
+    },
+    "after": {
+      "base": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 1
+      },
+      "candidate": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 1
+      },
+      "fixture": "bad-first",
+      "main": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 1
+      },
+      "mainEqual": true,
+      "sameAsBase": true
+    }
+  },
+  {
+    "before": {
+      "base": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "sources": 2
+      },
+      "candidate": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "sources": 2
+      },
+      "fixture": "bad-first",
+      "main": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 2
+      },
+      "mainEqual": false,
+      "sameAsBase": true
+    },
+    "after": {
+      "base": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 2
+      },
+      "candidate": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 2
+      },
+      "fixture": "bad-first",
+      "main": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 2
+      },
+      "mainEqual": true,
+      "sameAsBase": true
+    }
+  },
+  {
+    "before": {
+      "base": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "sources": 2
+      },
+      "candidate": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "sources": 2
+      },
+      "fixture": "bad-first",
+      "main": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 2
+      },
+      "mainEqual": false,
+      "sameAsBase": true
+    },
+    "after": {
+      "base": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 2
+      },
+      "candidate": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 2
+      },
+      "fixture": "bad-first",
+      "main": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 2
+      },
+      "mainEqual": true,
+      "sameAsBase": true
+    }
+  },
+  {
+    "before": {
+      "base": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "sources": 2
+      },
+      "candidate": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "sources": 2
+      },
+      "fixture": "bad-first",
+      "main": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 2
+      },
+      "mainEqual": false,
+      "sameAsBase": true
+    },
+    "after": {
+      "base": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 2
+      },
+      "candidate": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 2
+      },
+      "fixture": "bad-first",
+      "main": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 2
+      },
+      "mainEqual": true,
+      "sameAsBase": true
+    }
+  },
+  {
+    "before": {
+      "base": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "sources": 9
+      },
+      "candidate": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "sources": 9
+      },
+      "fixture": "bad-first",
+      "main": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 9
+      },
+      "mainEqual": false,
+      "sameAsBase": true
+    },
+    "after": {
+      "base": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 9
+      },
+      "candidate": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 9
+      },
+      "fixture": "bad-first",
+      "main": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 9
+      },
+      "mainEqual": true,
+      "sameAsBase": true
+    }
+  },
+  {
+    "before": {
+      "base": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "sources": 9
+      },
+      "candidate": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "sources": 9
+      },
+      "fixture": "bad-first",
+      "main": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 9
+      },
+      "mainEqual": false,
+      "sameAsBase": true
+    },
+    "after": {
+      "base": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 9
+      },
+      "candidate": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 9
+      },
+      "fixture": "bad-first",
+      "main": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 9
+      },
+      "mainEqual": true,
+      "sameAsBase": true
+    }
+  },
+  {
+    "before": {
+      "base": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "sources": 9
+      },
+      "candidate": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "sources": 9
+      },
+      "fixture": "bad-first",
+      "main": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 9
+      },
+      "mainEqual": false,
+      "sameAsBase": true
+    },
+    "after": {
+      "base": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 9
+      },
+      "candidate": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 9
+      },
+      "fixture": "bad-first",
+      "main": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 9
+      },
+      "mainEqual": true,
+      "sameAsBase": true
+    }
+  },
+  {
+    "before": {
+      "base": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "sources": 40
+      },
+      "candidate": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "sources": 40
+      },
+      "fixture": "bad-first",
+      "main": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 40
+      },
+      "mainEqual": false,
+      "sameAsBase": true
+    },
+    "after": {
+      "base": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 40
+      },
+      "candidate": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 40
+      },
+      "fixture": "bad-first",
+      "main": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 40
+      },
+      "mainEqual": true,
+      "sameAsBase": true
+    }
+  },
+  {
+    "before": {
+      "base": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "sources": 40
+      },
+      "candidate": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "sources": 40
+      },
+      "fixture": "bad-first",
+      "main": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 40
+      },
+      "mainEqual": false,
+      "sameAsBase": true
+    },
+    "after": {
+      "base": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 40
+      },
+      "candidate": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 40
+      },
+      "fixture": "bad-first",
+      "main": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 40
+      },
+      "mainEqual": true,
+      "sameAsBase": true
+    }
+  },
+  {
+    "before": {
+      "base": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "sources": 40
+      },
+      "candidate": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "sources": 40
+      },
+      "fixture": "bad-first",
+      "main": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 40
+      },
+      "mainEqual": false,
+      "sameAsBase": true
+    },
+    "after": {
+      "base": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 40
+      },
+      "candidate": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 40
+      },
+      "fixture": "bad-first",
+      "main": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 40
+      },
+      "mainEqual": true,
+      "sameAsBase": true
+    }
+  },
+  {
+    "before": {
+      "base": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class STARTS WITH 'example.' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "sources": 1
+      },
+      "candidate": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class STARTS WITH 'example.' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [
+          {
+            "id": 2,
+            "n.graph_id": null
+          }
+        ],
+        "sources": 1
+      },
+      "fixture": "bad-last",
+      "main": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class STARTS WITH 'example.' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [
+          {
+            "id": 2,
+            "n.graph_id": null
+          }
+        ],
+        "sources": 1
+      },
+      "mainEqual": true,
+      "sameAsBase": false
+    },
+    "after": {
+      "base": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class STARTS WITH 'example.' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [
+          {
+            "id": 2,
+            "n.graph_id": null
+          }
+        ],
+        "sources": 1
+      },
+      "candidate": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class STARTS WITH 'example.' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [
+          {
+            "id": 2,
+            "n.graph_id": null
+          }
+        ],
+        "sources": 1
+      },
+      "fixture": "bad-last",
+      "main": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class STARTS WITH 'example.' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [
+          {
+            "id": 2,
+            "n.graph_id": null
+          }
+        ],
+        "sources": 1
+      },
+      "mainEqual": true,
+      "sameAsBase": true
+    }
+  },
+  {
+    "before": {
+      "base": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class STARTS WITH 'example.' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "sources": 1
+      },
+      "candidate": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class STARTS WITH 'example.' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [
+          {
+            "callee": "other",
+            "caller": "example.Other",
+            "n.graph_id": null
+          }
+        ],
+        "sources": 1
+      },
+      "fixture": "bad-last",
+      "main": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class STARTS WITH 'example.' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [
+          {
+            "callee": "other",
+            "caller": "example.Other",
+            "n.graph_id": null
+          }
+        ],
+        "sources": 1
+      },
+      "mainEqual": true,
+      "sameAsBase": false
+    },
+    "after": {
+      "base": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class STARTS WITH 'example.' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [
+          {
+            "callee": "other",
+            "caller": "example.Other",
+            "n.graph_id": null
+          }
+        ],
+        "sources": 1
+      },
+      "candidate": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class STARTS WITH 'example.' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [
+          {
+            "callee": "other",
+            "caller": "example.Other",
+            "n.graph_id": null
+          }
+        ],
+        "sources": 1
+      },
+      "fixture": "bad-last",
+      "main": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class STARTS WITH 'example.' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [
+          {
+            "callee": "other",
+            "caller": "example.Other",
+            "n.graph_id": null
+          }
+        ],
+        "sources": 1
+      },
+      "mainEqual": true,
+      "sameAsBase": true
+    }
+  },
+  {
+    "before": {
+      "base": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class STARTS WITH 'example.' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "sources": 1
+      },
+      "candidate": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class STARTS WITH 'example.' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [
+          {
+            "id": 2,
+            "n.graphId": null,
+            "n.graph_id": null
+          }
+        ],
+        "sources": 1
+      },
+      "fixture": "bad-last",
+      "main": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class STARTS WITH 'example.' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [
+          {
+            "id": 2,
+            "n.graphId": null,
+            "n.graph_id": null
+          }
+        ],
+        "sources": 1
+      },
+      "mainEqual": true,
+      "sameAsBase": false
+    },
+    "after": {
+      "base": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class STARTS WITH 'example.' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [
+          {
+            "id": 2,
+            "n.graphId": null,
+            "n.graph_id": null
+          }
+        ],
+        "sources": 1
+      },
+      "candidate": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class STARTS WITH 'example.' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [
+          {
+            "id": 2,
+            "n.graphId": null,
+            "n.graph_id": null
+          }
+        ],
+        "sources": 1
+      },
+      "fixture": "bad-last",
+      "main": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class STARTS WITH 'example.' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [
+          {
+            "id": 2,
+            "n.graphId": null,
+            "n.graph_id": null
+          }
+        ],
+        "sources": 1
+      },
+      "mainEqual": true,
+      "sameAsBase": true
+    }
+  },
+  {
+    "before": {
+      "base": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE toLower(coalesce(n.caller_class,'')) STARTS WITH 'example.' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "sources": 1
+      },
+      "candidate": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE toLower(coalesce(n.caller_class,'')) STARTS WITH 'example.' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [
+          {
+            "id": 2,
+            "n.graph_id": null
+          }
+        ],
+        "sources": 1
+      },
+      "fixture": "bad-last",
+      "main": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE toLower(coalesce(n.caller_class,'')) STARTS WITH 'example.' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [
+          {
+            "id": 2,
+            "n.graph_id": null
+          }
+        ],
+        "sources": 1
+      },
+      "mainEqual": true,
+      "sameAsBase": false
+    },
+    "after": {
+      "base": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE toLower(coalesce(n.caller_class,'')) STARTS WITH 'example.' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [
+          {
+            "id": 2,
+            "n.graph_id": null
+          }
+        ],
+        "sources": 1
+      },
+      "candidate": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE toLower(coalesce(n.caller_class,'')) STARTS WITH 'example.' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [
+          {
+            "id": 2,
+            "n.graph_id": null
+          }
+        ],
+        "sources": 1
+      },
+      "fixture": "bad-last",
+      "main": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE toLower(coalesce(n.caller_class,'')) STARTS WITH 'example.' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [
+          {
+            "id": 2,
+            "n.graph_id": null
+          }
+        ],
+        "sources": 1
+      },
+      "mainEqual": true,
+      "sameAsBase": true
+    }
+  },
+  {
+    "before": {
+      "base": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE toLower(coalesce(n.caller_class,'')) STARTS WITH 'example.' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "sources": 1
+      },
+      "candidate": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE toLower(coalesce(n.caller_class,'')) STARTS WITH 'example.' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [
+          {
+            "callee": "other",
+            "caller": "example.Other",
+            "n.graph_id": null
+          }
+        ],
+        "sources": 1
+      },
+      "fixture": "bad-last",
+      "main": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE toLower(coalesce(n.caller_class,'')) STARTS WITH 'example.' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [
+          {
+            "callee": "other",
+            "caller": "example.Other",
+            "n.graph_id": null
+          }
+        ],
+        "sources": 1
+      },
+      "mainEqual": true,
+      "sameAsBase": false
+    },
+    "after": {
+      "base": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE toLower(coalesce(n.caller_class,'')) STARTS WITH 'example.' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [
+          {
+            "callee": "other",
+            "caller": "example.Other",
+            "n.graph_id": null
+          }
+        ],
+        "sources": 1
+      },
+      "candidate": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE toLower(coalesce(n.caller_class,'')) STARTS WITH 'example.' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [
+          {
+            "callee": "other",
+            "caller": "example.Other",
+            "n.graph_id": null
+          }
+        ],
+        "sources": 1
+      },
+      "fixture": "bad-last",
+      "main": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE toLower(coalesce(n.caller_class,'')) STARTS WITH 'example.' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [
+          {
+            "callee": "other",
+            "caller": "example.Other",
+            "n.graph_id": null
+          }
+        ],
+        "sources": 1
+      },
+      "mainEqual": true,
+      "sameAsBase": true
+    }
+  },
+  {
+    "before": {
+      "base": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE toLower(coalesce(n.caller_class,'')) STARTS WITH 'example.' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "sources": 1
+      },
+      "candidate": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE toLower(coalesce(n.caller_class,'')) STARTS WITH 'example.' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [
+          {
+            "id": 2,
+            "n.graphId": null,
+            "n.graph_id": null
+          }
+        ],
+        "sources": 1
+      },
+      "fixture": "bad-last",
+      "main": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE toLower(coalesce(n.caller_class,'')) STARTS WITH 'example.' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [
+          {
+            "id": 2,
+            "n.graphId": null,
+            "n.graph_id": null
+          }
+        ],
+        "sources": 1
+      },
+      "mainEqual": true,
+      "sameAsBase": false
+    },
+    "after": {
+      "base": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE toLower(coalesce(n.caller_class,'')) STARTS WITH 'example.' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [
+          {
+            "id": 2,
+            "n.graphId": null,
+            "n.graph_id": null
+          }
+        ],
+        "sources": 1
+      },
+      "candidate": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE toLower(coalesce(n.caller_class,'')) STARTS WITH 'example.' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [
+          {
+            "id": 2,
+            "n.graphId": null,
+            "n.graph_id": null
+          }
+        ],
+        "sources": 1
+      },
+      "fixture": "bad-last",
+      "main": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE toLower(coalesce(n.caller_class,'')) STARTS WITH 'example.' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [
+          {
+            "id": 2,
+            "n.graphId": null,
+            "n.graph_id": null
+          }
+        ],
+        "sources": 1
+      },
+      "mainEqual": true,
+      "sameAsBase": true
+    }
+  },
+  {
+    "before": {
+      "base": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "sources": 1
+      },
+      "candidate": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "sources": 1
+      },
+      "fixture": "bad-last",
+      "main": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 1
+      },
+      "mainEqual": false,
+      "sameAsBase": true
+    },
+    "after": {
+      "base": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 1
+      },
+      "candidate": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 1
+      },
+      "fixture": "bad-last",
+      "main": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 1
+      },
+      "mainEqual": true,
+      "sameAsBase": true
+    }
+  },
+  {
+    "before": {
+      "base": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "sources": 1
+      },
+      "candidate": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "sources": 1
+      },
+      "fixture": "bad-last",
+      "main": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 1
+      },
+      "mainEqual": false,
+      "sameAsBase": true
+    },
+    "after": {
+      "base": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 1
+      },
+      "candidate": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 1
+      },
+      "fixture": "bad-last",
+      "main": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 1
+      },
+      "mainEqual": true,
+      "sameAsBase": true
+    }
+  },
+  {
+    "before": {
+      "base": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "sources": 1
+      },
+      "candidate": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "sources": 1
+      },
+      "fixture": "bad-last",
+      "main": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 1
+      },
+      "mainEqual": false,
+      "sameAsBase": true
+    },
+    "after": {
+      "base": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 1
+      },
+      "candidate": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 1
+      },
+      "fixture": "bad-last",
+      "main": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 1
+      },
+      "mainEqual": true,
+      "sameAsBase": true
+    }
+  },
+  {
+    "before": {
+      "base": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'caller' OR n.callee_name CONTAINS 'invoke' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "sources": 1
+      },
+      "candidate": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'caller' OR n.callee_name CONTAINS 'invoke' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [
+          {
+            "id": 41,
+            "n.graph_id": null
+          }
+        ],
+        "sources": 1
+      },
+      "fixture": "bad-last",
+      "main": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'caller' OR n.callee_name CONTAINS 'invoke' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [
+          {
+            "id": 41,
+            "n.graph_id": null
+          }
+        ],
+        "sources": 1
+      },
+      "mainEqual": true,
+      "sameAsBase": false
+    },
+    "after": {
+      "base": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'caller' OR n.callee_name CONTAINS 'invoke' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [
+          {
+            "id": 41,
+            "n.graph_id": null
+          }
+        ],
+        "sources": 1
+      },
+      "candidate": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'caller' OR n.callee_name CONTAINS 'invoke' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [
+          {
+            "id": 41,
+            "n.graph_id": null
+          }
+        ],
+        "sources": 1
+      },
+      "fixture": "bad-last",
+      "main": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'caller' OR n.callee_name CONTAINS 'invoke' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [
+          {
+            "id": 41,
+            "n.graph_id": null
+          }
+        ],
+        "sources": 1
+      },
+      "mainEqual": true,
+      "sameAsBase": true
+    }
+  },
+  {
+    "before": {
+      "base": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'caller' OR n.callee_name CONTAINS 'invoke' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "sources": 1
+      },
+      "candidate": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'caller' OR n.callee_name CONTAINS 'invoke' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [
+          {
+            "callee": "invoke",
+            "caller": "example.Other",
+            "n.graph_id": null
+          }
+        ],
+        "sources": 1
+      },
+      "fixture": "bad-last",
+      "main": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'caller' OR n.callee_name CONTAINS 'invoke' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [
+          {
+            "callee": "invoke",
+            "caller": "example.Other",
+            "n.graph_id": null
+          }
+        ],
+        "sources": 1
+      },
+      "mainEqual": true,
+      "sameAsBase": false
+    },
+    "after": {
+      "base": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'caller' OR n.callee_name CONTAINS 'invoke' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [
+          {
+            "callee": "invoke",
+            "caller": "example.Other",
+            "n.graph_id": null
+          }
+        ],
+        "sources": 1
+      },
+      "candidate": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'caller' OR n.callee_name CONTAINS 'invoke' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [
+          {
+            "callee": "invoke",
+            "caller": "example.Other",
+            "n.graph_id": null
+          }
+        ],
+        "sources": 1
+      },
+      "fixture": "bad-last",
+      "main": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'caller' OR n.callee_name CONTAINS 'invoke' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [
+          {
+            "callee": "invoke",
+            "caller": "example.Other",
+            "n.graph_id": null
+          }
+        ],
+        "sources": 1
+      },
+      "mainEqual": true,
+      "sameAsBase": true
+    }
+  },
+  {
+    "before": {
+      "base": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'caller' OR n.callee_name CONTAINS 'invoke' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "sources": 1
+      },
+      "candidate": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'caller' OR n.callee_name CONTAINS 'invoke' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [
+          {
+            "id": 41,
+            "n.graphId": null,
+            "n.graph_id": null
+          }
+        ],
+        "sources": 1
+      },
+      "fixture": "bad-last",
+      "main": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'caller' OR n.callee_name CONTAINS 'invoke' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [
+          {
+            "id": 41,
+            "n.graphId": null,
+            "n.graph_id": null
+          }
+        ],
+        "sources": 1
+      },
+      "mainEqual": true,
+      "sameAsBase": false
+    },
+    "after": {
+      "base": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'caller' OR n.callee_name CONTAINS 'invoke' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [
+          {
+            "id": 41,
+            "n.graphId": null,
+            "n.graph_id": null
+          }
+        ],
+        "sources": 1
+      },
+      "candidate": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'caller' OR n.callee_name CONTAINS 'invoke' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [
+          {
+            "id": 41,
+            "n.graphId": null,
+            "n.graph_id": null
+          }
+        ],
+        "sources": 1
+      },
+      "fixture": "bad-last",
+      "main": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'caller' OR n.callee_name CONTAINS 'invoke' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [
+          {
+            "id": 41,
+            "n.graphId": null,
+            "n.graph_id": null
+          }
+        ],
+        "sources": 1
+      },
+      "mainEqual": true,
+      "sameAsBase": true
+    }
+  },
+  {
+    "before": {
+      "base": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "sources": 2
+      },
+      "candidate": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "sources": 2
+      },
+      "fixture": "bad-last",
+      "main": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 2
+      },
+      "mainEqual": false,
+      "sameAsBase": true
+    },
+    "after": {
+      "base": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 2
+      },
+      "candidate": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 2
+      },
+      "fixture": "bad-last",
+      "main": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 2
+      },
+      "mainEqual": true,
+      "sameAsBase": true
+    }
+  },
+  {
+    "before": {
+      "base": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "sources": 2
+      },
+      "candidate": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "sources": 2
+      },
+      "fixture": "bad-last",
+      "main": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 2
+      },
+      "mainEqual": false,
+      "sameAsBase": true
+    },
+    "after": {
+      "base": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 2
+      },
+      "candidate": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 2
+      },
+      "fixture": "bad-last",
+      "main": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 2
+      },
+      "mainEqual": true,
+      "sameAsBase": true
+    }
+  },
+  {
+    "before": {
+      "base": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "sources": 2
+      },
+      "candidate": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "sources": 2
+      },
+      "fixture": "bad-last",
+      "main": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 2
+      },
+      "mainEqual": false,
+      "sameAsBase": true
+    },
+    "after": {
+      "base": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 2
+      },
+      "candidate": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 2
+      },
+      "fixture": "bad-last",
+      "main": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 2
+      },
+      "mainEqual": true,
+      "sameAsBase": true
+    }
+  },
+  {
+    "before": {
+      "base": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "sources": 9
+      },
+      "candidate": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "sources": 9
+      },
+      "fixture": "bad-last",
+      "main": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 9
+      },
+      "mainEqual": false,
+      "sameAsBase": true
+    },
+    "after": {
+      "base": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 9
+      },
+      "candidate": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 9
+      },
+      "fixture": "bad-last",
+      "main": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 9
+      },
+      "mainEqual": true,
+      "sameAsBase": true
+    }
+  },
+  {
+    "before": {
+      "base": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "sources": 9
+      },
+      "candidate": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "sources": 9
+      },
+      "fixture": "bad-last",
+      "main": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 9
+      },
+      "mainEqual": false,
+      "sameAsBase": true
+    },
+    "after": {
+      "base": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 9
+      },
+      "candidate": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 9
+      },
+      "fixture": "bad-last",
+      "main": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 9
+      },
+      "mainEqual": true,
+      "sameAsBase": true
+    }
+  },
+  {
+    "before": {
+      "base": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "sources": 9
+      },
+      "candidate": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "sources": 9
+      },
+      "fixture": "bad-last",
+      "main": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 9
+      },
+      "mainEqual": false,
+      "sameAsBase": true
+    },
+    "after": {
+      "base": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 9
+      },
+      "candidate": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 9
+      },
+      "fixture": "bad-last",
+      "main": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 9
+      },
+      "mainEqual": true,
+      "sameAsBase": true
+    }
+  },
+  {
+    "before": {
+      "base": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "sources": 40
+      },
+      "candidate": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "sources": 40
+      },
+      "fixture": "bad-last",
+      "main": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 40
+      },
+      "mainEqual": false,
+      "sameAsBase": true
+    },
+    "after": {
+      "base": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 40
+      },
+      "candidate": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 40
+      },
+      "fixture": "bad-last",
+      "main": {
+        "columns": [
+          "n.graph_id",
+          "id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.id AS id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 40
+      },
+      "mainEqual": true,
+      "sameAsBase": true
+    }
+  },
+  {
+    "before": {
+      "base": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "sources": 40
+      },
+      "candidate": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "sources": 40
+      },
+      "fixture": "bad-last",
+      "main": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 40
+      },
+      "mainEqual": false,
+      "sameAsBase": true
+    },
+    "after": {
+      "base": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 40
+      },
+      "candidate": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 40
+      },
+      "fixture": "bad-last",
+      "main": {
+        "columns": [
+          "n.graph_id",
+          "caller",
+          "callee"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graph_id,n.caller_class AS caller,n.callee_name AS callee SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 40
+      },
+      "mainEqual": true,
+      "sameAsBase": true
+    }
+  },
+  {
+    "before": {
+      "base": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "sources": 40
+      },
+      "candidate": {
+        "error": "IllegalArgumentException",
+        "message": "Unknown node tag: -1",
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "sources": 40
+      },
+      "fixture": "bad-last",
+      "main": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 40
+      },
+      "mainEqual": false,
+      "sameAsBase": true
+    },
+    "after": {
+      "base": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 40
+      },
+      "candidate": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 40
+      },
+      "fixture": "bad-last",
+      "main": {
+        "columns": [
+          "n.graphId",
+          "id",
+          "n.graph_id"
+        ],
+        "mode": "MAPPED",
+        "query": "MATCH (n) WHERE n.caller_class CONTAINS 'none' RETURN DISTINCT n.graphId,n.id AS id,n.graph_id SKIP 1 LIMIT 1",
+        "rows": [],
+        "sources": 40
+      },
+      "mainEqual": true,
+      "sameAsBase": true
+    }
+  }
+]

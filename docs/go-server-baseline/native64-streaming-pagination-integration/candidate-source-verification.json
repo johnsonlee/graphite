@@ -1,0 +1,12 @@
+[
+  {
+    "phase": "candidate",
+    "moduleFiles": 2433,
+    "allInputsEqualIndependentlyReviewedFullModuleCandidate": true
+  },
+  {
+    "phase": "http",
+    "moduleFiles": 2433,
+    "allInputsEqualIndependentlyReviewedFullModuleCandidate": true
+  }
+]

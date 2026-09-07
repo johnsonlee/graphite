@@ -1,0 +1,29 @@
+[
+  {
+    "cwd": "/tmp/graphite-b-root-independent-review/module",
+    "command": "go test -race ./internal/query -run 'TestGenericProjectionBinding|TestStreamingPaginationWaveFailureCancellationJoin|TestStreamingPaginationHeapAndFinalSortCancellation|TestExactTuple' -count=1 -v",
+    "exit": 0,
+    "log": "combined-targeted-race.log"
+  },
+  {
+    "cwd": "/tmp/graphite-b-root-independent-review",
+    "command": "python3 verify-original1048.py",
+    "exit": 0
+  },
+  {
+    "cwd": "/tmp/graphite-b-root-independent-review",
+    "command": "python3 verify-b595.py",
+    "exit": 0
+  },
+  {
+    "cwd": "/tmp/graphite-b-root-independent-review",
+    "command": "python3 compare-all67.py",
+    "exit": 1,
+    "reason": "six explicitly classified changed artifacts"
+  },
+  {
+    "cwd": "/tmp/graphite-b-root-independent-review",
+    "command": "python3 classify-all67.py",
+    "exit": 0
+  }
+]

@@ -1,0 +1,2 @@
+Exception in thread "main" java.lang.ClassCastException: class io.johnsonlee.graphite.webgraph.WebGraphBackedGraph cannot be cast to class java.io.Closeable (io.johnsonlee.graphite.webgraph.WebGraphBackedGraph is in unnamed module of loader 'app'; java.io.Closeable is in module java.base of loader 'bootstrap')
+	at StreamingSourcesOracle.main(StreamingSourcesOracle.java:16)

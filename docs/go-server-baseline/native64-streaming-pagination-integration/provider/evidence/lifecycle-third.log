@@ -1,0 +1,8 @@
+--- FAIL: TestStreamingPaginationJavaHardCapacityBeforeSource (0.00s)
+    streaming_lifecycle_test.go:98: {[x] [map[x:2] map[x:41]] [] []}
+--- FAIL: TestStreamingPaginationWaveFailureCancellationJoin (5.00s)
+    --- FAIL: TestStreamingPaginationWaveFailureCancellationJoin/projection (5.00s)
+        streaming_lifecycle_test.go:163: owner failed to join
+FAIL
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/query	6.374s
+FAIL

@@ -1,0 +1,1248 @@
+=== RUN   TestStreamingScanKeepsAcceptedRowsAndProvenanceIndependent
+--- PASS: TestStreamingScanKeepsAcceptedRowsAndProvenanceIndependent (0.02s)
+=== RUN   TestStreamingScanPreservesPriorBindingsAndGlobalOrder
+--- PASS: TestStreamingScanPreservesPriorBindingsAndGlobalOrder (0.01s)
+=== RUN   TestStreamingScanRetainsObservableBindingOrder
+--- PASS: TestStreamingScanRetainsObservableBindingOrder (0.01s)
+=== RUN   TestStreamingPaginationAdmissionAndCounts
+=== RUN   TestStreamingPaginationAdmissionAndCounts/SKIP_2_LIMIT_3
+=== RUN   TestStreamingPaginationAdmissionAndCounts/SKIP_$s_LIMIT_3
+=== RUN   TestStreamingPaginationAdmissionAndCounts/SKIP_1+1_LIMIT_3
+=== RUN   TestStreamingPaginationAdmissionAndCounts/SKIP_-1_LIMIT_3
+=== RUN   TestStreamingPaginationAdmissionAndCounts/SKIP_'bad'_LIMIT_3
+=== RUN   TestStreamingPaginationAdmissionAndCounts/SKIP_substring(1,0)_LIMIT_3
+=== RUN   TestStreamingPaginationAdmissionAndCounts/SKIP_1.9_LIMIT_2.8
+=== RUN   TestStreamingPaginationAdmissionAndCounts/SKIP_1_LIMIT_2147483648
+=== RUN   TestStreamingPaginationAdmissionAndCounts/SKIP_0_LIMIT_2147483648
+=== RUN   TestStreamingPaginationAdmissionAndCounts/SKIP_2147483647_LIMIT_0
+=== RUN   TestStreamingPaginationAdmissionAndCounts/SKIP_0_LIMIT_$l
+=== RUN   TestStreamingPaginationAdmissionAndCounts/SKIP_0_LIMIT_-1
+--- PASS: TestStreamingPaginationAdmissionAndCounts (0.02s)
+    --- PASS: TestStreamingPaginationAdmissionAndCounts/SKIP_2_LIMIT_3 (0.00s)
+    --- PASS: TestStreamingPaginationAdmissionAndCounts/SKIP_$s_LIMIT_3 (0.00s)
+    --- PASS: TestStreamingPaginationAdmissionAndCounts/SKIP_1+1_LIMIT_3 (0.00s)
+    --- PASS: TestStreamingPaginationAdmissionAndCounts/SKIP_-1_LIMIT_3 (0.00s)
+    --- PASS: TestStreamingPaginationAdmissionAndCounts/SKIP_'bad'_LIMIT_3 (0.00s)
+    --- PASS: TestStreamingPaginationAdmissionAndCounts/SKIP_substring(1,0)_LIMIT_3 (0.00s)
+    --- PASS: TestStreamingPaginationAdmissionAndCounts/SKIP_1.9_LIMIT_2.8 (0.00s)
+    --- PASS: TestStreamingPaginationAdmissionAndCounts/SKIP_1_LIMIT_2147483648 (0.00s)
+    --- PASS: TestStreamingPaginationAdmissionAndCounts/SKIP_0_LIMIT_2147483648 (0.00s)
+    --- PASS: TestStreamingPaginationAdmissionAndCounts/SKIP_2147483647_LIMIT_0 (0.00s)
+    --- PASS: TestStreamingPaginationAdmissionAndCounts/SKIP_0_LIMIT_$l (0.00s)
+    --- PASS: TestStreamingPaginationAdmissionAndCounts/SKIP_0_LIMIT_-1 (0.00s)
+=== RUN   TestStreamingPaginationJavaHardCapacityBeforeSource
+--- PASS: TestStreamingPaginationJavaHardCapacityBeforeSource (0.00s)
+=== RUN   TestStreamingPaginationWaveFailureCancellationJoin
+=== RUN   TestStreamingPaginationWaveFailureCancellationJoin/source
+=== RUN   TestStreamingPaginationWaveFailureCancellationJoin/request
+=== RUN   TestStreamingPaginationWaveFailureCancellationJoin/projection
+--- PASS: TestStreamingPaginationWaveFailureCancellationJoin (0.00s)
+    --- PASS: TestStreamingPaginationWaveFailureCancellationJoin/source (0.00s)
+    --- PASS: TestStreamingPaginationWaveFailureCancellationJoin/request (0.00s)
+    --- PASS: TestStreamingPaginationWaveFailureCancellationJoin/projection (0.00s)
+=== RUN   TestStreamingPaginationOwnedRowsAfterClose
+--- PASS: TestStreamingPaginationOwnedRowsAfterClose (0.00s)
+=== RUN   TestStreamingPaginationRetainedCacheRequiresExhaustion
+=== RUN   TestStreamingPaginationRetainedCacheRequiresExhaustion/ordinary-stop
+=== RUN   TestStreamingPaginationRetainedCacheRequiresExhaustion/distinct-stop
+=== RUN   TestStreamingPaginationRetainedCacheRequiresExhaustion/cancel
+--- PASS: TestStreamingPaginationRetainedCacheRequiresExhaustion (0.01s)
+    --- PASS: TestStreamingPaginationRetainedCacheRequiresExhaustion/ordinary-stop (0.00s)
+    --- PASS: TestStreamingPaginationRetainedCacheRequiresExhaustion/distinct-stop (0.00s)
+    --- PASS: TestStreamingPaginationRetainedCacheRequiresExhaustion/cancel (0.00s)
+=== RUN   TestStreamingPaginationHeapAndFinalSortCancellation
+=== RUN   TestStreamingPaginationHeapAndFinalSortCancellation/heap
+=== RUN   TestStreamingPaginationHeapAndFinalSortCancellation/sort
+--- PASS: TestStreamingPaginationHeapAndFinalSortCancellation (0.00s)
+    --- PASS: TestStreamingPaginationHeapAndFinalSortCancellation/heap (0.00s)
+    --- PASS: TestStreamingPaginationHeapAndFinalSortCancellation/sort (0.00s)
+=== RUN   TestStreamingPaginationDesignOracle
+=== RUN   TestStreamingPaginationDesignOracle/skip-before-projection/false
+=== RUN   TestStreamingPaginationDesignOracle/skip-before-projection/true
+=== RUN   TestStreamingPaginationDesignOracle/skip-zero-projects-first/false
+=== RUN   TestStreamingPaginationDesignOracle/skip-zero-projects-first/true
+=== RUN   TestStreamingPaginationDesignOracle/skip-parameter-ignored/false
+=== RUN   TestStreamingPaginationDesignOracle/skip-parameter-ignored/true
+=== RUN   TestStreamingPaginationDesignOracle/skip-throwing-expression-ignored/false
+=== RUN   TestStreamingPaginationDesignOracle/skip-throwing-expression-ignored/true
+=== RUN   TestStreamingPaginationDesignOracle/skip-add-expression-ignored/false
+=== RUN   TestStreamingPaginationDesignOracle/skip-add-expression-ignored/true
+=== RUN   TestStreamingPaginationDesignOracle/skip-string-literal-converts-zero/false
+=== RUN   TestStreamingPaginationDesignOracle/skip-string-literal-converts-zero/true
+=== RUN   TestStreamingPaginationDesignOracle/skip-unary-negative-ignored/false
+=== RUN   TestStreamingPaginationDesignOracle/skip-unary-negative-ignored/true
+=== RUN   TestStreamingPaginationDesignOracle/limit-zero-skips-everything/false
+=== RUN   TestStreamingPaginationDesignOracle/limit-zero-skips-everything/true
+=== RUN   TestStreamingPaginationDesignOracle/negative-skip-with-zero-limit/false
+=== RUN   TestStreamingPaginationDesignOracle/negative-skip-with-zero-limit/true
+=== RUN   TestStreamingPaginationDesignOracle/retained-overflow-fallback/false
+=== RUN   TestStreamingPaginationDesignOracle/retained-overflow-fallback/true
+=== RUN   TestStreamingPaginationDesignOracle/generic-stop-before-late-read/false
+=== RUN   TestStreamingPaginationDesignOracle/generic-stop-before-late-read/true
+=== RUN   TestStreamingPaginationDesignOracle/order-consumes-late-read/false
+=== RUN   TestStreamingPaginationDesignOracle/order-consumes-late-read/true
+=== RUN   TestStreamingPaginationDesignOracle/order-projection-before-later-read/false
+=== RUN   TestStreamingPaginationDesignOracle/order-projection-before-later-read/true
+=== RUN   TestStreamingPaginationDesignOracle/unbounded-projects-before-later-read/false
+=== RUN   TestStreamingPaginationDesignOracle/unbounded-projects-before-later-read/true
+=== RUN   TestStreamingPaginationDesignOracle/order-evaluates-discarded-rows/false
+=== RUN   TestStreamingPaginationDesignOracle/order-evaluates-discarded-rows/true
+=== RUN   TestStreamingPaginationDesignOracle/order-ties-preserve-encounter/false
+=== RUN   TestStreamingPaginationDesignOracle/order-ties-preserve-encounter/true
+=== RUN   TestStreamingPaginationDesignOracle/order-source-property/false
+=== RUN   TestStreamingPaginationDesignOracle/order-source-property/true
+=== RUN   TestStreamingPaginationDesignOracle/order-alias-shadow/false
+=== RUN   TestStreamingPaginationDesignOracle/order-alias-shadow/true
+=== RUN   TestStreamingPaginationDesignOracle/distinct-skips-duplicate-order/false
+=== RUN   TestStreamingPaginationDesignOracle/distinct-skips-duplicate-order/true
+=== RUN   TestStreamingPaginationDesignOracle/distinct-still-projects-duplicate/false
+=== RUN   TestStreamingPaginationDesignOracle/distinct-still-projects-duplicate/true
+=== RUN   TestStreamingPaginationDesignOracle/distinct-eviction-rechecks-order/false
+=== RUN   TestStreamingPaginationDesignOracle/distinct-eviction-rechecks-order/true
+=== RUN   TestStreamingPaginationDesignOracle/distinct-order-duplicate-still-decodes/false
+=== RUN   TestStreamingPaginationDesignOracle/distinct-order-duplicate-still-decodes/true
+=== RUN   TestStreamingPaginationDesignOracle/distinct-skip-scope-stop/false
+=== RUN   TestStreamingPaginationDesignOracle/distinct-skip-scope-stop/true
+=== RUN   TestStreamingPaginationDesignOracle/late-duplicate-provenance-order-skipped/true
+=== RUN   TestStreamingPaginationDesignOracle/direct-skip/false
+=== RUN   TestStreamingPaginationDesignOracle/direct-skip/true
+=== RUN   TestStreamingPaginationDesignOracle/direct-order/false
+=== RUN   TestStreamingPaginationDesignOracle/direct-order/true
+=== RUN   TestStreamingPaginationDesignOracle/direct-order-throw/false
+=== RUN   TestStreamingPaginationDesignOracle/direct-order-throw/true
+--- PASS: TestStreamingPaginationDesignOracle (0.12s)
+    --- PASS: TestStreamingPaginationDesignOracle/skip-before-projection/false (0.01s)
+    --- PASS: TestStreamingPaginationDesignOracle/skip-before-projection/true (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/skip-zero-projects-first/false (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/skip-zero-projects-first/true (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/skip-parameter-ignored/false (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/skip-parameter-ignored/true (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/skip-throwing-expression-ignored/false (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/skip-throwing-expression-ignored/true (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/skip-add-expression-ignored/false (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/skip-add-expression-ignored/true (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/skip-string-literal-converts-zero/false (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/skip-string-literal-converts-zero/true (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/skip-unary-negative-ignored/false (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/skip-unary-negative-ignored/true (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/limit-zero-skips-everything/false (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/limit-zero-skips-everything/true (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/negative-skip-with-zero-limit/false (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/negative-skip-with-zero-limit/true (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/retained-overflow-fallback/false (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/retained-overflow-fallback/true (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/generic-stop-before-late-read/false (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/generic-stop-before-late-read/true (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/order-consumes-late-read/false (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/order-consumes-late-read/true (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/order-projection-before-later-read/false (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/order-projection-before-later-read/true (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/unbounded-projects-before-later-read/false (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/unbounded-projects-before-later-read/true (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/order-evaluates-discarded-rows/false (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/order-evaluates-discarded-rows/true (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/order-ties-preserve-encounter/false (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/order-ties-preserve-encounter/true (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/order-source-property/false (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/order-source-property/true (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/order-alias-shadow/false (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/order-alias-shadow/true (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/distinct-skips-duplicate-order/false (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/distinct-skips-duplicate-order/true (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/distinct-still-projects-duplicate/false (0.01s)
+    --- PASS: TestStreamingPaginationDesignOracle/distinct-still-projects-duplicate/true (0.01s)
+    --- PASS: TestStreamingPaginationDesignOracle/distinct-eviction-rechecks-order/false (0.01s)
+    --- PASS: TestStreamingPaginationDesignOracle/distinct-eviction-rechecks-order/true (0.01s)
+    --- PASS: TestStreamingPaginationDesignOracle/distinct-order-duplicate-still-decodes/false (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/distinct-order-duplicate-still-decodes/true (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/distinct-skip-scope-stop/false (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/distinct-skip-scope-stop/true (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/late-duplicate-provenance-order-skipped/true (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/direct-skip/false (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/direct-skip/true (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/direct-order/false (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/direct-order/true (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/direct-order-throw/false (0.00s)
+    --- PASS: TestStreamingPaginationDesignOracle/direct-order-throw/true (0.00s)
+=== RUN   TestStreamingPaginationActualMainCorpus
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/skip-source-order/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/skip-source-order/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-skip-id/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-skip-id/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-skip-whole/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-skip-whole/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-skip-nested/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-skip-nested/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-skip-string/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-skip-string/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-skip-expression/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-skip-expression/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/skip-before-error/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/skip-before-error/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/order-id/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/order-id/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/order-tie-skip/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/order-tie-skip/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/order-mixed-composite/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/order-mixed-composite/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/order-null/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/order-null/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/order-undefined-variable/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/order-undefined-variable/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/order-alias-shadows-source/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/order-alias-shadows-source/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/order-duplicate-alias/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/order-duplicate-alias/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/order-metadata-alias/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/order-metadata-alias/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/order-whole-nodes/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/order-whole-nodes/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/order-nested-maps/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/order-nested-maps/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-order-id/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-order-id/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-order-overwritten/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-order-overwritten/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-order-duplicate-projects/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-order-duplicate-projects/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-metadata-alias/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-metadata-alias/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-numeric-boxes/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-numeric-boxes/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-numeric-zeros/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-numeric-zeros/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-numeric-lists/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-numeric-lists/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-order-maps/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-order-maps/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/skip-parameter-ignored/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/skip-parameter-ignored/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/skip-arithmetic-ignored/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/skip-arithmetic-ignored/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/skip-negative-syntax-ignored/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/skip-negative-syntax-ignored/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/skip-throw-ignored/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/skip-throw-ignored/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/skip-string-zero/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/skip-string-zero/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/count-overflow/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/count-overflow/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/limit-wrapped-negative/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/limit-wrapped-negative/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/limit-fraction/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/limit-fraction/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/zero-before-order/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/zero-before-order/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/limit-parameter-declines/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/limit-parameter-declines/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/limit-parameter-zero-projects/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/limit-parameter-zero-projects/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/required-and/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/required-and/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/required-and-throw/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/required-and-throw/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/rank-choice/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/rank-choice/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/quoted-regex/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/quoted-regex/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/scope-a/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/scope-a/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/scope-b/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/scope-b/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/scope-missing/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/scope-missing/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/generic-inline/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/generic-inline/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/generic-label-unknown/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/generic-label-unknown/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/generic-anonymous/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/generic-anonymous/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/generic-supertype/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/generic-supertype/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/eviction-rechecks/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/MAPPED/eviction-rechecks/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/skip-source-order/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/skip-source-order/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-skip-id/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-skip-id/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-skip-whole/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-skip-whole/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-skip-nested/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-skip-nested/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-skip-string/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-skip-string/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-skip-expression/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-skip-expression/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/skip-before-error/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/skip-before-error/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/order-id/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/order-id/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/order-tie-skip/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/order-tie-skip/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/order-mixed-composite/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/order-mixed-composite/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/order-null/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/order-null/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/order-undefined-variable/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/order-undefined-variable/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/order-alias-shadows-source/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/order-alias-shadows-source/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/order-duplicate-alias/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/order-duplicate-alias/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/order-metadata-alias/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/order-metadata-alias/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/order-whole-nodes/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/order-whole-nodes/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/order-nested-maps/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/order-nested-maps/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-order-id/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-order-id/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-order-overwritten/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-order-overwritten/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-order-duplicate-projects/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-order-duplicate-projects/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-metadata-alias/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-metadata-alias/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-numeric-boxes/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-numeric-boxes/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-numeric-zeros/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-numeric-zeros/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-numeric-lists/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-numeric-lists/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-order-maps/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-order-maps/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/skip-parameter-ignored/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/skip-parameter-ignored/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/skip-arithmetic-ignored/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/skip-arithmetic-ignored/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/skip-negative-syntax-ignored/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/skip-negative-syntax-ignored/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/skip-throw-ignored/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/skip-throw-ignored/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/skip-string-zero/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/skip-string-zero/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/count-overflow/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/count-overflow/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/limit-wrapped-negative/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/limit-wrapped-negative/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/limit-fraction/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/limit-fraction/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/zero-before-order/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/zero-before-order/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/limit-parameter-declines/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/limit-parameter-declines/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/limit-parameter-zero-projects/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/limit-parameter-zero-projects/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/required-and/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/required-and/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/required-and-throw/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/required-and-throw/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/rank-choice/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/rank-choice/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/quoted-regex/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/quoted-regex/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/scope-a/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/scope-a/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/scope-b/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/scope-b/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/scope-missing/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/scope-missing/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/generic-inline/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/generic-inline/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/generic-label-unknown/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/generic-label-unknown/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/generic-anonymous/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/generic-anonymous/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/generic-supertype/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/generic-supertype/true
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/eviction-rechecks/false
+=== RUN   TestStreamingPaginationActualMainCorpus/clean/EAGER/eviction-rechecks/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/skip-source-order/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/skip-source-order/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-skip-id/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-skip-id/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-skip-whole/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-skip-whole/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-skip-nested/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-skip-nested/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-skip-string/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-skip-string/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-skip-expression/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-skip-expression/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/skip-before-error/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/skip-before-error/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/order-id/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/order-id/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/order-tie-skip/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/order-tie-skip/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/order-mixed-composite/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/order-mixed-composite/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/order-null/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/order-null/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/order-undefined-variable/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/order-undefined-variable/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/order-alias-shadows-source/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/order-alias-shadows-source/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/order-duplicate-alias/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/order-duplicate-alias/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/order-metadata-alias/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/order-metadata-alias/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/order-whole-nodes/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/order-whole-nodes/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/order-nested-maps/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/order-nested-maps/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-order-id/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-order-id/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-order-overwritten/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-order-overwritten/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-order-duplicate-projects/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-order-duplicate-projects/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-metadata-alias/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-metadata-alias/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-numeric-boxes/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-numeric-boxes/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-numeric-zeros/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-numeric-zeros/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-numeric-lists/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-numeric-lists/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-order-maps/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-order-maps/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/skip-parameter-ignored/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/skip-parameter-ignored/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/skip-arithmetic-ignored/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/skip-arithmetic-ignored/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/skip-negative-syntax-ignored/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/skip-negative-syntax-ignored/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/skip-throw-ignored/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/skip-throw-ignored/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/skip-string-zero/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/skip-string-zero/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/count-overflow/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/count-overflow/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/limit-wrapped-negative/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/limit-wrapped-negative/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/limit-fraction/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/limit-fraction/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/zero-before-order/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/zero-before-order/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/limit-parameter-declines/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/limit-parameter-declines/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/limit-parameter-zero-projects/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/limit-parameter-zero-projects/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/required-and/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/required-and/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/required-and-throw/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/required-and-throw/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/rank-choice/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/rank-choice/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/quoted-regex/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/quoted-regex/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/scope-a/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/scope-a/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/scope-b/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/scope-b/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/scope-missing/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/scope-missing/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/generic-inline/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/generic-inline/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/generic-label-unknown/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/generic-label-unknown/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/generic-anonymous/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/generic-anonymous/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/generic-supertype/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/generic-supertype/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/eviction-rechecks/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/eviction-rechecks/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/skip-source-order/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/skip-source-order/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-skip-id/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-skip-id/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-skip-whole/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-skip-whole/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-skip-nested/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-skip-nested/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-skip-string/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-skip-string/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-skip-expression/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-skip-expression/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/skip-before-error/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/skip-before-error/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/order-id/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/order-id/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/order-tie-skip/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/order-tie-skip/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/order-mixed-composite/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/order-mixed-composite/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/order-null/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/order-null/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/order-undefined-variable/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/order-undefined-variable/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/order-alias-shadows-source/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/order-alias-shadows-source/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/order-duplicate-alias/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/order-duplicate-alias/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/order-metadata-alias/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/order-metadata-alias/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/order-whole-nodes/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/order-whole-nodes/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/order-nested-maps/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/order-nested-maps/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-order-id/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-order-id/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-order-overwritten/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-order-overwritten/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-order-duplicate-projects/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-order-duplicate-projects/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-metadata-alias/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-metadata-alias/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-numeric-boxes/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-numeric-boxes/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-numeric-zeros/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-numeric-zeros/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-numeric-lists/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-numeric-lists/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-order-maps/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-order-maps/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/skip-parameter-ignored/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/skip-parameter-ignored/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/skip-arithmetic-ignored/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/skip-arithmetic-ignored/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/skip-negative-syntax-ignored/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/skip-negative-syntax-ignored/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/skip-throw-ignored/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/skip-throw-ignored/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/skip-string-zero/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/skip-string-zero/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/count-overflow/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/count-overflow/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/limit-wrapped-negative/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/limit-wrapped-negative/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/limit-fraction/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/limit-fraction/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/zero-before-order/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/zero-before-order/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/limit-parameter-declines/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/limit-parameter-declines/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/limit-parameter-zero-projects/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/limit-parameter-zero-projects/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/required-and/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/required-and/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/required-and-throw/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/required-and-throw/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/rank-choice/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/rank-choice/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/quoted-regex/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/quoted-regex/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/scope-a/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/scope-a/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/scope-b/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/scope-b/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/scope-missing/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/scope-missing/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/generic-inline/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/generic-inline/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/generic-label-unknown/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/generic-label-unknown/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/generic-anonymous/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/generic-anonymous/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/generic-supertype/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/generic-supertype/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/eviction-rechecks/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/eviction-rechecks/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/skip-source-order/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/skip-source-order/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-skip-id/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-skip-id/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-skip-whole/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-skip-whole/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-skip-nested/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-skip-nested/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-skip-string/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-skip-string/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-skip-expression/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-skip-expression/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/skip-before-error/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/skip-before-error/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/order-id/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/order-id/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/order-tie-skip/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/order-tie-skip/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/order-mixed-composite/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/order-mixed-composite/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/order-null/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/order-null/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/order-undefined-variable/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/order-undefined-variable/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/order-alias-shadows-source/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/order-alias-shadows-source/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/order-duplicate-alias/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/order-duplicate-alias/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/order-metadata-alias/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/order-metadata-alias/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/order-whole-nodes/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/order-whole-nodes/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/order-nested-maps/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/order-nested-maps/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-order-id/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-order-id/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-order-overwritten/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-order-overwritten/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-order-duplicate-projects/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-order-duplicate-projects/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-metadata-alias/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-metadata-alias/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-numeric-boxes/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-numeric-boxes/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-numeric-zeros/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-numeric-zeros/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-numeric-lists/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-numeric-lists/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-order-maps/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-order-maps/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/skip-parameter-ignored/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/skip-parameter-ignored/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/skip-arithmetic-ignored/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/skip-arithmetic-ignored/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/skip-negative-syntax-ignored/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/skip-negative-syntax-ignored/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/skip-throw-ignored/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/skip-throw-ignored/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/skip-string-zero/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/skip-string-zero/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/count-overflow/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/count-overflow/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/limit-wrapped-negative/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/limit-wrapped-negative/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/limit-fraction/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/limit-fraction/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/zero-before-order/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/zero-before-order/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/limit-parameter-declines/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/limit-parameter-declines/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/limit-parameter-zero-projects/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/limit-parameter-zero-projects/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/required-and/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/required-and/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/required-and-throw/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/required-and-throw/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/rank-choice/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/rank-choice/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/quoted-regex/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/quoted-regex/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/scope-a/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/scope-a/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/scope-b/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/scope-b/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/scope-missing/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/scope-missing/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/generic-inline/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/generic-inline/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/generic-label-unknown/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/generic-label-unknown/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/generic-anonymous/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/generic-anonymous/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/generic-supertype/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/generic-supertype/true
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/eviction-rechecks/false
+=== RUN   TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/eviction-rechecks/true
+--- PASS: TestStreamingPaginationActualMainCorpus (1.19s)
+    --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED (0.24s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/skip-source-order/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/skip-source-order/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-skip-id/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-skip-id/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-skip-whole/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-skip-whole/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-skip-nested/false (0.01s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-skip-nested/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-skip-string/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-skip-string/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-skip-expression/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-skip-expression/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/skip-before-error/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/skip-before-error/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/order-id/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/order-id/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/order-tie-skip/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/order-tie-skip/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/order-mixed-composite/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/order-mixed-composite/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/order-null/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/order-null/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/order-undefined-variable/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/order-undefined-variable/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/order-alias-shadows-source/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/order-alias-shadows-source/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/order-duplicate-alias/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/order-duplicate-alias/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/order-metadata-alias/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/order-metadata-alias/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/order-whole-nodes/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/order-whole-nodes/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/order-nested-maps/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/order-nested-maps/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-order-id/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-order-id/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-order-overwritten/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-order-overwritten/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-order-duplicate-projects/false (0.01s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-order-duplicate-projects/true (0.01s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-metadata-alias/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-metadata-alias/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-numeric-boxes/false (0.01s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-numeric-boxes/true (0.01s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-numeric-zeros/false (0.01s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-numeric-zeros/true (0.01s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-numeric-lists/false (0.01s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-numeric-lists/true (0.01s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-order-maps/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/distinct-order-maps/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/skip-parameter-ignored/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/skip-parameter-ignored/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/skip-arithmetic-ignored/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/skip-arithmetic-ignored/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/skip-negative-syntax-ignored/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/skip-negative-syntax-ignored/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/skip-throw-ignored/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/skip-throw-ignored/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/skip-string-zero/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/skip-string-zero/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/count-overflow/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/count-overflow/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/limit-wrapped-negative/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/limit-wrapped-negative/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/limit-fraction/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/limit-fraction/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/zero-before-order/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/zero-before-order/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/limit-parameter-declines/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/limit-parameter-declines/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/limit-parameter-zero-projects/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/limit-parameter-zero-projects/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/required-and/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/required-and/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/required-and-throw/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/required-and-throw/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/rank-choice/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/rank-choice/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/quoted-regex/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/quoted-regex/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/scope-a/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/scope-a/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/scope-b/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/scope-b/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/scope-missing/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/scope-missing/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/generic-inline/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/generic-inline/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/generic-label-unknown/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/generic-label-unknown/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/generic-anonymous/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/generic-anonymous/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/generic-supertype/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/generic-supertype/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/eviction-rechecks/false (0.01s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/MAPPED/eviction-rechecks/true (0.01s)
+    --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER (0.22s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/skip-source-order/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/skip-source-order/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-skip-id/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-skip-id/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-skip-whole/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-skip-whole/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-skip-nested/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-skip-nested/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-skip-string/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-skip-string/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-skip-expression/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-skip-expression/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/skip-before-error/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/skip-before-error/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/order-id/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/order-id/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/order-tie-skip/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/order-tie-skip/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/order-mixed-composite/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/order-mixed-composite/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/order-null/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/order-null/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/order-undefined-variable/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/order-undefined-variable/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/order-alias-shadows-source/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/order-alias-shadows-source/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/order-duplicate-alias/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/order-duplicate-alias/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/order-metadata-alias/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/order-metadata-alias/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/order-whole-nodes/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/order-whole-nodes/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/order-nested-maps/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/order-nested-maps/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-order-id/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-order-id/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-order-overwritten/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-order-overwritten/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-order-duplicate-projects/false (0.01s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-order-duplicate-projects/true (0.01s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-metadata-alias/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-metadata-alias/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-numeric-boxes/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-numeric-boxes/true (0.01s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-numeric-zeros/false (0.01s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-numeric-zeros/true (0.01s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-numeric-lists/false (0.01s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-numeric-lists/true (0.01s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-order-maps/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/distinct-order-maps/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/skip-parameter-ignored/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/skip-parameter-ignored/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/skip-arithmetic-ignored/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/skip-arithmetic-ignored/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/skip-negative-syntax-ignored/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/skip-negative-syntax-ignored/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/skip-throw-ignored/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/skip-throw-ignored/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/skip-string-zero/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/skip-string-zero/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/count-overflow/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/count-overflow/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/limit-wrapped-negative/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/limit-wrapped-negative/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/limit-fraction/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/limit-fraction/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/zero-before-order/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/zero-before-order/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/limit-parameter-declines/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/limit-parameter-declines/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/limit-parameter-zero-projects/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/limit-parameter-zero-projects/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/required-and/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/required-and/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/required-and-throw/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/required-and-throw/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/rank-choice/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/rank-choice/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/quoted-regex/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/quoted-regex/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/scope-a/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/scope-a/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/scope-b/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/scope-b/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/scope-missing/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/scope-missing/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/generic-inline/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/generic-inline/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/generic-label-unknown/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/generic-label-unknown/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/generic-anonymous/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/generic-anonymous/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/generic-supertype/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/generic-supertype/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/eviction-rechecks/false (0.01s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/clean/EAGER/eviction-rechecks/true (0.01s)
+    --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED (0.24s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/skip-source-order/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/skip-source-order/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-skip-id/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-skip-id/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-skip-whole/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-skip-whole/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-skip-nested/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-skip-nested/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-skip-string/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-skip-string/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-skip-expression/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-skip-expression/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/skip-before-error/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/skip-before-error/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/order-id/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/order-id/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/order-tie-skip/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/order-tie-skip/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/order-mixed-composite/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/order-mixed-composite/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/order-null/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/order-null/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/order-undefined-variable/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/order-undefined-variable/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/order-alias-shadows-source/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/order-alias-shadows-source/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/order-duplicate-alias/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/order-duplicate-alias/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/order-metadata-alias/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/order-metadata-alias/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/order-whole-nodes/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/order-whole-nodes/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/order-nested-maps/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/order-nested-maps/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-order-id/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-order-id/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-order-overwritten/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-order-overwritten/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-order-duplicate-projects/false (0.01s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-order-duplicate-projects/true (0.01s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-metadata-alias/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-metadata-alias/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-numeric-boxes/false (0.01s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-numeric-boxes/true (0.01s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-numeric-zeros/false (0.01s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-numeric-zeros/true (0.01s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-numeric-lists/false (0.01s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-numeric-lists/true (0.01s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-order-maps/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/distinct-order-maps/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/skip-parameter-ignored/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/skip-parameter-ignored/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/skip-arithmetic-ignored/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/skip-arithmetic-ignored/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/skip-negative-syntax-ignored/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/skip-negative-syntax-ignored/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/skip-throw-ignored/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/skip-throw-ignored/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/skip-string-zero/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/skip-string-zero/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/count-overflow/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/count-overflow/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/limit-wrapped-negative/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/limit-wrapped-negative/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/limit-fraction/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/limit-fraction/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/zero-before-order/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/zero-before-order/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/limit-parameter-declines/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/limit-parameter-declines/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/limit-parameter-zero-projects/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/limit-parameter-zero-projects/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/required-and/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/required-and/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/required-and-throw/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/required-and-throw/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/rank-choice/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/rank-choice/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/quoted-regex/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/quoted-regex/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/scope-a/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/scope-a/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/scope-b/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/scope-b/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/scope-missing/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/scope-missing/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/generic-inline/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/generic-inline/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/generic-label-unknown/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/generic-label-unknown/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/generic-anonymous/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/generic-anonymous/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/generic-supertype/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/generic-supertype/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/eviction-rechecks/false (0.01s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-first-unmatched/MAPPED/eviction-rechecks/true (0.01s)
+    --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED (0.23s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/skip-source-order/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/skip-source-order/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-skip-id/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-skip-id/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-skip-whole/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-skip-whole/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-skip-nested/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-skip-nested/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-skip-string/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-skip-string/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-skip-expression/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-skip-expression/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/skip-before-error/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/skip-before-error/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/order-id/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/order-id/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/order-tie-skip/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/order-tie-skip/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/order-mixed-composite/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/order-mixed-composite/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/order-null/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/order-null/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/order-undefined-variable/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/order-undefined-variable/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/order-alias-shadows-source/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/order-alias-shadows-source/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/order-duplicate-alias/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/order-duplicate-alias/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/order-metadata-alias/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/order-metadata-alias/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/order-whole-nodes/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/order-whole-nodes/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/order-nested-maps/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/order-nested-maps/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-order-id/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-order-id/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-order-overwritten/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-order-overwritten/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-order-duplicate-projects/false (0.01s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-order-duplicate-projects/true (0.01s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-metadata-alias/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-metadata-alias/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-numeric-boxes/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-numeric-boxes/true (0.01s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-numeric-zeros/false (0.01s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-numeric-zeros/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-numeric-lists/false (0.01s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-numeric-lists/true (0.01s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-order-maps/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/distinct-order-maps/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/skip-parameter-ignored/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/skip-parameter-ignored/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/skip-arithmetic-ignored/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/skip-arithmetic-ignored/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/skip-negative-syntax-ignored/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/skip-negative-syntax-ignored/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/skip-throw-ignored/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/skip-throw-ignored/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/skip-string-zero/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/skip-string-zero/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/count-overflow/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/count-overflow/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/limit-wrapped-negative/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/limit-wrapped-negative/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/limit-fraction/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/limit-fraction/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/zero-before-order/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/zero-before-order/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/limit-parameter-declines/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/limit-parameter-declines/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/limit-parameter-zero-projects/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/limit-parameter-zero-projects/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/required-and/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/required-and/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/required-and-throw/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/required-and-throw/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/rank-choice/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/rank-choice/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/quoted-regex/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/quoted-regex/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/scope-a/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/scope-a/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/scope-b/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/scope-b/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/scope-missing/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/scope-missing/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/generic-inline/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/generic-inline/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/generic-label-unknown/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/generic-label-unknown/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/generic-anonymous/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/generic-anonymous/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/generic-supertype/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/generic-supertype/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/eviction-rechecks/false (0.01s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-last-unmatched/MAPPED/eviction-rechecks/true (0.01s)
+    --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED (0.25s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/skip-source-order/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/skip-source-order/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-skip-id/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-skip-id/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-skip-whole/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-skip-whole/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-skip-nested/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-skip-nested/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-skip-string/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-skip-string/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-skip-expression/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-skip-expression/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/skip-before-error/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/skip-before-error/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/order-id/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/order-id/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/order-tie-skip/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/order-tie-skip/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/order-mixed-composite/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/order-mixed-composite/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/order-null/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/order-null/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/order-undefined-variable/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/order-undefined-variable/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/order-alias-shadows-source/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/order-alias-shadows-source/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/order-duplicate-alias/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/order-duplicate-alias/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/order-metadata-alias/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/order-metadata-alias/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/order-whole-nodes/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/order-whole-nodes/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/order-nested-maps/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/order-nested-maps/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-order-id/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-order-id/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-order-overwritten/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-order-overwritten/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-order-duplicate-projects/false (0.01s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-order-duplicate-projects/true (0.01s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-metadata-alias/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-metadata-alias/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-numeric-boxes/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-numeric-boxes/true (0.01s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-numeric-zeros/false (0.01s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-numeric-zeros/true (0.01s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-numeric-lists/false (0.01s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-numeric-lists/true (0.01s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-order-maps/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/distinct-order-maps/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/skip-parameter-ignored/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/skip-parameter-ignored/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/skip-arithmetic-ignored/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/skip-arithmetic-ignored/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/skip-negative-syntax-ignored/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/skip-negative-syntax-ignored/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/skip-throw-ignored/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/skip-throw-ignored/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/skip-string-zero/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/skip-string-zero/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/count-overflow/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/count-overflow/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/limit-wrapped-negative/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/limit-wrapped-negative/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/limit-fraction/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/limit-fraction/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/zero-before-order/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/zero-before-order/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/limit-parameter-declines/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/limit-parameter-declines/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/limit-parameter-zero-projects/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/limit-parameter-zero-projects/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/required-and/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/required-and/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/required-and-throw/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/required-and-throw/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/rank-choice/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/rank-choice/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/quoted-regex/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/quoted-regex/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/scope-a/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/scope-a/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/scope-b/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/scope-b/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/scope-missing/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/scope-missing/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/generic-inline/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/generic-inline/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/generic-label-unknown/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/generic-label-unknown/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/generic-anonymous/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/generic-anonymous/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/generic-supertype/false (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/generic-supertype/true (0.00s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/eviction-rechecks/false (0.01s)
+        --- PASS: TestStreamingPaginationActualMainCorpus/bad-matched/MAPPED/eviction-rechecks/true (0.01s)
+=== RUN   TestStreamingPaginationUnknownLabelMain
+=== RUN   TestStreamingPaginationUnknownLabelMain/clean/skip-expression/false
+=== RUN   TestStreamingPaginationUnknownLabelMain/clean/skip-expression/true
+=== RUN   TestStreamingPaginationUnknownLabelMain/clean/skip-parameter-negative/false
+=== RUN   TestStreamingPaginationUnknownLabelMain/clean/skip-parameter-negative/true
+=== RUN   TestStreamingPaginationUnknownLabelMain/clean/skip-expression-negative/false
+=== RUN   TestStreamingPaginationUnknownLabelMain/clean/skip-expression-negative/true
+=== RUN   TestStreamingPaginationUnknownLabelMain/clean/skip-string/false
+=== RUN   TestStreamingPaginationUnknownLabelMain/clean/skip-string/true
+=== RUN   TestStreamingPaginationUnknownLabelMain/clean/skip-parameter-valid/false
+=== RUN   TestStreamingPaginationUnknownLabelMain/clean/skip-parameter-valid/true
+=== RUN   TestStreamingPaginationUnknownLabelMain/clean/limit-capacity/false
+=== RUN   TestStreamingPaginationUnknownLabelMain/clean/limit-capacity/true
+=== RUN   TestStreamingPaginationUnknownLabelMain/bad-matched/skip-expression/false
+=== RUN   TestStreamingPaginationUnknownLabelMain/bad-matched/skip-expression/true
+=== RUN   TestStreamingPaginationUnknownLabelMain/bad-matched/skip-parameter-negative/false
+=== RUN   TestStreamingPaginationUnknownLabelMain/bad-matched/skip-parameter-negative/true
+=== RUN   TestStreamingPaginationUnknownLabelMain/bad-matched/skip-expression-negative/false
+=== RUN   TestStreamingPaginationUnknownLabelMain/bad-matched/skip-expression-negative/true
+=== RUN   TestStreamingPaginationUnknownLabelMain/bad-matched/skip-string/false
+=== RUN   TestStreamingPaginationUnknownLabelMain/bad-matched/skip-string/true
+=== RUN   TestStreamingPaginationUnknownLabelMain/bad-matched/skip-parameter-valid/false
+=== RUN   TestStreamingPaginationUnknownLabelMain/bad-matched/skip-parameter-valid/true
+=== RUN   TestStreamingPaginationUnknownLabelMain/bad-matched/limit-capacity/false
+=== RUN   TestStreamingPaginationUnknownLabelMain/bad-matched/limit-capacity/true
+--- PASS: TestStreamingPaginationUnknownLabelMain (0.04s)
+    --- PASS: TestStreamingPaginationUnknownLabelMain/clean/skip-expression/false (0.00s)
+    --- PASS: TestStreamingPaginationUnknownLabelMain/clean/skip-expression/true (0.00s)
+    --- PASS: TestStreamingPaginationUnknownLabelMain/clean/skip-parameter-negative/false (0.00s)
+    --- PASS: TestStreamingPaginationUnknownLabelMain/clean/skip-parameter-negative/true (0.00s)
+    --- PASS: TestStreamingPaginationUnknownLabelMain/clean/skip-expression-negative/false (0.00s)
+    --- PASS: TestStreamingPaginationUnknownLabelMain/clean/skip-expression-negative/true (0.00s)
+    --- PASS: TestStreamingPaginationUnknownLabelMain/clean/skip-string/false (0.00s)
+    --- PASS: TestStreamingPaginationUnknownLabelMain/clean/skip-string/true (0.00s)
+    --- PASS: TestStreamingPaginationUnknownLabelMain/clean/skip-parameter-valid/false (0.00s)
+    --- PASS: TestStreamingPaginationUnknownLabelMain/clean/skip-parameter-valid/true (0.00s)
+    --- PASS: TestStreamingPaginationUnknownLabelMain/clean/limit-capacity/false (0.00s)
+    --- PASS: TestStreamingPaginationUnknownLabelMain/clean/limit-capacity/true (0.00s)
+    --- PASS: TestStreamingPaginationUnknownLabelMain/bad-matched/skip-expression/false (0.00s)
+    --- PASS: TestStreamingPaginationUnknownLabelMain/bad-matched/skip-expression/true (0.00s)
+    --- PASS: TestStreamingPaginationUnknownLabelMain/bad-matched/skip-parameter-negative/false (0.00s)
+    --- PASS: TestStreamingPaginationUnknownLabelMain/bad-matched/skip-parameter-negative/true (0.00s)
+    --- PASS: TestStreamingPaginationUnknownLabelMain/bad-matched/skip-expression-negative/false (0.00s)
+    --- PASS: TestStreamingPaginationUnknownLabelMain/bad-matched/skip-expression-negative/true (0.00s)
+    --- PASS: TestStreamingPaginationUnknownLabelMain/bad-matched/skip-string/false (0.00s)
+    --- PASS: TestStreamingPaginationUnknownLabelMain/bad-matched/skip-string/true (0.00s)
+    --- PASS: TestStreamingPaginationUnknownLabelMain/bad-matched/skip-parameter-valid/false (0.00s)
+    --- PASS: TestStreamingPaginationUnknownLabelMain/bad-matched/skip-parameter-valid/true (0.00s)
+    --- PASS: TestStreamingPaginationUnknownLabelMain/bad-matched/limit-capacity/false (0.00s)
+    --- PASS: TestStreamingPaginationUnknownLabelMain/bad-matched/limit-capacity/true (0.00s)
+=== RUN   TestStreamingPaginationSourceHistories
+=== RUN   TestStreamingPaginationSourceHistories/skip-late-2
+=== RUN   TestStreamingPaginationSourceHistories/distinct-late-2
+=== RUN   TestStreamingPaginationSourceHistories/order-late-2
+=== RUN   TestStreamingPaginationSourceHistories/order-ties-2-MAPPED
+=== RUN   TestStreamingPaginationSourceHistories/order-ties-2-EAGER
+=== RUN   TestStreamingPaginationSourceHistories/skip-late-9
+=== RUN   TestStreamingPaginationSourceHistories/distinct-late-9
+=== RUN   TestStreamingPaginationSourceHistories/order-late-9
+=== RUN   TestStreamingPaginationSourceHistories/order-ties-9-MAPPED
+=== RUN   TestStreamingPaginationSourceHistories/order-ties-9-EAGER
+=== RUN   TestStreamingPaginationSourceHistories/skip-late-40
+=== RUN   TestStreamingPaginationSourceHistories/distinct-late-40
+=== RUN   TestStreamingPaginationSourceHistories/order-late-40
+=== RUN   TestStreamingPaginationSourceHistories/order-ties-40-MAPPED
+=== RUN   TestStreamingPaginationSourceHistories/order-ties-40-EAGER
+=== RUN   TestStreamingPaginationSourceHistories/route-offset-2-False
+=== RUN   TestStreamingPaginationSourceHistories/route-offset-2-True
+=== RUN   TestStreamingPaginationSourceHistories/route-offset-40-False
+=== RUN   TestStreamingPaginationSourceHistories/route-offset-40-True
+=== RUN   TestStreamingPaginationSourceHistories/skip-missing-sidecar
+=== RUN   TestStreamingPaginationSourceHistories/distinct-missing-sidecar
+=== RUN   TestStreamingPaginationSourceHistories/order-missing-sidecar
+=== RUN   TestStreamingPaginationSourceHistories/route-in
+=== RUN   TestStreamingPaginationSourceHistories/route-or-residual
+=== RUN   TestStreamingPaginationSourceHistories/route-conflict
+=== RUN   TestStreamingPaginationSourceHistories/route-empty
+=== RUN   TestStreamingPaginationSourceHistories/route-unknown-or
+=== RUN   TestStreamingPaginationSourceHistories/route-inline
+--- PASS: TestStreamingPaginationSourceHistories (0.89s)
+    --- PASS: TestStreamingPaginationSourceHistories/skip-late-2 (0.01s)
+    --- PASS: TestStreamingPaginationSourceHistories/distinct-late-2 (0.01s)
+    --- PASS: TestStreamingPaginationSourceHistories/order-late-2 (0.01s)
+    --- PASS: TestStreamingPaginationSourceHistories/order-ties-2-MAPPED (0.01s)
+    --- PASS: TestStreamingPaginationSourceHistories/order-ties-2-EAGER (0.01s)
+    --- PASS: TestStreamingPaginationSourceHistories/skip-late-9 (0.02s)
+    --- PASS: TestStreamingPaginationSourceHistories/distinct-late-9 (0.02s)
+    --- PASS: TestStreamingPaginationSourceHistories/order-late-9 (0.02s)
+    --- PASS: TestStreamingPaginationSourceHistories/order-ties-9-MAPPED (0.03s)
+    --- PASS: TestStreamingPaginationSourceHistories/order-ties-9-EAGER (0.02s)
+    --- PASS: TestStreamingPaginationSourceHistories/skip-late-40 (0.09s)
+    --- PASS: TestStreamingPaginationSourceHistories/distinct-late-40 (0.10s)
+    --- PASS: TestStreamingPaginationSourceHistories/order-late-40 (0.09s)
+    --- PASS: TestStreamingPaginationSourceHistories/order-ties-40-MAPPED (0.09s)
+    --- PASS: TestStreamingPaginationSourceHistories/order-ties-40-EAGER (0.09s)
+    --- PASS: TestStreamingPaginationSourceHistories/route-offset-2-False (0.01s)
+    --- PASS: TestStreamingPaginationSourceHistories/route-offset-2-True (0.01s)
+    --- PASS: TestStreamingPaginationSourceHistories/route-offset-40-False (0.08s)
+    --- PASS: TestStreamingPaginationSourceHistories/route-offset-40-True (0.08s)
+    --- PASS: TestStreamingPaginationSourceHistories/skip-missing-sidecar (0.02s)
+    --- PASS: TestStreamingPaginationSourceHistories/distinct-missing-sidecar (0.02s)
+    --- PASS: TestStreamingPaginationSourceHistories/order-missing-sidecar (0.02s)
+    --- PASS: TestStreamingPaginationSourceHistories/route-in (0.01s)
+    --- PASS: TestStreamingPaginationSourceHistories/route-or-residual (0.01s)
+    --- PASS: TestStreamingPaginationSourceHistories/route-conflict (0.01s)
+    --- PASS: TestStreamingPaginationSourceHistories/route-empty (0.01s)
+    --- PASS: TestStreamingPaginationSourceHistories/route-unknown-or (0.01s)
+    --- PASS: TestStreamingPaginationSourceHistories/route-inline (0.01s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/query	3.547s

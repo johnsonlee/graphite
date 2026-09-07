@@ -1,0 +1,74 @@
+[
+  {
+    "name": "b-ordinary-skip",
+    "method": "POST",
+    "path": "/api/cypher",
+    "body": {
+      "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'get' RETURN n.id AS id, n.caller_class AS caller, n.caller_name AS name SKIP 3 LIMIT 12"
+    },
+    "purpose": "ordinary SKIP before projection; indexed string source"
+  },
+  {
+    "name": "b-distinct-skip",
+    "method": "POST",
+    "path": "/api/cypher",
+    "body": {
+      "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'get' RETURN DISTINCT n.graph_id AS missing, n.caller_class AS caller, n.caller_name AS name SKIP 3 LIMIT 12"
+    },
+    "purpose": "qualified DISTINCT exhausts sources for provenance"
+  },
+  {
+    "name": "b-ordinary-order-parallel",
+    "method": "POST",
+    "path": "/api/cypher",
+    "body": {
+      "query": "MATCH (n:CallSiteNode) WHERE n.caller_class = 'com.google.android.mms.util.PduCache' RETURN n.id AS id, n.caller_name AS name ORDER BY name, id SKIP 2 LIMIT 12"
+    },
+    "purpose": "ordinary direct-string ORDER; source parallel eligible when main strategy permits"
+  },
+  {
+    "name": "b-ordinary-order-generic-serial",
+    "method": "POST",
+    "path": "/api/cypher",
+    "body": {
+      "query": "MATCH (n:CallSiteNode) WHERE n.graphId = 'fixture-android-00' AND n.id >= 0 RETURN n.id AS id ORDER BY id DESC SKIP 2 LIMIT 12"
+    },
+    "purpose": "generic serial ORDER; route one actual source; complete source scan"
+  },
+  {
+    "name": "b-distinct-order-retained",
+    "method": "POST",
+    "path": "/api/cypher",
+    "body": {
+      "query": "MATCH (n:CallSiteNode) WHERE n.caller_class = 'com.google.android.mms.util.PduCache' RETURN DISTINCT n.caller_class AS caller ORDER BY caller SKIP 0 LIMIT 2"
+    },
+    "purpose": "one visible class repeated; retained duplicates merge provenance"
+  },
+  {
+    "name": "b-distinct-order-eviction-candidate",
+    "method": "POST",
+    "path": "/api/cypher",
+    "body": {
+      "query": "MATCH (n:CallSiteNode) WHERE n.caller_class = 'com.google.android.mms.util.PduCache' RETURN DISTINCT n.caller_name AS name ORDER BY n.callee_name DESC SKIP 0 LIMIT 2"
+    },
+    "purpose": "small retained heap with repeated method keys and varying ORDER; eviction/reappearance to be confirmed by actual capture, not asserted"
+  },
+  {
+    "name": "b-order-duplicate-alias-ties",
+    "method": "POST",
+    "path": "/api/cypher",
+    "body": {
+      "query": "MATCH (n:CallSiteNode) WHERE n.caller_class = 'com.google.android.mms.util.PduCache' RETURN n.caller_name AS x, n.callee_name AS x ORDER BY x SKIP 2 LIMIT 8"
+    },
+    "purpose": "duplicate alias overwrite; tied callee names"
+  },
+  {
+    "name": "b-distinct-order-callee",
+    "method": "POST",
+    "path": "/api/cypher",
+    "body": {
+      "query": "MATCH (n:CallSiteNode) WHERE n.caller_class = 'com.google.android.mms.util.PduCache' RETURN DISTINCT n.callee_class AS callee, n.callee_name AS name ORDER BY name DESC, callee SKIP 1 LIMIT 3"
+    },
+    "purpose": "retained DISTINCT heap, stable ties/eviction and provenance"
+  }
+]

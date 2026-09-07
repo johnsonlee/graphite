@@ -571,3 +571,31 @@ The remaining32 in the old suite are not the complete product gap inventory.
 independent allocation audit, root combination, every complete raw output and
 counter/profile, shipping command evidence and setup/test collector failures.
 The mutex contention diagnostic and label-map switch are separate hypotheses.
+
+
+### 2026-09-07 follow-up: filtered node pagination and ORDER
+
+This functional correction ports SKIP-before-projection, bounded ranking and
+DISTINCT retained/evicted evaluation, source scoping and cancellation boundaries.
+
+| Item | Evidence / status |
+|---|---|
+| Native base / candidate | `62b92d20`;32-file incremental `58f4e291d0a429d0f2f7a7e01cd78557ce164b041a01ce8ef63e3e3cf29b56a6`;three production files exact author,2401 unaffected inputs preserved |
+| Correctness | Fullmodule race/vet and independent cancellation/join checks;2433 root inputs exact tested candidate;original1016→1044/1048,exact B28 fixes/F4 retained;generic408→432/432 |
+| New oracle |595 complete JSON-value responses and traces;166 numeric spelling leaves retained,not byte equality;old67 captures61exact,3functional,3only76mappedView state leaves |
+| Real64 |Fixed13+8 grounded B queries,fresh21 actualmain HTTP bodies;candidate21/21 complete matches,base20/21;all1152 persisted original/main/native/HTTPfiles unchanged after completed processes |
+| Real row repair |Old DISTINCT ORDER returns <init>/getInstance;main andcandidate normalizeKey/purgeByMessageBox.Wrongbase retained as failure,invalid for speed comparison |
+| Ordinary SKIP |13.296867→0.001228s,CPU13.348855→0.001270s,allocation3,812,181,784→1,043,152bytes |
+| Routed generic ORDER |11.813967→0.171036s,CPU16.389199→0.171067s,allocation12,760,607,808→261,524,016bytes |
+| DISTINCT SKIP regression |1.268922→1.535125s,CPU1.284297→1.576204s,allocation1,081,987,720→1,620,267,304bytes |
+| Direct ORDER |Eligible ordinary0.017963→0.001457s,allocation9,566,080→22,791,224bytes;retained DISTINCT0.017785→0.002595s,allocation9,719,544→22,487,256bytes |
+| Control costs |Prefixfirst13.552867→15.079963s,repeat10.028290→11.577072s;cause not established.Unchanged controls also slower;all raw paired costs retained |
+| Shipping |63/63 fulltyped main bodies/headers/catalog64;152 activecompiler/embed+2433 module inputs;two fresh default60s/cap4 processes exit143/no forcedkill/ports released |
+| Collector failure |Initial strictbaseline stops19th with fullbody mismatch/exit2 beforeClose.Retained unchanged;fresh same-harness full21 sweeps keep mismatch failure,close Stores,baseexit2/candidate0.No query/expected/production masking |
+| Decision |Keep functional fidelity and large materialization removal;retain DISTINCT SKIP/allocation/control regressions for separate optimization |
+| Limits |Single instrumented shared-host observations,not P95/peakRSS/main-relative10x;wrongbase query has no valid speed comparison;relationship/globalruntime/finalbenchmark gate remain open |
+
+`docs/go-server-baseline/native64-streaming-pagination-integration/` retains all
+provider/reviewer/root source evidence, setup and collector failures, fresh main
+bodies, complete sweeps, actual command replays and post-exit fixture identities.
+This is a functional follow-up; Attempts16/17 remain separate hypotheses.

@@ -1,0 +1,7 @@
+--- FAIL: TestStreamingPaginationActualMainCorpus (0.27s)
+    --- FAIL: TestStreamingPaginationActualMainCorpus/clean/EAGER (0.05s)
+        --- FAIL: TestStreamingPaginationActualMainCorpus/clean/EAGER/limit-wrapped-negative/true (0.00s)
+            streaming_pagination_test.go:222: main={"cross":true,"error":"OutOfMemoryError","message":"Requested array size exceeds VM limit","mode":"EAGER","name":"limit-wrapped-negative","params":{},"query":"MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN substring('x','bad') AS x ORDER BY n.id LIMIT 2147483648"} native={"cross":true,"error":"ClassCastException","message":"class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')","mode":"EAGER","name":"limit-wrapped-negative","params":{},"query":"MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN substring('x','bad') AS x ORDER BY n.id LIMIT 2147483648"}
+FAIL
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/query	0.807s
+FAIL

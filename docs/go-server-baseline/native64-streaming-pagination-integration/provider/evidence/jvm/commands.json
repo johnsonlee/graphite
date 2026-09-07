@@ -1,0 +1,77 @@
+[
+  {
+    "argv": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx256m",
+      "-cp",
+      "/private/tmp/graphite-go-streaming-pagination-87aaf0ad/streaming-pagination-review/jvm/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "StreamingPaginationOracle",
+      "/private/tmp/graphite-go-streaming-pagination-87aaf0ad/streaming-pagination-review/jvm/fixtures/clean",
+      "/private/tmp/graphite-go-streaming-pagination-87aaf0ad/graphite-server/internal/query/testdata/streaming-pagination/cases.json",
+      "/private/tmp/graphite-go-streaming-pagination-87aaf0ad/graphite-server/internal/query/testdata/streaming-pagination/clean-MAPPED-main.json",
+      "MAPPED"
+    ],
+    "cwd": "/private/tmp/graphite-go-streaming-pagination-87aaf0ad",
+    "exitCode": 0
+  },
+  {
+    "argv": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx256m",
+      "-cp",
+      "/private/tmp/graphite-go-streaming-pagination-87aaf0ad/streaming-pagination-review/jvm/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "StreamingPaginationOracle",
+      "/private/tmp/graphite-go-streaming-pagination-87aaf0ad/streaming-pagination-review/jvm/fixtures/clean",
+      "/private/tmp/graphite-go-streaming-pagination-87aaf0ad/graphite-server/internal/query/testdata/streaming-pagination/cases.json",
+      "/private/tmp/graphite-go-streaming-pagination-87aaf0ad/graphite-server/internal/query/testdata/streaming-pagination/clean-EAGER-main.json",
+      "EAGER"
+    ],
+    "cwd": "/private/tmp/graphite-go-streaming-pagination-87aaf0ad",
+    "exitCode": 0
+  },
+  {
+    "argv": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx256m",
+      "-cp",
+      "/private/tmp/graphite-go-streaming-pagination-87aaf0ad/streaming-pagination-review/jvm/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "StreamingPaginationOracle",
+      "/private/tmp/graphite-go-streaming-pagination-87aaf0ad/streaming-pagination-review/jvm/fixtures/bad-first-unmatched",
+      "/private/tmp/graphite-go-streaming-pagination-87aaf0ad/graphite-server/internal/query/testdata/streaming-pagination/cases.json",
+      "/private/tmp/graphite-go-streaming-pagination-87aaf0ad/graphite-server/internal/query/testdata/streaming-pagination/bad-first-unmatched-MAPPED-main.json",
+      "MAPPED"
+    ],
+    "cwd": "/private/tmp/graphite-go-streaming-pagination-87aaf0ad",
+    "exitCode": 0
+  },
+  {
+    "argv": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx256m",
+      "-cp",
+      "/private/tmp/graphite-go-streaming-pagination-87aaf0ad/streaming-pagination-review/jvm/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "StreamingPaginationOracle",
+      "/private/tmp/graphite-go-streaming-pagination-87aaf0ad/streaming-pagination-review/jvm/fixtures/bad-last-unmatched",
+      "/private/tmp/graphite-go-streaming-pagination-87aaf0ad/graphite-server/internal/query/testdata/streaming-pagination/cases.json",
+      "/private/tmp/graphite-go-streaming-pagination-87aaf0ad/graphite-server/internal/query/testdata/streaming-pagination/bad-last-unmatched-MAPPED-main.json",
+      "MAPPED"
+    ],
+    "cwd": "/private/tmp/graphite-go-streaming-pagination-87aaf0ad",
+    "exitCode": 0
+  },
+  {
+    "argv": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx256m",
+      "-cp",
+      "/private/tmp/graphite-go-streaming-pagination-87aaf0ad/streaming-pagination-review/jvm/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "StreamingPaginationOracle",
+      "/private/tmp/graphite-go-streaming-pagination-87aaf0ad/streaming-pagination-review/jvm/fixtures/bad-matched",
+      "/private/tmp/graphite-go-streaming-pagination-87aaf0ad/graphite-server/internal/query/testdata/streaming-pagination/cases.json",
+      "/private/tmp/graphite-go-streaming-pagination-87aaf0ad/graphite-server/internal/query/testdata/streaming-pagination/bad-matched-MAPPED-main.json",
+      "MAPPED"
+    ],
+    "cwd": "/private/tmp/graphite-go-streaming-pagination-87aaf0ad",
+    "exitCode": 0
+  }
+]

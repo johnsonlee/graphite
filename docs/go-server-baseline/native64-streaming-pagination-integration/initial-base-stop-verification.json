@@ -1,0 +1,9 @@
+{
+  "exitCode": 2,
+  "allInitialSourcesAndBinaryUnchangedBeforeHarnessChange": true,
+  "all1152CloneHashesMatch": true,
+  "noExtraGraphFiles": true,
+  "originalRunDidNotReachClose": true,
+  "failure": "Complete successful response differs at b-distinct-order-eviction-candidate; raw output and strict fail retained",
+  "action": "Fresh collecting sweeps keep every mismatch as failure, continue original query history, close Stores, exit2 if any mismatch. No production/query/oracle change."
+}

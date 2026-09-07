@@ -1,0 +1,29 @@
+[
+  {
+    "argv": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/javac",
+      "-cp",
+      "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "-d",
+      "/private/tmp/graphite-go-streaming-pagination-87aaf0ad/streaming-pagination-review/jvm/classes",
+      "/private/tmp/graphite-go-streaming-pagination-87aaf0ad/graphite-server/internal/query/testdata/streaming-pagination/StreamingSourcesOracle.java"
+    ],
+    "cwd": "/private/tmp/graphite-go-streaming-pagination-87aaf0ad",
+    "exitCode": 0
+  },
+  {
+    "argv": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx256m",
+      "-cp",
+      "/private/tmp/graphite-go-streaming-pagination-87aaf0ad/streaming-pagination-review/jvm/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "StreamingSourcesOracle",
+      "/private/tmp/graphite-go-streaming-pagination-87aaf0ad/streaming-pagination-review/jvm/fixtures",
+      "/private/tmp/graphite-go-streaming-pagination-87aaf0ad/streaming-pagination-review/jvm",
+      "/private/tmp/graphite-go-streaming-pagination-87aaf0ad/graphite-server/internal/query/testdata/streaming-pagination/source-cases.json",
+      "/private/tmp/graphite-go-streaming-pagination-87aaf0ad/graphite-server/internal/query/testdata/streaming-pagination/sources-main.json"
+    ],
+    "cwd": "/private/tmp/graphite-go-streaming-pagination-87aaf0ad",
+    "exitCode": 0
+  }
+]

@@ -1,0 +1,108 @@
+[
+  {
+    "BAdmitted": true,
+    "actualStorageStrategyProbed": false,
+    "branch": "ordinary-skip",
+    "candidateAtoms": 1,
+    "limit": 12,
+    "name": "b-ordinary-skip",
+    "noEarlierIntercept": true,
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'get' RETURN n.id AS id, n.caller_class AS caller, n.caller_name AS name SKIP 3 LIMIT 12",
+    "retained": 15,
+    "selectedGraphIDs": null,
+    "skip": 3
+  },
+  {
+    "BAdmitted": true,
+    "actualStorageStrategyProbed": false,
+    "branch": "distinct-skip-qualified-exhaustion",
+    "candidateAtoms": 1,
+    "limit": 12,
+    "name": "b-distinct-skip",
+    "noEarlierIntercept": true,
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'get' RETURN DISTINCT n.graph_id AS missing, n.caller_class AS caller, n.caller_name AS name SKIP 3 LIMIT 12",
+    "retained": 15,
+    "selectedGraphIDs": null,
+    "skip": 3
+  },
+  {
+    "BAdmitted": true,
+    "actualStorageStrategyProbed": false,
+    "branch": "direct-string-order-strategy-dependent-parallel",
+    "candidateAtoms": 1,
+    "limit": 12,
+    "name": "b-ordinary-order-parallel",
+    "noEarlierIntercept": true,
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_class = 'com.google.android.mms.util.PduCache' RETURN n.id AS id, n.caller_name AS name ORDER BY name, id SKIP 2 LIMIT 12",
+    "retained": 14,
+    "selectedGraphIDs": null,
+    "skip": 2
+  },
+  {
+    "BAdmitted": true,
+    "actualStorageStrategyProbed": false,
+    "branch": "serial-order",
+    "candidateAtoms": 0,
+    "limit": 12,
+    "name": "b-ordinary-order-generic-serial",
+    "noEarlierIntercept": true,
+    "query": "MATCH (n:CallSiteNode) WHERE n.graphId = 'fixture-android-00' AND n.id \u003e= 0 RETURN n.id AS id ORDER BY id DESC SKIP 2 LIMIT 12",
+    "retained": 14,
+    "selectedGraphIDs": {
+      "fixture-android-00": true
+    },
+    "skip": 2
+  },
+  {
+    "BAdmitted": true,
+    "actualStorageStrategyProbed": false,
+    "branch": "serial-distinct-retained-order",
+    "candidateAtoms": 1,
+    "limit": 2,
+    "name": "b-distinct-order-retained",
+    "noEarlierIntercept": true,
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_class = 'com.google.android.mms.util.PduCache' RETURN DISTINCT n.caller_class AS caller ORDER BY caller SKIP 0 LIMIT 2",
+    "retained": 2,
+    "selectedGraphIDs": null,
+    "skip": 0
+  },
+  {
+    "BAdmitted": true,
+    "actualStorageStrategyProbed": false,
+    "branch": "serial-distinct-retained-order",
+    "candidateAtoms": 1,
+    "limit": 2,
+    "name": "b-distinct-order-eviction-candidate",
+    "noEarlierIntercept": true,
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_class = 'com.google.android.mms.util.PduCache' RETURN DISTINCT n.caller_name AS name ORDER BY n.callee_name DESC SKIP 0 LIMIT 2",
+    "retained": 2,
+    "selectedGraphIDs": null,
+    "skip": 0
+  },
+  {
+    "BAdmitted": true,
+    "actualStorageStrategyProbed": false,
+    "branch": "direct-string-order-strategy-dependent-parallel",
+    "candidateAtoms": 1,
+    "limit": 8,
+    "name": "b-order-duplicate-alias-ties",
+    "noEarlierIntercept": true,
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_class = 'com.google.android.mms.util.PduCache' RETURN n.caller_name AS x, n.callee_name AS x ORDER BY x SKIP 2 LIMIT 8",
+    "retained": 10,
+    "selectedGraphIDs": null,
+    "skip": 2
+  },
+  {
+    "BAdmitted": true,
+    "actualStorageStrategyProbed": false,
+    "branch": "serial-distinct-retained-order",
+    "candidateAtoms": 1,
+    "limit": 3,
+    "name": "b-distinct-order-callee",
+    "noEarlierIntercept": true,
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_class = 'com.google.android.mms.util.PduCache' RETURN DISTINCT n.callee_class AS callee, n.callee_name AS name ORDER BY name DESC, callee SKIP 1 LIMIT 3",
+    "retained": 4,
+    "selectedGraphIDs": null,
+    "skip": 1
+  }
+]

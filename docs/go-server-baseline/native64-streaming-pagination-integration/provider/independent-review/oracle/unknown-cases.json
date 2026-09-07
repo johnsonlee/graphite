@@ -1,0 +1,36 @@
+[
+  {
+    "name": "skip-expression",
+    "query": "MATCH (n:AbsentType) WHERE true RETURN 1 AS x ORDER BY x SKIP substring('x','bad') LIMIT 1",
+    "params": {}
+  },
+  {
+    "name": "skip-parameter-negative",
+    "query": "MATCH (n:AbsentType) WHERE true RETURN 1 AS x ORDER BY x SKIP $s LIMIT 1",
+    "params": {
+      "s": -1
+    }
+  },
+  {
+    "name": "skip-expression-negative",
+    "query": "MATCH (n:AbsentType) WHERE true RETURN 1 AS x ORDER BY x SKIP -1 LIMIT 1",
+    "params": {}
+  },
+  {
+    "name": "skip-string",
+    "query": "MATCH (n:AbsentType) WHERE true RETURN 1 AS x ORDER BY x SKIP 'bad' LIMIT 1",
+    "params": {}
+  },
+  {
+    "name": "skip-parameter-valid",
+    "query": "MATCH (n:AbsentType) WHERE true RETURN 1 AS x ORDER BY x SKIP $s LIMIT 1",
+    "params": {
+      "s": 1
+    }
+  },
+  {
+    "name": "limit-capacity",
+    "query": "MATCH (n:AbsentType) WHERE true RETURN 1 AS x ORDER BY x SKIP 0 LIMIT 2147483647",
+    "params": {}
+  }
+]

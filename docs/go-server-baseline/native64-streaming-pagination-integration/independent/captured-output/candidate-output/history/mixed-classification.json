@@ -1,0 +1,290 @@
+[
+  {
+    "cross": false,
+    "eligible": true,
+    "equal": true,
+    "name": "annotation-direct"
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "equal": true,
+    "name": "annotation-direct"
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "equal": true,
+    "name": "annotation-lower"
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "equal": true,
+    "name": "annotation-lower"
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "equal": true,
+    "name": "four-or"
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "equal": true,
+    "name": "four-or"
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "equal": true,
+    "name": "mixed-class-name"
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "equal": true,
+    "name": "mixed-class-name"
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "equal": true,
+    "name": "node-label"
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "equal": true,
+    "name": "node-label"
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "equal": true,
+    "name": "callsite-label"
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "equal": true,
+    "name": "callsite-label"
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "equal": true,
+    "name": "in"
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "equal": true,
+    "name": "in"
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "equal": true,
+    "name": "exists"
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "equal": true,
+    "name": "exists"
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "equal": true,
+    "name": "parameter"
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "equal": true,
+    "name": "parameter"
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "equal": true,
+    "name": "scope"
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "equal": true,
+    "name": "scope"
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "equal": true,
+    "name": "graph-function-scope"
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "equal": true,
+    "name": "graph-function-scope"
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "equal": true,
+    "name": "scope-skip-decline"
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "equal": true,
+    "name": "scope-skip-decline"
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "equal": true,
+    "name": "skip"
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "equal": true,
+    "name": "skip"
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "equal": true,
+    "name": "metadata-alias"
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "equal": true,
+    "name": "metadata-alias"
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "equal": true,
+    "name": "duplicate-alias"
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "equal": true,
+    "name": "duplicate-alias"
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "equal": true,
+    "name": "nulls-graph"
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "equal": true,
+    "name": "nulls-graph"
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "equal": true,
+    "name": "null-term-decline"
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "equal": true,
+    "name": "null-term-decline"
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "equal": false,
+    "name": "empty-wrapper-decline"
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "equal": false,
+    "name": "empty-wrapper-decline"
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "equal": true,
+    "name": "eager-extra-decline"
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "equal": true,
+    "name": "eager-extra-decline"
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "equal": true,
+    "name": "cast-wrapper-decline"
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "equal": true,
+    "name": "cast-wrapper-decline"
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "equal": true,
+    "name": "order-decline"
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "equal": true,
+    "name": "order-decline"
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "equal": true,
+    "name": "inline-decline"
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "equal": true,
+    "name": "inline-decline"
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "equal": true,
+    "name": "optional-decline"
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "equal": true,
+    "name": "optional-decline"
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "equal": true,
+    "name": "wide-limit"
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "equal": true,
+    "name": "wide-limit"
+  }
+]

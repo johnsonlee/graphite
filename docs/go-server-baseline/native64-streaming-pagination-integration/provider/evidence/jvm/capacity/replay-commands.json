@@ -1,0 +1,33 @@
+[
+  {
+    "argv": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/javac",
+      "-d",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-pagination-capacity-i73_xxbu",
+      "/tmp/graphite-go-streaming-pagination-freeze/evidence/jvm/capacity/CapacityOracle.java"
+    ],
+    "exitCode": 0
+  },
+  {
+    "argv": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx16m",
+      "-cp",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-pagination-capacity-i73_xxbu",
+      "CapacityOracle"
+    ],
+    "exitCode": 0
+  },
+  {
+    "argv": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx16m",
+      "-XX:-UseCompressedOops",
+      "-XX:-UseCompressedClassPointers",
+      "-cp",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-pagination-capacity-i73_xxbu",
+      "CapacityOracle"
+    ],
+    "exitCode": 0
+  }
+]

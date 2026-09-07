@@ -1,0 +1,33 @@
+{
+  "compared": [
+    "split-bad-tag-native.json",
+    "main-string-source-property-main.json-native.json",
+    "main-string-source-offset-main.json-native.json",
+    "annotation-native.json",
+    "required-missing-index-native.json",
+    "supplementary-native.json",
+    "split-bad-callee-native.json",
+    "source-pairs-native.json",
+    "main-string-source-main.json-native.json",
+    "generic-fault-audit.json",
+    "split-bad-count-native.json",
+    "annotation-after-native.json",
+    "split-missing-index-native.json",
+    "source-pairs-eligibility.json",
+    "late-native.json",
+    "supplementary-eligibility.json",
+    "split-clean-native.json",
+    "primary-eligibility.json",
+    "lazy-filtered-480.json",
+    "required-native.json",
+    "required-missing-identity-native.json",
+    "mixed-native.json",
+    "primary-native.json"
+  ],
+  "changed": [
+    "supplementary-native.json",
+    "main-string-source-main.json-native.json",
+    "generic-fault-audit.json",
+    "primary-native.json"
+  ]
+}

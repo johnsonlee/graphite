@@ -1,0 +1,1046 @@
+[
+  {
+    "main": "oracle/bad-first-unmatched-MAPPED-wire.json",
+    "native": "native-exact/streaming-bad-first-unmatched-MAPPED-native.json",
+    "lexicalNumberTypeDifferences": [
+      {
+        "path": "$[44].rows[0].x",
+        "main": "0.0",
+        "native": "0",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[45].rows[0].x",
+        "main": "0.0",
+        "native": "0",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[50].params.skip",
+        "main": "100.0",
+        "native": "100",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[50].params.limit",
+        "main": "1.0",
+        "native": "1",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[50].params.zero",
+        "main": "0.0",
+        "native": "0",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[51].params.skip",
+        "main": "100.0",
+        "native": "100",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[51].params.limit",
+        "main": "1.0",
+        "native": "1",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[51].params.zero",
+        "main": "0.0",
+        "native": "0",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[68].params.skip",
+        "main": "100.0",
+        "native": "100",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[68].params.limit",
+        "main": "1.0",
+        "native": "1",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[68].params.zero",
+        "main": "0.0",
+        "native": "0",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[69].params.skip",
+        "main": "100.0",
+        "native": "100",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[69].params.limit",
+        "main": "1.0",
+        "native": "1",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[69].params.zero",
+        "main": "0.0",
+        "native": "0",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[70].params.skip",
+        "main": "100.0",
+        "native": "100",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[70].params.limit",
+        "main": "1.0",
+        "native": "1",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[70].params.zero",
+        "main": "0.0",
+        "native": "0",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[71].params.skip",
+        "main": "100.0",
+        "native": "100",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[71].params.limit",
+        "main": "1.0",
+        "native": "1",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[71].params.zero",
+        "main": "0.0",
+        "native": "0",
+        "sameJSONNumberValue": true
+      }
+    ]
+  },
+  {
+    "main": "oracle/bad-last-unmatched-MAPPED-wire.json",
+    "native": "native-exact/streaming-bad-last-unmatched-MAPPED-native.json",
+    "lexicalNumberTypeDifferences": [
+      {
+        "path": "$[44].rows[0].x",
+        "main": "0.0",
+        "native": "0",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[45].rows[0].x",
+        "main": "0.0",
+        "native": "0",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[50].params.skip",
+        "main": "100.0",
+        "native": "100",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[50].params.limit",
+        "main": "1.0",
+        "native": "1",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[50].params.zero",
+        "main": "0.0",
+        "native": "0",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[51].params.skip",
+        "main": "100.0",
+        "native": "100",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[51].params.limit",
+        "main": "1.0",
+        "native": "1",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[51].params.zero",
+        "main": "0.0",
+        "native": "0",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[68].params.skip",
+        "main": "100.0",
+        "native": "100",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[68].params.limit",
+        "main": "1.0",
+        "native": "1",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[68].params.zero",
+        "main": "0.0",
+        "native": "0",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[69].params.skip",
+        "main": "100.0",
+        "native": "100",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[69].params.limit",
+        "main": "1.0",
+        "native": "1",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[69].params.zero",
+        "main": "0.0",
+        "native": "0",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[70].params.skip",
+        "main": "100.0",
+        "native": "100",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[70].params.limit",
+        "main": "1.0",
+        "native": "1",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[70].params.zero",
+        "main": "0.0",
+        "native": "0",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[71].params.skip",
+        "main": "100.0",
+        "native": "100",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[71].params.limit",
+        "main": "1.0",
+        "native": "1",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[71].params.zero",
+        "main": "0.0",
+        "native": "0",
+        "sameJSONNumberValue": true
+      }
+    ]
+  },
+  {
+    "main": "oracle/bad-matched-MAPPED-wire.json",
+    "native": "native-exact/streaming-bad-matched-MAPPED-native.json",
+    "lexicalNumberTypeDifferences": [
+      {
+        "path": "$[50].params.skip",
+        "main": "100.0",
+        "native": "100",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[50].params.limit",
+        "main": "1.0",
+        "native": "1",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[50].params.zero",
+        "main": "0.0",
+        "native": "0",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[51].params.skip",
+        "main": "100.0",
+        "native": "100",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[51].params.limit",
+        "main": "1.0",
+        "native": "1",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[51].params.zero",
+        "main": "0.0",
+        "native": "0",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[68].params.skip",
+        "main": "100.0",
+        "native": "100",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[68].params.limit",
+        "main": "1.0",
+        "native": "1",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[68].params.zero",
+        "main": "0.0",
+        "native": "0",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[69].params.skip",
+        "main": "100.0",
+        "native": "100",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[69].params.limit",
+        "main": "1.0",
+        "native": "1",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[69].params.zero",
+        "main": "0.0",
+        "native": "0",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[70].params.skip",
+        "main": "100.0",
+        "native": "100",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[70].params.limit",
+        "main": "1.0",
+        "native": "1",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[70].params.zero",
+        "main": "0.0",
+        "native": "0",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[71].params.skip",
+        "main": "100.0",
+        "native": "100",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[71].params.limit",
+        "main": "1.0",
+        "native": "1",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[71].params.zero",
+        "main": "0.0",
+        "native": "0",
+        "sameJSONNumberValue": true
+      }
+    ]
+  },
+  {
+    "main": "oracle/clean-MAPPED-wire.json",
+    "native": "native-exact/streaming-clean-MAPPED-native.json",
+    "lexicalNumberTypeDifferences": [
+      {
+        "path": "$[44].rows[0].x",
+        "main": "0.0",
+        "native": "0",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[45].rows[0].x",
+        "main": "0.0",
+        "native": "0",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[50].params.skip",
+        "main": "100.0",
+        "native": "100",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[50].params.limit",
+        "main": "1.0",
+        "native": "1",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[50].params.zero",
+        "main": "0.0",
+        "native": "0",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[51].params.skip",
+        "main": "100.0",
+        "native": "100",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[51].params.limit",
+        "main": "1.0",
+        "native": "1",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[51].params.zero",
+        "main": "0.0",
+        "native": "0",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[68].params.skip",
+        "main": "100.0",
+        "native": "100",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[68].params.limit",
+        "main": "1.0",
+        "native": "1",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[68].params.zero",
+        "main": "0.0",
+        "native": "0",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[69].params.skip",
+        "main": "100.0",
+        "native": "100",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[69].params.limit",
+        "main": "1.0",
+        "native": "1",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[69].params.zero",
+        "main": "0.0",
+        "native": "0",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[70].params.skip",
+        "main": "100.0",
+        "native": "100",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[70].params.limit",
+        "main": "1.0",
+        "native": "1",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[70].params.zero",
+        "main": "0.0",
+        "native": "0",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[71].params.skip",
+        "main": "100.0",
+        "native": "100",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[71].params.limit",
+        "main": "1.0",
+        "native": "1",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[71].params.zero",
+        "main": "0.0",
+        "native": "0",
+        "sameJSONNumberValue": true
+      }
+    ]
+  },
+  {
+    "main": "oracle/clean-EAGER-wire.json",
+    "native": "native-exact/streaming-clean-EAGER-native.json",
+    "lexicalNumberTypeDifferences": [
+      {
+        "path": "$[44].rows[0].x",
+        "main": "0.0",
+        "native": "0",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[45].rows[0].x",
+        "main": "0.0",
+        "native": "0",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[50].params.skip",
+        "main": "100.0",
+        "native": "100",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[50].params.limit",
+        "main": "1.0",
+        "native": "1",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[50].params.zero",
+        "main": "0.0",
+        "native": "0",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[51].params.skip",
+        "main": "100.0",
+        "native": "100",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[51].params.limit",
+        "main": "1.0",
+        "native": "1",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[51].params.zero",
+        "main": "0.0",
+        "native": "0",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[68].params.skip",
+        "main": "100.0",
+        "native": "100",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[68].params.limit",
+        "main": "1.0",
+        "native": "1",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[68].params.zero",
+        "main": "0.0",
+        "native": "0",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[69].params.skip",
+        "main": "100.0",
+        "native": "100",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[69].params.limit",
+        "main": "1.0",
+        "native": "1",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[69].params.zero",
+        "main": "0.0",
+        "native": "0",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[70].params.skip",
+        "main": "100.0",
+        "native": "100",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[70].params.limit",
+        "main": "1.0",
+        "native": "1",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[70].params.zero",
+        "main": "0.0",
+        "native": "0",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[71].params.skip",
+        "main": "100.0",
+        "native": "100",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[71].params.limit",
+        "main": "1.0",
+        "native": "1",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[71].params.zero",
+        "main": "0.0",
+        "native": "0",
+        "sameJSONNumberValue": true
+      }
+    ]
+  },
+  {
+    "main": "oracle/clean-unknown-wire.json",
+    "native": "native-exact/streaming-unknown-clean-native.json",
+    "lexicalNumberTypeDifferences": [
+      {
+        "path": "$[2].params.s",
+        "main": "-1.0",
+        "native": "-1",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[3].params.s",
+        "main": "-1.0",
+        "native": "-1",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[8].params.s",
+        "main": "1.0",
+        "native": "1",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[9].params.s",
+        "main": "1.0",
+        "native": "1",
+        "sameJSONNumberValue": true
+      }
+    ]
+  },
+  {
+    "main": "oracle/bad-matched-unknown-wire.json",
+    "native": "native-exact/streaming-unknown-bad-matched-native.json",
+    "lexicalNumberTypeDifferences": [
+      {
+        "path": "$[2].params.s",
+        "main": "-1.0",
+        "native": "-1",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[3].params.s",
+        "main": "-1.0",
+        "native": "-1",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[8].params.s",
+        "main": "1.0",
+        "native": "1",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[9].params.s",
+        "main": "1.0",
+        "native": "1",
+        "sameJSONNumberValue": true
+      }
+    ]
+  },
+  {
+    "main": "oracle/sources-wire.json",
+    "native": "native-exact/streaming-sources-native.json",
+    "lexicalNumberTypeDifferences": [
+      {
+        "path": "$[0].count",
+        "main": "2.0",
+        "native": "2",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[0].badAt",
+        "main": "1.0",
+        "native": "1",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[1].count",
+        "main": "2.0",
+        "native": "2",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[1].badAt",
+        "main": "1.0",
+        "native": "1",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[2].count",
+        "main": "2.0",
+        "native": "2",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[2].badAt",
+        "main": "1.0",
+        "native": "1",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[3].count",
+        "main": "2.0",
+        "native": "2",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[3].repeat",
+        "main": "2.0",
+        "native": "2",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[4].count",
+        "main": "2.0",
+        "native": "2",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[4].repeat",
+        "main": "2.0",
+        "native": "2",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[5].count",
+        "main": "9.0",
+        "native": "9",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[5].badAt",
+        "main": "8.0",
+        "native": "8",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[6].count",
+        "main": "9.0",
+        "native": "9",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[6].badAt",
+        "main": "8.0",
+        "native": "8",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[7].count",
+        "main": "9.0",
+        "native": "9",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[7].badAt",
+        "main": "8.0",
+        "native": "8",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[8].count",
+        "main": "9.0",
+        "native": "9",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[8].repeat",
+        "main": "2.0",
+        "native": "2",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[9].count",
+        "main": "9.0",
+        "native": "9",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[9].repeat",
+        "main": "2.0",
+        "native": "2",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[10].count",
+        "main": "40.0",
+        "native": "40",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[10].badAt",
+        "main": "39.0",
+        "native": "39",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[11].count",
+        "main": "40.0",
+        "native": "40",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[11].badAt",
+        "main": "39.0",
+        "native": "39",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[12].count",
+        "main": "40.0",
+        "native": "40",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[12].badAt",
+        "main": "39.0",
+        "native": "39",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[13].count",
+        "main": "40.0",
+        "native": "40",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[13].repeat",
+        "main": "2.0",
+        "native": "2",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[14].count",
+        "main": "40.0",
+        "native": "40",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[14].repeat",
+        "main": "2.0",
+        "native": "2",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[15].count",
+        "main": "2.0",
+        "native": "2",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[15].badAt",
+        "main": "0.0",
+        "native": "0",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[15].repeat",
+        "main": "2.0",
+        "native": "2",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[16].count",
+        "main": "2.0",
+        "native": "2",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[16].badAt",
+        "main": "0.0",
+        "native": "0",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[16].repeat",
+        "main": "2.0",
+        "native": "2",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[17].count",
+        "main": "40.0",
+        "native": "40",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[17].badAt",
+        "main": "0.0",
+        "native": "0",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[17].repeat",
+        "main": "2.0",
+        "native": "2",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[18].count",
+        "main": "40.0",
+        "native": "40",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[18].badAt",
+        "main": "0.0",
+        "native": "0",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[18].repeat",
+        "main": "2.0",
+        "native": "2",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[19].count",
+        "main": "9.0",
+        "native": "9",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[19].badAt",
+        "main": "8.0",
+        "native": "8",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[20].count",
+        "main": "9.0",
+        "native": "9",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[20].badAt",
+        "main": "8.0",
+        "native": "8",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[21].count",
+        "main": "9.0",
+        "native": "9",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[21].badAt",
+        "main": "8.0",
+        "native": "8",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[22].count",
+        "main": "2.0",
+        "native": "2",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[22].badAt",
+        "main": "1.0",
+        "native": "1",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[23].count",
+        "main": "2.0",
+        "native": "2",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[23].badAt",
+        "main": "1.0",
+        "native": "1",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[24].count",
+        "main": "2.0",
+        "native": "2",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[24].badAt",
+        "main": "1.0",
+        "native": "1",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[25].count",
+        "main": "2.0",
+        "native": "2",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[25].badAt",
+        "main": "1.0",
+        "native": "1",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[26].count",
+        "main": "2.0",
+        "native": "2",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[26].badAt",
+        "main": "1.0",
+        "native": "1",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[27].count",
+        "main": "2.0",
+        "native": "2",
+        "sameJSONNumberValue": true
+      },
+      {
+        "path": "$[27].badAt",
+        "main": "1.0",
+        "native": "1",
+        "sameJSONNumberValue": true
+      }
+    ]
+  }
+]

@@ -1,0 +1,653 @@
+{
+  "data": "/tmp/graphite-pagination-main-real64-62b92d20",
+  "loadMode": "MAPPED",
+  "count": 64,
+  "totals": {
+    "nodes": 19431891,
+    "edges": 20448885,
+    "methods": 1374983,
+    "callSites": 5046935
+  },
+  "graphs": [
+    {
+      "id": "fixture-android-00",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-android-00",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:11.078542Z",
+      "nodes": 360214,
+      "edges": 388773,
+      "methods": 24779,
+      "callSites": 100606
+    },
+    {
+      "id": "fixture-android-01",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-android-01",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:11.112670Z",
+      "nodes": 378711,
+      "edges": 415357,
+      "methods": 25700,
+      "callSites": 110875
+    },
+    {
+      "id": "fixture-android-02",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-android-02",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:11.156377Z",
+      "nodes": 366093,
+      "edges": 394557,
+      "methods": 25074,
+      "callSites": 102233
+    },
+    {
+      "id": "fixture-android-03",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-android-03",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:11.190507Z",
+      "nodes": 381305,
+      "edges": 417318,
+      "methods": 25258,
+      "callSites": 108305
+    },
+    {
+      "id": "fixture-android-04",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-android-04",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:11.219577Z",
+      "nodes": 363932,
+      "edges": 383925,
+      "methods": 24910,
+      "callSites": 102157
+    },
+    {
+      "id": "fixture-android-05",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-android-05",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:11.255191Z",
+      "nodes": 357260,
+      "edges": 386922,
+      "methods": 24793,
+      "callSites": 98095
+    },
+    {
+      "id": "fixture-android-06",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-android-06",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:11.294562Z",
+      "nodes": 395517,
+      "edges": 432252,
+      "methods": 25698,
+      "callSites": 114190
+    },
+    {
+      "id": "fixture-android-07",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-android-07",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:11.335923Z",
+      "nodes": 383772,
+      "edges": 413134,
+      "methods": 26166,
+      "callSites": 108587
+    },
+    {
+      "id": "fixture-android-08",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-android-08",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:11.380503Z",
+      "nodes": 387483,
+      "edges": 425018,
+      "methods": 26293,
+      "callSites": 111032
+    },
+    {
+      "id": "fixture-android-09",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-android-09",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:11.432715Z",
+      "nodes": 389674,
+      "edges": 422337,
+      "methods": 27309,
+      "callSites": 110050
+    },
+    {
+      "id": "fixture-android-10",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-android-10",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:11.481301Z",
+      "nodes": 379829,
+      "edges": 412059,
+      "methods": 25013,
+      "callSites": 103391
+    },
+    {
+      "id": "fixture-android-11",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-android-11",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:11.542170Z",
+      "nodes": 346906,
+      "edges": 372640,
+      "methods": 23920,
+      "callSites": 94712
+    },
+    {
+      "id": "fixture-android-12",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-android-12",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:11.596130Z",
+      "nodes": 434497,
+      "edges": 477311,
+      "methods": 28417,
+      "callSites": 121945
+    },
+    {
+      "id": "fixture-android-13",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-android-13",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:11.653333Z",
+      "nodes": 400857,
+      "edges": 430901,
+      "methods": 25710,
+      "callSites": 117348
+    },
+    {
+      "id": "fixture-android-14",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-android-14",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:11.712284Z",
+      "nodes": 384438,
+      "edges": 419606,
+      "methods": 25648,
+      "callSites": 108560
+    },
+    {
+      "id": "fixture-android-15",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-android-15",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:11.780347Z",
+      "nodes": 330738,
+      "edges": 359485,
+      "methods": 23822,
+      "callSites": 94748
+    },
+    {
+      "id": "fixture-hive-00",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-hive-00",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:11.893517Z",
+      "nodes": 415533,
+      "edges": 417820,
+      "methods": 25970,
+      "callSites": 102295
+    },
+    {
+      "id": "fixture-hive-01",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-hive-01",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:12.010179Z",
+      "nodes": 333994,
+      "edges": 334279,
+      "methods": 23388,
+      "callSites": 81185
+    },
+    {
+      "id": "fixture-hive-02",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-hive-02",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:12.138202Z",
+      "nodes": 411559,
+      "edges": 432159,
+      "methods": 27285,
+      "callSites": 96064
+    },
+    {
+      "id": "fixture-hive-03",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-hive-03",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:12.262907Z",
+      "nodes": 394928,
+      "edges": 383295,
+      "methods": 25440,
+      "callSites": 94421
+    },
+    {
+      "id": "fixture-hive-04",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-hive-04",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:12.385363Z",
+      "nodes": 373364,
+      "edges": 372924,
+      "methods": 24809,
+      "callSites": 86012
+    },
+    {
+      "id": "fixture-hive-05",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-hive-05",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:12.514056Z",
+      "nodes": 361491,
+      "edges": 349563,
+      "methods": 25109,
+      "callSites": 82642
+    },
+    {
+      "id": "fixture-hive-06",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-hive-06",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:12.646824Z",
+      "nodes": 382987,
+      "edges": 361305,
+      "methods": 24959,
+      "callSites": 86251
+    },
+    {
+      "id": "fixture-hive-07",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-hive-07",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:12.785929Z",
+      "nodes": 421548,
+      "edges": 449426,
+      "methods": 25969,
+      "callSites": 102028
+    },
+    {
+      "id": "fixture-hive-08",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-hive-08",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:12.934914Z",
+      "nodes": 421277,
+      "edges": 425423,
+      "methods": 26277,
+      "callSites": 99087
+    },
+    {
+      "id": "fixture-hive-09",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-hive-09",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:13.090314Z",
+      "nodes": 366679,
+      "edges": 359657,
+      "methods": 24481,
+      "callSites": 82759
+    },
+    {
+      "id": "fixture-hive-10",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-hive-10",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:13.249940Z",
+      "nodes": 334323,
+      "edges": 334127,
+      "methods": 23819,
+      "callSites": 79356
+    },
+    {
+      "id": "fixture-hive-11",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-hive-11",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:13.411638Z",
+      "nodes": 352533,
+      "edges": 364570,
+      "methods": 25942,
+      "callSites": 89373
+    },
+    {
+      "id": "fixture-hive-12",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-hive-12",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:13.572488Z",
+      "nodes": 396703,
+      "edges": 400173,
+      "methods": 25058,
+      "callSites": 93578
+    },
+    {
+      "id": "fixture-hive-13",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-hive-13",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:13.740705Z",
+      "nodes": 368970,
+      "edges": 368746,
+      "methods": 26321,
+      "callSites": 86013
+    },
+    {
+      "id": "fixture-hive-14",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-hive-14",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:13.912687Z",
+      "nodes": 357675,
+      "edges": 377555,
+      "methods": 24003,
+      "callSites": 88637
+    },
+    {
+      "id": "fixture-hive-15",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-hive-15",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:14.085991Z",
+      "nodes": 376820,
+      "edges": 366855,
+      "methods": 25186,
+      "callSites": 87946
+    },
+    {
+      "id": "fixture-kotlin-compiler-00",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-kotlin-compiler-00",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:14.258485Z",
+      "nodes": 217622,
+      "edges": 233151,
+      "methods": 16464,
+      "callSites": 59257
+    },
+    {
+      "id": "fixture-kotlin-compiler-01",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-kotlin-compiler-01",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:14.414373Z",
+      "nodes": 205755,
+      "edges": 218314,
+      "methods": 15684,
+      "callSites": 55092
+    },
+    {
+      "id": "fixture-kotlin-compiler-02",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-kotlin-compiler-02",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:14.591493Z",
+      "nodes": 193153,
+      "edges": 207029,
+      "methods": 14354,
+      "callSites": 52094
+    },
+    {
+      "id": "fixture-kotlin-compiler-03",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-kotlin-compiler-03",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:14.772025Z",
+      "nodes": 178341,
+      "edges": 191505,
+      "methods": 13209,
+      "callSites": 48917
+    },
+    {
+      "id": "fixture-kotlin-compiler-04",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-kotlin-compiler-04",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:14.947721Z",
+      "nodes": 217735,
+      "edges": 232579,
+      "methods": 15673,
+      "callSites": 59098
+    },
+    {
+      "id": "fixture-kotlin-compiler-05",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-kotlin-compiler-05",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:15.116106Z",
+      "nodes": 227660,
+      "edges": 246353,
+      "methods": 16343,
+      "callSites": 62560
+    },
+    {
+      "id": "fixture-kotlin-compiler-06",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-kotlin-compiler-06",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:15.301330Z",
+      "nodes": 193592,
+      "edges": 204667,
+      "methods": 14623,
+      "callSites": 52417
+    },
+    {
+      "id": "fixture-kotlin-compiler-07",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-kotlin-compiler-07",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:15.492173Z",
+      "nodes": 202111,
+      "edges": 215725,
+      "methods": 15573,
+      "callSites": 54757
+    },
+    {
+      "id": "fixture-kotlin-compiler-08",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-kotlin-compiler-08",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:15.661003Z",
+      "nodes": 219911,
+      "edges": 237038,
+      "methods": 16263,
+      "callSites": 59877
+    },
+    {
+      "id": "fixture-kotlin-compiler-09",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-kotlin-compiler-09",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:15.858587Z",
+      "nodes": 225090,
+      "edges": 237762,
+      "methods": 17463,
+      "callSites": 59459
+    },
+    {
+      "id": "fixture-kotlin-compiler-10",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-kotlin-compiler-10",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:16.047857Z",
+      "nodes": 241993,
+      "edges": 256405,
+      "methods": 18551,
+      "callSites": 64023
+    },
+    {
+      "id": "fixture-kotlin-compiler-11",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-kotlin-compiler-11",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:16.238831Z",
+      "nodes": 192380,
+      "edges": 204342,
+      "methods": 14347,
+      "callSites": 51565
+    },
+    {
+      "id": "fixture-kotlin-compiler-12",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-kotlin-compiler-12",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:16.413212Z",
+      "nodes": 204741,
+      "edges": 215343,
+      "methods": 15285,
+      "callSites": 54287
+    },
+    {
+      "id": "fixture-kotlin-compiler-13",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-kotlin-compiler-13",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:16.608113Z",
+      "nodes": 208131,
+      "edges": 224674,
+      "methods": 15051,
+      "callSites": 57490
+    },
+    {
+      "id": "fixture-kotlin-compiler-14",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-kotlin-compiler-14",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:16.789285Z",
+      "nodes": 202677,
+      "edges": 220140,
+      "methods": 14446,
+      "callSites": 56472
+    },
+    {
+      "id": "fixture-kotlin-compiler-15",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-kotlin-compiler-15",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:16.988155Z",
+      "nodes": 202540,
+      "edges": 212190,
+      "methods": 16340,
+      "callSites": 53001
+    },
+    {
+      "id": "fixture-tika-00",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-tika-00",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:17.054213Z",
+      "nodes": 222589,
+      "edges": 235360,
+      "methods": 17584,
+      "callSites": 55707
+    },
+    {
+      "id": "fixture-tika-01",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-tika-01",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:17.128168Z",
+      "nodes": 262470,
+      "edges": 278576,
+      "methods": 19174,
+      "callSites": 67073
+    },
+    {
+      "id": "fixture-tika-02",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-tika-02",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:17.205774Z",
+      "nodes": 253443,
+      "edges": 263710,
+      "methods": 20689,
+      "callSites": 60764
+    },
+    {
+      "id": "fixture-tika-03",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-tika-03",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:17.284768Z",
+      "nodes": 219700,
+      "edges": 231994,
+      "methods": 17675,
+      "callSites": 54516
+    },
+    {
+      "id": "fixture-tika-04",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-tika-04",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:17.362493Z",
+      "nodes": 250102,
+      "edges": 267564,
+      "methods": 19473,
+      "callSites": 65357
+    },
+    {
+      "id": "fixture-tika-05",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-tika-05",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:17.449237Z",
+      "nodes": 237378,
+      "edges": 249931,
+      "methods": 20290,
+      "callSites": 59823
+    },
+    {
+      "id": "fixture-tika-06",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-tika-06",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:17.536112Z",
+      "nodes": 243243,
+      "edges": 261932,
+      "methods": 18445,
+      "callSites": 58836
+    },
+    {
+      "id": "fixture-tika-07",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-tika-07",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:17.625660Z",
+      "nodes": 242588,
+      "edges": 255593,
+      "methods": 19132,
+      "callSites": 57832
+    },
+    {
+      "id": "fixture-tika-08",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-tika-08",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:17.722648Z",
+      "nodes": 245189,
+      "edges": 259190,
+      "methods": 19239,
+      "callSites": 63677
+    },
+    {
+      "id": "fixture-tika-09",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-tika-09",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:17.811162Z",
+      "nodes": 258928,
+      "edges": 283433,
+      "methods": 19919,
+      "callSites": 66311
+    },
+    {
+      "id": "fixture-tika-10",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-tika-10",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:17.911848Z",
+      "nodes": 271650,
+      "edges": 285075,
+      "methods": 20758,
+      "callSites": 68948
+    },
+    {
+      "id": "fixture-tika-11",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-tika-11",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:18.016330Z",
+      "nodes": 246572,
+      "edges": 266198,
+      "methods": 18944,
+      "callSites": 62554
+    },
+    {
+      "id": "fixture-tika-12",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-tika-12",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:18.118268Z",
+      "nodes": 248976,
+      "edges": 261415,
+      "methods": 20748,
+      "callSites": 62181
+    },
+    {
+      "id": "fixture-tika-13",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-tika-13",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:18.221197Z",
+      "nodes": 245295,
+      "edges": 263096,
+      "methods": 18671,
+      "callSites": 59606
+    },
+    {
+      "id": "fixture-tika-14",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-tika-14",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:18.335039Z",
+      "nodes": 246197,
+      "edges": 260626,
+      "methods": 21175,
+      "callSites": 59770
+    },
+    {
+      "id": "fixture-tika-15",
+      "path": "/tmp/graphite-pagination-main-real64-62b92d20/fixture-tika-15",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T04:16:18.440807Z",
+      "nodes": 292529,
+      "edges": 318503,
+      "methods": 20872,
+      "callSites": 79133
+    }
+  ]
+}

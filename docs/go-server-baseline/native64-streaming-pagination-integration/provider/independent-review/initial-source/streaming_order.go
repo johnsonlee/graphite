@@ -1,0 +1,239 @@
+package query
+
+import (
+	"container/heap"
+	"context"
+	"math"
+	"runtime"
+	"sort"
+
+	"github.com/johnsonlee/graphite/graphite-server/internal/cypher"
+	"github.com/johnsonlee/graphite/graphite-server/internal/store"
+)
+
+type streamingRankedRow struct {
+	row       map[string]any
+	values    []any
+	encounter int64
+	visible   string
+}
+type streamingRowHeap struct {
+	rows  []*streamingRankedRow
+	items []cypher.SortItem
+}
+
+func (h streamingRowHeap) compare(a, b *streamingRankedRow) int {
+	for i, item := range h.items {
+		c := compare(a.values[i], b.values[i])
+		if item.Descending {
+			c = -c
+		}
+		if c != 0 {
+			return c
+		}
+	}
+	if a.encounter < b.encounter {
+		return -1
+	}
+	if a.encounter > b.encounter {
+		return 1
+	}
+	return 0
+}
+func (h streamingRowHeap) Len() int           { return len(h.rows) }
+func (h streamingRowHeap) Less(i, j int) bool { return h.compare(h.rows[i], h.rows[j]) > 0 }
+func (h streamingRowHeap) Swap(i, j int)      { h.rows[i], h.rows[j] = h.rows[j], h.rows[i] }
+func (h *streamingRowHeap) Push(v any)        { h.rows = append(h.rows, v.(*streamingRankedRow)) }
+func (h *streamingRowHeap) Pop() any {
+	v := h.rows[len(h.rows)-1]
+	h.rows[len(h.rows)-1] = nil
+	h.rows = h.rows[:len(h.rows)-1]
+	return v
+}
+func (h *streamingRowHeap) add(row *streamingRankedRow, limit int) *streamingRankedRow {
+	if len(h.rows) < limit {
+		heap.Push(h, row)
+		return nil
+	}
+	if h.compare(row, h.rows[0]) < 0 {
+		removed := heap.Pop(h).(*streamingRankedRow)
+		heap.Push(h, row)
+		return removed
+	}
+	return row
+}
+func (h *streamingRowHeap) result(columns []string, skip int) Result {
+	sort.Slice(h.rows, func(i, j int) bool { return h.compare(h.rows[i], h.rows[j]) < 0 })
+	rows := []map[string]any{}
+	for _, r := range h.rows[min(skip, len(h.rows)):] {
+		rows = append(rows, r.row)
+	}
+	return Result{Columns: columns, Rows: rows}
+}
+
+func (e evaluator) streamingSortValues(p *streamingPaginationPlan, bindings, row map[string]any) []any {
+	scope := e.cloneRow(bindings)
+	for _, column := range p.columns {
+		e.bind(scope, column, row[column])
+	}
+	mergeProvenance(scope, row)
+	values := make([]any, len(p.projection.OrderBy))
+	for i, item := range p.projection.OrderBy {
+		if variable, ok := item.Expression.(cypher.Variable); ok {
+			values[i] = scope[variable.Name]
+		} else {
+			values[i] = freezeCandidate(e.eval(item.Expression, scope))
+		}
+	}
+	return values
+}
+
+func (e evaluator) streamingOrderedRows(p *streamingPaginationPlan, next func(context.Context) (map[string]any, bool)) Result {
+	top := &streamingRowHeap{items: p.projection.OrderBy}
+	selected := map[string]*streamingRankedRow{}
+	encounter := int64(0)
+	for {
+		bindings, ok := next(e.ctx)
+		if !ok {
+			break
+		}
+		if e.eval(p.match.Where, bindings) != true {
+			continue
+		}
+		row := e.streamingProject(p, bindings)
+		visible := ""
+		if p.projection.Distinct {
+			visible = distinctVisibleKey(row)
+			if old := selected[visible]; old != nil {
+				mergeProvenance(old.row, row)
+				encounter++
+				continue
+			}
+		}
+		ranked := &streamingRankedRow{row: row, values: e.streamingSortValues(p, bindings, row), encounter: encounter, visible: visible}
+		encounter++
+		removed := top.add(ranked, p.retained)
+		if p.projection.Distinct && removed != ranked {
+			if removed != nil {
+				delete(selected, removed.visible)
+			}
+			selected[visible] = ranked
+		}
+	}
+	e.check()
+	return top.result(p.columns, p.skip)
+}
+
+type streamingOrderWorkerKey struct{}
+
+// ORDER uses shouldParallelizeStringScan over the scoped pipeline catalog. Unlike
+// generic DISTINCT's existing admission, eager graphs have neither strategy nor
+// prepared lookup capabilities, so a nonempty eligible type permits workers.
+func (e evaluator) streamingStringParallel(p *streamingPaginationPlan, sources []Graph) bool {
+	for _, entry := range mainDirectStringTypes {
+		if len(p.node.Labels) > 0 && !matchesLabel(store.Node{Kind: entry.kind}, p.node.Labels[0]) {
+			continue
+		}
+		supported := false
+		for _, atom := range p.atoms {
+			for _, property := range entry.properties {
+				supported = supported || atom.property == property
+			}
+		}
+		if !supported {
+			continue
+		}
+		for _, source := range sources {
+			if len(source.Store.NodesOfKind(entry.kind)) == 0 {
+				continue
+			}
+			if source.Store.Mode != "MAPPED" || entry.kind != "CallSiteNode" {
+				return true
+			}
+			index, ok, err := source.Store.RetainedProjectionIndex(e.ctx)
+			failMainStringRead(err)
+			if !ok {
+				return true
+			}
+			serial, err := index.PrefersSerialProjectionScan(e.ctx)
+			failMainStringRead(err)
+			if !serial {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func (e evaluator) streamingOrderParallelism(p *streamingPaginationPlan, sources []Graph) int {
+	if len(p.projection.OrderBy) == 0 || !e.cross || p.projection.Distinct || p.atoms == nil || len(sources) <= 1 || e.ctx.Value(streamingOrderWorkerKey{}) == true {
+		return 1
+	}
+	if !e.streamingStringParallel(p, sources) {
+		return 1
+	}
+	parallel := min(len(sources), runtime.NumCPU(), 8)
+	if len(sources) >= 40 {
+		parallel = min(len(sources), max(1, runtime.NumCPU()/2))
+	}
+	return parallel
+}
+
+func (e evaluator) streamingParallelOrder(p *streamingPaginationPlan, sources []Graph, factory streamingNodeFactory, parallel int) Result {
+	// main constructs PriorityQueue(retainedCount) before any source task.
+	// Java17's default compressed-class Object[] layout has two header words;
+	// larger lengths fail deterministically, independently of available heap.
+	// Do not attempt the giant allocation or emulate environment-dependent OOM.
+	if p.retained > math.MaxInt32-2 {
+		functionError("OutOfMemoryError", "Requested array size exceeds VM limit")
+	}
+	top := &streamingRowHeap{items: p.projection.OrderBy}
+	for start := 0; start < len(sources); start += parallel {
+		end := min(len(sources), start+parallel)
+		runDistinctTasks(e.ctx, end-start, parallel, false, func(ctx context.Context, i int) []*streamingRankedRow {
+			local := e
+			local.ctx = context.WithValue(ctx, streamingOrderWorkerKey{}, true)
+			local.rowOrders = nil
+			local.regexes = &regexLRU{entries: map[string]compiledRegex{}}
+			source := sources[start+i]
+			// Storage sees the full catalog count even though this worker owns only
+			// one source, matching directStringCandidates' default source argument.
+			next := local.streamingBindings(p, []Graph{source}, func(worker evaluator, g Graph, n cypher.NodePattern, a []distinctStringAtom, _ int) mainNodeNext {
+				return factory(worker, g, n, a, len(sources))
+			})
+			owned := &streamingRowHeap{items: p.projection.OrderBy}
+			order := int64(0)
+			for {
+				bindings, ok := next(local.ctx)
+				if !ok {
+					break
+				}
+				if local.eval(p.match.Where, bindings) != true {
+					continue
+				}
+				row := local.streamingProject(p, bindings)
+				ranked := &streamingRankedRow{row: row, values: local.streamingSortValues(p, bindings, row), encounter: (int64(start+i) << 56) + order}
+				order++
+				owned.add(ranked, p.retained)
+			}
+			return owned.rows
+		}, func(_ int, rows []*streamingRankedRow) bool {
+			for _, row := range rows {
+				top.add(row, p.retained)
+			}
+			return false
+		})
+	}
+	e.check()
+	result := top.result(p.columns, p.skip)
+	// Restore row-key insertion order only after all worker evaluators are joined.
+	for i, row := range result.Rows {
+		owned := map[string]any{}
+		for _, column := range p.columns {
+			e.bind(owned, column, row[column])
+		}
+		mergeProvenance(owned, row)
+		result.Rows[i] = owned
+	}
+	return result
+}

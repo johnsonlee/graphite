@@ -1,0 +1,17 @@
+2147483631	Java heap space
+2147483632	Java heap space
+2147483633	Java heap space
+2147483634	Java heap space
+2147483635	Java heap space
+2147483636	Java heap space
+2147483637	Java heap space
+2147483638	Java heap space
+2147483639	Java heap space
+2147483640	Java heap space
+2147483641	Java heap space
+2147483642	Java heap space
+2147483643	Java heap space
+2147483644	Java heap space
+2147483645	Requested array size exceeds VM limit
+2147483646	Requested array size exceeds VM limit
+2147483647	Requested array size exceeds VM limit

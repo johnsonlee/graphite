@@ -1,0 +1,22 @@
+=== RUN   TestReviewBFinalSortCancellation
+--- PASS: TestReviewBFinalSortCancellation (0.02s)
+=== RUN   TestReviewBFinalSortCancellation
+--- PASS: TestReviewBFinalSortCancellation (0.00s)
+=== RUN   TestReviewBFinalSortCancellation
+--- PASS: TestReviewBFinalSortCancellation (0.00s)
+=== RUN   TestReviewBFinalSortCancellation
+--- PASS: TestReviewBFinalSortCancellation (0.00s)
+=== RUN   TestReviewBFinalSortCancellation
+--- PASS: TestReviewBFinalSortCancellation (0.00s)
+=== RUN   TestReviewBFinalSortCancellation
+--- PASS: TestReviewBFinalSortCancellation (0.00s)
+=== RUN   TestReviewBFinalSortCancellation
+--- PASS: TestReviewBFinalSortCancellation (0.00s)
+=== RUN   TestReviewBFinalSortCancellation
+--- PASS: TestReviewBFinalSortCancellation (0.00s)
+=== RUN   TestReviewBFinalSortCancellation
+--- PASS: TestReviewBFinalSortCancellation (0.00s)
+=== RUN   TestReviewBFinalSortCancellation
+--- PASS: TestReviewBFinalSortCancellation (0.00s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/query	1.298s

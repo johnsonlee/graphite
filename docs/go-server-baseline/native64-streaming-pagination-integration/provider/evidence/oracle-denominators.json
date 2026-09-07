@@ -1,0 +1,47 @@
+{
+  "sources-wire.json": {
+    "records": 28,
+    "executions": 38,
+    "sha256": "5169e8f3146ff402bc3946053f99a74ba6413a3bdf6af47caf183e25bfc0fc0a"
+  },
+  "clean-MAPPED-wire.json": {
+    "records": 96,
+    "executions": 96,
+    "sha256": "480167a1fb27e4ac3c1ff4a8e5e0b99abf79c4d4f0bb7472b25fb9dbcae1b83c"
+  },
+  "clean-EAGER-wire.json": {
+    "records": 96,
+    "executions": 96,
+    "sha256": "61ec606961be5b87dc98d2520f7547956a5b433da311d8f31ef5fd2a2c87e31f"
+  },
+  "bad-first-unmatched-MAPPED-wire.json": {
+    "records": 96,
+    "executions": 96,
+    "sha256": "47f71395ca174be05d5ffef218677320d51e67c7fe21096f9931104a3fbced1b"
+  },
+  "bad-last-unmatched-MAPPED-wire.json": {
+    "records": 96,
+    "executions": 96,
+    "sha256": "47f71395ca174be05d5ffef218677320d51e67c7fe21096f9931104a3fbced1b"
+  },
+  "bad-matched-MAPPED-wire.json": {
+    "records": 96,
+    "executions": 96,
+    "sha256": "6d17c0d5e28f8523c5b246daf6aa43886d22550eb477b81eff01d3a251897830"
+  },
+  "clean-unknown-wire.json": {
+    "records": 12,
+    "executions": 12,
+    "sha256": "a29987873065e6dfaac10ac8a7ca4db4924b235d431a4cd0b7a094c57f765c7e"
+  },
+  "bad-matched-unknown-wire.json": {
+    "records": 12,
+    "executions": 12,
+    "sha256": "a29987873065e6dfaac10ac8a7ca4db4924b235d431a4cd0b7a094c57f765c7e"
+  },
+  "design-main.json": {
+    "records": 53,
+    "executions": 53,
+    "sha256": "22bac0f3123acf4cfe5bd67bb4bd89a0b83142610eb120f2ed643e0c74f658fa"
+  }
+}

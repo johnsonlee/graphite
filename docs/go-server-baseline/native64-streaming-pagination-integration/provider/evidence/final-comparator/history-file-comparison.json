@@ -1,0 +1,23 @@
+{
+  "compared": [
+    "annotation-native.json",
+    "dense-clean-native.json",
+    "cache-threshold-native.json",
+    "dense-callee-sid-native.json",
+    "annotation-after-classification.json",
+    "rolling-native.json",
+    "dense-callee-sid-missing-native.json",
+    "history-native.json",
+    "annotation-after-native.json",
+    "dense-return-sid-missing-native.json",
+    "mixed-classification.json",
+    "dense-clean-missing-native.json",
+    "annotation-classification.json",
+    "mixed-native.json",
+    "dense-return-sid-native.json",
+    "wide-history-native.json"
+  ],
+  "changed": [
+    "rolling-native.json"
+  ]
+}

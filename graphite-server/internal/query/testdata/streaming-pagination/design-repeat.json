@@ -1,0 +1,2153 @@
+[
+  {
+    "name": "skip-before-projection",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id \u003e\u003d 0 RETURN CASE WHEN n.id\u003d17 THEN substring(\u0027x\u0027,\u0027bad\u0027) ELSE n.id END AS x SKIP 1 LIMIT 1",
+    "cross": false,
+    "capabilities": false,
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2
+      }
+    ],
+    "traces": [
+      {
+        "source": "local",
+        "next": 2,
+        "hasNext": 2,
+        "ids": [
+          17,
+          2
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "skip-before-projection",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id \u003e\u003d 0 RETURN CASE WHEN n.id\u003d17 THEN substring(\u0027x\u0027,\u0027bad\u0027) ELSE n.id END AS x SKIP 1 LIMIT 1",
+    "cross": true,
+    "capabilities": false,
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ],
+    "traces": [
+      {
+        "source": "a",
+        "next": 2,
+        "hasNext": 2,
+        "ids": [
+          17,
+          2
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      },
+      {
+        "source": "b",
+        "next": 0,
+        "hasNext": 0,
+        "ids": [],
+        "calls": [],
+        "pipelineStack": []
+      }
+    ]
+  },
+  {
+    "name": "skip-zero-projects-first",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id \u003e\u003d 0 RETURN CASE WHEN n.id\u003d17 THEN substring(\u0027x\u0027,\u0027bad\u0027) ELSE n.id END AS x SKIP 0 LIMIT 1",
+    "cross": false,
+    "capabilities": false,
+    "params": {},
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)",
+    "traces": [
+      {
+        "source": "local",
+        "next": 1,
+        "hasNext": 1,
+        "ids": [
+          17
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "skip-zero-projects-first",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id \u003e\u003d 0 RETURN CASE WHEN n.id\u003d17 THEN substring(\u0027x\u0027,\u0027bad\u0027) ELSE n.id END AS x SKIP 0 LIMIT 1",
+    "cross": true,
+    "capabilities": false,
+    "params": {},
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)",
+    "traces": [
+      {
+        "source": "a",
+        "next": 1,
+        "hasNext": 1,
+        "ids": [
+          17
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      },
+      {
+        "source": "b",
+        "next": 0,
+        "hasNext": 0,
+        "ids": [],
+        "calls": [],
+        "pipelineStack": []
+      }
+    ]
+  },
+  {
+    "name": "skip-parameter-ignored",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id \u003e\u003d 0 RETURN n.id AS x SKIP $skip LIMIT 1",
+    "cross": false,
+    "capabilities": false,
+    "params": {
+      "skip": 1.0
+    },
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 17
+      }
+    ],
+    "traces": [
+      {
+        "source": "local",
+        "next": 1,
+        "hasNext": 1,
+        "ids": [
+          17
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "skip-parameter-ignored",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id \u003e\u003d 0 RETURN n.id AS x SKIP $skip LIMIT 1",
+    "cross": true,
+    "capabilities": false,
+    "params": {
+      "skip": 1.0
+    },
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 17,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ],
+    "traces": [
+      {
+        "source": "a",
+        "next": 1,
+        "hasNext": 1,
+        "ids": [
+          17
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      },
+      {
+        "source": "b",
+        "next": 0,
+        "hasNext": 0,
+        "ids": [],
+        "calls": [],
+        "pipelineStack": []
+      }
+    ]
+  },
+  {
+    "name": "skip-throwing-expression-ignored",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id \u003e\u003d 0 RETURN n.id AS x SKIP substring(\u0027x\u0027,\u0027bad\u0027) LIMIT 1",
+    "cross": false,
+    "capabilities": false,
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 17
+      }
+    ],
+    "traces": [
+      {
+        "source": "local",
+        "next": 1,
+        "hasNext": 1,
+        "ids": [
+          17
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "skip-throwing-expression-ignored",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id \u003e\u003d 0 RETURN n.id AS x SKIP substring(\u0027x\u0027,\u0027bad\u0027) LIMIT 1",
+    "cross": true,
+    "capabilities": false,
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 17,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ],
+    "traces": [
+      {
+        "source": "a",
+        "next": 1,
+        "hasNext": 1,
+        "ids": [
+          17
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      },
+      {
+        "source": "b",
+        "next": 0,
+        "hasNext": 0,
+        "ids": [],
+        "calls": [],
+        "pipelineStack": []
+      }
+    ]
+  },
+  {
+    "name": "skip-add-expression-ignored",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id \u003e\u003d 0 RETURN n.id AS x SKIP 1+1 LIMIT 1",
+    "cross": false,
+    "capabilities": false,
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 17
+      }
+    ],
+    "traces": [
+      {
+        "source": "local",
+        "next": 1,
+        "hasNext": 1,
+        "ids": [
+          17
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "skip-add-expression-ignored",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id \u003e\u003d 0 RETURN n.id AS x SKIP 1+1 LIMIT 1",
+    "cross": true,
+    "capabilities": false,
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 17,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ],
+    "traces": [
+      {
+        "source": "a",
+        "next": 1,
+        "hasNext": 1,
+        "ids": [
+          17
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      },
+      {
+        "source": "b",
+        "next": 0,
+        "hasNext": 0,
+        "ids": [],
+        "calls": [],
+        "pipelineStack": []
+      }
+    ]
+  },
+  {
+    "name": "skip-string-literal-converts-zero",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id \u003e\u003d 0 RETURN n.id AS x SKIP \u0027bad\u0027 LIMIT 1",
+    "cross": false,
+    "capabilities": false,
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 17
+      }
+    ],
+    "traces": [
+      {
+        "source": "local",
+        "next": 1,
+        "hasNext": 1,
+        "ids": [
+          17
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "skip-string-literal-converts-zero",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id \u003e\u003d 0 RETURN n.id AS x SKIP \u0027bad\u0027 LIMIT 1",
+    "cross": true,
+    "capabilities": false,
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 17,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ],
+    "traces": [
+      {
+        "source": "a",
+        "next": 1,
+        "hasNext": 1,
+        "ids": [
+          17
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      },
+      {
+        "source": "b",
+        "next": 0,
+        "hasNext": 0,
+        "ids": [],
+        "calls": [],
+        "pipelineStack": []
+      }
+    ]
+  },
+  {
+    "name": "skip-unary-negative-ignored",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id \u003e\u003d 0 RETURN n.id AS x SKIP -1 LIMIT 1",
+    "cross": false,
+    "capabilities": false,
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 17
+      }
+    ],
+    "traces": [
+      {
+        "source": "local",
+        "next": 1,
+        "hasNext": 1,
+        "ids": [
+          17
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "skip-unary-negative-ignored",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id \u003e\u003d 0 RETURN n.id AS x SKIP -1 LIMIT 1",
+    "cross": true,
+    "capabilities": false,
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 17,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ],
+    "traces": [
+      {
+        "source": "a",
+        "next": 1,
+        "hasNext": 1,
+        "ids": [
+          17
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      },
+      {
+        "source": "b",
+        "next": 0,
+        "hasNext": 0,
+        "ids": [],
+        "calls": [],
+        "pipelineStack": []
+      }
+    ]
+  },
+  {
+    "name": "limit-zero-skips-everything",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id \u003e\u003d 0 RETURN substring(\u0027x\u0027,\u0027bad\u0027) AS x ORDER BY substring(\u0027x\u0027,\u0027bad\u0027) SKIP 1 LIMIT 0",
+    "cross": false,
+    "capabilities": false,
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [],
+    "traces": [
+      {
+        "source": "local",
+        "next": 0,
+        "hasNext": 0,
+        "ids": [],
+        "calls": [],
+        "pipelineStack": []
+      }
+    ]
+  },
+  {
+    "name": "limit-zero-skips-everything",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id \u003e\u003d 0 RETURN substring(\u0027x\u0027,\u0027bad\u0027) AS x ORDER BY substring(\u0027x\u0027,\u0027bad\u0027) SKIP 1 LIMIT 0",
+    "cross": true,
+    "capabilities": false,
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [],
+    "traces": [
+      {
+        "source": "a",
+        "next": 0,
+        "hasNext": 0,
+        "ids": [],
+        "calls": [],
+        "pipelineStack": []
+      },
+      {
+        "source": "b",
+        "next": 0,
+        "hasNext": 0,
+        "ids": [],
+        "calls": [],
+        "pipelineStack": []
+      }
+    ]
+  },
+  {
+    "name": "negative-skip-with-zero-limit",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id \u003e\u003d 0 RETURN substring(\u0027x\u0027,\u0027bad\u0027) AS x SKIP -1 LIMIT 0",
+    "cross": false,
+    "capabilities": false,
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [],
+    "traces": [
+      {
+        "source": "local",
+        "next": 0,
+        "hasNext": 0,
+        "ids": [],
+        "calls": [],
+        "pipelineStack": []
+      }
+    ]
+  },
+  {
+    "name": "negative-skip-with-zero-limit",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id \u003e\u003d 0 RETURN substring(\u0027x\u0027,\u0027bad\u0027) AS x SKIP -1 LIMIT 0",
+    "cross": true,
+    "capabilities": false,
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [],
+    "traces": [
+      {
+        "source": "a",
+        "next": 0,
+        "hasNext": 0,
+        "ids": [],
+        "calls": [],
+        "pipelineStack": []
+      },
+      {
+        "source": "b",
+        "next": 0,
+        "hasNext": 0,
+        "ids": [],
+        "calls": [],
+        "pipelineStack": []
+      }
+    ]
+  },
+  {
+    "name": "retained-overflow-fallback",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id \u003e\u003d 0 RETURN n.id AS x SKIP 2147483647 LIMIT 1",
+    "cross": false,
+    "capabilities": false,
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [],
+    "traces": [
+      {
+        "source": "local",
+        "next": 4,
+        "hasNext": 5,
+        "ids": [
+          17,
+          2,
+          41,
+          90
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeGeneralClauses",
+          "executeMatch",
+          "executeWithActiveBudget",
+          "matchNodeElement",
+          "matchPattern",
+          "matchPatternEagerly"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "retained-overflow-fallback",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id \u003e\u003d 0 RETURN n.id AS x SKIP 2147483647 LIMIT 1",
+    "cross": true,
+    "capabilities": false,
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [],
+    "traces": [
+      {
+        "source": "a",
+        "next": 4,
+        "hasNext": 5,
+        "ids": [
+          17,
+          2,
+          41,
+          90
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeGeneralClauses",
+          "executeMatch",
+          "executeWithActiveBudget",
+          "matchNodeElement",
+          "matchPattern",
+          "matchPatternEagerly"
+        ]
+      },
+      {
+        "source": "b",
+        "next": 4,
+        "hasNext": 5,
+        "ids": [
+          17,
+          2,
+          41,
+          90
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeGeneralClauses",
+          "executeMatch",
+          "executeWithActiveBudget",
+          "matchNodeElement",
+          "matchPattern",
+          "matchPatternEagerly"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "generic-stop-before-late-read",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id \u003e\u003d 0 RETURN n.id AS x LIMIT 1",
+    "cross": false,
+    "capabilities": false,
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 17
+      }
+    ],
+    "traces": [
+      {
+        "source": "local",
+        "next": 1,
+        "hasNext": 1,
+        "ids": [
+          17
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "tryFastFilteredNodeLimit"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "generic-stop-before-late-read",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id \u003e\u003d 0 RETURN n.id AS x LIMIT 1",
+    "cross": true,
+    "capabilities": false,
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 17,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ],
+    "traces": [
+      {
+        "source": "a",
+        "next": 1,
+        "hasNext": 1,
+        "ids": [
+          17
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "tryFastFilteredNodeLimit"
+        ]
+      },
+      {
+        "source": "b",
+        "next": 0,
+        "hasNext": 0,
+        "ids": [],
+        "calls": [],
+        "pipelineStack": []
+      }
+    ]
+  },
+  {
+    "name": "order-consumes-late-read",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id \u003e\u003d 0 RETURN n.id AS x ORDER BY x LIMIT 1",
+    "cross": false,
+    "capabilities": false,
+    "params": {},
+    "error": "IllegalStateException",
+    "message": "AUDIT_FETCH_local_4",
+    "traces": [
+      {
+        "source": "local",
+        "next": 4,
+        "hasNext": 4,
+        "ids": [
+          17,
+          2,
+          41
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "projectOrderedFilteredRows",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "order-consumes-late-read",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id \u003e\u003d 0 RETURN n.id AS x ORDER BY x LIMIT 1",
+    "cross": true,
+    "capabilities": false,
+    "params": {},
+    "error": "IllegalStateException",
+    "message": "AUDIT_FETCH_b_4",
+    "traces": [
+      {
+        "source": "a",
+        "next": 4,
+        "hasNext": 5,
+        "ids": [
+          17,
+          2,
+          41,
+          90
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "projectOrderedFilteredRows",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      },
+      {
+        "source": "b",
+        "next": 4,
+        "hasNext": 4,
+        "ids": [
+          17,
+          2,
+          41
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "projectOrderedFilteredRows",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "order-projection-before-later-read",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id \u003e\u003d 0 RETURN substring(\u0027x\u0027,\u0027bad\u0027) AS x ORDER BY x LIMIT 1",
+    "cross": false,
+    "capabilities": false,
+    "params": {},
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)",
+    "traces": [
+      {
+        "source": "local",
+        "next": 1,
+        "hasNext": 1,
+        "ids": [
+          17
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "projectOrderedFilteredRows",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "order-projection-before-later-read",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id \u003e\u003d 0 RETURN substring(\u0027x\u0027,\u0027bad\u0027) AS x ORDER BY x LIMIT 1",
+    "cross": true,
+    "capabilities": false,
+    "params": {},
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)",
+    "traces": [
+      {
+        "source": "a",
+        "next": 1,
+        "hasNext": 1,
+        "ids": [
+          17
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "projectOrderedFilteredRows",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      },
+      {
+        "source": "b",
+        "next": 0,
+        "hasNext": 0,
+        "ids": [],
+        "calls": [],
+        "pipelineStack": []
+      }
+    ]
+  },
+  {
+    "name": "unbounded-projects-before-later-read",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id \u003e\u003d 0 RETURN substring(\u0027x\u0027,\u0027bad\u0027) AS x",
+    "cross": false,
+    "capabilities": false,
+    "params": {},
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)",
+    "traces": [
+      {
+        "source": "local",
+        "next": 1,
+        "hasNext": 1,
+        "ids": [
+          17
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "tryStreamingFilteredNodeMatch"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "unbounded-projects-before-later-read",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id \u003e\u003d 0 RETURN substring(\u0027x\u0027,\u0027bad\u0027) AS x",
+    "cross": true,
+    "capabilities": false,
+    "params": {},
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)",
+    "traces": [
+      {
+        "source": "a",
+        "next": 1,
+        "hasNext": 1,
+        "ids": [
+          17
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "tryStreamingFilteredNodeMatch"
+        ]
+      },
+      {
+        "source": "b",
+        "next": 0,
+        "hasNext": 0,
+        "ids": [],
+        "calls": [],
+        "pipelineStack": []
+      }
+    ]
+  },
+  {
+    "name": "order-evaluates-discarded-rows",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id \u003e\u003d 0 RETURN n.id AS x ORDER BY CASE WHEN n.id\u003d90 THEN substring(\u0027x\u0027,\u0027bad\u0027) ELSE 0 END LIMIT 1",
+    "cross": false,
+    "capabilities": false,
+    "params": {},
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)",
+    "traces": [
+      {
+        "source": "local",
+        "next": 4,
+        "hasNext": 4,
+        "ids": [
+          17,
+          2,
+          41,
+          90
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "projectOrderedFilteredRows",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "order-evaluates-discarded-rows",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id \u003e\u003d 0 RETURN n.id AS x ORDER BY CASE WHEN n.id\u003d90 THEN substring(\u0027x\u0027,\u0027bad\u0027) ELSE 0 END LIMIT 1",
+    "cross": true,
+    "capabilities": false,
+    "params": {},
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)",
+    "traces": [
+      {
+        "source": "a",
+        "next": 4,
+        "hasNext": 4,
+        "ids": [
+          17,
+          2,
+          41,
+          90
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "projectOrderedFilteredRows",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      },
+      {
+        "source": "b",
+        "next": 0,
+        "hasNext": 0,
+        "ids": [],
+        "calls": [],
+        "pipelineStack": []
+      }
+    ]
+  },
+  {
+    "name": "order-ties-preserve-encounter",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id \u003e\u003d 0 RETURN n.id AS x ORDER BY 0 SKIP 1 LIMIT 2",
+    "cross": false,
+    "capabilities": false,
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2
+      },
+      {
+        "x": 41
+      }
+    ],
+    "traces": [
+      {
+        "source": "local",
+        "next": 4,
+        "hasNext": 5,
+        "ids": [
+          17,
+          2,
+          41,
+          90
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "projectOrderedFilteredRows",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "order-ties-preserve-encounter",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id \u003e\u003d 0 RETURN n.id AS x ORDER BY 0 SKIP 1 LIMIT 2",
+    "cross": true,
+    "capabilities": false,
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": 41,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ],
+    "traces": [
+      {
+        "source": "a",
+        "next": 4,
+        "hasNext": 5,
+        "ids": [
+          17,
+          2,
+          41,
+          90
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "projectOrderedFilteredRows",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      },
+      {
+        "source": "b",
+        "next": 4,
+        "hasNext": 5,
+        "ids": [
+          17,
+          2,
+          41,
+          90
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "projectOrderedFilteredRows",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "order-source-property",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id \u003e\u003d 0 RETURN n.id AS x ORDER BY n.id DESC LIMIT 2",
+    "cross": false,
+    "capabilities": false,
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 90
+      },
+      {
+        "x": 41
+      }
+    ],
+    "traces": [
+      {
+        "source": "local",
+        "next": 4,
+        "hasNext": 5,
+        "ids": [
+          17,
+          2,
+          41,
+          90
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "projectOrderedFilteredRows",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "order-source-property",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id \u003e\u003d 0 RETURN n.id AS x ORDER BY n.id DESC LIMIT 2",
+    "cross": true,
+    "capabilities": false,
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 90,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": 90,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ],
+    "traces": [
+      {
+        "source": "a",
+        "next": 4,
+        "hasNext": 5,
+        "ids": [
+          17,
+          2,
+          41,
+          90
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "projectOrderedFilteredRows",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      },
+      {
+        "source": "b",
+        "next": 4,
+        "hasNext": 5,
+        "ids": [
+          17,
+          2,
+          41,
+          90
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "projectOrderedFilteredRows",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "order-alias-shadow",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id \u003e\u003d 0 RETURN n.id AS n ORDER BY n.id LIMIT 2",
+    "cross": false,
+    "capabilities": false,
+    "params": {},
+    "columns": [
+      "n"
+    ],
+    "rows": [
+      {
+        "n": 17
+      },
+      {
+        "n": 2
+      }
+    ],
+    "traces": [
+      {
+        "source": "local",
+        "next": 4,
+        "hasNext": 5,
+        "ids": [
+          17,
+          2,
+          41,
+          90
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "projectOrderedFilteredRows",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "order-alias-shadow",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id \u003e\u003d 0 RETURN n.id AS n ORDER BY n.id LIMIT 2",
+    "cross": true,
+    "capabilities": false,
+    "params": {},
+    "columns": [
+      "n"
+    ],
+    "rows": [
+      {
+        "n": 17,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "n": 2,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ],
+    "traces": [
+      {
+        "source": "a",
+        "next": 4,
+        "hasNext": 5,
+        "ids": [
+          17,
+          2,
+          41,
+          90
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "projectOrderedFilteredRows",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      },
+      {
+        "source": "b",
+        "next": 4,
+        "hasNext": 5,
+        "ids": [
+          17,
+          2,
+          41,
+          90
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "projectOrderedFilteredRows",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "distinct-skips-duplicate-order",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id \u003e\u003d 0 RETURN DISTINCT 1 AS x ORDER BY CASE WHEN n.id\u003d17 THEN 0 ELSE substring(\u0027x\u0027,\u0027bad\u0027) END LIMIT 1",
+    "cross": false,
+    "capabilities": false,
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 1
+      }
+    ],
+    "traces": [
+      {
+        "source": "local",
+        "next": 4,
+        "hasNext": 5,
+        "ids": [
+          17,
+          2,
+          41,
+          90
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "projectOrderedFilteredRows",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "distinct-skips-duplicate-order",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id \u003e\u003d 0 RETURN DISTINCT 1 AS x ORDER BY CASE WHEN n.id\u003d17 THEN 0 ELSE substring(\u0027x\u0027,\u0027bad\u0027) END LIMIT 1",
+    "cross": true,
+    "capabilities": false,
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ],
+    "traces": [
+      {
+        "source": "a",
+        "next": 4,
+        "hasNext": 5,
+        "ids": [
+          17,
+          2,
+          41,
+          90
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "projectOrderedFilteredRows",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      },
+      {
+        "source": "b",
+        "next": 4,
+        "hasNext": 5,
+        "ids": [
+          17,
+          2,
+          41,
+          90
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "projectOrderedFilteredRows",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "distinct-still-projects-duplicate",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id \u003e\u003d 0 RETURN DISTINCT CASE WHEN n.id\u003d17 THEN 1 ELSE substring(\u0027x\u0027,\u0027bad\u0027) END AS x ORDER BY 0 LIMIT 1",
+    "cross": false,
+    "capabilities": false,
+    "params": {},
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)",
+    "traces": [
+      {
+        "source": "local",
+        "next": 2,
+        "hasNext": 2,
+        "ids": [
+          17,
+          2
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "projectOrderedFilteredRows",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "distinct-still-projects-duplicate",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id \u003e\u003d 0 RETURN DISTINCT CASE WHEN n.id\u003d17 THEN 1 ELSE substring(\u0027x\u0027,\u0027bad\u0027) END AS x ORDER BY 0 LIMIT 1",
+    "cross": true,
+    "capabilities": false,
+    "params": {},
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)",
+    "traces": [
+      {
+        "source": "a",
+        "next": 2,
+        "hasNext": 2,
+        "ids": [
+          17,
+          2
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "projectOrderedFilteredRows",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      },
+      {
+        "source": "b",
+        "next": 0,
+        "hasNext": 0,
+        "ids": [],
+        "calls": [],
+        "pipelineStack": []
+      }
+    ]
+  },
+  {
+    "name": "distinct-eviction-rechecks-order",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id \u003e\u003d 0 RETURN DISTINCT CASE WHEN n.id IN [17,90] THEN \u0027A\u0027 ELSE \u0027B\u0027 END AS x ORDER BY CASE WHEN n.id\u003d17 THEN 10 WHEN n.id\u003d90 THEN substring(\u0027x\u0027,\u0027bad\u0027) ELSE 0 END LIMIT 1",
+    "cross": false,
+    "capabilities": false,
+    "params": {},
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)",
+    "traces": [
+      {
+        "source": "local",
+        "next": 4,
+        "hasNext": 4,
+        "ids": [
+          17,
+          2,
+          41,
+          90
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "projectOrderedFilteredRows",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "distinct-eviction-rechecks-order",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id \u003e\u003d 0 RETURN DISTINCT CASE WHEN n.id IN [17,90] THEN \u0027A\u0027 ELSE \u0027B\u0027 END AS x ORDER BY CASE WHEN n.id\u003d17 THEN 10 WHEN n.id\u003d90 THEN substring(\u0027x\u0027,\u0027bad\u0027) ELSE 0 END LIMIT 1",
+    "cross": true,
+    "capabilities": false,
+    "params": {},
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)",
+    "traces": [
+      {
+        "source": "a",
+        "next": 4,
+        "hasNext": 4,
+        "ids": [
+          17,
+          2,
+          41,
+          90
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "projectOrderedFilteredRows",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      },
+      {
+        "source": "b",
+        "next": 0,
+        "hasNext": 0,
+        "ids": [],
+        "calls": [],
+        "pipelineStack": []
+      }
+    ]
+  },
+  {
+    "name": "distinct-order-duplicate-still-decodes",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id \u003e\u003d 0 RETURN DISTINCT 1 AS x ORDER BY 0 LIMIT 1",
+    "cross": false,
+    "capabilities": false,
+    "params": {},
+    "error": "IllegalStateException",
+    "message": "AUDIT_FETCH_local_4",
+    "traces": [
+      {
+        "source": "local",
+        "next": 4,
+        "hasNext": 4,
+        "ids": [
+          17,
+          2,
+          41
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "projectOrderedFilteredRows",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "distinct-order-duplicate-still-decodes",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id \u003e\u003d 0 RETURN DISTINCT 1 AS x ORDER BY 0 LIMIT 1",
+    "cross": true,
+    "capabilities": false,
+    "params": {},
+    "error": "IllegalStateException",
+    "message": "AUDIT_FETCH_b_4",
+    "traces": [
+      {
+        "source": "a",
+        "next": 4,
+        "hasNext": 5,
+        "ids": [
+          17,
+          2,
+          41,
+          90
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "projectOrderedFilteredRows",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      },
+      {
+        "source": "b",
+        "next": 4,
+        "hasNext": 4,
+        "ids": [
+          17,
+          2,
+          41
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "projectOrderedFilteredRows",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "distinct-skip-scope-stop",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id \u003e\u003d 0 RETURN DISTINCT n.caller_name AS x SKIP 1 LIMIT 1",
+    "cross": false,
+    "capabilities": false,
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other"
+      }
+    ],
+    "traces": [
+      {
+        "source": "local",
+        "next": 2,
+        "hasNext": 2,
+        "ids": [
+          17,
+          2
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "projectDistinctFilteredRows",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "distinct-skip-scope-stop",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id \u003e\u003d 0 RETURN DISTINCT n.caller_name AS x SKIP 1 LIMIT 1",
+    "cross": true,
+    "capabilities": false,
+    "params": {},
+    "error": "IllegalStateException",
+    "message": "AUDIT_FETCH_b_4",
+    "traces": [
+      {
+        "source": "a",
+        "next": 4,
+        "hasNext": 5,
+        "ids": [
+          17,
+          2,
+          41,
+          90
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "projectDistinctFilteredRows",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      },
+      {
+        "source": "b",
+        "next": 4,
+        "hasNext": 4,
+        "ids": [
+          17,
+          2,
+          41
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "projectDistinctFilteredRows",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "late-duplicate-provenance-order-skipped",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id\u003d17 RETURN DISTINCT 1 AS x ORDER BY CASE WHEN n.graphId\u003d\u0027a\u0027 THEN 0 ELSE substring(\u0027x\u0027,\u0027bad\u0027) END LIMIT 1",
+    "cross": true,
+    "capabilities": false,
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ],
+    "traces": [
+      {
+        "source": "a",
+        "next": 4,
+        "hasNext": 5,
+        "ids": [
+          17,
+          2,
+          41,
+          90
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "projectOrderedFilteredRows",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      },
+      {
+        "source": "b",
+        "next": 4,
+        "hasNext": 5,
+        "ids": [
+          17,
+          2,
+          41,
+          90
+        ],
+        "calls": [
+          "nodes"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "projectOrderedFilteredRows",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "direct-skip",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x SKIP 1 LIMIT 1",
+    "cross": false,
+    "capabilities": true,
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 41
+      }
+    ],
+    "traces": [
+      {
+        "source": "local",
+        "next": 2,
+        "hasNext": 2,
+        "ids": [
+          2,
+          41
+        ],
+        "calls": [
+          "nodeCount",
+          "nodesByStringPropertyDisjunction",
+          "stringPropertyNodeOrder"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "invokeSuspend",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "direct-skip",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x SKIP 1 LIMIT 1",
+    "cross": true,
+    "capabilities": true,
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 41,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ],
+    "traces": [
+      {
+        "source": "a",
+        "next": 2,
+        "hasNext": 2,
+        "ids": [
+          2,
+          41
+        ],
+        "calls": [
+          "nodeCount",
+          "nodesByStringPropertyDisjunction",
+          "stringPropertyNodeOrder"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "invokeSuspend",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      },
+      {
+        "source": "b",
+        "next": 0,
+        "hasNext": 0,
+        "ids": [],
+        "calls": [],
+        "pipelineStack": []
+      }
+    ]
+  },
+  {
+    "name": "direct-order",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x ORDER BY x DESC LIMIT 1",
+    "cross": false,
+    "capabilities": true,
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 41
+      }
+    ],
+    "traces": [
+      {
+        "source": "local",
+        "next": 2,
+        "hasNext": 3,
+        "ids": [
+          2,
+          41
+        ],
+        "calls": [
+          "nodeCount",
+          "nodesByStringPropertyDisjunction",
+          "stringPropertyNodeOrder"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "invokeSuspend",
+          "projectOrderedFilteredRows",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "direct-order",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x ORDER BY x DESC LIMIT 1",
+    "cross": true,
+    "capabilities": true,
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 41,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ],
+    "traces": [
+      {
+        "source": "a",
+        "next": 2,
+        "hasNext": 3,
+        "ids": [
+          2,
+          41
+        ],
+        "calls": [
+          "nodeCount",
+          "nodesByStringPropertyDisjunction",
+          "prefersSerialStringPropertyDisjunction",
+          "stringPropertyNodeOrder"
+        ],
+        "pipelineStack": [
+          "invokeSuspend",
+          "projectOrderedDirectStringRows$lambda$220$lambda$219",
+          "runDirectStringTasks$submit$lambda$168"
+        ]
+      },
+      {
+        "source": "b",
+        "next": 2,
+        "hasNext": 3,
+        "ids": [
+          2,
+          41
+        ],
+        "calls": [
+          "nodeCount",
+          "nodesByStringPropertyDisjunction",
+          "stringPropertyNodeOrder"
+        ],
+        "pipelineStack": [
+          "invokeSuspend",
+          "projectOrderedDirectStringRows$lambda$220$lambda$219",
+          "runDirectStringTasks$submit$lambda$168"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "direct-order-throw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x ORDER BY substring(n.caller_name,\u0027bad\u0027) LIMIT 1",
+    "cross": false,
+    "capabilities": true,
+    "params": {},
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)",
+    "traces": [
+      {
+        "source": "local",
+        "next": 1,
+        "hasNext": 1,
+        "ids": [
+          2
+        ],
+        "calls": [
+          "nodeCount",
+          "nodesByStringPropertyDisjunction",
+          "stringPropertyNodeOrder"
+        ],
+        "pipelineStack": [
+          "execute$cypher",
+          "executeWithActiveBudget",
+          "invokeSuspend",
+          "projectOrderedFilteredRows",
+          "tryStreamingFilteredMatchLimit"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "direct-order-throw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x ORDER BY substring(n.caller_name,\u0027bad\u0027) LIMIT 1",
+    "cross": true,
+    "capabilities": true,
+    "params": {},
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)",
+    "traces": [
+      {
+        "source": "a",
+        "next": 1,
+        "hasNext": 1,
+        "ids": [
+          2
+        ],
+        "calls": [
+          "nodeCount",
+          "nodesByStringPropertyDisjunction",
+          "prefersSerialStringPropertyDisjunction",
+          "stringPropertyNodeOrder"
+        ],
+        "pipelineStack": [
+          "invokeSuspend",
+          "projectOrderedDirectStringRows$lambda$220$lambda$219",
+          "runDirectStringTasks$submit$lambda$168"
+        ]
+      },
+      {
+        "source": "b",
+        "next": 1,
+        "hasNext": 1,
+        "ids": [
+          2
+        ],
+        "calls": [
+          "nodeCount",
+          "nodesByStringPropertyDisjunction",
+          "stringPropertyNodeOrder"
+        ],
+        "pipelineStack": [
+          "invokeSuspend",
+          "projectOrderedDirectStringRows$lambda$220$lambda$219",
+          "runDirectStringTasks$submit$lambda$168"
+        ]
+      }
+    ]
+  }
+]

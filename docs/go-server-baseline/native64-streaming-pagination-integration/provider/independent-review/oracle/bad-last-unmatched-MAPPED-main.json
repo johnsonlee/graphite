@@ -1,0 +1,1795 @@
+[
+  {
+    "name": "skip-source-order",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x SKIP 1 LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 41
+      }
+    ]
+  },
+  {
+    "name": "skip-source-order",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x SKIP 1 LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 41,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "distinct-skip-id",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.id AS x SKIP 0 LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2
+      }
+    ]
+  },
+  {
+    "name": "distinct-skip-id",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.id AS x SKIP 0 LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "distinct-skip-whole",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n AS x SKIP 0 LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": {
+          "id": 2,
+          "type": "CallSiteNode",
+          "callee_class": "example.Target",
+          "callee_name": "other",
+          "caller_class": "example.Other",
+          "caller_name": "other",
+          "line": 2
+        }
+      }
+    ]
+  },
+  {
+    "name": "distinct-skip-whole",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n AS x SKIP 0 LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": {
+          "id": 2,
+          "type": "CallSiteNode",
+          "callee_class": "example.Target",
+          "callee_name": "other",
+          "caller_class": "example.Other",
+          "caller_name": "other",
+          "line": 2,
+          "graphId": "a",
+          "elementId": "a:2",
+          "qualifiedId": "a:2"
+        },
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "distinct-skip-nested",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT {node:n,list:[n,n.id]} AS x SKIP 0 LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": {
+          "node": {
+            "id": 2,
+            "type": "CallSiteNode",
+            "callee_class": "example.Target",
+            "callee_name": "other",
+            "caller_class": "example.Other",
+            "caller_name": "other",
+            "line": 2
+          },
+          "list": [
+            {
+              "id": 2,
+              "type": "CallSiteNode",
+              "callee_class": "example.Target",
+              "callee_name": "other",
+              "caller_class": "example.Other",
+              "caller_name": "other",
+              "line": 2
+            },
+            2
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "distinct-skip-nested",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT {node:n,list:[n,n.id]} AS x SKIP 0 LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": {
+          "node": {
+            "id": 2,
+            "type": "CallSiteNode",
+            "callee_class": "example.Target",
+            "callee_name": "other",
+            "caller_class": "example.Other",
+            "caller_name": "other",
+            "line": 2,
+            "graphId": "a",
+            "elementId": "a:2",
+            "qualifiedId": "a:2"
+          },
+          "list": [
+            {
+              "id": 2,
+              "type": "CallSiteNode",
+              "callee_class": "example.Target",
+              "callee_name": "other",
+              "caller_class": "example.Other",
+              "caller_name": "other",
+              "line": 2,
+              "graphId": "a",
+              "elementId": "a:2",
+              "qualifiedId": "a:2"
+            },
+            2
+          ]
+        },
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "distinct-skip-string",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.caller_name AS x SKIP 0 LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "distinct-skip-string",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.caller_name AS x SKIP 0 LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "distinct-skip-expression",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.id+0 AS x SKIP 0 LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2
+      }
+    ]
+  },
+  {
+    "name": "distinct-skip-expression",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.id+0 AS x SKIP 0 LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "skip-before-error",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN CASE WHEN n.id\u003d2 THEN substring(\u0027x\u0027,\u0027bad\u0027) ELSE n.id END AS x SKIP 1 LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 41
+      }
+    ]
+  },
+  {
+    "name": "skip-before-error",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN CASE WHEN n.id\u003d2 THEN substring(\u0027x\u0027,\u0027bad\u0027) ELSE n.id END AS x SKIP 1 LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 41,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "order-id",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x ORDER BY n.id DESC LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 41
+      }
+    ]
+  },
+  {
+    "name": "order-id",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x ORDER BY n.id DESC LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 41,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "order-tie-skip",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x ORDER BY 0 SKIP 1 LIMIT 2",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 41
+      }
+    ]
+  },
+  {
+    "name": "order-tie-skip",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x ORDER BY 0 SKIP 1 LIMIT 2",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 41,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "order-mixed-composite",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x ORDER BY n.graphId DESC,n.id ASC SKIP 1 LIMIT 3",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 41
+      }
+    ]
+  },
+  {
+    "name": "order-mixed-composite",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x ORDER BY n.graphId DESC,n.id ASC SKIP 1 LIMIT 3",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 41,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": 41,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "order-null",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x ORDER BY null,n.id DESC LIMIT 3",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 41
+      },
+      {
+        "x": 2
+      }
+    ]
+  },
+  {
+    "name": "order-null",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x ORDER BY null,n.id DESC LIMIT 3",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 41,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": 41,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "order-undefined-variable",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x ORDER BY missing LIMIT 2",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2
+      },
+      {
+        "x": 41
+      }
+    ]
+  },
+  {
+    "name": "order-undefined-variable",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x ORDER BY missing LIMIT 2",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": 41,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "order-alias-shadows-source",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS n ORDER BY n.id DESC LIMIT 2",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "n"
+    ],
+    "rows": [
+      {
+        "n": 2
+      },
+      {
+        "n": 41
+      }
+    ]
+  },
+  {
+    "name": "order-alias-shadows-source",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS n ORDER BY n.id DESC LIMIT 2",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "n"
+    ],
+    "rows": [
+      {
+        "n": 2,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "n": 41,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "order-duplicate-alias",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x,n.caller_name AS x ORDER BY x LIMIT 3",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x",
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other"
+      },
+      {
+        "x": "other"
+      }
+    ]
+  },
+  {
+    "name": "order-duplicate-alias",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x,n.caller_name AS x ORDER BY x LIMIT 3",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x",
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "order-metadata-alias",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS `$metadata` ORDER BY n.id DESC SKIP 1 LIMIT 2",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "$metadata"
+    ],
+    "rows": [
+      {
+        "$metadata": 2
+      }
+    ]
+  },
+  {
+    "name": "order-metadata-alias",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS `$metadata` ORDER BY n.id DESC SKIP 1 LIMIT 2",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "$metadata"
+    ],
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "order-whole-nodes",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n AS x ORDER BY x DESC SKIP 1 LIMIT 2",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": {
+          "id": 2,
+          "type": "CallSiteNode",
+          "callee_class": "example.Target",
+          "callee_name": "other",
+          "caller_class": "example.Other",
+          "caller_name": "other",
+          "line": 2
+        }
+      }
+    ]
+  },
+  {
+    "name": "order-whole-nodes",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n AS x ORDER BY x DESC SKIP 1 LIMIT 2",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": {
+          "id": 2,
+          "type": "CallSiteNode",
+          "callee_class": "example.Target",
+          "callee_name": "other",
+          "caller_class": "example.Other",
+          "caller_name": "other",
+          "line": 2,
+          "graphId": "b",
+          "elementId": "b:2",
+          "qualifiedId": "b:2"
+        },
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "x": {
+          "id": 41,
+          "type": "CallSiteNode",
+          "callee_class": "example.Target",
+          "callee_name": "invoke",
+          "caller_class": "example.Other",
+          "caller_name": "other",
+          "line": 4,
+          "graphId": "a",
+          "elementId": "a:41",
+          "qualifiedId": "a:41"
+        },
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "order-nested-maps",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN {id:n.id,node:n} AS x ORDER BY x DESC LIMIT 2",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": {
+          "id": 41,
+          "node": {
+            "id": 41,
+            "type": "CallSiteNode",
+            "callee_class": "example.Target",
+            "callee_name": "invoke",
+            "caller_class": "example.Other",
+            "caller_name": "other",
+            "line": 4
+          }
+        }
+      },
+      {
+        "x": {
+          "id": 2,
+          "node": {
+            "id": 2,
+            "type": "CallSiteNode",
+            "callee_class": "example.Target",
+            "callee_name": "other",
+            "caller_class": "example.Other",
+            "caller_name": "other",
+            "line": 2
+          }
+        }
+      }
+    ]
+  },
+  {
+    "name": "order-nested-maps",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN {id:n.id,node:n} AS x ORDER BY x DESC LIMIT 2",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": {
+          "id": 41,
+          "node": {
+            "id": 41,
+            "type": "CallSiteNode",
+            "callee_class": "example.Target",
+            "callee_name": "invoke",
+            "caller_class": "example.Other",
+            "caller_name": "other",
+            "line": 4,
+            "graphId": "b",
+            "elementId": "b:41",
+            "qualifiedId": "b:41"
+          }
+        },
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "x": {
+          "id": 41,
+          "node": {
+            "id": 41,
+            "type": "CallSiteNode",
+            "callee_class": "example.Target",
+            "callee_name": "invoke",
+            "caller_class": "example.Other",
+            "caller_name": "other",
+            "line": 4,
+            "graphId": "a",
+            "elementId": "a:41",
+            "qualifiedId": "a:41"
+          }
+        },
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "distinct-order-id",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.id AS x ORDER BY n.id DESC LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 41
+      }
+    ]
+  },
+  {
+    "name": "distinct-order-id",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.id AS x ORDER BY n.id DESC LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 41,
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "distinct-order-overwritten",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.id AS x,1 AS x ORDER BY CASE WHEN n.id\u003d2 THEN 0 ELSE substring(\u0027x\u0027,\u0027bad\u0027) END LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x",
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 1
+      }
+    ]
+  },
+  {
+    "name": "distinct-order-overwritten",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.id AS x,1 AS x ORDER BY CASE WHEN n.id\u003d2 THEN 0 ELSE substring(\u0027x\u0027,\u0027bad\u0027) END LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x",
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "distinct-order-duplicate-projects",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT CASE WHEN n.id\u003d2 THEN 1 ELSE substring(\u0027x\u0027,\u0027bad\u0027) END AS x ORDER BY 0 LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "distinct-order-duplicate-projects",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT CASE WHEN n.id\u003d2 THEN 1 ELSE substring(\u0027x\u0027,\u0027bad\u0027) END AS x ORDER BY 0 LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "distinct-metadata-alias",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT 1 AS `$metadata` ORDER BY n.id LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "$metadata"
+    ],
+    "rows": [
+      {
+        "$metadata": 1
+      }
+    ]
+  },
+  {
+    "name": "distinct-metadata-alias",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT 1 AS `$metadata` ORDER BY n.id LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "$metadata"
+    ],
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "distinct-numeric-boxes",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT CASE WHEN n.id\u003d2 THEN 1 ELSE 1.0 END AS x ORDER BY n.id LIMIT 3",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 1
+      }
+    ]
+  },
+  {
+    "name": "distinct-numeric-boxes",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT CASE WHEN n.id\u003d2 THEN 1 ELSE 1.0 END AS x ORDER BY n.id LIMIT 3",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 1,
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "distinct-numeric-zeros",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT CASE WHEN n.id\u003d2 THEN 0.0 ELSE -0.0 END AS x ORDER BY n.id LIMIT 3",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0.0
+      }
+    ]
+  },
+  {
+    "name": "distinct-numeric-zeros",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT CASE WHEN n.id\u003d2 THEN 0.0 ELSE -0.0 END AS x ORDER BY n.id LIMIT 3",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 0.0,
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "distinct-numeric-lists",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT CASE WHEN n.id\u003d2 THEN [1] ELSE [1.0] END AS x ORDER BY n.id LIMIT 3",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": [
+          1
+        ]
+      }
+    ]
+  },
+  {
+    "name": "distinct-numeric-lists",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT CASE WHEN n.id\u003d2 THEN [1] ELSE [1.0] END AS x ORDER BY n.id LIMIT 3",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": [
+          1
+        ],
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "distinct-order-maps",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT {v:1} AS x ORDER BY CASE WHEN n.id\u003d2 THEN 0 ELSE substring(\u0027x\u0027,\u0027bad\u0027) END LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": {
+          "v": 1
+        }
+      }
+    ]
+  },
+  {
+    "name": "distinct-order-maps",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT {v:1} AS x ORDER BY CASE WHEN n.id\u003d2 THEN 0 ELSE substring(\u0027x\u0027,\u0027bad\u0027) END LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": {
+          "v": 1
+        },
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "skip-parameter-ignored",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x SKIP $skip LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {
+      "skip": 100.0,
+      "limit": 1.0,
+      "zero": 0.0
+    },
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2
+      }
+    ]
+  },
+  {
+    "name": "skip-parameter-ignored",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x SKIP $skip LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {
+      "skip": 100.0,
+      "limit": 1.0,
+      "zero": 0.0
+    },
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "skip-arithmetic-ignored",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x SKIP 1+1 LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2
+      }
+    ]
+  },
+  {
+    "name": "skip-arithmetic-ignored",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x SKIP 1+1 LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "skip-negative-syntax-ignored",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x SKIP -1 LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2
+      }
+    ]
+  },
+  {
+    "name": "skip-negative-syntax-ignored",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x SKIP -1 LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "skip-throw-ignored",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x SKIP substring(\u0027x\u0027,\u0027bad\u0027) LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2
+      }
+    ]
+  },
+  {
+    "name": "skip-throw-ignored",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x SKIP substring(\u0027x\u0027,\u0027bad\u0027) LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "skip-string-zero",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x SKIP \u0027bad\u0027 LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2
+      }
+    ]
+  },
+  {
+    "name": "skip-string-zero",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x SKIP \u0027bad\u0027 LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "count-overflow",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x SKIP 2147483647 LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "count-overflow",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x SKIP 2147483647 LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "limit-wrapped-negative",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN substring(\u0027x\u0027,\u0027bad\u0027) AS x ORDER BY n.id LIMIT 2147483648",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "limit-wrapped-negative",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN substring(\u0027x\u0027,\u0027bad\u0027) AS x ORDER BY n.id LIMIT 2147483648",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "OutOfMemoryError",
+    "message": "Requested array size exceeds VM limit"
+  },
+  {
+    "name": "limit-fraction",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x ORDER BY x SKIP 1.9 LIMIT 1.9",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 41
+      }
+    ]
+  },
+  {
+    "name": "limit-fraction",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x ORDER BY x SKIP 1.9 LIMIT 1.9",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "zero-before-order",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN substring(\u0027x\u0027,\u0027bad\u0027) AS x ORDER BY substring(\u0027x\u0027,\u0027bad\u0027) LIMIT 0",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "zero-before-order",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN substring(\u0027x\u0027,\u0027bad\u0027) AS x ORDER BY substring(\u0027x\u0027,\u0027bad\u0027) LIMIT 0",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "limit-parameter-declines",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x ORDER BY x DESC LIMIT $limit",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {
+      "skip": 100.0,
+      "limit": 1.0,
+      "zero": 0.0
+    },
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "limit-parameter-declines",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x ORDER BY x DESC LIMIT $limit",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {
+      "skip": 100.0,
+      "limit": 1.0,
+      "zero": 0.0
+    },
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "limit-parameter-zero-projects",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN substring(\u0027x\u0027,\u0027bad\u0027) AS x SKIP 0 LIMIT $zero",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {
+      "skip": 100.0,
+      "limit": 1.0,
+      "zero": 0.0
+    },
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "limit-parameter-zero-projects",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN substring(\u0027x\u0027,\u0027bad\u0027) AS x SKIP 0 LIMIT $zero",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {
+      "skip": 100.0,
+      "limit": 1.0,
+      "zero": 0.0
+    },
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "required-and",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 AND n.id\u003d41 RETURN n.id AS x ORDER BY x DESC SKIP 0 LIMIT 2",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 41
+      }
+    ]
+  },
+  {
+    "name": "required-and",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 AND n.id\u003d41 RETURN n.id AS x ORDER BY x DESC SKIP 0 LIMIT 2",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 41,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": 41,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "required-and-throw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 AND substring(\u0027x\u0027,\u0027bad\u0027)\u003d\u0027x\u0027 RETURN n.id AS x ORDER BY x DESC SKIP 0 LIMIT 2",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "required-and-throw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 AND substring(\u0027x\u0027,\u0027bad\u0027)\u003d\u0027x\u0027 RETURN n.id AS x ORDER BY x DESC SKIP 0 LIMIT 2",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "rank-choice",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS \u0027Acme\u0027 AND n.caller_name\u003d\u0027other\u0027 RETURN n.id AS x ORDER BY x DESC SKIP 0 LIMIT 2",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "rank-choice",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_class CONTAINS \u0027Acme\u0027 AND n.caller_name\u003d\u0027other\u0027 RETURN n.id AS x ORDER BY x DESC SKIP 0 LIMIT 2",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "quoted-regex",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name \u003d~ \u0027.*\\\\Qother\\\\E.*\u0027 RETURN n.id AS x ORDER BY x DESC SKIP 0 LIMIT 2",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 41
+      },
+      {
+        "x": 2
+      }
+    ]
+  },
+  {
+    "name": "quoted-regex",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name \u003d~ \u0027.*\\\\Qother\\\\E.*\u0027 RETURN n.id AS x ORDER BY x DESC SKIP 0 LIMIT 2",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 41,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": 41,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "scope-a",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 AND n.graphId\u003d\u0027a\u0027 RETURN n.id AS x ORDER BY x DESC SKIP 0 LIMIT 2",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "scope-a",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 AND n.graphId\u003d\u0027a\u0027 RETURN n.id AS x ORDER BY x DESC SKIP 0 LIMIT 2",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 41,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "scope-b",
+    "query": "MATCH (n:CallSiteNode) WHERE n.graphId\u003d\u0027b\u0027 AND n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x ORDER BY x DESC SKIP 0 LIMIT 2",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "scope-b",
+    "query": "MATCH (n:CallSiteNode) WHERE n.graphId\u003d\u0027b\u0027 AND n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x ORDER BY x DESC SKIP 0 LIMIT 2",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 41,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "scope-missing",
+    "query": "MATCH (n:CallSiteNode) WHERE n.graphId\u003d\u0027missing\u0027 AND n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x ORDER BY x DESC SKIP 0 LIMIT 2",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "scope-missing",
+    "query": "MATCH (n:CallSiteNode) WHERE n.graphId\u003d\u0027missing\u0027 AND n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x ORDER BY x DESC SKIP 0 LIMIT 2",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "generic-inline",
+    "query": "MATCH (n:CallSiteNode {caller_name:\u0027other\u0027}) WHERE n.id\u003e\u003d0 RETURN 1 AS x ORDER BY x SKIP 1 LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "generic-inline",
+    "query": "MATCH (n:CallSiteNode {caller_name:\u0027other\u0027}) WHERE n.id\u003e\u003d0 RETURN 1 AS x ORDER BY x SKIP 1 LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "generic-label-unknown",
+    "query": "MATCH (n:AbsentType) WHERE n.id\u003e\u003d0 RETURN 1 AS x ORDER BY x SKIP 1 LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "generic-label-unknown",
+    "query": "MATCH (n:AbsentType) WHERE n.id\u003e\u003d0 RETURN 1 AS x ORDER BY x SKIP 1 LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "generic-anonymous",
+    "query": "MATCH (:CallSiteNode) WHERE true RETURN 1 AS x ORDER BY x SKIP 1 LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "generic-anonymous",
+    "query": "MATCH (:CallSiteNode) WHERE true RETURN 1 AS x ORDER BY x SKIP 1 LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "generic-supertype",
+    "query": "MATCH (n:Node) WHERE n.id\u003e\u003d0 RETURN 1 AS x ORDER BY x SKIP 1 LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "generic-supertype",
+    "query": "MATCH (n:Node) WHERE n.id\u003e\u003d0 RETURN 1 AS x ORDER BY x SKIP 1 LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "eviction-rechecks",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id\u003e\u003d0 RETURN DISTINCT CASE WHEN n.id IN [17,90] THEN \u0027A\u0027 ELSE \u0027B\u0027 END AS x ORDER BY CASE WHEN n.id\u003d17 THEN 10 WHEN n.id\u003d90 THEN substring(\u0027x\u0027,\u0027bad\u0027) ELSE 0 END LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "eviction-rechecks",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id\u003e\u003d0 RETURN DISTINCT CASE WHEN n.id IN [17,90] THEN \u0027A\u0027 ELSE \u0027B\u0027 END AS x ORDER BY CASE WHEN n.id\u003d17 THEN 10 WHEN n.id\u003d90 THEN substring(\u0027x\u0027,\u0027bad\u0027) ELSE 0 END LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  }
+]
