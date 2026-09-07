@@ -5149,3 +5149,28 @@ the resource family repeated its invalid loaded/retained/peak relationship, both
 repairs. This head is documentation-only and takes the second routing sample with the
 notification-based wait; if the graph-parameter tail recurs, the local replay is extended from
 the 246 graph-set rows to the full 822-row sequence in the harness order.
+
+### 2026-09-07 - Gate repair, step 3: the routing states run index-cold on a JVM-warm process
+
+**Diagnosis (534449a, 8824d79, local full-sequence replay):** with the notification-based wait the
+cold routing state still failed the request-selected P95 rule twice (0.388 → 0.896 ms, then
+0.278 → 0.612 ms) on ten candidate rows above 0.6 ms. A local replay of the full 1,137-row
+sequence in the harness order (one JVM per jar, per-row wall, executor-thread CPU, page faults,
+collections, compilation time, safepoint log) showed the slow rows on both jars as scheduling
+stalls: wall far above CPU, no safepoint, no collection and no major fault inside their windows.
+The candidate compiles fewer methods over the replay (1,158 against 1,567; C2 244 against 395) but
+its cold replay is six times shorter, so it reaches the request-selected rows while the compiler
+queue from the first 576 rows is still draining, on a four-vCPU runner already carrying the
+candidate's 3.16 busy cores against the base's 2.42; the base reaches the same rows after 4-6 s of
+index builds during which its queue drained. Deoptimizations (36, JDK internals) and the worker
+thread's allocation (31 MB over the replay) were ruled out.
+
+**Change (owner's decision on #117):** the routing driver runs every routing state with one JMH
+warm-up iteration (`-wi 1 -i 1`), the invocation setup resetting the index state before both
+replays, so the measured replay is index-cold on a JVM-warm process. The harness appends each
+replay's observations under one header; the comparator takes `--expected-replays 2`, reads the
+rules from the measured (last) replay, keeps reading the first cold K64 request from the no-warm-up
+first replay, reports that replay's request-selected P50/P95 as an advisory line, and fails when
+the replay count is not the one the driver ran. The base reference run and the global-wide driver
+keep `-wi 0`; a gate test pins all three flags. The comparator pins in the workflow follow the new
+script content.

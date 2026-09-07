@@ -583,15 +583,41 @@ function parsePressureObservations(contents, revision, errors) {
         const values = line.split("\t");
         return Object.fromEntries(headers.map((header, index) => [header, values[index]]));
     }).filter((row) => ["graph-id", "graph-parameter", "graph-id-set", "graph-set-reference"].includes(row.family));
-    const seen = new Set();
     for (const row of rows) {
-        if (seen.has(row.id)) errors.push(`${revision}: duplicate graph-routing observation ${row.id}`);
-        seen.add(row.id);
         if (row.targetGraphId === "" || !/^[0-9a-f]{64}$/.test(row.workloadIdentity ?? "")) {
             errors.push(`${revision}/${row.id}: target graph and workload identity are required`);
         }
     }
     return rows;
+}
+
+const GRAPH_ROUTING_COLD_FIRST_ID = "request-selected-set-wrapped-contains-k64-group-00-zero";
+
+/**
+ * One JVM writes every replay of the workload, in order, under one header: with a JMH warm-up
+ * iteration the file holds the no-warm-up first replay followed by the measured one. Each replay
+ * starts with the cold-first K64 request, which delimits them; every id must appear once per
+ * replay, and the count of replays must be the one the driver ran.
+ */
+function splitPressureReplays(rows, revision, expectedReplays, errors) {
+    const replays = [];
+    for (const row of rows) {
+        if (row.id === GRAPH_ROUTING_COLD_FIRST_ID || replays.length === 0) replays.push([]);
+        replays[replays.length - 1].push(row);
+    }
+    if (rows.length > 0 && replays.length !== expectedReplays) {
+        errors.push(`${revision}: expected ${expectedReplays} graph-routing replay(s), found ${replays.length}`);
+    }
+    replays.forEach((replay, index) => {
+        const seen = new Set();
+        for (const row of replay) {
+            if (seen.has(row.id)) {
+                errors.push(`${revision}: duplicate graph-routing observation ${row.id} in replay ${index + 1}`);
+            }
+            seen.add(row.id);
+        }
+    });
+    return replays;
 }
 
 const GRAPH_ROUTING_SELECTIVITIES = ["zero", "targeted", "dense"];
@@ -851,7 +877,8 @@ export function compareGraphIdPressure(
     candidateObservations,
     baseCorrectnessContents,
     candidateCorrectnessContents,
-    minimumSpeedup = 10
+    minimumSpeedup = 10,
+    expectedReplays = 1
 ) {
     const errors = [];
     const expectedBenchmark = "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries";
@@ -970,13 +997,23 @@ export function compareGraphIdPressure(
         }
     }
 
-    const baseRows = parsePressureObservations(baseObservations, "base", errors);
-    const candidateRows = parsePressureObservations(candidateObservations, "candidate", errors);
-    const coldFirstId = "request-selected-set-wrapped-contains-k64-group-00-zero";
+    const baseReplays = splitPressureReplays(
+        parsePressureObservations(baseObservations, "base", errors), "base", expectedReplays, errors
+    );
+    const candidateReplays = splitPressureReplays(
+        parsePressureObservations(candidateObservations, "candidate", errors), "candidate", expectedReplays, errors
+    );
+    // The rules read the measured (last) replay; the cold-first K64 request and the advisory
+    // request-selected distribution read the first replay, which no warm-up precedes.
+    const baseRows = baseReplays.at(-1) ?? [];
+    const candidateRows = candidateReplays.at(-1) ?? [];
+    const baseNoWarmupRows = baseReplays[0] ?? [];
+    const candidateNoWarmupRows = candidateReplays[0] ?? [];
+    const coldFirstId = GRAPH_ROUTING_COLD_FIRST_ID;
     let coldFirst = null;
     if (candidateIndexState === "cold") {
-        const baseFirst = baseRows[0];
-        const candidateFirst = candidateRows[0];
+        const baseFirst = baseNoWarmupRows[0];
+        const candidateFirst = candidateNoWarmupRows[0];
         if (baseFirst?.id !== coldFirstId || candidateFirst?.id !== coldFirstId) {
             errors.push(`cold: first observation must be ${coldFirstId} in both revisions`);
         } else {
@@ -1410,6 +1447,20 @@ export function compareGraphIdPressure(
         candidateGraphParameterP50 / baseGraphParameterP50 - 1;
     const graphParameterP95Regression = graphParameterLatencyRows.length === 0 ? Number.POSITIVE_INFINITY :
         candidateGraphParameterP95 / baseGraphParameterP95 - 1;
+    const noWarmupLatencies = (replayRows) => replayRows
+        .filter((row) => row.family === "graph-parameter" && row.outcome === "success")
+        .map((row) => finiteNumber(row.latencyNanos))
+        .filter((latency) => latency !== null && latency > 0);
+    const baseNoWarmupLatencies = noWarmupLatencies(baseNoWarmupRows);
+    const candidateNoWarmupLatencies = noWarmupLatencies(candidateNoWarmupRows);
+    const noWarmupRequestSelected = expectedReplays > 1 &&
+        baseNoWarmupLatencies.length > 0 && candidateNoWarmupLatencies.length > 0 ? {
+            sampleCount: candidateNoWarmupLatencies.length,
+            baseP50: pressurePercentile(baseNoWarmupLatencies, 0.50),
+            candidateP50: pressurePercentile(candidateNoWarmupLatencies, 0.50),
+            baseP95: pressurePercentile(baseNoWarmupLatencies, 0.95),
+            candidateP95: pressurePercentile(candidateNoWarmupLatencies, 0.95)
+        } : null;
     const maximumGraphParameterRegression = 0.15;
     // A percentage-only guardrail is unstable for the tens-of-microseconds reference path.
     // Preserve the 15% bound for material latency and tolerate at most 0.25ms of absolute jitter.
@@ -1506,6 +1557,8 @@ export function compareGraphIdPressure(
         routingOverheadP50,
         routingOverheadP95,
         indexState: candidateIndexState,
+        replays: expectedReplays,
+        noWarmupRequestSelected,
         resources: {
             base: baseResources,
             candidate: candidateResources
@@ -2136,7 +2189,10 @@ export function renderGraphIdPressureReport(comparison) {
     const lines = [
         "### 64 fixture-derived graphId pressure gate",
         "",
-        `Index state: **${comparison.indexState}**`,
+        `Index state: **${comparison.indexState}**` + ((comparison.replays ?? 1) > 1 ?
+            ` (index-cold on a JVM-warm process: ${comparison.replays - 1} warm-up replay precedes the ` +
+                "measured replay, the index state is reset before each; the first cold K64 request is read " +
+                "from the no-warm-up replay)" : ""),
         "",
         `Post-optimization regression gate: query-level graphId and request-selected P50/P95 may regress by at most ` +
             `${(comparison.maximumGraphParameterRegression * 100).toFixed(0)}% or 0.25ms of absolute jitter.`,
@@ -2153,6 +2209,13 @@ export function renderGraphIdPressureReport(comparison) {
         `- Request-selected regression: ` +
             `**${(comparison.graphParameterP50Regression * 100).toFixed(2)}% P50 / ` +
             `${(comparison.graphParameterP95Regression * 100).toFixed(2)}% P95**`,
+        ...(comparison.noWarmupRequestSelected ? [
+            `- No-warm-up request-selected P50 / P95 (advisory, ${comparison.noWarmupRequestSelected.sampleCount} rows): ` +
+                `**${(comparison.noWarmupRequestSelected.baseP50 / 1e6).toFixed(3)} → ` +
+                `${(comparison.noWarmupRequestSelected.candidateP50 / 1e6).toFixed(3)} ms / ` +
+                `${(comparison.noWarmupRequestSelected.baseP95 / 1e6).toFixed(3)} → ` +
+                `${(comparison.noWarmupRequestSelected.candidateP95 / 1e6).toFixed(3)} ms**`
+        ] : []),
         `- Candidate graphId/request-selected latency ratio: ` +
             `**${comparison.routingOverheadP50.toFixed(2)}x P50 / ${comparison.routingOverheadP95.toFixed(2)}x P95**`,
         "",
@@ -3023,7 +3086,8 @@ function compareGraphIdPressureCommand(args) {
         fs.readFileSync(requireArg(args, "candidate-observations"), "utf8"),
         fs.readFileSync(requireArg(args, "base-correctness"), "utf8"),
         fs.readFileSync(requireArg(args, "candidate-correctness"), "utf8"),
-        Number(args["minimum-speedup"] ?? 10)
+        Number(args["minimum-speedup"] ?? 10),
+        Number(args["expected-replays"] ?? 1)
     );
     writeFile(requireArg(args, "report"), renderGraphIdPressureReport(comparison));
     writeJson(requireArg(args, "status"), comparison);

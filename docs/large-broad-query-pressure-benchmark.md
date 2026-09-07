@@ -113,6 +113,18 @@ fixture graphs exactly once at each width and selectivity. The driver derives a 
 for the equality, `IN` literal, `IN` parameter, and reference identities. The oracle is independent
 of the candidate graphId path; candidate self-recording is explicitly not accepted.
 
+### Graph-routing states: index-cold on a JVM-warm process
+
+The fixture64 routing driver runs each of the `cold`, `warm` and `startup-prepared` states with
+one JMH warm-up iteration before the measured one (`-wi 1 -i 1`). The invocation setup resets the
+index state before both replays, so the measured replay is index-cold (or warm, or prepared) on a
+process whose compiler queue has drained: the gate compares routing, not the JVM's first execution
+of the routing code. The harness keeps every replay's observations, in order, under one header, and
+the comparator (`--expected-replays 2`) reads the rules from the last replay while the first cold
+K64 request keeps being read from the no-warm-up first replay; that replay's request-selected P50
+and P95 are reported as an advisory line. The base reference run and the global-wide driver keep
+`-wi 0`, so the first-execution evidence of the global-wide gate is unchanged.
+
 ## Comparable base/candidate run
 
 Copy the same benchmark source into the base and candidate checkouts before building either JMH

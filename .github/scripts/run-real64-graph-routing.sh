@@ -205,7 +205,7 @@ run_revision() {
   fi
   java -jar "${JAR}" "${FILTER}" \
     -p graphCount=64 -p coverageFamily=graph-routing -p indexState="${INDEX_STATE}" \
-    -p timeoutMillis="${TIMEOUT_MILLIS}" -wi 0 -i 1 -f 1 -to 30m -foe true -prof gc -rf json \
+    -p timeoutMillis="${TIMEOUT_MILLIS}" -wi 1 -i 1 -f 1 -to 30m -foe true -prof gc -rf json \
     -rff "${RESULT_PREFIX}.json" \
     -jvmArgs "-Xmx8g -Dgraphite.broad.pressure.graphs=${MANIFEST} ${CORRECTNESS_ARGS} \
       -Dgraphite.broad.pressure.output=${RESULT_PREFIX}.correctness \
@@ -249,6 +249,7 @@ for INDEX_STATE in cold warm startup-prepared; do
     --base-correctness "${BASE_CORRECTNESS_ORACLE}" \
     --candidate-correctness "${ORACLE}" \
     --minimum-speedup 10 \
+    --expected-replays 2 \
     --report "${OUTPUT_DIR}/graph-routing-${INDEX_STATE}-report.md" \
     --status "${OUTPUT_DIR}/graph-routing-${INDEX_STATE}-status.json"; then
     echo "${INDEX_STATE} graph-routing comparison failed; retaining evidence for aggregation" >&2

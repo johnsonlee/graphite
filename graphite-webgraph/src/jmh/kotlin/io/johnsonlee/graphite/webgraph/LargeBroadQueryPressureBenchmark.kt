@@ -30,6 +30,7 @@ import java.lang.management.ManagementFactory
 import java.lang.reflect.Method
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.StandardOpenOption
 import java.security.MessageDigest
 import java.util.Optional
 import java.util.concurrent.Callable
@@ -79,6 +80,7 @@ open class LargeBroadQueryPressureBenchmark {
     private lateinit var sources: List<CypherGraph>
     private lateinit var queryExecutor: ExecutorService
     private lateinit var sampler: BroadQueryResourceSampler
+    private var observationsWritten = false
     private lateinit var workload: List<BroadQueryCase>
     private lateinit var graphPaths: List<Path>
     private lateinit var sourcesById: Map<String, CypherGraph>
@@ -718,7 +720,16 @@ open class LargeBroadQueryPressureBenchmark {
                 sample.execution.generalFallbackExecutions
             ).joinToString("\t")
         }
-        Files.writeString(Path.of(configured), lines)
+        // One JVM replays the workload once per JMH invocation (a warm-up iteration, then the
+        // measured one); every replay's rows are kept, in order, under one header, so the
+        // comparator can read the no-warm-up first replay and the measured last replay apart.
+        val output = Path.of(configured)
+        if (observationsWritten) {
+            Files.writeString(output, lines.substringAfter('\n'), StandardOpenOption.APPEND)
+        } else {
+            Files.writeString(output, lines)
+            observationsWritten = true
+        }
     }
 
     private fun digest(canonicalResult: ByteArray): String = MessageDigest.getInstance("SHA-256")
