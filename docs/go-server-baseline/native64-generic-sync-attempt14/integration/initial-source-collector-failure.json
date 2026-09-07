@@ -1,0 +1,10 @@
+{
+  "error": "AssertionError: ({'graphite-server'}, set())",
+  "reason": "Root contains an existing ignored Mach-O build output not present in clean tested worktree. No source mismatch. Preserve binary untouched; exclude this exact ignored non-source output from module source identity.",
+  "ignoredBinary": {
+    "path": "graphite-server/graphite-server",
+    "bytes": 11632210,
+    "sha256": "9a29c713aba00051fc74fc2bfca65a67cd7075577be3e215ac4e8c767401ce67",
+    "ignoreRule": "graphite-server/.gitignore:1:/graphite-server\tgraphite-server/graphite-server"
+  }
+}

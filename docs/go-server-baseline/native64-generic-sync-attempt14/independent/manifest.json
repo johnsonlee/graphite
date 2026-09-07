@@ -1,0 +1,15 @@
+{
+  "frozenUTC": "2026-09-07T01:40:04.793080+00:00",
+  "verdict": "No blocking defect found within bounded incremental review",
+  "files": {
+    "README.md": "48424e9bb64d2e0b31c07b9bff1f0ce03121c27b93ed1d3a85bbf88a84ac4d57",
+    "generic_sync_independent_review_test.go": "eee997a66cf4a5fa51129acdd98a58882db539098a4c07e0688c543017972fbc",
+    "independent-race.log": "ac5704cfc132962587a26d065f6c7598f0320d98003eaa4fe76a541716b6cd36",
+    "query-vet.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "receipt.json": "85aebc3f439ce5d326bcd53c5dfc186d07bd30d0a4d22b2651d487c76a37cd95",
+    "sources/generic_distinct.go": "bdef01c374d5ad809bd00f1bcbb3cd8bfdb36d130c88b08269abf3f7eec49765",
+    "sources/indexed_distinct.go": "65ac7db259a4a0222e11b38fae640f2133a90aa30897a633bc990af48186ece0",
+    "sources/string_candidates.go": "63344549fe967273de844afa738c312809e422e8ed653bae7fc29f8fd8deaf8a",
+    "targeted-race.log": "a71542074a1498810aac82ae69a929c551df0dbce963678b78d2a549290c41f8"
+  }
+}

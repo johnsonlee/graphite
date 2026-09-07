@@ -1,0 +1,5 @@
+{
+  "exitCode": 1,
+  "error": "AssertionError: [242]",
+  "reason": "Recursive diagnostic-state diff asserted equal object keys before classifying the two expected error-to-success corrections. No tests/source changes; compare full primary records separately, retain strict leaf checker only for rolling state."
+}

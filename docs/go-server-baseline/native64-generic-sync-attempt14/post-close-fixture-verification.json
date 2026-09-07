@@ -1,0 +1,16 @@
+{
+  "verifiedAtUTC": "2026-09-07T02:16:03.545048+00:00",
+  "results": {
+    "original": {
+      "files": 1152,
+      "allHashesMatch": true,
+      "noExtraGraphFiles": true
+    },
+    "clone": {
+      "files": 1152,
+      "allHashesMatch": true,
+      "noExtraGraphFiles": true
+    }
+  },
+  "persistenceNotDisabled": true
+}

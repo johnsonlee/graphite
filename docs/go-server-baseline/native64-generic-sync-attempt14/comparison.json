@@ -1,0 +1,99 @@
+{
+  "queries": {
+    "wrapped-firstLastGraphBimodalClassPrefix": {
+      "base": {
+        "seconds": 18.6244555,
+        "allocationBytes": 9102896136,
+        "cpuSeconds": 24.664960999999998,
+        "numGC": 1,
+        "completeMainOutputEqual": true
+      },
+      "candidate": {
+        "seconds": 9.812521417,
+        "allocationBytes": 1837258232,
+        "cpuSeconds": 53.656092,
+        "numGC": 0,
+        "completeMainOutputEqual": true
+      }
+    },
+    "wrapped-firstLastGraphBimodalClassPrefix-repeat": {
+      "base": {
+        "seconds": 12.059741792,
+        "allocationBytes": 8320045544,
+        "cpuSeconds": 18.916477,
+        "numGC": 1,
+        "completeMainOutputEqual": true
+      },
+      "candidate": {
+        "seconds": 2.204653833,
+        "allocationBytes": 1054280552,
+        "cpuSeconds": 13.878162000000003,
+        "numGC": 0,
+        "completeMainOutputEqual": true
+      }
+    },
+    "global-wide-wrapped-case-insensitive-distinct-dense": {
+      "base": {
+        "seconds": 4.118134667,
+        "allocationBytes": 5804046608,
+        "cpuSeconds": 22.697799000000003,
+        "numGC": 1,
+        "completeMainOutputEqual": true
+      },
+      "candidate": {
+        "seconds": 4.105638125,
+        "allocationBytes": 5804046200,
+        "cpuSeconds": 22.48150899999999,
+        "numGC": 0,
+        "completeMainOutputEqual": true
+      }
+    },
+    "global-wide-wrapped-case-insensitive-distinct-dense-repeat": {
+      "base": {
+        "seconds": 4.117561458,
+        "allocationBytes": 367946600,
+        "cpuSeconds": 19.206036000000008,
+        "numGC": 0,
+        "completeMainOutputEqual": true
+      },
+      "candidate": {
+        "seconds": 4.092249625,
+        "allocationBytes": 367932504,
+        "cpuSeconds": 19.024614000000007,
+        "numGC": 0,
+        "completeMainOutputEqual": true
+      }
+    },
+    "global-wide-distribution-broad-all-64": {
+      "base": {
+        "seconds": 0.001797333,
+        "allocationBytes": 1630224,
+        "cpuSeconds": 0.001834000000018321,
+        "numGC": 0,
+        "completeMainOutputEqual": true
+      },
+      "candidate": {
+        "seconds": 0.001796375,
+        "allocationBytes": 1629952,
+        "cpuSeconds": 0.0018219999999971037,
+        "numGC": 0,
+        "completeMainOutputEqual": true
+      }
+    }
+  },
+  "verification": {
+    "base": {
+      "unchangedSourceFiles": 2097,
+      "binarySHA256": "3e354de04021e6aba2bb297258761533f8eee81b6525734cb51833b8d788b8d7",
+      "fixtureVerified": true,
+      "exitCode": 0
+    },
+    "candidate": {
+      "unchangedSourceFiles": 2188,
+      "binarySHA256": "e29f0990d650e3ad29ac5cca2518888c816d336949c233ee5c8a408b9e92d145",
+      "fixtureVerified": true,
+      "exitCode": 0
+    }
+  },
+  "limits": "Single ordered diagnostic, background correctness/build work; not P95/HTTP/main-relative performance."
+}

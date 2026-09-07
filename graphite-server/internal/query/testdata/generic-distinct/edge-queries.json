@@ -1,0 +1,17 @@
+[
+  "MATCH (n:Annotation) WHERE n.caller_class STARTS WITH 'example' RETURN DISTINCT n.value AS v, n.graph_id AS g LIMIT 1",
+  "MATCH (n:Annotation) WHERE n.caller_class STARTS WITH 'example' RETURN DISTINCT n.value AS v, n.graph_id AS g SKIP $skip LIMIT 1",
+  "MATCH (n:Annotation) WHERE n.caller_class STARTS WITH 'example' RETURN DISTINCT n.value AS v, n.graph_id AS g SKIP 1+1 LIMIT 1",
+  "MATCH (n:Annotation) WHERE n.caller_class STARTS WITH 'example' RETURN DISTINCT n.value AS v, n.graph_id AS g SKIP null LIMIT 1",
+  "MATCH (n:Annotation) WHERE n.caller_class STARTS WITH 'example' RETURN DISTINCT n.value AS v, n.graph_id AS g SKIP true LIMIT 1",
+  "MATCH (n:Annotation) WHERE n.caller_class STARTS WITH 'example' RETURN DISTINCT n.value AS v, n.graph_id AS g SKIP 0.9 LIMIT 2",
+  "MATCH (n:Annotation) WHERE n.caller_class STARTS WITH 'example' RETURN DISTINCT n.value AS v, n.graph_id AS g SKIP -1 LIMIT 1",
+  "MATCH (n:Annotation) WHERE n.caller_class STARTS WITH 'example' RETURN DISTINCT n.value AS v, n.graph_id AS g LIMIT 1.9",
+  "MATCH (n:Annotation) WHERE n.caller_class STARTS WITH 'example' RETURN DISTINCT n.value AS v, n.graph_id AS g LIMIT $limit",
+  "MATCH (n:Method) WHERE n.name STARTS WITH '' RETURN DISTINCT n.name AS v, n.graph_id AS g LIMIT 1",
+  "MATCH (n:Missing) WHERE n.name STARTS WITH '' RETURN DISTINCT n.name AS v, n.graph_id AS g LIMIT 1",
+  "MATCH (n:Node) WHERE n.name STARTS WITH '' RETURN DISTINCT n.name AS v, n.graph_id AS g LIMIT 1",
+  "MATCH (n:Constant) WHERE n.name STARTS WITH '' RETURN DISTINCT n.name AS v, n.graph_id AS g LIMIT 1",
+  "MATCH (n:ResourceValue) WHERE n.name STARTS WITH '' RETURN DISTINCT n.name AS v, n.graph_id AS g LIMIT 1",
+  "MATCH (n:Annotation) WHERE n.caller_class STARTS WITH 'example' RETURN DISTINCT n.value AS `z`, 1 AS `?`, 2 AS `\ud800`, 3 AS `a`, 4 AS `\udc00`, 5 AS `z` LIMIT 1"
+]

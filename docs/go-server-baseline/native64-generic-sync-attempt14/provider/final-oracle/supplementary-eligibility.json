@@ -1,0 +1,386 @@
+[
+  {
+    "cross": false,
+    "eligible": true,
+    "fixture": "clean",
+    "name": "distinct-skip-zero"
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "fixture": "clean",
+    "name": "distinct-skip-zero"
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "fixture": "clean",
+    "name": "distinct-skip-one"
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "fixture": "clean",
+    "name": "distinct-skip-one"
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "distinct-order"
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "distinct-order"
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "fixture": "clean",
+    "name": "distinct-null-class"
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "fixture": "clean",
+    "name": "distinct-null-class"
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "fixture": "clean",
+    "name": "exists-guard"
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "fixture": "clean",
+    "name": "exists-guard"
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "fixture": "clean",
+    "name": "lower-coalesce"
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "fixture": "clean",
+    "name": "lower-coalesce"
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "empty-coalesce"
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "clean",
+    "name": "empty-coalesce"
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "fixture": "clean",
+    "name": "metadata-alias"
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "fixture": "clean",
+    "name": "metadata-alias"
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "fixture": "bad-first-unmatched",
+    "name": "distinct-skip-zero"
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "fixture": "bad-first-unmatched",
+    "name": "distinct-skip-zero"
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "fixture": "bad-first-unmatched",
+    "name": "distinct-skip-one"
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "fixture": "bad-first-unmatched",
+    "name": "distinct-skip-one"
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "distinct-order"
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "distinct-order"
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "fixture": "bad-first-unmatched",
+    "name": "distinct-null-class"
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "fixture": "bad-first-unmatched",
+    "name": "distinct-null-class"
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "fixture": "bad-first-unmatched",
+    "name": "exists-guard"
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "fixture": "bad-first-unmatched",
+    "name": "exists-guard"
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "fixture": "bad-first-unmatched",
+    "name": "lower-coalesce"
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "fixture": "bad-first-unmatched",
+    "name": "lower-coalesce"
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "empty-coalesce"
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-first-unmatched",
+    "name": "empty-coalesce"
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "fixture": "bad-first-unmatched",
+    "name": "metadata-alias"
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "fixture": "bad-first-unmatched",
+    "name": "metadata-alias"
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "fixture": "bad-last-unmatched",
+    "name": "distinct-skip-zero"
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "fixture": "bad-last-unmatched",
+    "name": "distinct-skip-zero"
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "fixture": "bad-last-unmatched",
+    "name": "distinct-skip-one"
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "fixture": "bad-last-unmatched",
+    "name": "distinct-skip-one"
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "distinct-order"
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "distinct-order"
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "fixture": "bad-last-unmatched",
+    "name": "distinct-null-class"
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "fixture": "bad-last-unmatched",
+    "name": "distinct-null-class"
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "fixture": "bad-last-unmatched",
+    "name": "exists-guard"
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "fixture": "bad-last-unmatched",
+    "name": "exists-guard"
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "fixture": "bad-last-unmatched",
+    "name": "lower-coalesce"
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "fixture": "bad-last-unmatched",
+    "name": "lower-coalesce"
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "empty-coalesce"
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-last-unmatched",
+    "name": "empty-coalesce"
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "fixture": "bad-last-unmatched",
+    "name": "metadata-alias"
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "fixture": "bad-last-unmatched",
+    "name": "metadata-alias"
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "fixture": "bad-matched",
+    "name": "distinct-skip-zero"
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "fixture": "bad-matched",
+    "name": "distinct-skip-zero"
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "fixture": "bad-matched",
+    "name": "distinct-skip-one"
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "fixture": "bad-matched",
+    "name": "distinct-skip-one"
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "distinct-order"
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "distinct-order"
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "fixture": "bad-matched",
+    "name": "distinct-null-class"
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "fixture": "bad-matched",
+    "name": "distinct-null-class"
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "fixture": "bad-matched",
+    "name": "exists-guard"
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "fixture": "bad-matched",
+    "name": "exists-guard"
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "fixture": "bad-matched",
+    "name": "lower-coalesce"
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "fixture": "bad-matched",
+    "name": "lower-coalesce"
+  },
+  {
+    "cross": false,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "empty-coalesce"
+  },
+  {
+    "cross": true,
+    "eligible": false,
+    "fixture": "bad-matched",
+    "name": "empty-coalesce"
+  },
+  {
+    "cross": false,
+    "eligible": true,
+    "fixture": "bad-matched",
+    "name": "metadata-alias"
+  },
+  {
+    "cross": true,
+    "eligible": true,
+    "fixture": "bad-matched",
+    "name": "metadata-alias"
+  }
+]

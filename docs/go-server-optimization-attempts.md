@@ -428,3 +428,33 @@ copy; no64 execution overlaps another. Background correctness/build work and
 fixture-hash I/O are recorded. Collector/setup failures remain preserved: an
 unaccounted Attempt12 test delta, speculative-state artifact equality, and the
 PATH GNU cp clone flag. None is counted as a successful execution or discarded.
+
+
+## 2026-09-07 — Attempt 14: synchronous generic DISTINCT cursor
+
+Hypothesis: replace Attempt11's per-node producer/request rendezvous with
+explicit synchronous candidate positions, retaining full decode, projection,
+Java equality, source batches, required exhaustion and task ownership. Evaluate
+the complete revised candidate against current ordinary/Attempt12/13 base.
+
+| Item | Evidence / status |
+|---|---|
+| Native base / candidate | `082a4736`; complete frozen patch `5a2e7eed0f304ec038932f4cb7cf51139b9f976fa6368d77142daaf2b8d7ae65`, incremental synchronous delta `50b779dc89b87796ec178d726300a7525204ad49a1c16c887073c21630032991` |
+| Scope | Explicit positions replace per-node channels; shared A6/A7 preparation remains unchanged, lazy first demand, live per-wave context and separate source lifetime; consumer/provenance/task merge unchanged from reviewed generic executor |
+| Correctness | Full-module race/vet, all2186 source/fixture files unchanged and equal root. Original1048 improves966→968 full main matches, exactly two scoped early-stop fixes; remaining80 retained. Generic432 outputs unchanged; all48 rolling responses equal,32 speculative40-source mappedView state changes retained |
+| Independent tests | Standard context cancellation/task joins, fresh wave after successful child cancellation, first-demand preparation, Store.Close between demands, restartable legacy walk, owning results and Java UTF16 equality |
+| Fixture | All64 real graphs,1152files/10,338,207,518bytes, isolated COW clone; all hashes checked before each sequential process and both original/clone after Close; no persistence disabled |
+| Prefix first | Execute+marshal18.624456→9.812521s; allocation9,102,896,136→1,837,258,232bytes; CPU24.664961→53.656092s — explicit first-request CPU regression |
+| Prefix repeat | Execute+marshal12.059742→2.204654s; allocation8,320,045,544→1,054,280,552bytes; CPU18.916477→13.878162s |
+| Controls | Dense DISTINCT first4.118135→4.105638s, repeat4.117561→4.092250s; ordinary0.001797→0.001796s. Allocations essentially unchanged; all five complete output bodies equal main |
+| HTTP | Independent actual shipping42/42 HTTP200, full typed bodies/headers/catalog64 equal; all239 source/embed inputs match root, default60s/capacity4, no profiling helpers or tuple code; SIGTERM143/no forced kill/port released |
+| Decision | Keep lower observed prefix latency/allocation and repeat CPU, with explicit first-request CPU cost. Rejected per-node rendezvous remains absent |
+| Limits | Single ordered instrumented observations with background correctness/build I/O; no overlapping64 execution, no CPU sampler, not HTTP/P95/peak RSS or main-relative10x acceptance |
+
+`docs/go-server-baseline/native64-generic-sync-attempt14/` preserves the frozen
+provider/review, exact combined source checks, full outputs/counters, real shipping
+HTTP evidence and cleanup. Root independently repeated the42 typed response and
+239 input checks. Collector failures for changed error/result object keys and an
+existing ignored build output remain recorded; neither changed production/tests.
+Exact tuples, main lazy candidate capabilities and streaming consumers remain
+separate work; full parity and final benchmark-regression-gate are unproven.

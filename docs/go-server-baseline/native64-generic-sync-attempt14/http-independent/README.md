@@ -1,0 +1,27 @@
+# Attempt 14 independent shipping HTTP correctness
+
+PASS: **42/42 HTTP200**, complete type-sensitive bodies and protocol headers equal to pinned main; all64 catalog IDs, ordering, counts and totals match. PID91470 exited with normal CLI SIGTERM status143, no forced kill; port18863 is free. All126 production source hashes still match the parent's candidate. Original and COW clone both have zero content changes after full rehash.
+
+## Build and provenance
+
+Independent clean worktree `/tmp/graphite-generic-sync-http-independent-082a4736`, base `082a47368d08dd622991c83c743a05d7347dd0ac`, plus the complete generic-sync patch SHA256 `5a2e7eed0f304ec038932f4cb7cf51139b9f976fa6368d77142daaf2b8d7ae65`. Three-way application is recorded in apply.log. All126 production Go files exactly match `/tmp/graphite-go-generic-sync-root-082a4736` before and after execution. Ordinary projection and A12/A13 remain in the base; this build contains no exact-tuple change, profile-query command or profile_export helper. Root/provider sources were not edited.
+
+Actual shipping `go build -o .../graphite-server ./cmd/graphite-server`, Go1.22.0 darwin/arm64. No diagnostic entry point is used. Binary SHA256 `bd1d035cbb366876ddd646320b7ef748a52dc559da1956ee6b1765da8cd0ce67`. `source-identity.json` pins all239 Go/module/embed input files and the build command; `binary-build-info.txt`, go-env.json and root-production-{comparison,after}.json record compiler and exact implementation identity. No source change followed the build.
+
+## Fixture isolation
+
+Original `/tmp/pr113-exp037-fixture.nXn4fg`; dedicated COW clone `/tmp/graphite-generic-sync-http-real64-cow-082a4736`. Successful `/bin/cp -cRp` preserves metadata and creates separate inodes for all1154 regular files; no symlink or hardlink is accepted. Clone preparation and full hashing occurred after the parent reported both paired64 profile processes terminal, so this task did not overlap that measurement.
+
+Before launch, the original and clone were fully streamed through SHA256: all1152 graph files / 10,338,207,518 bytes match frozen manifest SHA256 `3084fd51040494ea79d72022fb46b004b15ac6475b4b4ff748adf8a443edf9cf`; the two top-level TSV files also agree. Config graph paths and --data point to the clone; graph IDs, order, counts, queries and original oracle are unchanged. Production Close persistence is not disabled. After actual server exit, both directories were fully hashed again: original changed0, clone changed0, still1154 files each. No reset or cleanup concealed a persistence write. This observed absence of changed files does not prove every writer branch or replace the provider's Java sidecar round-trip evidence.
+
+## HTTP protocol and independent gate
+
+Port18863; default server60,000ms query timeout and explicit default capacity4. GRAPHITE_NATIVE_CPU_PROFILE, GRAPHITE_PROFILE, GOGC, GODEBUG, GOMEMLIMIT and GOMAXPROCS are explicitly unset by launch.py; actual runtime environment identity is independently checked. Parent authorized launch after paired run78117 completed; this was the only64 graph process owned by this task.
+
+The original A7 42-case harness and main responses are preserved in inputs/. Main is exactly `4e328b0109e13c896b74004823fb049fcb19251a`. Harness changes are limited to concrete root/input paths, cloned graph data/config, and a server-exit record in the existing finally block. Its 15-second shutdown watchdog and the original120-second client timeout are unchanged. `runner-path-and-exit-evidence.patch` shows the full difference. Request bodies, fixed order, complete42 denominator, original baselines and HTTP helper are unchanged.
+
+`verify.py` independently checks every raw JSON body with Decimal numeric parsing and explicit object/array/bool/number/null/string tags, preserving array order and all returned values/provenance. It checks Content-Type, Retry-After and present Content-Length; Date, whitespace and JSON object-key order are not semantic gates. There are no dynamic masks. All full raw bodies/headers remain in http/observations.json. It also verifies original cases/baselines, all64 catalog entries, config path-only changes, binary/source/embed/input hashes, root candidate equivalence, original/clone before-and-after identity, expected absence of diagnostic/tuple code, actual runtime defaults, no forced kill, PID absence and plain TCP bind success. Runner exit0 alone cannot pass.
+
+Runner session79531 finished exit0; observed listener PID91470 matches http/server-exit.json and exited143, forcedKill=false. lsof found no listener, connect returned refusal61, and ordinary bind succeeded; port-after-run.json preserves the independent checks. verify.log and verification.json record the final all42 pass. No request was retried, dropped or edited to repair a result.
+
+Exact commands are in source-identity.json, launch.py and replay-command.json. Reproduce in a fresh evidence/output directory with a fresh COW clone, then run verify-fixtures.py before, launch.py, verify-fixtures.py after and verify.py. Existing output directories intentionally cannot be overwritten by the HTTP harness. This is correctness evidence only: elapsed diagnostic fields are retained but are not latency, CPU, allocation, throughput, speedup or P95 acceptance. The parent's separate paired diagnostic has its own evidence and tradeoffs. No production change or commit was made by this validation task.

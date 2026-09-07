@@ -1,0 +1,14 @@
+{
+  "decision": "Keep with explicit first-request CPU tradeoff",
+  "fullModuleRaceVetPassed": true,
+  "sourceAndFixtureFilesVerified": 2186,
+  "originalCorpusTotal": 1048,
+  "originalCorpusFullEqual": 968,
+  "all64PairedFiveFullMainBodiesEqual": true,
+  "rootIndependentlyVerified42FullTypedHTTPBodies": true,
+  "shippingManifestSHA256": "d35a69973f19ed3fcf13d425e39dd9407eddf7a52f06f8cb8bbd03c9abe9cf1a",
+  "allShippingInputsEqualRoot": true,
+  "originalAndCloneFixturesUnchanged": true,
+  "serverExitedPortFree": true,
+  "overallGoalEstablished": false
+}

@@ -1,0 +1,13 @@
+{
+  "recordedUTC": "2026-09-07T02:18:59.862019+00:00",
+  "command": [
+    "lsof",
+    "-nP",
+    "-iTCP:18863",
+    "-sTCP:LISTEN",
+    "-Fpcn"
+  ],
+  "exitCode": 0,
+  "output": "p91470\ncgraphite-server\nf69\nn*:18863\n",
+  "stderr": ""
+}
