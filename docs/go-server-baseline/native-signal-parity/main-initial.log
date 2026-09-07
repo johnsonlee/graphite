@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/private/tmp/graphite-go-signal-parity-de0608f0/docs/go-server-baseline/native-signal-parity/verify.py", line 101, in <module>
+    if __name__=='__main__':main()
+                            ~~~~^^
+  File "/private/tmp/graphite-go-signal-parity-de0608f0/docs/go-server-baseline/native-signal-parity/verify.py", line 75, in main
+    if process.poll() is not None or time.monotonic()>=deadline:raise AssertionError((name,process.poll(),text))
+                                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('main-profile-save-error-SIGTERM', 1, 'Picked up JAVA_TOOL_OPTIONS: -Xmx128m -XX:ActiveProcessorCount=2 -Dfile.encoding=UTF-8\nError: Could not find or load main class signal\nCaused by: java.lang.ClassNotFoundException: signal\n')

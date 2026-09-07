@@ -58,7 +58,7 @@ def main():
                             with urllib.request.urlopen(request,timeout=20) as response:responses.append(json.load(response))
                         assert all(value==responses[0] for value in responses)
                         process.terminate();process.wait(timeout=15)
-                        assert process.returncode==(0 if route=='direct' else 143)
+                        assert process.returncode==143
                         data=report.read_text();match=re.search(r'<script id="profile-data" type="application/json">(.*?)</script>',data,re.S)
                         assert match, 'not the native self-contained HTML report'
                         tree=json.loads(match[1]);assert int(tree['root']['value'])>0

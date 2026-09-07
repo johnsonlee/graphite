@@ -10,11 +10,9 @@ import (
 	"net"
 	"net/http"
 	"os"
-	"os/signal"
 	"path/filepath"
 	"strconv"
 	"strings"
-	"syscall"
 	"time"
 
 	"github.com/johnsonlee/graphite/graphite-server/internal/server"
@@ -166,9 +164,7 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) error {
 }
 
 func main() {
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	code := executeProfiled(ctx, os.Args[1:], os.Stdout, os.Stderr, os.Getenv)
-	stop()
+	code := executeWithSignals(os.Args[1:], os.Stdout, os.Stderr, os.Getenv)
 	if code != 0 {
 		os.Exit(code)
 	}

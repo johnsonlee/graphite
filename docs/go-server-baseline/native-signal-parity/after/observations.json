@@ -1,0 +1,250 @@
+{
+  "passed": true,
+  "native": "/private/tmp/graphite-native-signal-after",
+  "nativeSHA256": "ce3a3863c3689729b6510c039118ea733f660b232b6f0adc6cf4d07234550eb3",
+  "mainJar": "/private/tmp/graphite-native-signal-main-build-4e328b0/graphite-query/build/libs/graphite.jar",
+  "mainJarSHA256": "b66045d07cd6a3cd44ac6543cbfc031d063e795aa881dd3be1690a55cb702853",
+  "checks": [
+    {
+      "name": "native-direct-SIGTERM",
+      "command": [
+        "/private/tmp/graphite-native-signal-after",
+        "serve",
+        "--id",
+        "tiny",
+        "/private/tmp/graphite-go-signal-parity-de0608f0/graphite-server/internal/store/testdata/callsite-index/store",
+        "--data",
+        "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite signal oracle 0v6ii1rc/native-direct-SIGTERM/data",
+        "--port",
+        "0"
+      ],
+      "signal": "SIGTERM",
+      "signalTarget": "parent PID",
+      "returncode": 143,
+      "expected": 143,
+      "stdout": "",
+      "stderr": "Graphite Go server (in development): http://localhost:51069\n",
+      "catalog": {
+        "count": 1,
+        "data": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite signal oracle 0v6ii1rc/native-direct-SIGTERM/data",
+        "graphs": [
+          {
+            "id": "tiny",
+            "path": "/private/tmp/graphite-go-signal-parity-de0608f0/graphite-server/internal/store/testdata/callsite-index/store",
+            "loadMode": "MAPPED",
+            "loadedAt": "2026-09-06T23:25:23.295229Z",
+            "nodes": 4,
+            "edges": 0,
+            "methods": 0,
+            "callSites": 4
+          }
+        ],
+        "loadMode": "MAPPED",
+        "totals": {
+          "nodes": 4,
+          "edges": 0,
+          "methods": 0,
+          "callSites": 4
+        }
+      },
+      "profileFlushed": true,
+      "reportSHA256": "2c843351f30a8fbe46ec32a85a11ffbca0752459bf59b1e4479a5ed28244125c"
+    },
+    {
+      "name": "native-direct-SIGINT",
+      "command": [
+        "/private/tmp/graphite-native-signal-after",
+        "serve",
+        "--id",
+        "tiny",
+        "/private/tmp/graphite-go-signal-parity-de0608f0/graphite-server/internal/store/testdata/callsite-index/store",
+        "--data",
+        "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite signal oracle 0v6ii1rc/native-direct-SIGINT/data",
+        "--port",
+        "0"
+      ],
+      "signal": "SIGINT",
+      "signalTarget": "parent PID",
+      "returncode": 130,
+      "expected": 130,
+      "stdout": "",
+      "stderr": "Graphite Go server (in development): http://localhost:51073\n",
+      "catalog": {
+        "count": 1,
+        "data": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite signal oracle 0v6ii1rc/native-direct-SIGINT/data",
+        "graphs": [
+          {
+            "id": "tiny",
+            "path": "/private/tmp/graphite-go-signal-parity-de0608f0/graphite-server/internal/store/testdata/callsite-index/store",
+            "loadMode": "MAPPED",
+            "loadedAt": "2026-09-06T23:25:23.537584Z",
+            "nodes": 4,
+            "edges": 0,
+            "methods": 0,
+            "callSites": 4
+          }
+        ],
+        "loadMode": "MAPPED",
+        "totals": {
+          "nodes": 4,
+          "edges": 0,
+          "methods": 0,
+          "callSites": 4
+        }
+      },
+      "profileFlushed": true,
+      "reportSHA256": "91a97bef587c21fbfe0fcbd39c1efa6179f4b7eeb5e060fec40e65b4f6584813"
+    },
+    {
+      "name": "native-homebrew-SIGTERM",
+      "command": [
+        "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite signal oracle 0v6ii1rc/graphite",
+        "--profile",
+        "serve",
+        "--id",
+        "tiny",
+        "/private/tmp/graphite-go-signal-parity-de0608f0/graphite-server/internal/store/testdata/callsite-index/store",
+        "--data",
+        "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite signal oracle 0v6ii1rc/native-homebrew-SIGTERM/data",
+        "--port",
+        "0"
+      ],
+      "signal": "SIGTERM",
+      "signalTarget": "parent PID",
+      "returncode": 143,
+      "expected": 143,
+      "stdout": "",
+      "stderr": "Graphite Go server (in development): http://localhost:51077\n",
+      "catalog": {
+        "count": 1,
+        "data": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite signal oracle 0v6ii1rc/native-homebrew-SIGTERM/data",
+        "graphs": [
+          {
+            "id": "tiny",
+            "path": "/private/tmp/graphite-go-signal-parity-de0608f0/graphite-server/internal/store/testdata/callsite-index/store",
+            "loadMode": "MAPPED",
+            "loadedAt": "2026-09-06T23:25:24.036151Z",
+            "nodes": 4,
+            "edges": 0,
+            "methods": 0,
+            "callSites": 4
+          }
+        ],
+        "loadMode": "MAPPED",
+        "totals": {
+          "nodes": 4,
+          "edges": 0,
+          "methods": 0,
+          "callSites": 4
+        }
+      },
+      "profileFlushed": true,
+      "reportSHA256": "44b165f10d576f04643b0296b733f62e4b5e7ded2ec2b27d55e4fbe5ad229a47"
+    },
+    {
+      "name": "bridge-homebrew-SIGINT",
+      "command": [
+        "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite signal oracle 0v6ii1rc/graphite",
+        "--profile",
+        "@/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite signal oracle 0v6ii1rc/bridge-homebrew-SIGINT/top.args"
+      ],
+      "signal": "SIGINT",
+      "signalTarget": "parent PID",
+      "returncode": 130,
+      "expected": 130,
+      "stdout": "",
+      "stderr": "Picked up JAVA_TOOL_OPTIONS: -Xmx128m -XX:ActiveProcessorCount=2 -Dfile.encoding=UTF-8\nGraphite Go server (in development): http://localhost:51082\n",
+      "catalog": {
+        "count": 1,
+        "data": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite signal oracle 0v6ii1rc/bridge-homebrew-SIGINT/data",
+        "graphs": [
+          {
+            "id": "tiny",
+            "path": "/private/tmp/graphite-go-signal-parity-de0608f0/graphite-server/internal/store/testdata/callsite-index/store",
+            "loadMode": "MAPPED",
+            "loadedAt": "2026-09-06T23:25:24.513367Z",
+            "nodes": 4,
+            "edges": 0,
+            "methods": 0,
+            "callSites": 4
+          }
+        ],
+        "loadMode": "MAPPED",
+        "totals": {
+          "nodes": 4,
+          "edges": 0,
+          "methods": 0,
+          "callSites": 4
+        }
+      },
+      "profileFlushed": true,
+      "reportSHA256": "558d3e4069296982cc700780ea7c3d9ad6f74af350faae684154c718e0bb5540"
+    },
+    {
+      "name": "native-profile-save-error-SIGTERM",
+      "command": [
+        "/private/tmp/graphite-native-signal-after",
+        "serve",
+        "--id",
+        "tiny",
+        "/private/tmp/graphite-go-signal-parity-de0608f0/graphite-server/internal/store/testdata/callsite-index/store",
+        "--data",
+        "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite signal oracle 0v6ii1rc/native-profile-save-error-SIGTERM/data",
+        "--port",
+        "0"
+      ],
+      "signal": "SIGTERM",
+      "signalTarget": "parent PID",
+      "returncode": 143,
+      "expected": 143,
+      "stdout": "",
+      "stderr": "Graphite Go server (in development): http://localhost:51089\nError: save CPU report: rename /private/tmp/graphite-go-signal-parity-de0608f0/docs/go-server-baseline/native-signal-parity/after/.graphite-cpu-2984700638.html /private/tmp/graphite-go-signal-parity-de0608f0/docs/go-server-baseline/native-signal-parity/after/native-profile-save-error-SIGTERM-existing-output-directory: file exists\n",
+      "catalog": {
+        "count": 1,
+        "data": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite signal oracle 0v6ii1rc/native-profile-save-error-SIGTERM/data",
+        "graphs": [
+          {
+            "id": "tiny",
+            "path": "/private/tmp/graphite-go-signal-parity-de0608f0/graphite-server/internal/store/testdata/callsite-index/store",
+            "loadMode": "MAPPED",
+            "loadedAt": "2026-09-06T23:25:24.767454Z",
+            "nodes": 4,
+            "edges": 0,
+            "methods": 0,
+            "callSites": 4
+          }
+        ],
+        "loadMode": "MAPPED",
+        "totals": {
+          "nodes": 4,
+          "edges": 0,
+          "methods": 0,
+          "callSites": 4
+        }
+      },
+      "existingOutputPreserved": true
+    },
+    {
+      "name": "normal-help",
+      "command": [
+        "/private/tmp/graphite-native-signal-after",
+        "--help"
+      ],
+      "returncode": 0,
+      "stdout": "Usage: graphite-explore [-hV] [--metrics]\n                        [--cypher-max-timeout-ms=<cypherMaxTimeoutMillis>]\n                        [--cypher-work-budget=<cypherWorkBudget>]\n                        [--data=<data>] [--id=<graphId>]\n                        [--load-mode=<loadMode>]\n                        [--max-concurrent-cypher=<maxConcurrentCypher>]\n                        [-p=<port>] [--topology=<topology>]\n                        [--graph=<graphSpecs>]... [<graphDir>]\nInteractive web visualization for saved Graphite graphs\n      [<graphDir>]           Optional saved graph directory for single-graph\n                               startup\n      --cypher-max-timeout-ms=<cypherMaxTimeoutMillis>\n                             Maximum Cypher request timeout in milliseconds\n      --cypher-work-budget=<cypherWorkBudget>\n                             Deprecated and ignored; Cypher execution is\n                               limited by timeout instead\n      --data=<data>          Data directory used to resolve relative graph\n                               paths and allow empty startup\n      --graph=<graphSpecs>   Initial graph mapping id:path. Repeat for multiple\n                               graphs.\n  -h, --help                 Show this help message and exit.\n      --id=<graphId>         Required graph id for the optional positional graph\n      --load-mode=<loadMode> Graph load mode: EAGER, MAPPED, AUTO. Defaults to\n                               MAPPED for multi-graph heap stability.\n      --max-concurrent-cypher=<maxConcurrentCypher>\n                             Maximum number of Cypher queries executing at once\n      --metrics              Expose Prometheus performance metrics at /metrics\n  -p, --port=<port>          HTTP port\n      --topology=<topology>  Cypher file or directory used at startup to derive\n                               graph-to-graph calls. Queries return source,\n                               target, and optional protocol, operation,\n                               weight, evidence.\n  -V, --version              Print version information and exit.\n",
+      "stderr": "",
+      "profileFlushed": true
+    },
+    {
+      "name": "invalid-args",
+      "command": [
+        "/private/tmp/graphite-native-signal-after",
+        "--unknown"
+      ],
+      "returncode": 2,
+      "stdout": "",
+      "stderr": "Unknown option: '--unknown'\nUsage: graphite-explore [-hV] [--metrics]\n                        [--cypher-max-timeout-ms=<cypherMaxTimeoutMillis>]\n                        [--cypher-work-budget=<cypherWorkBudget>]\n                        [--data=<data>] [--id=<graphId>]\n                        [--load-mode=<loadMode>]\n                        [--max-concurrent-cypher=<maxConcurrentCypher>]\n                        [-p=<port>] [--topology=<topology>]\n                        [--graph=<graphSpecs>]... [<graphDir>]\nInteractive web visualization for saved Graphite graphs\n      [<graphDir>]           Optional saved graph directory for single-graph\n                               startup\n      --cypher-max-timeout-ms=<cypherMaxTimeoutMillis>\n                             Maximum Cypher request timeout in milliseconds\n      --cypher-work-budget=<cypherWorkBudget>\n                             Deprecated and ignored; Cypher execution is\n                               limited by timeout instead\n      --data=<data>          Data directory used to resolve relative graph\n                               paths and allow empty startup\n      --graph=<graphSpecs>   Initial graph mapping id:path. Repeat for multiple\n                               graphs.\n  -h, --help                 Show this help message and exit.\n      --id=<graphId>         Required graph id for the optional positional graph\n      --load-mode=<loadMode> Graph load mode: EAGER, MAPPED, AUTO. Defaults to\n                               MAPPED for multi-graph heap stability.\n      --max-concurrent-cypher=<maxConcurrentCypher>\n                             Maximum number of Cypher queries executing at once\n      --metrics              Expose Prometheus performance metrics at /metrics\n  -p, --port=<port>          HTTP port\n      --topology=<topology>  Cypher file or directory used at startup to derive\n                               graph-to-graph calls. Queries return source,\n                               target, and optional protocol, operation,\n                               weight, evidence.\n  -V, --version              Print version information and exit.\n",
+      "profileFlushed": true
+    }
+  ]
+}

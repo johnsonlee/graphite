@@ -1,0 +1,65 @@
+{
+  "runs": [
+    {
+      "command": [
+        "python3",
+        "-W",
+        "error::ResourceWarning",
+        "scripts/native/smoke.py",
+        "--output",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-signal-integration/smoke.json"
+      ],
+      "exitCode": 0,
+      "log": "smoke.log"
+    },
+    {
+      "command": [
+        "python3",
+        "-W",
+        "error::ResourceWarning",
+        "docs/go-server-baseline/native-signal-parity/verify.py",
+        "--native",
+        "/tmp/graphite-go-signal-root-e6c3bd0c/graphite-explore/build/generated/native-resources/graphite-native/darwin-arm64/graphite-server",
+        "--main-jar",
+        "/tmp/graphite-native-signal-main-build-4e328b0/graphite-query/build/libs/graphite.jar",
+        "--bridge-jar",
+        "/tmp/graphite-go-signal-root-e6c3bd0c/graphite-query/build/libs/graphite.jar",
+        "--output",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-signal-integration/processes",
+        "--expected-native-signal",
+        "posix"
+      ],
+      "exitCode": 0,
+      "log": "processes.log"
+    },
+    {
+      "command": [
+        "python3",
+        "-W",
+        "error::ResourceWarning",
+        "scripts/native/verify_native_wrapper.py",
+        "--jar",
+        "/tmp/graphite-go-signal-root-e6c3bd0c/graphite-query/build/libs/graphite.jar",
+        "--native",
+        "/tmp/graphite-go-signal-root-e6c3bd0c/graphite-explore/build/generated/native-resources/graphite-native/darwin-arm64/graphite-server",
+        "--output",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-signal-integration/native-wrapper"
+      ],
+      "exitCode": 0,
+      "log": "native-wrapper.log"
+    },
+    {
+      "command": [
+        "python3",
+        "-W",
+        "error::ResourceWarning",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-signal-integration/profile-cli-verify.py",
+        "/tmp/graphite-go-signal-root-e6c3bd0c/graphite-explore/build/generated/native-resources/graphite-native/darwin-arm64/graphite-server"
+      ],
+      "exitCode": 0,
+      "log": "profile-cli.log"
+    }
+  ],
+  "binarySHA256": "1b10bdc20102f35231fb4165fb85aee309beb498d5d29665713d1df0565d876d",
+  "jarSHA256": "7784d0164e5b03e649fe5d37f2fe19798f53eec43c0fc99cb28304f987701944"
+}

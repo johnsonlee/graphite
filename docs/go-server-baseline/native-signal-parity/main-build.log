@@ -1,0 +1,61 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.13/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+
+> Configure project :
+[root project 'graphite'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+
+> Configure project :core
+[project ':core'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+
+> Configure project :cypher
+[project ':cypher'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+
+> Configure project :sootup
+[project ':sootup'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+
+> Configure project :webgraph
+[project ':webgraph'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+
+> Task :core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :core:compileKotlin FROM-CACHE
+> Task :core:compileJava NO-SOURCE
+> Task :core:processResources NO-SOURCE
+> Task :core:classes UP-TO-DATE
+> Task :core:jar
+> Task :cypher:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :cypher:generateGrammarSource FROM-CACHE
+> Task :cypher:compileKotlin FROM-CACHE
+> Task :cypher:compileJava FROM-CACHE
+> Task :cypher:processResources NO-SOURCE
+> Task :cypher:classes UP-TO-DATE
+> Task :cypher:jar
+> Task :explore:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :webgraph:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :webgraph:compileKotlin FROM-CACHE
+> Task :webgraph:compileJava NO-SOURCE
+> Task :webgraph:processResources NO-SOURCE
+> Task :webgraph:classes UP-TO-DATE
+> Task :webgraph:jar
+> Task :explore:compileKotlin FROM-CACHE
+> Task :explore:compileJava NO-SOURCE
+> Task :explore:processResources
+> Task :explore:classes
+> Task :explore:jar
+> Task :query:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :sootup:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :sootup:compileKotlin FROM-CACHE
+> Task :sootup:compileJava NO-SOURCE
+> Task :sootup:processResources NO-SOURCE
+> Task :sootup:classes UP-TO-DATE
+> Task :sootup:jar
+> Task :query:compileKotlin FROM-CACHE
+> Task :query:compileJava NO-SOURCE
+> Task :query:processResources NO-SOURCE
+> Task :query:classes UP-TO-DATE
+> Task :query:jar
+> Task :query:compileTestKotlin FROM-CACHE
+> Task :query:compileTestJava NO-SOURCE
+> Task :query:shadowJar
+
+BUILD SUCCESSFUL in 10s
+17 actionable tasks: 8 executed, 9 from cache

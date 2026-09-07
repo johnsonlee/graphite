@@ -1,0 +1,396 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "name": "main-SIGTERM",
+      "image": "graphite-signal-main:4e328b0",
+      "imageId": "sha256:41817b529c1925a9184589dec988e83ff772e1c3e01e8d38bb5882ee460c9bca",
+      "signal": "SIGTERM",
+      "exitCode": 143,
+      "catalog": {
+        "data": "/",
+        "loadMode": "MAPPED",
+        "count": 1,
+        "totals": {
+          "nodes": 4,
+          "edges": 0,
+          "methods": 0,
+          "callSites": 4
+        },
+        "graphs": [
+          {
+            "id": "app",
+            "path": "/data",
+            "loadMode": "MAPPED",
+            "loadedAt": "2026-09-06T23:27:38.231008440Z",
+            "nodes": 4,
+            "edges": 0,
+            "methods": 0,
+            "callSites": 4
+          }
+        ]
+      },
+      "config": {
+        "AttachStderr": true,
+        "AttachStdin": false,
+        "AttachStdout": true,
+        "Cmd": [
+          "--id",
+          "app",
+          "/data"
+        ],
+        "Domainname": "",
+        "Entrypoint": [
+          "java",
+          "-jar",
+          "/app/graphite.jar",
+          "serve"
+        ],
+        "Env": [
+          "JAVA_TOOL_OPTIONS=-Xmx128m -XX:ActiveProcessorCount=2",
+          "PATH=/opt/java/openjdk/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+          "JAVA_HOME=/opt/java/openjdk",
+          "LANG=en_US.UTF-8",
+          "LANGUAGE=en_US:en",
+          "LC_ALL=en_US.UTF-8",
+          "JAVA_VERSION=jdk-17.0.20+8"
+        ],
+        "ExposedPorts": {
+          "8080/tcp": {}
+        },
+        "Hostname": "85666094e425",
+        "Image": "graphite-signal-main:4e328b0",
+        "Labels": {
+          "org.opencontainers.image.description": "Interactive web visualization for Graphite static analysis graphs",
+          "org.opencontainers.image.licenses": "Apache-2.0",
+          "org.opencontainers.image.source": "https://github.com/johnsonlee/graphite",
+          "org.opencontainers.image.title": "graphite-explore",
+          "org.opencontainers.image.url": "https://github.com/johnsonlee/graphite",
+          "org.opencontainers.image.version": "0.0.0-dev"
+        },
+        "OpenStdin": false,
+        "StdinOnce": false,
+        "Tty": false,
+        "User": "graphite:graphite",
+        "Volumes": {
+          "/data": {}
+        },
+        "WorkingDir": "/app"
+      },
+      "top": "PID                 PPID                COMMAND\n3304                3281                java -jar /app/graphite.jar serve --id app /data",
+      "stdout": "",
+      "stderr": "Picked up JAVA_TOOL_OPTIONS: -Xmx128m -XX:ActiveProcessorCount=2\nLoaded graph 'app' from /data using MAPPED mode\nWeb UI: http://localhost:8080\nData: /\nLoaded graphs: app\nTopology: 1 graphs, 0 relations\nCypher limits: 4 concurrent, 60000ms maximum timeout\nPress Ctrl+C to stop\n"
+    },
+    {
+      "name": "main-SIGINT",
+      "image": "graphite-signal-main:4e328b0",
+      "imageId": "sha256:41817b529c1925a9184589dec988e83ff772e1c3e01e8d38bb5882ee460c9bca",
+      "signal": "SIGINT",
+      "exitCode": 130,
+      "catalog": {
+        "data": "/",
+        "loadMode": "MAPPED",
+        "count": 1,
+        "totals": {
+          "nodes": 4,
+          "edges": 0,
+          "methods": 0,
+          "callSites": 4
+        },
+        "graphs": [
+          {
+            "id": "app",
+            "path": "/data",
+            "loadMode": "MAPPED",
+            "loadedAt": "2026-09-06T23:27:39.517888619Z",
+            "nodes": 4,
+            "edges": 0,
+            "methods": 0,
+            "callSites": 4
+          }
+        ]
+      },
+      "config": {
+        "AttachStderr": true,
+        "AttachStdin": false,
+        "AttachStdout": true,
+        "Cmd": [
+          "--id",
+          "app",
+          "/data"
+        ],
+        "Domainname": "",
+        "Entrypoint": [
+          "java",
+          "-jar",
+          "/app/graphite.jar",
+          "serve"
+        ],
+        "Env": [
+          "JAVA_TOOL_OPTIONS=-Xmx128m -XX:ActiveProcessorCount=2",
+          "PATH=/opt/java/openjdk/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+          "JAVA_HOME=/opt/java/openjdk",
+          "LANG=en_US.UTF-8",
+          "LANGUAGE=en_US:en",
+          "LC_ALL=en_US.UTF-8",
+          "JAVA_VERSION=jdk-17.0.20+8"
+        ],
+        "ExposedPorts": {
+          "8080/tcp": {}
+        },
+        "Hostname": "a24e5910e466",
+        "Image": "graphite-signal-main:4e328b0",
+        "Labels": {
+          "org.opencontainers.image.description": "Interactive web visualization for Graphite static analysis graphs",
+          "org.opencontainers.image.licenses": "Apache-2.0",
+          "org.opencontainers.image.source": "https://github.com/johnsonlee/graphite",
+          "org.opencontainers.image.title": "graphite-explore",
+          "org.opencontainers.image.url": "https://github.com/johnsonlee/graphite",
+          "org.opencontainers.image.version": "0.0.0-dev"
+        },
+        "OpenStdin": false,
+        "StdinOnce": false,
+        "Tty": false,
+        "User": "graphite:graphite",
+        "Volumes": {
+          "/data": {}
+        },
+        "WorkingDir": "/app"
+      },
+      "top": "PID                 PPID                COMMAND\n3454                3432                java -jar /app/graphite.jar serve --id app /data",
+      "stdout": "",
+      "stderr": "Picked up JAVA_TOOL_OPTIONS: -Xmx128m -XX:ActiveProcessorCount=2\nLoaded graph 'app' from /data using MAPPED mode\nWeb UI: http://localhost:8080\nData: /\nLoaded graphs: app\nTopology: 1 graphs, 0 relations\nCypher limits: 4 concurrent, 60000ms maximum timeout\nPress Ctrl+C to stop\n"
+    },
+    {
+      "name": "native-before-SIGINT",
+      "image": "graphite-native-packaging-audit:arm64",
+      "imageId": "sha256:747ba6a4c0b9c7395b7a5c5ccfa701bfc66143b810eb8a88ba175129223b34e2",
+      "signal": "SIGINT",
+      "exitCode": 0,
+      "catalog": {
+        "count": 1,
+        "data": "/",
+        "graphs": [
+          {
+            "id": "app",
+            "path": "/data",
+            "loadMode": "MAPPED",
+            "loadedAt": "2026-09-06T23:27:40.647025935Z",
+            "nodes": 4,
+            "edges": 0,
+            "methods": 0,
+            "callSites": 4
+          }
+        ],
+        "loadMode": "MAPPED",
+        "totals": {
+          "nodes": 4,
+          "edges": 0,
+          "methods": 0,
+          "callSites": 4
+        }
+      },
+      "config": {
+        "AttachStderr": true,
+        "AttachStdin": false,
+        "AttachStdout": true,
+        "Cmd": [
+          "--id",
+          "app",
+          "/data"
+        ],
+        "Domainname": "",
+        "Entrypoint": [
+          "/app/graphite-server",
+          "serve"
+        ],
+        "Env": [
+          "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+          "HOME=/home/graphite"
+        ],
+        "ExposedPorts": {
+          "8080/tcp": {}
+        },
+        "Hostname": "f9610e7e4331",
+        "Image": "graphite-native-packaging-audit:arm64",
+        "Labels": {
+          "org.opencontainers.image.description": "Interactive web visualization for Graphite static analysis graphs",
+          "org.opencontainers.image.licenses": "Apache-2.0",
+          "org.opencontainers.image.source": "https://github.com/johnsonlee/graphite",
+          "org.opencontainers.image.title": "graphite-explore",
+          "org.opencontainers.image.url": "https://github.com/johnsonlee/graphite",
+          "org.opencontainers.image.version": "3.0.0-packaging-audit"
+        },
+        "OpenStdin": false,
+        "StdinOnce": false,
+        "StopSignal": "SIGTERM",
+        "Tty": false,
+        "User": "1000:1000",
+        "Volumes": {
+          "/data": {}
+        },
+        "WorkingDir": "/app"
+      },
+      "top": "PID                 PPID                COMMAND\n3604                3580                /app/graphite-server serve --id app /data",
+      "stdout": "",
+      "stderr": "Graphite Go server (in development): http://localhost:8080\n"
+    },
+    {
+      "name": "native-after-SIGTERM",
+      "image": "graphite-signal-native:after",
+      "imageId": "sha256:7c3d7de3efdce19cb086448513b1b185b120d248a2587fb9bbc0843d56ff0178",
+      "signal": "SIGTERM",
+      "exitCode": 143,
+      "catalog": {
+        "count": 1,
+        "data": "/",
+        "graphs": [
+          {
+            "id": "app",
+            "path": "/data",
+            "loadMode": "MAPPED",
+            "loadedAt": "2026-09-06T23:27:41.146906016Z",
+            "nodes": 4,
+            "edges": 0,
+            "methods": 0,
+            "callSites": 4
+          }
+        ],
+        "loadMode": "MAPPED",
+        "totals": {
+          "nodes": 4,
+          "edges": 0,
+          "methods": 0,
+          "callSites": 4
+        }
+      },
+      "config": {
+        "AttachStderr": true,
+        "AttachStdin": false,
+        "AttachStdout": true,
+        "Cmd": [
+          "--id",
+          "app",
+          "/data"
+        ],
+        "Domainname": "",
+        "Entrypoint": [
+          "/app/graphite-server",
+          "serve"
+        ],
+        "Env": [
+          "GRAPHITE_NATIVE_CPU_PROFILE=1",
+          "GRAPHITE_PROFILE=/data/profile.html",
+          "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+          "HOME=/home/graphite"
+        ],
+        "ExposedPorts": {
+          "8080/tcp": {}
+        },
+        "Hostname": "531d5f81661c",
+        "Image": "graphite-signal-native:after",
+        "Labels": {
+          "org.opencontainers.image.description": "Interactive web visualization for Graphite static analysis graphs",
+          "org.opencontainers.image.licenses": "Apache-2.0",
+          "org.opencontainers.image.source": "https://github.com/johnsonlee/graphite",
+          "org.opencontainers.image.title": "graphite-explore",
+          "org.opencontainers.image.url": "https://github.com/johnsonlee/graphite",
+          "org.opencontainers.image.version": "3.0.0-signal-audit"
+        },
+        "OpenStdin": false,
+        "StdinOnce": false,
+        "StopSignal": "SIGTERM",
+        "Tty": false,
+        "User": "1000:1000",
+        "Volumes": {
+          "/data": {}
+        },
+        "WorkingDir": "/app"
+      },
+      "top": "PID                 PPID                COMMAND\n3721                3698                /app/graphite-server serve --id app /data",
+      "stdout": "",
+      "stderr": "Graphite Go server (in development): http://localhost:8080\n",
+      "profileFlushed": true,
+      "reportSHA256": "1d8c13a5b3a523ef59cc7804a8364b36d8da3f1bb51def1690571ea3f0e8fe95"
+    },
+    {
+      "name": "native-after-SIGINT",
+      "image": "graphite-signal-native:after",
+      "imageId": "sha256:7c3d7de3efdce19cb086448513b1b185b120d248a2587fb9bbc0843d56ff0178",
+      "signal": "SIGINT",
+      "exitCode": 130,
+      "catalog": {
+        "count": 1,
+        "data": "/",
+        "graphs": [
+          {
+            "id": "app",
+            "path": "/data",
+            "loadMode": "MAPPED",
+            "loadedAt": "2026-09-06T23:27:41.86732643Z",
+            "nodes": 4,
+            "edges": 0,
+            "methods": 0,
+            "callSites": 4
+          }
+        ],
+        "loadMode": "MAPPED",
+        "totals": {
+          "nodes": 4,
+          "edges": 0,
+          "methods": 0,
+          "callSites": 4
+        }
+      },
+      "config": {
+        "AttachStderr": true,
+        "AttachStdin": false,
+        "AttachStdout": true,
+        "Cmd": [
+          "--id",
+          "app",
+          "/data"
+        ],
+        "Domainname": "",
+        "Entrypoint": [
+          "/app/graphite-server",
+          "serve"
+        ],
+        "Env": [
+          "GRAPHITE_NATIVE_CPU_PROFILE=1",
+          "GRAPHITE_PROFILE=/data/profile.html",
+          "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+          "HOME=/home/graphite"
+        ],
+        "ExposedPorts": {
+          "8080/tcp": {}
+        },
+        "Hostname": "aec25ea83ac5",
+        "Image": "graphite-signal-native:after",
+        "Labels": {
+          "org.opencontainers.image.description": "Interactive web visualization for Graphite static analysis graphs",
+          "org.opencontainers.image.licenses": "Apache-2.0",
+          "org.opencontainers.image.source": "https://github.com/johnsonlee/graphite",
+          "org.opencontainers.image.title": "graphite-explore",
+          "org.opencontainers.image.url": "https://github.com/johnsonlee/graphite",
+          "org.opencontainers.image.version": "3.0.0-signal-audit"
+        },
+        "OpenStdin": false,
+        "StdinOnce": false,
+        "StopSignal": "SIGTERM",
+        "Tty": false,
+        "User": "1000:1000",
+        "Volumes": {
+          "/data": {}
+        },
+        "WorkingDir": "/app"
+      },
+      "top": "PID                 PPID                COMMAND\n3839                3816                /app/graphite-server serve --id app /data",
+      "stdout": "",
+      "stderr": "Graphite Go server (in development): http://localhost:8080\n",
+      "profileFlushed": true,
+      "reportSHA256": "516e058fc367b39276de3bc5d9667abe99b45e558c632dee5cc6ce9b5f082d99"
+    }
+  ],
+  "dockerVersion": "Client:\n Cloud integration: v1.0.35+desktop.10\n Version:           25.0.3\n API version:       1.44\n Go version:        go1.21.6\n Git commit:        4debf41\n Built:             Tue Feb  6 21:13:26 2024\n OS/Arch:           darwin/arm64\n Context:           colima\n\nServer: Docker Engine - Community\n Engine:\n  Version:          29.5.2\n  API version:      1.54 (minimum version 1.40)\n  Go version:       go1.26.3\n  Git commit:       568f755\n  Built:            Wed May 20 14:39:25 2026\n  OS/Arch:          linux/arm64\n  Experimental:     false\n containerd:\n  Version:          v2.2.4\n  GitCommit:        193637f7ee8ae5f5aa5248f49e7baa3e6164966e\n runc:\n  Version:          1.3.5\n  GitCommit:        v1.3.5-0-g488fc13e\n docker-init:\n  Version:          0.19.0\n  GitCommit:        de40ad0"
+}

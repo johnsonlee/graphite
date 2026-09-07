@@ -1,0 +1,8 @@
+{
+  "graphite-explore.jar": "577f837d09a16e324d9c3062ac784c132d0714976a7037b8e8d8ed332e1a6f24",
+  "graphite-server-3.0.0-root-signal-audit-darwin-amd64.tar.gz": "5e55b135c07c9676665c80bc94b642be28317da1360bd68d1b06ce97c5008337",
+  "graphite-server-3.0.0-root-signal-audit-darwin-arm64.tar.gz": "b4ddf3a699fe3e3639c8844e480242ecc0f6bb274f0a953557dca7621f7b6a95",
+  "graphite-server-3.0.0-root-signal-audit-linux-amd64.tar.gz": "9804384b95de7c1cd1e14feed3a9ee91f16f5272b5340d8e0a3dbb1c899e35ba",
+  "graphite-server-3.0.0-root-signal-audit-linux-arm64.tar.gz": "1a168d4d926e3bfbdc5cadbe73588378104bc11c487912988e13e9eba5b4c3dc",
+  "graphite.jar": "7784d0164e5b03e649fe5d37f2fe19798f53eec43c0fc99cb28304f987701944"
+}

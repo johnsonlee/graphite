@@ -1,0 +1,58 @@
+#0 building with "colima" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.30kB done
+#1 DONE 0.0s
+
+#2 [auth] docker/dockerfile:pull token for registry-1.docker.io
+#2 DONE 0.0s
+
+#3 resolve image config for docker-image://docker.io/docker/dockerfile:1.7
+#3 DONE 1.2s
+
+#4 docker-image://docker.io/docker/dockerfile:1.7@sha256:a57df69d0ea827fb7266491f2813635de6f17269be881f696fbfdf2d83dda33e
+#4 resolve docker.io/docker/dockerfile:1.7@sha256:a57df69d0ea827fb7266491f2813635de6f17269be881f696fbfdf2d83dda33e 0.0s done
+#4 CACHED
+
+#5 [internal] load .dockerignore
+#5 transferring context: 2B done
+#5 DONE 0.0s
+
+#6 [internal] load build context
+#6 transferring context: 20.01MB 0.1s done
+#6 DONE 0.1s
+
+#7 [1/6] COPY native-runtime/rootfs/ /
+#7 CACHED
+
+#8 [2/6] COPY --chown=1000:1000 native-runtime/writable/ /
+#8 CACHED
+
+#9 [3/6] COPY --chmod=0755 native-runtime/linux-arm64/graphite-server /app/graphite-server
+#9 DONE 0.0s
+
+#10 [4/6] COPY native-runtime/linux-arm64/LICENSE native-runtime/linux-arm64/VERSION /app/
+#10 DONE 0.0s
+
+#11 [5/6] COPY native-runtime/linux-arm64/licenses/ /app/licenses/
+#11 DONE 0.0s
+
+#12 [6/6] WORKDIR /app
+#12 DONE 0.0s
+
+#13 exporting to image
+#13 exporting layers
+#13 exporting layers 0.3s done
+#13 exporting manifest sha256:704212f14b04f41367029d08cbe3f5699338df702ccc0fd805b185c25243c546
+#13 exporting manifest sha256:704212f14b04f41367029d08cbe3f5699338df702ccc0fd805b185c25243c546 done
+#13 exporting config sha256:212e3cb3fd7bec159a8b4286cdb5c3dcce113623279f3d02af7adbb5cbc25853 done
+#13 exporting attestation manifest sha256:a2565d19d2f9e597b886b27dcc07d76dbdc9a0c82ec1c465b8f5c399306f17ca done
+#13 exporting manifest list sha256:f5db98be1699bac6e330802f5ff38bcf398a515494af9f0ffd5d32a5004a47a0 done
+#13 naming to docker.io/library/graphite-signal-native:final done
+#13 unpacking to docker.io/library/graphite-signal-native:final 0.1s done
+#13 DONE 0.4s
+
+View build details: docker-desktop://dashboard/build/colima/colima/vzw2thtis6g2zzluorfayi21b
+
+What's Next?
+  View a summary of image vulnerabilities and recommendations → docker scout quickview

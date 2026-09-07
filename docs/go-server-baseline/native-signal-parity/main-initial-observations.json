@@ -1,0 +1,145 @@
+{
+  "passed": false,
+  "error": "AssertionError(('main-profile-save-error-SIGTERM', 1, 'Picked up JAVA_TOOL_OPTIONS: -Xmx128m -XX:ActiveProcessorCount=2 -Dfile.encoding=UTF-8\\nError: Could not find or load main class signal\\nCaused by: java.lang.ClassNotFoundException: signal\\n'))",
+  "checks": [
+    {
+      "name": "main-direct-SIGTERM",
+      "command": [
+        "java",
+        "-Xmx128m",
+        "-XX:ActiveProcessorCount=2",
+        "-Dfile.encoding=UTF-8",
+        "-jar",
+        "/private/tmp/graphite-native-signal-main-build-4e328b0/graphite-query/build/libs/graphite.jar",
+        "serve",
+        "--id",
+        "tiny",
+        "/private/tmp/graphite-go-signal-parity-de0608f0/graphite-server/internal/store/testdata/callsite-index/store",
+        "--data",
+        "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite signal oracle mmharlog/main-direct-SIGTERM/data",
+        "--port",
+        "0"
+      ],
+      "signal": "SIGTERM",
+      "signalTarget": "parent PID",
+      "returncode": 143,
+      "expected": 143,
+      "stdout": "",
+      "stderr": "Loaded graph 'tiny' from /private/tmp/graphite-go-signal-parity-de0608f0/graphite-server/internal/store/testdata/callsite-index/store using MAPPED mode\nWeb UI: http://localhost:50723\nData: /var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite signal oracle mmharlog/main-direct-SIGTERM/data\nLoaded graphs: tiny\nTopology: 1 graphs, 0 relations\nCypher limits: 4 concurrent, 60000ms maximum timeout\nPress Ctrl+C to stop\n",
+      "catalog": {
+        "data": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite signal oracle mmharlog/main-direct-SIGTERM/data",
+        "loadMode": "MAPPED",
+        "count": 1,
+        "totals": {
+          "nodes": 4,
+          "edges": 0,
+          "methods": 0,
+          "callSites": 4
+        },
+        "graphs": [
+          {
+            "id": "tiny",
+            "path": "/private/tmp/graphite-go-signal-parity-de0608f0/graphite-server/internal/store/testdata/callsite-index/store",
+            "loadMode": "MAPPED",
+            "loadedAt": "2026-09-06T23:21:11.894478Z",
+            "nodes": 4,
+            "edges": 0,
+            "methods": 0,
+            "callSites": 4
+          }
+        ]
+      }
+    },
+    {
+      "name": "main-direct-SIGINT",
+      "command": [
+        "java",
+        "-Xmx128m",
+        "-XX:ActiveProcessorCount=2",
+        "-Dfile.encoding=UTF-8",
+        "-jar",
+        "/private/tmp/graphite-native-signal-main-build-4e328b0/graphite-query/build/libs/graphite.jar",
+        "serve",
+        "--id",
+        "tiny",
+        "/private/tmp/graphite-go-signal-parity-de0608f0/graphite-server/internal/store/testdata/callsite-index/store",
+        "--data",
+        "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite signal oracle mmharlog/main-direct-SIGINT/data",
+        "--port",
+        "0"
+      ],
+      "signal": "SIGINT",
+      "signalTarget": "parent PID",
+      "returncode": 130,
+      "expected": 130,
+      "stdout": "",
+      "stderr": "Loaded graph 'tiny' from /private/tmp/graphite-go-signal-parity-de0608f0/graphite-server/internal/store/testdata/callsite-index/store using MAPPED mode\nWeb UI: http://localhost:50725\nData: /var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite signal oracle mmharlog/main-direct-SIGINT/data\nLoaded graphs: tiny\nTopology: 1 graphs, 0 relations\nCypher limits: 4 concurrent, 60000ms maximum timeout\nPress Ctrl+C to stop\n",
+      "catalog": {
+        "data": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite signal oracle mmharlog/main-direct-SIGINT/data",
+        "loadMode": "MAPPED",
+        "count": 1,
+        "totals": {
+          "nodes": 4,
+          "edges": 0,
+          "methods": 0,
+          "callSites": 4
+        },
+        "graphs": [
+          {
+            "id": "tiny",
+            "path": "/private/tmp/graphite-go-signal-parity-de0608f0/graphite-server/internal/store/testdata/callsite-index/store",
+            "loadMode": "MAPPED",
+            "loadedAt": "2026-09-06T23:21:12.796965Z",
+            "nodes": 4,
+            "edges": 0,
+            "methods": 0,
+            "callSites": 4
+          }
+        ]
+      }
+    },
+    {
+      "name": "main-homebrew-SIGTERM",
+      "command": [
+        "/private/tmp/graphite-go-signal-parity-de0608f0/docs/go-server-baseline/native-signal-parity/main-homebrew-wrapper.sh",
+        "serve",
+        "--id",
+        "tiny",
+        "/private/tmp/graphite-go-signal-parity-de0608f0/graphite-server/internal/store/testdata/callsite-index/store",
+        "--data",
+        "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite signal oracle mmharlog/main-homebrew-SIGTERM/data",
+        "--port",
+        "0"
+      ],
+      "signal": "SIGTERM",
+      "signalTarget": "parent PID",
+      "returncode": 143,
+      "expected": 143,
+      "stdout": "",
+      "stderr": "Picked up JAVA_TOOL_OPTIONS: -Xmx128m -XX:ActiveProcessorCount=2 -Dfile.encoding=UTF-8\nLoaded graph 'tiny' from /private/tmp/graphite-go-signal-parity-de0608f0/graphite-server/internal/store/testdata/callsite-index/store using MAPPED mode\nWeb UI: http://localhost:50727\nData: /var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite signal oracle mmharlog/main-homebrew-SIGTERM/data\nLoaded graphs: tiny\nTopology: 1 graphs, 0 relations\nCypher limits: 4 concurrent, 60000ms maximum timeout\nPress Ctrl+C to stop\n",
+      "catalog": {
+        "data": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite signal oracle mmharlog/main-homebrew-SIGTERM/data",
+        "loadMode": "MAPPED",
+        "count": 1,
+        "totals": {
+          "nodes": 4,
+          "edges": 0,
+          "methods": 0,
+          "callSites": 4
+        },
+        "graphs": [
+          {
+            "id": "tiny",
+            "path": "/private/tmp/graphite-go-signal-parity-de0608f0/graphite-server/internal/store/testdata/callsite-index/store",
+            "loadMode": "MAPPED",
+            "loadedAt": "2026-09-06T23:21:14.029745Z",
+            "nodes": 4,
+            "edges": 0,
+            "methods": 0,
+            "callSites": 4
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,84 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.13/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+
+> Configure project :
+[root project 'graphite'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+
+> Configure project :core
+[project ':core'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+
+> Configure project :cypher
+[project ':cypher'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+
+> Configure project :sootup
+[project ':sootup'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+
+> Configure project :webgraph
+[project ':webgraph'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+
+> Task :core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :core:compileKotlin FROM-CACHE
+> Task :core:compileJava NO-SOURCE
+> Task :core:processResources NO-SOURCE
+> Task :core:classes UP-TO-DATE
+> Task :core:jar
+> Task :cypher:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :cypher:generateGrammarSource FROM-CACHE
+> Task :cypher:compileKotlin FROM-CACHE
+> Task :cypher:compileJava FROM-CACHE
+> Task :cypher:processResources NO-SOURCE
+> Task :cypher:classes UP-TO-DATE
+> Task :cypher:jar
+> Task :explore:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :webgraph:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :webgraph:compileKotlin FROM-CACHE
+> Task :webgraph:compileJava NO-SOURCE
+> Task :webgraph:processResources NO-SOURCE
+> Task :webgraph:classes UP-TO-DATE
+> Task :webgraph:jar
+> Task :explore:compileKotlin FROM-CACHE
+> Task :explore:compileJava NO-SOURCE
+
+> Task :explore:prepareNativeServer
+Building native server darwin-amd64 3.0.0-root-signal-audit
+Building native server darwin-arm64 3.0.0-root-signal-audit
+Building native server linux-amd64 3.0.0-root-signal-audit
+Building native server linux-arm64 3.0.0-root-signal-audit
+
+> Task :explore:processResources
+> Task :explore:classes
+> Task :explore:jar
+> Task :query:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :sootup:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :sootup:compileKotlin FROM-CACHE
+> Task :sootup:compileJava NO-SOURCE
+> Task :sootup:processResources NO-SOURCE
+> Task :sootup:classes UP-TO-DATE
+> Task :sootup:jar
+> Task :query:compileKotlin FROM-CACHE
+> Task :query:compileJava NO-SOURCE
+> Task :query:processResources NO-SOURCE
+> Task :query:classes UP-TO-DATE
+> Task :query:jar
+> Task :query:startScripts
+> Task :query:installDist
+> Task :explore:startScripts
+> Task :explore:installDist
+> Task :query:compileTestKotlin
+> Task :query:compileTestJava NO-SOURCE
+> Task :explore:compileJmhKotlin
+
+> Task :explore:compileTestKotlin
+w: file:///private/tmp/graphite-go-signal-root-e6c3bd0c/graphite-explore/src/test/kotlin/io/johnsonlee/graphite/cli/ExploreCommandTest.kt:1981:68 Unchecked cast of 'kotlin.Any?' to 'kotlin.collections.List<kotlin.collections.Map<kotlin.String, kotlin.Any?>>'.
+w: file:///private/tmp/graphite-go-signal-root-e6c3bd0c/graphite-explore/src/test/kotlin/io/johnsonlee/graphite/cli/ExploreCommandTest.kt:3526:80 Unchecked cast of 'kotlin.Any?' to 'kotlin.collections.List<kotlin.collections.Map<kotlin.String, kotlin.Any?>>'.
+w: file:///private/tmp/graphite-go-signal-root-e6c3bd0c/graphite-explore/src/test/kotlin/io/johnsonlee/graphite/cli/ExploreCommandTest.kt:3527:78 Unchecked cast of 'kotlin.Any?' to 'kotlin.collections.List<kotlin.collections.Map<kotlin.String, kotlin.Any?>>'.
+w: file:///private/tmp/graphite-go-signal-root-e6c3bd0c/graphite-explore/src/test/kotlin/io/johnsonlee/graphite/cli/ExploreCommandTest.kt:3553:94 Unchecked cast of 'kotlin.Any?' to 'kotlin.collections.List<kotlin.collections.Map<kotlin.String, kotlin.Any?>>'.
+w: file:///private/tmp/graphite-go-signal-root-e6c3bd0c/graphite-explore/src/test/kotlin/io/johnsonlee/graphite/cli/ExploreCommandTest.kt:3556:92 Unchecked cast of 'kotlin.Any?' to 'kotlin.collections.List<kotlin.collections.Map<kotlin.String, kotlin.Any?>>'.
+
+> Task :query:shadowJar
+> Task :explore:compileJmhJava NO-SOURCE
+> Task :explore:compileTestJava NO-SOURCE
+> Task :explore:shadowJar
+
+BUILD SUCCESSFUL in 31s
+25 actionable tasks: 17 executed, 8 from cache

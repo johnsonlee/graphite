@@ -1,0 +1,438 @@
+{
+  "base": "de0608f075174833a06f31eb3214b3ba9c4e0917",
+  "requiredLayers": [
+    {
+      "name": "profiling except stale README hunk",
+      "sha256": "a57591f69291d97b192488d3c302eb0c6f73de791d446444cb3790f0b823e83b"
+    },
+    {
+      "name": "native release",
+      "sha256": "19b53e606d3faa4baa63ef2fe031d9a1ccce1876151da5743a7002c66d17e0bb"
+    }
+  ],
+  "sourceRoot": "/private/tmp/graphite-go-signal-parity-de0608f0",
+  "source": {
+    "graphite-server/cmd/graphite-server/main.go": "b950573428f1d6c641d0e22796326b2717c6c3e96815074fe096393c5052290c",
+    "graphite-server/cmd/graphite-server/signals.go": "6726650c03ac95da4ff58f3fc4c3d03a3047a7fe347dfdb1441d51738374debe",
+    "graphite-server/cmd/graphite-server/signals_test.go": "cdba9de123d05c33e26b9f97fbdbed64cf3741792f54303cca686bf606ceae50",
+    "scripts/native/verify_native_wrapper.py": "2031a4384ac3a30364c6f46b66d554881b684b5bdb38b5a576eae85ceeaf868f",
+    "scripts/native/verify_docker.py": "72f7b710bbb1e779bfb7f7600c6c1bdd8abec86afc1fd3dc0318f45cd68793db"
+  },
+  "deltaBaselineFiles": {
+    "graphite-server/cmd/graphite-server/main.go": "6d23940b6ab17a71eb2f9acb7f6b7eb148be7f82ef67bd7356147c11c1945006",
+    "scripts/native/verify_native_wrapper.py": "446eca37365d57f7f4f1de2862e3215042f9830d3395a3c7329f851aa278a5e5",
+    "scripts/native/verify_docker.py": "67da4c0e640400a1e0ad8363ae00ac1bd818256738a8babaea91420c8cd6e4f8"
+  },
+  "artifacts": {
+    "/tmp/graphite-native-signal-before": {
+      "sha256": "e6752111f448960d949c47794937fdadc476862fab68887e148c0fa16c39ebba",
+      "bytes": 20294786
+    },
+    "/tmp/graphite-native-signal-after": {
+      "sha256": "ce3a3863c3689729b6510c039118ea733f660b232b6f0adc6cf4d07234550eb3",
+      "bytes": 20294354
+    },
+    "/tmp/graphite-native-signal-after-linux-arm64": {
+      "sha256": "e6b597b3d5d5e3b89aa2fc154c4fefee0a9b52f4a7de5bd242c4b99f5f65c0aa",
+      "bytes": 19998029
+    },
+    "/tmp/graphite-native-signal-final": {
+      "sha256": "809f7340e20a0b59007d6d4614750c8c8019f6b09f466fa5d9a8556527ea2d18",
+      "bytes": 20294290
+    },
+    "/tmp/graphite-native-signal-final-linux-arm64": {
+      "sha256": "fc191d1659c0a8d06a7149921465b63a3bed5746ae9cc67468ac9966c1abbb02",
+      "bytes": 19999125
+    },
+    "/tmp/graphite-native-signal-main-build-4e328b0/graphite-query/build/libs/graphite.jar": {
+      "sha256": "b66045d07cd6a3cd44ac6543cbfc031d063e795aa881dd3be1690a55cb702853",
+      "bytes": 37099220
+    },
+    "/tmp/graphite-native-release-build-274cd678/graphite-query/build/libs/graphite.jar": {
+      "sha256": "dfaea0fd1e11bbc2ec15b28fe3fdc76ea38306f3eea9c2dda47da7b8ab775d43",
+      "bytes": 65088821
+    }
+  },
+  "dockerBuildContexts": {
+    "/tmp/graphite-native-signal-docker-main": {
+      "Dockerfile": "e4c62688b2618a863a47aa12d7841dd6dc331b01b834f8ce504d511140bd9f08",
+      "graphite.jar": "b66045d07cd6a3cd44ac6543cbfc031d063e795aa881dd3be1690a55cb702853"
+    },
+    "/tmp/graphite-native-signal-docker-after": {
+      "Dockerfile": "16a2ccc055ffe0e1e030f6e107c0cde4b735b0e77d232e10156610af8bf39d79",
+      "native-runtime/linux-amd64/LICENSE": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "native-runtime/linux-amd64/README.md": "68ec76fbbbc7f7eede58714d1ba44ee3a14d009fdb88ce9d53f32a5bc20c4b18",
+      "native-runtime/linux-amd64/VERSION": "929cd5926dc2c330d68d9e9429b5e5caa9c448cb74d8e988e1480ad0a934dc02",
+      "native-runtime/linux-amd64/graphite-server": "8ce7488d536f034f18b08cba31ee46f2b0e2a4fb85f23d5421d504cbf1962297",
+      "native-runtime/linux-amd64/licenses/Go-LICENSE": "2d36597f7117c38b006835ae7f537487207d8ec407aa9d9980794b2030cbc067",
+      "native-runtime/linux-amd64/licenses/fdlibm-fdlibm.txt": "28d9a670b87eb8fbaac3e8aad850233bcce2281ef9d3c83ccdb9f698bae5ea5f",
+      "native-runtime/linux-amd64/licenses/fdlibm-reduction.txt": "a6e2102ff5da1950f41ab269d2379ec3b13da3c1e4476326ce49ad6004fbde59",
+      "native-runtime/linux-amd64/licenses/fdlibm-sincos.txt": "cfe837ceedcc8d423bb62ac12be55a44bc8385550e330554dbba386ff16b233e",
+      "native-runtime/linux-amd64/licenses/fdlibm-tan.txt": "28d402634ebb7d9617e591ba58b6187450f8f5c9307c367e1992c6ea1a465eea",
+      "native-runtime/linux-amd64/licenses/github.com_antlr4-go_antlr_v4@v4.13.1/LICENSE": "683fcd416d83b64781e229a3c2a598462fbf55c5c9fea54be244766b22c033cf",
+      "native-runtime/linux-amd64/licenses/golang.org_x_exp@v0.0.0-20240506185415-9bf2ced13842/LICENSE": "2d36597f7117c38b006835ae7f537487207d8ec407aa9d9980794b2030cbc067",
+      "native-runtime/linux-arm64/LICENSE": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "native-runtime/linux-arm64/README.md": "68ec76fbbbc7f7eede58714d1ba44ee3a14d009fdb88ce9d53f32a5bc20c4b18",
+      "native-runtime/linux-arm64/VERSION": "567b09841d04c2534120327f8786dc17c6cc2ec00d01aa503ec84ef9765d4c0e",
+      "native-runtime/linux-arm64/graphite-server": "fc191d1659c0a8d06a7149921465b63a3bed5746ae9cc67468ac9966c1abbb02",
+      "native-runtime/linux-arm64/licenses/Go-LICENSE": "2d36597f7117c38b006835ae7f537487207d8ec407aa9d9980794b2030cbc067",
+      "native-runtime/linux-arm64/licenses/fdlibm-fdlibm.txt": "28d9a670b87eb8fbaac3e8aad850233bcce2281ef9d3c83ccdb9f698bae5ea5f",
+      "native-runtime/linux-arm64/licenses/fdlibm-reduction.txt": "a6e2102ff5da1950f41ab269d2379ec3b13da3c1e4476326ce49ad6004fbde59",
+      "native-runtime/linux-arm64/licenses/fdlibm-sincos.txt": "cfe837ceedcc8d423bb62ac12be55a44bc8385550e330554dbba386ff16b233e",
+      "native-runtime/linux-arm64/licenses/fdlibm-tan.txt": "28d402634ebb7d9617e591ba58b6187450f8f5c9307c367e1992c6ea1a465eea",
+      "native-runtime/linux-arm64/licenses/github.com_antlr4-go_antlr_v4@v4.13.1/LICENSE": "683fcd416d83b64781e229a3c2a598462fbf55c5c9fea54be244766b22c033cf",
+      "native-runtime/linux-arm64/licenses/golang.org_x_exp@v0.0.0-20240506185415-9bf2ced13842/LICENSE": "2d36597f7117c38b006835ae7f537487207d8ec407aa9d9980794b2030cbc067",
+      "native-runtime/linux-arm64/licenses/google-pprof-LICENSE": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "native-runtime/rootfs/etc/group": "c3e1d967572b990f3b5cfdfb302dd31b8f4175e3bedaf4c87f66a02033cb895d",
+      "native-runtime/rootfs/etc/passwd": "1c10134648ef27499f0ddd0ea6a0df3cbe5d4a16129e2af20a99b65659a0c0db"
+    }
+  },
+  "images": {
+    "graphite-signal-main:4e328b0": {
+      "Architecture": "arm64",
+      "Author": "",
+      "Comment": "buildkit.dockerfile.v0",
+      "Config": {
+        "ArgsEscaped": true,
+        "AttachStderr": false,
+        "AttachStdin": false,
+        "AttachStdout": false,
+        "Cmd": [
+          "--id",
+          "app",
+          "/data"
+        ],
+        "Domainname": "",
+        "Entrypoint": [
+          "java",
+          "-jar",
+          "/app/graphite.jar",
+          "serve"
+        ],
+        "Env": [
+          "PATH=/opt/java/openjdk/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+          "JAVA_HOME=/opt/java/openjdk",
+          "LANG=en_US.UTF-8",
+          "LANGUAGE=en_US:en",
+          "LC_ALL=en_US.UTF-8",
+          "JAVA_VERSION=jdk-17.0.20+8",
+          "JAVA_TOOL_OPTIONS=-Xmx4g"
+        ],
+        "ExposedPorts": {
+          "8080/tcp": {}
+        },
+        "Hostname": "",
+        "Image": "",
+        "Labels": {
+          "org.opencontainers.image.description": "Interactive web visualization for Graphite static analysis graphs",
+          "org.opencontainers.image.licenses": "Apache-2.0",
+          "org.opencontainers.image.source": "https://github.com/johnsonlee/graphite",
+          "org.opencontainers.image.title": "graphite-explore",
+          "org.opencontainers.image.url": "https://github.com/johnsonlee/graphite",
+          "org.opencontainers.image.version": "0.0.0-dev"
+        },
+        "OnBuild": null,
+        "OpenStdin": false,
+        "StdinOnce": false,
+        "Tty": false,
+        "User": "graphite:graphite",
+        "Volumes": {
+          "/data": {}
+        },
+        "WorkingDir": "/app"
+      },
+      "Container": "",
+      "ContainerConfig": null,
+      "Created": "2026-09-07T08:25:28.219077444+09:00",
+      "DockerVersion": "",
+      "GraphDriver": {
+        "Data": null,
+        "Name": "overlayfs"
+      },
+      "Id": "sha256:41817b529c1925a9184589dec988e83ff772e1c3e01e8d38bb5882ee460c9bca",
+      "Metadata": {
+        "LastTagTime": "2026-09-06T23:25:28.842941959Z"
+      },
+      "Os": "linux",
+      "Parent": "",
+      "RepoDigests": [
+        "graphite-signal-main@sha256:41817b529c1925a9184589dec988e83ff772e1c3e01e8d38bb5882ee460c9bca"
+      ],
+      "RepoTags": [
+        "graphite-signal-main:4e328b0"
+      ],
+      "RootFS": {
+        "Layers": [
+          "sha256:bf05b9274099653dfa3f182aeace25591e8de4215f625d8f58da1fba0e34036a",
+          "sha256:ed4a9a0601251d16996ea37e0ebef06d51d469bd9a82d4bf83783aa33963efd4",
+          "sha256:096f1c666bc404aa49494405e8a268d9500958cc1d4cae155a7ab48cd6b1f396",
+          "sha256:a045ae22939400b8a0a220ab3dd0747e783886e0dffe216b0323c23c1a983791",
+          "sha256:1b18f233273b12942b43ea3fa5cefa0127e0ed83358fc37dca9927be6a23e7da",
+          "sha256:822f7d5f9965a9dfc165203a8ec9dea9cf55d19b36f9db9b24a370d3de3eafba",
+          "sha256:9fd0c194d3e0913baa4f3442a8abadbdae6c56c3c72a30b3955d33b71184d482",
+          "sha256:eaafc1f71a017705cdf3d9caa6781d896bd886697e6a5abe2869e06d1155525e"
+        ],
+        "Type": "layers"
+      },
+      "Size": 125016181
+    },
+    "graphite-native-packaging-audit:arm64": {
+      "Architecture": "arm64",
+      "Author": "",
+      "Comment": "buildkit.dockerfile.v0",
+      "Config": {
+        "ArgsEscaped": true,
+        "AttachStderr": false,
+        "AttachStdin": false,
+        "AttachStdout": false,
+        "Cmd": [
+          "--id",
+          "app",
+          "/data"
+        ],
+        "Domainname": "",
+        "Entrypoint": [
+          "/app/graphite-server",
+          "serve"
+        ],
+        "Env": [
+          "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+          "HOME=/home/graphite"
+        ],
+        "ExposedPorts": {
+          "8080/tcp": {}
+        },
+        "Hostname": "",
+        "Image": "",
+        "Labels": {
+          "org.opencontainers.image.description": "Interactive web visualization for Graphite static analysis graphs",
+          "org.opencontainers.image.licenses": "Apache-2.0",
+          "org.opencontainers.image.source": "https://github.com/johnsonlee/graphite",
+          "org.opencontainers.image.title": "graphite-explore",
+          "org.opencontainers.image.url": "https://github.com/johnsonlee/graphite",
+          "org.opencontainers.image.version": "3.0.0-packaging-audit"
+        },
+        "OnBuild": null,
+        "OpenStdin": false,
+        "StdinOnce": false,
+        "StopSignal": "SIGTERM",
+        "Tty": false,
+        "User": "1000:1000",
+        "Volumes": {
+          "/data": {}
+        },
+        "WorkingDir": "/app"
+      },
+      "Container": "",
+      "ContainerConfig": null,
+      "Created": "2026-09-07T07:44:32.645743904+09:00",
+      "DockerVersion": "",
+      "GraphDriver": {
+        "Data": null,
+        "Name": "overlayfs"
+      },
+      "Id": "sha256:747ba6a4c0b9c7395b7a5c5ccfa701bfc66143b810eb8a88ba175129223b34e2",
+      "Metadata": {
+        "LastTagTime": "2026-09-06T22:44:33.023529308Z"
+      },
+      "Os": "linux",
+      "Parent": "",
+      "RepoDigests": [
+        "graphite-native-packaging-audit@sha256:747ba6a4c0b9c7395b7a5c5ccfa701bfc66143b810eb8a88ba175129223b34e2"
+      ],
+      "RepoTags": [
+        "graphite-native-packaging-audit:arm64"
+      ],
+      "RootFS": {
+        "Layers": [
+          "sha256:f03ad2b18251bfa559d86945b00683ce9a51caac9634c527b0da36ac061b89da",
+          "sha256:c434a59c143b3c023b5b2addb465adb6e2c23910791d10bb287268436d9c7aa4",
+          "sha256:22711645c3ae4c16dfd3275c3fcbde2caa5a1afa4e3a17113e2f0d9318729633",
+          "sha256:70d227dab1be81bb30a2af08d610693268575281f036e72b6472d34965a8e53b",
+          "sha256:6e9472a97557330e16f6d9b18f7eed387cb948ef591eea099dee2a8b1ae0ecdf",
+          "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef"
+        ],
+        "Type": "layers"
+      },
+      "Size": 6868380
+    },
+    "graphite-signal-native:after": {
+      "Architecture": "arm64",
+      "Author": "",
+      "Comment": "buildkit.dockerfile.v0",
+      "Config": {
+        "ArgsEscaped": true,
+        "AttachStderr": false,
+        "AttachStdin": false,
+        "AttachStdout": false,
+        "Cmd": [
+          "--id",
+          "app",
+          "/data"
+        ],
+        "Domainname": "",
+        "Entrypoint": [
+          "/app/graphite-server",
+          "serve"
+        ],
+        "Env": [
+          "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+          "HOME=/home/graphite"
+        ],
+        "ExposedPorts": {
+          "8080/tcp": {}
+        },
+        "Hostname": "",
+        "Image": "",
+        "Labels": {
+          "org.opencontainers.image.description": "Interactive web visualization for Graphite static analysis graphs",
+          "org.opencontainers.image.licenses": "Apache-2.0",
+          "org.opencontainers.image.source": "https://github.com/johnsonlee/graphite",
+          "org.opencontainers.image.title": "graphite-explore",
+          "org.opencontainers.image.url": "https://github.com/johnsonlee/graphite",
+          "org.opencontainers.image.version": "3.0.0-signal-audit"
+        },
+        "OnBuild": null,
+        "OpenStdin": false,
+        "StdinOnce": false,
+        "StopSignal": "SIGTERM",
+        "Tty": false,
+        "User": "1000:1000",
+        "Volumes": {
+          "/data": {}
+        },
+        "WorkingDir": "/app"
+      },
+      "Container": "",
+      "ContainerConfig": null,
+      "Created": "2026-09-07T08:26:43.558632949+09:00",
+      "DockerVersion": "",
+      "GraphDriver": {
+        "Data": null,
+        "Name": "overlayfs"
+      },
+      "Id": "sha256:7c3d7de3efdce19cb086448513b1b185b120d248a2587fb9bbc0843d56ff0178",
+      "Metadata": {
+        "LastTagTime": "2026-09-06T23:26:43.940072885Z"
+      },
+      "Os": "linux",
+      "Parent": "",
+      "RepoDigests": [
+        "graphite-signal-native@sha256:7c3d7de3efdce19cb086448513b1b185b120d248a2587fb9bbc0843d56ff0178"
+      ],
+      "RepoTags": [
+        "graphite-signal-native:after"
+      ],
+      "RootFS": {
+        "Layers": [
+          "sha256:f03ad2b18251bfa559d86945b00683ce9a51caac9634c527b0da36ac061b89da",
+          "sha256:c434a59c143b3c023b5b2addb465adb6e2c23910791d10bb287268436d9c7aa4",
+          "sha256:ac2923c844f81535420e59e332d35f3dc6b2c7844877bd9deb818a3aa459bfdb",
+          "sha256:5f0b1e41d99ab32d6c8ba050a3360c535b1828f998650b8ee9103eaaed836448",
+          "sha256:04d78625cf8640e1e2b10504e4a7c85f81336f36af2760b438545b171904a7ba",
+          "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef"
+        ],
+        "Type": "layers"
+      },
+      "Size": 8748423
+    },
+    "graphite-signal-native:final": {
+      "Architecture": "arm64",
+      "Author": "",
+      "Comment": "buildkit.dockerfile.v0",
+      "Config": {
+        "ArgsEscaped": true,
+        "AttachStderr": false,
+        "AttachStdin": false,
+        "AttachStdout": false,
+        "Cmd": [
+          "--id",
+          "app",
+          "/data"
+        ],
+        "Domainname": "",
+        "Entrypoint": [
+          "/app/graphite-server",
+          "serve"
+        ],
+        "Env": [
+          "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+          "HOME=/home/graphite"
+        ],
+        "ExposedPorts": {
+          "8080/tcp": {}
+        },
+        "Hostname": "",
+        "Image": "",
+        "Labels": {
+          "org.opencontainers.image.description": "Interactive web visualization for Graphite static analysis graphs",
+          "org.opencontainers.image.licenses": "Apache-2.0",
+          "org.opencontainers.image.source": "https://github.com/johnsonlee/graphite",
+          "org.opencontainers.image.title": "graphite-explore",
+          "org.opencontainers.image.url": "https://github.com/johnsonlee/graphite",
+          "org.opencontainers.image.version": "3.0.0-signal-audit"
+        },
+        "OnBuild": null,
+        "OpenStdin": false,
+        "StdinOnce": false,
+        "StopSignal": "SIGTERM",
+        "Tty": false,
+        "User": "1000:1000",
+        "Volumes": {
+          "/data": {}
+        },
+        "WorkingDir": "/app"
+      },
+      "Container": "",
+      "ContainerConfig": null,
+      "Created": "2026-09-07T08:34:43.058919544+09:00",
+      "DockerVersion": "",
+      "GraphDriver": {
+        "Data": null,
+        "Name": "overlayfs"
+      },
+      "Id": "sha256:f5db98be1699bac6e330802f5ff38bcf398a515494af9f0ffd5d32a5004a47a0",
+      "Metadata": {
+        "LastTagTime": "2026-09-06T23:34:43.418319147Z"
+      },
+      "Os": "linux",
+      "Parent": "",
+      "RepoDigests": [
+        "graphite-signal-native@sha256:f5db98be1699bac6e330802f5ff38bcf398a515494af9f0ffd5d32a5004a47a0"
+      ],
+      "RepoTags": [
+        "graphite-signal-native:final"
+      ],
+      "RootFS": {
+        "Layers": [
+          "sha256:f03ad2b18251bfa559d86945b00683ce9a51caac9634c527b0da36ac061b89da",
+          "sha256:c434a59c143b3c023b5b2addb465adb6e2c23910791d10bb287268436d9c7aa4",
+          "sha256:5404756efe0628a78f2f51bc218381bc209c0049c36c57da34210df7f88d17cb",
+          "sha256:040845778aa3b974f65078fea4f5ba373b4f1de84af2153d8bf224fe85f91ed2",
+          "sha256:0429a135573f1aec87688f3edc0c5601f43a59feca243a282e18f95d02432f52",
+          "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef"
+        ],
+        "Type": "layers"
+      },
+      "Size": 8749510
+    }
+  },
+  "goVersion": "go version go1.22.0 darwin/arm64",
+  "javaVersion": "openjdk version \"17.0.18\" 2026-01-20\nOpenJDK Runtime Environment Homebrew (build 17.0.18+0)\nOpenJDK 64-Bit Server VM Homebrew (build 17.0.18+0, mixed mode, sharing)\n",
+  "host": "Darwin johnsonlee.local 23.3.0 Darwin Kernel Version 23.3.0: Wed Dec 20 21:31:10 PST 2023; root:xnu-10002.81.5~7/RELEASE_ARM64_T6031 arm64 arm Darwin",
+  "completedExitCodes": {
+    "mainShadowJar": 0,
+    "finalGoRace": 0,
+    "finalGoVet": 0,
+    "beforeOracle": 0,
+    "finalProcessOracle": 0,
+    "finalDockerOracle": 0,
+    "normalProfileSaveFailure": 1
+  },
+  "performance": false,
+  "notes": [
+    "Final cleanup ordering unregisters signal delivery before joining listener also during panic unwinding; final native binaries and candidate checks were rebuilt after that adjustment.",
+    "Only macOS ARM64 CLI and Linux ARM64 Docker execution are claimed here.",
+    "No original freeze, root source, real64 fixture, remote release or commit was modified."
+  ]
+}

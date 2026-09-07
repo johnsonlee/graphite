@@ -53,7 +53,7 @@ def main():
         evidence.update(catalog=catalog,top=top,uiSHA256=hashlib.sha256(ui).hexdigest(),imageId=inspect['Image'],config=inspect['Config'],mounts=inspect['Mounts'])
         docker('stop','--time','15',container)
         after=json.loads(docker('inspect',container))[0]
-        assert after['State']['ExitCode']==0 and not after['State']['Running']
+        assert after['State']['ExitCode']==143 and not after['State']['Running']
         evidence.update(passed=True,exitCode=after['State']['ExitCode'],logs=docker('logs',container))
         args.output.write_text(json.dumps(evidence,indent=2)+'\n')
         print(json.dumps({'passed':True,'platform':args.platform}))

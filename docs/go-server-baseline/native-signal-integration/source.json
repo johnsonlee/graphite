@@ -1,0 +1,13 @@
+{
+  "base": "e6c3bd0c4a6f73ec85ce892bd173750dd7d62c0a",
+  "archive": "/tmp/graphite-go-signal-root-e6c3bd0c",
+  "files": {
+    "graphite-server/cmd/graphite-server/main.go": "b950573428f1d6c641d0e22796326b2717c6c3e96815074fe096393c5052290c",
+    "graphite-server/cmd/graphite-server/signals.go": "6726650c03ac95da4ff58f3fc4c3d03a3047a7fe347dfdb1441d51738374debe",
+    "graphite-server/cmd/graphite-server/signals_test.go": "cdba9de123d05c33e26b9f97fbdbed64cf3741792f54303cca686bf606ceae50",
+    "scripts/native/verify_native_wrapper.py": "2031a4384ac3a30364c6f46b66d554881b684b5bdb38b5a576eae85ceeaf868f",
+    "scripts/native/verify_docker.py": "72f7b710bbb1e779bfb7f7600c6c1bdd8abec86afc1fd3dc0318f45cd68793db"
+  },
+  "version": "3.0.0-root-signal-audit",
+  "providerManifestSHA256": "b83294d983a0bdcd5dc69da95a205f0bda65b3c39a1f3ba5609261acc09dc76c"
+}

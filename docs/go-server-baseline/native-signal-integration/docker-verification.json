@@ -1,0 +1,118 @@
+{
+  "runs": [
+    {
+      "command": [
+        "python3",
+        "scripts/native/release.py",
+        "--resources",
+        "/tmp/graphite-go-signal-root-e6c3bd0c/graphite-explore/build/generated/native-resources/graphite-native",
+        "--output",
+        "/tmp/graphite-go-signal-root-e6c3bd0c/build/root-signal-release",
+        "--version",
+        "3.0.0-root-signal-audit",
+        "--query-jar",
+        "/tmp/graphite-go-signal-root-e6c3bd0c/graphite-query/build/libs/graphite.jar",
+        "--explore-jar",
+        "/tmp/graphite-go-signal-root-e6c3bd0c/graphite-explore/build/libs/graphite-explore.jar"
+      ],
+      "exitCode": 0,
+      "log": "release-prepare.log"
+    },
+    {
+      "command": [
+        "python3",
+        "scripts/native/stage_docker.py",
+        "--assets",
+        "/tmp/graphite-go-signal-root-e6c3bd0c/build/root-signal-release",
+        "--version",
+        "3.0.0-root-signal-audit",
+        "--output",
+        "/tmp/graphite-go-signal-root-e6c3bd0c/native-runtime"
+      ],
+      "exitCode": 0,
+      "log": "docker-stage.log"
+    },
+    {
+      "command": [
+        "docker",
+        "build",
+        "--platform",
+        "linux/arm64",
+        "--build-arg",
+        "VERSION=3.0.0-root-signal-audit",
+        "-f",
+        "graphite-explore/Dockerfile",
+        "-t",
+        "graphite-root-signal-audit:arm64",
+        "."
+      ],
+      "exitCode": 0,
+      "log": "docker-build-arm64.log"
+    },
+    {
+      "command": [
+        "python3",
+        "-W",
+        "error::ResourceWarning",
+        "scripts/native/verify_docker.py",
+        "--image",
+        "graphite-root-signal-audit:arm64",
+        "--platform",
+        "linux/arm64",
+        "--output",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-signal-integration/docker-arm64.json"
+      ],
+      "exitCode": 0,
+      "log": "docker-arm64.log"
+    },
+    {
+      "command": [
+        "docker",
+        "build",
+        "--platform",
+        "linux/amd64",
+        "--build-arg",
+        "VERSION=3.0.0-root-signal-audit",
+        "-f",
+        "graphite-explore/Dockerfile",
+        "-t",
+        "graphite-root-signal-audit:amd64",
+        "."
+      ],
+      "exitCode": 0,
+      "log": "docker-build-amd64.log"
+    },
+    {
+      "command": [
+        "python3",
+        "-W",
+        "error::ResourceWarning",
+        "scripts/native/verify_docker.py",
+        "--image",
+        "graphite-root-signal-audit:amd64",
+        "--platform",
+        "linux/amd64",
+        "--output",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-signal-integration/docker-amd64.json"
+      ],
+      "exitCode": 0,
+      "log": "docker-amd64.log"
+    },
+    {
+      "command": [
+        "python3",
+        "-W",
+        "error::ResourceWarning",
+        "docs/go-server-baseline/native-signal-parity/verify_docker_signals.py",
+        "--candidate-only",
+        "--candidate-image",
+        "graphite-root-signal-audit:arm64",
+        "--output",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-signal-integration/docker-signals"
+      ],
+      "exitCode": 0,
+      "log": "docker-signals.log"
+    }
+  ],
+  "assets": "/tmp/graphite-go-signal-root-e6c3bd0c/build/root-signal-release"
+}

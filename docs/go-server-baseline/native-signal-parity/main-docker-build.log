@@ -1,0 +1,102 @@
+#0 building with "colima" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.28kB done
+#1 DONE 0.0s
+
+#2 resolve image config for docker-image://docker.io/docker/dockerfile:1.7
+#2 DONE 0.3s
+
+#3 docker-image://docker.io/docker/dockerfile:1.7@sha256:a57df69d0ea827fb7266491f2813635de6f17269be881f696fbfdf2d83dda33e
+#3 resolve docker.io/docker/dockerfile:1.7@sha256:a57df69d0ea827fb7266491f2813635de6f17269be881f696fbfdf2d83dda33e 0.0s done
+#3 CACHED
+
+#4 [internal] load metadata for docker.io/library/eclipse-temurin:17-jre-jammy
+#4 ...
+
+#5 [auth] library/eclipse-temurin:pull token for registry-1.docker.io
+#5 DONE 0.0s
+
+#4 [internal] load metadata for docker.io/library/eclipse-temurin:17-jre-jammy
+#4 DONE 2.3s
+
+#6 [internal] load .dockerignore
+#6 transferring context: 2B done
+#6 DONE 0.0s
+
+#7 [1/4] FROM docker.io/library/eclipse-temurin:17-jre-jammy@sha256:e17d77fb030dd4b642dc078d048a5fb9efcb3676ee20305d905949105a6ccd5a
+#7 resolve docker.io/library/eclipse-temurin:17-jre-jammy@sha256:e17d77fb030dd4b642dc078d048a5fb9efcb3676ee20305d905949105a6ccd5a 0.0s done
+#7 DONE 0.1s
+
+#8 [internal] load build context
+#8 transferring context: 37.11MB 0.1s done
+#8 DONE 0.1s
+
+#7 [1/4] FROM docker.io/library/eclipse-temurin:17-jre-jammy@sha256:e17d77fb030dd4b642dc078d048a5fb9efcb3676ee20305d905949105a6ccd5a
+#7 sha256:9315335689436874de3bf6af628f9cebb2cb16304c656840092ff6576ad0dee0 0B / 156B 0.2s
+#7 sha256:9f344795113c28668e59776c1edc4227dd1278aee1185231a067acb9f1b2dbb7 0B / 2.46kB 0.2s
+#7 sha256:89d270651baf2b553fdae46dce86c1f24094f5c918f29bab8f4dabbb179cfb45 0B / 16.04MB 0.2s
+#7 sha256:e817ba1e32677a16a6971c59bb9374b583fffb2255a0aac78488867e795098bb 0B / 47.00MB 0.2s
+#7 sha256:9315335689436874de3bf6af628f9cebb2cb16304c656840092ff6576ad0dee0 156B / 156B 0.3s done
+#7 sha256:9f344795113c28668e59776c1edc4227dd1278aee1185231a067acb9f1b2dbb7 2.46kB / 2.46kB 0.4s done
+#7 sha256:231032373bb3b10375f5940876c5c9a4a630f4e007e3aee895f8e1687b00295e 0B / 27.62MB 0.2s
+#7 sha256:89d270651baf2b553fdae46dce86c1f24094f5c918f29bab8f4dabbb179cfb45 2.10MB / 16.04MB 1.1s
+#7 sha256:e817ba1e32677a16a6971c59bb9374b583fffb2255a0aac78488867e795098bb 5.24MB / 47.00MB 1.2s
+#7 sha256:231032373bb3b10375f5940876c5c9a4a630f4e007e3aee895f8e1687b00295e 5.24MB / 27.62MB 0.8s
+#7 sha256:89d270651baf2b553fdae46dce86c1f24094f5c918f29bab8f4dabbb179cfb45 5.24MB / 16.04MB 1.4s
+#7 sha256:231032373bb3b10375f5940876c5c9a4a630f4e007e3aee895f8e1687b00295e 8.39MB / 27.62MB 0.9s
+#7 sha256:89d270651baf2b553fdae46dce86c1f24094f5c918f29bab8f4dabbb179cfb45 9.44MB / 16.04MB 1.5s
+#7 sha256:e817ba1e32677a16a6971c59bb9374b583fffb2255a0aac78488867e795098bb 9.44MB / 47.00MB 1.5s
+#7 sha256:231032373bb3b10375f5940876c5c9a4a630f4e007e3aee895f8e1687b00295e 10.49MB / 27.62MB 1.1s
+#7 sha256:89d270651baf2b553fdae46dce86c1f24094f5c918f29bab8f4dabbb179cfb45 12.58MB / 16.04MB 1.7s
+#7 sha256:e817ba1e32677a16a6971c59bb9374b583fffb2255a0aac78488867e795098bb 12.58MB / 47.00MB 1.7s
+#7 sha256:231032373bb3b10375f5940876c5c9a4a630f4e007e3aee895f8e1687b00295e 13.63MB / 27.62MB 1.2s
+#7 sha256:89d270651baf2b553fdae46dce86c1f24094f5c918f29bab8f4dabbb179cfb45 16.04MB / 16.04MB 1.8s done
+#7 sha256:231032373bb3b10375f5940876c5c9a4a630f4e007e3aee895f8e1687b00295e 15.73MB / 27.62MB 1.4s
+#7 sha256:e817ba1e32677a16a6971c59bb9374b583fffb2255a0aac78488867e795098bb 16.78MB / 47.00MB 2.0s
+#7 sha256:231032373bb3b10375f5940876c5c9a4a630f4e007e3aee895f8e1687b00295e 18.87MB / 27.62MB 1.5s
+#7 sha256:e817ba1e32677a16a6971c59bb9374b583fffb2255a0aac78488867e795098bb 19.92MB / 47.00MB 2.1s
+#7 sha256:e817ba1e32677a16a6971c59bb9374b583fffb2255a0aac78488867e795098bb 23.07MB / 47.00MB 2.3s
+#7 sha256:231032373bb3b10375f5940876c5c9a4a630f4e007e3aee895f8e1687b00295e 23.07MB / 27.62MB 1.8s
+#7 sha256:231032373bb3b10375f5940876c5c9a4a630f4e007e3aee895f8e1687b00295e 27.62MB / 27.62MB 2.0s done
+#7 extracting sha256:231032373bb3b10375f5940876c5c9a4a630f4e007e3aee895f8e1687b00295e
+#7 sha256:e817ba1e32677a16a6971c59bb9374b583fffb2255a0aac78488867e795098bb 30.41MB / 47.00MB 2.6s
+#7 extracting sha256:231032373bb3b10375f5940876c5c9a4a630f4e007e3aee895f8e1687b00295e 0.4s done
+#7 sha256:e817ba1e32677a16a6971c59bb9374b583fffb2255a0aac78488867e795098bb 45.09MB / 47.00MB 2.9s
+#7 extracting sha256:89d270651baf2b553fdae46dce86c1f24094f5c918f29bab8f4dabbb179cfb45
+#7 extracting sha256:89d270651baf2b553fdae46dce86c1f24094f5c918f29bab8f4dabbb179cfb45 0.3s done
+#7 sha256:e817ba1e32677a16a6971c59bb9374b583fffb2255a0aac78488867e795098bb 47.00MB / 47.00MB 3.0s done
+#7 extracting sha256:e817ba1e32677a16a6971c59bb9374b583fffb2255a0aac78488867e795098bb
+#7 extracting sha256:e817ba1e32677a16a6971c59bb9374b583fffb2255a0aac78488867e795098bb 0.4s done
+#7 DONE 3.5s
+
+#7 [1/4] FROM docker.io/library/eclipse-temurin:17-jre-jammy@sha256:e17d77fb030dd4b642dc078d048a5fb9efcb3676ee20305d905949105a6ccd5a
+#7 extracting sha256:9315335689436874de3bf6af628f9cebb2cb16304c656840092ff6576ad0dee0 done
+#7 extracting sha256:9f344795113c28668e59776c1edc4227dd1278aee1185231a067acb9f1b2dbb7 done
+#7 DONE 3.5s
+
+#9 [2/4] RUN groupadd --system --gid 1000 graphite  && useradd  --system --uid 1000 --gid graphite --home /home/graphite --create-home graphite
+#9 DONE 0.1s
+
+#10 [3/4] WORKDIR /app
+#10 DONE 0.0s
+
+#11 [4/4] COPY graphite.jar /app/graphite.jar
+#11 DONE 0.0s
+
+#12 exporting to image
+#12 exporting layers
+#12 exporting layers 0.6s done
+#12 exporting manifest sha256:6d08c6c7ae36dc6d11b8da386159ba63122c98ad31870096dfd6e134a9aedee8
+#12 exporting manifest sha256:6d08c6c7ae36dc6d11b8da386159ba63122c98ad31870096dfd6e134a9aedee8 done
+#12 exporting config sha256:6abb648525e94db782e853fbd9059ee23d84074b046b07bfff8eff007b2bd1b2 done
+#12 exporting attestation manifest sha256:358428d0a8d0d4b65542c6c068d976524ed3d5b8b01d9159c0bec0f1ded9a2e9 done
+#12 exporting manifest list sha256:41817b529c1925a9184589dec988e83ff772e1c3e01e8d38bb5882ee460c9bca done
+#12 naming to docker.io/library/graphite-signal-main:4e328b0 done
+#12 unpacking to docker.io/library/graphite-signal-main:4e328b0 0.1s done
+#12 DONE 0.8s
+
+View build details: docker-desktop://dashboard/build/colima/colima/txgdgbtd4j0sssfb1qm1jsdm6
+
+What's Next?
+  View a summary of image vulnerabilities and recommendations → docker scout quickview

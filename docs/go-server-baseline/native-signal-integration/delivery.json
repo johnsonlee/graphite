@@ -1,0 +1,38 @@
+{
+  "base": "de0608f075174833a06f31eb3214b3ba9c4e0917",
+  "requiredLayers": [
+    {
+      "name": "profiling except stale README hunk",
+      "sha256": "a57591f69291d97b192488d3c302eb0c6f73de791d446444cb3790f0b823e83b"
+    },
+    {
+      "name": "native release",
+      "sha256": "19b53e606d3faa4baa63ef2fe031d9a1ccce1876151da5743a7002c66d17e0bb"
+    }
+  ],
+  "rootApplyCheckHead": "e6c3bd0c4a6f73ec85ce892bd173750dd7d62c0a",
+  "patch": "/tmp/graphite-native-signal-delivery/signal-parity.patch",
+  "patchSHA256": "f8a3dc14ad32bdd6584d253118c38de0366d9a3741f2d810771e88c22e6f5a7e",
+  "patchBytes": 349890,
+  "manifest": "/tmp/graphite-go-signal-parity-de0608f0/docs/go-server-baseline/native-signal-parity/manifest.json",
+  "manifestSHA256": "b83294d983a0bdcd5dc69da95a205f0bda65b3c39a1f3ba5609261acc09dc76c",
+  "sourceFiles": [
+    "graphite-server/cmd/graphite-server/main.go",
+    "graphite-server/cmd/graphite-server/signals.go",
+    "graphite-server/cmd/graphite-server/signals_test.go",
+    "scripts/native/verify_native_wrapper.py",
+    "scripts/native/verify_docker.py"
+  ],
+  "baselineExistingFileSHA256": {
+    "graphite-server/cmd/graphite-server/main.go": "6d23940b6ab17a71eb2f9acb7f6b7eb148be7f82ef67bd7356147c11c1945006",
+    "scripts/native/verify_native_wrapper.py": "446eca37365d57f7f4f1de2862e3215042f9830d3395a3c7329f851aa278a5e5",
+    "scripts/native/verify_docker.py": "67da4c0e640400a1e0ad8363ae00ac1bd818256738a8babaea91420c8cd6e4f8"
+  },
+  "evidenceFiles": 64,
+  "checks": {
+    "manifest": "all file hashes match",
+    "reverseApply": "passed",
+    "rootForwardApply": "passed (read-only --check)"
+  },
+  "frozen": true
+}

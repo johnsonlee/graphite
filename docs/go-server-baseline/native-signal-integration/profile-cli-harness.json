@@ -1,0 +1,4 @@
+{
+  "originalSHA256": "1cd46e6b48e117cd0f3e75da1fb4a444c908e898ac1fd82e3a1a115c8f3153ef",
+  "adaptation": "Only actual server SIGTERM expected status 0 to143; all other original checks retained. Immutable prior runner/evidence untouched."
+}

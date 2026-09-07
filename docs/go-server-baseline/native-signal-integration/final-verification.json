@@ -1,0 +1,28 @@
+{
+  "passed": true,
+  "sourceFilesRechecked": {
+    "graphite-server/cmd/graphite-server/main.go": "b950573428f1d6c641d0e22796326b2717c6c3e96815074fe096393c5052290c",
+    "graphite-server/cmd/graphite-server/signals.go": "6726650c03ac95da4ff58f3fc4c3d03a3047a7fe347dfdb1441d51738374debe",
+    "graphite-server/cmd/graphite-server/signals_test.go": "cdba9de123d05c33e26b9f97fbdbed64cf3741792f54303cca686bf606ceae50",
+    "scripts/native/verify_native_wrapper.py": "2031a4384ac3a30364c6f46b66d554881b684b5bdb38b5a576eae85ceeaf868f",
+    "scripts/native/verify_docker.py": "72f7b710bbb1e779bfb7f7600c6c1bdd8abec86afc1fd3dc0318f45cd68793db"
+  },
+  "releaseDirectory": "/tmp/graphite-go-signal-root-e6c3bd0c/build/root-signal-release",
+  "artifactSHA256": {
+    "graphite-server-3.0.0-root-signal-audit-darwin-amd64.tar.gz": "5e55b135c07c9676665c80bc94b642be28317da1360bd68d1b06ce97c5008337",
+    "graphite-server-3.0.0-root-signal-audit-darwin-arm64.tar.gz": "b4ddf3a699fe3e3639c8844e480242ecc0f6bb274f0a953557dca7621f7b6a95",
+    "graphite-server-3.0.0-root-signal-audit-linux-amd64.tar.gz": "9804384b95de7c1cd1e14feed3a9ee91f16f5272b5340d8e0a3dbb1c899e35ba",
+    "graphite-server-3.0.0-root-signal-audit-linux-arm64.tar.gz": "1a168d4d926e3bfbdc5cadbe73588378104bc11c487912988e13e9eba5b4c3dc",
+    "graphite.jar": "7784d0164e5b03e649fe5d37f2fe19798f53eec43c0fc99cb28304f987701944",
+    "graphite-explore.jar": "577f837d09a16e324d9c3062ac784c132d0714976a7037b8e8d8ed332e1a6f24",
+    "SHA256SUMS": "12b4ff99742e1ede98663ef35591a49adc34872b4117ceada669aace80f2def1",
+    "graphite.rb": "b54d5760057b584c9d8e7b46f49476ea4bc573af0b26854b425c75770fe8cec0"
+  },
+  "binarySHA256": {
+    "darwin-amd64": "604fb79f462513222b77c610743141009ba3c715d479d78a929899d458be5b35",
+    "darwin-arm64": "1b10bdc20102f35231fb4165fb85aee309beb498d5d29665713d1df0565d876d",
+    "linux-amd64": "54c61c377635032471b4babbb9eba349ddd6dae01aa95a462ce6510776967283",
+    "linux-arm64": "b0be8e3504914ed3880510fbc660d6906e3174579a0669afb02ededd42cf08b8"
+  },
+  "allRecordedRunsExitZero": true
+}

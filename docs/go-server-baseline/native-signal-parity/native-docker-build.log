@@ -1,0 +1,54 @@
+#0 building with "colima" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.30kB done
+#1 DONE 0.0s
+
+#2 resolve image config for docker-image://docker.io/docker/dockerfile:1.7
+#2 DONE 0.7s
+
+#3 docker-image://docker.io/docker/dockerfile:1.7@sha256:a57df69d0ea827fb7266491f2813635de6f17269be881f696fbfdf2d83dda33e
+#3 resolve docker.io/docker/dockerfile:1.7@sha256:a57df69d0ea827fb7266491f2813635de6f17269be881f696fbfdf2d83dda33e 0.0s done
+#3 CACHED
+
+#4 [internal] load .dockerignore
+#4 transferring context: 2B done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 20.03MB 0.1s done
+#5 DONE 0.1s
+
+#6 [1/6] COPY native-runtime/rootfs/ /
+#6 CACHED
+
+#7 [2/6] COPY --chown=1000:1000 native-runtime/writable/ /
+#7 CACHED
+
+#8 [3/6] COPY --chmod=0755 native-runtime/linux-arm64/graphite-server /app/graphite-server
+#8 DONE 0.0s
+
+#9 [4/6] COPY native-runtime/linux-arm64/LICENSE native-runtime/linux-arm64/VERSION /app/
+#9 DONE 0.0s
+
+#10 [5/6] COPY native-runtime/linux-arm64/licenses/ /app/licenses/
+#10 DONE 0.0s
+
+#11 [6/6] WORKDIR /app
+#11 DONE 0.0s
+
+#12 exporting to image
+#12 exporting layers
+#12 exporting layers 0.4s done
+#12 exporting manifest sha256:5ed74f074c2fcb9ff2e89def095a2e6c6f76624deb5ceaf4c8162d9dfdd6e613 done
+#12 exporting config sha256:6012358ced892b7b60e19e5309fcd1a695de1df0e3b1af95934a99be31c1c401 done
+#12 exporting attestation manifest sha256:42d61ca8198b5b0e3029964acd3680b017c5d85b4804da52ac4f4513047b3716 done
+#12 exporting manifest list sha256:7c3d7de3efdce19cb086448513b1b185b120d248a2587fb9bbc0843d56ff0178 done
+#12 naming to docker.io/library/graphite-signal-native:after done
+#12 unpacking to docker.io/library/graphite-signal-native:after 0.1s done
+#12 DONE 0.5s
+
+View build details: docker-desktop://dashboard/build/colima/colima/l4vwjzqt96hzn70m6ofl62986
+
+What's Next?
+  View a summary of image vulnerabilities and recommendations → docker scout quickview

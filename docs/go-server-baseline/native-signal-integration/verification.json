@@ -1,0 +1,40 @@
+{
+  "runs": [
+    {
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./..."
+      ],
+      "cwd": "/tmp/graphite-go-signal-root-e6c3bd0c/graphite-server",
+      "exitCode": 0,
+      "log": "race.log"
+    },
+    {
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "cwd": "/tmp/graphite-go-signal-root-e6c3bd0c/graphite-server",
+      "exitCode": 0,
+      "log": "vet.log"
+    },
+    {
+      "command": [
+        "./gradlew",
+        ":query:shadowJar",
+        ":explore:shadowJar",
+        ":query:installDist",
+        ":explore:installDist",
+        "--no-daemon",
+        "-Dorg.gradle.jvmargs=-Xmx2g",
+        "-Pversion=3.0.0-root-signal-audit"
+      ],
+      "cwd": "/tmp/graphite-go-signal-root-e6c3bd0c",
+      "exitCode": 0,
+      "log": "gradle.log"
+    }
+  ]
+}
