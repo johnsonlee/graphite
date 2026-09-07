@@ -1,0 +1,920 @@
+{
+  "fileCount": 183,
+  "files": [
+    {
+      "path": "IndexLifecycleOracle.java",
+      "bytes": 4407,
+      "sha256": "27b4ce42d4c3c208b5d361c1f5355c12fd7cc29852fc3f8b533f2e5d4ae97ead"
+    },
+    {
+      "path": "README.md",
+      "bytes": 2801,
+      "sha256": "e11259e5f6f8840146d61870ed67e90c1b9771d7c9ccafa84432b0831ac23387"
+    },
+    {
+      "path": "classes/IndexLifecycleOracle.class",
+      "bytes": 9141,
+      "sha256": "cc6df2dd90e4a2a4290c68f355963d15dbccaf3d18f456cd48ee8aadd18b67c2"
+    },
+    {
+      "path": "command-0.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "command-1.log",
+      "bytes": 61,
+      "sha256": "bdfd31a73b407882372ea97c54bceabf3ac1584ffccc8842c80399c7ea94a626"
+    },
+    {
+      "path": "commands.json",
+      "bytes": 1161,
+      "sha256": "f0c6f8ea89300985d83523652b08ad6b4beb7d0ee108bdbfb90259339c4e7a7b"
+    },
+    {
+      "path": "fixture-before.json",
+      "bytes": 23104,
+      "sha256": "d58faeab81002e82f2843b341232fb07887dcb296970996dc7fffa71bd1a3cc2"
+    },
+    {
+      "path": "fixtures/lazy-bad-matched/forward.graph",
+      "bytes": 12,
+      "sha256": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4"
+    },
+    {
+      "path": "fixtures/lazy-bad-matched/forward.offsets",
+      "bytes": 35,
+      "sha256": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458"
+    },
+    {
+      "path": "fixtures/lazy-bad-matched/forward.properties",
+      "bytes": 620,
+      "sha256": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc"
+    },
+    {
+      "path": "fixtures/lazy-bad-matched/graph.callsite-string-content.identity",
+      "bytes": 32,
+      "sha256": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0"
+    },
+    {
+      "path": "fixtures/lazy-bad-matched/graph.callsite-string-index",
+      "bytes": 676,
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+    },
+    {
+      "path": "fixtures/lazy-bad-matched/graph.classoverview",
+      "bytes": 64,
+      "sha256": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea"
+    },
+    {
+      "path": "fixtures/lazy-bad-matched/graph.comparisons",
+      "bytes": 8,
+      "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8"
+    },
+    {
+      "path": "fixtures/lazy-bad-matched/graph.labelprefix",
+      "bytes": 368,
+      "sha256": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23"
+    },
+    {
+      "path": "fixtures/lazy-bad-matched/graph.labels",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "fixtures/lazy-bad-matched/graph.metadata",
+      "bytes": 36,
+      "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb"
+    },
+    {
+      "path": "fixtures/lazy-bad-matched/graph.nodedata",
+      "bytes": 220,
+      "sha256": "9727c0bb15ff09833a7d051df8eecca190e98f0338a045929d7f865d933318d8"
+    },
+    {
+      "path": "fixtures/lazy-bad-matched/graph.nodeindex",
+      "bytes": 60,
+      "sha256": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c"
+    },
+    {
+      "path": "fixtures/lazy-bad-matched/graph.nodeoffsets",
+      "bytes": 736,
+      "sha256": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf"
+    },
+    {
+      "path": "fixtures/lazy-bad-matched/graph.resources",
+      "bytes": 8,
+      "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17"
+    },
+    {
+      "path": "fixtures/lazy-bad-matched/graph.strings",
+      "bytes": 535,
+      "sha256": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b"
+    },
+    {
+      "path": "fixtures/lazy-bad-matched/graph.strings.identity",
+      "bytes": 32,
+      "sha256": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb"
+    },
+    {
+      "path": "fixtures/lazy-bad-matched/graph.typeindex",
+      "bytes": 232,
+      "sha256": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849"
+    },
+    {
+      "path": "fixtures/lazy-bad-missing/forward.graph",
+      "bytes": 12,
+      "sha256": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4"
+    },
+    {
+      "path": "fixtures/lazy-bad-missing/forward.offsets",
+      "bytes": 35,
+      "sha256": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458"
+    },
+    {
+      "path": "fixtures/lazy-bad-missing/forward.properties",
+      "bytes": 620,
+      "sha256": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc"
+    },
+    {
+      "path": "fixtures/lazy-bad-missing/graph.callsite-string-content.identity",
+      "bytes": 32,
+      "sha256": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0"
+    },
+    {
+      "path": "fixtures/lazy-bad-missing/graph.callsite-string-index",
+      "bytes": 676,
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+    },
+    {
+      "path": "fixtures/lazy-bad-missing/graph.classoverview",
+      "bytes": 64,
+      "sha256": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea"
+    },
+    {
+      "path": "fixtures/lazy-bad-missing/graph.comparisons",
+      "bytes": 8,
+      "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8"
+    },
+    {
+      "path": "fixtures/lazy-bad-missing/graph.labelprefix",
+      "bytes": 368,
+      "sha256": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23"
+    },
+    {
+      "path": "fixtures/lazy-bad-missing/graph.labels",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "fixtures/lazy-bad-missing/graph.metadata",
+      "bytes": 36,
+      "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb"
+    },
+    {
+      "path": "fixtures/lazy-bad-missing/graph.nodedata",
+      "bytes": 220,
+      "sha256": "9727c0bb15ff09833a7d051df8eecca190e98f0338a045929d7f865d933318d8"
+    },
+    {
+      "path": "fixtures/lazy-bad-missing/graph.nodeindex",
+      "bytes": 60,
+      "sha256": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c"
+    },
+    {
+      "path": "fixtures/lazy-bad-missing/graph.nodeoffsets",
+      "bytes": 736,
+      "sha256": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf"
+    },
+    {
+      "path": "fixtures/lazy-bad-missing/graph.resources",
+      "bytes": 8,
+      "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17"
+    },
+    {
+      "path": "fixtures/lazy-bad-missing/graph.strings",
+      "bytes": 535,
+      "sha256": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b"
+    },
+    {
+      "path": "fixtures/lazy-bad-missing/graph.strings.identity",
+      "bytes": 32,
+      "sha256": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb"
+    },
+    {
+      "path": "fixtures/lazy-bad-missing/graph.typeindex",
+      "bytes": 232,
+      "sha256": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849"
+    },
+    {
+      "path": "fixtures/lazy-clean/forward.graph",
+      "bytes": 12,
+      "sha256": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4"
+    },
+    {
+      "path": "fixtures/lazy-clean/forward.offsets",
+      "bytes": 35,
+      "sha256": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458"
+    },
+    {
+      "path": "fixtures/lazy-clean/forward.properties",
+      "bytes": 620,
+      "sha256": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc"
+    },
+    {
+      "path": "fixtures/lazy-clean/graph.callsite-string-content.identity",
+      "bytes": 32,
+      "sha256": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0"
+    },
+    {
+      "path": "fixtures/lazy-clean/graph.callsite-string-index",
+      "bytes": 676,
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+    },
+    {
+      "path": "fixtures/lazy-clean/graph.classoverview",
+      "bytes": 64,
+      "sha256": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea"
+    },
+    {
+      "path": "fixtures/lazy-clean/graph.comparisons",
+      "bytes": 8,
+      "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8"
+    },
+    {
+      "path": "fixtures/lazy-clean/graph.labelprefix",
+      "bytes": 368,
+      "sha256": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23"
+    },
+    {
+      "path": "fixtures/lazy-clean/graph.labels",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "fixtures/lazy-clean/graph.metadata",
+      "bytes": 36,
+      "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb"
+    },
+    {
+      "path": "fixtures/lazy-clean/graph.nodedata",
+      "bytes": 220,
+      "sha256": "f0a4462a820a7daa557704796992c79b9ddafcb80475aaafa020592cb4e19e1a"
+    },
+    {
+      "path": "fixtures/lazy-clean/graph.nodeindex",
+      "bytes": 60,
+      "sha256": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c"
+    },
+    {
+      "path": "fixtures/lazy-clean/graph.nodeoffsets",
+      "bytes": 736,
+      "sha256": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf"
+    },
+    {
+      "path": "fixtures/lazy-clean/graph.resources",
+      "bytes": 8,
+      "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17"
+    },
+    {
+      "path": "fixtures/lazy-clean/graph.strings",
+      "bytes": 535,
+      "sha256": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b"
+    },
+    {
+      "path": "fixtures/lazy-clean/graph.strings.identity",
+      "bytes": 32,
+      "sha256": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb"
+    },
+    {
+      "path": "fixtures/lazy-clean/graph.typeindex",
+      "bytes": 232,
+      "sha256": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849"
+    },
+    {
+      "path": "fixtures/lazy-corrupt/forward.graph",
+      "bytes": 12,
+      "sha256": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4"
+    },
+    {
+      "path": "fixtures/lazy-corrupt/forward.offsets",
+      "bytes": 35,
+      "sha256": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458"
+    },
+    {
+      "path": "fixtures/lazy-corrupt/forward.properties",
+      "bytes": 620,
+      "sha256": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc"
+    },
+    {
+      "path": "fixtures/lazy-corrupt/graph.callsite-string-content.identity",
+      "bytes": 32,
+      "sha256": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0"
+    },
+    {
+      "path": "fixtures/lazy-corrupt/graph.callsite-string-index",
+      "bytes": 676,
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+    },
+    {
+      "path": "fixtures/lazy-corrupt/graph.classoverview",
+      "bytes": 64,
+      "sha256": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea"
+    },
+    {
+      "path": "fixtures/lazy-corrupt/graph.comparisons",
+      "bytes": 8,
+      "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8"
+    },
+    {
+      "path": "fixtures/lazy-corrupt/graph.labelprefix",
+      "bytes": 368,
+      "sha256": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23"
+    },
+    {
+      "path": "fixtures/lazy-corrupt/graph.labels",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "fixtures/lazy-corrupt/graph.metadata",
+      "bytes": 36,
+      "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb"
+    },
+    {
+      "path": "fixtures/lazy-corrupt/graph.nodedata",
+      "bytes": 220,
+      "sha256": "f0a4462a820a7daa557704796992c79b9ddafcb80475aaafa020592cb4e19e1a"
+    },
+    {
+      "path": "fixtures/lazy-corrupt/graph.nodeindex",
+      "bytes": 60,
+      "sha256": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c"
+    },
+    {
+      "path": "fixtures/lazy-corrupt/graph.nodeoffsets",
+      "bytes": 736,
+      "sha256": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf"
+    },
+    {
+      "path": "fixtures/lazy-corrupt/graph.resources",
+      "bytes": 8,
+      "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17"
+    },
+    {
+      "path": "fixtures/lazy-corrupt/graph.strings",
+      "bytes": 535,
+      "sha256": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b"
+    },
+    {
+      "path": "fixtures/lazy-corrupt/graph.strings.identity",
+      "bytes": 32,
+      "sha256": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb"
+    },
+    {
+      "path": "fixtures/lazy-corrupt/graph.typeindex",
+      "bytes": 232,
+      "sha256": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849"
+    },
+    {
+      "path": "fixtures/lazy-missing/forward.graph",
+      "bytes": 12,
+      "sha256": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4"
+    },
+    {
+      "path": "fixtures/lazy-missing/forward.offsets",
+      "bytes": 35,
+      "sha256": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458"
+    },
+    {
+      "path": "fixtures/lazy-missing/forward.properties",
+      "bytes": 620,
+      "sha256": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc"
+    },
+    {
+      "path": "fixtures/lazy-missing/graph.callsite-string-content.identity",
+      "bytes": 32,
+      "sha256": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0"
+    },
+    {
+      "path": "fixtures/lazy-missing/graph.callsite-string-index",
+      "bytes": 676,
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+    },
+    {
+      "path": "fixtures/lazy-missing/graph.classoverview",
+      "bytes": 64,
+      "sha256": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea"
+    },
+    {
+      "path": "fixtures/lazy-missing/graph.comparisons",
+      "bytes": 8,
+      "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8"
+    },
+    {
+      "path": "fixtures/lazy-missing/graph.labelprefix",
+      "bytes": 368,
+      "sha256": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23"
+    },
+    {
+      "path": "fixtures/lazy-missing/graph.labels",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "fixtures/lazy-missing/graph.metadata",
+      "bytes": 36,
+      "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb"
+    },
+    {
+      "path": "fixtures/lazy-missing/graph.nodedata",
+      "bytes": 220,
+      "sha256": "f0a4462a820a7daa557704796992c79b9ddafcb80475aaafa020592cb4e19e1a"
+    },
+    {
+      "path": "fixtures/lazy-missing/graph.nodeindex",
+      "bytes": 60,
+      "sha256": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c"
+    },
+    {
+      "path": "fixtures/lazy-missing/graph.nodeoffsets",
+      "bytes": 736,
+      "sha256": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf"
+    },
+    {
+      "path": "fixtures/lazy-missing/graph.resources",
+      "bytes": 8,
+      "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17"
+    },
+    {
+      "path": "fixtures/lazy-missing/graph.strings",
+      "bytes": 535,
+      "sha256": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b"
+    },
+    {
+      "path": "fixtures/lazy-missing/graph.strings.identity",
+      "bytes": 32,
+      "sha256": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb"
+    },
+    {
+      "path": "fixtures/lazy-missing/graph.typeindex",
+      "bytes": 232,
+      "sha256": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849"
+    },
+    {
+      "path": "fixtures/startup-bad-matched/forward.graph",
+      "bytes": 12,
+      "sha256": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4"
+    },
+    {
+      "path": "fixtures/startup-bad-matched/forward.offsets",
+      "bytes": 35,
+      "sha256": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458"
+    },
+    {
+      "path": "fixtures/startup-bad-matched/forward.properties",
+      "bytes": 620,
+      "sha256": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc"
+    },
+    {
+      "path": "fixtures/startup-bad-matched/graph.callsite-string-content.identity",
+      "bytes": 32,
+      "sha256": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0"
+    },
+    {
+      "path": "fixtures/startup-bad-matched/graph.callsite-string-index",
+      "bytes": 676,
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+    },
+    {
+      "path": "fixtures/startup-bad-matched/graph.classoverview",
+      "bytes": 64,
+      "sha256": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea"
+    },
+    {
+      "path": "fixtures/startup-bad-matched/graph.comparisons",
+      "bytes": 8,
+      "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8"
+    },
+    {
+      "path": "fixtures/startup-bad-matched/graph.labelprefix",
+      "bytes": 368,
+      "sha256": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23"
+    },
+    {
+      "path": "fixtures/startup-bad-matched/graph.labels",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "fixtures/startup-bad-matched/graph.metadata",
+      "bytes": 36,
+      "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb"
+    },
+    {
+      "path": "fixtures/startup-bad-matched/graph.nodedata",
+      "bytes": 220,
+      "sha256": "9727c0bb15ff09833a7d051df8eecca190e98f0338a045929d7f865d933318d8"
+    },
+    {
+      "path": "fixtures/startup-bad-matched/graph.nodeindex",
+      "bytes": 60,
+      "sha256": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c"
+    },
+    {
+      "path": "fixtures/startup-bad-matched/graph.nodeoffsets",
+      "bytes": 736,
+      "sha256": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf"
+    },
+    {
+      "path": "fixtures/startup-bad-matched/graph.resources",
+      "bytes": 8,
+      "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17"
+    },
+    {
+      "path": "fixtures/startup-bad-matched/graph.strings",
+      "bytes": 535,
+      "sha256": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b"
+    },
+    {
+      "path": "fixtures/startup-bad-matched/graph.strings.identity",
+      "bytes": 32,
+      "sha256": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb"
+    },
+    {
+      "path": "fixtures/startup-bad-matched/graph.typeindex",
+      "bytes": 232,
+      "sha256": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849"
+    },
+    {
+      "path": "fixtures/startup-bad-missing/forward.graph",
+      "bytes": 12,
+      "sha256": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4"
+    },
+    {
+      "path": "fixtures/startup-bad-missing/forward.offsets",
+      "bytes": 35,
+      "sha256": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458"
+    },
+    {
+      "path": "fixtures/startup-bad-missing/forward.properties",
+      "bytes": 620,
+      "sha256": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc"
+    },
+    {
+      "path": "fixtures/startup-bad-missing/graph.callsite-string-content.identity",
+      "bytes": 32,
+      "sha256": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0"
+    },
+    {
+      "path": "fixtures/startup-bad-missing/graph.callsite-string-index",
+      "bytes": 676,
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+    },
+    {
+      "path": "fixtures/startup-bad-missing/graph.classoverview",
+      "bytes": 64,
+      "sha256": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea"
+    },
+    {
+      "path": "fixtures/startup-bad-missing/graph.comparisons",
+      "bytes": 8,
+      "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8"
+    },
+    {
+      "path": "fixtures/startup-bad-missing/graph.labelprefix",
+      "bytes": 368,
+      "sha256": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23"
+    },
+    {
+      "path": "fixtures/startup-bad-missing/graph.labels",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "fixtures/startup-bad-missing/graph.metadata",
+      "bytes": 36,
+      "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb"
+    },
+    {
+      "path": "fixtures/startup-bad-missing/graph.nodedata",
+      "bytes": 220,
+      "sha256": "9727c0bb15ff09833a7d051df8eecca190e98f0338a045929d7f865d933318d8"
+    },
+    {
+      "path": "fixtures/startup-bad-missing/graph.nodeindex",
+      "bytes": 60,
+      "sha256": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c"
+    },
+    {
+      "path": "fixtures/startup-bad-missing/graph.nodeoffsets",
+      "bytes": 736,
+      "sha256": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf"
+    },
+    {
+      "path": "fixtures/startup-bad-missing/graph.resources",
+      "bytes": 8,
+      "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17"
+    },
+    {
+      "path": "fixtures/startup-bad-missing/graph.strings",
+      "bytes": 535,
+      "sha256": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b"
+    },
+    {
+      "path": "fixtures/startup-bad-missing/graph.strings.identity",
+      "bytes": 32,
+      "sha256": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb"
+    },
+    {
+      "path": "fixtures/startup-bad-missing/graph.typeindex",
+      "bytes": 232,
+      "sha256": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849"
+    },
+    {
+      "path": "fixtures/startup-clean/forward.graph",
+      "bytes": 12,
+      "sha256": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4"
+    },
+    {
+      "path": "fixtures/startup-clean/forward.offsets",
+      "bytes": 35,
+      "sha256": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458"
+    },
+    {
+      "path": "fixtures/startup-clean/forward.properties",
+      "bytes": 620,
+      "sha256": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc"
+    },
+    {
+      "path": "fixtures/startup-clean/graph.callsite-string-content.identity",
+      "bytes": 32,
+      "sha256": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0"
+    },
+    {
+      "path": "fixtures/startup-clean/graph.callsite-string-index",
+      "bytes": 676,
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+    },
+    {
+      "path": "fixtures/startup-clean/graph.classoverview",
+      "bytes": 64,
+      "sha256": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea"
+    },
+    {
+      "path": "fixtures/startup-clean/graph.comparisons",
+      "bytes": 8,
+      "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8"
+    },
+    {
+      "path": "fixtures/startup-clean/graph.labelprefix",
+      "bytes": 368,
+      "sha256": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23"
+    },
+    {
+      "path": "fixtures/startup-clean/graph.labels",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "fixtures/startup-clean/graph.metadata",
+      "bytes": 36,
+      "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb"
+    },
+    {
+      "path": "fixtures/startup-clean/graph.nodedata",
+      "bytes": 220,
+      "sha256": "f0a4462a820a7daa557704796992c79b9ddafcb80475aaafa020592cb4e19e1a"
+    },
+    {
+      "path": "fixtures/startup-clean/graph.nodeindex",
+      "bytes": 60,
+      "sha256": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c"
+    },
+    {
+      "path": "fixtures/startup-clean/graph.nodeoffsets",
+      "bytes": 736,
+      "sha256": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf"
+    },
+    {
+      "path": "fixtures/startup-clean/graph.resources",
+      "bytes": 8,
+      "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17"
+    },
+    {
+      "path": "fixtures/startup-clean/graph.strings",
+      "bytes": 535,
+      "sha256": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b"
+    },
+    {
+      "path": "fixtures/startup-clean/graph.strings.identity",
+      "bytes": 32,
+      "sha256": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb"
+    },
+    {
+      "path": "fixtures/startup-clean/graph.typeindex",
+      "bytes": 232,
+      "sha256": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849"
+    },
+    {
+      "path": "fixtures/startup-corrupt/forward.graph",
+      "bytes": 12,
+      "sha256": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4"
+    },
+    {
+      "path": "fixtures/startup-corrupt/forward.offsets",
+      "bytes": 35,
+      "sha256": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458"
+    },
+    {
+      "path": "fixtures/startup-corrupt/forward.properties",
+      "bytes": 620,
+      "sha256": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc"
+    },
+    {
+      "path": "fixtures/startup-corrupt/graph.callsite-string-content.identity",
+      "bytes": 32,
+      "sha256": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0"
+    },
+    {
+      "path": "fixtures/startup-corrupt/graph.callsite-string-index",
+      "bytes": 676,
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+    },
+    {
+      "path": "fixtures/startup-corrupt/graph.classoverview",
+      "bytes": 64,
+      "sha256": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea"
+    },
+    {
+      "path": "fixtures/startup-corrupt/graph.comparisons",
+      "bytes": 8,
+      "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8"
+    },
+    {
+      "path": "fixtures/startup-corrupt/graph.labelprefix",
+      "bytes": 368,
+      "sha256": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23"
+    },
+    {
+      "path": "fixtures/startup-corrupt/graph.labels",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "fixtures/startup-corrupt/graph.metadata",
+      "bytes": 36,
+      "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb"
+    },
+    {
+      "path": "fixtures/startup-corrupt/graph.nodedata",
+      "bytes": 220,
+      "sha256": "f0a4462a820a7daa557704796992c79b9ddafcb80475aaafa020592cb4e19e1a"
+    },
+    {
+      "path": "fixtures/startup-corrupt/graph.nodeindex",
+      "bytes": 60,
+      "sha256": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c"
+    },
+    {
+      "path": "fixtures/startup-corrupt/graph.nodeoffsets",
+      "bytes": 736,
+      "sha256": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf"
+    },
+    {
+      "path": "fixtures/startup-corrupt/graph.resources",
+      "bytes": 8,
+      "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17"
+    },
+    {
+      "path": "fixtures/startup-corrupt/graph.strings",
+      "bytes": 535,
+      "sha256": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b"
+    },
+    {
+      "path": "fixtures/startup-corrupt/graph.strings.identity",
+      "bytes": 32,
+      "sha256": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb"
+    },
+    {
+      "path": "fixtures/startup-corrupt/graph.typeindex",
+      "bytes": 232,
+      "sha256": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849"
+    },
+    {
+      "path": "fixtures/startup-missing/forward.graph",
+      "bytes": 12,
+      "sha256": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4"
+    },
+    {
+      "path": "fixtures/startup-missing/forward.offsets",
+      "bytes": 35,
+      "sha256": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458"
+    },
+    {
+      "path": "fixtures/startup-missing/forward.properties",
+      "bytes": 620,
+      "sha256": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc"
+    },
+    {
+      "path": "fixtures/startup-missing/graph.callsite-string-content.identity",
+      "bytes": 32,
+      "sha256": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0"
+    },
+    {
+      "path": "fixtures/startup-missing/graph.callsite-string-index",
+      "bytes": 676,
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+    },
+    {
+      "path": "fixtures/startup-missing/graph.classoverview",
+      "bytes": 64,
+      "sha256": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea"
+    },
+    {
+      "path": "fixtures/startup-missing/graph.comparisons",
+      "bytes": 8,
+      "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8"
+    },
+    {
+      "path": "fixtures/startup-missing/graph.labelprefix",
+      "bytes": 368,
+      "sha256": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23"
+    },
+    {
+      "path": "fixtures/startup-missing/graph.labels",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "fixtures/startup-missing/graph.metadata",
+      "bytes": 36,
+      "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb"
+    },
+    {
+      "path": "fixtures/startup-missing/graph.nodedata",
+      "bytes": 220,
+      "sha256": "f0a4462a820a7daa557704796992c79b9ddafcb80475aaafa020592cb4e19e1a"
+    },
+    {
+      "path": "fixtures/startup-missing/graph.nodeindex",
+      "bytes": 60,
+      "sha256": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c"
+    },
+    {
+      "path": "fixtures/startup-missing/graph.nodeoffsets",
+      "bytes": 736,
+      "sha256": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf"
+    },
+    {
+      "path": "fixtures/startup-missing/graph.resources",
+      "bytes": 8,
+      "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17"
+    },
+    {
+      "path": "fixtures/startup-missing/graph.strings",
+      "bytes": 535,
+      "sha256": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b"
+    },
+    {
+      "path": "fixtures/startup-missing/graph.strings.identity",
+      "bytes": 32,
+      "sha256": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb"
+    },
+    {
+      "path": "fixtures/startup-missing/graph.typeindex",
+      "bytes": 232,
+      "sha256": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849"
+    },
+    {
+      "path": "main-source/GraphStore.kt",
+      "bytes": 53704,
+      "sha256": "2fe499f043740e7b70970a242613f760bf23577aef45d6fa612161e1d4d546ad"
+    },
+    {
+      "path": "main-source/MappedWebGraphBackedGraph.kt",
+      "bytes": 145024,
+      "sha256": "9133289c4382b59f4bc880f9de3d8aee0930d449a32f9a487893dabb56255cb7"
+    },
+    {
+      "path": "main.json",
+      "bytes": 70774,
+      "sha256": "8895109a7f305010d7a79458c0162df7c559ed4f97fbf35b2964c2c22f218943"
+    },
+    {
+      "path": "source-verification.json",
+      "bytes": 569,
+      "sha256": "3492fa8ee67edc688db6cf5cb900cb224f58136ce77e3ae406e037700029954b"
+    },
+    {
+      "path": "verification.json",
+      "bytes": 1724,
+      "sha256": "d0d1a8328bf25db8b3382e56428cd9a74bf70d379edd5e77f379290b3c90013a"
+    },
+    {
+      "path": "verify.py",
+      "bytes": 3541,
+      "sha256": "a135f8f8b8bf18a405d49952022122b6d45f0850baae66de4bff9aaeada5cc57"
+    }
+  ]
+}

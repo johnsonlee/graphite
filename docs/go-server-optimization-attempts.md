@@ -759,3 +759,21 @@ outputs, original/candidate captures, source/JAR authentication, independent
 verifier and complete test logs. This is a functional prerequisite, not
 Attempt20 or a performance result. Full1,267 real64 replay, index-state setup,
 per-case P95 and the final100%/10x gates remain incomplete.
+
+
+### 2026-09-08 — Functional follow-up: capture main index-state lifecycle
+
+Actual pinned-main capture now covers10 lazy/startup scenarios and70 operations
+using copied tiny persisted correctness fixtures:30 full query responses,
+30 clears and10 preparations. Existing/missing/corrupt sidecars and two bad-node
+variants show that clear may persist a built index first, and startup-prepared
+query behavior cannot be reconstructed from a retained-index flag alone. Both
+bad-node startup scenarios first succeed, then return the original decode error
+after clearing. These are main observations, not native parity claims.
+
+Independent checks verify20 successful responses/10 expected errors, empty
+inspected cache state after every clear, and exactly6 generated/replaced index
+files with all other fixture bytes unchanged. Captures, original file hashes,
+post-run fixtures, exact source/JAR hashes and verifier are retained in
+`docs/go-server-baseline/native-index-lifecycle/`. Native lifecycle APIs and
+full1,267-case real64 state replay remain unfinished; no performance was run.

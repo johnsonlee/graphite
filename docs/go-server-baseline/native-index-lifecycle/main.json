@@ -1,0 +1,2520 @@
+[
+  {
+    "startup": false,
+    "fixture": "clean",
+    "initialIndexFile": {
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+      "bytes": 676
+    },
+    "loaded": {
+      "trigrams": false,
+      "loadedFromPersistence": false,
+      "retained": false,
+      "rawProjectionCount": 0,
+      "mappedView": false,
+      "rawMatchCount": 0,
+      "mappedRangeCount": 0,
+      "indexFile": {
+        "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+        "bytes": 676
+      }
+    },
+    "steps": [
+      {
+        "action": "query",
+        "before": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "g"
+              ]
+            }
+          }
+        ],
+        "after": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "clear",
+        "before": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "after": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "query",
+        "before": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "g"
+              ]
+            }
+          }
+        ],
+        "after": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "prepare",
+        "before": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "prepared": true,
+        "after": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "clear",
+        "before": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "after": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "query",
+        "before": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "g"
+              ]
+            }
+          }
+        ],
+        "after": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "clear",
+        "before": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "after": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      }
+    ],
+    "finalIndexFile": {
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+      "bytes": 676
+    }
+  },
+  {
+    "startup": false,
+    "fixture": "missing",
+    "initialIndexFile": null,
+    "loaded": {
+      "trigrams": false,
+      "loadedFromPersistence": false,
+      "retained": false,
+      "rawProjectionCount": 0,
+      "mappedView": false,
+      "rawMatchCount": 0,
+      "mappedRangeCount": 0,
+      "indexFile": null
+    },
+    "steps": [
+      {
+        "action": "query",
+        "before": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": null
+        },
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "g"
+              ]
+            }
+          }
+        ],
+        "after": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": null
+        }
+      },
+      {
+        "action": "clear",
+        "before": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": null
+        },
+        "after": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": null
+        }
+      },
+      {
+        "action": "query",
+        "before": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": null
+        },
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "g"
+              ]
+            }
+          }
+        ],
+        "after": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": null
+        }
+      },
+      {
+        "action": "prepare",
+        "before": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": null
+        },
+        "prepared": true,
+        "after": {
+          "trigrams": true,
+          "loadedFromPersistence": false,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": null
+        }
+      },
+      {
+        "action": "clear",
+        "before": {
+          "trigrams": true,
+          "loadedFromPersistence": false,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": null
+        },
+        "after": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "query",
+        "before": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "g"
+              ]
+            }
+          }
+        ],
+        "after": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "clear",
+        "before": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "after": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      }
+    ],
+    "finalIndexFile": {
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+      "bytes": 676
+    }
+  },
+  {
+    "startup": false,
+    "fixture": "bad-matched",
+    "initialIndexFile": {
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+      "bytes": 676
+    },
+    "loaded": {
+      "trigrams": false,
+      "loadedFromPersistence": false,
+      "retained": false,
+      "rawProjectionCount": 0,
+      "mappedView": false,
+      "rawMatchCount": 0,
+      "mappedRangeCount": 0,
+      "indexFile": {
+        "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+        "bytes": 676
+      }
+    },
+    "steps": [
+      {
+        "action": "query",
+        "before": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)",
+        "after": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "clear",
+        "before": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "after": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "query",
+        "before": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)",
+        "after": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "prepare",
+        "before": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "prepared": true,
+        "after": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "clear",
+        "before": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "after": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "query",
+        "before": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)",
+        "after": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "clear",
+        "before": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "after": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      }
+    ],
+    "finalIndexFile": {
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+      "bytes": 676
+    }
+  },
+  {
+    "startup": false,
+    "fixture": "bad-missing",
+    "initialIndexFile": null,
+    "loaded": {
+      "trigrams": false,
+      "loadedFromPersistence": false,
+      "retained": false,
+      "rawProjectionCount": 0,
+      "mappedView": false,
+      "rawMatchCount": 0,
+      "mappedRangeCount": 0,
+      "indexFile": null
+    },
+    "steps": [
+      {
+        "action": "query",
+        "before": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": null
+        },
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)",
+        "after": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": null
+        }
+      },
+      {
+        "action": "clear",
+        "before": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": null
+        },
+        "after": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": null
+        }
+      },
+      {
+        "action": "query",
+        "before": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": null
+        },
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)",
+        "after": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": null
+        }
+      },
+      {
+        "action": "prepare",
+        "before": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": null
+        },
+        "prepared": true,
+        "after": {
+          "trigrams": true,
+          "loadedFromPersistence": false,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": null
+        }
+      },
+      {
+        "action": "clear",
+        "before": {
+          "trigrams": true,
+          "loadedFromPersistence": false,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": null
+        },
+        "after": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "query",
+        "before": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)",
+        "after": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "clear",
+        "before": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "after": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      }
+    ],
+    "finalIndexFile": {
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+      "bytes": 676
+    }
+  },
+  {
+    "startup": false,
+    "fixture": "corrupt",
+    "initialIndexFile": {
+      "sha256": "2c431971c1d66819d4f822575f20aae43360dd38f9ad8f2860c2741e586ef84c",
+      "bytes": 676
+    },
+    "loaded": {
+      "trigrams": false,
+      "loadedFromPersistence": false,
+      "retained": false,
+      "rawProjectionCount": 0,
+      "mappedView": false,
+      "rawMatchCount": 0,
+      "mappedRangeCount": 0,
+      "indexFile": {
+        "sha256": "2c431971c1d66819d4f822575f20aae43360dd38f9ad8f2860c2741e586ef84c",
+        "bytes": 676
+      }
+    },
+    "steps": [
+      {
+        "action": "query",
+        "before": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "2c431971c1d66819d4f822575f20aae43360dd38f9ad8f2860c2741e586ef84c",
+            "bytes": 676
+          }
+        },
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "g"
+              ]
+            }
+          }
+        ],
+        "after": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "2c431971c1d66819d4f822575f20aae43360dd38f9ad8f2860c2741e586ef84c",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "clear",
+        "before": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "2c431971c1d66819d4f822575f20aae43360dd38f9ad8f2860c2741e586ef84c",
+            "bytes": 676
+          }
+        },
+        "after": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "2c431971c1d66819d4f822575f20aae43360dd38f9ad8f2860c2741e586ef84c",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "query",
+        "before": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "2c431971c1d66819d4f822575f20aae43360dd38f9ad8f2860c2741e586ef84c",
+            "bytes": 676
+          }
+        },
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "g"
+              ]
+            }
+          }
+        ],
+        "after": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "2c431971c1d66819d4f822575f20aae43360dd38f9ad8f2860c2741e586ef84c",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "prepare",
+        "before": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "2c431971c1d66819d4f822575f20aae43360dd38f9ad8f2860c2741e586ef84c",
+            "bytes": 676
+          }
+        },
+        "prepared": true,
+        "after": {
+          "trigrams": true,
+          "loadedFromPersistence": false,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "2c431971c1d66819d4f822575f20aae43360dd38f9ad8f2860c2741e586ef84c",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "clear",
+        "before": {
+          "trigrams": true,
+          "loadedFromPersistence": false,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "2c431971c1d66819d4f822575f20aae43360dd38f9ad8f2860c2741e586ef84c",
+            "bytes": 676
+          }
+        },
+        "after": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "query",
+        "before": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "g"
+              ]
+            }
+          }
+        ],
+        "after": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "clear",
+        "before": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "after": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      }
+    ],
+    "finalIndexFile": {
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+      "bytes": 676
+    }
+  },
+  {
+    "startup": true,
+    "fixture": "clean",
+    "initialIndexFile": {
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+      "bytes": 676
+    },
+    "loaded": {
+      "trigrams": true,
+      "loadedFromPersistence": true,
+      "retained": true,
+      "rawProjectionCount": 0,
+      "mappedView": false,
+      "rawMatchCount": 0,
+      "mappedRangeCount": 0,
+      "indexFile": {
+        "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+        "bytes": 676
+      }
+    },
+    "steps": [
+      {
+        "action": "query",
+        "before": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "g"
+              ]
+            }
+          }
+        ],
+        "after": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "clear",
+        "before": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "after": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "query",
+        "before": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "g"
+              ]
+            }
+          }
+        ],
+        "after": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "prepare",
+        "before": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "prepared": true,
+        "after": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "clear",
+        "before": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "after": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "query",
+        "before": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "g"
+              ]
+            }
+          }
+        ],
+        "after": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "clear",
+        "before": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "after": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      }
+    ],
+    "finalIndexFile": {
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+      "bytes": 676
+    }
+  },
+  {
+    "startup": true,
+    "fixture": "missing",
+    "initialIndexFile": null,
+    "loaded": {
+      "trigrams": true,
+      "loadedFromPersistence": false,
+      "retained": true,
+      "rawProjectionCount": 0,
+      "mappedView": false,
+      "rawMatchCount": 0,
+      "mappedRangeCount": 0,
+      "indexFile": {
+        "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+        "bytes": 676
+      }
+    },
+    "steps": [
+      {
+        "action": "query",
+        "before": {
+          "trigrams": true,
+          "loadedFromPersistence": false,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "g"
+              ]
+            }
+          }
+        ],
+        "after": {
+          "trigrams": true,
+          "loadedFromPersistence": false,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "clear",
+        "before": {
+          "trigrams": true,
+          "loadedFromPersistence": false,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "after": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "query",
+        "before": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "g"
+              ]
+            }
+          }
+        ],
+        "after": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "prepare",
+        "before": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "prepared": true,
+        "after": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "clear",
+        "before": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "after": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "query",
+        "before": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "g"
+              ]
+            }
+          }
+        ],
+        "after": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "clear",
+        "before": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "after": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      }
+    ],
+    "finalIndexFile": {
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+      "bytes": 676
+    }
+  },
+  {
+    "startup": true,
+    "fixture": "bad-matched",
+    "initialIndexFile": {
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+      "bytes": 676
+    },
+    "loaded": {
+      "trigrams": true,
+      "loadedFromPersistence": true,
+      "retained": true,
+      "rawProjectionCount": 0,
+      "mappedView": false,
+      "rawMatchCount": 0,
+      "mappedRangeCount": 0,
+      "indexFile": {
+        "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+        "bytes": 676
+      }
+    },
+    "steps": [
+      {
+        "action": "query",
+        "before": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "g"
+              ]
+            }
+          }
+        ],
+        "after": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "clear",
+        "before": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "after": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "query",
+        "before": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)",
+        "after": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "prepare",
+        "before": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "prepared": true,
+        "after": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "clear",
+        "before": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "after": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "query",
+        "before": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)",
+        "after": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "clear",
+        "before": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "after": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      }
+    ],
+    "finalIndexFile": {
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+      "bytes": 676
+    }
+  },
+  {
+    "startup": true,
+    "fixture": "bad-missing",
+    "initialIndexFile": null,
+    "loaded": {
+      "trigrams": true,
+      "loadedFromPersistence": false,
+      "retained": true,
+      "rawProjectionCount": 0,
+      "mappedView": false,
+      "rawMatchCount": 0,
+      "mappedRangeCount": 0,
+      "indexFile": {
+        "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+        "bytes": 676
+      }
+    },
+    "steps": [
+      {
+        "action": "query",
+        "before": {
+          "trigrams": true,
+          "loadedFromPersistence": false,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "g"
+              ]
+            }
+          }
+        ],
+        "after": {
+          "trigrams": true,
+          "loadedFromPersistence": false,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "clear",
+        "before": {
+          "trigrams": true,
+          "loadedFromPersistence": false,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "after": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "query",
+        "before": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)",
+        "after": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "prepare",
+        "before": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "prepared": true,
+        "after": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "clear",
+        "before": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "after": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "query",
+        "before": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)",
+        "after": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "clear",
+        "before": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "after": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      }
+    ],
+    "finalIndexFile": {
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+      "bytes": 676
+    }
+  },
+  {
+    "startup": true,
+    "fixture": "corrupt",
+    "initialIndexFile": {
+      "sha256": "2c431971c1d66819d4f822575f20aae43360dd38f9ad8f2860c2741e586ef84c",
+      "bytes": 676
+    },
+    "loaded": {
+      "trigrams": true,
+      "loadedFromPersistence": false,
+      "retained": true,
+      "rawProjectionCount": 0,
+      "mappedView": false,
+      "rawMatchCount": 0,
+      "mappedRangeCount": 0,
+      "indexFile": {
+        "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+        "bytes": 676
+      }
+    },
+    "steps": [
+      {
+        "action": "query",
+        "before": {
+          "trigrams": true,
+          "loadedFromPersistence": false,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "g"
+              ]
+            }
+          }
+        ],
+        "after": {
+          "trigrams": true,
+          "loadedFromPersistence": false,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "clear",
+        "before": {
+          "trigrams": true,
+          "loadedFromPersistence": false,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "after": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "query",
+        "before": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "g"
+              ]
+            }
+          }
+        ],
+        "after": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "prepare",
+        "before": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "prepared": true,
+        "after": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "clear",
+        "before": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "after": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "query",
+        "before": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "g"
+              ]
+            }
+          }
+        ],
+        "after": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      },
+      {
+        "action": "clear",
+        "before": {
+          "trigrams": true,
+          "loadedFromPersistence": true,
+          "retained": true,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        },
+        "after": {
+          "trigrams": false,
+          "loadedFromPersistence": false,
+          "retained": false,
+          "rawProjectionCount": 0,
+          "mappedView": false,
+          "rawMatchCount": 0,
+          "mappedRangeCount": 0,
+          "indexFile": {
+            "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+            "bytes": 676
+          }
+        }
+      }
+    ],
+    "finalIndexFile": {
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+      "bytes": 676
+    }
+  }
+]

@@ -1,0 +1,666 @@
+[
+  {
+    "path": "lazy-bad-matched/forward.graph",
+    "sha256": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4"
+  },
+  {
+    "path": "lazy-bad-matched/forward.offsets",
+    "sha256": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458"
+  },
+  {
+    "path": "lazy-bad-matched/forward.properties",
+    "sha256": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc"
+  },
+  {
+    "path": "lazy-bad-matched/graph.callsite-string-content.identity",
+    "sha256": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0"
+  },
+  {
+    "path": "lazy-bad-matched/graph.callsite-string-index",
+    "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+  },
+  {
+    "path": "lazy-bad-matched/graph.classoverview",
+    "sha256": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea"
+  },
+  {
+    "path": "lazy-bad-matched/graph.comparisons",
+    "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8"
+  },
+  {
+    "path": "lazy-bad-matched/graph.labelprefix",
+    "sha256": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23"
+  },
+  {
+    "path": "lazy-bad-matched/graph.labels",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "lazy-bad-matched/graph.metadata",
+    "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb"
+  },
+  {
+    "path": "lazy-bad-matched/graph.nodedata",
+    "sha256": "9727c0bb15ff09833a7d051df8eecca190e98f0338a045929d7f865d933318d8"
+  },
+  {
+    "path": "lazy-bad-matched/graph.nodeindex",
+    "sha256": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c"
+  },
+  {
+    "path": "lazy-bad-matched/graph.nodeoffsets",
+    "sha256": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf"
+  },
+  {
+    "path": "lazy-bad-matched/graph.resources",
+    "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17"
+  },
+  {
+    "path": "lazy-bad-matched/graph.strings",
+    "sha256": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b"
+  },
+  {
+    "path": "lazy-bad-matched/graph.strings.identity",
+    "sha256": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb"
+  },
+  {
+    "path": "lazy-bad-matched/graph.typeindex",
+    "sha256": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849"
+  },
+  {
+    "path": "lazy-bad-missing/forward.graph",
+    "sha256": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4"
+  },
+  {
+    "path": "lazy-bad-missing/forward.offsets",
+    "sha256": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458"
+  },
+  {
+    "path": "lazy-bad-missing/forward.properties",
+    "sha256": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc"
+  },
+  {
+    "path": "lazy-bad-missing/graph.callsite-string-content.identity",
+    "sha256": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0"
+  },
+  {
+    "path": "lazy-bad-missing/graph.classoverview",
+    "sha256": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea"
+  },
+  {
+    "path": "lazy-bad-missing/graph.comparisons",
+    "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8"
+  },
+  {
+    "path": "lazy-bad-missing/graph.labelprefix",
+    "sha256": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23"
+  },
+  {
+    "path": "lazy-bad-missing/graph.labels",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "lazy-bad-missing/graph.metadata",
+    "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb"
+  },
+  {
+    "path": "lazy-bad-missing/graph.nodedata",
+    "sha256": "9727c0bb15ff09833a7d051df8eecca190e98f0338a045929d7f865d933318d8"
+  },
+  {
+    "path": "lazy-bad-missing/graph.nodeindex",
+    "sha256": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c"
+  },
+  {
+    "path": "lazy-bad-missing/graph.nodeoffsets",
+    "sha256": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf"
+  },
+  {
+    "path": "lazy-bad-missing/graph.resources",
+    "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17"
+  },
+  {
+    "path": "lazy-bad-missing/graph.strings",
+    "sha256": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b"
+  },
+  {
+    "path": "lazy-bad-missing/graph.strings.identity",
+    "sha256": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb"
+  },
+  {
+    "path": "lazy-bad-missing/graph.typeindex",
+    "sha256": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849"
+  },
+  {
+    "path": "lazy-clean/forward.graph",
+    "sha256": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4"
+  },
+  {
+    "path": "lazy-clean/forward.offsets",
+    "sha256": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458"
+  },
+  {
+    "path": "lazy-clean/forward.properties",
+    "sha256": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc"
+  },
+  {
+    "path": "lazy-clean/graph.callsite-string-content.identity",
+    "sha256": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0"
+  },
+  {
+    "path": "lazy-clean/graph.callsite-string-index",
+    "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+  },
+  {
+    "path": "lazy-clean/graph.classoverview",
+    "sha256": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea"
+  },
+  {
+    "path": "lazy-clean/graph.comparisons",
+    "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8"
+  },
+  {
+    "path": "lazy-clean/graph.labelprefix",
+    "sha256": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23"
+  },
+  {
+    "path": "lazy-clean/graph.labels",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "lazy-clean/graph.metadata",
+    "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb"
+  },
+  {
+    "path": "lazy-clean/graph.nodedata",
+    "sha256": "f0a4462a820a7daa557704796992c79b9ddafcb80475aaafa020592cb4e19e1a"
+  },
+  {
+    "path": "lazy-clean/graph.nodeindex",
+    "sha256": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c"
+  },
+  {
+    "path": "lazy-clean/graph.nodeoffsets",
+    "sha256": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf"
+  },
+  {
+    "path": "lazy-clean/graph.resources",
+    "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17"
+  },
+  {
+    "path": "lazy-clean/graph.strings",
+    "sha256": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b"
+  },
+  {
+    "path": "lazy-clean/graph.strings.identity",
+    "sha256": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb"
+  },
+  {
+    "path": "lazy-clean/graph.typeindex",
+    "sha256": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849"
+  },
+  {
+    "path": "lazy-corrupt/forward.graph",
+    "sha256": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4"
+  },
+  {
+    "path": "lazy-corrupt/forward.offsets",
+    "sha256": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458"
+  },
+  {
+    "path": "lazy-corrupt/forward.properties",
+    "sha256": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc"
+  },
+  {
+    "path": "lazy-corrupt/graph.callsite-string-content.identity",
+    "sha256": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0"
+  },
+  {
+    "path": "lazy-corrupt/graph.callsite-string-index",
+    "sha256": "2c431971c1d66819d4f822575f20aae43360dd38f9ad8f2860c2741e586ef84c"
+  },
+  {
+    "path": "lazy-corrupt/graph.classoverview",
+    "sha256": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea"
+  },
+  {
+    "path": "lazy-corrupt/graph.comparisons",
+    "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8"
+  },
+  {
+    "path": "lazy-corrupt/graph.labelprefix",
+    "sha256": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23"
+  },
+  {
+    "path": "lazy-corrupt/graph.labels",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "lazy-corrupt/graph.metadata",
+    "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb"
+  },
+  {
+    "path": "lazy-corrupt/graph.nodedata",
+    "sha256": "f0a4462a820a7daa557704796992c79b9ddafcb80475aaafa020592cb4e19e1a"
+  },
+  {
+    "path": "lazy-corrupt/graph.nodeindex",
+    "sha256": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c"
+  },
+  {
+    "path": "lazy-corrupt/graph.nodeoffsets",
+    "sha256": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf"
+  },
+  {
+    "path": "lazy-corrupt/graph.resources",
+    "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17"
+  },
+  {
+    "path": "lazy-corrupt/graph.strings",
+    "sha256": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b"
+  },
+  {
+    "path": "lazy-corrupt/graph.strings.identity",
+    "sha256": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb"
+  },
+  {
+    "path": "lazy-corrupt/graph.typeindex",
+    "sha256": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849"
+  },
+  {
+    "path": "lazy-missing/forward.graph",
+    "sha256": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4"
+  },
+  {
+    "path": "lazy-missing/forward.offsets",
+    "sha256": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458"
+  },
+  {
+    "path": "lazy-missing/forward.properties",
+    "sha256": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc"
+  },
+  {
+    "path": "lazy-missing/graph.callsite-string-content.identity",
+    "sha256": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0"
+  },
+  {
+    "path": "lazy-missing/graph.classoverview",
+    "sha256": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea"
+  },
+  {
+    "path": "lazy-missing/graph.comparisons",
+    "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8"
+  },
+  {
+    "path": "lazy-missing/graph.labelprefix",
+    "sha256": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23"
+  },
+  {
+    "path": "lazy-missing/graph.labels",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "lazy-missing/graph.metadata",
+    "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb"
+  },
+  {
+    "path": "lazy-missing/graph.nodedata",
+    "sha256": "f0a4462a820a7daa557704796992c79b9ddafcb80475aaafa020592cb4e19e1a"
+  },
+  {
+    "path": "lazy-missing/graph.nodeindex",
+    "sha256": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c"
+  },
+  {
+    "path": "lazy-missing/graph.nodeoffsets",
+    "sha256": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf"
+  },
+  {
+    "path": "lazy-missing/graph.resources",
+    "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17"
+  },
+  {
+    "path": "lazy-missing/graph.strings",
+    "sha256": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b"
+  },
+  {
+    "path": "lazy-missing/graph.strings.identity",
+    "sha256": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb"
+  },
+  {
+    "path": "lazy-missing/graph.typeindex",
+    "sha256": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849"
+  },
+  {
+    "path": "startup-bad-matched/forward.graph",
+    "sha256": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4"
+  },
+  {
+    "path": "startup-bad-matched/forward.offsets",
+    "sha256": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458"
+  },
+  {
+    "path": "startup-bad-matched/forward.properties",
+    "sha256": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc"
+  },
+  {
+    "path": "startup-bad-matched/graph.callsite-string-content.identity",
+    "sha256": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0"
+  },
+  {
+    "path": "startup-bad-matched/graph.callsite-string-index",
+    "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+  },
+  {
+    "path": "startup-bad-matched/graph.classoverview",
+    "sha256": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea"
+  },
+  {
+    "path": "startup-bad-matched/graph.comparisons",
+    "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8"
+  },
+  {
+    "path": "startup-bad-matched/graph.labelprefix",
+    "sha256": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23"
+  },
+  {
+    "path": "startup-bad-matched/graph.labels",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "startup-bad-matched/graph.metadata",
+    "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb"
+  },
+  {
+    "path": "startup-bad-matched/graph.nodedata",
+    "sha256": "9727c0bb15ff09833a7d051df8eecca190e98f0338a045929d7f865d933318d8"
+  },
+  {
+    "path": "startup-bad-matched/graph.nodeindex",
+    "sha256": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c"
+  },
+  {
+    "path": "startup-bad-matched/graph.nodeoffsets",
+    "sha256": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf"
+  },
+  {
+    "path": "startup-bad-matched/graph.resources",
+    "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17"
+  },
+  {
+    "path": "startup-bad-matched/graph.strings",
+    "sha256": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b"
+  },
+  {
+    "path": "startup-bad-matched/graph.strings.identity",
+    "sha256": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb"
+  },
+  {
+    "path": "startup-bad-matched/graph.typeindex",
+    "sha256": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849"
+  },
+  {
+    "path": "startup-bad-missing/forward.graph",
+    "sha256": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4"
+  },
+  {
+    "path": "startup-bad-missing/forward.offsets",
+    "sha256": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458"
+  },
+  {
+    "path": "startup-bad-missing/forward.properties",
+    "sha256": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc"
+  },
+  {
+    "path": "startup-bad-missing/graph.callsite-string-content.identity",
+    "sha256": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0"
+  },
+  {
+    "path": "startup-bad-missing/graph.classoverview",
+    "sha256": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea"
+  },
+  {
+    "path": "startup-bad-missing/graph.comparisons",
+    "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8"
+  },
+  {
+    "path": "startup-bad-missing/graph.labelprefix",
+    "sha256": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23"
+  },
+  {
+    "path": "startup-bad-missing/graph.labels",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "startup-bad-missing/graph.metadata",
+    "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb"
+  },
+  {
+    "path": "startup-bad-missing/graph.nodedata",
+    "sha256": "9727c0bb15ff09833a7d051df8eecca190e98f0338a045929d7f865d933318d8"
+  },
+  {
+    "path": "startup-bad-missing/graph.nodeindex",
+    "sha256": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c"
+  },
+  {
+    "path": "startup-bad-missing/graph.nodeoffsets",
+    "sha256": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf"
+  },
+  {
+    "path": "startup-bad-missing/graph.resources",
+    "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17"
+  },
+  {
+    "path": "startup-bad-missing/graph.strings",
+    "sha256": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b"
+  },
+  {
+    "path": "startup-bad-missing/graph.strings.identity",
+    "sha256": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb"
+  },
+  {
+    "path": "startup-bad-missing/graph.typeindex",
+    "sha256": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849"
+  },
+  {
+    "path": "startup-clean/forward.graph",
+    "sha256": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4"
+  },
+  {
+    "path": "startup-clean/forward.offsets",
+    "sha256": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458"
+  },
+  {
+    "path": "startup-clean/forward.properties",
+    "sha256": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc"
+  },
+  {
+    "path": "startup-clean/graph.callsite-string-content.identity",
+    "sha256": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0"
+  },
+  {
+    "path": "startup-clean/graph.callsite-string-index",
+    "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+  },
+  {
+    "path": "startup-clean/graph.classoverview",
+    "sha256": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea"
+  },
+  {
+    "path": "startup-clean/graph.comparisons",
+    "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8"
+  },
+  {
+    "path": "startup-clean/graph.labelprefix",
+    "sha256": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23"
+  },
+  {
+    "path": "startup-clean/graph.labels",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "startup-clean/graph.metadata",
+    "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb"
+  },
+  {
+    "path": "startup-clean/graph.nodedata",
+    "sha256": "f0a4462a820a7daa557704796992c79b9ddafcb80475aaafa020592cb4e19e1a"
+  },
+  {
+    "path": "startup-clean/graph.nodeindex",
+    "sha256": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c"
+  },
+  {
+    "path": "startup-clean/graph.nodeoffsets",
+    "sha256": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf"
+  },
+  {
+    "path": "startup-clean/graph.resources",
+    "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17"
+  },
+  {
+    "path": "startup-clean/graph.strings",
+    "sha256": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b"
+  },
+  {
+    "path": "startup-clean/graph.strings.identity",
+    "sha256": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb"
+  },
+  {
+    "path": "startup-clean/graph.typeindex",
+    "sha256": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849"
+  },
+  {
+    "path": "startup-corrupt/forward.graph",
+    "sha256": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4"
+  },
+  {
+    "path": "startup-corrupt/forward.offsets",
+    "sha256": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458"
+  },
+  {
+    "path": "startup-corrupt/forward.properties",
+    "sha256": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc"
+  },
+  {
+    "path": "startup-corrupt/graph.callsite-string-content.identity",
+    "sha256": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0"
+  },
+  {
+    "path": "startup-corrupt/graph.callsite-string-index",
+    "sha256": "2c431971c1d66819d4f822575f20aae43360dd38f9ad8f2860c2741e586ef84c"
+  },
+  {
+    "path": "startup-corrupt/graph.classoverview",
+    "sha256": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea"
+  },
+  {
+    "path": "startup-corrupt/graph.comparisons",
+    "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8"
+  },
+  {
+    "path": "startup-corrupt/graph.labelprefix",
+    "sha256": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23"
+  },
+  {
+    "path": "startup-corrupt/graph.labels",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "startup-corrupt/graph.metadata",
+    "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb"
+  },
+  {
+    "path": "startup-corrupt/graph.nodedata",
+    "sha256": "f0a4462a820a7daa557704796992c79b9ddafcb80475aaafa020592cb4e19e1a"
+  },
+  {
+    "path": "startup-corrupt/graph.nodeindex",
+    "sha256": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c"
+  },
+  {
+    "path": "startup-corrupt/graph.nodeoffsets",
+    "sha256": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf"
+  },
+  {
+    "path": "startup-corrupt/graph.resources",
+    "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17"
+  },
+  {
+    "path": "startup-corrupt/graph.strings",
+    "sha256": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b"
+  },
+  {
+    "path": "startup-corrupt/graph.strings.identity",
+    "sha256": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb"
+  },
+  {
+    "path": "startup-corrupt/graph.typeindex",
+    "sha256": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849"
+  },
+  {
+    "path": "startup-missing/forward.graph",
+    "sha256": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4"
+  },
+  {
+    "path": "startup-missing/forward.offsets",
+    "sha256": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458"
+  },
+  {
+    "path": "startup-missing/forward.properties",
+    "sha256": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc"
+  },
+  {
+    "path": "startup-missing/graph.callsite-string-content.identity",
+    "sha256": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0"
+  },
+  {
+    "path": "startup-missing/graph.classoverview",
+    "sha256": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea"
+  },
+  {
+    "path": "startup-missing/graph.comparisons",
+    "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8"
+  },
+  {
+    "path": "startup-missing/graph.labelprefix",
+    "sha256": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23"
+  },
+  {
+    "path": "startup-missing/graph.labels",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "startup-missing/graph.metadata",
+    "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb"
+  },
+  {
+    "path": "startup-missing/graph.nodedata",
+    "sha256": "f0a4462a820a7daa557704796992c79b9ddafcb80475aaafa020592cb4e19e1a"
+  },
+  {
+    "path": "startup-missing/graph.nodeindex",
+    "sha256": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c"
+  },
+  {
+    "path": "startup-missing/graph.nodeoffsets",
+    "sha256": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf"
+  },
+  {
+    "path": "startup-missing/graph.resources",
+    "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17"
+  },
+  {
+    "path": "startup-missing/graph.strings",
+    "sha256": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b"
+  },
+  {
+    "path": "startup-missing/graph.strings.identity",
+    "sha256": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb"
+  },
+  {
+    "path": "startup-missing/graph.typeindex",
+    "sha256": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849"
+  }
+]

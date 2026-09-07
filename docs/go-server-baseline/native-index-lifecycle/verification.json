@@ -1,0 +1,62 @@
+{
+  "passed": true,
+  "actualMainScenarios": 10,
+  "lifecycleSteps": 70,
+  "queryResponses": 30,
+  "successfulResponses": 20,
+  "expectedSourceErrors": 10,
+  "clears": 30,
+  "clearsPersistingBuiltIndexes": [
+    [
+      false,
+      "missing",
+      4
+    ],
+    [
+      false,
+      "bad-missing",
+      4
+    ],
+    [
+      false,
+      "corrupt",
+      4
+    ]
+  ],
+  "fixtureChanges": [
+    {
+      "path": "lazy-bad-missing/graph.callsite-string-index",
+      "before": null,
+      "after": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+    },
+    {
+      "path": "lazy-corrupt/graph.callsite-string-index",
+      "before": "2c431971c1d66819d4f822575f20aae43360dd38f9ad8f2860c2741e586ef84c",
+      "after": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+    },
+    {
+      "path": "lazy-missing/graph.callsite-string-index",
+      "before": null,
+      "after": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+    },
+    {
+      "path": "startup-bad-missing/graph.callsite-string-index",
+      "before": null,
+      "after": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+    },
+    {
+      "path": "startup-corrupt/graph.callsite-string-index",
+      "before": "2c431971c1d66819d4f822575f20aae43360dd38f9ad8f2860c2741e586ef84c",
+      "after": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+    },
+    {
+      "path": "startup-missing/graph.callsite-string-index",
+      "before": null,
+      "after": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+    }
+  ],
+  "allOtherFixtureFilesUnchanged": true,
+  "nativeParityProven": false,
+  "real64ReplayExecuted": false,
+  "performanceMeasured": false
+}
