@@ -1,0 +1,7 @@
+{
+  "base": "eebec091ae34bbfa9656d730b8f07ddc34967136",
+  "hypothesis": "Replace the two selected projection linear SID scans with the actual main loaded-table UTF16 binary search; no other query/task/index change.",
+  "cpuSampling": false,
+  "harnessSHA256": "f31d93baadc9b019fd4f5e42b84570997f599f4a869ad07c83a5939e5830e9a6",
+  "coTenancy": "Background correctness/compilation work; one64 performance process at a time. This is a diagnostic, not final P95."
+}

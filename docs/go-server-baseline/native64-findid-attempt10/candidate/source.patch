@@ -1,0 +1,38 @@
+diff --git a/graphite-server/internal/query/indexed_distinct.go b/graphite-server/internal/query/indexed_distinct.go
+index fa4013af..924e3178 100644
+--- a/graphite-server/internal/query/indexed_distinct.go
++++ b/graphite-server/internal/query/indexed_distinct.go
+@@ -541,16 +541,7 @@ func (e evaluator) distinctSourceHits(source Graph, plan *indexedDistinctPlan, s
+ 					valid = false
+ 					break
+ 				}
+-				sid := int32(-1)
+-				for j, s := range source.Store.Strings {
+-					if j&1023 == 0 {
+-						e.check()
+-					}
+-					if s == text {
+-						sid = int32(j)
+-						break
+-					}
+-				}
++				sid := e.distinctStringTableID(source.Store.Strings, text)
+ 				if sid < 0 {
+ 					valid = false
+ 					break
+@@ -787,14 +778,7 @@ func (e evaluator) distinctRawRows(source Graph, index *store.DistinctStringInde
+ 					valid = false
+ 					break
+ 				}
+-				sid := int32(-1)
+-				for j, s := range source.Store.Strings {
+-					e.check()
+-					if s == text {
+-						sid = int32(j)
+-						break
+-					}
+-				}
++				sid := e.distinctStringTableID(source.Store.Strings, text)
+ 				if sid < 0 {
+ 					valid = false
+ 					break

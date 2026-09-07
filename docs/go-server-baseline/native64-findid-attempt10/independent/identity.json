@@ -1,0 +1,34 @@
+{
+  "base": "eebec091ae34bbfa9656d730b8f07ddc34967136",
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "mainJar": "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+  "mainJarSHA256": "91c3a1d154ca96004c55df195d9f752e077cab3e33ca1570b2c88b872d9bc34d",
+  "mainFindIDSourceSHA256": "d7dd6b85cce88f9202ce1e2b4087a0e6ac07211d1e52758f4964be48f2df18a8",
+  "sourceFiles": {
+    "graphite-server/internal/query/indexed_distinct.go": "65ac7db259a4a0222e11b38fae640f2133a90aa30897a633bc990af48186ece0",
+    "graphite-server/internal/query/distinct_string_id.go": "27480147a00d731c9d5452e9a6113a93eeefc4c8c729b3c0f50e0e74f47b17b4",
+    "graphite-server/internal/query/distinct_string_id_integration_test.go": "73be8629c6af161a83325db847709fab217cd98d68153cf927645c359a71e753"
+  },
+  "control": {
+    "worktree": "/tmp/graphite-go-findid-control-eebec091",
+    "revision": "eebec091ae34bbfa9656d730b8f07ddc34967136",
+    "harnessSHA256": "13b30315364302ad5b7a2ae71b488626d22fb269d0d5e0e4bebc3bfa5bc0b383"
+  },
+  "javaClassArtifacts": {
+    "FindIdQueryOracle.class": "df1cc92a8fa8a6d04792d88e09de74c6ce37ecb0b069e4e0bccd59e2c9c2cefa",
+    "FindIdOracle.class": "165c69bb9e54dda5a3ee287c50fe119f6585eb4a0cd48075bb0d7040745adfa2"
+  },
+  "go": "go version go1.22.0 darwin/arm64",
+  "validation": {
+    "targetedRaceTopLevelTests": 5,
+    "actualMainMethodLookups": 45,
+    "newFullQueriesMainEqual": 2,
+    "oldControlDiffersOnBoth": true,
+    "moduleRace": true,
+    "moduleVet": true,
+    "originalCompleteOracleFilesEqual": 17
+  },
+  "performanceRun": false,
+  "productionEditedByReviewer": false,
+  "frozen": true
+}

@@ -1,0 +1,74 @@
+{
+  "files": 17,
+  "allCompleteEqual": true,
+  "checks": [
+    {
+      "file": "annotation-after-native.json",
+      "completeEqual": true
+    },
+    {
+      "file": "annotation-native.json",
+      "completeEqual": true
+    },
+    {
+      "file": "late-native.json",
+      "completeEqual": true
+    },
+    {
+      "file": "mixed-native.json",
+      "completeEqual": true
+    },
+    {
+      "file": "primary-eligibility.json",
+      "completeEqual": true
+    },
+    {
+      "file": "primary-native.json",
+      "completeEqual": true
+    },
+    {
+      "file": "required-missing-identity-native.json",
+      "completeEqual": true
+    },
+    {
+      "file": "required-missing-index-native.json",
+      "completeEqual": true
+    },
+    {
+      "file": "required-native.json",
+      "completeEqual": true
+    },
+    {
+      "file": "source-pairs-native.json",
+      "completeEqual": true
+    },
+    {
+      "file": "split-bad-callee-native.json",
+      "completeEqual": true
+    },
+    {
+      "file": "split-bad-count-native.json",
+      "completeEqual": true
+    },
+    {
+      "file": "split-bad-tag-native.json",
+      "completeEqual": true
+    },
+    {
+      "file": "split-clean-native.json",
+      "completeEqual": true
+    },
+    {
+      "file": "split-missing-index-native.json",
+      "completeEqual": true
+    },
+    {
+      "file": "supplementary-eligibility.json",
+      "completeEqual": true
+    },
+    {
+      "file": "supplementary-native.json",
+      "completeEqual": true
+    }
+  ]
+}

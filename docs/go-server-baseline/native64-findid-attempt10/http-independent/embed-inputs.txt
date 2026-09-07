@@ -1,0 +1,6 @@
+/private/tmp/graphite-go-findid-independent-eebec091/graphite-server/internal/profiling:report.html
+/private/tmp/graphite-go-findid-independent-eebec091/graphite-server/internal/javaregex:java17_advanced.json,java17_names.json.gz,java17_unicode.json
+/private/tmp/graphite-go-findid-independent-eebec091/graphite-server/internal/web:assets/app.js,assets/index.html,assets/style.css,assets/ui-state.js
+/opt/homebrew/Cellar/go/1.22.0/libexec/src/crypto/internal/nistec:p256_asm_table.bin
+/private/tmp/graphite-go-findid-independent-eebec091/graphite-server/internal/server:spec/openapi.json
+/private/tmp/graphite-go-findid-independent-eebec091/graphite-server/cmd/graphite-server:explore-usage.txt,serve-usage.txt

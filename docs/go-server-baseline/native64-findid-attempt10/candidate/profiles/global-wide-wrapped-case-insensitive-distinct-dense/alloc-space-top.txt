@@ -1,0 +1,23 @@
+File: profile-query
+Type: alloc_space
+Time: Sep 7, 2026 at 9:33am (KST)
+Showing nodes accounting for 5487.94MB, 98.76% of 5557.03MB total
+Dropped 55 nodes (cum <= 27.79MB)
+      flat  flat%   sum%        cum   cum%
+ 5184.22MB 93.29% 93.29%  5184.22MB 93.29%  os.ReadFile
+  102.50MB  1.84% 95.14%      151MB  2.72%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctAtomMatches
+   89.56MB  1.61% 96.75%    89.56MB  1.61%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*CallSiteStringIndex).Postings
+   48.50MB  0.87% 97.62%    48.50MB  0.87%  strings.(*Builder).grow
+      36MB  0.65% 98.27%       36MB  0.65%  github.com/johnsonlee/graphite/graphite-server/internal/javastring.UTF16
+      15MB  0.27% 98.54%       32MB  0.58%  github.com/johnsonlee/graphite/graphite-server/internal/query.key
+   11.65MB  0.21% 98.75%   229.61MB  4.13%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctRawRows
+    0.50MB 0.009% 98.76%  5525.82MB 99.44%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctSourceHits
+         0     0% 98.76%    48.50MB  0.87%  github.com/johnsonlee/graphite/graphite-server/internal/javastring.Case
+         0     0% 98.76%       36MB  0.65%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctStringTableID
+         0     0% 98.76%  5525.82MB 99.44%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.indexedDistinct.func4
+         0     0% 98.76%    48.50MB  0.87%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.javaCase (inline)
+         0     0% 98.76%       36MB  0.65%  github.com/johnsonlee/graphite/graphite-server/internal/query.javaUTF16 (inline)
+         0     0% 98.76%  5525.82MB 99.44%  github.com/johnsonlee/graphite/graphite-server/internal/query.runDistinctTasks[go.shape.map[string]bool].func1.1
+         0     0% 98.76%  5286.52MB 95.13%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).PrepareDistinctStringIndex
+         0     0% 98.76%  5184.22MB 93.29%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).prepareProjectionOffsets
+         0     0% 98.76%    48.50MB  0.87%  strings.(*Builder).Grow

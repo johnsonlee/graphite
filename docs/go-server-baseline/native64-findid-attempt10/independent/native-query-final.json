@@ -1,0 +1,52 @@
+[
+  {
+    "columns": [
+      "x"
+    ],
+    "fixture": "duplicate",
+    "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'a' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "g0",
+            "g1",
+            "g2",
+            "g3",
+            "g4",
+            "g5",
+            "g6",
+            "g7"
+          ]
+        },
+        "x": "aaa"
+      }
+    ],
+    "sources": 9
+  },
+  {
+    "columns": [
+      "x"
+    ],
+    "fixture": "unsorted",
+    "query": "MATCH (n:CallSite) WHERE n.caller_name CONTAINS 'a' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "g0",
+            "g1",
+            "g2",
+            "g3",
+            "g4",
+            "g5",
+            "g6",
+            "g7"
+          ]
+        },
+        "x": "aaa"
+      }
+    ],
+    "sources": 9
+  }
+]

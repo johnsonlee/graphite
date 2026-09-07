@@ -300,3 +300,28 @@ from this attempt were integrated.
 actual main tables/results, unintegrated candidate and completed independent
 checks. The initial design remains explicitly about the superseded first-SID
 contract; it is not relabelled as evidence for the binary-search replacement.
+
+
+## 2026-09-07 — Attempt 10: main loaded-table SID binary search
+
+Hypothesis: replace the two selected-projection linear SID scans at their
+original callsites with main's UTF16 binary search. This also corrects accepted
+serialized duplicate/unsorted-table lookup behavior. No cache, table sorting,
+new candidate set, task scheduling or Postings reordering is included.
+
+| Item | Evidence / status |
+|---|---|
+| Native base / candidate | `eebec091`; candidate adds two production files, separately verified tests and fixtures; exact patch/source/binary identities per run |
+| Fixture | All64 `/tmp/pr113-exp037-fixture.nXn4fg`; all1,152 files/10,338,207,518bytes and all catalogs reverified per process |
+| Correctness | 45 actual-main method lookups; two complete nine-source main queries fix previously extra g8 provenance; candidate and portable root integration full-module race/vet pass; all17 original oracle files unchanged (739/1048 overall,309 existing differences) |
+| HTTP | Independent clean command42/42 HTTP200, complete main bodies/checked headers, all64catalog, default60-second timeout; stopped afterward |
+| Dense first | Execution+marshal53.949→8.570s; process CPU260.150→43.156s; allocation5,770,530,048→5,804,032,136bytes |
+| Dense repeat | Execution+marshal54.051→8.770s; process CPU258.078→40.931s; allocation334,408,336→367,914,936bytes |
+| Allocation tradeoff | About33.5MB additional allocation per dense request for UTF16 comparison; not an allocation/GC improvement |
+| Controls | Prefix and ordinary do not use the helper; their small single-run timing changes are inconclusive. Complete five-query ordered outputs equal main and each other |
+| Decision | Keep functional correction and verified dense CPU/latency improvement over the regressed native base. Overall main-relative10x P95 and100% parity remain unproven |
+| Measurement limits | CPU sampling disabled; process CPU from getrusage. Single instrumented observations with background correctness/build work, not HTTP/P95 or peak RSS; one64 process at a time |
+
+`docs/go-server-baseline/native64-findid-attempt10/` retains all commands,
+identities, independent checks, complete responses and raw counters. The rejected
+lazy first-SID hypothesis remains separately preserved as Attempt9.

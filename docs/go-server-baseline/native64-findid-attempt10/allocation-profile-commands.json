@@ -1,0 +1,62 @@
+[
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-alloc_space",
+      "-nodecount=25",
+      "-base",
+      "docs/go-server-baseline/native64-findid-attempt10/base/profiles/global-wide-wrapped-case-insensitive-distinct-dense/heap-before.pprof",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-975q_6iv/profile-query",
+      "docs/go-server-baseline/native64-findid-attempt10/base/profiles/global-wide-wrapped-case-insensitive-distinct-dense/heap-after.pprof"
+    ],
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-alloc_space",
+      "-nodecount=25",
+      "-base",
+      "docs/go-server-baseline/native64-findid-attempt10/base/profiles/global-wide-wrapped-case-insensitive-distinct-dense-repeat/heap-before.pprof",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-975q_6iv/profile-query",
+      "docs/go-server-baseline/native64-findid-attempt10/base/profiles/global-wide-wrapped-case-insensitive-distinct-dense-repeat/heap-after.pprof"
+    ],
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-alloc_space",
+      "-nodecount=25",
+      "-base",
+      "docs/go-server-baseline/native64-findid-attempt10/candidate/profiles/global-wide-wrapped-case-insensitive-distinct-dense/heap-before.pprof",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-jo4chvgi/profile-query",
+      "docs/go-server-baseline/native64-findid-attempt10/candidate/profiles/global-wide-wrapped-case-insensitive-distinct-dense/heap-after.pprof"
+    ],
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-alloc_space",
+      "-nodecount=25",
+      "-base",
+      "docs/go-server-baseline/native64-findid-attempt10/candidate/profiles/global-wide-wrapped-case-insensitive-distinct-dense-repeat/heap-before.pprof",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-jo4chvgi/profile-query",
+      "docs/go-server-baseline/native64-findid-attempt10/candidate/profiles/global-wide-wrapped-case-insensitive-distinct-dense-repeat/heap-after.pprof"
+    ],
+    "exitCode": 0
+  }
+]

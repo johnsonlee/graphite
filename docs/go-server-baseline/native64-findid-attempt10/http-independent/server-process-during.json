@@ -1,0 +1,12 @@
+{
+  "command": [
+    "lsof",
+    "-nP",
+    "-iTCP:18859",
+    "-sTCP:LISTEN",
+    "-F",
+    "pc"
+  ],
+  "returncode": 0,
+  "output": "p27384\ncgraphite-server\nf69\n"
+}

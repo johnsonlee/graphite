@@ -1,0 +1,17 @@
+=== RUN   TestDistinctStringIDActualMainMethodOracle
+    distinct_string_id_integration_test.go:56: 45 actual main method lookups
+--- PASS: TestDistinctStringIDActualMainMethodOracle (0.00s)
+=== RUN   TestDistinctStringIDUTF16EqualityAndEmptyCancellation
+--- PASS: TestDistinctStringIDUTF16EqualityAndEmptyCancellation (0.00s)
+=== RUN   TestDistinctStringIDActualFullQueryMain
+=== RUN   TestDistinctStringIDActualFullQueryMain/duplicate
+=== RUN   TestDistinctStringIDActualFullQueryMain/unsorted
+--- PASS: TestDistinctStringIDActualFullQueryMain (0.03s)
+    --- PASS: TestDistinctStringIDActualFullQueryMain/duplicate (0.02s)
+    --- PASS: TestDistinctStringIDActualFullQueryMain/unsorted (0.01s)
+=== RUN   TestDistinctStringIDCloseAndOriginalPostingsBoundary
+--- PASS: TestDistinctStringIDCloseAndOriginalPostingsBoundary (0.00s)
+=== RUN   TestDistinctStringIDCancellationInsideSearch
+--- PASS: TestDistinctStringIDCancellationInsideSearch (0.00s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/query	1.302s

@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "shippingFilesVerified": 55,
+  "rootSourceManifestSHA256": "08687a5a3aba2184641312b5698560fffffa35949511d5dc0befc9142d20e3cd",
+  "independentHTTPManifestSHA256": "88927f83bcbc2adb3cac445b9d4b6814f5aa284064f9ea0bd84bad63c621d994",
+  "httpCases": 42,
+  "allStatus200AndCompleteBodiesAndHeadersEqual": true,
+  "real64PairedDiagnosticOutputs": 5,
+  "goalMainRelativeP95Proven": false
+}

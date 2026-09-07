@@ -1,0 +1,33 @@
+{
+  "purpose": "Independent 42-case all64 HTTP correctness freeze",
+  "base": "eebec091ae34bbfa9656d730b8f07ddc34967136",
+  "binarySHA256": "b9cb0f22ebe1b9cbd23562e75b67bf446dd044c377e19059a10d8f09dd5fcf02",
+  "sourceIdentitySHA256": "a18b3572cbd12b2cd344b10ed0fe7dfcc5a4277aa8f80c82051b6fa3f5049fbb",
+  "verificationSHA256": "e8c07ae872938449cf7445114a2482526fa89a242a3c00aaf7777ff7dea95f67",
+  "files": {
+    "README.md": "e222df534aa48e0a2212fdd1cbed4e4a120555d6effb53de6d8781d109881618",
+    "binary-build-info.txt": "8a59ddc0abfa22f85c01d2a1b2eaad465926c3b547861aa55c629b3804fe0397",
+    "embed-inputs.txt": "e43a36be381cee163696c89d539f0f0a4afce1ca3d472827ebacd7ae361f9a46",
+    "git-status.txt": "bc13fb76f7b7bda70de65c7d606c21003d09bdd3c781f6cb5f798a7aaadc1655",
+    "go-env.json": "8651a1138015caeb2f3c2f652258e9974327d060ee30c957a96829c85ea14f25",
+    "graphite-server": "b9cb0f22ebe1b9cbd23562e75b67bf446dd044c377e19059a10d8f09dd5fcf02",
+    "http/catalog.json": "71d1650cf7660ef3935f7b49c2012b90477b1ad61884333d548d385179d3ea84",
+    "http/identity.json": "fe4fa018e2aaee2d62d4a805ea1a560687195dd31c62805f5503e7e47c29777f",
+    "http/observations.json": "6b6c8b166aa9b2416546af863cc7f606322079648efabc15d7906873c0c6d6ea",
+    "http/observations.partial.json": "6b6c8b166aa9b2416546af863cc7f606322079648efabc15d7906873c0c6d6ea",
+    "http/server.log": "26b7c7fccf791bd1603dda3b67da3b9f52e54710a083365966720fbf82a252b1",
+    "http/summary.json": "e0ad6ef0f7dd622a67ad8c7f8e6f42496211e87f4b9ce58641775da5c64a8f03",
+    "inputs/config.json": "8b425fbc3249a7f47880dd1665d661f887429905606656787d129d9e4e25a9ba",
+    "inputs/distinct_string_id.go": "27480147a00d731c9d5452e9a6113a93eeefc4c8c729b3c0f50e0e74f47b17b4",
+    "inputs/frozen-main-observations.json": "a435e053ea81a1333b5d16d530d9c7534c9cb4ee06aeffc44b68a45dd16bddd8",
+    "inputs/http_parity.py": "502731ed3780cae40ba75489f126e4686e59794ae19fed67ede9c0740b8f3d06",
+    "inputs/indexed_distinct.go": "65ac7db259a4a0222e11b38fae640f2133a90aa30897a633bc990af48186ece0",
+    "inputs/replay-http.py": "2898864c437f9de6db061183e360de55c30ff9aa01575845b6bb4131985d5b93",
+    "replay-command.json": "2f40f4a35c4cbee8408d1ee712c0884642093124d8b828eafc39bee84c6807ca",
+    "replay.log": "9be71df9527c789578889d2c3a5071c072a6222d53531ca5259f5c5263d3efdf",
+    "server-process-during.json": "8e3933e6c3a0a0073bd2a924611f1065cc61a30b6183f13961470c5fdebef7c0",
+    "source-identity.json": "a18b3572cbd12b2cd344b10ed0fe7dfcc5a4277aa8f80c82051b6fa3f5049fbb",
+    "verification.json": "e8c07ae872938449cf7445114a2482526fa89a242a3c00aaf7777ff7dea95f67",
+    "verify.py": "6c5217a0b684b220c1a7161fdcd49bf486735ae3390826789654aeb9147d0b19"
+  }
+}
