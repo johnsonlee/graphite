@@ -1,0 +1,1388 @@
+{
+  "passed": true,
+  "actualMainResponseCount": 320,
+  "baselinePublicDifferences": 24,
+  "candidatePublicDifferences": 0,
+  "strictRecordDifferences": [
+    {
+      "count": 40,
+      "scoped": false,
+      "name": "ordered",
+      "repeat": 0
+    },
+    {
+      "count": 40,
+      "scoped": false,
+      "name": "ordered",
+      "repeat": 1
+    },
+    {
+      "count": 40,
+      "scoped": true,
+      "name": "ordered",
+      "repeat": 0
+    },
+    {
+      "count": 40,
+      "scoped": true,
+      "name": "ordered",
+      "repeat": 1
+    },
+    {
+      "count": 40,
+      "scoped": true,
+      "name": "and-route",
+      "repeat": 0
+    },
+    {
+      "count": 40,
+      "scoped": true,
+      "name": "and-route",
+      "repeat": 1
+    },
+    {
+      "count": 64,
+      "scoped": false,
+      "name": "ordered",
+      "repeat": 0
+    },
+    {
+      "count": 64,
+      "scoped": false,
+      "name": "ordered",
+      "repeat": 1
+    },
+    {
+      "count": 64,
+      "scoped": true,
+      "name": "ordered",
+      "repeat": 0
+    },
+    {
+      "count": 64,
+      "scoped": true,
+      "name": "ordered",
+      "repeat": 1
+    },
+    {
+      "count": 64,
+      "scoped": true,
+      "name": "and-route",
+      "repeat": 0
+    },
+    {
+      "count": 64,
+      "scoped": true,
+      "name": "and-route",
+      "repeat": 1
+    }
+  ],
+  "permittedCancellationStateLeaves": [
+    {
+      "count": 40,
+      "scoped": false,
+      "name": "ordered",
+      "repeat": 0,
+      "phase": "after",
+      "source": "g33",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g33"
+      },
+      "go": {
+        "id": "g33",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 40,
+      "scoped": false,
+      "name": "ordered",
+      "repeat": 0,
+      "phase": "after",
+      "source": "g34",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g34"
+      },
+      "go": {
+        "id": "g34",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 40,
+      "scoped": false,
+      "name": "ordered",
+      "repeat": 0,
+      "phase": "after",
+      "source": "g36",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g36"
+      },
+      "go": {
+        "id": "g36",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 40,
+      "scoped": false,
+      "name": "ordered",
+      "repeat": 0,
+      "phase": "after",
+      "source": "g37",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g37"
+      },
+      "go": {
+        "id": "g37",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 40,
+      "scoped": false,
+      "name": "ordered",
+      "repeat": 0,
+      "phase": "after",
+      "source": "g38",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g38"
+      },
+      "go": {
+        "id": "g38",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 40,
+      "scoped": false,
+      "name": "ordered",
+      "repeat": 1,
+      "phase": "before",
+      "source": "g33",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g33"
+      },
+      "go": {
+        "id": "g33",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 40,
+      "scoped": false,
+      "name": "ordered",
+      "repeat": 1,
+      "phase": "after",
+      "source": "g33",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g33"
+      },
+      "go": {
+        "id": "g33",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 40,
+      "scoped": false,
+      "name": "ordered",
+      "repeat": 1,
+      "phase": "before",
+      "source": "g34",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g34"
+      },
+      "go": {
+        "id": "g34",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 40,
+      "scoped": false,
+      "name": "ordered",
+      "repeat": 1,
+      "phase": "after",
+      "source": "g34",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g34"
+      },
+      "go": {
+        "id": "g34",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 40,
+      "scoped": false,
+      "name": "ordered",
+      "repeat": 1,
+      "phase": "before",
+      "source": "g36",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g36"
+      },
+      "go": {
+        "id": "g36",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 40,
+      "scoped": false,
+      "name": "ordered",
+      "repeat": 1,
+      "phase": "after",
+      "source": "g36",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g36"
+      },
+      "go": {
+        "id": "g36",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 40,
+      "scoped": false,
+      "name": "ordered",
+      "repeat": 1,
+      "phase": "before",
+      "source": "g37",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g37"
+      },
+      "go": {
+        "id": "g37",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 40,
+      "scoped": false,
+      "name": "ordered",
+      "repeat": 1,
+      "phase": "after",
+      "source": "g37",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g37"
+      },
+      "go": {
+        "id": "g37",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 40,
+      "scoped": false,
+      "name": "ordered",
+      "repeat": 1,
+      "phase": "before",
+      "source": "g38",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g38"
+      },
+      "go": {
+        "id": "g38",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 40,
+      "scoped": false,
+      "name": "ordered",
+      "repeat": 1,
+      "phase": "after",
+      "source": "g38",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g38"
+      },
+      "go": {
+        "id": "g38",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 40,
+      "scoped": true,
+      "name": "ordered",
+      "repeat": 0,
+      "phase": "after",
+      "source": "g32",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g32"
+      },
+      "go": {
+        "id": "g32",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 40,
+      "scoped": true,
+      "name": "ordered",
+      "repeat": 0,
+      "phase": "after",
+      "source": "g34",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g34"
+      },
+      "go": {
+        "id": "g34",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 40,
+      "scoped": true,
+      "name": "ordered",
+      "repeat": 0,
+      "phase": "after",
+      "source": "g36",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g36"
+      },
+      "go": {
+        "id": "g36",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 40,
+      "scoped": true,
+      "name": "ordered",
+      "repeat": 1,
+      "phase": "before",
+      "source": "g32",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g32"
+      },
+      "go": {
+        "id": "g32",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 40,
+      "scoped": true,
+      "name": "ordered",
+      "repeat": 1,
+      "phase": "after",
+      "source": "g32",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g32"
+      },
+      "go": {
+        "id": "g32",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 40,
+      "scoped": true,
+      "name": "ordered",
+      "repeat": 1,
+      "phase": "before",
+      "source": "g34",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g34"
+      },
+      "go": {
+        "id": "g34",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 40,
+      "scoped": true,
+      "name": "ordered",
+      "repeat": 1,
+      "phase": "after",
+      "source": "g34",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g34"
+      },
+      "go": {
+        "id": "g34",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 40,
+      "scoped": true,
+      "name": "ordered",
+      "repeat": 1,
+      "phase": "before",
+      "source": "g36",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g36"
+      },
+      "go": {
+        "id": "g36",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 40,
+      "scoped": true,
+      "name": "ordered",
+      "repeat": 1,
+      "phase": "after",
+      "source": "g36",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g36"
+      },
+      "go": {
+        "id": "g36",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 40,
+      "scoped": true,
+      "name": "and-route",
+      "repeat": 0,
+      "phase": "after",
+      "source": "g34",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g34"
+      },
+      "go": {
+        "id": "g34",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 40,
+      "scoped": true,
+      "name": "and-route",
+      "repeat": 0,
+      "phase": "after",
+      "source": "g36",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g36"
+      },
+      "go": {
+        "id": "g36",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 40,
+      "scoped": true,
+      "name": "and-route",
+      "repeat": 1,
+      "phase": "before",
+      "source": "g34",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g34"
+      },
+      "go": {
+        "id": "g34",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 40,
+      "scoped": true,
+      "name": "and-route",
+      "repeat": 1,
+      "phase": "after",
+      "source": "g34",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g34"
+      },
+      "go": {
+        "id": "g34",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 40,
+      "scoped": true,
+      "name": "and-route",
+      "repeat": 1,
+      "phase": "before",
+      "source": "g36",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g36"
+      },
+      "go": {
+        "id": "g36",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 40,
+      "scoped": true,
+      "name": "and-route",
+      "repeat": 1,
+      "phase": "after",
+      "source": "g36",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g36"
+      },
+      "go": {
+        "id": "g36",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 64,
+      "scoped": false,
+      "name": "ordered",
+      "repeat": 0,
+      "phase": "after",
+      "source": "g56",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g56"
+      },
+      "go": {
+        "id": "g56",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 64,
+      "scoped": false,
+      "name": "ordered",
+      "repeat": 0,
+      "phase": "after",
+      "source": "g58",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g58"
+      },
+      "go": {
+        "id": "g58",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 64,
+      "scoped": false,
+      "name": "ordered",
+      "repeat": 0,
+      "phase": "after",
+      "source": "g60",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g60"
+      },
+      "go": {
+        "id": "g60",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 64,
+      "scoped": false,
+      "name": "ordered",
+      "repeat": 0,
+      "phase": "after",
+      "source": "g61",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g61"
+      },
+      "go": {
+        "id": "g61",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 64,
+      "scoped": false,
+      "name": "ordered",
+      "repeat": 0,
+      "phase": "after",
+      "source": "g62",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g62"
+      },
+      "go": {
+        "id": "g62",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 64,
+      "scoped": false,
+      "name": "ordered",
+      "repeat": 1,
+      "phase": "before",
+      "source": "g56",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g56"
+      },
+      "go": {
+        "id": "g56",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 64,
+      "scoped": false,
+      "name": "ordered",
+      "repeat": 1,
+      "phase": "after",
+      "source": "g56",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g56"
+      },
+      "go": {
+        "id": "g56",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 64,
+      "scoped": false,
+      "name": "ordered",
+      "repeat": 1,
+      "phase": "before",
+      "source": "g58",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g58"
+      },
+      "go": {
+        "id": "g58",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 64,
+      "scoped": false,
+      "name": "ordered",
+      "repeat": 1,
+      "phase": "after",
+      "source": "g58",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g58"
+      },
+      "go": {
+        "id": "g58",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 64,
+      "scoped": false,
+      "name": "ordered",
+      "repeat": 1,
+      "phase": "before",
+      "source": "g60",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g60"
+      },
+      "go": {
+        "id": "g60",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 64,
+      "scoped": false,
+      "name": "ordered",
+      "repeat": 1,
+      "phase": "after",
+      "source": "g60",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g60"
+      },
+      "go": {
+        "id": "g60",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 64,
+      "scoped": false,
+      "name": "ordered",
+      "repeat": 1,
+      "phase": "before",
+      "source": "g61",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g61"
+      },
+      "go": {
+        "id": "g61",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 64,
+      "scoped": false,
+      "name": "ordered",
+      "repeat": 1,
+      "phase": "after",
+      "source": "g61",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g61"
+      },
+      "go": {
+        "id": "g61",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 64,
+      "scoped": false,
+      "name": "ordered",
+      "repeat": 1,
+      "phase": "before",
+      "source": "g62",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g62"
+      },
+      "go": {
+        "id": "g62",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 64,
+      "scoped": false,
+      "name": "ordered",
+      "repeat": 1,
+      "phase": "after",
+      "source": "g62",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g62"
+      },
+      "go": {
+        "id": "g62",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 64,
+      "scoped": true,
+      "name": "ordered",
+      "repeat": 0,
+      "phase": "after",
+      "source": "g56",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g56"
+      },
+      "go": {
+        "id": "g56",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 64,
+      "scoped": true,
+      "name": "ordered",
+      "repeat": 0,
+      "phase": "after",
+      "source": "g57",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g57"
+      },
+      "go": {
+        "id": "g57",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 64,
+      "scoped": true,
+      "name": "ordered",
+      "repeat": 0,
+      "phase": "after",
+      "source": "g59",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g59"
+      },
+      "go": {
+        "id": "g59",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 64,
+      "scoped": true,
+      "name": "ordered",
+      "repeat": 0,
+      "phase": "after",
+      "source": "g60",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g60"
+      },
+      "go": {
+        "id": "g60",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 64,
+      "scoped": true,
+      "name": "ordered",
+      "repeat": 0,
+      "phase": "after",
+      "source": "g61",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g61"
+      },
+      "go": {
+        "id": "g61",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 64,
+      "scoped": true,
+      "name": "ordered",
+      "repeat": 0,
+      "phase": "after",
+      "source": "g62",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g62"
+      },
+      "go": {
+        "id": "g62",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 64,
+      "scoped": true,
+      "name": "ordered",
+      "repeat": 1,
+      "phase": "before",
+      "source": "g56",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g56"
+      },
+      "go": {
+        "id": "g56",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 64,
+      "scoped": true,
+      "name": "ordered",
+      "repeat": 1,
+      "phase": "after",
+      "source": "g56",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g56"
+      },
+      "go": {
+        "id": "g56",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 64,
+      "scoped": true,
+      "name": "ordered",
+      "repeat": 1,
+      "phase": "before",
+      "source": "g57",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g57"
+      },
+      "go": {
+        "id": "g57",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 64,
+      "scoped": true,
+      "name": "ordered",
+      "repeat": 1,
+      "phase": "after",
+      "source": "g57",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g57"
+      },
+      "go": {
+        "id": "g57",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 64,
+      "scoped": true,
+      "name": "ordered",
+      "repeat": 1,
+      "phase": "before",
+      "source": "g59",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g59"
+      },
+      "go": {
+        "id": "g59",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 64,
+      "scoped": true,
+      "name": "ordered",
+      "repeat": 1,
+      "phase": "after",
+      "source": "g59",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g59"
+      },
+      "go": {
+        "id": "g59",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 64,
+      "scoped": true,
+      "name": "ordered",
+      "repeat": 1,
+      "phase": "before",
+      "source": "g60",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g60"
+      },
+      "go": {
+        "id": "g60",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 64,
+      "scoped": true,
+      "name": "ordered",
+      "repeat": 1,
+      "phase": "after",
+      "source": "g60",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g60"
+      },
+      "go": {
+        "id": "g60",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 64,
+      "scoped": true,
+      "name": "ordered",
+      "repeat": 1,
+      "phase": "before",
+      "source": "g61",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g61"
+      },
+      "go": {
+        "id": "g61",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 64,
+      "scoped": true,
+      "name": "ordered",
+      "repeat": 1,
+      "phase": "after",
+      "source": "g61",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g61"
+      },
+      "go": {
+        "id": "g61",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 64,
+      "scoped": true,
+      "name": "ordered",
+      "repeat": 1,
+      "phase": "before",
+      "source": "g62",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g62"
+      },
+      "go": {
+        "id": "g62",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 64,
+      "scoped": true,
+      "name": "ordered",
+      "repeat": 1,
+      "phase": "after",
+      "source": "g62",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g62"
+      },
+      "go": {
+        "id": "g62",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 64,
+      "scoped": true,
+      "name": "and-route",
+      "repeat": 0,
+      "phase": "after",
+      "source": "g58",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g58"
+      },
+      "go": {
+        "id": "g58",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 64,
+      "scoped": true,
+      "name": "and-route",
+      "repeat": 0,
+      "phase": "after",
+      "source": "g60",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g60"
+      },
+      "go": {
+        "id": "g60",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 64,
+      "scoped": true,
+      "name": "and-route",
+      "repeat": 0,
+      "phase": "after",
+      "source": "g62",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g62"
+      },
+      "go": {
+        "id": "g62",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 64,
+      "scoped": true,
+      "name": "and-route",
+      "repeat": 1,
+      "phase": "before",
+      "source": "g58",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g58"
+      },
+      "go": {
+        "id": "g58",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 64,
+      "scoped": true,
+      "name": "and-route",
+      "repeat": 1,
+      "phase": "after",
+      "source": "g58",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g58"
+      },
+      "go": {
+        "id": "g58",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 64,
+      "scoped": true,
+      "name": "and-route",
+      "repeat": 1,
+      "phase": "before",
+      "source": "g60",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g60"
+      },
+      "go": {
+        "id": "g60",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 64,
+      "scoped": true,
+      "name": "and-route",
+      "repeat": 1,
+      "phase": "after",
+      "source": "g60",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g60"
+      },
+      "go": {
+        "id": "g60",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 64,
+      "scoped": true,
+      "name": "and-route",
+      "repeat": 1,
+      "phase": "before",
+      "source": "g62",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g62"
+      },
+      "go": {
+        "id": "g62",
+        "mappedView": false,
+        "retained": false
+      }
+    },
+    {
+      "count": 64,
+      "scoped": true,
+      "name": "and-route",
+      "repeat": 1,
+      "phase": "after",
+      "source": "g62",
+      "main": {
+        "mappedView": false,
+        "retained": true,
+        "id": "g62"
+      },
+      "go": {
+        "id": "g62",
+        "mappedView": false,
+        "retained": false
+      }
+    }
+  ],
+  "actualMainSchedulingControls": 12,
+  "schedulingWorkerCount": 8,
+  "real64BenchmarkExecuted": false,
+  "performanceMeasured": false,
+  "inputSHA256": {
+    "main.json": "e6700c29d98b11da6bc4e1c8d22d946ffa188bbba9ef3b52c5d890be52c702df",
+    "baseline-native.json": "c80d02575a53fedf7680a5fdd68a6c4985d233c699921e4a5f41ddcc415a1719",
+    "candidate-verified.json": "8a71776708bfa7232377f3b8819a8cc128e173b485bfcafa43803255dbb0d24a",
+    "schedule-matrix-main.json": "a6c83dd6522cb54cfdc6acfe237171a1abc57c90307b477c197a6160f2b90ee4"
+  }
+}

@@ -1,0 +1,3380 @@
+[
+  {
+    "count": 40,
+    "shape": 0,
+    "active": false,
+    "scoped": false,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS $term RETURN n.caller_name AS x ORDER BY x LIMIT 1",
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g2",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g3",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g4",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g5",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g6",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g7",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g8",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g9",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g10",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g11",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g12",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g13",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g14",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g15",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g16",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g17",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g18",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g19",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g20",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g21",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g22",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g23",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g24",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g25",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g26",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g27",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g28",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g29",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g30",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g31",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g32",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g33",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g34",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g35",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g36",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g37",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g38",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g39",
+        "mappedView": false,
+        "retained": true
+      }
+    ],
+    "events": [],
+    "parentInterrupted": false
+  },
+  {
+    "count": 40,
+    "shape": 1,
+    "active": false,
+    "scoped": true,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS $term RETURN n.caller_name AS x ORDER BY x LIMIT 1",
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g2",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g3",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g4",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g5",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g6",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g7",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g8",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g9",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g10",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g11",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g12",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g13",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g14",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g15",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g16",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g17",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g18",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g19",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g20",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g21",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g22",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g23",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g24",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g25",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g26",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g27",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g28",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g29",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g30",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g31",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g32",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g33",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g34",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g35",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g36",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g37",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g38",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g39",
+        "mappedView": false,
+        "retained": true
+      }
+    ],
+    "events": [],
+    "parentInterrupted": false
+  },
+  {
+    "count": 40,
+    "shape": 2,
+    "active": false,
+    "scoped": true,
+    "query": "MATCH (n) WHERE (n.graphId\u003d\u0027g0\u0027 OR n.graphId\u003d\u0027missing\u0027) AND n.caller_name CONTAINS $term RETURN n.caller_name AS x ORDER BY x LIMIT 1",
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g2",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g3",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g4",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g5",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g6",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g7",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g8",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g9",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g10",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g11",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g12",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g13",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g14",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g15",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g16",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g17",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g18",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g19",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g20",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g21",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g22",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g23",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g24",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g25",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g26",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g27",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g28",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g29",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g30",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g31",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g32",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g33",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g34",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g35",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g36",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g37",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g38",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g39",
+        "mappedView": false,
+        "retained": true
+      }
+    ],
+    "events": [],
+    "parentInterrupted": false
+  },
+  {
+    "count": 40,
+    "shape": 0,
+    "active": true,
+    "scoped": false,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS $term RETURN n.caller_name AS x ORDER BY x LIMIT 1",
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g2",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g3",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g4",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g5",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g6",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g7",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g8",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g9",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g10",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g11",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g12",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g13",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g14",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g15",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g16",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g17",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g18",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g19",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g20",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g21",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g22",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g23",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g24",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g25",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g26",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g27",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g28",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g29",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g30",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g31",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g32",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g33",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g34",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g35",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g36",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g37",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g38",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g39",
+        "mappedView": false,
+        "retained": true
+      }
+    ],
+    "events": [
+      "entered:34",
+      "entered:37",
+      "entered:33",
+      "entered:32",
+      "entered:35",
+      "entered:36",
+      "entered:38",
+      "original-bad-source-called:39",
+      "original-bad-source-called:39",
+      "main-interrupted:36",
+      "main-interrupted:34",
+      "main-interrupted:33",
+      "main-interrupted:32",
+      "main-interrupted:35",
+      "main-interrupted:38",
+      "main-interrupted:37"
+    ],
+    "parentInterrupted": false
+  },
+  {
+    "count": 40,
+    "shape": 1,
+    "active": true,
+    "scoped": true,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS $term RETURN n.caller_name AS x ORDER BY x LIMIT 1",
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g2",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g3",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g4",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g5",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g6",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g7",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g8",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g9",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g10",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g11",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g12",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g13",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g14",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g15",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g16",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g17",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g18",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g19",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g20",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g21",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g22",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g23",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g24",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g25",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g26",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g27",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g28",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g29",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g30",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g31",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g32",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g33",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g34",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g35",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g36",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g37",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g38",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g39",
+        "mappedView": false,
+        "retained": true
+      }
+    ],
+    "events": [
+      "entered:32",
+      "entered:33",
+      "entered:34",
+      "entered:35",
+      "entered:36",
+      "entered:37",
+      "entered:38",
+      "original-bad-source-called:39",
+      "original-bad-source-called:39",
+      "main-interrupted:34",
+      "main-interrupted:32",
+      "main-interrupted:33",
+      "main-interrupted:35",
+      "main-interrupted:36",
+      "main-interrupted:38",
+      "main-interrupted:37"
+    ],
+    "parentInterrupted": false
+  },
+  {
+    "count": 40,
+    "shape": 2,
+    "active": true,
+    "scoped": true,
+    "query": "MATCH (n) WHERE (n.graphId\u003d\u0027g0\u0027 OR n.graphId\u003d\u0027missing\u0027) AND n.caller_name CONTAINS $term RETURN n.caller_name AS x ORDER BY x LIMIT 1",
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g2",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g3",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g4",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g5",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g6",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g7",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g8",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g9",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g10",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g11",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g12",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g13",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g14",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g15",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g16",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g17",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g18",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g19",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g20",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g21",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g22",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g23",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g24",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g25",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g26",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g27",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g28",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g29",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g30",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g31",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g32",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g33",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g34",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g35",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g36",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g37",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g38",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g39",
+        "mappedView": false,
+        "retained": true
+      }
+    ],
+    "events": [
+      "entered:37",
+      "entered:38",
+      "entered:35",
+      "entered:33",
+      "entered:34",
+      "entered:32",
+      "entered:36",
+      "original-bad-source-called:39",
+      "original-bad-source-called:39",
+      "main-interrupted:33",
+      "main-interrupted:35",
+      "main-interrupted:34",
+      "main-interrupted:37",
+      "main-interrupted:38",
+      "main-interrupted:32",
+      "main-interrupted:36"
+    ],
+    "parentInterrupted": false
+  },
+  {
+    "count": 64,
+    "shape": 0,
+    "active": false,
+    "scoped": false,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS $term RETURN n.caller_name AS x ORDER BY x LIMIT 1",
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g2",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g3",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g4",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g5",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g6",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g7",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g8",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g9",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g10",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g11",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g12",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g13",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g14",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g15",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g16",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g17",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g18",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g19",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g20",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g21",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g22",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g23",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g24",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g25",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g26",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g27",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g28",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g29",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g30",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g31",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g32",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g33",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g34",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g35",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g36",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g37",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g38",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g39",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g40",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g41",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g42",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g43",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g44",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g45",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g46",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g47",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g48",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g49",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g50",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g51",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g52",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g53",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g54",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g55",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g56",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g57",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g58",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g59",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g60",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g61",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g62",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g63",
+        "mappedView": false,
+        "retained": true
+      }
+    ],
+    "events": [],
+    "parentInterrupted": false
+  },
+  {
+    "count": 64,
+    "shape": 1,
+    "active": false,
+    "scoped": true,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS $term RETURN n.caller_name AS x ORDER BY x LIMIT 1",
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g2",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g3",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g4",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g5",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g6",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g7",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g8",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g9",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g10",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g11",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g12",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g13",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g14",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g15",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g16",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g17",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g18",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g19",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g20",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g21",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g22",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g23",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g24",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g25",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g26",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g27",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g28",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g29",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g30",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g31",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g32",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g33",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g34",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g35",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g36",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g37",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g38",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g39",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g40",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g41",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g42",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g43",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g44",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g45",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g46",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g47",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g48",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g49",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g50",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g51",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g52",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g53",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g54",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g55",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g56",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g57",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g58",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g59",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g60",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g61",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g62",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g63",
+        "mappedView": false,
+        "retained": true
+      }
+    ],
+    "events": [],
+    "parentInterrupted": false
+  },
+  {
+    "count": 64,
+    "shape": 2,
+    "active": false,
+    "scoped": true,
+    "query": "MATCH (n) WHERE (n.graphId\u003d\u0027g0\u0027 OR n.graphId\u003d\u0027missing\u0027) AND n.caller_name CONTAINS $term RETURN n.caller_name AS x ORDER BY x LIMIT 1",
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g2",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g3",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g4",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g5",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g6",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g7",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g8",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g9",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g10",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g11",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g12",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g13",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g14",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g15",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g16",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g17",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g18",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g19",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g20",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g21",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g22",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g23",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g24",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g25",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g26",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g27",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g28",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g29",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g30",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g31",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g32",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g33",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g34",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g35",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g36",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g37",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g38",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g39",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g40",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g41",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g42",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g43",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g44",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g45",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g46",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g47",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g48",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g49",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g50",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g51",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g52",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g53",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g54",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g55",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g56",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g57",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g58",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g59",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g60",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g61",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g62",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g63",
+        "mappedView": false,
+        "retained": true
+      }
+    ],
+    "events": [],
+    "parentInterrupted": false
+  },
+  {
+    "count": 64,
+    "shape": 0,
+    "active": true,
+    "scoped": false,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS $term RETURN n.caller_name AS x ORDER BY x LIMIT 1",
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g2",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g3",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g4",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g5",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g6",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g7",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g8",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g9",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g10",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g11",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g12",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g13",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g14",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g15",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g16",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g17",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g18",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g19",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g20",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g21",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g22",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g23",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g24",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g25",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g26",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g27",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g28",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g29",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g30",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g31",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g32",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g33",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g34",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g35",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g36",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g37",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g38",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g39",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g40",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g41",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g42",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g43",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g44",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g45",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g46",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g47",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g48",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g49",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g50",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g51",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g52",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g53",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g54",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g55",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g56",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g57",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g58",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g59",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g60",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g61",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g62",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g63",
+        "mappedView": false,
+        "retained": true
+      }
+    ],
+    "events": [
+      "entered:56",
+      "entered:58",
+      "entered:59",
+      "entered:57",
+      "entered:60",
+      "entered:61",
+      "entered:62",
+      "original-bad-source-called:63",
+      "original-bad-source-called:63",
+      "main-interrupted:56",
+      "main-interrupted:62",
+      "main-interrupted:57",
+      "main-interrupted:59",
+      "main-interrupted:58",
+      "main-interrupted:61",
+      "main-interrupted:60"
+    ],
+    "parentInterrupted": false
+  },
+  {
+    "count": 64,
+    "shape": 1,
+    "active": true,
+    "scoped": true,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS $term RETURN n.caller_name AS x ORDER BY x LIMIT 1",
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g2",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g3",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g4",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g5",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g6",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g7",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g8",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g9",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g10",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g11",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g12",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g13",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g14",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g15",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g16",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g17",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g18",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g19",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g20",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g21",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g22",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g23",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g24",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g25",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g26",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g27",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g28",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g29",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g30",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g31",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g32",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g33",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g34",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g35",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g36",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g37",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g38",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g39",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g40",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g41",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g42",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g43",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g44",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g45",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g46",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g47",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g48",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g49",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g50",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g51",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g52",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g53",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g54",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g55",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g56",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g57",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g58",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g59",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g60",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g61",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g62",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g63",
+        "mappedView": false,
+        "retained": true
+      }
+    ],
+    "events": [
+      "entered:56",
+      "entered:57",
+      "entered:58",
+      "entered:59",
+      "entered:60",
+      "entered:61",
+      "entered:62",
+      "original-bad-source-called:63",
+      "original-bad-source-called:63",
+      "main-interrupted:56",
+      "main-interrupted:57",
+      "main-interrupted:58",
+      "main-interrupted:61",
+      "main-interrupted:60",
+      "main-interrupted:59",
+      "main-interrupted:62"
+    ],
+    "parentInterrupted": false
+  },
+  {
+    "count": 64,
+    "shape": 2,
+    "active": true,
+    "scoped": true,
+    "query": "MATCH (n) WHERE (n.graphId\u003d\u0027g0\u0027 OR n.graphId\u003d\u0027missing\u0027) AND n.caller_name CONTAINS $term RETURN n.caller_name AS x ORDER BY x LIMIT 1",
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "after": [
+      {
+        "id": "g0",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g1",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g2",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g3",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g4",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g5",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g6",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g7",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g8",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g9",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g10",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g11",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g12",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g13",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g14",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g15",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g16",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g17",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g18",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g19",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g20",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g21",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g22",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g23",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g24",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g25",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g26",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g27",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g28",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g29",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g30",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g31",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g32",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g33",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g34",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g35",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g36",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g37",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g38",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g39",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g40",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g41",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g42",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g43",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g44",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g45",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g46",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g47",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g48",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g49",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g50",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g51",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g52",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g53",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g54",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g55",
+        "mappedView": false,
+        "retained": true
+      },
+      {
+        "id": "g56",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g57",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g58",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g59",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g60",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g61",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g62",
+        "mappedView": false,
+        "retained": false
+      },
+      {
+        "id": "g63",
+        "mappedView": false,
+        "retained": true
+      }
+    ],
+    "events": [
+      "entered:56",
+      "entered:57",
+      "entered:58",
+      "entered:59",
+      "entered:60",
+      "entered:61",
+      "entered:62",
+      "original-bad-source-called:63",
+      "original-bad-source-called:63",
+      "main-interrupted:56",
+      "main-interrupted:57",
+      "main-interrupted:58",
+      "main-interrupted:59",
+      "main-interrupted:60",
+      "main-interrupted:61",
+      "main-interrupted:62"
+    ],
+    "parentInterrupted": false
+  }
+]

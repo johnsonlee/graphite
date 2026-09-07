@@ -1,0 +1,674 @@
+[
+  {
+    "case": [
+      2,
+      false,
+      true,
+      "ordinary",
+      0
+    ],
+    "main": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "g0"
+            ]
+          }
+        }
+      ]
+    },
+    "native": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    }
+  },
+  {
+    "case": [
+      2,
+      false,
+      true,
+      "ordinary",
+      1
+    ],
+    "main": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "g0"
+            ]
+          }
+        }
+      ]
+    },
+    "native": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    }
+  },
+  {
+    "case": [
+      2,
+      false,
+      true,
+      "wrapped",
+      0
+    ],
+    "main": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "g0"
+            ]
+          }
+        }
+      ]
+    },
+    "native": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    }
+  },
+  {
+    "case": [
+      2,
+      false,
+      true,
+      "wrapped",
+      1
+    ],
+    "main": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "g0"
+            ]
+          }
+        }
+      ]
+    },
+    "native": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    }
+  },
+  {
+    "case": [
+      2,
+      true,
+      true,
+      "ordinary",
+      0
+    ],
+    "main": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "g0"
+            ]
+          }
+        }
+      ]
+    },
+    "native": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    }
+  },
+  {
+    "case": [
+      2,
+      true,
+      true,
+      "ordinary",
+      1
+    ],
+    "main": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "g0"
+            ]
+          }
+        }
+      ]
+    },
+    "native": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    }
+  },
+  {
+    "case": [
+      2,
+      true,
+      true,
+      "wrapped",
+      0
+    ],
+    "main": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "g0"
+            ]
+          }
+        }
+      ]
+    },
+    "native": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    }
+  },
+  {
+    "case": [
+      2,
+      true,
+      true,
+      "wrapped",
+      1
+    ],
+    "main": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "g0"
+            ]
+          }
+        }
+      ]
+    },
+    "native": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    }
+  },
+  {
+    "case": [
+      2,
+      true,
+      true,
+      "and-route",
+      0
+    ],
+    "main": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "native": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "$metadata": {
+            "graphIds": [
+              "g0"
+            ]
+          },
+          "x": "other"
+        }
+      ]
+    }
+  },
+  {
+    "case": [
+      2,
+      true,
+      true,
+      "and-route",
+      1
+    ],
+    "main": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "native": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "$metadata": {
+            "graphIds": [
+              "g0"
+            ]
+          },
+          "x": "other"
+        }
+      ]
+    }
+  },
+  {
+    "case": [
+      8,
+      false,
+      true,
+      "ordinary",
+      0
+    ],
+    "main": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "g0"
+            ]
+          }
+        }
+      ]
+    },
+    "native": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    }
+  },
+  {
+    "case": [
+      8,
+      false,
+      true,
+      "ordinary",
+      1
+    ],
+    "main": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "g0"
+            ]
+          }
+        }
+      ]
+    },
+    "native": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    }
+  },
+  {
+    "case": [
+      8,
+      false,
+      true,
+      "wrapped",
+      0
+    ],
+    "main": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "g0"
+            ]
+          }
+        }
+      ]
+    },
+    "native": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    }
+  },
+  {
+    "case": [
+      8,
+      false,
+      true,
+      "wrapped",
+      1
+    ],
+    "main": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "g0"
+            ]
+          }
+        }
+      ]
+    },
+    "native": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    }
+  },
+  {
+    "case": [
+      8,
+      true,
+      true,
+      "ordinary",
+      0
+    ],
+    "main": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "g0"
+            ]
+          }
+        }
+      ]
+    },
+    "native": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    }
+  },
+  {
+    "case": [
+      8,
+      true,
+      true,
+      "ordinary",
+      1
+    ],
+    "main": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "g0"
+            ]
+          }
+        }
+      ]
+    },
+    "native": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    }
+  },
+  {
+    "case": [
+      8,
+      true,
+      true,
+      "wrapped",
+      0
+    ],
+    "main": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "g0"
+            ]
+          }
+        }
+      ]
+    },
+    "native": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    }
+  },
+  {
+    "case": [
+      8,
+      true,
+      true,
+      "wrapped",
+      1
+    ],
+    "main": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "g0"
+            ]
+          }
+        }
+      ]
+    },
+    "native": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    }
+  },
+  {
+    "case": [
+      8,
+      true,
+      true,
+      "and-route",
+      0
+    ],
+    "main": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "native": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "$metadata": {
+            "graphIds": [
+              "g0"
+            ]
+          },
+          "x": "other"
+        }
+      ]
+    }
+  },
+  {
+    "case": [
+      8,
+      true,
+      true,
+      "and-route",
+      1
+    ],
+    "main": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "native": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "$metadata": {
+            "graphIds": [
+              "g0"
+            ]
+          },
+          "x": "other"
+        }
+      ]
+    }
+  },
+  {
+    "case": [
+      40,
+      true,
+      true,
+      "and-route",
+      0
+    ],
+    "main": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "native": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "$metadata": {
+            "graphIds": [
+              "g0"
+            ]
+          },
+          "x": "other"
+        }
+      ]
+    }
+  },
+  {
+    "case": [
+      40,
+      true,
+      true,
+      "and-route",
+      1
+    ],
+    "main": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "native": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "$metadata": {
+            "graphIds": [
+              "g0"
+            ]
+          },
+          "x": "other"
+        }
+      ]
+    }
+  },
+  {
+    "case": [
+      64,
+      true,
+      true,
+      "and-route",
+      0
+    ],
+    "main": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "native": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "$metadata": {
+            "graphIds": [
+              "g0"
+            ]
+          },
+          "x": "other"
+        }
+      ]
+    }
+  },
+  {
+    "case": [
+      64,
+      true,
+      true,
+      "and-route",
+      1
+    ],
+    "main": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "native": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "$metadata": {
+            "graphIds": [
+              "g0"
+            ]
+          },
+          "x": "other"
+        }
+      ]
+    }
+  }
+]

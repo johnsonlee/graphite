@@ -31,13 +31,15 @@ func (e *Error) JavaMessage() any {
 func fail(message string) { panic(&Error{Message: message, Class: "CypherException"}) }
 
 type evaluator struct {
-	indexFirst bool
-	ctx        context.Context
-	parameters map[string]any
-	graphs     []Graph
-	cross      bool
-	rowOrders  map[string]rowOrder
-	regexes    *regexLRU
+	sourceScopeApplied  bool
+	workTrackingEnabled bool
+	indexFirst          bool
+	ctx                 context.Context
+	parameters          map[string]any
+	graphs              []Graph
+	cross               bool
+	rowOrders           map[string]rowOrder
+	regexes             *regexLRU
 }
 
 func (e evaluator) check() {

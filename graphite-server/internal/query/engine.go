@@ -22,10 +22,24 @@ type Result struct {
 // Execute evaluates a single-store query. A negative limit means unlimited;
 // limit zero returns no rows. It does not truncate before ORDER/aggregation.
 func Execute(ctx context.Context, graph *store.Store, source string, parameters map[string]any, limit int) (result Result, err error) {
-	return executeSources(ctx, graph, nil, false, source, parameters, limit)
+	return executeSources(ctx, graph, nil, false, source, parameters, limit, ExecutionOptions{})
+}
+
+// ExecutionOptions preserves the distinction between main's plain executor and
+// its execution-context/request-selected paths. Work counters and budget
+// accounting are independent of these planner policy switches.
+type ExecutionOptions struct {
+	SourceScopeApplied  bool
+	WorkTrackingEnabled bool
 }
 
 func ExecuteCross(ctx context.Context, graphs []Graph, source string, parameters map[string]any, limit int) (Result, error) {
+	return ExecuteCrossWithOptions(ctx, graphs, source, parameters, limit, ExecutionOptions{})
+}
+
+// ExecuteCrossWithOptions keeps source order and qualification unchanged. A
+// preselected list, even if it contains all graphs, must carry its scope marker.
+func ExecuteCrossWithOptions(ctx context.Context, graphs []Graph, source string, parameters map[string]any, limit int, options ExecutionOptions) (Result, error) {
 	seen := map[string]bool{}
 	for _, g := range graphs {
 		if g.ID == "" || g.Store == nil || seen[g.ID] {
@@ -33,10 +47,10 @@ func ExecuteCross(ctx context.Context, graphs []Graph, source string, parameters
 		}
 		seen[g.ID] = true
 	}
-	return executeSources(ctx, nil, graphs, true, source, parameters, limit)
+	return executeSources(ctx, nil, graphs, true, source, parameters, limit, options)
 }
 
-func executeSources(ctx context.Context, graph *store.Store, graphs []Graph, cross bool, source string, parameters map[string]any, limit int) (result Result, err error) {
+func executeSources(ctx context.Context, graph *store.Store, graphs []Graph, cross bool, source string, parameters map[string]any, limit int, options ExecutionOptions) (result Result, err error) {
 	defer func() {
 		if v := recover(); v != nil {
 			switch x := v.(type) {
@@ -70,7 +84,7 @@ func executeSources(ctx context.Context, graph *store.Store, graphs []Graph, cro
 		return Result{}, err
 	}
 	validate(ast)
-	e := evaluator{ctx: ctx, parameters: parameters, graphs: graphs, cross: cross, regexes: &regexLRU{entries: map[string]compiledRegex{}}}
+	e := evaluator{ctx: ctx, parameters: parameters, graphs: graphs, cross: cross, sourceScopeApplied: options.SourceScopeApplied, workTrackingEnabled: options.WorkTrackingEnabled, regexes: &regexLRU{entries: map[string]compiledRegex{}}}
 	javaSource := !utf8.ValidString(source) || (strings.Contains(source, `\u`) && needsJavaOutputOrder(ast))
 	if needsRowOrder(ast) || javaSource {
 		e.rowOrders = map[string]rowOrder{}

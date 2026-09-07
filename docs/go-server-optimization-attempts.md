@@ -733,3 +733,29 @@ No graph loads, query executions or performance measurements occurred.
 Go case/AST report, independent verification and test receipts. Explicit
 request-selected scope propagation and main's index-state lifecycle remain
 runtime gaps to fix before full real64 replay and per-case P95 acceptance.
+
+
+### 2026-09-08 — Functional follow-up: request-selected scope and context policies
+
+Added `ExecuteCrossWithOptions` and HTTP propagation of main's already-selected
+source marker and execution-context planner policies. Explicit selection of
+every source remains distinct from unscoped/allGraphs execution. Scoped
+ordinary/residual queries preserve persisted-source preference; streaming
+queries avoid a second root pruning pass, and full split-source scans preserve
+main's retained-index policy. Finite work-budget accounting remains unfinished.
+
+Actual pinned-main capture covers160 scenarios/320 responses with1/2/8/40/64
+tiny persisted correctness sources,8 query shapes,scope and bad-last variants,
+each repeated twice. Original Go has24 public differences; candidate has0.
+Deterministic states match. Twelve additional actual-main scheduling controls
+prove canceled last-wave sibling retained states; six forced Go schedules match
+full states and join every started sibling. Raw natural-state differences are
+preserved with explicit lifecycle assertions and negative controls, not erased.
+Six HTTP body/state cases verify propagation. Full-module race tests and vet
+pass. Initial strict-state and harness/expectation failures remain archived.
+
+`docs/go-server-baseline/native-request-source-scope/` contains the actual main
+outputs, original/candidate captures, source/JAR authentication, independent
+verifier and complete test logs. This is a functional prerequisite, not
+Attempt20 or a performance result. Full1,267 real64 replay, index-state setup,
+per-case P95 and the final100%/10x gates remain incomplete.

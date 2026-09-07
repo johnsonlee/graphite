@@ -26,6 +26,16 @@ func (e evaluator) mainStringCandidates(source Graph, pattern cypher.NodePattern
 }
 
 func (e evaluator) mainStringCandidatesWithPolicy(source Graph, pattern cypher.NodePattern, atoms []distinctStringAtom, sourceCount int, forcePersisted bool) mainNodeNext {
+	return e.mainStringCandidatesWithStorage(source, pattern, atoms, sourceCount, forcePersisted, false)
+}
+
+// Streaming bindings request complete candidate consumption with main's default
+// mappedView=false. A split source then loads retained storage, not a mapped view.
+func (e evaluator) mainStreamingStringCandidates(source Graph, pattern cypher.NodePattern, atoms []distinctStringAtom, sourceCount int) mainNodeNext {
+	return e.mainStringCandidatesWithStorage(source, pattern, atoms, sourceCount, false, true)
+}
+
+func (e evaluator) mainStringCandidatesWithStorage(source Graph, pattern cypher.NodePattern, atoms []distinctStringAtom, sourceCount int, forcePersisted, fullSplitScan bool) mainNodeNext {
 	children := []mainNodeNext{}
 	for _, entry := range mainDirectStringTypes {
 		if len(pattern.Labels) > 0 && !matchesLabel(store.Node{Kind: entry.kind}, pattern.Labels[0]) {
@@ -45,7 +55,7 @@ func (e evaluator) mainStringCandidatesWithPolicy(source Graph, pattern cypher.N
 		}
 		ids := source.Store.NodesOfKind(entry.kind)
 		if source.Store.Mode == "MAPPED" && entry.kind == "CallSiteNode" {
-			spec := &mainStringSourceSpec{atoms: filters, sourceCount: sourceCount, forcePersisted: forcePersisted, lazyMain: true}
+			spec := &mainStringSourceSpec{atoms: filters, sourceCount: sourceCount, forcePersisted: forcePersisted, fullSplitScan: fullSplitScan, lazyMain: true}
 			children = append(children, e.mainCandidateIterator(source, spec, len(ids)))
 			continue
 		}

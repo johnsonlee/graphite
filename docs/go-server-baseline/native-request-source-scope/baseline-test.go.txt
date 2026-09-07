@@ -1,0 +1,67 @@
+package query
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"os"
+	"reflect"
+	"testing"
+)
+
+func TestRequestSourceScopeMain(t *testing.T) {
+	var cases []struct {
+		Count      int              `json:"count"`
+		Scoped     bool             `json:"scoped"`
+		BadLast    bool             `json:"badLast"`
+		Name       string           `json:"name"`
+		Query      string           `json:"query"`
+		Parameters map[string]any   `json:"parameters"`
+		Repeats    []map[string]any `json:"repeats"`
+	}
+	readDistinctJSON(t, "testdata/request-source-scope/main.json", &cases)
+	outputs := []map[string]any{}
+	if len(cases) != 160 {
+		t.Fatal("incomplete actual-main scenario matrix")
+	}
+	for _, c := range cases {
+		t.Run(fmt.Sprintf("%d/scoped=%v/badLast=%v/%s", c.Count, c.Scoped, c.BadLast, c.Name), func(t *testing.T) {
+			sources := make([]Graph, c.Count)
+			for i := range sources {
+				name := "clean"
+				if c.BadLast && i == len(sources)-1 {
+					name = "bad-matched"
+				}
+				sources[i] = Graph{fmt.Sprintf("g%d", i), candidateGraph(t, name)}
+			}
+			record := map[string]any{"count": c.Count, "scoped": c.Scoped, "badLast": c.BadLast, "name": c.Name, "query": c.Query, "parameters": c.Parameters}
+			repeats := []map[string]any{}
+			for i, want := range c.Repeats {
+				actual := map[string]any{"before": ordinaryHistoryState(t, sources)}
+				result, err := ExecuteCross(context.Background(), sources, c.Query, c.Parameters, -1)
+				actual = distinctOracleResult(actual, result, err)
+				actual["after"] = ordinaryHistoryState(t, sources)
+				raw, _ := json.Marshal(actual)
+				var normalized map[string]any
+				if err := json.Unmarshal(raw, &normalized); err != nil {
+					t.Fatal(err)
+				}
+				repeats = append(repeats, normalized)
+				if !reflect.DeepEqual(normalized, want) {
+					t.Errorf("repeat%d differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT", i)
+				}
+			}
+			record["repeats"] = repeats
+			outputs = append(outputs, record)
+		})
+	}
+	if path := os.Getenv("REQUEST_SCOPE_OUTPUT"); path != "" {
+		raw, err := json.MarshalIndent(outputs, "", "  ")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(path, append(raw, '\n'), 0600); err != nil {
+			t.Fatal(err)
+		}
+	}
+}

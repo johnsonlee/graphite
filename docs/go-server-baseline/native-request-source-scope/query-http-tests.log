@@ -1,0 +1,7 @@
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/query	0.755s
+--- FAIL: TestRequestSourceScopeHTTP (0.01s)
+    --- FAIL: TestRequestSourceScopeHTTP/selected/and-route (0.00s)
+        request_source_scope_test.go:61: error body: map[code:cypher_query_failed error:Index (2147483647) is greater than or equal to list size (9)]
+FAIL
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/server	0.487s
+FAIL

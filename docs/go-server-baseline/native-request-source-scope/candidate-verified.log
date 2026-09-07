@@ -1,0 +1,5 @@
+--- FAIL: TestRequestSourceScopeMain (0.42s)
+    request_source_scope_test.go:69: open ../docs/go-server-baseline/native-request-source-scope/candidate-verified.json: no such file or directory
+FAIL
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/query	0.908s
+FAIL

@@ -49,7 +49,7 @@ func (e evaluator) compileOrdinaryProjection(branch cypher.SingleQuery) *ordinar
 			return nil
 		}
 	}
-	p := &ordinaryProjectionPlan{indexedDistinctPlan: compiled, projection: r, direct: true, leading: true, scoped: compiled.graphIDs != nil}
+	p := &ordinaryProjectionPlan{indexedDistinctPlan: compiled, projection: r, direct: true, leading: true, scoped: e.sourceScopeApplied || compiled.graphIDs != nil}
 	p.columns = nil
 	p.properties = nil
 	for _, item := range r.Items {
@@ -172,7 +172,7 @@ func (e evaluator) ordinaryProjection(graph *store.Store, branch cypher.SingleQu
 			return e.ordinaryBindResult(result, plan), true
 		}
 	}
-	serial := !parallel
+	serial := !parallel || e.workTrackingEnabled && !balanced
 	if balanced {
 		mayBatch := !plan.scoped || parallel
 		serial = plan.scoped && allRetained || !rawLeading && !mayBatch && !parallel

@@ -179,6 +179,7 @@ func (s *Server) crossCypher(w http.ResponseWriter, r *http.Request) {
 		writeQueryError(w, err)
 		return
 	}
+	sourceScopeApplied := explicit && len(ids) > 0
 	leases, err := s.Registry.AcquireSelected(ids)
 	if err != nil {
 		status := 400
@@ -220,7 +221,7 @@ func (s *Server) crossCypher(w http.ResponseWriter, r *http.Request) {
 			response, err = fanout(ctx, graphs, text, limit, perGraph, includeRows)
 		} else {
 			var result query.Result
-			result, err = query.ExecuteCross(ctx, graphs, text, nil, limit)
+			result, err = query.ExecuteCrossWithOptions(ctx, graphs, text, nil, limit, query.ExecutionOptions{SourceScopeApplied: sourceScopeApplied, WorkTrackingEnabled: true})
 			response = map[string]any{"columns": result.Columns, "rows": result.ResponseRows(), "rowCount": len(result.Rows), "graphCount": len(graphs)}
 			if explicit {
 				response["mode"] = mode

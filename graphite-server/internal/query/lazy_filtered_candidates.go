@@ -22,7 +22,7 @@ func (s *lazyFilteredScanner) next(ctx context.Context, selected bool) (map[stri
 		return nil, false
 	}
 	if s.nextNode == nil {
-		s.nextNode = local.mainStringCandidatesWithPolicy(s.source, s.plan.node, s.plan.atoms, s.sourceCount, !s.plan.projection.Distinct && s.plan.graphIDs != nil)
+		s.nextNode = local.mainStringCandidatesWithPolicy(s.source, s.plan.node, s.plan.atoms, s.sourceCount, !s.plan.projection.Distinct && (local.sourceScopeApplied || s.plan.graphIDs != nil))
 	}
 	for {
 		local.check()
@@ -121,7 +121,7 @@ func (e evaluator) lazyCandidateFiltered(p *lazyFilteredPlan, sources []Graph) R
 	if len(sources) >= 40 {
 		parallel = min(len(sources), max(1, runtime.NumCPU()/2))
 	}
-	useParallel := e.cross && parallel > 1 && capability && parallelSafe
+	useParallel := e.cross && parallel > 1 && capability && parallelSafe && (p.projection.Distinct || !e.workTrackingEnabled || len(sources) >= 40)
 	if !useParallel {
 		for _, scanner := range scanners {
 			for {

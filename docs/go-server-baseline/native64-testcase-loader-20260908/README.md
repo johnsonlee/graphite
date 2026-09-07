@@ -34,11 +34,16 @@ unknown graph identities and duplicated case IDs. Fullmodule race and vet pass.
 ## Next runtime requirements
 
 This completes definition ingestion and syntax checks, not testcase execution.
-The current query API does not yet carry main's request-selected scope marker
+At this capture, the query API did not yet carry main's request-selected scope marker
 into its planner. Main's explicit-selected HTTP path also sets that marker
 (ExploreRoutes.kt:834), so the missing propagation is a functional issue as well
 as a benchmark-driver issue. Its planner effect includes persisted-source
 preference in QueryPipeline.tryFastFilteredNodeLimit.
+
+The subsequent [request-scope functional follow-up](../native-request-source-scope/README.md)
+adds this execution option and HTTP propagation, with actual-main response and
+source-lifecycle checks. The frozen validator output above remains an exact
+historical artifact; its runtime limitation text describes that earlier capture.
 
 The cold/warm/startup-prepared states also need corresponding native lifecycle
 operations. Main clearStringPropertyIndexes clears retained and mapped views,

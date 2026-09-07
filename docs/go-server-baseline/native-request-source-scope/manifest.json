@@ -1,0 +1,416 @@
+{
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 5372,
+      "sha256": "72c2770c6378aacbc61a94c1cba89f3537c749b0c076a3a8d6a7552edd23dac0"
+    },
+    {
+      "path": "SourceScopeScheduleMatrixOracle.java",
+      "bytes": 4146,
+      "sha256": "0d2b5cff9318c0e3857450e925c8a92113998b28e6051c5e5025d71ec07ce0a4"
+    },
+    {
+      "path": "SourceScopeScheduleOracle.java",
+      "bytes": 3985,
+      "sha256": "bc8192a4178215f93e5f98ff7b2c2bcc7833449cc53b6dc234def5922819754c"
+    },
+    {
+      "path": "baseline-native.json",
+      "bytes": 1814635,
+      "sha256": "c80d02575a53fedf7680a5fdd68a6c4985d233c699921e4a5f41ddcc415a1719"
+    },
+    {
+      "path": "baseline-native.log",
+      "bytes": 11863,
+      "sha256": "9f4b64bfe6542b5ff97c9941a351fa0f80a24cfb77ffd26a696dd9422cc8e9bf"
+    },
+    {
+      "path": "baseline-public-differences.json",
+      "bytes": 11055,
+      "sha256": "d5abf111e10055e5a17c7e0a36d7c0655a6c319404fb60c338fbb8285156936e"
+    },
+    {
+      "path": "baseline-test.go.txt",
+      "bytes": 2207,
+      "sha256": "dfb5c430031405cda000deebe4c922ddb7f0b910d3c7a9f0a3e3bab6be98555d"
+    },
+    {
+      "path": "candidate-final.json",
+      "bytes": 1814825,
+      "sha256": "19afdeaee72b0036caa95fd303f8c61c432aa736a028aadf70e13d882aa663c6"
+    },
+    {
+      "path": "candidate-final.log",
+      "bytes": 782,
+      "sha256": "8e7ca11814ac022a2a020906e6aa9ea9d1e800ca944a1777c8369b6f5fd1ebd7"
+    },
+    {
+      "path": "candidate-initial.json",
+      "bytes": 1814845,
+      "sha256": "7a1d10685643e09acd98b5ed64ff1a40f93d405f0d5d92d9253708461139fcd4"
+    },
+    {
+      "path": "candidate-initial.log",
+      "bytes": 4047,
+      "sha256": "af320f489b8c99a805e9073767edd136a7bcd6920d42096c92197851bc5758ca"
+    },
+    {
+      "path": "candidate-schedule-tests.log",
+      "bytes": 30947,
+      "sha256": "aeee6a3aa1ca2100c491b662ba68da518939721a530020938e74e5506991eb05"
+    },
+    {
+      "path": "candidate-verified.json",
+      "bytes": 1814879,
+      "sha256": "8a71776708bfa7232377f3b8819a8cc128e173b485bfcafa43803255dbb0d24a"
+    },
+    {
+      "path": "candidate-verified.log",
+      "bytes": 277,
+      "sha256": "241392239c1fd506aa7b5cbedf27d71bdd0b50c152d88f60052918ecd39e6dab"
+    },
+    {
+      "path": "classes/SourceScopeOracle.class",
+      "bytes": 7637,
+      "sha256": "a77233077e194c249e3f8a7ff770beb2e83414295e385a5e1fca93a6e0f280d6"
+    },
+    {
+      "path": "classes/SourceScopeScheduleMatrixOracle.class",
+      "bytes": 9418,
+      "sha256": "871b1024ce6446dfabb8c3c1a1d4ccb8b7618405f98dabecca02675acf19d31e"
+    },
+    {
+      "path": "classes/SourceScopeScheduleOracle.class",
+      "bytes": 9159,
+      "sha256": "762dc65bd2d1f966ce9a3aff2800d812f6f82a841dff4e1f078f76281b7b9be1"
+    },
+    {
+      "path": "command-0.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "command-1.log",
+      "bytes": 97,
+      "sha256": "74b92df476c2680a6afc9740a502c41535ef6800233152bcc854007e7728cf50"
+    },
+    {
+      "path": "commands.json",
+      "bytes": 1184,
+      "sha256": "65876d0733cf04e3ed155c38f3ccc88c3a28cf9624a6b503d81f6b69a6e33784"
+    },
+    {
+      "path": "full-race.log",
+      "bytes": 1315,
+      "sha256": "84a4b17cf1d2e77d87a6e3909167d10aebf226e0f81a0a54a9aa8e7bc5e85442"
+    },
+    {
+      "path": "initial-wrong-cwd-no-tests.log",
+      "bytes": 92,
+      "sha256": "8da75133cc8d378c2be41f2f33a75c7f7c0e51443862bcce32f249bfd77c77a3"
+    },
+    {
+      "path": "main-source/graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/CypherExecutor.kt",
+      "bytes": 25235,
+      "sha256": "2de0ff1f84fc67fd76f3d4c3335c406ed440c625e29f3911aa73d2aa04cf2586"
+    },
+    {
+      "path": "main-source/graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/QueryPipeline.kt",
+      "bytes": 241874,
+      "sha256": "9522dff099e2843f32115ae52f01adfb29c14d147dd3b9919daf907181c4f4ae"
+    },
+    {
+      "path": "main.json",
+      "bytes": 1816007,
+      "sha256": "e6700c29d98b11da6bc4e1c8d22d946ffa188bbba9ef3b52c5d890be52c702df"
+    },
+    {
+      "path": "original-source/internal/query/engine.go",
+      "bytes": 14578,
+      "sha256": "8bf53da8b83dab072d2013dcb5d4f174040d14e262a923fb365ed10557e67e60"
+    },
+    {
+      "path": "original-source/internal/query/eval.go",
+      "bytes": 13259,
+      "sha256": "da83c73c99d306abe8137d332339b57abe49cc0a43a2a41ef53bb82f25d5fe1f"
+    },
+    {
+      "path": "original-source/internal/query/lazy_filtered_candidates.go",
+      "bytes": 6023,
+      "sha256": "f977c1a839e881f9edb86b78d29c2b8acc95c4a0f8dc2e5dbcce6f35323afad9"
+    },
+    {
+      "path": "original-source/internal/query/main_string_candidates.go",
+      "bytes": 6346,
+      "sha256": "9c55befb82ba45e054d0e8e40813f134d4219185daee25ff77c3a9350cf627f9"
+    },
+    {
+      "path": "original-source/internal/query/main_string_source.go",
+      "bytes": 6237,
+      "sha256": "6acd635b256d9107895a9b9fc1e86bbd46122a3172795f4eb8ea5eb3f8403da4"
+    },
+    {
+      "path": "original-source/internal/query/ordinary_projection.go",
+      "bytes": 10682,
+      "sha256": "b0835812b129c540f02dab733aa8e63cf5e4b32e15adb00f1983754f269eb612"
+    },
+    {
+      "path": "original-source/internal/query/streaming_pagination.go",
+      "bytes": 7798,
+      "sha256": "38f65e892cf3534134ec301665a86c8d3402470df4d77d75c7d91682447a8c8b"
+    },
+    {
+      "path": "original-source/internal/server/cross.go",
+      "bytes": 7367,
+      "sha256": "5965f85a3a08b0b8fe4a5e8b3cc111b1ac1d19f3734c57a325e217e85ea0a7cb"
+    },
+    {
+      "path": "query-http-tests.log",
+      "bytes": 422,
+      "sha256": "939d93583545d0a93dd7d75d0cfaafe038c5db5f84e0ea3bf5aeca1d0afa2ca4"
+    },
+    {
+      "path": "schedule-command-0.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "schedule-command-1.log",
+      "bytes": 88,
+      "sha256": "9e13357c42b4976b4c9a65a759d4e96582e6dd6fe398fdcf44ead6ded5f79be2"
+    },
+    {
+      "path": "schedule-commands.json",
+      "bytes": 1214,
+      "sha256": "9aa0ec9cb3d42680125729ea2aa0316d9379e395ca507c01986e392ace65111a"
+    },
+    {
+      "path": "schedule-fixtures/bad-matched/forward.graph",
+      "bytes": 12,
+      "sha256": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4"
+    },
+    {
+      "path": "schedule-fixtures/bad-matched/forward.offsets",
+      "bytes": 35,
+      "sha256": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458"
+    },
+    {
+      "path": "schedule-fixtures/bad-matched/forward.properties",
+      "bytes": 620,
+      "sha256": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc"
+    },
+    {
+      "path": "schedule-fixtures/bad-matched/graph.callsite-string-content.identity",
+      "bytes": 32,
+      "sha256": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0"
+    },
+    {
+      "path": "schedule-fixtures/bad-matched/graph.callsite-string-index",
+      "bytes": 676,
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+    },
+    {
+      "path": "schedule-fixtures/bad-matched/graph.classoverview",
+      "bytes": 64,
+      "sha256": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea"
+    },
+    {
+      "path": "schedule-fixtures/bad-matched/graph.comparisons",
+      "bytes": 8,
+      "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8"
+    },
+    {
+      "path": "schedule-fixtures/bad-matched/graph.labelprefix",
+      "bytes": 368,
+      "sha256": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23"
+    },
+    {
+      "path": "schedule-fixtures/bad-matched/graph.labels",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "schedule-fixtures/bad-matched/graph.metadata",
+      "bytes": 36,
+      "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb"
+    },
+    {
+      "path": "schedule-fixtures/bad-matched/graph.nodedata",
+      "bytes": 220,
+      "sha256": "9727c0bb15ff09833a7d051df8eecca190e98f0338a045929d7f865d933318d8"
+    },
+    {
+      "path": "schedule-fixtures/bad-matched/graph.nodeindex",
+      "bytes": 60,
+      "sha256": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c"
+    },
+    {
+      "path": "schedule-fixtures/bad-matched/graph.nodeoffsets",
+      "bytes": 736,
+      "sha256": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf"
+    },
+    {
+      "path": "schedule-fixtures/bad-matched/graph.resources",
+      "bytes": 8,
+      "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17"
+    },
+    {
+      "path": "schedule-fixtures/bad-matched/graph.strings",
+      "bytes": 535,
+      "sha256": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b"
+    },
+    {
+      "path": "schedule-fixtures/bad-matched/graph.strings.identity",
+      "bytes": 32,
+      "sha256": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb"
+    },
+    {
+      "path": "schedule-fixtures/bad-matched/graph.typeindex",
+      "bytes": 232,
+      "sha256": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849"
+    },
+    {
+      "path": "schedule-fixtures/clean/forward.graph",
+      "bytes": 12,
+      "sha256": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4"
+    },
+    {
+      "path": "schedule-fixtures/clean/forward.offsets",
+      "bytes": 35,
+      "sha256": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458"
+    },
+    {
+      "path": "schedule-fixtures/clean/forward.properties",
+      "bytes": 620,
+      "sha256": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc"
+    },
+    {
+      "path": "schedule-fixtures/clean/graph.callsite-string-content.identity",
+      "bytes": 32,
+      "sha256": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0"
+    },
+    {
+      "path": "schedule-fixtures/clean/graph.callsite-string-index",
+      "bytes": 676,
+      "sha256": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f"
+    },
+    {
+      "path": "schedule-fixtures/clean/graph.classoverview",
+      "bytes": 64,
+      "sha256": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea"
+    },
+    {
+      "path": "schedule-fixtures/clean/graph.comparisons",
+      "bytes": 8,
+      "sha256": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8"
+    },
+    {
+      "path": "schedule-fixtures/clean/graph.labelprefix",
+      "bytes": 368,
+      "sha256": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23"
+    },
+    {
+      "path": "schedule-fixtures/clean/graph.labels",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "schedule-fixtures/clean/graph.metadata",
+      "bytes": 36,
+      "sha256": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb"
+    },
+    {
+      "path": "schedule-fixtures/clean/graph.nodedata",
+      "bytes": 220,
+      "sha256": "f0a4462a820a7daa557704796992c79b9ddafcb80475aaafa020592cb4e19e1a"
+    },
+    {
+      "path": "schedule-fixtures/clean/graph.nodeindex",
+      "bytes": 60,
+      "sha256": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c"
+    },
+    {
+      "path": "schedule-fixtures/clean/graph.nodeoffsets",
+      "bytes": 736,
+      "sha256": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf"
+    },
+    {
+      "path": "schedule-fixtures/clean/graph.resources",
+      "bytes": 8,
+      "sha256": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17"
+    },
+    {
+      "path": "schedule-fixtures/clean/graph.strings",
+      "bytes": 535,
+      "sha256": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b"
+    },
+    {
+      "path": "schedule-fixtures/clean/graph.strings.identity",
+      "bytes": 32,
+      "sha256": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb"
+    },
+    {
+      "path": "schedule-fixtures/clean/graph.typeindex",
+      "bytes": 232,
+      "sha256": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849"
+    },
+    {
+      "path": "schedule-main.json",
+      "bytes": 25915,
+      "sha256": "8db8216a68b9d59341f50fd5c665310927bc994ed3b8ca61f38f27ae438fcfb0"
+    },
+    {
+      "path": "schedule-matrix-command-0.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "schedule-matrix-command-1.log",
+      "bytes": 89,
+      "sha256": "019b9735967188c53cde9c1b0d43b530721d3b15b28400531b24d3fc46e4bc77"
+    },
+    {
+      "path": "schedule-matrix-commands.json",
+      "bytes": 1233,
+      "sha256": "cc60de2e8e8ffded636657e4c8d2cc5472572fbfb611b56944497865e6dcedb4"
+    },
+    {
+      "path": "schedule-matrix-main.json",
+      "bytes": 64737,
+      "sha256": "a6c83dd6522cb54cfdc6acfe237171a1abc57c90307b477c197a6160f2b90ee4"
+    },
+    {
+      "path": "source-verification.json",
+      "bytes": 1725,
+      "sha256": "c9f59701f28fb28bbdf3796facca77c11df48e632b42145e47cc307380c14e1e"
+    },
+    {
+      "path": "test-commands.json",
+      "bytes": 522,
+      "sha256": "ce4e527a279dd3831f73f7ed7bfbec3f6652e55413e6ba88cc916fb8db940b78"
+    },
+    {
+      "path": "validator-build.log",
+      "bytes": 97,
+      "sha256": "93c38cb2e476c0ac040264f866e3984d10127bc55c5596fba79eb43179267ef7"
+    },
+    {
+      "path": "verification.json",
+      "bytes": 26700,
+      "sha256": "4c433fb9efa67d6d0e68440af3534a1fe2e814a7a6ca7dbb1d9cfcc181e6ac9a"
+    },
+    {
+      "path": "verify.py",
+      "bytes": 4760,
+      "sha256": "8b46a6cef2a857c1f02fc1591fcab648ea2c00efdcf1d51499c45b2782e77c72"
+    },
+    {
+      "path": "vet.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "fileCount": 82,
+  "performanceMeasured": false
+}

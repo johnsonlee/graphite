@@ -14,6 +14,7 @@ type mainStringSourceSpec struct {
 	atoms          []distinctStringAtom
 	sourceCount    int
 	forcePersisted bool
+	fullSplitScan  bool
 	lazyMain       bool
 	generic        bool
 }
@@ -45,6 +46,13 @@ func (e evaluator) mainCandidateIterator(source Graph, plan *mainStringSourceSpe
 			} else {
 				raw = true
 			}
+		} else if plan.sourceCount >= 40 && plan.fullSplitScan {
+			// The streaming consumer passes the whole concrete node count. Main's raw
+			// bounded parallel shortcut is therefore ineligible; preserve retained-index
+			// loading/building and cannot-match preflight without initializing a view.
+			index, _, err = source.Store.PrepareDistinctStringIndex(e.ctx, store.DistinctProjectionOptions{MainSource: plan.lazyMain, SourceCount: plan.sourceCount, Limit: limit, SkipPreparedPreference: true, CannotMatch: func() bool { return e.distinctCannotMatch(source, &indexedDistinctPlan{atoms: plan.atoms}) }})
+			failMainStringRead(err)
+			raw = index.Raw
 		} else if plan.sourceCount >= 40 {
 			view, ok, err := source.Store.PrepareDistinctStringIndex(e.ctx, store.DistinctProjectionOptions{MainSource: plan.lazyMain, SourceCount: 40, Limit: limit, InitializeMappedView: true})
 			failMainStringRead(err)

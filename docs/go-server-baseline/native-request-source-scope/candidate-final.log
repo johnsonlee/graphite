@@ -1,0 +1,10 @@
+--- FAIL: TestRequestSourceScopeMain (1.85s)
+    --- FAIL: TestRequestSourceScopeMain/64/scoped=false/badLast=true/ordered (0.03s)
+        request_source_scope_test.go:51: repeat0 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+        request_source_scope_test.go:51: repeat1 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+    --- FAIL: TestRequestSourceScopeMain/64/scoped=true/badLast=true/and-route (0.03s)
+        request_source_scope_test.go:51: repeat0 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+        request_source_scope_test.go:51: repeat1 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+FAIL
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/query	2.345s
+FAIL

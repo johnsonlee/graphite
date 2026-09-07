@@ -1,0 +1,34 @@
+[
+  {
+    "command": [
+      "go",
+      "test",
+      "-race",
+      "./..."
+    ],
+    "cwd": "graphite-server",
+    "sessionId": 30475,
+    "exitCode": 0,
+    "output": "full-race.log"
+  },
+  {
+    "command": [
+      "go",
+      "vet",
+      "./..."
+    ],
+    "cwd": "graphite-server",
+    "exitCode": 0,
+    "output": "vet.log"
+  },
+  {
+    "command": [
+      "go",
+      "test",
+      "./cmd/graphite-benchmark-cases"
+    ],
+    "cwd": "graphite-server",
+    "exitCode": 0,
+    "output": "validator-build.log"
+  }
+]

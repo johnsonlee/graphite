@@ -1,0 +1,24 @@
+{
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "mainClean": true,
+  "mainJarSHA256": "91c3a1d154ca96004c55df195d9f752e077cab3e33ca1570b2c88b872d9bc34d",
+  "mainSourceSnapshots": {
+    "graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/QueryPipeline.kt": "9522dff099e2843f32115ae52f01adfb29c14d147dd3b9919daf907181c4f4ae",
+    "graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/CypherExecutor.kt": "2de0ff1f84fc67fd76f3d4c3335c406ed440c625e29f3911aa73d2aa04cf2586"
+  },
+  "nativeBase": "417218e3",
+  "eightOriginalProductionFilesMatchCommittedBase": {
+    "graphite-server/internal/server/cross.go": "5965f85a3a08b0b8fe4a5e8b3cc111b1ac1d19f3734c57a325e217e85ea0a7cb",
+    "graphite-server/internal/query/ordinary_projection.go": "b0835812b129c540f02dab733aa8e63cf5e4b32e15adb00f1983754f269eb612",
+    "graphite-server/internal/query/main_string_candidates.go": "9c55befb82ba45e054d0e8e40813f134d4219185daee25ff77c3a9350cf627f9",
+    "graphite-server/internal/query/engine.go": "8bf53da8b83dab072d2013dcb5d4f174040d14e262a923fb365ed10557e67e60",
+    "graphite-server/internal/query/main_string_source.go": "6acd635b256d9107895a9b9fc1e86bbd46122a3172795f4eb8ea5eb3f8403da4",
+    "graphite-server/internal/query/streaming_pagination.go": "38f65e892cf3534134ec301665a86c8d3402470df4d77d75c7d91682447a8c8b",
+    "graphite-server/internal/query/eval.go": "da83c73c99d306abe8137d332339b57abe49cc0a43a2a41ef53bb82f25d5fe1f",
+    "graphite-server/internal/query/lazy_filtered_candidates.go": "f977c1a839e881f9edb86b78d29c2b8acc95c4a0f8dc2e5dbcce6f35323afad9"
+  },
+  "system": "macOS-14.3-arm64-arm-64bit-Mach-O",
+  "logicalCPUs": 16,
+  "realGraphsOpened": 0,
+  "performanceMeasured": false
+}

@@ -1,0 +1,112 @@
+--- FAIL: TestRequestSourceScopeMain (1.79s)
+    --- FAIL: TestRequestSourceScopeMain/2/scoped=false/badLast=true/ordinary (0.00s)
+        request_source_scope_test.go:51: repeat0 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+        request_source_scope_test.go:51: repeat1 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+    --- FAIL: TestRequestSourceScopeMain/2/scoped=false/badLast=true/wrapped (0.00s)
+        request_source_scope_test.go:51: repeat0 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+        request_source_scope_test.go:51: repeat1 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+    --- FAIL: TestRequestSourceScopeMain/2/scoped=true/badLast=false/ordinary (0.00s)
+        request_source_scope_test.go:51: repeat0 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+        request_source_scope_test.go:51: repeat1 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+    --- FAIL: TestRequestSourceScopeMain/2/scoped=true/badLast=false/wrapped (0.00s)
+        request_source_scope_test.go:51: repeat0 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+        request_source_scope_test.go:51: repeat1 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+    --- FAIL: TestRequestSourceScopeMain/2/scoped=true/badLast=false/residual (0.00s)
+        request_source_scope_test.go:51: repeat0 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+        request_source_scope_test.go:51: repeat1 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+    --- FAIL: TestRequestSourceScopeMain/2/scoped=true/badLast=false/and-route (0.00s)
+        request_source_scope_test.go:51: repeat0 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+        request_source_scope_test.go:51: repeat1 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+    --- FAIL: TestRequestSourceScopeMain/2/scoped=true/badLast=true/ordinary (0.00s)
+        request_source_scope_test.go:51: repeat0 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+        request_source_scope_test.go:51: repeat1 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+    --- FAIL: TestRequestSourceScopeMain/2/scoped=true/badLast=true/wrapped (0.00s)
+        request_source_scope_test.go:51: repeat0 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+        request_source_scope_test.go:51: repeat1 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+    --- FAIL: TestRequestSourceScopeMain/2/scoped=true/badLast=true/residual (0.00s)
+        request_source_scope_test.go:51: repeat0 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+        request_source_scope_test.go:51: repeat1 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+    --- FAIL: TestRequestSourceScopeMain/2/scoped=true/badLast=true/and-route (0.00s)
+        request_source_scope_test.go:51: repeat0 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+        request_source_scope_test.go:51: repeat1 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+    --- FAIL: TestRequestSourceScopeMain/8/scoped=false/badLast=true/ordinary (0.00s)
+        request_source_scope_test.go:51: repeat0 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+        request_source_scope_test.go:51: repeat1 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+    --- FAIL: TestRequestSourceScopeMain/8/scoped=false/badLast=true/wrapped (0.00s)
+        request_source_scope_test.go:51: repeat0 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+        request_source_scope_test.go:51: repeat1 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+    --- FAIL: TestRequestSourceScopeMain/8/scoped=true/badLast=false/ordinary (0.00s)
+        request_source_scope_test.go:51: repeat0 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+        request_source_scope_test.go:51: repeat1 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+    --- FAIL: TestRequestSourceScopeMain/8/scoped=true/badLast=false/wrapped (0.00s)
+        request_source_scope_test.go:51: repeat0 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+        request_source_scope_test.go:51: repeat1 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+    --- FAIL: TestRequestSourceScopeMain/8/scoped=true/badLast=false/residual (0.00s)
+        request_source_scope_test.go:51: repeat0 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+        request_source_scope_test.go:51: repeat1 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+    --- FAIL: TestRequestSourceScopeMain/8/scoped=true/badLast=false/and-route (0.01s)
+        request_source_scope_test.go:51: repeat0 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+        request_source_scope_test.go:51: repeat1 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+    --- FAIL: TestRequestSourceScopeMain/8/scoped=true/badLast=true/ordinary (0.00s)
+        request_source_scope_test.go:51: repeat0 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+        request_source_scope_test.go:51: repeat1 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+    --- FAIL: TestRequestSourceScopeMain/8/scoped=true/badLast=true/wrapped (0.00s)
+        request_source_scope_test.go:51: repeat0 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+        request_source_scope_test.go:51: repeat1 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+    --- FAIL: TestRequestSourceScopeMain/8/scoped=true/badLast=true/residual (0.00s)
+        request_source_scope_test.go:51: repeat0 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+        request_source_scope_test.go:51: repeat1 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+    --- FAIL: TestRequestSourceScopeMain/8/scoped=true/badLast=true/and-route (0.00s)
+        request_source_scope_test.go:51: repeat0 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+        request_source_scope_test.go:51: repeat1 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+    --- FAIL: TestRequestSourceScopeMain/40/scoped=false/badLast=false/ordered (0.02s)
+        request_source_scope_test.go:51: repeat0 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+        request_source_scope_test.go:51: repeat1 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+    --- FAIL: TestRequestSourceScopeMain/40/scoped=false/badLast=true/ordered (0.02s)
+        request_source_scope_test.go:51: repeat0 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+        request_source_scope_test.go:51: repeat1 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+    --- FAIL: TestRequestSourceScopeMain/40/scoped=true/badLast=false/residual (0.01s)
+        request_source_scope_test.go:51: repeat0 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+        request_source_scope_test.go:51: repeat1 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+    --- FAIL: TestRequestSourceScopeMain/40/scoped=true/badLast=false/ordered (0.02s)
+        request_source_scope_test.go:51: repeat0 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+        request_source_scope_test.go:51: repeat1 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+    --- FAIL: TestRequestSourceScopeMain/40/scoped=true/badLast=false/and-route (0.01s)
+        request_source_scope_test.go:51: repeat0 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+        request_source_scope_test.go:51: repeat1 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+    --- FAIL: TestRequestSourceScopeMain/40/scoped=true/badLast=true/residual (0.01s)
+        request_source_scope_test.go:51: repeat0 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+        request_source_scope_test.go:51: repeat1 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+    --- FAIL: TestRequestSourceScopeMain/40/scoped=true/badLast=true/ordered (0.02s)
+        request_source_scope_test.go:51: repeat0 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+        request_source_scope_test.go:51: repeat1 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+    --- FAIL: TestRequestSourceScopeMain/40/scoped=true/badLast=true/and-route (0.01s)
+        request_source_scope_test.go:51: repeat0 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+        request_source_scope_test.go:51: repeat1 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+    --- FAIL: TestRequestSourceScopeMain/64/scoped=false/badLast=false/ordered (0.02s)
+        request_source_scope_test.go:51: repeat0 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+        request_source_scope_test.go:51: repeat1 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+    --- FAIL: TestRequestSourceScopeMain/64/scoped=false/badLast=true/ordered (0.03s)
+        request_source_scope_test.go:51: repeat0 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+        request_source_scope_test.go:51: repeat1 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+    --- FAIL: TestRequestSourceScopeMain/64/scoped=true/badLast=false/residual (0.02s)
+        request_source_scope_test.go:51: repeat0 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+        request_source_scope_test.go:51: repeat1 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+    --- FAIL: TestRequestSourceScopeMain/64/scoped=true/badLast=false/ordered (0.02s)
+        request_source_scope_test.go:51: repeat0 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+        request_source_scope_test.go:51: repeat1 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+    --- FAIL: TestRequestSourceScopeMain/64/scoped=true/badLast=false/and-route (0.02s)
+        request_source_scope_test.go:51: repeat0 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+        request_source_scope_test.go:51: repeat1 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+    --- FAIL: TestRequestSourceScopeMain/64/scoped=true/badLast=true/residual (0.02s)
+        request_source_scope_test.go:51: repeat0 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+        request_source_scope_test.go:51: repeat1 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+    --- FAIL: TestRequestSourceScopeMain/64/scoped=true/badLast=true/ordered (0.03s)
+        request_source_scope_test.go:51: repeat0 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+        request_source_scope_test.go:51: repeat1 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+    --- FAIL: TestRequestSourceScopeMain/64/scoped=true/badLast=true/and-route (0.02s)
+        request_source_scope_test.go:51: repeat0 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+        request_source_scope_test.go:51: repeat1 differs from actual main; full values retained in REQUEST_SCOPE_OUTPUT
+FAIL
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/query	2.115s
+FAIL

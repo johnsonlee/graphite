@@ -87,7 +87,7 @@ type streamingNodeFactory func(evaluator, Graph, cypher.NodePattern, []distinctS
 
 func realStreamingNodes(e evaluator, source Graph, node cypher.NodePattern, atoms []distinctStringAtom, count int) mainNodeNext {
 	if atoms != nil {
-		return e.mainStringCandidates(source, node, atoms, count)
+		return e.mainStreamingStringCandidates(source, node, atoms, count)
 	}
 	return e.lazyGenericNodes(source, node)
 }
@@ -109,9 +109,11 @@ func (e evaluator) streamingPagination(graph *store.Store, branch cypher.SingleQ
 		return result, true
 	}
 	if p.node.Variable != "" {
-		p.graphIDs = e.streamingGraphConstraint(p.match.Where, p.node.Variable)
-		if value, ok := e.distinctStringConstant(p.node.Properties["graphId"]); ok {
-			p.graphIDs = streamingGraphIntersection(p.graphIDs, map[string]bool{value: true})
+		if !e.sourceScopeApplied {
+			p.graphIDs = e.streamingGraphConstraint(p.match.Where, p.node.Variable)
+			if value, ok := e.distinctStringConstant(p.node.Properties["graphId"]); ok {
+				p.graphIDs = streamingGraphIntersection(p.graphIDs, map[string]bool{value: true})
+			}
 		}
 		if len(p.node.Labels) <= 1 && len(p.node.Properties) == 0 {
 			p.atoms = e.lazyNecessaryCandidates(p.match.Where, p.node.Variable)

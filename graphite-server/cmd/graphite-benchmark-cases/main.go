@@ -58,7 +58,7 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	r := report{MainRevision: w.MainRevision, ManifestSHA256: hash, SourceOrder: w.SourceOrder, Cases: make([]caseRecord, 0, len(w.Cases)), Limitations: []string{"AST and execution-input validation only", "Request-selected sourceScopeApplied still requires a corresponding Go execution API", "Cold/warm/startup-prepared state preparation is not implemented by this validator", "No query result or P95 claim"}}
+	r := report{MainRevision: w.MainRevision, ManifestSHA256: hash, SourceOrder: w.SourceOrder, Cases: make([]caseRecord, 0, len(w.Cases)), Limitations: []string{"AST and execution-input validation only", "This validator does not invoke the Go execution API", "Cold/warm/startup-prepared state preparation is not implemented by this validator", "No query result or P95 claim"}}
 	for _, c := range w.Cases {
 		input, err := w.Input(c, 60000)
 		if err != nil {
