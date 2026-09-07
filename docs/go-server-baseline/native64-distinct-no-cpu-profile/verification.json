@@ -1,0 +1,8 @@
+{
+  "passed": true,
+  "completePairedOutputsEqual": 5,
+  "sourceFilesUnchangedDuringRuns": true,
+  "cpuSamplingEnabled": false,
+  "coTenancy": "Background correctness/compilation work, including root cursor race/vet and small profile exports. No other 64-graph performance process was run concurrently.",
+  "scope": "Sequential instrumented all64 queries, not HTTP/P95; forced GC and heap sampling remain."
+}

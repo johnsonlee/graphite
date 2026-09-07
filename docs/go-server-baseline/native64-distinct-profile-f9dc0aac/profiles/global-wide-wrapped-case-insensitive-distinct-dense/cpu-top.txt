@@ -1,0 +1,33 @@
+File: profile-query
+Type: cpu
+Time: Sep 7, 2026 at 9:07am (KST)
+Duration: 53.94s, Total samples = 3280.95s (6082.18%)
+Showing nodes accounting for 3267.81s, 99.60% of 3280.95s total
+Dropped 157 nodes (cum <= 16.40s)
+Showing top 25 nodes out of 36
+      flat  flat%   sum%        cum   cum%
+  3087.73s 94.11% 94.11%   3087.73s 94.11%  runtime.usleep
+   172.14s  5.25% 99.36%    172.15s  5.25%  runtime.pthread_cond_wait
+     5.80s  0.18% 99.53%    312.07s  9.51%  sync.(*Mutex).lockSlow
+     0.88s 0.027% 99.56%   1067.03s 32.52%  sync.(*Mutex).Unlock (inline)
+     0.53s 0.016% 99.58%    312.60s  9.53%  sync.(*Mutex).Lock (inline)
+     0.24s 0.0073% 99.58%   1788.16s 54.50%  runtime.stealWork
+     0.10s 0.003% 99.59%   1379.64s 42.05%  context.(*cancelCtx).Err
+     0.09s 0.0027% 99.59%   1377.79s 41.99%  runtime.lock2
+     0.07s 0.0021% 99.59%   1066.15s 32.50%  sync.(*Mutex).unlockSlow
+     0.06s 0.0018% 99.59%    305.86s  9.32%  runtime.semacquire1
+     0.03s 0.00091% 99.60%   1271.71s 38.76%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctRawRows
+     0.03s 0.00091% 99.60%   1787.81s 54.49%  runtime.runqgrab
+     0.03s 0.00091% 99.60%   1787.84s 54.49%  runtime.runqsteal
+     0.03s 0.00091% 99.60%   1066.09s 32.49%  runtime.semrelease1
+     0.02s 0.00061% 99.60%   1267.82s 38.64%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.check (partial-inline)
+     0.01s 0.0003% 99.60%     97.19s  2.96%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionNodeOrder
+     0.01s 0.0003% 99.60%   1892.75s 57.69%  runtime.findRunnable
+     0.01s 0.0003% 99.60%   1893.83s 57.72%  runtime.schedule
+         0     0% 99.60%    103.71s  3.16%  github.com/johnsonlee/graphite/graphite-server/internal/javastring.Case
+         0     0% 99.60%    117.35s  3.58%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctAtomMatches
+         0     0% 99.60%   1379.80s 42.05%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctSourceHits
+         0     0% 99.60%   1379.80s 42.05%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.indexedDistinct.func4
+         0     0% 99.60%    103.71s  3.16%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.javaCase (inline)
+         0     0% 99.60%   1379.80s 42.05%  github.com/johnsonlee/graphite/graphite-server/internal/query.runDistinctTasks[go.shape.map[string]bool].func1.1
+         0     0% 99.60%    108.10s  3.29%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).PrepareDistinctStringIndex

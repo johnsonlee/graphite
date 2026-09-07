@@ -1,0 +1,9 @@
+{
+  "query": "global-wide-wrapped-case-insensitive-distinct-dense",
+  "sampleSecondsFromPprof": 3280.95,
+  "profileDurationSecondsFromPprof": 53.94,
+  "runtimeNumCPU": 16,
+  "requestRusageUserPlusSystemSeconds": 259.433377,
+  "reason": "Sample aggregate exceeds even 16 times the profiling wall interval and disagrees with getrusage. Do not treat sample seconds or the usleep percentage as actual CPU time or a proven cause.",
+  "followup": "Paired bb961cd8/f9dc0aac five-query controls with CPU sampling disabled, in native64-distinct-no-cpu-profile. No Go upgrade or workaround applied."
+}

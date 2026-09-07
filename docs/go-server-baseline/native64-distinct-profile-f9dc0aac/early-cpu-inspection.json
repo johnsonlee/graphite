@@ -1,0 +1,13 @@
+{
+  "command": [
+    "go",
+    "tool",
+    "pprof",
+    "-top",
+    "-nodecount=25",
+    "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-3blq1qcl/profile-query",
+    "docs/go-server-baseline/native64-distinct-profile-f9dc0aac/profiles/global-wide-wrapped-case-insensitive-distinct-dense/cpu.pprof"
+  ],
+  "exitCode": 0,
+  "note": "Read completed first-dense CPU profile while repeat query was still running; host co-tenancy, not controlled timing."
+}

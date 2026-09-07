@@ -1,0 +1,33 @@
+File: profile-query
+Type: cpu
+Time: Sep 7, 2026 at 9:06am (KST)
+Duration: 11.55s, Total samples = 15.62s (135.27%)
+Showing nodes accounting for 14.20s, 90.91% of 15.62s total
+Dropped 133 nodes (cum <= 0.08s)
+Showing top 25 nodes out of 101
+      flat  flat%   sum%        cum   cum%
+     7.99s 51.15% 51.15%      7.99s 51.15%  runtime.madvise
+     1.03s  6.59% 57.75%      3.96s 25.35%  runtime.scanobject
+     0.60s  3.84% 61.59%      0.60s  3.84%  runtime.(*gcBits).bytep (inline)
+     0.56s  3.59% 65.17%      1.61s 10.31%  runtime.greyobject
+     0.52s  3.33% 68.50%      0.64s  4.10%  runtime.findObject
+     0.43s  2.75% 71.25%      0.43s  2.75%  runtime/internal/atomic.(*Int64).Add (inline)
+     0.34s  2.18% 73.43%      0.34s  2.18%  runtime.(*mspan).base (inline)
+     0.34s  2.18% 75.61%      0.34s  2.18%  runtime.typePointers.nextFast (inline)
+     0.32s  2.05% 77.66%      0.32s  2.05%  runtime.pthread_kill
+     0.31s  1.98% 79.64%      5.09s 32.59%  runtime.gcDrain
+     0.20s  1.28% 80.92%      0.20s  1.28%  runtime.pthread_cond_signal
+     0.19s  1.22% 82.14%      0.55s  3.52%  runtime.mallocgc
+     0.17s  1.09% 83.23%      0.21s  1.34%  runtime.typePointers.next
+     0.17s  1.09% 84.31%      0.17s  1.09%  runtime.usleep
+     0.16s  1.02% 85.34%      0.16s  1.02%  runtime.duffcopy
+     0.15s  0.96% 86.30%      0.15s  0.96%  runtime.newArenaMayUnlock
+     0.13s  0.83% 87.13%      0.20s  1.28%  sort.partition_func
+     0.09s  0.58% 87.71%      0.09s  0.58%  runtime.(*mspan).heapBitsSmallForAddr
+     0.09s  0.58% 88.28%      0.09s  0.58%  runtime.spanOf (inline)
+     0.08s  0.51% 88.80%      0.20s  1.28%  runtime.concatstrings
+     0.08s  0.51% 89.31%      0.11s   0.7%  strconv.appendEscapedRune
+     0.07s  0.45% 89.76%      0.15s  0.96%  github.com/johnsonlee/graphite/graphite-server/internal/javastring.Case
+     0.07s  0.45% 90.20%      0.09s  0.58%  runtime.mapaccess2_fast32
+     0.06s  0.38% 90.59%      0.15s  0.96%  runtime.(*mspan).typePointersOfUnchecked
+     0.05s  0.32% 90.91%      0.13s  0.83%  fmt.(*pp).doPrintf

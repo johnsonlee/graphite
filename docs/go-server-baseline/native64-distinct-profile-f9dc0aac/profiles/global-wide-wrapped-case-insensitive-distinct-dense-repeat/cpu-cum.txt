@@ -1,0 +1,33 @@
+File: profile-query
+Type: cpu
+Time: Sep 7, 2026 at 9:08am (KST)
+Duration: 57.19s, Total samples = 3009.64s (5262.54%)
+Showing nodes accounting for 2850.94s, 94.73% of 3009.64s total
+Dropped 95 nodes (cum <= 15.05s)
+Showing top 25 nodes out of 36
+      flat  flat%   sum%        cum   cum%
+  2845.91s 94.56% 94.56%   2845.91s 94.56%  runtime.usleep
+         0     0% 94.56%   1673.01s 55.59%  runtime.mcall
+         0     0% 94.56%   1673.01s 55.59%  runtime.park_m
+     0.02s 0.00066% 94.56%   1670.83s 55.52%  runtime.schedule
+     0.01s 0.00033% 94.56%   1668.95s 55.45%  runtime.findRunnable
+     0.15s 0.005% 94.57%   1584.05s 52.63%  runtime.stealWork
+     0.01s 0.00033% 94.57%   1583.83s 52.63%  runtime.runqsteal
+     0.05s 0.0017% 94.57%   1583.82s 52.62%  runtime.runqgrab
+     0.10s 0.0033% 94.57%   1337.32s 44.43%  runtime.lock2
+         0     0% 94.57%   1337.32s 44.43%  runtime.lockWithRank (inline)
+         0     0% 94.57%   1335.94s 44.39%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctSourceHits
+         0     0% 94.57%   1335.94s 44.39%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.indexedDistinct.func4
+         0     0% 94.57%   1335.94s 44.39%  github.com/johnsonlee/graphite/graphite-server/internal/query.runDistinctTasks[go.shape.map[string]bool].func1.1
+     0.09s 0.003% 94.57%   1335.83s 44.39%  context.(*cancelCtx).Err
+         0     0% 94.57%   1262.14s 41.94%  runtime.osyield (inline)
+         0     0% 94.57%   1234.04s 41.00%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctRawRows
+     0.01s 0.00033% 94.57%   1230.71s 40.89%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.check
+     0.52s 0.017% 94.59%    975.75s 32.42%  sync.(*Mutex).Unlock (inline)
+     0.12s 0.004% 94.60%    975.23s 32.40%  sync.(*Mutex).unlockSlow
+     0.04s 0.0013% 94.60%    975.16s 32.40%  runtime.semrelease1
+         0     0% 94.60%    975.16s 32.40%  sync.runtime_Semrelease
+     0.37s 0.012% 94.61%    360.08s 11.96%  sync.(*Mutex).Lock (inline)
+     3.48s  0.12% 94.72%    359.71s 11.95%  sync.(*Mutex).lockSlow
+     0.05s 0.0017% 94.73%    355.97s 11.83%  runtime.semacquire1
+     0.01s 0.00033% 94.73%    355.95s 11.83%  sync.runtime_SemacquireMutex

@@ -1,0 +1,7 @@
+{
+  "baseRevision": "bb961cd8db99b7bd374d185afb367963ef1947ac",
+  "candidateRevision": "f9dc0aac1c1026797cc749f6ba8901ca6a0e0267",
+  "originalHarnessSHA256": "3a153120606666ef8da99e55adb7f8d8933e7c1c37bad059ed83a25bb6d9e2e7",
+  "controlHarnessSHA256": "f31d93baadc9b019fd4f5e42b84570997f599f4a869ad07c83a5939e5830e9a6",
+  "purpose": "Same five ordered all64 queries with CPU sampling disabled; same serialization, forced GC, request counters and full output comparisons. Two sequential processes; diagnostic, not HTTP/P95."
+}

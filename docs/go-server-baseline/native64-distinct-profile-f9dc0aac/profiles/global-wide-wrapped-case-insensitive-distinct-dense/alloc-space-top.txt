@@ -1,0 +1,20 @@
+File: profile-query
+Type: alloc_space
+Time: Sep 7, 2026 at 9:07am (KST)
+Showing nodes accounting for 5443.35MB, 98.72% of 5514.01MB total
+Dropped 90 nodes (cum <= 27.57MB)
+      flat  flat%   sum%        cum   cum%
+ 5184.22MB 94.02% 94.02%  5184.22MB 94.02%  os.ReadFile
+      94MB  1.70% 95.72%      145MB  2.63%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctAtomMatches
+   86.52MB  1.57% 97.29%    86.52MB  1.57%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*CallSiteStringIndex).Postings
+      51MB  0.92% 98.22%       51MB  0.92%  strings.(*Builder).grow
+   17.50MB  0.32% 98.54%    33.50MB  0.61%  github.com/johnsonlee/graphite/graphite-server/internal/query.key
+    8.59MB  0.16% 98.69%   188.98MB  3.43%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctRawRows
+    1.50MB 0.027% 98.72%  5476.11MB 99.31%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctSourceHits
+         0     0% 98.72%       51MB  0.92%  github.com/johnsonlee/graphite/graphite-server/internal/javastring.Case
+         0     0% 98.72%  5476.11MB 99.31%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.indexedDistinct.func4
+         0     0% 98.72%       51MB  0.92%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.javaCase (inline)
+         0     0% 98.72%  5476.11MB 99.31%  github.com/johnsonlee/graphite/graphite-server/internal/query.runDistinctTasks[go.shape.map[string]bool].func1.1
+         0     0% 98.72%  5279.22MB 95.74%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).PrepareDistinctStringIndex
+         0     0% 98.72%  5184.22MB 94.02%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).prepareProjectionOffsets
+         0     0% 98.72%       51MB  0.92%  strings.(*Builder).Grow

@@ -1,0 +1,204 @@
+[
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-nodecount=25",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-3blq1qcl/profile-query",
+      "docs/go-server-baseline/native64-distinct-profile-f9dc0aac/profiles/global-wide-distribution-broad-all-64/cpu.pprof"
+    ],
+    "exitCode": 0,
+    "output": "docs/go-server-baseline/native64-distinct-profile-f9dc0aac/profiles/global-wide-distribution-broad-all-64/cpu-top.txt"
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-cum",
+      "-nodecount=25",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-3blq1qcl/profile-query",
+      "docs/go-server-baseline/native64-distinct-profile-f9dc0aac/profiles/global-wide-distribution-broad-all-64/cpu.pprof"
+    ],
+    "exitCode": 0,
+    "output": "docs/go-server-baseline/native64-distinct-profile-f9dc0aac/profiles/global-wide-distribution-broad-all-64/cpu-cum.txt"
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-alloc_space",
+      "-nodecount=25",
+      "-base",
+      "docs/go-server-baseline/native64-distinct-profile-f9dc0aac/profiles/global-wide-distribution-broad-all-64/heap-before.pprof",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-3blq1qcl/profile-query",
+      "docs/go-server-baseline/native64-distinct-profile-f9dc0aac/profiles/global-wide-distribution-broad-all-64/heap-after.pprof"
+    ],
+    "exitCode": 0,
+    "output": "docs/go-server-baseline/native64-distinct-profile-f9dc0aac/profiles/global-wide-distribution-broad-all-64/alloc-space-top.txt"
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-cum",
+      "-nodecount=25",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-3blq1qcl/profile-query",
+      "docs/go-server-baseline/native64-distinct-profile-f9dc0aac/profiles/global-wide-wrapped-case-insensitive-distinct-dense/cpu.pprof"
+    ],
+    "exitCode": 0,
+    "output": "docs/go-server-baseline/native64-distinct-profile-f9dc0aac/profiles/global-wide-wrapped-case-insensitive-distinct-dense/cpu-cum.txt"
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-alloc_space",
+      "-nodecount=25",
+      "-base",
+      "docs/go-server-baseline/native64-distinct-profile-f9dc0aac/profiles/global-wide-wrapped-case-insensitive-distinct-dense/heap-before.pprof",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-3blq1qcl/profile-query",
+      "docs/go-server-baseline/native64-distinct-profile-f9dc0aac/profiles/global-wide-wrapped-case-insensitive-distinct-dense/heap-after.pprof"
+    ],
+    "exitCode": 0,
+    "output": "docs/go-server-baseline/native64-distinct-profile-f9dc0aac/profiles/global-wide-wrapped-case-insensitive-distinct-dense/alloc-space-top.txt"
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-nodecount=25",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-3blq1qcl/profile-query",
+      "docs/go-server-baseline/native64-distinct-profile-f9dc0aac/profiles/global-wide-wrapped-case-insensitive-distinct-dense-repeat/cpu.pprof"
+    ],
+    "exitCode": 0,
+    "output": "docs/go-server-baseline/native64-distinct-profile-f9dc0aac/profiles/global-wide-wrapped-case-insensitive-distinct-dense-repeat/cpu-top.txt"
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-cum",
+      "-nodecount=25",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-3blq1qcl/profile-query",
+      "docs/go-server-baseline/native64-distinct-profile-f9dc0aac/profiles/global-wide-wrapped-case-insensitive-distinct-dense-repeat/cpu.pprof"
+    ],
+    "exitCode": 0,
+    "output": "docs/go-server-baseline/native64-distinct-profile-f9dc0aac/profiles/global-wide-wrapped-case-insensitive-distinct-dense-repeat/cpu-cum.txt"
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-alloc_space",
+      "-nodecount=25",
+      "-base",
+      "docs/go-server-baseline/native64-distinct-profile-f9dc0aac/profiles/global-wide-wrapped-case-insensitive-distinct-dense-repeat/heap-before.pprof",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-3blq1qcl/profile-query",
+      "docs/go-server-baseline/native64-distinct-profile-f9dc0aac/profiles/global-wide-wrapped-case-insensitive-distinct-dense-repeat/heap-after.pprof"
+    ],
+    "exitCode": 0,
+    "output": "docs/go-server-baseline/native64-distinct-profile-f9dc0aac/profiles/global-wide-wrapped-case-insensitive-distinct-dense-repeat/alloc-space-top.txt"
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-nodecount=25",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-3blq1qcl/profile-query",
+      "docs/go-server-baseline/native64-distinct-profile-f9dc0aac/profiles/wrapped-firstLastGraphBimodalClassPrefix/cpu.pprof"
+    ],
+    "exitCode": 0,
+    "output": "docs/go-server-baseline/native64-distinct-profile-f9dc0aac/profiles/wrapped-firstLastGraphBimodalClassPrefix/cpu-top.txt"
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-cum",
+      "-nodecount=25",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-3blq1qcl/profile-query",
+      "docs/go-server-baseline/native64-distinct-profile-f9dc0aac/profiles/wrapped-firstLastGraphBimodalClassPrefix/cpu.pprof"
+    ],
+    "exitCode": 0,
+    "output": "docs/go-server-baseline/native64-distinct-profile-f9dc0aac/profiles/wrapped-firstLastGraphBimodalClassPrefix/cpu-cum.txt"
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-alloc_space",
+      "-nodecount=25",
+      "-base",
+      "docs/go-server-baseline/native64-distinct-profile-f9dc0aac/profiles/wrapped-firstLastGraphBimodalClassPrefix/heap-before.pprof",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-3blq1qcl/profile-query",
+      "docs/go-server-baseline/native64-distinct-profile-f9dc0aac/profiles/wrapped-firstLastGraphBimodalClassPrefix/heap-after.pprof"
+    ],
+    "exitCode": 0,
+    "output": "docs/go-server-baseline/native64-distinct-profile-f9dc0aac/profiles/wrapped-firstLastGraphBimodalClassPrefix/alloc-space-top.txt"
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-nodecount=25",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-3blq1qcl/profile-query",
+      "docs/go-server-baseline/native64-distinct-profile-f9dc0aac/profiles/wrapped-firstLastGraphBimodalClassPrefix-repeat/cpu.pprof"
+    ],
+    "exitCode": 0,
+    "output": "docs/go-server-baseline/native64-distinct-profile-f9dc0aac/profiles/wrapped-firstLastGraphBimodalClassPrefix-repeat/cpu-top.txt"
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-cum",
+      "-nodecount=25",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-3blq1qcl/profile-query",
+      "docs/go-server-baseline/native64-distinct-profile-f9dc0aac/profiles/wrapped-firstLastGraphBimodalClassPrefix-repeat/cpu.pprof"
+    ],
+    "exitCode": 0,
+    "output": "docs/go-server-baseline/native64-distinct-profile-f9dc0aac/profiles/wrapped-firstLastGraphBimodalClassPrefix-repeat/cpu-cum.txt"
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-top",
+      "-alloc_space",
+      "-nodecount=25",
+      "-base",
+      "docs/go-server-baseline/native64-distinct-profile-f9dc0aac/profiles/wrapped-firstLastGraphBimodalClassPrefix-repeat/heap-before.pprof",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-3blq1qcl/profile-query",
+      "docs/go-server-baseline/native64-distinct-profile-f9dc0aac/profiles/wrapped-firstLastGraphBimodalClassPrefix-repeat/heap-after.pprof"
+    ],
+    "exitCode": 0,
+    "output": "docs/go-server-baseline/native64-distinct-profile-f9dc0aac/profiles/wrapped-firstLastGraphBimodalClassPrefix-repeat/alloc-space-top.txt"
+  }
+]

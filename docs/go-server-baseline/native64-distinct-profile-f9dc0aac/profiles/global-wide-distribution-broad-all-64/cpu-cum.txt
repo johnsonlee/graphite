@@ -1,0 +1,33 @@
+File: profile-query
+Type: cpu
+Time: Sep 7, 2026 at 9:09am (KST)
+Duration: 11.42s, Total samples = 10.40s (91.10%)
+Showing nodes accounting for 9s, 86.54% of 10.40s total
+Dropped 65 nodes (cum <= 0.05s)
+Showing top 25 nodes out of 59
+      flat  flat%   sum%        cum   cum%
+         0     0%     0%      8.51s 81.83%  runtime.(*mheap).alloc.func1
+         0     0%     0%      8.51s 81.83%  runtime.(*mheap).allocSpan
+         0     0%     0%      8.51s 81.83%  runtime.systemstack
+     8.48s 81.54% 81.54%      8.48s 81.54%  runtime.madvise
+         0     0% 81.54%      8.48s 81.54%  runtime.sysUsed (inline)
+         0     0% 81.54%      8.48s 81.54%  runtime.sysUsedOS (inline)
+         0     0% 81.54%      1.75s 16.83%  github.com/johnsonlee/graphite/graphite-server/internal/query.ExecuteCross
+         0     0% 81.54%      1.75s 16.83%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.branch
+         0     0% 81.54%      1.75s 16.83%  github.com/johnsonlee/graphite/graphite-server/internal/query.executeSources
+         0     0% 81.54%      1.75s 16.83%  main.main
+         0     0% 81.54%      1.75s 16.83%  main.profile
+         0     0% 81.54%      1.75s 16.83%  main.profile.func1
+         0     0% 81.54%      1.75s 16.83%  runtime.main
+         0     0% 81.54%      1.75s 16.83%  runtime/pprof.Do
+         0     0% 81.54%      1.37s 13.17%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.match
+         0     0% 81.54%      1.37s 13.17%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.matchSingleNode
+     0.01s 0.096% 81.63%      1.26s 12.12%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.indexedNodeWalker
+         0     0% 81.63%      0.92s  8.85%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).CertifyCallSiteTrigrams
+         0     0% 81.63%      0.92s  8.85%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).certifyCallSiteTrigrams
+     0.04s  0.38% 82.02%      0.69s  6.63%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*CallSiteStringIndex).containsTrigrams
+     0.41s  3.94% 85.96%      0.65s  6.25%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*CallSiteStringIndex).trigramBound (inline)
+         0     0% 85.96%      0.38s  3.65%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.project
+         0     0% 85.96%      0.26s  2.50%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.eval
+     0.06s  0.58% 86.54%      0.24s  2.31%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*CallSiteStringIndex).trigramAt (inline)
+         0     0% 86.54%      0.21s  2.02%  github.com/johnsonlee/graphite/graphite-server/internal/store.lowerTrigramHashes

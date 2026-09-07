@@ -253,3 +253,28 @@ The baseline diagnostic and its failed raw-engine-serialization harness are
 preserved in `native64-positive-profile-de0608f0/`; the corrected harness calls
 the actual server serializer. All comparison outputs preserve complete arrays,
 values and provenance. No failed run is discarded or treated as a fast success.
+
+
+### 2026-09-07 follow-up: indexed DISTINCT compatibility diagnosis
+
+The separate functional integration `f9dc0aac` reproduces main's selective
+projection semantics; it was not accepted as a performance optimization. A
+fresh all64 five-query diagnostic found dense DISTINCT allocation reductions
+alongside a major execution/CPU regression. CPU samples were inconsistent with
+both the wall interval and process CPU counters, so a second control disabled
+CPU sampling instead of treating sample percentages as a proven cause.
+
+| Item | Evidence / status |
+|---|---|
+| Exact control revisions | `bb961cd8` before indexed DISTINCT; `f9dc0aac` after; two sequential fresh processes |
+| Fixture / correctness | All64, all 1,152 hashes and catalog totals freshly checked per process; five complete bodies equal to pinned main and each other |
+| Dense first, no CPU sampler | Allocation 7,807,915,504→5,770,519,952 bytes; execution+marshal 13.585→59.740 s; process CPU 19.674→296.275 s |
+| Dense repeat, no CPU sampler | Allocation 6,405,969,320→334,421,632 bytes; execution+marshal 8.427→53.414 s; process CPU 15.062→250.703 s |
+| Other paths | Prefix allocation/time approximately unchanged. Subsequent ordinary allocation/time rises with different prior Store/index history; not an isolated ordinary code comparison |
+| Decision / next work | Preserve compatibility and record the unresolved performance regression. Audit repeated target-SID scans and cancellation contention before testing a separate optimization hypothesis |
+| Limits | Single instrumented observations with background correctness/build work, not HTTP/P95, peak RSS, or main-relative acceptance |
+
+Raw sampled and non-CPU-sampled controls are respectively in
+`docs/go-server-baseline/native64-distinct-profile-f9dc0aac/` and
+`docs/go-server-baseline/native64-distinct-no-cpu-profile/`. Neither supports
+completion of the requested 10x main-relative P95 goal.

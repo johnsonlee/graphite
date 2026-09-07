@@ -1,0 +1,41 @@
+--- original-profile-query.go
++++ control-profile-query.go
+@@ -82,7 +82,7 @@
+ 	if len(cfg.Graphs) != 64 {
+ 		panic("exactly 64 real graphs required")
+ 	}
+-	save(filepath.Join(*out, "runtime.json"), map[string]any{"goVersion": runtime.Version(), "GOOS": runtime.GOOS, "GOARCH": runtime.GOARCH, "NumCPU": runtime.NumCPU(), "GOMAXPROCS": runtime.GOMAXPROCS(0), "MemProfileRate": runtime.MemProfileRate, "GOGC": os.Getenv("GOGC"), "GOMEMLIMIT": os.Getenv("GOMEMLIMIT"), "pid": os.Getpid(), "scope": "loaded-64-store ExecuteCross plus root response JSON marshaling; not HTTP; one request at a time", "profiling": "CPU starts after full load/catalog/forced GC; heap alloc delta subtracts before profile; sampled allocation rate is default 512 KiB"})
++	save(filepath.Join(*out, "runtime.json"), map[string]any{"goVersion": runtime.Version(), "GOOS": runtime.GOOS, "GOARCH": runtime.GOARCH, "NumCPU": runtime.NumCPU(), "GOMAXPROCS": runtime.GOMAXPROCS(0), "MemProfileRate": runtime.MemProfileRate, "GOGC": os.Getenv("GOGC"), "GOMEMLIMIT": os.Getenv("GOMEMLIMIT"), "pid": os.Getpid(), "scope": "loaded-64-store ExecuteCross plus root response JSON marshaling; not HTTP; one request at a time", "profiling": "CPU sampling disabled; heap alloc delta subtracts before profile; sampled allocation rate is default 512 KiB"})
+ 	sources := []query.Graph{}
+ 	actual := []graphSpec{}
+ 	totals := map[string]int64{"nodes": 0, "edges": 0, "methods": 0, "callSites": 0}
+@@ -124,9 +124,7 @@
+ 	runtime.GC()
+ 	runtime.GC()
+ 	heap(filepath.Join(dir, "heap-before.pprof"))
+-	cpu, e := os.Create(filepath.Join(dir, "cpu.pprof"))
+-	must(e)
+-	must(pprof.StartCPUProfile(cpu))
++	var e error // CPU sampling disabled for this measurement control.
+ 	before := snap()
+ 	fmt.Printf("PROFILE START %s %s\n", q.Name, before.Timestamp)
+ 	start := time.Now()
+@@ -143,8 +141,7 @@
+ 	}
+ 	elapsed := time.Since(start).Seconds()
+ 	after := snap()
+-	pprof.StopCPUProfile()
+-	must(cpu.Close())
++	// No CPU sampler was started.
+ 	runtime.GC()
+ 	runtime.GC()
+ 	heap(filepath.Join(dir, "heap-after.pprof"))
+@@ -160,7 +157,7 @@
+ 	must(e)
+ 	equal := digest(expected) == digest(canonicalOutput)
+ 	delta := map[string]any{"totalAllocBytes": after.Mem.TotalAlloc - before.Mem.TotalAlloc, "mallocs": after.Mem.Mallocs - before.Mem.Mallocs, "frees": after.Mem.Frees - before.Mem.Frees, "numGC": after.Mem.NumGC - before.Mem.NumGC, "pauseTotalNs": after.Mem.PauseTotalNs - before.Mem.PauseTotalNs, "userCPUSeconds": seconds(after.Usage.Utime) - seconds(before.Usage.Utime), "systemCPUSeconds": seconds(after.Usage.Stime) - seconds(before.Usage.Stime)}
+-	receipt := map[string]any{"name": q.Name, "query": q.Query, "source": q.Source, "querySecondsDiagnostic": querySeconds, "executeAndMarshalSecondsDiagnostic": elapsed, "outputBytes": len(output), "outputSha256": digest(output), "expectedSha256": digest(expected), "fullOutputMatchesExpected": equal, "rowCount": len(result.Rows), "before": before, "afterRequest": after, "afterForcedGC": postGC, "requestDeltas": delta, "notes": []string{"Not HTTP and not a P95 observation.", "CPU profiling and host co-tenancy affect observed durations.", "GC before and after profiling is excluded from request runtime deltas and CPU profile.", "heap-after minus heap-before contains profiler bookkeeping and post-request GC instrumentation in addition to request allocation."}}
++	receipt := map[string]any{"name": q.Name, "query": q.Query, "source": q.Source, "querySecondsDiagnostic": querySeconds, "executeAndMarshalSecondsDiagnostic": elapsed, "outputBytes": len(output), "outputSha256": digest(output), "expectedSha256": digest(expected), "fullOutputMatchesExpected": equal, "rowCount": len(result.Rows), "before": before, "afterRequest": after, "afterForcedGC": postGC, "requestDeltas": delta, "notes": []string{"Not HTTP and not a P95 observation.", "CPU sampling disabled; host co-tenancy can affect durations.", "GC before and after profiling is excluded from request runtime deltas and CPU profile.", "heap-after minus heap-before contains profiler bookkeeping and post-request GC instrumentation in addition to request allocation."}}
+ 	if queryErr != nil {
+ 		receipt["error"] = queryErr.Error()
+ 	}
