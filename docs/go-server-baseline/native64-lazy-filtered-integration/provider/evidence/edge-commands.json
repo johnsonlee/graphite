@@ -1,0 +1,62 @@
+[
+  {
+    "argv": [
+      "/opt/homebrew/opt/openjdk@17/bin/java",
+      "-Dfile.encoding=UTF-8",
+      "-Xmx256m",
+      "-cp",
+      "/tmp/graphite-go-lazy-cde-evidence:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "LazyFilteredOracle",
+      "/tmp/graphite-go-lazy-cde-evidence/main-fixtures/clean-MAPPED",
+      "/private/tmp/graphite-go-lazy-cde-87aaf0ad/graphite-server/internal/query/testdata/lazy-filtered/edge-cases.json",
+      "/private/tmp/graphite-go-lazy-cde-87aaf0ad/graphite-server/internal/query/testdata/lazy-filtered/clean-edge-main.json",
+      "MAPPED"
+    ],
+    "exit": 0
+  },
+  {
+    "argv": [
+      "/opt/homebrew/opt/openjdk@17/bin/java",
+      "-Dfile.encoding=UTF-8",
+      "-Xmx256m",
+      "-cp",
+      "/tmp/graphite-go-lazy-cde-evidence:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "LazyFilteredOracle",
+      "/tmp/graphite-go-lazy-cde-evidence/main-fixtures/bad-first-unmatched-MAPPED",
+      "/private/tmp/graphite-go-lazy-cde-87aaf0ad/graphite-server/internal/query/testdata/lazy-filtered/edge-cases.json",
+      "/private/tmp/graphite-go-lazy-cde-87aaf0ad/graphite-server/internal/query/testdata/lazy-filtered/bad-first-unmatched-edge-main.json",
+      "MAPPED"
+    ],
+    "exit": 0
+  },
+  {
+    "argv": [
+      "/opt/homebrew/opt/openjdk@17/bin/java",
+      "-Dfile.encoding=UTF-8",
+      "-Xmx256m",
+      "-cp",
+      "/tmp/graphite-go-lazy-cde-evidence:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "LazyFilteredOracle",
+      "/tmp/graphite-go-lazy-cde-evidence/main-fixtures/bad-last-unmatched-MAPPED",
+      "/private/tmp/graphite-go-lazy-cde-87aaf0ad/graphite-server/internal/query/testdata/lazy-filtered/edge-cases.json",
+      "/private/tmp/graphite-go-lazy-cde-87aaf0ad/graphite-server/internal/query/testdata/lazy-filtered/bad-last-unmatched-edge-main.json",
+      "MAPPED"
+    ],
+    "exit": 0
+  },
+  {
+    "argv": [
+      "/opt/homebrew/opt/openjdk@17/bin/java",
+      "-Dfile.encoding=UTF-8",
+      "-Xmx256m",
+      "-cp",
+      "/tmp/graphite-go-lazy-cde-evidence:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "LazyFilteredOracle",
+      "/tmp/graphite-go-lazy-cde-evidence/main-fixtures/bad-matched-MAPPED",
+      "/private/tmp/graphite-go-lazy-cde-87aaf0ad/graphite-server/internal/query/testdata/lazy-filtered/edge-cases.json",
+      "/private/tmp/graphite-go-lazy-cde-87aaf0ad/graphite-server/internal/query/testdata/lazy-filtered/bad-matched-edge-main.json",
+      "MAPPED"
+    ],
+    "exit": 0
+  }
+]

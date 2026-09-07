@@ -1,0 +1,13 @@
+{
+  "name": "d-unbounded-android",
+  "query": "MATCH (n:CallSiteNode) WHERE n.graphId = 'fixture-android-00' AND n.caller_name = 'getTopMostActivity' RETURN [n.caller_class, n.caller_name] AS value",
+  "source": "Fresh pinned-main all64 HTTP capture for lazy filtered integration",
+  "expected": {
+    "columns": [
+      "value"
+    ],
+    "graphCount": 64,
+    "rowCount": 0,
+    "rows": []
+  }
+}

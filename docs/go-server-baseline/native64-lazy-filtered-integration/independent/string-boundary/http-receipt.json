@@ -1,0 +1,38 @@
+{
+  "argv": [
+    "/opt/homebrew/opt/openjdk@17/bin/java",
+    "-Xmx512m",
+    "-jar",
+    "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+    "--graph",
+    "tiny:/tmp/graphite-go-lazy-cde-evidence/main-fixtures/clean-MAPPED",
+    "--port",
+    "18863"
+  ],
+  "jarSHA256": "91c3a1d154ca96004c55df195d9f752e077cab3e33ca1570b2c88b872d9bc34d",
+  "records": [
+    {
+      "query": "MATCH (n:CallSiteNode) WHERE n.id=17 RETURN n.caller_class AS field,n AS whole",
+      "status": 200,
+      "headers": {
+        "Date": "Mon, 07 Sep 2026 02:46:49 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "377"
+      },
+      "bodySHA256": "55dda8982dba06cb98c517e992355ff6915f2f4a4bb663d97f4ac16a7310490f"
+    },
+    {
+      "query": "MATCH (n:CallSiteNode) WHERE n.id>=0 RETURN [n,n.id] AS x LIMIT 3",
+      "status": 200,
+      "headers": {
+        "Date": "Mon, 07 Sep 2026 02:46:49 GMT",
+        "Connection": "close",
+        "Content-Type": "application/json",
+        "Content-Length": "954"
+      },
+      "bodySHA256": "e4fb9e5df329dac694da5b9276191a78cb8051507331a64766ec90827c6448cf"
+    }
+  ],
+  "processExit": 143
+}

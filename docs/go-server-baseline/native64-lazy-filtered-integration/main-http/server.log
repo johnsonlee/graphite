@@ -1,0 +1,70 @@
+Loaded graph 'fixture-android-00' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-android-00 using MAPPED mode
+Loaded graph 'fixture-android-01' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-android-01 using MAPPED mode
+Loaded graph 'fixture-android-02' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-android-02 using MAPPED mode
+Loaded graph 'fixture-android-03' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-android-03 using MAPPED mode
+Loaded graph 'fixture-android-04' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-android-04 using MAPPED mode
+Loaded graph 'fixture-android-05' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-android-05 using MAPPED mode
+Loaded graph 'fixture-android-06' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-android-06 using MAPPED mode
+Loaded graph 'fixture-android-07' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-android-07 using MAPPED mode
+Loaded graph 'fixture-android-08' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-android-08 using MAPPED mode
+Loaded graph 'fixture-android-09' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-android-09 using MAPPED mode
+Loaded graph 'fixture-android-10' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-android-10 using MAPPED mode
+Loaded graph 'fixture-android-11' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-android-11 using MAPPED mode
+Loaded graph 'fixture-android-12' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-android-12 using MAPPED mode
+Loaded graph 'fixture-android-13' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-android-13 using MAPPED mode
+Loaded graph 'fixture-android-14' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-android-14 using MAPPED mode
+Loaded graph 'fixture-android-15' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-android-15 using MAPPED mode
+Loaded graph 'fixture-hive-00' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-hive-00 using MAPPED mode
+Loaded graph 'fixture-hive-01' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-hive-01 using MAPPED mode
+Loaded graph 'fixture-hive-02' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-hive-02 using MAPPED mode
+Loaded graph 'fixture-hive-03' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-hive-03 using MAPPED mode
+Loaded graph 'fixture-hive-04' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-hive-04 using MAPPED mode
+Loaded graph 'fixture-hive-05' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-hive-05 using MAPPED mode
+Loaded graph 'fixture-hive-06' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-hive-06 using MAPPED mode
+Loaded graph 'fixture-hive-07' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-hive-07 using MAPPED mode
+Loaded graph 'fixture-hive-08' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-hive-08 using MAPPED mode
+Loaded graph 'fixture-hive-09' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-hive-09 using MAPPED mode
+Loaded graph 'fixture-hive-10' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-hive-10 using MAPPED mode
+Loaded graph 'fixture-hive-11' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-hive-11 using MAPPED mode
+Loaded graph 'fixture-hive-12' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-hive-12 using MAPPED mode
+Loaded graph 'fixture-hive-13' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-hive-13 using MAPPED mode
+Loaded graph 'fixture-hive-14' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-hive-14 using MAPPED mode
+Loaded graph 'fixture-hive-15' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-hive-15 using MAPPED mode
+Loaded graph 'fixture-kotlin-compiler-00' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-kotlin-compiler-00 using MAPPED mode
+Loaded graph 'fixture-kotlin-compiler-01' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-kotlin-compiler-01 using MAPPED mode
+Loaded graph 'fixture-kotlin-compiler-02' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-kotlin-compiler-02 using MAPPED mode
+Loaded graph 'fixture-kotlin-compiler-03' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-kotlin-compiler-03 using MAPPED mode
+Loaded graph 'fixture-kotlin-compiler-04' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-kotlin-compiler-04 using MAPPED mode
+Loaded graph 'fixture-kotlin-compiler-05' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-kotlin-compiler-05 using MAPPED mode
+Loaded graph 'fixture-kotlin-compiler-06' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-kotlin-compiler-06 using MAPPED mode
+Loaded graph 'fixture-kotlin-compiler-07' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-kotlin-compiler-07 using MAPPED mode
+Loaded graph 'fixture-kotlin-compiler-08' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-kotlin-compiler-08 using MAPPED mode
+Loaded graph 'fixture-kotlin-compiler-09' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-kotlin-compiler-09 using MAPPED mode
+Loaded graph 'fixture-kotlin-compiler-10' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-kotlin-compiler-10 using MAPPED mode
+Loaded graph 'fixture-kotlin-compiler-11' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-kotlin-compiler-11 using MAPPED mode
+Loaded graph 'fixture-kotlin-compiler-12' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-kotlin-compiler-12 using MAPPED mode
+Loaded graph 'fixture-kotlin-compiler-13' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-kotlin-compiler-13 using MAPPED mode
+Loaded graph 'fixture-kotlin-compiler-14' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-kotlin-compiler-14 using MAPPED mode
+Loaded graph 'fixture-kotlin-compiler-15' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-kotlin-compiler-15 using MAPPED mode
+Loaded graph 'fixture-tika-00' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-tika-00 using MAPPED mode
+Loaded graph 'fixture-tika-01' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-tika-01 using MAPPED mode
+Loaded graph 'fixture-tika-02' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-tika-02 using MAPPED mode
+Loaded graph 'fixture-tika-03' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-tika-03 using MAPPED mode
+Loaded graph 'fixture-tika-04' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-tika-04 using MAPPED mode
+Loaded graph 'fixture-tika-05' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-tika-05 using MAPPED mode
+Loaded graph 'fixture-tika-06' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-tika-06 using MAPPED mode
+Loaded graph 'fixture-tika-07' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-tika-07 using MAPPED mode
+Loaded graph 'fixture-tika-08' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-tika-08 using MAPPED mode
+Loaded graph 'fixture-tika-09' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-tika-09 using MAPPED mode
+Loaded graph 'fixture-tika-10' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-tika-10 using MAPPED mode
+Loaded graph 'fixture-tika-11' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-tika-11 using MAPPED mode
+Loaded graph 'fixture-tika-12' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-tika-12 using MAPPED mode
+Loaded graph 'fixture-tika-13' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-tika-13 using MAPPED mode
+Loaded graph 'fixture-tika-14' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-tika-14 using MAPPED mode
+Loaded graph 'fixture-tika-15' from /tmp/graphite-cde-main-real64-9ada2bf1/fixture-tika-15 using MAPPED mode
+Web UI: http://localhost:18871
+Data: /tmp/graphite-cde-main-real64-9ada2bf1
+Loaded graphs: fixture-android-00, fixture-android-01, fixture-android-02, fixture-android-03, fixture-android-04, fixture-android-05, fixture-android-06, fixture-android-07, fixture-android-08, fixture-android-09, fixture-android-10, fixture-android-11, fixture-android-12, fixture-android-13, fixture-android-14, fixture-android-15, fixture-hive-00, fixture-hive-01, fixture-hive-02, fixture-hive-03, fixture-hive-04, fixture-hive-05, fixture-hive-06, fixture-hive-07, fixture-hive-08, fixture-hive-09, fixture-hive-10, fixture-hive-11, fixture-hive-12, fixture-hive-13, fixture-hive-14, fixture-hive-15, fixture-kotlin-compiler-00, fixture-kotlin-compiler-01, fixture-kotlin-compiler-02, fixture-kotlin-compiler-03, fixture-kotlin-compiler-04, fixture-kotlin-compiler-05, fixture-kotlin-compiler-06, fixture-kotlin-compiler-07, fixture-kotlin-compiler-08, fixture-kotlin-compiler-09, fixture-kotlin-compiler-10, fixture-kotlin-compiler-11, fixture-kotlin-compiler-12, fixture-kotlin-compiler-13, fixture-kotlin-compiler-14, fixture-kotlin-compiler-15, fixture-tika-00, fixture-tika-01, fixture-tika-02, fixture-tika-03, fixture-tika-04, fixture-tika-05, fixture-tika-06, fixture-tika-07, fixture-tika-08, fixture-tika-09, fixture-tika-10, fixture-tika-11, fixture-tika-12, fixture-tika-13, fixture-tika-14, fixture-tika-15
+Topology: 64 graphs, 0 relations
+Cypher limits: 4 concurrent, 60000ms maximum timeout
+Press Ctrl+C to stop

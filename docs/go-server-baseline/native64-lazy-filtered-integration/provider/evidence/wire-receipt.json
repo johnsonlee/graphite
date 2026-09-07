@@ -1,0 +1,87 @@
+{
+  "commands": [
+    {
+      "argv": [
+        "/opt/homebrew/opt/openjdk@17/bin/java",
+        "-Dfile.encoding=UTF-8",
+        "-Xmx256m",
+        "-cp",
+        "/tmp/graphite-go-lazy-cde-evidence:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "LazyFilteredOracle",
+        "/tmp/graphite-go-lazy-cde-evidence/main-fixtures/clean-MAPPED",
+        "/private/tmp/graphite-go-lazy-cde-87aaf0ad/graphite-server/internal/query/testdata/lazy-filtered/cases.json",
+        "/private/tmp/graphite-go-lazy-cde-87aaf0ad/graphite-server/internal/query/testdata/lazy-filtered/clean-MAPPED-main.json",
+        "MAPPED"
+      ],
+      "exit": 0
+    },
+    {
+      "argv": [
+        "/opt/homebrew/opt/openjdk@17/bin/java",
+        "-Dfile.encoding=UTF-8",
+        "-Xmx256m",
+        "-cp",
+        "/tmp/graphite-go-lazy-cde-evidence:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "LazyFilteredOracle",
+        "/tmp/graphite-go-lazy-cde-evidence/main-fixtures/bad-first-unmatched-MAPPED",
+        "/private/tmp/graphite-go-lazy-cde-87aaf0ad/graphite-server/internal/query/testdata/lazy-filtered/cases.json",
+        "/private/tmp/graphite-go-lazy-cde-87aaf0ad/graphite-server/internal/query/testdata/lazy-filtered/bad-first-unmatched-MAPPED-main.json",
+        "MAPPED"
+      ],
+      "exit": 0
+    },
+    {
+      "argv": [
+        "/opt/homebrew/opt/openjdk@17/bin/java",
+        "-Dfile.encoding=UTF-8",
+        "-Xmx256m",
+        "-cp",
+        "/tmp/graphite-go-lazy-cde-evidence:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "LazyFilteredOracle",
+        "/tmp/graphite-go-lazy-cde-evidence/main-fixtures/bad-last-unmatched-MAPPED",
+        "/private/tmp/graphite-go-lazy-cde-87aaf0ad/graphite-server/internal/query/testdata/lazy-filtered/cases.json",
+        "/private/tmp/graphite-go-lazy-cde-87aaf0ad/graphite-server/internal/query/testdata/lazy-filtered/bad-last-unmatched-MAPPED-main.json",
+        "MAPPED"
+      ],
+      "exit": 0
+    },
+    {
+      "argv": [
+        "/opt/homebrew/opt/openjdk@17/bin/java",
+        "-Dfile.encoding=UTF-8",
+        "-Xmx256m",
+        "-cp",
+        "/tmp/graphite-go-lazy-cde-evidence:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "LazyFilteredOracle",
+        "/tmp/graphite-go-lazy-cde-evidence/main-fixtures/bad-matched-MAPPED",
+        "/private/tmp/graphite-go-lazy-cde-87aaf0ad/graphite-server/internal/query/testdata/lazy-filtered/cases.json",
+        "/private/tmp/graphite-go-lazy-cde-87aaf0ad/graphite-server/internal/query/testdata/lazy-filtered/bad-matched-MAPPED-main.json",
+        "MAPPED"
+      ],
+      "exit": 0
+    },
+    {
+      "argv": [
+        "/opt/homebrew/opt/openjdk@17/bin/java",
+        "-Dfile.encoding=UTF-8",
+        "-Xmx256m",
+        "-cp",
+        "/tmp/graphite-go-lazy-cde-evidence:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "LazyFilteredOracle",
+        "/tmp/graphite-go-lazy-cde-evidence/main-fixtures/clean-EAGER",
+        "/private/tmp/graphite-go-lazy-cde-87aaf0ad/graphite-server/internal/query/testdata/lazy-filtered/cases.json",
+        "/private/tmp/graphite-go-lazy-cde-87aaf0ad/graphite-server/internal/query/testdata/lazy-filtered/clean-EAGER-main.json",
+        "EAGER"
+      ],
+      "exit": 0
+    }
+  ],
+  "semantic_sha256_unchanged": {
+    "/private/tmp/graphite-go-lazy-cde-87aaf0ad/graphite-server/internal/query/testdata/lazy-filtered/bad-first-unmatched-MAPPED-main.json": "a803620f78a725b744518397660d54d4f200b204953b7f96ae54814252be5262",
+    "/private/tmp/graphite-go-lazy-cde-87aaf0ad/graphite-server/internal/query/testdata/lazy-filtered/bad-matched-MAPPED-main.json": "3173bc64979d0c2d0501b921b9322ea9caad14d769cd59d95748bfeabc8a70eb",
+    "/private/tmp/graphite-go-lazy-cde-87aaf0ad/graphite-server/internal/query/testdata/lazy-filtered/bad-last-unmatched-MAPPED-main.json": "125677c7e0a63cc17079f2b767a137ef3f06e59a31c2814ab0c2054b68691ad7",
+    "/private/tmp/graphite-go-lazy-cde-87aaf0ad/graphite-server/internal/query/testdata/lazy-filtered/clean-EAGER-main.json": "c52f0d6bec7b64b7b43ce22e86172cbc0473c6c98881fe8e8cf6c5a7851f0dbb",
+    "/private/tmp/graphite-go-lazy-cde-87aaf0ad/graphite-server/internal/query/testdata/lazy-filtered/clean-MAPPED-main.json": "f527a0fb6d18825663fd6c254f5d7f6379ff619233b0f9357bf54afed501f302"
+  },
+  "encoding": "Java Gson string getBytes(StandardCharsets.UTF_8); actual HTTP confirmed isolated D800 replacement is ?; no Go-side normalization."
+}

@@ -1,0 +1,23 @@
+{
+  "data": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite",
+  "loadMode": "MAPPED",
+  "count": 1,
+  "totals": {
+    "nodes": 4,
+    "edges": 0,
+    "methods": 0,
+    "callSites": 4
+  },
+  "graphs": [
+    {
+      "id": "tiny",
+      "path": "/tmp/graphite-go-lazy-cde-evidence/main-fixtures/clean-MAPPED",
+      "loadMode": "MAPPED",
+      "loadedAt": "2026-09-07T02:46:49.003634Z",
+      "nodes": 4,
+      "edges": 0,
+      "methods": 0,
+      "callSites": 4
+    }
+  ]
+}

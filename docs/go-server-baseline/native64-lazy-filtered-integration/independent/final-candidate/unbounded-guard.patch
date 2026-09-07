@@ -1,0 +1,11 @@
+--- tested/graphite-server/internal/query/lazy_filtered.go
++++ frozen/graphite-server/internal/query/lazy_filtered.go
+@@ -173,7 +173,7 @@
+ 				}
+ 			} else {
+ 				result.Rows = append(result.Rows, row)
+-				if len(result.Rows) >= p.limit {
++				if p.bounded && len(result.Rows) >= p.limit {
+ 					return result, true
+ 				}
+ 			}

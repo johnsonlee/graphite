@@ -1,0 +1,28 @@
+[
+  {
+    "name": "base",
+    "command": [
+      "python3",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-lazy-filtered-integration/run-profile.py",
+      "--worktree",
+      "/tmp/graphite-go-cde-base-9ada2bf1",
+      "--out",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-lazy-filtered-integration/base"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 154.65392589569092
+  },
+  {
+    "name": "candidate",
+    "command": [
+      "python3",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-lazy-filtered-integration/run-profile.py",
+      "--worktree",
+      "/tmp/graphite-go-cde-root-9ada2bf1",
+      "--out",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-lazy-filtered-integration/candidate"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 77.89603781700134
+  }
+]

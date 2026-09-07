@@ -1,0 +1,232 @@
+=== RUN   TestReviewLazyOldCorpusMigrationHasExactOracle
+    lazy_review_test.go:78: full original=80 newly admitted=72 response differences=8
+--- PASS: TestReviewLazyOldCorpusMigrationHasExactOracle (0.14s)
+=== RUN   TestReviewLazyParallelCancellationJoinsAndFreshRequest
+--- PASS: TestReviewLazyParallelCancellationJoinsAndFreshRequest (0.03s)
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/absent-scoped
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/absent-cross
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/absent-distinct-scoped
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/absent-distinct-cross
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/present-cross-scoped
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/present-cross-cross
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/present-cross-distinct-scoped
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/present-cross-distinct-cross
+--- PASS: TestReviewLazyScopedGenericRouteStillConsumes (0.03s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/absent-scoped (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/absent-cross (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/absent-distinct-scoped (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/absent-distinct-cross (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/present-cross-scoped (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/present-cross-cross (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/present-cross-distinct-scoped (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/present-cross-distinct-cross (0.00s)
+=== RUN   TestReviewLazyOldCorpusMigrationHasExactOracle
+    lazy_review_test.go:78: full original=80 newly admitted=72 response differences=8
+--- PASS: TestReviewLazyOldCorpusMigrationHasExactOracle (0.11s)
+=== RUN   TestReviewLazyParallelCancellationJoinsAndFreshRequest
+--- PASS: TestReviewLazyParallelCancellationJoinsAndFreshRequest (0.03s)
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/absent-scoped
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/absent-cross
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/absent-distinct-scoped
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/absent-distinct-cross
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/present-cross-scoped
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/present-cross-cross
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/present-cross-distinct-scoped
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/present-cross-distinct-cross
+--- PASS: TestReviewLazyScopedGenericRouteStillConsumes (0.03s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/absent-scoped (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/absent-cross (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/absent-distinct-scoped (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/absent-distinct-cross (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/present-cross-scoped (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/present-cross-cross (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/present-cross-distinct-scoped (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/present-cross-distinct-cross (0.00s)
+=== RUN   TestReviewLazyOldCorpusMigrationHasExactOracle
+    lazy_review_test.go:78: full original=80 newly admitted=72 response differences=8
+--- PASS: TestReviewLazyOldCorpusMigrationHasExactOracle (0.11s)
+=== RUN   TestReviewLazyParallelCancellationJoinsAndFreshRequest
+--- PASS: TestReviewLazyParallelCancellationJoinsAndFreshRequest (0.03s)
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/absent-scoped
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/absent-cross
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/absent-distinct-scoped
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/absent-distinct-cross
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/present-cross-scoped
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/present-cross-cross
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/present-cross-distinct-scoped
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/present-cross-distinct-cross
+--- PASS: TestReviewLazyScopedGenericRouteStillConsumes (0.03s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/absent-scoped (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/absent-cross (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/absent-distinct-scoped (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/absent-distinct-cross (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/present-cross-scoped (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/present-cross-cross (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/present-cross-distinct-scoped (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/present-cross-distinct-cross (0.00s)
+=== RUN   TestReviewLazyOldCorpusMigrationHasExactOracle
+    lazy_review_test.go:78: full original=80 newly admitted=72 response differences=8
+--- PASS: TestReviewLazyOldCorpusMigrationHasExactOracle (0.11s)
+=== RUN   TestReviewLazyParallelCancellationJoinsAndFreshRequest
+--- PASS: TestReviewLazyParallelCancellationJoinsAndFreshRequest (0.03s)
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/absent-scoped
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/absent-cross
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/absent-distinct-scoped
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/absent-distinct-cross
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/present-cross-scoped
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/present-cross-cross
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/present-cross-distinct-scoped
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/present-cross-distinct-cross
+--- PASS: TestReviewLazyScopedGenericRouteStillConsumes (0.03s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/absent-scoped (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/absent-cross (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/absent-distinct-scoped (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/absent-distinct-cross (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/present-cross-scoped (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/present-cross-cross (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/present-cross-distinct-scoped (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/present-cross-distinct-cross (0.00s)
+=== RUN   TestReviewLazyOldCorpusMigrationHasExactOracle
+    lazy_review_test.go:78: full original=80 newly admitted=72 response differences=8
+--- PASS: TestReviewLazyOldCorpusMigrationHasExactOracle (0.12s)
+=== RUN   TestReviewLazyParallelCancellationJoinsAndFreshRequest
+--- PASS: TestReviewLazyParallelCancellationJoinsAndFreshRequest (0.03s)
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/absent-scoped
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/absent-cross
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/absent-distinct-scoped
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/absent-distinct-cross
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/present-cross-scoped
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/present-cross-cross
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/present-cross-distinct-scoped
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/present-cross-distinct-cross
+--- PASS: TestReviewLazyScopedGenericRouteStillConsumes (0.03s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/absent-scoped (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/absent-cross (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/absent-distinct-scoped (0.01s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/absent-distinct-cross (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/present-cross-scoped (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/present-cross-cross (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/present-cross-distinct-scoped (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/present-cross-distinct-cross (0.00s)
+=== RUN   TestReviewLazyOldCorpusMigrationHasExactOracle
+    lazy_review_test.go:78: full original=80 newly admitted=72 response differences=8
+--- PASS: TestReviewLazyOldCorpusMigrationHasExactOracle (0.11s)
+=== RUN   TestReviewLazyParallelCancellationJoinsAndFreshRequest
+--- PASS: TestReviewLazyParallelCancellationJoinsAndFreshRequest (0.03s)
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/absent-scoped
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/absent-cross
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/absent-distinct-scoped
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/absent-distinct-cross
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/present-cross-scoped
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/present-cross-cross
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/present-cross-distinct-scoped
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/present-cross-distinct-cross
+--- PASS: TestReviewLazyScopedGenericRouteStillConsumes (0.03s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/absent-scoped (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/absent-cross (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/absent-distinct-scoped (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/absent-distinct-cross (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/present-cross-scoped (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/present-cross-cross (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/present-cross-distinct-scoped (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/present-cross-distinct-cross (0.00s)
+=== RUN   TestReviewLazyOldCorpusMigrationHasExactOracle
+    lazy_review_test.go:78: full original=80 newly admitted=72 response differences=8
+--- PASS: TestReviewLazyOldCorpusMigrationHasExactOracle (0.11s)
+=== RUN   TestReviewLazyParallelCancellationJoinsAndFreshRequest
+--- PASS: TestReviewLazyParallelCancellationJoinsAndFreshRequest (0.03s)
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/absent-scoped
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/absent-cross
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/absent-distinct-scoped
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/absent-distinct-cross
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/present-cross-scoped
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/present-cross-cross
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/present-cross-distinct-scoped
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/present-cross-distinct-cross
+--- PASS: TestReviewLazyScopedGenericRouteStillConsumes (0.03s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/absent-scoped (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/absent-cross (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/absent-distinct-scoped (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/absent-distinct-cross (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/present-cross-scoped (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/present-cross-cross (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/present-cross-distinct-scoped (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/present-cross-distinct-cross (0.00s)
+=== RUN   TestReviewLazyOldCorpusMigrationHasExactOracle
+    lazy_review_test.go:78: full original=80 newly admitted=72 response differences=8
+--- PASS: TestReviewLazyOldCorpusMigrationHasExactOracle (0.11s)
+=== RUN   TestReviewLazyParallelCancellationJoinsAndFreshRequest
+--- PASS: TestReviewLazyParallelCancellationJoinsAndFreshRequest (0.03s)
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/absent-scoped
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/absent-cross
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/absent-distinct-scoped
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/absent-distinct-cross
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/present-cross-scoped
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/present-cross-cross
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/present-cross-distinct-scoped
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/present-cross-distinct-cross
+--- PASS: TestReviewLazyScopedGenericRouteStillConsumes (0.03s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/absent-scoped (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/absent-cross (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/absent-distinct-scoped (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/absent-distinct-cross (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/present-cross-scoped (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/present-cross-cross (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/present-cross-distinct-scoped (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/present-cross-distinct-cross (0.00s)
+=== RUN   TestReviewLazyOldCorpusMigrationHasExactOracle
+    lazy_review_test.go:78: full original=80 newly admitted=72 response differences=8
+--- PASS: TestReviewLazyOldCorpusMigrationHasExactOracle (0.11s)
+=== RUN   TestReviewLazyParallelCancellationJoinsAndFreshRequest
+--- PASS: TestReviewLazyParallelCancellationJoinsAndFreshRequest (0.03s)
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/absent-scoped
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/absent-cross
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/absent-distinct-scoped
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/absent-distinct-cross
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/present-cross-scoped
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/present-cross-cross
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/present-cross-distinct-scoped
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/present-cross-distinct-cross
+--- PASS: TestReviewLazyScopedGenericRouteStillConsumes (0.03s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/absent-scoped (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/absent-cross (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/absent-distinct-scoped (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/absent-distinct-cross (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/present-cross-scoped (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/present-cross-cross (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/present-cross-distinct-scoped (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/present-cross-distinct-cross (0.00s)
+=== RUN   TestReviewLazyOldCorpusMigrationHasExactOracle
+    lazy_review_test.go:78: full original=80 newly admitted=72 response differences=8
+--- PASS: TestReviewLazyOldCorpusMigrationHasExactOracle (0.11s)
+=== RUN   TestReviewLazyParallelCancellationJoinsAndFreshRequest
+--- PASS: TestReviewLazyParallelCancellationJoinsAndFreshRequest (0.03s)
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/absent-scoped
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/absent-cross
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/absent-distinct-scoped
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/absent-distinct-cross
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/present-cross-scoped
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/present-cross-cross
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/present-cross-distinct-scoped
+=== RUN   TestReviewLazyScopedGenericRouteStillConsumes/present-cross-distinct-cross
+--- PASS: TestReviewLazyScopedGenericRouteStillConsumes (0.03s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/absent-scoped (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/absent-cross (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/absent-distinct-scoped (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/absent-distinct-cross (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/present-cross-scoped (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/present-cross-cross (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/present-cross-distinct-scoped (0.00s)
+    --- PASS: TestReviewLazyScopedGenericRouteStillConsumes/present-cross-distinct-cross (0.00s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/query	3.065s

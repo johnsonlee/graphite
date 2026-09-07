@@ -1,0 +1,12 @@
+--- FAIL: TestReviewLazyScopedGenericRouteStillConsumes (0.03s)
+    --- FAIL: TestReviewLazyScopedGenericRouteStillConsumes/absent-scoped (0.01s)
+        lazy_review_test.go:155: main={"error":"ClassCastException","message":"class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')","query":"MATCH (n) WHERE n.graphId='absent' AND substring('x','bad')='x' RETURN n.id AS x LIMIT 1"} native={"columns":["x"],"query":"MATCH (n) WHERE n.graphId='absent' AND substring('x','bad')='x' RETURN n.id AS x LIMIT 1","rows":[]}
+    --- FAIL: TestReviewLazyScopedGenericRouteStillConsumes/absent-distinct-scoped (0.00s)
+        lazy_review_test.go:155: main={"error":"ClassCastException","message":"class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')","query":"MATCH (n) WHERE n.graphId='absent' AND substring('x','bad')='x' RETURN DISTINCT n.id AS x LIMIT 1"} native={"columns":["x"],"query":"MATCH (n) WHERE n.graphId='absent' AND substring('x','bad')='x' RETURN DISTINCT n.id AS x LIMIT 1","rows":[]}
+    --- FAIL: TestReviewLazyScopedGenericRouteStillConsumes/present-cross-scoped (0.00s)
+        lazy_review_test.go:155: main={"error":"ClassCastException","message":"class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')","query":"MATCH (n) WHERE n.graphId='b' AND substring('x','bad')='x' RETURN n.id AS x LIMIT 1"} native={"columns":["x"],"query":"MATCH (n) WHERE n.graphId='b' AND substring('x','bad')='x' RETURN n.id AS x LIMIT 1","rows":[]}
+    --- FAIL: TestReviewLazyScopedGenericRouteStillConsumes/present-cross-distinct-scoped (0.00s)
+        lazy_review_test.go:155: main={"error":"ClassCastException","message":"class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')","query":"MATCH (n) WHERE n.graphId='b' AND substring('x','bad')='x' RETURN DISTINCT n.id AS x LIMIT 1"} native={"columns":["x"],"query":"MATCH (n) WHERE n.graphId='b' AND substring('x','bad')='x' RETURN DISTINCT n.id AS x LIMIT 1","rows":[]}
+FAIL
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/query	0.502s
+FAIL

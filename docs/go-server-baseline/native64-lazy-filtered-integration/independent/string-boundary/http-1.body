@@ -1,0 +1,50 @@
+{
+  "columns": [
+    "x"
+  ],
+  "rows": [
+    {
+      "x": [
+        {
+          "id": 17,
+          "type": "CallSiteNode",
+          "callee_class": "example.Target",
+          "callee_name": "invoke",
+          "caller_class": "example.İD?Caller",
+          "caller_name": "caller",
+          "line": 3
+        },
+        17
+      ]
+    },
+    {
+      "x": [
+        {
+          "id": 2,
+          "type": "CallSiteNode",
+          "callee_class": "example.Target",
+          "callee_name": "other",
+          "caller_class": "example.Other",
+          "caller_name": "other",
+          "line": 2
+        },
+        2
+      ]
+    },
+    {
+      "x": [
+        {
+          "id": 41,
+          "type": "CallSiteNode",
+          "callee_class": "example.Target",
+          "callee_name": "invoke",
+          "caller_class": "example.Other",
+          "caller_name": "other",
+          "line": 4
+        },
+        41
+      ]
+    }
+  ],
+  "rowCount": 3
+}

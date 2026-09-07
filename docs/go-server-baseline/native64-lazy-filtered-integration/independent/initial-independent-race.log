@@ -1,0 +1,33 @@
+--- FAIL: TestReviewLazyOldCorpusMigrationHasExactOracle (0.13s)
+    lazy_review_test.go:70: full original=80 newly admitted=72 response differences=54
+    lazy_review_test.go:72: unexpected denominator/migration 80 72 54
+--- FAIL: TestReviewLazyOldCorpusMigrationHasExactOracle (0.11s)
+    lazy_review_test.go:70: full original=80 newly admitted=72 response differences=54
+    lazy_review_test.go:72: unexpected denominator/migration 80 72 54
+--- FAIL: TestReviewLazyOldCorpusMigrationHasExactOracle (0.11s)
+    lazy_review_test.go:70: full original=80 newly admitted=72 response differences=54
+    lazy_review_test.go:72: unexpected denominator/migration 80 72 54
+--- FAIL: TestReviewLazyOldCorpusMigrationHasExactOracle (0.11s)
+    lazy_review_test.go:70: full original=80 newly admitted=72 response differences=54
+    lazy_review_test.go:72: unexpected denominator/migration 80 72 54
+--- FAIL: TestReviewLazyOldCorpusMigrationHasExactOracle (0.11s)
+    lazy_review_test.go:70: full original=80 newly admitted=72 response differences=54
+    lazy_review_test.go:72: unexpected denominator/migration 80 72 54
+--- FAIL: TestReviewLazyOldCorpusMigrationHasExactOracle (0.11s)
+    lazy_review_test.go:70: full original=80 newly admitted=72 response differences=54
+    lazy_review_test.go:72: unexpected denominator/migration 80 72 54
+--- FAIL: TestReviewLazyOldCorpusMigrationHasExactOracle (0.11s)
+    lazy_review_test.go:70: full original=80 newly admitted=72 response differences=54
+    lazy_review_test.go:72: unexpected denominator/migration 80 72 54
+--- FAIL: TestReviewLazyOldCorpusMigrationHasExactOracle (0.11s)
+    lazy_review_test.go:70: full original=80 newly admitted=72 response differences=54
+    lazy_review_test.go:72: unexpected denominator/migration 80 72 54
+--- FAIL: TestReviewLazyOldCorpusMigrationHasExactOracle (0.11s)
+    lazy_review_test.go:70: full original=80 newly admitted=72 response differences=54
+    lazy_review_test.go:72: unexpected denominator/migration 80 72 54
+--- FAIL: TestReviewLazyOldCorpusMigrationHasExactOracle (0.11s)
+    lazy_review_test.go:70: full original=80 newly admitted=72 response differences=54
+    lazy_review_test.go:72: unexpected denominator/migration 80 72 54
+FAIL
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/query	1.818s
+FAIL

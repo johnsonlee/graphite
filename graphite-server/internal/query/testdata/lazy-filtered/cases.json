@@ -1,0 +1,211 @@
+[
+  {
+    "name": "candidate",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' AND true RETURN n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "candidate-distinct",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' AND true RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "reverse-candidate",
+    "query": "MATCH (n:CallSiteNode) WHERE true AND n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "reverse-candidate-distinct",
+    "query": "MATCH (n:CallSiteNode) WHERE true AND n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "candidate-throw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' AND substring('x','bad')='x' RETURN n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "candidate-throw-distinct",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' AND substring('x','bad')='x' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "reverse-throw",
+    "query": "MATCH (n:CallSiteNode) WHERE substring('x','bad')='x' AND n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "reverse-throw-distinct",
+    "query": "MATCH (n:CallSiteNode) WHERE substring('x','bad')='x' AND n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "candidate-false",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' AND false RETURN n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "candidate-false-distinct",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' AND false RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "candidate-or-residual",
+    "query": "MATCH (n:CallSiteNode) WHERE (n.caller_name CONTAINS 'other' OR n.callee_name='target') AND n.id>0 RETURN n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "candidate-or-residual-distinct",
+    "query": "MATCH (n:CallSiteNode) WHERE (n.caller_name CONTAINS 'other' OR n.callee_name='target') AND n.id>0 RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "direct-conjunction",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' AND n.callee_name='target' RETURN n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "direct-conjunction-distinct",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' AND n.callee_name='target' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "direct-conjunction-reversed",
+    "query": "MATCH (n:CallSiteNode) WHERE n.callee_name='target' AND n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "direct-conjunction-reversed-distinct",
+    "query": "MATCH (n:CallSiteNode) WHERE n.callee_name='target' AND n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "regex-candidate",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name =~ '.*\\\\Qother\\\\E.*' RETURN n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "regex-candidate-distinct",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name =~ '.*\\\\Qother\\\\E.*' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "generic-wrapper",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "generic-wrapper-distinct",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "generic-empty",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(coalesce(n.caller_name,'')) CONTAINS '' RETURN n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "generic-empty-distinct",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(coalesce(n.caller_name,'')) CONTAINS '' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "generic-id",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id>=0 RETURN n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "generic-id-distinct",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id>=0 RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "param-candidate",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS $term AND n.id>$id RETURN n.id AS x LIMIT 1",
+    "params": {
+      "term": "other",
+      "id": 0
+    }
+  },
+  {
+    "name": "param-null-candidate",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS $term AND true RETURN n.id AS x LIMIT 1",
+    "params": {
+      "term": null
+    }
+  },
+  {
+    "name": "param-nonstring-candidate",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS $term AND true RETURN n.id AS x LIMIT 1",
+    "params": {
+      "term": 2
+    }
+  },
+  {
+    "name": "route-candidate",
+    "query": "MATCH (n) WHERE n.graphId='b' AND n.caller_name CONTAINS 'other' AND true RETURN n.id AS x LIMIT 1"
+  },
+  {
+    "name": "route-param",
+    "query": "MATCH (n) WHERE graphId(n)=$graph AND n.caller_name CONTAINS $term AND true RETURN n.id AS x LIMIT 1",
+    "params": {
+      "term": "other",
+      "graph": "b"
+    }
+  },
+  {
+    "name": "route-conflict",
+    "query": "MATCH (n) WHERE n.graphId='a' AND n.graphId='b' AND substring('x','bad')='x' RETURN n.id AS x LIMIT 1"
+  },
+  {
+    "name": "inline",
+    "query": "MATCH (n {caller_name:$term}) WHERE n.id>=0 RETURN n.id AS x LIMIT 1",
+    "params": {
+      "term": "other"
+    }
+  },
+  {
+    "name": "inline-before-where",
+    "query": "MATCH (n {caller_name:substring('x','bad')}) WHERE false RETURN n.id AS x LIMIT 1"
+  },
+  {
+    "name": "inline-mismatch-before-throw",
+    "query": "MATCH (n {caller_name:'absent',callee_name:substring('x','bad')}) WHERE true RETURN n.id AS x LIMIT 1"
+  },
+  {
+    "name": "zero-before-inline",
+    "query": "MATCH (n {caller_name:substring('x','bad')}) WHERE true RETURN substring('x','bad') AS x LIMIT 0"
+  },
+  {
+    "name": "all-label-constraint",
+    "query": "MATCH (n:CallSiteNode:FieldNode) WHERE true RETURN n.id AS x LIMIT 1"
+  },
+  {
+    "name": "whole-owned",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id>=0 RETURN [n,n.id] AS x LIMIT 3"
+  },
+  {
+    "name": "nested-owned",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id>=0 RETURN {node:n,ids:[n.id]} AS x LIMIT 3"
+  },
+  {
+    "name": "alias-overwrite",
+    "query": "MATCH (n) WHERE n.id>=0 RETURN substring('x','bad') AS x,n.id AS x LIMIT 1"
+  },
+  {
+    "name": "distinct-alias",
+    "query": "MATCH (n) WHERE n.id>=0 RETURN DISTINCT n.id AS x,n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "metadata-alias",
+    "query": "MATCH (n) WHERE n.id>=0 RETURN DISTINCT n.caller_name AS `$metadata` LIMIT 1"
+  },
+  {
+    "name": "distinct-qualified-drain",
+    "query": "MATCH (n) WHERE n.id>=0 RETURN DISTINCT CASE WHEN n.id=90 THEN substring('x','bad') ELSE 1 END AS x LIMIT 1"
+  },
+  {
+    "name": "projection-error",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id>=0 RETURN substring('x','bad') AS x"
+  },
+  {
+    "name": "raw-unbounded",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.id AS x"
+  },
+  {
+    "name": "wrapped-unbounded",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN n.id AS x"
+  },
+  {
+    "name": "generic-unbounded",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id>=0 RETURN n.id AS x"
+  },
+  {
+    "name": "inline-unbounded",
+    "query": "MATCH (n {caller_name:'other'}) WHERE n.id>=0 RETURN n.id AS x"
+  },
+  {
+    "name": "route-unbounded",
+    "query": "MATCH (n) WHERE n.graphId='b' AND n.id>=0 RETURN n.id AS x"
+  },
+  {
+    "name": "constraints-first-unbounded",
+    "query": "MATCH (n {caller_name:substring('x','bad')}) WHERE false RETURN n.id AS x"
+  }
+]

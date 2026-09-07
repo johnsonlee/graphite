@@ -1,0 +1,66 @@
+[
+  {
+    "bounded": true,
+    "candidateAtoms": 1,
+    "distinct": false,
+    "name": "c-necessary-ordinary",
+    "noEarlierConsumer": true,
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'get' AND n.id \u003e= 0 RETURN n.caller_class AS caller, n.caller_name AS name LIMIT 200"
+  },
+  {
+    "bounded": true,
+    "candidateAtoms": 1,
+    "distinct": false,
+    "name": "c-necessary-ordinary-repeat",
+    "noEarlierConsumer": true,
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'get' AND n.id \u003e= 0 RETURN n.caller_class AS caller, n.caller_name AS name LIMIT 200"
+  },
+  {
+    "bounded": true,
+    "candidateAtoms": 1,
+    "distinct": true,
+    "name": "c-necessary-distinct",
+    "noEarlierConsumer": true,
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'get' AND n.id \u003e= 0 RETURN DISTINCT n.caller_class AS caller, n.caller_name AS name LIMIT 200"
+  },
+  {
+    "bounded": true,
+    "candidateAtoms": 1,
+    "distinct": true,
+    "name": "c-necessary-distinct-repeat",
+    "noEarlierConsumer": true,
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'get' AND n.id \u003e= 0 RETURN DISTINCT n.caller_class AS caller, n.caller_name AS name LIMIT 200"
+  },
+  {
+    "bounded": false,
+    "candidateAtoms": 0,
+    "distinct": false,
+    "name": "d-unbounded-android",
+    "noEarlierConsumer": true,
+    "query": "MATCH (n:CallSiteNode) WHERE n.graphId = 'fixture-android-00' AND n.caller_name = 'getTopMostActivity' RETURN [n.caller_class, n.caller_name] AS value"
+  },
+  {
+    "bounded": false,
+    "candidateAtoms": 0,
+    "distinct": false,
+    "name": "d-unbounded-kotlin",
+    "noEarlierConsumer": true,
+    "query": "MATCH (n:CallSiteNode) WHERE n.graphId = 'fixture-kotlin-compiler-00' AND n.caller_name = 'getName' RETURN [n.caller_class, n.caller_name] AS value"
+  },
+  {
+    "bounded": true,
+    "candidateAtoms": 0,
+    "distinct": false,
+    "name": "e-generic-ordinary",
+    "noEarlierConsumer": true,
+    "query": "MATCH (n:CallSiteNode) WHERE toString(toString(n.caller_name)) CONTAINS 'get' RETURN [n.caller_class, n.caller_name] AS value LIMIT 20"
+  },
+  {
+    "bounded": true,
+    "candidateAtoms": 0,
+    "distinct": true,
+    "name": "e-generic-distinct",
+    "noEarlierConsumer": true,
+    "query": "MATCH (n:CallSiteNode) WHERE toString(toString(n.caller_name)) CONTAINS 'get' RETURN DISTINCT [n.caller_class, n.caller_name] AS value LIMIT 20"
+  }
+]

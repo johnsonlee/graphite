@@ -1,0 +1,8 @@
+{
+  "complete": true,
+  "cases": 13,
+  "oldFiveFullBodiesEqual": true,
+  "newLazyConsumerBodies": 8,
+  "serverExited": true,
+  "forcedKill": false
+}

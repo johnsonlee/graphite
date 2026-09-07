@@ -1,0 +1,4432 @@
+[
+  {
+    "id": 1,
+    "suite": "primary",
+    "index": 134,
+    "main": {
+      "name": "distinct-direct-id",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 2
+        }
+      ],
+      "fixture": "bad-first-unmatched"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-first-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "distinct-direct-id",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1"
+    },
+    "group": "A-generic-distinct-candidate-projection",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 2
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 2,
+    "suite": "primary",
+    "index": 135,
+    "main": {
+      "name": "distinct-direct-id",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 2,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        }
+      ],
+      "fixture": "bad-first-unmatched"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-first-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "distinct-direct-id",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1"
+    },
+    "group": "A-generic-distinct-candidate-projection",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 2,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 3,
+    "suite": "primary",
+    "index": 138,
+    "main": {
+      "name": "distinct-id-function",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT id(n) AS x LIMIT 1",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 2
+        }
+      ],
+      "fixture": "bad-first-unmatched"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-first-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "distinct-id-function",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT id(n) AS x LIMIT 1"
+    },
+    "group": "A-generic-distinct-candidate-projection",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 2
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 4,
+    "suite": "primary",
+    "index": 139,
+    "main": {
+      "name": "distinct-id-function",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT id(n) AS x LIMIT 1",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 2,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        }
+      ],
+      "fixture": "bad-first-unmatched"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-first-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "distinct-id-function",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT id(n) AS x LIMIT 1"
+    },
+    "group": "A-generic-distinct-candidate-projection",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 2,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 5,
+    "suite": "primary",
+    "index": 150,
+    "main": {
+      "name": "distinct-whole",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n AS x LIMIT 1",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": {
+            "id": 2,
+            "type": "CallSiteNode",
+            "callee_class": "example.Target",
+            "callee_name": "other",
+            "caller_class": "example.Other",
+            "caller_name": "other",
+            "line": 2
+          }
+        }
+      ],
+      "fixture": "bad-first-unmatched"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-first-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "distinct-whole",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n AS x LIMIT 1"
+    },
+    "group": "A-generic-distinct-candidate-projection",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": {
+            "id": 2,
+            "type": "CallSiteNode",
+            "callee_class": "example.Target",
+            "callee_name": "other",
+            "caller_class": "example.Other",
+            "caller_name": "other",
+            "line": 2
+          }
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 6,
+    "suite": "primary",
+    "index": 151,
+    "main": {
+      "name": "distinct-whole",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n AS x LIMIT 1",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": {
+            "id": 2,
+            "type": "CallSiteNode",
+            "callee_class": "example.Target",
+            "callee_name": "other",
+            "caller_class": "example.Other",
+            "caller_name": "other",
+            "line": 2,
+            "graphId": "a",
+            "elementId": "a:2",
+            "qualifiedId": "a:2"
+          },
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ],
+      "fixture": "bad-first-unmatched"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-first-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "distinct-whole",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n AS x LIMIT 1"
+    },
+    "group": "A-generic-distinct-candidate-projection",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": {
+            "id": 2,
+            "type": "CallSiteNode",
+            "callee_class": "example.Target",
+            "callee_name": "other",
+            "caller_class": "example.Other",
+            "caller_name": "other",
+            "line": 2,
+            "graphId": "a",
+            "elementId": "a:2",
+            "qualifiedId": "a:2"
+          },
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 7,
+    "suite": "primary",
+    "index": 154,
+    "main": {
+      "name": "distinct-literal",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT 1 AS x LIMIT 1",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 1
+        }
+      ],
+      "fixture": "bad-first-unmatched"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-first-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "distinct-literal",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT 1 AS x LIMIT 1"
+    },
+    "group": "A-generic-distinct-candidate-projection",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 1
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 8,
+    "suite": "primary",
+    "index": 155,
+    "main": {
+      "name": "distinct-literal",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT 1 AS x LIMIT 1",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 1,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        }
+      ],
+      "fixture": "bad-first-unmatched"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-first-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "distinct-literal",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT 1 AS x LIMIT 1"
+    },
+    "group": "A-generic-distinct-candidate-projection",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 1,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 9,
+    "suite": "primary",
+    "index": 158,
+    "main": {
+      "name": "distinct-wrapped",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT toString(n.caller_name) AS x LIMIT 1",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other"
+        }
+      ],
+      "fixture": "bad-first-unmatched"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-first-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "distinct-wrapped",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT toString(n.caller_name) AS x LIMIT 1"
+    },
+    "group": "A-generic-distinct-candidate-projection",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other"
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 10,
+    "suite": "primary",
+    "index": 159,
+    "main": {
+      "name": "distinct-wrapped",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT toString(n.caller_name) AS x LIMIT 1",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        }
+      ],
+      "fixture": "bad-first-unmatched"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-first-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "distinct-wrapped",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT toString(n.caller_name) AS x LIMIT 1"
+    },
+    "group": "A-generic-distinct-candidate-projection",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 11,
+    "suite": "primary",
+    "index": 162,
+    "main": {
+      "name": "distinct-expression",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name+'' AS x LIMIT 1",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other"
+        }
+      ],
+      "fixture": "bad-first-unmatched"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-first-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "distinct-expression",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name+'' AS x LIMIT 1"
+    },
+    "group": "A-generic-distinct-candidate-projection",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other"
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 12,
+    "suite": "primary",
+    "index": 163,
+    "main": {
+      "name": "distinct-expression",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name+'' AS x LIMIT 1",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        }
+      ],
+      "fixture": "bad-first-unmatched"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-first-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "distinct-expression",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name+'' AS x LIMIT 1"
+    },
+    "group": "A-generic-distinct-candidate-projection",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 13,
+    "suite": "primary",
+    "index": 166,
+    "main": {
+      "name": "distinct-throw-projection",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT substring(n.caller_name,'bad') AS x LIMIT 1",
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "fixture": "bad-first-unmatched"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-first-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "distinct-throw-projection",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT substring(n.caller_name,'bad') AS x LIMIT 1"
+    },
+    "group": "A-generic-distinct-candidate-projection",
+    "mainResponse": {
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')"
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "both-error-difference"
+  },
+  {
+    "id": 14,
+    "suite": "primary",
+    "index": 167,
+    "main": {
+      "name": "distinct-throw-projection",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT substring(n.caller_name,'bad') AS x LIMIT 1",
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "fixture": "bad-first-unmatched"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-first-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "distinct-throw-projection",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT substring(n.caller_name,'bad') AS x LIMIT 1"
+    },
+    "group": "A-generic-distinct-candidate-projection",
+    "mainResponse": {
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')"
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "both-error-difference"
+  },
+  {
+    "id": 15,
+    "suite": "primary",
+    "index": 172,
+    "main": {
+      "name": "skip",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 0 LIMIT 1",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other"
+        }
+      ],
+      "fixture": "bad-first-unmatched"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-first-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "skip",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 0 LIMIT 1"
+    },
+    "group": "B-streaming-order-skip-limit",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other"
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 16,
+    "suite": "primary",
+    "index": 173,
+    "main": {
+      "name": "skip",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 0 LIMIT 1",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ],
+      "fixture": "bad-first-unmatched"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-first-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "skip",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 0 LIMIT 1"
+    },
+    "group": "B-streaming-order-skip-limit",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 17,
+    "suite": "primary",
+    "index": 174,
+    "main": {
+      "name": "skip-one",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 1 LIMIT 1",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other"
+        }
+      ],
+      "fixture": "bad-first-unmatched"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-first-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "skip-one",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 1 LIMIT 1"
+    },
+    "group": "B-streaming-order-skip-limit",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other"
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 18,
+    "suite": "primary",
+    "index": 175,
+    "main": {
+      "name": "skip-one",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 1 LIMIT 1",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ],
+      "fixture": "bad-first-unmatched"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-first-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "skip-one",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 1 LIMIT 1"
+    },
+    "group": "B-streaming-order-skip-limit",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 19,
+    "suite": "primary",
+    "index": 176,
+    "main": {
+      "name": "order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x LIMIT 1",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other"
+        }
+      ],
+      "fixture": "bad-first-unmatched"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-first-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x LIMIT 1"
+    },
+    "group": "B-streaming-order-skip-limit",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other"
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 20,
+    "suite": "primary",
+    "index": 177,
+    "main": {
+      "name": "order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x LIMIT 1",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ],
+      "fixture": "bad-first-unmatched"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-first-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x LIMIT 1"
+    },
+    "group": "B-streaming-order-skip-limit",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 21,
+    "suite": "primary",
+    "index": 178,
+    "main": {
+      "name": "order-desc",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x DESC LIMIT 1",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other"
+        }
+      ],
+      "fixture": "bad-first-unmatched"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-first-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "order-desc",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x DESC LIMIT 1"
+    },
+    "group": "B-streaming-order-skip-limit",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other"
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 22,
+    "suite": "primary",
+    "index": 179,
+    "main": {
+      "name": "order-desc",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x DESC LIMIT 1",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ],
+      "fixture": "bad-first-unmatched"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-first-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "order-desc",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x DESC LIMIT 1"
+    },
+    "group": "B-streaming-order-skip-limit",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 23,
+    "suite": "primary",
+    "index": 180,
+    "main": {
+      "name": "order-source",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY n.caller_name LIMIT 1",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other"
+        }
+      ],
+      "fixture": "bad-first-unmatched"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-first-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "order-source",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY n.caller_name LIMIT 1"
+    },
+    "group": "B-streaming-order-skip-limit",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other"
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 24,
+    "suite": "primary",
+    "index": 181,
+    "main": {
+      "name": "order-source",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY n.caller_name LIMIT 1",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ],
+      "fixture": "bad-first-unmatched"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-first-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "order-source",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY n.caller_name LIMIT 1"
+    },
+    "group": "B-streaming-order-skip-limit",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 25,
+    "suite": "primary",
+    "index": 182,
+    "main": {
+      "name": "order-throw",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY substring('x','bad') LIMIT 1",
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "fixture": "bad-first-unmatched"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-first-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "order-throw",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY substring('x','bad') LIMIT 1"
+    },
+    "group": "B-streaming-order-skip-limit",
+    "mainResponse": {
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')"
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "both-error-difference"
+  },
+  {
+    "id": 26,
+    "suite": "primary",
+    "index": 183,
+    "main": {
+      "name": "order-throw",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY substring('x','bad') LIMIT 1",
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "fixture": "bad-first-unmatched"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-first-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "order-throw",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY substring('x','bad') LIMIT 1"
+    },
+    "group": "B-streaming-order-skip-limit",
+    "mainResponse": {
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')"
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "both-error-difference"
+  },
+  {
+    "id": 27,
+    "suite": "primary",
+    "index": 188,
+    "main": {
+      "name": "where-and-true",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND true RETURN n.caller_name AS x LIMIT 1",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other"
+        }
+      ],
+      "fixture": "bad-first-unmatched"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-first-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "where-and-true",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND true RETURN n.caller_name AS x LIMIT 1"
+    },
+    "group": "C-residual-predicate-candidates",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other"
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 28,
+    "suite": "primary",
+    "index": 189,
+    "main": {
+      "name": "where-and-true",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND true RETURN n.caller_name AS x LIMIT 1",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ],
+      "fixture": "bad-first-unmatched"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-first-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "where-and-true",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND true RETURN n.caller_name AS x LIMIT 1"
+    },
+    "group": "C-residual-predicate-candidates",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 29,
+    "suite": "primary",
+    "index": 190,
+    "main": {
+      "name": "where-and-throw",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND substring('x','bad')='x' RETURN n.caller_name AS x LIMIT 1",
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "fixture": "bad-first-unmatched"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-first-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "where-and-throw",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND substring('x','bad')='x' RETURN n.caller_name AS x LIMIT 1"
+    },
+    "group": "C-residual-predicate-candidates",
+    "mainResponse": {
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')"
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "both-error-difference"
+  },
+  {
+    "id": 30,
+    "suite": "primary",
+    "index": 191,
+    "main": {
+      "name": "where-and-throw",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND substring('x','bad')='x' RETURN n.caller_name AS x LIMIT 1",
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "fixture": "bad-first-unmatched"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-first-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "where-and-throw",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND substring('x','bad')='x' RETURN n.caller_name AS x LIMIT 1"
+    },
+    "group": "C-residual-predicate-candidates",
+    "mainResponse": {
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')"
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "both-error-difference"
+  },
+  {
+    "id": 31,
+    "suite": "primary",
+    "index": 218,
+    "main": {
+      "name": "untyped-raw-throwing-projection",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure",
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "fixture": "bad-last-unmatched"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "untyped-raw-throwing-projection",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+    },
+    "group": "D-unbounded-streaming-projection",
+    "mainResponse": {
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')"
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "both-error-difference"
+  },
+  {
+    "id": 32,
+    "suite": "primary",
+    "index": 219,
+    "main": {
+      "name": "untyped-raw-throwing-projection",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure",
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "fixture": "bad-last-unmatched"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "untyped-raw-throwing-projection",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+    },
+    "group": "D-unbounded-streaming-projection",
+    "mainResponse": {
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')"
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "both-error-difference"
+  },
+  {
+    "id": 33,
+    "suite": "primary",
+    "index": 222,
+    "main": {
+      "name": "untyped-wrapped-throwing-projection",
+      "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure",
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "fixture": "bad-last-unmatched"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "untyped-wrapped-throwing-projection",
+      "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+    },
+    "group": "D-unbounded-streaming-projection",
+    "mainResponse": {
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')"
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "both-error-difference"
+  },
+  {
+    "id": 34,
+    "suite": "primary",
+    "index": 223,
+    "main": {
+      "name": "untyped-wrapped-throwing-projection",
+      "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure",
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "fixture": "bad-last-unmatched"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "untyped-wrapped-throwing-projection",
+      "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+    },
+    "group": "D-unbounded-streaming-projection",
+    "mainResponse": {
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')"
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "both-error-difference"
+  },
+  {
+    "id": 35,
+    "suite": "primary",
+    "index": 226,
+    "main": {
+      "name": "typed-raw-throwing-projection",
+      "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure",
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "fixture": "bad-last-unmatched"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "typed-raw-throwing-projection",
+      "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+    },
+    "group": "D-unbounded-streaming-projection",
+    "mainResponse": {
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')"
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "both-error-difference"
+  },
+  {
+    "id": 36,
+    "suite": "primary",
+    "index": 227,
+    "main": {
+      "name": "typed-raw-throwing-projection",
+      "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure",
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "fixture": "bad-last-unmatched"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "typed-raw-throwing-projection",
+      "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+    },
+    "group": "D-unbounded-streaming-projection",
+    "mainResponse": {
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')"
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "both-error-difference"
+  },
+  {
+    "id": 37,
+    "suite": "primary",
+    "index": 230,
+    "main": {
+      "name": "typed-wrapped-throwing-projection",
+      "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure",
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "fixture": "bad-last-unmatched"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "typed-wrapped-throwing-projection",
+      "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+    },
+    "group": "D-unbounded-streaming-projection",
+    "mainResponse": {
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')"
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "both-error-difference"
+  },
+  {
+    "id": 38,
+    "suite": "primary",
+    "index": 231,
+    "main": {
+      "name": "typed-wrapped-throwing-projection",
+      "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure",
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "fixture": "bad-last-unmatched"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "typed-wrapped-throwing-projection",
+      "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN substring(n.callee_name,'bad') AS failure"
+    },
+    "group": "D-unbounded-streaming-projection",
+    "mainResponse": {
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')"
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "both-error-difference"
+  },
+  {
+    "id": 39,
+    "suite": "primary",
+    "index": 242,
+    "main": {
+      "name": "distinct-direct-id",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 2
+        }
+      ],
+      "fixture": "bad-last-unmatched"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "distinct-direct-id",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1"
+    },
+    "group": "A-generic-distinct-candidate-projection",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 2
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 40,
+    "suite": "primary",
+    "index": 243,
+    "main": {
+      "name": "distinct-direct-id",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 2,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        }
+      ],
+      "fixture": "bad-last-unmatched"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "distinct-direct-id",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1"
+    },
+    "group": "A-generic-distinct-candidate-projection",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 2,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 41,
+    "suite": "primary",
+    "index": 246,
+    "main": {
+      "name": "distinct-id-function",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT id(n) AS x LIMIT 1",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 2
+        }
+      ],
+      "fixture": "bad-last-unmatched"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "distinct-id-function",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT id(n) AS x LIMIT 1"
+    },
+    "group": "A-generic-distinct-candidate-projection",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 2
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 42,
+    "suite": "primary",
+    "index": 247,
+    "main": {
+      "name": "distinct-id-function",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT id(n) AS x LIMIT 1",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 2,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        }
+      ],
+      "fixture": "bad-last-unmatched"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "distinct-id-function",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT id(n) AS x LIMIT 1"
+    },
+    "group": "A-generic-distinct-candidate-projection",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 2,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 43,
+    "suite": "primary",
+    "index": 258,
+    "main": {
+      "name": "distinct-whole",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n AS x LIMIT 1",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": {
+            "id": 2,
+            "type": "CallSiteNode",
+            "callee_class": "example.Target",
+            "callee_name": "other",
+            "caller_class": "example.Other",
+            "caller_name": "other",
+            "line": 2
+          }
+        }
+      ],
+      "fixture": "bad-last-unmatched"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "distinct-whole",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n AS x LIMIT 1"
+    },
+    "group": "A-generic-distinct-candidate-projection",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": {
+            "id": 2,
+            "type": "CallSiteNode",
+            "callee_class": "example.Target",
+            "callee_name": "other",
+            "caller_class": "example.Other",
+            "caller_name": "other",
+            "line": 2
+          }
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 44,
+    "suite": "primary",
+    "index": 259,
+    "main": {
+      "name": "distinct-whole",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n AS x LIMIT 1",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": {
+            "id": 2,
+            "type": "CallSiteNode",
+            "callee_class": "example.Target",
+            "callee_name": "other",
+            "caller_class": "example.Other",
+            "caller_name": "other",
+            "line": 2,
+            "graphId": "a",
+            "elementId": "a:2",
+            "qualifiedId": "a:2"
+          },
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ],
+      "fixture": "bad-last-unmatched"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "distinct-whole",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n AS x LIMIT 1"
+    },
+    "group": "A-generic-distinct-candidate-projection",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": {
+            "id": 2,
+            "type": "CallSiteNode",
+            "callee_class": "example.Target",
+            "callee_name": "other",
+            "caller_class": "example.Other",
+            "caller_name": "other",
+            "line": 2,
+            "graphId": "a",
+            "elementId": "a:2",
+            "qualifiedId": "a:2"
+          },
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 45,
+    "suite": "primary",
+    "index": 262,
+    "main": {
+      "name": "distinct-literal",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT 1 AS x LIMIT 1",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 1
+        }
+      ],
+      "fixture": "bad-last-unmatched"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "distinct-literal",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT 1 AS x LIMIT 1"
+    },
+    "group": "A-generic-distinct-candidate-projection",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 1
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 46,
+    "suite": "primary",
+    "index": 263,
+    "main": {
+      "name": "distinct-literal",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT 1 AS x LIMIT 1",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 1,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        }
+      ],
+      "fixture": "bad-last-unmatched"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "distinct-literal",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT 1 AS x LIMIT 1"
+    },
+    "group": "A-generic-distinct-candidate-projection",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": 1,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 47,
+    "suite": "primary",
+    "index": 266,
+    "main": {
+      "name": "distinct-wrapped",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT toString(n.caller_name) AS x LIMIT 1",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other"
+        }
+      ],
+      "fixture": "bad-last-unmatched"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "distinct-wrapped",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT toString(n.caller_name) AS x LIMIT 1"
+    },
+    "group": "A-generic-distinct-candidate-projection",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other"
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 48,
+    "suite": "primary",
+    "index": 267,
+    "main": {
+      "name": "distinct-wrapped",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT toString(n.caller_name) AS x LIMIT 1",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        }
+      ],
+      "fixture": "bad-last-unmatched"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "distinct-wrapped",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT toString(n.caller_name) AS x LIMIT 1"
+    },
+    "group": "A-generic-distinct-candidate-projection",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 49,
+    "suite": "primary",
+    "index": 270,
+    "main": {
+      "name": "distinct-expression",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name+'' AS x LIMIT 1",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other"
+        }
+      ],
+      "fixture": "bad-last-unmatched"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "distinct-expression",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name+'' AS x LIMIT 1"
+    },
+    "group": "A-generic-distinct-candidate-projection",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other"
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 50,
+    "suite": "primary",
+    "index": 271,
+    "main": {
+      "name": "distinct-expression",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name+'' AS x LIMIT 1",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        }
+      ],
+      "fixture": "bad-last-unmatched"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "distinct-expression",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name+'' AS x LIMIT 1"
+    },
+    "group": "A-generic-distinct-candidate-projection",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 51,
+    "suite": "primary",
+    "index": 274,
+    "main": {
+      "name": "distinct-throw-projection",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT substring(n.caller_name,'bad') AS x LIMIT 1",
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "fixture": "bad-last-unmatched"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "distinct-throw-projection",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT substring(n.caller_name,'bad') AS x LIMIT 1"
+    },
+    "group": "A-generic-distinct-candidate-projection",
+    "mainResponse": {
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')"
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "both-error-difference"
+  },
+  {
+    "id": 52,
+    "suite": "primary",
+    "index": 275,
+    "main": {
+      "name": "distinct-throw-projection",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT substring(n.caller_name,'bad') AS x LIMIT 1",
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "fixture": "bad-last-unmatched"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "distinct-throw-projection",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT substring(n.caller_name,'bad') AS x LIMIT 1"
+    },
+    "group": "A-generic-distinct-candidate-projection",
+    "mainResponse": {
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')"
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "both-error-difference"
+  },
+  {
+    "id": 53,
+    "suite": "primary",
+    "index": 280,
+    "main": {
+      "name": "skip",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 0 LIMIT 1",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other"
+        }
+      ],
+      "fixture": "bad-last-unmatched"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "skip",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 0 LIMIT 1"
+    },
+    "group": "B-streaming-order-skip-limit",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other"
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 54,
+    "suite": "primary",
+    "index": 281,
+    "main": {
+      "name": "skip",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 0 LIMIT 1",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ],
+      "fixture": "bad-last-unmatched"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "skip",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 0 LIMIT 1"
+    },
+    "group": "B-streaming-order-skip-limit",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 55,
+    "suite": "primary",
+    "index": 282,
+    "main": {
+      "name": "skip-one",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 1 LIMIT 1",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other"
+        }
+      ],
+      "fixture": "bad-last-unmatched"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "skip-one",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 1 LIMIT 1"
+    },
+    "group": "B-streaming-order-skip-limit",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other"
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 56,
+    "suite": "primary",
+    "index": 283,
+    "main": {
+      "name": "skip-one",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 1 LIMIT 1",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ],
+      "fixture": "bad-last-unmatched"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "skip-one",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x SKIP 1 LIMIT 1"
+    },
+    "group": "B-streaming-order-skip-limit",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 57,
+    "suite": "primary",
+    "index": 284,
+    "main": {
+      "name": "order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x LIMIT 1",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other"
+        }
+      ],
+      "fixture": "bad-last-unmatched"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x LIMIT 1"
+    },
+    "group": "B-streaming-order-skip-limit",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other"
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 58,
+    "suite": "primary",
+    "index": 285,
+    "main": {
+      "name": "order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x LIMIT 1",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ],
+      "fixture": "bad-last-unmatched"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x LIMIT 1"
+    },
+    "group": "B-streaming-order-skip-limit",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 59,
+    "suite": "primary",
+    "index": 286,
+    "main": {
+      "name": "order-desc",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x DESC LIMIT 1",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other"
+        }
+      ],
+      "fixture": "bad-last-unmatched"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "order-desc",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x DESC LIMIT 1"
+    },
+    "group": "B-streaming-order-skip-limit",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other"
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 60,
+    "suite": "primary",
+    "index": 287,
+    "main": {
+      "name": "order-desc",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x DESC LIMIT 1",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ],
+      "fixture": "bad-last-unmatched"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "order-desc",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY x DESC LIMIT 1"
+    },
+    "group": "B-streaming-order-skip-limit",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 61,
+    "suite": "primary",
+    "index": 288,
+    "main": {
+      "name": "order-source",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY n.caller_name LIMIT 1",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other"
+        }
+      ],
+      "fixture": "bad-last-unmatched"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "order-source",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY n.caller_name LIMIT 1"
+    },
+    "group": "B-streaming-order-skip-limit",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other"
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 62,
+    "suite": "primary",
+    "index": 289,
+    "main": {
+      "name": "order-source",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY n.caller_name LIMIT 1",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ],
+      "fixture": "bad-last-unmatched"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "order-source",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY n.caller_name LIMIT 1"
+    },
+    "group": "B-streaming-order-skip-limit",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 63,
+    "suite": "primary",
+    "index": 290,
+    "main": {
+      "name": "order-throw",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY substring('x','bad') LIMIT 1",
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "fixture": "bad-last-unmatched"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "order-throw",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY substring('x','bad') LIMIT 1"
+    },
+    "group": "B-streaming-order-skip-limit",
+    "mainResponse": {
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')"
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "both-error-difference"
+  },
+  {
+    "id": 64,
+    "suite": "primary",
+    "index": 291,
+    "main": {
+      "name": "order-throw",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY substring('x','bad') LIMIT 1",
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "fixture": "bad-last-unmatched"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "order-throw",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x ORDER BY substring('x','bad') LIMIT 1"
+    },
+    "group": "B-streaming-order-skip-limit",
+    "mainResponse": {
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')"
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "both-error-difference"
+  },
+  {
+    "id": 65,
+    "suite": "primary",
+    "index": 294,
+    "main": {
+      "name": "where-wrapped",
+      "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other"
+        }
+      ],
+      "fixture": "bad-last-unmatched"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "where-wrapped",
+      "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+    },
+    "group": "E-generic-filtered-limit-stop",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other"
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 66,
+    "suite": "primary",
+    "index": 295,
+    "main": {
+      "name": "where-wrapped",
+      "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ],
+      "fixture": "bad-last-unmatched"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "where-wrapped",
+      "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_name,''))) CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+    },
+    "group": "E-generic-filtered-limit-stop",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 67,
+    "suite": "primary",
+    "index": 296,
+    "main": {
+      "name": "where-and-true",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND true RETURN n.caller_name AS x LIMIT 1",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other"
+        }
+      ],
+      "fixture": "bad-last-unmatched"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "where-and-true",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND true RETURN n.caller_name AS x LIMIT 1"
+    },
+    "group": "C-residual-predicate-candidates",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other"
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 68,
+    "suite": "primary",
+    "index": 297,
+    "main": {
+      "name": "where-and-true",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND true RETURN n.caller_name AS x LIMIT 1",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ],
+      "fixture": "bad-last-unmatched"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "where-and-true",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND true RETURN n.caller_name AS x LIMIT 1"
+    },
+    "group": "C-residual-predicate-candidates",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 69,
+    "suite": "primary",
+    "index": 316,
+    "main": {
+      "name": "inline",
+      "query": "MATCH (n {caller_name:'other'}) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other"
+        }
+      ],
+      "fixture": "bad-last-unmatched"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "inline",
+      "query": "MATCH (n {caller_name:'other'}) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+    },
+    "group": "E-generic-filtered-limit-stop",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other"
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 70,
+    "suite": "primary",
+    "index": 317,
+    "main": {
+      "name": "inline",
+      "query": "MATCH (n {caller_name:'other'}) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ],
+      "fixture": "bad-last-unmatched"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "inline",
+      "query": "MATCH (n {caller_name:'other'}) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+    },
+    "group": "E-generic-filtered-limit-stop",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 71,
+    "suite": "primary",
+    "index": 406,
+    "main": {
+      "name": "where-and-throw",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND substring('x','bad')='x' RETURN n.caller_name AS x LIMIT 1",
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "fixture": "bad-matched"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "ClassCastException",
+      "fixture": "bad-matched",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "where-and-throw",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND substring('x','bad')='x' RETURN n.caller_name AS x LIMIT 1"
+    },
+    "group": "C-residual-predicate-candidates",
+    "mainResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "nativeResponse": {
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')"
+    },
+    "comparison": "both-error-difference"
+  },
+  {
+    "id": 72,
+    "suite": "primary",
+    "index": 407,
+    "main": {
+      "name": "where-and-throw",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND substring('x','bad')='x' RETURN n.caller_name AS x LIMIT 1",
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "fixture": "bad-matched"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "ClassCastException",
+      "fixture": "bad-matched",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "name": "where-and-throw",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND substring('x','bad')='x' RETURN n.caller_name AS x LIMIT 1"
+    },
+    "group": "C-residual-predicate-candidates",
+    "mainResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "nativeResponse": {
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')"
+    },
+    "comparison": "both-error-difference"
+  },
+  {
+    "id": 73,
+    "suite": "supplementary",
+    "index": 20,
+    "main": {
+      "name": "distinct-order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x ORDER BY x LIMIT 1",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other"
+        }
+      ],
+      "fixture": "bad-first-unmatched"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-first-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "distinct-order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x ORDER BY x LIMIT 1"
+    },
+    "group": "B-streaming-order-skip-limit",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other"
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 74,
+    "suite": "supplementary",
+    "index": 21,
+    "main": {
+      "name": "distinct-order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x ORDER BY x LIMIT 1",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        }
+      ],
+      "fixture": "bad-first-unmatched"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-first-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "distinct-order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x ORDER BY x LIMIT 1"
+    },
+    "group": "B-streaming-order-skip-limit",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 75,
+    "suite": "supplementary",
+    "index": 36,
+    "main": {
+      "name": "distinct-order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x ORDER BY x LIMIT 1",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other"
+        }
+      ],
+      "fixture": "bad-last-unmatched"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "distinct-order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x ORDER BY x LIMIT 1"
+    },
+    "group": "B-streaming-order-skip-limit",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other"
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 76,
+    "suite": "supplementary",
+    "index": 37,
+    "main": {
+      "name": "distinct-order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x ORDER BY x LIMIT 1",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        }
+      ],
+      "fixture": "bad-last-unmatched"
+    },
+    "native": {
+      "cross": true,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "distinct-order",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x ORDER BY x LIMIT 1"
+    },
+    "group": "B-streaming-order-skip-limit",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 77,
+    "suite": "supplementary",
+    "index": 44,
+    "main": {
+      "name": "empty-coalesce",
+      "query": "MATCH (n) WHERE toLower(coalesce(n.caller_name,'')) CONTAINS '' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "caller"
+        }
+      ],
+      "fixture": "bad-last-unmatched"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-last-unmatched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "empty-coalesce",
+      "query": "MATCH (n) WHERE toLower(coalesce(n.caller_name,'')) CONTAINS '' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+    },
+    "group": "E-generic-filtered-limit-stop",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "caller"
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 78,
+    "suite": "supplementary",
+    "index": 60,
+    "main": {
+      "name": "empty-coalesce",
+      "query": "MATCH (n) WHERE toLower(coalesce(n.caller_name,'')) CONTAINS '' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "caller"
+        }
+      ],
+      "fixture": "bad-matched"
+    },
+    "native": {
+      "cross": false,
+      "empty": false,
+      "error": "IndexOutOfBoundsException",
+      "fixture": "bad-matched",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "name": "empty-coalesce",
+      "query": "MATCH (n) WHERE toLower(coalesce(n.caller_name,'')) CONTAINS '' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+    },
+    "group": "E-generic-filtered-limit-stop",
+    "mainResponse": {
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "caller"
+        }
+      ]
+    },
+    "nativeResponse": {
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)"
+    },
+    "comparison": "main-success-native-error"
+  },
+  {
+    "id": 79,
+    "suite": "annotation",
+    "index": 34,
+    "main": {
+      "name": "empty-wrapper-decline",
+      "query": "MATCH (odd) WHERE toLower(coalesce(odd.caller_class,'')) CONTAINS '' RETURN DISTINCT odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x",
+        "y",
+        "z"
+      ],
+      "rows": [
+        {
+          "x": "example.Other",
+          "y": null,
+          "z": 12
+        },
+        {
+          "x": "example.Other",
+          "y": "other",
+          "z": "other"
+        },
+        {
+          "x": "example.Other",
+          "y": "other",
+          "z": "invoke"
+        },
+        {
+          "x": "example.\u0130D?Caller",
+          "y": "caller",
+          "z": "invoke"
+        },
+        {
+          "x": null,
+          "y": null,
+          "z": null
+        }
+      ]
+    },
+    "native": {
+      "columns": [
+        "x",
+        "y",
+        "z"
+      ],
+      "cross": false,
+      "empty": false,
+      "name": "empty-wrapper-decline",
+      "query": "MATCH (odd) WHERE toLower(coalesce(odd.caller_class,'')) CONTAINS '' RETURN DISTINCT odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+      "rows": [
+        {
+          "x": null,
+          "y": null,
+          "z": null
+        },
+        {
+          "x": "example.Other",
+          "y": null,
+          "z": 12
+        },
+        {
+          "x": "example.Other",
+          "y": "other",
+          "z": "other"
+        },
+        {
+          "x": "example.Other",
+          "y": "other",
+          "z": "invoke"
+        },
+        {
+          "x": "example.\u0130D?Caller",
+          "y": "caller",
+          "z": "invoke"
+        }
+      ]
+    },
+    "group": "F-mapped-supertype-order",
+    "mainResponse": {
+      "columns": [
+        "x",
+        "y",
+        "z"
+      ],
+      "rows": [
+        {
+          "x": "example.Other",
+          "y": null,
+          "z": 12
+        },
+        {
+          "x": "example.Other",
+          "y": "other",
+          "z": "other"
+        },
+        {
+          "x": "example.Other",
+          "y": "other",
+          "z": "invoke"
+        },
+        {
+          "x": "example.\u0130D?Caller",
+          "y": "caller",
+          "z": "invoke"
+        },
+        {
+          "x": null,
+          "y": null,
+          "z": null
+        }
+      ]
+    },
+    "nativeResponse": {
+      "columns": [
+        "x",
+        "y",
+        "z"
+      ],
+      "rows": [
+        {
+          "x": null,
+          "y": null,
+          "z": null
+        },
+        {
+          "x": "example.Other",
+          "y": null,
+          "z": 12
+        },
+        {
+          "x": "example.Other",
+          "y": "other",
+          "z": "other"
+        },
+        {
+          "x": "example.Other",
+          "y": "other",
+          "z": "invoke"
+        },
+        {
+          "x": "example.\u0130D?Caller",
+          "y": "caller",
+          "z": "invoke"
+        }
+      ]
+    },
+    "comparison": "both-success-difference"
+  },
+  {
+    "id": 80,
+    "suite": "annotation",
+    "index": 35,
+    "main": {
+      "name": "empty-wrapper-decline",
+      "query": "MATCH (odd) WHERE toLower(coalesce(odd.caller_class,'')) CONTAINS '' RETURN DISTINCT odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x",
+        "y",
+        "z"
+      ],
+      "rows": [
+        {
+          "x": "example.Other",
+          "y": null,
+          "z": 12,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "x": "example.Other",
+          "y": "other",
+          "z": "other",
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "x": "example.Other",
+          "y": "other",
+          "z": "invoke",
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "x": "example.\u0130D?Caller",
+          "y": "caller",
+          "z": "invoke",
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "x": null,
+          "y": null,
+          "z": null,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        }
+      ]
+    },
+    "native": {
+      "columns": [
+        "x",
+        "y",
+        "z"
+      ],
+      "cross": true,
+      "empty": false,
+      "name": "empty-wrapper-decline",
+      "query": "MATCH (odd) WHERE toLower(coalesce(odd.caller_class,'')) CONTAINS '' RETURN DISTINCT odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+      "rows": [
+        {
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          },
+          "x": null,
+          "y": null,
+          "z": null
+        },
+        {
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          },
+          "x": "example.Other",
+          "y": null,
+          "z": 12
+        },
+        {
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          },
+          "x": "example.Other",
+          "y": "other",
+          "z": "other"
+        },
+        {
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          },
+          "x": "example.Other",
+          "y": "other",
+          "z": "invoke"
+        },
+        {
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          },
+          "x": "example.\u0130D?Caller",
+          "y": "caller",
+          "z": "invoke"
+        }
+      ]
+    },
+    "group": "F-mapped-supertype-order",
+    "mainResponse": {
+      "columns": [
+        "x",
+        "y",
+        "z"
+      ],
+      "rows": [
+        {
+          "x": "example.Other",
+          "y": null,
+          "z": 12,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "x": "example.Other",
+          "y": "other",
+          "z": "other",
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "x": "example.Other",
+          "y": "other",
+          "z": "invoke",
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "x": "example.\u0130D?Caller",
+          "y": "caller",
+          "z": "invoke",
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "x": null,
+          "y": null,
+          "z": null,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        }
+      ]
+    },
+    "nativeResponse": {
+      "columns": [
+        "x",
+        "y",
+        "z"
+      ],
+      "rows": [
+        {
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          },
+          "x": null,
+          "y": null,
+          "z": null
+        },
+        {
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          },
+          "x": "example.Other",
+          "y": null,
+          "z": 12
+        },
+        {
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          },
+          "x": "example.Other",
+          "y": "other",
+          "z": "other"
+        },
+        {
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          },
+          "x": "example.Other",
+          "y": "other",
+          "z": "invoke"
+        },
+        {
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          },
+          "x": "example.\u0130D?Caller",
+          "y": "caller",
+          "z": "invoke"
+        }
+      ]
+    },
+    "comparison": "both-success-difference"
+  },
+  {
+    "id": 81,
+    "suite": "mixed",
+    "index": 34,
+    "main": {
+      "name": "empty-wrapper-decline",
+      "query": "MATCH (odd) WHERE toLower(coalesce(odd.caller_class,'')) CONTAINS '' RETURN DISTINCT odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+      "cross": false,
+      "empty": false,
+      "columns": [
+        "x",
+        "y",
+        "z"
+      ],
+      "rows": [
+        {
+          "x": "example.\u0130D?Caller",
+          "y": "caller",
+          "z": "invoke"
+        },
+        {
+          "x": "example.Other",
+          "y": "other",
+          "z": "other"
+        },
+        {
+          "x": "example.Other",
+          "y": "other",
+          "z": "invoke"
+        },
+        {
+          "x": null,
+          "y": null,
+          "z": null
+        }
+      ]
+    },
+    "native": {
+      "columns": [
+        "x",
+        "y",
+        "z"
+      ],
+      "cross": false,
+      "empty": false,
+      "name": "empty-wrapper-decline",
+      "query": "MATCH (odd) WHERE toLower(coalesce(odd.caller_class,'')) CONTAINS '' RETURN DISTINCT odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+      "rows": [
+        {
+          "x": null,
+          "y": null,
+          "z": null
+        },
+        {
+          "x": "example.\u0130D?Caller",
+          "y": "caller",
+          "z": "invoke"
+        },
+        {
+          "x": "example.Other",
+          "y": "other",
+          "z": "other"
+        },
+        {
+          "x": "example.Other",
+          "y": "other",
+          "z": "invoke"
+        }
+      ]
+    },
+    "group": "F-mapped-supertype-order",
+    "mainResponse": {
+      "columns": [
+        "x",
+        "y",
+        "z"
+      ],
+      "rows": [
+        {
+          "x": "example.\u0130D?Caller",
+          "y": "caller",
+          "z": "invoke"
+        },
+        {
+          "x": "example.Other",
+          "y": "other",
+          "z": "other"
+        },
+        {
+          "x": "example.Other",
+          "y": "other",
+          "z": "invoke"
+        },
+        {
+          "x": null,
+          "y": null,
+          "z": null
+        }
+      ]
+    },
+    "nativeResponse": {
+      "columns": [
+        "x",
+        "y",
+        "z"
+      ],
+      "rows": [
+        {
+          "x": null,
+          "y": null,
+          "z": null
+        },
+        {
+          "x": "example.\u0130D?Caller",
+          "y": "caller",
+          "z": "invoke"
+        },
+        {
+          "x": "example.Other",
+          "y": "other",
+          "z": "other"
+        },
+        {
+          "x": "example.Other",
+          "y": "other",
+          "z": "invoke"
+        }
+      ]
+    },
+    "comparison": "both-success-difference"
+  },
+  {
+    "id": 82,
+    "suite": "mixed",
+    "index": 35,
+    "main": {
+      "name": "empty-wrapper-decline",
+      "query": "MATCH (odd) WHERE toLower(coalesce(odd.caller_class,'')) CONTAINS '' RETURN DISTINCT odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+      "cross": true,
+      "empty": false,
+      "columns": [
+        "x",
+        "y",
+        "z"
+      ],
+      "rows": [
+        {
+          "x": "example.\u0130D?Caller",
+          "y": "caller",
+          "z": "invoke",
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "x": "example.Other",
+          "y": "other",
+          "z": "other",
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "x": "example.Other",
+          "y": "other",
+          "z": "invoke",
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "x": null,
+          "y": null,
+          "z": null,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        }
+      ]
+    },
+    "native": {
+      "columns": [
+        "x",
+        "y",
+        "z"
+      ],
+      "cross": true,
+      "empty": false,
+      "name": "empty-wrapper-decline",
+      "query": "MATCH (odd) WHERE toLower(coalesce(odd.caller_class,'')) CONTAINS '' RETURN DISTINCT odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+      "rows": [
+        {
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          },
+          "x": null,
+          "y": null,
+          "z": null
+        },
+        {
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          },
+          "x": "example.\u0130D?Caller",
+          "y": "caller",
+          "z": "invoke"
+        },
+        {
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          },
+          "x": "example.Other",
+          "y": "other",
+          "z": "other"
+        },
+        {
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          },
+          "x": "example.Other",
+          "y": "other",
+          "z": "invoke"
+        }
+      ]
+    },
+    "group": "F-mapped-supertype-order",
+    "mainResponse": {
+      "columns": [
+        "x",
+        "y",
+        "z"
+      ],
+      "rows": [
+        {
+          "x": "example.\u0130D?Caller",
+          "y": "caller",
+          "z": "invoke",
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "x": "example.Other",
+          "y": "other",
+          "z": "other",
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "x": "example.Other",
+          "y": "other",
+          "z": "invoke",
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        },
+        {
+          "x": null,
+          "y": null,
+          "z": null,
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        }
+      ]
+    },
+    "nativeResponse": {
+      "columns": [
+        "x",
+        "y",
+        "z"
+      ],
+      "rows": [
+        {
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          },
+          "x": null,
+          "y": null,
+          "z": null
+        },
+        {
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          },
+          "x": "example.\u0130D?Caller",
+          "y": "caller",
+          "z": "invoke"
+        },
+        {
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          },
+          "x": "example.Other",
+          "y": "other",
+          "z": "other"
+        },
+        {
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          },
+          "x": "example.Other",
+          "y": "other",
+          "z": "invoke"
+        }
+      ]
+    },
+    "comparison": "both-success-difference"
+  }
+]

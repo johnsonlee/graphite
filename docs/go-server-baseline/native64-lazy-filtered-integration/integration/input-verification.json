@@ -1,0 +1,12 @@
+[
+  {
+    "directory": "/tmp/graphite-go-lazy-cde-evidence/freeze",
+    "manifestSHA256": "ea88ff27f7948f273b68369d3d9c2f282f4ce517e20a734d6c667833fd7cb852",
+    "verifiedFiles": 259
+  },
+  {
+    "directory": "/tmp/graphite-lazy-cde-independent-review",
+    "manifestSHA256": "ecc45f8a7e196aa3f4fab911d5f6a9537ca3a2bf8a1d7d1ea4c8bca29f920d6e",
+    "verifiedFiles": 54
+  }
+]

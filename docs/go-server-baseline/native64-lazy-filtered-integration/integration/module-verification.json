@@ -1,0 +1,28 @@
+{
+  "checks": [
+    {
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./...",
+        "-count=1"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 51.7805380821228,
+      "log": "race.log"
+    },
+    {
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 1.4985687732696533,
+      "log": "vet.log"
+    }
+  ],
+  "sourceFiles": 2401,
+  "sourceUnchanged": true
+}

@@ -1,0 +1,50 @@
+[
+  {
+    "name": "edge-0",
+    "query": "MATCH (n) WHERE n.absent='x' AND n.caller_name CONTAINS 'other' RETURN n.id AS x LIMIT 1"
+  },
+  {
+    "name": "edge-1",
+    "query": "MATCH (n) WHERE n.absent='x' AND n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1"
+  },
+  {
+    "name": "edge-2",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.absent='x' RETURN n.id AS x LIMIT 1"
+  },
+  {
+    "name": "edge-3",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.absent='x' RETURN DISTINCT n.id AS x LIMIT 1"
+  },
+  {
+    "name": "edge-4",
+    "query": "MATCH (n) WHERE n.absent CONTAINS 'x' AND n.caller_name CONTAINS 'other' RETURN n.id AS x LIMIT 1"
+  },
+  {
+    "name": "edge-5",
+    "query": "MATCH (n) WHERE n.absent CONTAINS 'x' AND n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1"
+  },
+  {
+    "name": "edge-6",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.absent CONTAINS 'x' RETURN n.id AS x LIMIT 1"
+  },
+  {
+    "name": "edge-7",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.absent CONTAINS 'x' RETURN DISTINCT n.id AS x LIMIT 1"
+  },
+  {
+    "name": "edge-8",
+    "query": "MATCH (n) WHERE (n.caller_name CONTAINS 'other' OR n.caller_name CONTAINS 'other') AND n.callee_name CONTAINS 'invoke' RETURN n.id AS x LIMIT 1"
+  },
+  {
+    "name": "edge-9",
+    "query": "MATCH (n) WHERE (n.caller_name CONTAINS 'other' OR n.caller_name CONTAINS 'other') AND n.callee_name CONTAINS 'invoke' RETURN DISTINCT n.id AS x LIMIT 1"
+  },
+  {
+    "name": "edge-10",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND (n.absent='x' OR n.absent='y') RETURN n.id AS x LIMIT 1"
+  },
+  {
+    "name": "edge-11",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND (n.absent='x' OR n.absent='y') RETURN DISTINCT n.id AS x LIMIT 1"
+  }
+]

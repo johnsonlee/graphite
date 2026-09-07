@@ -1,0 +1,16 @@
+{
+  "command": [
+    "go",
+    "test",
+    "-race",
+    "./internal/query",
+    "-run",
+    "^TestReviewLazy",
+    "-count=10",
+    "-v"
+  ],
+  "exitCode": 0,
+  "reviewTestsSHA256": "0d0b6c9ed5df02846c907e44396f248fca45a367c71b68afb837549ac87835bf",
+  "testOnlyFileRemovedAfterRun": true,
+  "sourceUnaffected": true
+}

@@ -1,0 +1,69 @@
+{
+  "initialRace": [
+    "go",
+    "test",
+    "-race",
+    "./internal/query",
+    "-run",
+    "^TestReviewLazy",
+    "-count=10"
+  ],
+  "routeBefore": [
+    "go",
+    "test",
+    "./internal/query",
+    "-run",
+    "^TestReviewLazyScopedGenericRouteStillConsumes$",
+    "-count=1"
+  ],
+  "finalRace": [
+    "go",
+    "test",
+    "-race",
+    "./internal/query",
+    "-run",
+    "^TestReviewLazy|^TestLazyFiltered|^TestLazyNecessary|^TestStringCandidateCorruptBaselinePreservation$",
+    "-count=3"
+  ],
+  "requiredCancel": [
+    "go",
+    "test",
+    "-race",
+    "./internal/query",
+    "-run",
+    "^TestReviewLazyParallelCancellationJoinsAndFreshRequest$",
+    "-count=10"
+  ],
+  "vet": [
+    "go",
+    "vet",
+    "./internal/query",
+    "./internal/store"
+  ],
+  "routeOracle": {
+    "java": "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+    "classpath": "/tmp/graphite-lazy-cde-independent-review/route-oracle/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+    "mainClass": "LazyFilteredOracle",
+    "args": [
+      "/tmp/graphite-lazy-cde-independent-review/route-oracle/fixture",
+      "/tmp/graphite-lazy-cde-independent-review/route-oracle/cases.json",
+      "/tmp/graphite-lazy-cde-independent-review/route-oracle/main-main.json",
+      "MAPPED"
+    ]
+  },
+  "finalGuard": [
+    "go",
+    "test",
+    "-race",
+    "./internal/query",
+    "-run",
+    "^TestLazyFilteredOriginalCDE22$|^TestLazyFilteredMain480$|^TestReviewLazy",
+    "-count=1"
+  ],
+  "finalGuardVet": [
+    "go",
+    "vet",
+    "./internal/query",
+    "./internal/store"
+  ]
+}

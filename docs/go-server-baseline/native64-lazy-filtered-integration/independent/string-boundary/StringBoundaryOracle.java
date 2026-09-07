@@ -1,0 +1,5 @@
+import com.google.gson.*;import io.johnsonlee.graphite.cypher.*;import io.johnsonlee.graphite.webgraph.*;import java.nio.file.*;import java.util.*;
+public class StringBoundaryOracle {
+ static Map<String,Object> value(String s){var out=new LinkedHashMap<String,Object>();out.put("utf16",s.chars().boxed().toList());out.put("utf8hex",HexFormat.of().formatHex(s.getBytes(java.nio.charset.StandardCharsets.UTF_8)));return out;}
+ public static void main(String[]args)throws Exception{var graph=GraphStore.INSTANCE.loadMapped(Path.of(args[0]));var result=new CypherExecutor(graph).execute("MATCH (n:CallSiteNode) WHERE n.id=17 RETURN n.caller_class AS field,n AS whole",Map.of());var row=result.getRows().get(0);var direct=(String)row.get("field");var whole=(Map<?,?>)row.get("whole");var output=new LinkedHashMap<String,Object>();output.put("direct",value(direct));output.put("materialized",value((String)whole.get("caller_class")));output.put("java",System.getProperty("java.version"));Files.writeString(Path.of(args[1]),new GsonBuilder().setPrettyPrinting().create().toJson(output)+"\n");((java.io.Closeable)graph).close();}
+}

@@ -1,0 +1,7 @@
+Loaded graph 'tiny' from /tmp/graphite-go-lazy-cde-evidence/main-fixtures/clean-MAPPED using MAPPED mode
+Web UI: http://localhost:18863
+Data: /Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite
+Loaded graphs: tiny
+Topology: 1 graphs, 0 relations
+Cypher limits: 4 concurrent, 60000ms maximum timeout
+Press Ctrl+C to stop

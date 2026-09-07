@@ -1,0 +1,130 @@
+[
+  {
+    "actual": {
+      "columns": [
+        "x"
+      ],
+      "query": "MATCH (n) WHERE n.graphId='absent' AND substring('x','bad')='x' RETURN n.id AS x LIMIT 1",
+      "rows": []
+    },
+    "cross": false,
+    "expected": {
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "query": "MATCH (n) WHERE n.graphId='absent' AND substring('x','bad')='x' RETURN n.id AS x LIMIT 1"
+    },
+    "name": "absent"
+  },
+  {
+    "actual": {
+      "columns": [
+        "x"
+      ],
+      "query": "MATCH (n) WHERE n.graphId='absent' AND substring('x','bad')='x' RETURN n.id AS x LIMIT 1",
+      "rows": []
+    },
+    "cross": true,
+    "expected": {
+      "columns": [
+        "x"
+      ],
+      "query": "MATCH (n) WHERE n.graphId='absent' AND substring('x','bad')='x' RETURN n.id AS x LIMIT 1",
+      "rows": []
+    },
+    "name": "absent"
+  },
+  {
+    "actual": {
+      "columns": [
+        "x"
+      ],
+      "query": "MATCH (n) WHERE n.graphId='absent' AND substring('x','bad')='x' RETURN DISTINCT n.id AS x LIMIT 1",
+      "rows": []
+    },
+    "cross": false,
+    "expected": {
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "query": "MATCH (n) WHERE n.graphId='absent' AND substring('x','bad')='x' RETURN DISTINCT n.id AS x LIMIT 1"
+    },
+    "name": "absent-distinct"
+  },
+  {
+    "actual": {
+      "columns": [
+        "x"
+      ],
+      "query": "MATCH (n) WHERE n.graphId='absent' AND substring('x','bad')='x' RETURN DISTINCT n.id AS x LIMIT 1",
+      "rows": []
+    },
+    "cross": true,
+    "expected": {
+      "columns": [
+        "x"
+      ],
+      "query": "MATCH (n) WHERE n.graphId='absent' AND substring('x','bad')='x' RETURN DISTINCT n.id AS x LIMIT 1",
+      "rows": []
+    },
+    "name": "absent-distinct"
+  },
+  {
+    "actual": {
+      "columns": [
+        "x"
+      ],
+      "query": "MATCH (n) WHERE n.graphId='b' AND substring('x','bad')='x' RETURN n.id AS x LIMIT 1",
+      "rows": []
+    },
+    "cross": false,
+    "expected": {
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "query": "MATCH (n) WHERE n.graphId='b' AND substring('x','bad')='x' RETURN n.id AS x LIMIT 1"
+    },
+    "name": "present-cross"
+  },
+  {
+    "actual": {
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "query": "MATCH (n) WHERE n.graphId='b' AND substring('x','bad')='x' RETURN n.id AS x LIMIT 1"
+    },
+    "cross": true,
+    "expected": {
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "query": "MATCH (n) WHERE n.graphId='b' AND substring('x','bad')='x' RETURN n.id AS x LIMIT 1"
+    },
+    "name": "present-cross"
+  },
+  {
+    "actual": {
+      "columns": [
+        "x"
+      ],
+      "query": "MATCH (n) WHERE n.graphId='b' AND substring('x','bad')='x' RETURN DISTINCT n.id AS x LIMIT 1",
+      "rows": []
+    },
+    "cross": false,
+    "expected": {
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "query": "MATCH (n) WHERE n.graphId='b' AND substring('x','bad')='x' RETURN DISTINCT n.id AS x LIMIT 1"
+    },
+    "name": "present-cross-distinct"
+  },
+  {
+    "actual": {
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "query": "MATCH (n) WHERE n.graphId='b' AND substring('x','bad')='x' RETURN DISTINCT n.id AS x LIMIT 1"
+    },
+    "cross": true,
+    "expected": {
+      "error": "ClassCastException",
+      "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+      "query": "MATCH (n) WHERE n.graphId='b' AND substring('x','bad')='x' RETURN DISTINCT n.id AS x LIMIT 1"
+    },
+    "name": "present-cross-distinct"
+  }
+]

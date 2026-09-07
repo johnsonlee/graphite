@@ -1,0 +1,35 @@
+{
+  "failure": "verify.py reached plain socket bind after response/source/exit verification; OSError48 Address already in use",
+  "observedUTC": "2026-09-07T03:33:57.696789+00:00",
+  "probes": [
+    {
+      "phase": "lazy13",
+      "port": 18872,
+      "serverExit": {
+        "pid": 65868,
+        "returnCode": 143,
+        "forcedKill": false
+      },
+      "listenerCommandExit": 1,
+      "listeners": "",
+      "connectResult": 61,
+      "plainBindSucceeded": true,
+      "bindError": null
+    },
+    {
+      "phase": "regression42",
+      "port": 18873,
+      "serverExit": {
+        "pid": 66736,
+        "returnCode": 143,
+        "forcedKill": false
+      },
+      "listenerCommandExit": 1,
+      "listeners": "",
+      "connectResult": 61,
+      "plainBindSucceeded": true,
+      "bindError": null
+    }
+  ],
+  "noRuntimeOrResponseChange": true
+}

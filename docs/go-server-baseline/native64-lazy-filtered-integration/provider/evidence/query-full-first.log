@@ -1,0 +1,20 @@
+--- FAIL: TestStringCandidateCorruptBaselinePreservation (0.07s)
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-last-unmatched/untyped-raw-throwing-projection/scoped (0.00s)
+        string_candidates_test.go:552: got class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap') want IndexOutOfBoundsException: Index (2147483647) is greater than or equal to list size (9)
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-last-unmatched/untyped-raw-throwing-projection/cross (0.00s)
+        string_candidates_test.go:552: got class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap') want IndexOutOfBoundsException: Index (2147483647) is greater than or equal to list size (9)
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-last-unmatched/untyped-wrapped-throwing-projection/scoped (0.00s)
+        string_candidates_test.go:552: got class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap') want IndexOutOfBoundsException: Index (2147483647) is greater than or equal to list size (9)
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-last-unmatched/untyped-wrapped-throwing-projection/cross (0.00s)
+        string_candidates_test.go:552: got class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap') want IndexOutOfBoundsException: Index (2147483647) is greater than or equal to list size (9)
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-last-unmatched/typed-raw-throwing-projection/scoped (0.00s)
+        string_candidates_test.go:552: got class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap') want IndexOutOfBoundsException: Index (2147483647) is greater than or equal to list size (9)
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-last-unmatched/typed-raw-throwing-projection/cross (0.00s)
+        string_candidates_test.go:552: got class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap') want IndexOutOfBoundsException: Index (2147483647) is greater than or equal to list size (9)
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-last-unmatched/typed-wrapped-throwing-projection/scoped (0.00s)
+        string_candidates_test.go:552: got class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap') want IndexOutOfBoundsException: Index (2147483647) is greater than or equal to list size (9)
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-last-unmatched/typed-wrapped-throwing-projection/cross (0.00s)
+        string_candidates_test.go:552: got class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap') want IndexOutOfBoundsException: Index (2147483647) is greater than or equal to list size (9)
+FAIL
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/query	6.161s
+FAIL

@@ -1,0 +1,49 @@
+{
+  "cwd": "/tmp/graphite-go-lazy-cde-87aaf0ad/graphite-server",
+  "finalCommands": [
+    {
+      "argv": [
+        "go",
+        "test",
+        "-race",
+        "./..."
+      ],
+      "env": {
+        "INDEXED_DISTINCT_OUTPUT": "/tmp/graphite-go-lazy-cde-evidence/final-corpus"
+      },
+      "log": "module-race-unbounded-final.log"
+    },
+    {
+      "argv": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "log": "module-vet-unbounded-final.log"
+    }
+  ],
+  "mainSourcesCommand": {
+    "argv": [
+      "/opt/homebrew/opt/openjdk@17/bin/java",
+      "-Dfile.encoding=UTF-8",
+      "-Xmx256m",
+      "-cp",
+      "/tmp/graphite-go-lazy-cde-evidence:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "LazySourcesOracle",
+      "/tmp/graphite-go-lazy-cde-87aaf0ad/graphite-server/internal/query/testdata/lazy-filtered",
+      "/tmp/graphite-go-lazy-cde-evidence/source-fixtures",
+      "/tmp/graphite-go-lazy-cde-87aaf0ad/graphite-server/internal/query/testdata/lazy-filtered/sources-main.json"
+    ],
+    "log": "sources-main.log",
+    "observedProcessors": 16,
+    "cpuOverride": false
+  },
+  "sourceBaseTree": "baf9ae489cae2477bc52c7a83561cfd0ff449560",
+  "baseCommit": "87aaf0ad",
+  "sourceProviderManifestSHA": "e33b63a7d43792ff65fa680c6024b5e91e7726f9fd8e6b53a7e4e26644f98bf0",
+  "sourceProviderPatchSHA": "aee8349b9c860736ab6a7dd51efb3ac0841603f9e291a2942a9e8dd4631a1cc7",
+  "oracleMainCommit": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "oracleJarSHA": "91c3a1d154ca96004c55df195d9f752e077cab3e33ca1570b2c88b872d9bc34d",
+  "java": "17.0.18 ARM64",
+  "performanceRuns": 0
+}

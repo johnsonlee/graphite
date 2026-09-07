@@ -1,0 +1,48 @@
+=== RUN   TestLazyFilteredOriginalCDE22
+=== RUN   TestLazyFilteredOriginalCDE22/27
+=== RUN   TestLazyFilteredOriginalCDE22/28
+=== RUN   TestLazyFilteredOriginalCDE22/29
+=== RUN   TestLazyFilteredOriginalCDE22/30
+=== RUN   TestLazyFilteredOriginalCDE22/31
+=== RUN   TestLazyFilteredOriginalCDE22/32
+=== RUN   TestLazyFilteredOriginalCDE22/33
+=== RUN   TestLazyFilteredOriginalCDE22/34
+=== RUN   TestLazyFilteredOriginalCDE22/35
+=== RUN   TestLazyFilteredOriginalCDE22/36
+=== RUN   TestLazyFilteredOriginalCDE22/37
+=== RUN   TestLazyFilteredOriginalCDE22/38
+=== RUN   TestLazyFilteredOriginalCDE22/65
+=== RUN   TestLazyFilteredOriginalCDE22/66
+=== RUN   TestLazyFilteredOriginalCDE22/67
+=== RUN   TestLazyFilteredOriginalCDE22/68
+=== RUN   TestLazyFilteredOriginalCDE22/69
+=== RUN   TestLazyFilteredOriginalCDE22/70
+=== RUN   TestLazyFilteredOriginalCDE22/71
+=== RUN   TestLazyFilteredOriginalCDE22/72
+=== RUN   TestLazyFilteredOriginalCDE22/77
+=== RUN   TestLazyFilteredOriginalCDE22/78
+--- PASS: TestLazyFilteredOriginalCDE22 (0.07s)
+    --- PASS: TestLazyFilteredOriginalCDE22/27 (0.01s)
+    --- PASS: TestLazyFilteredOriginalCDE22/28 (0.00s)
+    --- PASS: TestLazyFilteredOriginalCDE22/29 (0.00s)
+    --- PASS: TestLazyFilteredOriginalCDE22/30 (0.00s)
+    --- PASS: TestLazyFilteredOriginalCDE22/31 (0.00s)
+    --- PASS: TestLazyFilteredOriginalCDE22/32 (0.00s)
+    --- PASS: TestLazyFilteredOriginalCDE22/33 (0.00s)
+    --- PASS: TestLazyFilteredOriginalCDE22/34 (0.00s)
+    --- PASS: TestLazyFilteredOriginalCDE22/35 (0.00s)
+    --- PASS: TestLazyFilteredOriginalCDE22/36 (0.00s)
+    --- PASS: TestLazyFilteredOriginalCDE22/37 (0.00s)
+    --- PASS: TestLazyFilteredOriginalCDE22/38 (0.00s)
+    --- PASS: TestLazyFilteredOriginalCDE22/65 (0.00s)
+    --- PASS: TestLazyFilteredOriginalCDE22/66 (0.00s)
+    --- PASS: TestLazyFilteredOriginalCDE22/67 (0.00s)
+    --- PASS: TestLazyFilteredOriginalCDE22/68 (0.00s)
+    --- PASS: TestLazyFilteredOriginalCDE22/69 (0.00s)
+    --- PASS: TestLazyFilteredOriginalCDE22/70 (0.00s)
+    --- PASS: TestLazyFilteredOriginalCDE22/71 (0.00s)
+    --- PASS: TestLazyFilteredOriginalCDE22/72 (0.00s)
+    --- PASS: TestLazyFilteredOriginalCDE22/77 (0.00s)
+    --- PASS: TestLazyFilteredOriginalCDE22/78 (0.00s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/query	0.314s

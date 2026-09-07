@@ -1,0 +1,11 @@
+{
+  "base": "9ada2bf1",
+  "clones": {
+    "main": "/tmp/graphite-cde-main-real64-9ada2bf1",
+    "native": "/tmp/graphite-cde-native-real64-9ada2bf1",
+    "http": "/tmp/graphite-cde-http-real64-9ada2bf1"
+  },
+  "queries": 13,
+  "oldHistoryControls": 5,
+  "newCDEQueries": 8
+}

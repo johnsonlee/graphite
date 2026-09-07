@@ -1,0 +1,18 @@
+[
+  {
+    "name": "absent",
+    "query": "MATCH (n) WHERE n.graphId='absent' AND substring('x','bad')='x' RETURN n.id AS x LIMIT 1"
+  },
+  {
+    "name": "absent-distinct",
+    "query": "MATCH (n) WHERE n.graphId='absent' AND substring('x','bad')='x' RETURN DISTINCT n.id AS x LIMIT 1"
+  },
+  {
+    "name": "present-cross",
+    "query": "MATCH (n) WHERE n.graphId='b' AND substring('x','bad')='x' RETURN n.id AS x LIMIT 1"
+  },
+  {
+    "name": "present-cross-distinct",
+    "query": "MATCH (n) WHERE n.graphId='b' AND substring('x','bad')='x' RETURN DISTINCT n.id AS x LIMIT 1"
+  }
+]

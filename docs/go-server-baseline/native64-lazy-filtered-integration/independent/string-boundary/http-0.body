@@ -1,0 +1,21 @@
+{
+  "columns": [
+    "field",
+    "whole"
+  ],
+  "rows": [
+    {
+      "field": "example.İD?Caller",
+      "whole": {
+        "id": 17,
+        "type": "CallSiteNode",
+        "callee_class": "example.Target",
+        "callee_name": "invoke",
+        "caller_class": "example.İD?Caller",
+        "caller_name": "caller",
+        "line": 3
+      }
+    }
+  ],
+  "rowCount": 1
+}

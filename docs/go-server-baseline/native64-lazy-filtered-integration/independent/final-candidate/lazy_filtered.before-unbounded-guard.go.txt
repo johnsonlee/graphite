@@ -1,0 +1,313 @@
+package query
+
+import (
+	"context"
+	"math"
+	"strings"
+
+	"github.com/johnsonlee/graphite/graphite-server/internal/cypher"
+	"github.com/johnsonlee/graphite/graphite-server/internal/store"
+)
+
+// These consumers correspond to QueryPipeline.tryFastFilteredNodeLimit's
+// residual/generic paths and tryStreamingFilteredNodeMatch. Pagination and
+// ordered projection deliberately remain separate planner admissions.
+type lazyFilteredPlan struct {
+	match           cypher.MatchClause
+	node            cypher.NodePattern
+	projection      cypher.ProjectionClause
+	columns         []string
+	limit           int
+	bounded         bool
+	atoms           []distinctStringAtom
+	residual        cypher.Expr
+	directPredicate func(evaluator, any) bool
+	graphIDs        map[string]bool
+}
+
+func (e evaluator) compileLazyFiltered(branch cypher.SingleQuery) *lazyFilteredPlan {
+	if len(branch.Clauses) != 2 {
+		return nil
+	}
+	m, ok := branch.Clauses[0].(cypher.MatchClause)
+	if !ok || m.Optional || m.Where == nil || len(m.Patterns) != 1 {
+		return nil
+	}
+	r, ok := branch.Clauses[1].(cypher.ProjectionClause)
+	if !ok || r.With || r.All || r.Where != nil || r.Skip != nil || len(r.OrderBy) != 0 {
+		return nil
+	}
+	pattern := m.Patterns[0]
+	if pattern.PathVariable != "" || len(pattern.Nodes) != 1 || len(pattern.Relationships) != 0 {
+		return nil
+	}
+	node := pattern.Nodes[0]
+	if node.Variable == "" {
+		return nil
+	}
+	// Main routes Method and unknown labels through earlier dispatchers/general
+	// execution before either consumer. Do not capture those branches here.
+	for _, label := range node.Labels {
+		if strings.EqualFold(label, "Method") || !lazyKnownLabel(label) {
+			return nil
+		}
+	}
+	for _, item := range r.Items {
+		if containsAggregate(item.Expression) {
+			return nil
+		}
+	}
+	p := &lazyFilteredPlan{match: m, node: node, projection: r, limit: math.MaxInt32, residual: m.Where}
+	for _, item := range r.Items {
+		name := item.Alias
+		if name == "" {
+			name = columnName(item.Expression)
+		}
+		p.columns = append(p.columns, name)
+	}
+	if r.Limit == nil {
+		if r.Distinct || lazyElementEquality(m.Where, node.Variable) {
+			return nil
+		}
+		p.graphIDs = e.lazyFirstGraphEquality(m.Where, node.Variable)
+		return p
+	}
+	count, literal := plannerLiteralCount(r.Limit)
+	if !literal {
+		return nil
+	}
+	p.bounded, p.limit = true, int(count)
+	residual, route := e.distinctGraphRoute(m.Where, node.Variable)
+	p.graphIDs = route
+	if route != nil && len(route) > 0 {
+		p.residual = residual
+	}
+	if len(node.Labels) <= 1 && len(node.Properties) == 0 {
+		// Higher-priority raw projection consumers have already run. Remaining
+		// supported concrete-type sources still consume lazily and trust the
+		// direct predicate, just as main's disjunction executor does.
+		if atoms, ok := e.compileDistinctDisjunction(p.residual, node.Variable); ok {
+			p.atoms = lazyUniqueAtoms(atoms)
+			p.directPredicate = func(evaluator, any) bool { return true }
+			return p
+		}
+		p.atoms, p.directPredicate = e.lazyConjunction(p.residual, node.Variable)
+		if p.atoms == nil {
+			p.atoms = e.lazyNecessaryCandidates(p.residual, node.Variable)
+		}
+	}
+	return p
+}
+
+var lazyConcreteKinds = []string{"IntConstant", "StringConstant", "LongConstant", "FloatConstant", "DoubleConstant", "BooleanConstant", "NullConstant", "EnumConstant", "LocalVariable", "FieldNode", "ParameterNode", "ReturnNode", "CallSiteNode", "AnnotationNode", "ResourceValueNode", "ResourceFileNode"}
+
+func lazyKnownLabel(label string) bool {
+	for _, kind := range lazyConcreteKinds {
+		if matchesLabel(store.Node{Kind: kind}, label) {
+			return true
+		}
+	}
+	return false
+}
+
+func (e evaluator) lazyFiltered(graph *store.Store, branch cypher.SingleQuery) (Result, bool) {
+	defer ordinarySourceFailure()
+	p := e.compileLazyFiltered(branch)
+	if p == nil {
+		return Result{}, false
+	}
+	result := Result{Columns: p.columns, Rows: []map[string]any{}}
+	if p.limit <= 0 {
+		return result, true
+	}
+	sources := e.graphs
+	if !e.cross {
+		sources = nil
+		if graph != nil {
+			sources = []Graph{{ID: "single", Store: graph}}
+		}
+	}
+	selectedSources := []Graph{}
+	for _, source := range sources {
+		if p.graphIDs == nil || p.graphIDs[source.ID] || (!e.cross && p.bounded && p.atoms == nil) {
+			selectedSources = append(selectedSources, source)
+		}
+	}
+	if p.atoms != nil {
+		return e.lazyCandidateFiltered(p, selectedSources), true
+	}
+	seen := map[string]int{}
+	bindings := map[string]any{p.node.Variable: nil}
+	for _, source := range selectedSources {
+		next := e.lazyGenericNodes(source, p.node)
+		for {
+			node, ok := next(e.ctx)
+			if !ok {
+				break
+			}
+			candidate := e.nodeValue(source.Store, source.ID, node)
+			if !e.matches(candidate, p.node, nil) {
+				continue
+			}
+			bindings[p.node.Variable] = candidate
+			if e.eval(p.match.Where, bindings) != true {
+				continue
+			}
+			row := e.lazyProject(p, candidate, source.ID, false)
+			if p.projection.Distinct {
+				visible := make(map[string]any, len(row))
+				for k, v := range row {
+					if k != provenanceKey {
+						visible[k] = v
+					}
+				}
+				k := key(visible)
+				if i, exists := seen[k]; exists {
+					mergeProvenance(result.Rows[i], row)
+				} else if len(result.Rows) < p.limit {
+					seen[k] = len(result.Rows)
+					result.Rows = append(result.Rows, row)
+				}
+				if !e.cross && len(result.Rows) >= p.limit {
+					return result, true
+				}
+			} else {
+				result.Rows = append(result.Rows, row)
+				if len(result.Rows) >= p.limit {
+					return result, true
+				}
+			}
+		}
+	}
+	if !p.bounded {
+		e.check()
+	}
+	return result, true
+}
+
+func lazyGenericIDs(graph *store.Store, node cypher.NodePattern) []int32 {
+	if len(node.Labels) == 0 || strings.EqualFold(node.Labels[0], "Node") {
+		return graph.QueryNodeIDs()
+	}
+	kinds := []string{}
+	for _, kind := range lazyConcreteKinds {
+		if matchesLabel(store.Node{Kind: kind}, node.Labels[0]) {
+			kinds = append(kinds, kind)
+		}
+	}
+	if len(kinds) == 1 {
+		return graph.NodesOfKind(kinds[0])
+	}
+	// Preserve the existing source encounter policy for supertype scans. Main's
+	// MAPPED Class-identity ordering remains the separately recorded F gap.
+	wanted := map[int32]bool{}
+	for _, kind := range kinds {
+		for _, id := range graph.NodesOfKind(kind) {
+			wanted[id] = true
+		}
+	}
+	ids := []int32{}
+	for _, id := range graph.QueryNodeIDs() {
+		if wanted[id] {
+			ids = append(ids, id)
+		}
+	}
+	return ids
+}
+
+func (e evaluator) lazyProject(p *lazyFilteredPlan, candidate any, graphID string, selected bool) map[string]any {
+	bindings := map[string]any{}
+	e.bind(bindings, p.node.Variable, candidate)
+	if e.cross {
+		addProvenance(bindings, graphID)
+	}
+	row := map[string]any{}
+	for i, item := range p.projection.Items {
+		if selected {
+			overwritten := false
+			for j := i + 1; j < len(p.columns); j++ {
+				if p.columns[j] == p.columns[i] {
+					overwritten = true
+					break
+				}
+			}
+			if overwritten {
+				continue
+			}
+		}
+		e.bind(row, p.columns[i], freezeCandidate(e.eval(item.Expression, bindings)))
+	}
+	mergeProvenance(row, bindings)
+	return row
+}
+
+func lazyElementEquality(expr cypher.Expr, variable string) bool {
+	b, ok := expr.(cypher.Binary)
+	if !ok {
+		return false
+	}
+	if b.Op == "AND" {
+		return lazyElementEquality(b.Left, variable) || lazyElementEquality(b.Right, variable)
+	}
+	if b.Op != "=" {
+		return false
+	}
+	isElement := func(x cypher.Expr) bool {
+		if k, ok := distinctProperty(x, variable); ok {
+			return k == "elementId" || k == "qualifiedId"
+		}
+		c, ok := x.(cypher.Call)
+		if !ok || len(c.Arguments) != 1 || c.Distinct {
+			return false
+		}
+		v, ok := c.Arguments[0].(cypher.Variable)
+		return ok && v.Name == variable && (strings.EqualFold(c.Name, "elementId") || strings.EqualFold(c.Name, "qualifiedId"))
+	}
+	return isElement(b.Left) || isElement(b.Right)
+}
+func (e evaluator) lazyFirstGraphEquality(expr cypher.Expr, variable string) map[string]bool {
+	b, ok := expr.(cypher.Binary)
+	if !ok {
+		return nil
+	}
+	if b.Op == "AND" {
+		if a := e.lazyFirstGraphEquality(b.Left, variable); a != nil {
+			return a
+		}
+		return e.lazyFirstGraphEquality(b.Right, variable)
+	}
+	if b.Op == "=" {
+		return e.distinctPureGraphConstraint(expr, variable)
+	}
+	return nil
+}
+
+// Generic nodeElementCandidates source, with no WHERE or constraint pushdown.
+// The owner constructs one source on demand and retains only owned returned Nodes.
+func (e evaluator) lazyGenericNodes(source Graph, pattern cypher.NodePattern) mainNodeNext {
+	ids := lazyGenericIDs(source.Store, pattern)
+	position := 0
+	return func(ctx context.Context) (store.Node, bool) {
+		local := e
+		local.ctx = ctx
+		for position < len(ids) {
+			local.check()
+			id := ids[position]
+			position++
+			if source.Store.Mode == "MAPPED" {
+				node, present, err := source.Store.ProjectionCandidateNode(ctx, id)
+				failMainStringRead(err)
+				if !present {
+					continue
+				}
+				return node, true
+			}
+			node, err := source.Store.CandidateNode(ctx, id)
+			if err != nil {
+				failProjectionRead(err)
+			}
+			return node, true
+		}
+		return store.Node{}, false
+	}
+}

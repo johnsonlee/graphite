@@ -518,3 +518,34 @@ verification and cleanup. The build collector's initial `/tmp` versus
 `/private/tmp` error remains recorded; no source/test change masked it.
 This is a functional follow-up, leaving optimization attempt15 unused and the
 full compatibility/P95 objective and final benchmark-regression-gate open.
+
+
+### 2026-09-07 follow-up: lazy filtered node consumers
+
+This functional correction implements necessary-condition candidates, immediate
+unbounded projection and generic filtered LIMIT consumption. Qualified DISTINCT
+drains for provenance; scoped bounded generic preserves main's route-before-read
+exception instead of returning early and hiding evaluation errors.
+
+| Item | Evidence / status |
+|---|---|
+| Native base / candidate | `9ada2bf1`;102-file consumer patch `b4f97957cc8ab4462ba62048d922792e9762214b3bc311eec823d557c1dbfe5a`;four production hashes match independent review,2299 unaffected base inputs preserved |
+| Correctness |Whole-module race/vet;independent cancellation/fresh-request/Close and80-case migration race×10;2401 source/testdata inputs identical to root.Original1048 improves994→1016;C8/D8/E6 all equal;B28/F4 retained |
+| New oracle |620 full responses:480 broad,96 conjunction,36 source-wave,8 independent scoped-route cases.All580 prior DISTINCT/122 ordinary preserved;67 exported artifacts retain every full response,53 speculative mappedView leaf differences recorded |
+| Wire correction |Exactly12 lone-D800 response leaves in480 semantic oracle correspond to Java UTF8 question marks;2 actual main HTTP bodies independently prove boundary.Original semantic files/failures kept,no production or query/parameter normalization |
+| Real64 |Fresh pinned-main13 HTTP bodies;5 controls+8 new C/D/E planner-proven requests.Both Go revisions return all13 complete bodies.All64 persisted graphs/1152files with separate COW clones,original/main/native contents unchanged after Close |
+| Necessary ordinary |First execute+marshal12.130730→0.002318s,CPU16.865690→0.002344s,allocation13,743,344,640→2,698,568bytes.Repeat11.859974→0.001675s |
+| Necessary DISTINCT |First12.324256→2.185858s,repeat12.281630→2.119354s;first allocation14,170,226,096→1,192,757,232bytes |
+| Unbounded routed |Android zero rows11.531376→0.091208s;Kotlin54 rows11.541083→0.054738s.Main route consumption and complete response order preserved |
+| Generic ordinary |12.952423→0.000533s;allocation3,890,732,256→780,536bytes |
+| Generic DISTINCT regression |1.928698→6.492682s,CPU1.941437→6.470970s,allocation2,263,578,128→8,392,767,504bytes.Required full consumption/projection retained;separate optimization needed |
+| Shipping HTTP |55/55 full typed bodies/headers/catalog64;150 compiler/embed+2401 module inputs match tested/root source.Default60s/capacity4,no helpers;both SIGTERM143/no forced kill,ports released |
+| Decision |Keep functional fidelity and materialization removal,explicitly retain generic DISTINCT latency/CPU/allocation regression.No map-reuse optimization mixed in |
+| Limits |Single instrumented co-tenant diagnostics,no CPU sampler,no P95/peakRSS/main-relative10x claim.B/relationships/lazy edges/EAGER strategy/global budgets and final benchmark-regression-gate remain open |
+
+`docs/go-server-baseline/native64-lazy-filtered-integration/` contains freezes,
+root combination evidence, fresh main bodies, planner admission proof, raw paired
+measurements and actual command verification. An initial post-exit plain-bind
+failure and subsequent no-listener/refused-connect/successful-bind probes remain;
+the unchanged verifier later passed without restarting servers or changing data.
+The remaining32 in the old suite are not the complete product gap inventory.

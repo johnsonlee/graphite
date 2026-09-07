@@ -1,0 +1,150 @@
+{
+  "all13CompleteResponsesEqual": true,
+  "sourceAndBinaryUnchanged": true,
+  "observations": [
+    {
+      "group": "global64",
+      "name": "wrapped-firstLastGraphBimodalClassPrefix",
+      "completeResponseEqual": true,
+      "baseSeconds": 13.980943292,
+      "candidateSeconds": 14.087499458,
+      "baseCPU": 69.052798,
+      "candidateCPU": 69.731214,
+      "baseAllocationBytes": 9281813016,
+      "candidateAllocationBytes": 9281811568
+    },
+    {
+      "group": "global64",
+      "name": "wrapped-firstLastGraphBimodalClassPrefix-repeat",
+      "completeResponseEqual": true,
+      "baseSeconds": 10.051793584,
+      "candidateSeconds": 10.424524125,
+      "baseCPU": 46.997608,
+      "candidateCPU": 48.558149,
+      "baseAllocationBytes": 3759957408,
+      "candidateAllocationBytes": 3759929928
+    },
+    {
+      "group": "global64",
+      "name": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "completeResponseEqual": true,
+      "baseSeconds": 0.29542125,
+      "candidateSeconds": 0.324119375,
+      "baseCPU": 1.820874999999976,
+      "candidateCPU": 2.1817679999999946,
+      "baseAllocationBytes": 268476536,
+      "candidateAllocationBytes": 268469264
+    },
+    {
+      "group": "global64",
+      "name": "global-wide-wrapped-case-insensitive-distinct-dense-repeat",
+      "completeResponseEqual": true,
+      "baseSeconds": 0.302984791,
+      "candidateSeconds": 0.316465125,
+      "baseCPU": 1.9875020000000134,
+      "candidateCPU": 2.1230949999999957,
+      "baseAllocationBytes": 268445000,
+      "candidateAllocationBytes": 268442376
+    },
+    {
+      "group": "global64",
+      "name": "global-wide-distribution-broad-all-64",
+      "completeResponseEqual": true,
+      "baseSeconds": 0.001870209,
+      "candidateSeconds": 0.001807667,
+      "baseCPU": 0.0019010000000108107,
+      "candidateCPU": 0.0018250000000179512,
+      "baseAllocationBytes": 1635776,
+      "candidateAllocationBytes": 1635280
+    },
+    {
+      "group": "global64",
+      "name": "c-necessary-ordinary",
+      "completeResponseEqual": true,
+      "baseSeconds": 12.130730292,
+      "candidateSeconds": 0.002317542,
+      "baseCPU": 16.865690000000015,
+      "candidateCPU": 0.0023439999999936845,
+      "baseAllocationBytes": 13743344640,
+      "candidateAllocationBytes": 2698568
+    },
+    {
+      "group": "global64",
+      "name": "c-necessary-ordinary-repeat",
+      "completeResponseEqual": true,
+      "baseSeconds": 11.859973833,
+      "candidateSeconds": 0.001675333,
+      "baseCPU": 16.69356200000002,
+      "candidateCPU": 0.0017040000000037026,
+      "baseAllocationBytes": 13743357456,
+      "candidateAllocationBytes": 2272440
+    },
+    {
+      "group": "global64",
+      "name": "c-necessary-distinct",
+      "completeResponseEqual": true,
+      "baseSeconds": 12.324256417,
+      "candidateSeconds": 2.185857833,
+      "baseCPU": 17.302617999999992,
+      "candidateCPU": 10.422545,
+      "baseAllocationBytes": 14170226096,
+      "candidateAllocationBytes": 1192757232
+    },
+    {
+      "group": "global64",
+      "name": "c-necessary-distinct-repeat",
+      "completeResponseEqual": true,
+      "baseSeconds": 12.281629875,
+      "candidateSeconds": 2.119354,
+      "baseCPU": 17.323354000000027,
+      "candidateCPU": 10.109284000000034,
+      "baseAllocationBytes": 14170183024,
+      "candidateAllocationBytes": 1172740640
+    },
+    {
+      "group": "global64",
+      "name": "d-unbounded-android",
+      "completeResponseEqual": true,
+      "baseSeconds": 11.531376333,
+      "candidateSeconds": 0.091208417,
+      "baseCPU": 16.180566999999993,
+      "candidateCPU": 0.0912180000000049,
+      "baseAllocationBytes": 12625966936,
+      "candidateAllocationBytes": 137492016
+    },
+    {
+      "group": "global64",
+      "name": "d-unbounded-kotlin",
+      "completeResponseEqual": true,
+      "baseSeconds": 11.541082833,
+      "candidateSeconds": 0.054738375,
+      "baseCPU": 16.201767000000018,
+      "candidateCPU": 0.05476899999997897,
+      "baseAllocationBytes": 12626186872,
+      "candidateAllocationBytes": 82167664
+    },
+    {
+      "group": "global64",
+      "name": "e-generic-ordinary",
+      "completeResponseEqual": true,
+      "baseSeconds": 12.952423333,
+      "candidateSeconds": 0.000533125,
+      "baseCPU": 13.10923799999997,
+      "candidateCPU": 0.0005700000000246064,
+      "baseAllocationBytes": 3890732256,
+      "candidateAllocationBytes": 780536
+    },
+    {
+      "group": "global64",
+      "name": "e-generic-distinct",
+      "completeResponseEqual": true,
+      "baseSeconds": 1.9286976660000001,
+      "candidateSeconds": 6.49268225,
+      "baseCPU": 1.9414370000000147,
+      "candidateCPU": 6.470969999999959,
+      "baseAllocationBytes": 2263578128,
+      "candidateAllocationBytes": 8392767504
+    }
+  ],
+  "scope": "Single sequential instrumented observations, not P95 or main-relative speedup."
+}

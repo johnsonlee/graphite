@@ -1,0 +1,1105 @@
+[
+  {
+    "name": "candidate",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 AND true RETURN n.caller_name AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other"
+      }
+    ]
+  },
+  {
+    "name": "candidate",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 AND true RETURN n.caller_name AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "candidate-distinct",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 AND true RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other"
+      }
+    ]
+  },
+  {
+    "name": "candidate-distinct",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 AND true RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "reverse-candidate",
+    "query": "MATCH (n:CallSiteNode) WHERE true AND n.caller_name CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other"
+      }
+    ]
+  },
+  {
+    "name": "reverse-candidate",
+    "query": "MATCH (n:CallSiteNode) WHERE true AND n.caller_name CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "reverse-candidate-distinct",
+    "query": "MATCH (n:CallSiteNode) WHERE true AND n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other"
+      }
+    ]
+  },
+  {
+    "name": "reverse-candidate-distinct",
+    "query": "MATCH (n:CallSiteNode) WHERE true AND n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "candidate-throw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 AND substring(\u0027x\u0027,\u0027bad\u0027)\u003d\u0027x\u0027 RETURN n.caller_name AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "candidate-throw",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 AND substring(\u0027x\u0027,\u0027bad\u0027)\u003d\u0027x\u0027 RETURN n.caller_name AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "candidate-throw-distinct",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 AND substring(\u0027x\u0027,\u0027bad\u0027)\u003d\u0027x\u0027 RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "candidate-throw-distinct",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 AND substring(\u0027x\u0027,\u0027bad\u0027)\u003d\u0027x\u0027 RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "reverse-throw",
+    "query": "MATCH (n:CallSiteNode) WHERE substring(\u0027x\u0027,\u0027bad\u0027)\u003d\u0027x\u0027 AND n.caller_name CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "reverse-throw",
+    "query": "MATCH (n:CallSiteNode) WHERE substring(\u0027x\u0027,\u0027bad\u0027)\u003d\u0027x\u0027 AND n.caller_name CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "reverse-throw-distinct",
+    "query": "MATCH (n:CallSiteNode) WHERE substring(\u0027x\u0027,\u0027bad\u0027)\u003d\u0027x\u0027 AND n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "reverse-throw-distinct",
+    "query": "MATCH (n:CallSiteNode) WHERE substring(\u0027x\u0027,\u0027bad\u0027)\u003d\u0027x\u0027 AND n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "candidate-false",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 AND false RETURN n.caller_name AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "candidate-false",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 AND false RETURN n.caller_name AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "candidate-false-distinct",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 AND false RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "candidate-false-distinct",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 AND false RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "candidate-or-residual",
+    "query": "MATCH (n:CallSiteNode) WHERE (n.caller_name CONTAINS \u0027other\u0027 OR n.callee_name\u003d\u0027target\u0027) AND n.id\u003e0 RETURN n.caller_name AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other"
+      }
+    ]
+  },
+  {
+    "name": "candidate-or-residual",
+    "query": "MATCH (n:CallSiteNode) WHERE (n.caller_name CONTAINS \u0027other\u0027 OR n.callee_name\u003d\u0027target\u0027) AND n.id\u003e0 RETURN n.caller_name AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "candidate-or-residual-distinct",
+    "query": "MATCH (n:CallSiteNode) WHERE (n.caller_name CONTAINS \u0027other\u0027 OR n.callee_name\u003d\u0027target\u0027) AND n.id\u003e0 RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other"
+      }
+    ]
+  },
+  {
+    "name": "candidate-or-residual-distinct",
+    "query": "MATCH (n:CallSiteNode) WHERE (n.caller_name CONTAINS \u0027other\u0027 OR n.callee_name\u003d\u0027target\u0027) AND n.id\u003e0 RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "direct-conjunction",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 AND n.callee_name\u003d\u0027target\u0027 RETURN n.caller_name AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "direct-conjunction",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 AND n.callee_name\u003d\u0027target\u0027 RETURN n.caller_name AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "direct-conjunction-distinct",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 AND n.callee_name\u003d\u0027target\u0027 RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "direct-conjunction-distinct",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS \u0027other\u0027 AND n.callee_name\u003d\u0027target\u0027 RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "direct-conjunction-reversed",
+    "query": "MATCH (n:CallSiteNode) WHERE n.callee_name\u003d\u0027target\u0027 AND n.caller_name CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "direct-conjunction-reversed",
+    "query": "MATCH (n:CallSiteNode) WHERE n.callee_name\u003d\u0027target\u0027 AND n.caller_name CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "direct-conjunction-reversed-distinct",
+    "query": "MATCH (n:CallSiteNode) WHERE n.callee_name\u003d\u0027target\u0027 AND n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "direct-conjunction-reversed-distinct",
+    "query": "MATCH (n:CallSiteNode) WHERE n.callee_name\u003d\u0027target\u0027 AND n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "regex-candidate",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name \u003d~ \u0027.*\\\\Qother\\\\E.*\u0027 RETURN n.caller_name AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other"
+      }
+    ]
+  },
+  {
+    "name": "regex-candidate",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name \u003d~ \u0027.*\\\\Qother\\\\E.*\u0027 RETURN n.caller_name AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "regex-candidate-distinct",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name \u003d~ \u0027.*\\\\Qother\\\\E.*\u0027 RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other"
+      }
+    ]
+  },
+  {
+    "name": "regex-candidate-distinct",
+    "query": "MATCH (n:CallSiteNode) WHERE n.caller_name \u003d~ \u0027.*\\\\Qother\\\\E.*\u0027 RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "generic-wrapper",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_name,\u0027\u0027))) CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "generic-wrapper",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_name,\u0027\u0027))) CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "generic-wrapper-distinct",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_name,\u0027\u0027))) CONTAINS \u0027other\u0027 RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "generic-wrapper-distinct",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(toString(coalesce(n.caller_name,\u0027\u0027))) CONTAINS \u0027other\u0027 RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "generic-empty",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(coalesce(n.caller_name,\u0027\u0027)) CONTAINS \u0027\u0027 RETURN n.caller_name AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "generic-empty",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(coalesce(n.caller_name,\u0027\u0027)) CONTAINS \u0027\u0027 RETURN n.caller_name AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "generic-empty-distinct",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(coalesce(n.caller_name,\u0027\u0027)) CONTAINS \u0027\u0027 RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "generic-empty-distinct",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(coalesce(n.caller_name,\u0027\u0027)) CONTAINS \u0027\u0027 RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "generic-id",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id\u003e\u003d0 RETURN n.caller_name AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "generic-id",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id\u003e\u003d0 RETURN n.caller_name AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "generic-id-distinct",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id\u003e\u003d0 RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "generic-id-distinct",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id\u003e\u003d0 RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "param-candidate",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS $term AND n.id\u003e$id RETURN n.id AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {
+      "term": "other",
+      "id": 0.0
+    },
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2
+      }
+    ]
+  },
+  {
+    "name": "param-candidate",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS $term AND n.id\u003e$id RETURN n.id AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {
+      "term": "other",
+      "id": 0.0
+    },
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "param-null-candidate",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS $term AND true RETURN n.id AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {
+      "term": null
+    },
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "param-null-candidate",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS $term AND true RETURN n.id AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {
+      "term": null
+    },
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "param-nonstring-candidate",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS $term AND true RETURN n.id AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {
+      "term": 2.0
+    },
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "param-nonstring-candidate",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS $term AND true RETURN n.id AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {
+      "term": 2.0
+    },
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "route-candidate",
+    "query": "MATCH (n) WHERE n.graphId\u003d\u0027b\u0027 AND n.caller_name CONTAINS \u0027other\u0027 AND true RETURN n.id AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "route-candidate",
+    "query": "MATCH (n) WHERE n.graphId\u003d\u0027b\u0027 AND n.caller_name CONTAINS \u0027other\u0027 AND true RETURN n.id AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "route-param",
+    "query": "MATCH (n) WHERE graphId(n)\u003d$graph AND n.caller_name CONTAINS $term AND true RETURN n.id AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {
+      "term": "other",
+      "graph": "b"
+    },
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "route-param",
+    "query": "MATCH (n) WHERE graphId(n)\u003d$graph AND n.caller_name CONTAINS $term AND true RETURN n.id AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {
+      "term": "other",
+      "graph": "b"
+    },
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "route-conflict",
+    "query": "MATCH (n) WHERE n.graphId\u003d\u0027a\u0027 AND n.graphId\u003d\u0027b\u0027 AND substring(\u0027x\u0027,\u0027bad\u0027)\u003d\u0027x\u0027 RETURN n.id AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "route-conflict",
+    "query": "MATCH (n) WHERE n.graphId\u003d\u0027a\u0027 AND n.graphId\u003d\u0027b\u0027 AND substring(\u0027x\u0027,\u0027bad\u0027)\u003d\u0027x\u0027 RETURN n.id AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "inline",
+    "query": "MATCH (n {caller_name:$term}) WHERE n.id\u003e\u003d0 RETURN n.id AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {
+      "term": "other"
+    },
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "inline",
+    "query": "MATCH (n {caller_name:$term}) WHERE n.id\u003e\u003d0 RETURN n.id AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {
+      "term": "other"
+    },
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "inline-before-where",
+    "query": "MATCH (n {caller_name:substring(\u0027x\u0027,\u0027bad\u0027)}) WHERE false RETURN n.id AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "inline-before-where",
+    "query": "MATCH (n {caller_name:substring(\u0027x\u0027,\u0027bad\u0027)}) WHERE false RETURN n.id AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "inline-mismatch-before-throw",
+    "query": "MATCH (n {caller_name:\u0027absent\u0027,callee_name:substring(\u0027x\u0027,\u0027bad\u0027)}) WHERE true RETURN n.id AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "inline-mismatch-before-throw",
+    "query": "MATCH (n {caller_name:\u0027absent\u0027,callee_name:substring(\u0027x\u0027,\u0027bad\u0027)}) WHERE true RETURN n.id AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "zero-before-inline",
+    "query": "MATCH (n {caller_name:substring(\u0027x\u0027,\u0027bad\u0027)}) WHERE true RETURN substring(\u0027x\u0027,\u0027bad\u0027) AS x LIMIT 0",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "zero-before-inline",
+    "query": "MATCH (n {caller_name:substring(\u0027x\u0027,\u0027bad\u0027)}) WHERE true RETURN substring(\u0027x\u0027,\u0027bad\u0027) AS x LIMIT 0",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "all-label-constraint",
+    "query": "MATCH (n:CallSiteNode:FieldNode) WHERE true RETURN n.id AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "all-label-constraint",
+    "query": "MATCH (n:CallSiteNode:FieldNode) WHERE true RETURN n.id AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "whole-owned",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id\u003e\u003d0 RETURN [n,n.id] AS x LIMIT 3",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "whole-owned",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id\u003e\u003d0 RETURN [n,n.id] AS x LIMIT 3",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "nested-owned",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id\u003e\u003d0 RETURN {node:n,ids:[n.id]} AS x LIMIT 3",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "nested-owned",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id\u003e\u003d0 RETURN {node:n,ids:[n.id]} AS x LIMIT 3",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "alias-overwrite",
+    "query": "MATCH (n) WHERE n.id\u003e\u003d0 RETURN substring(\u0027x\u0027,\u0027bad\u0027) AS x,n.id AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "alias-overwrite",
+    "query": "MATCH (n) WHERE n.id\u003e\u003d0 RETURN substring(\u0027x\u0027,\u0027bad\u0027) AS x,n.id AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "distinct-alias",
+    "query": "MATCH (n) WHERE n.id\u003e\u003d0 RETURN DISTINCT n.id AS x,n.caller_name AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "distinct-alias",
+    "query": "MATCH (n) WHERE n.id\u003e\u003d0 RETURN DISTINCT n.id AS x,n.caller_name AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "metadata-alias",
+    "query": "MATCH (n) WHERE n.id\u003e\u003d0 RETURN DISTINCT n.caller_name AS `$metadata` LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "metadata-alias",
+    "query": "MATCH (n) WHERE n.id\u003e\u003d0 RETURN DISTINCT n.caller_name AS `$metadata` LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "distinct-qualified-drain",
+    "query": "MATCH (n) WHERE n.id\u003e\u003d0 RETURN DISTINCT CASE WHEN n.id\u003d90 THEN substring(\u0027x\u0027,\u0027bad\u0027) ELSE 1 END AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "distinct-qualified-drain",
+    "query": "MATCH (n) WHERE n.id\u003e\u003d0 RETURN DISTINCT CASE WHEN n.id\u003d90 THEN substring(\u0027x\u0027,\u0027bad\u0027) ELSE 1 END AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "projection-error",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id\u003e\u003d0 RETURN substring(\u0027x\u0027,\u0027bad\u0027) AS x",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "projection-error",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id\u003e\u003d0 RETURN substring(\u0027x\u0027,\u0027bad\u0027) AS x",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "raw-unbounded",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "raw-unbounded",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "wrapped-unbounded",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_name,\u0027\u0027))) CONTAINS \u0027other\u0027 RETURN n.id AS x",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "wrapped-unbounded",
+    "query": "MATCH (n) WHERE toLower(toString(coalesce(n.caller_name,\u0027\u0027))) CONTAINS \u0027other\u0027 RETURN n.id AS x",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "generic-unbounded",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id\u003e\u003d0 RETURN n.id AS x",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "generic-unbounded",
+    "query": "MATCH (n:CallSiteNode) WHERE n.id\u003e\u003d0 RETURN n.id AS x",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "inline-unbounded",
+    "query": "MATCH (n {caller_name:\u0027other\u0027}) WHERE n.id\u003e\u003d0 RETURN n.id AS x",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "inline-unbounded",
+    "query": "MATCH (n {caller_name:\u0027other\u0027}) WHERE n.id\u003e\u003d0 RETURN n.id AS x",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "route-unbounded",
+    "query": "MATCH (n) WHERE n.graphId\u003d\u0027b\u0027 AND n.id\u003e\u003d0 RETURN n.id AS x",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "route-unbounded",
+    "query": "MATCH (n) WHERE n.graphId\u003d\u0027b\u0027 AND n.id\u003e\u003d0 RETURN n.id AS x",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "constraints-first-unbounded",
+    "query": "MATCH (n {caller_name:substring(\u0027x\u0027,\u0027bad\u0027)}) WHERE false RETURN n.id AS x",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "constraints-first-unbounded",
+    "query": "MATCH (n {caller_name:substring(\u0027x\u0027,\u0027bad\u0027)}) WHERE false RETURN n.id AS x",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  }
+]

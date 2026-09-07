@@ -157,6 +157,9 @@ func (e evaluator) branch(graph *store.Store, branch cypher.SingleQuery) Result 
 	if result, ok := e.genericDistinct(graph, branch); ok {
 		return result
 	}
+	if result, ok := e.lazyFiltered(graph, branch); ok {
+		return result
+	}
 	earlyLimit := e.computeEarlyLimit(branch)
 	rows := []map[string]any{{}}
 	columns := []string{}

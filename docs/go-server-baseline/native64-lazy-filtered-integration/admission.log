@@ -1,0 +1,4 @@
+=== RUN   TestCDEReal64WorkloadAdmission
+--- PASS: TestCDEReal64WorkloadAdmission (0.01s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/query	0.336s

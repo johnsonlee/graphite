@@ -1,0 +1,258 @@
+[
+  {
+    "name": "edge-0",
+    "query": "MATCH (n) WHERE n.absent\u003d\u0027x\u0027 AND n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "edge-0",
+    "query": "MATCH (n) WHERE n.absent\u003d\u0027x\u0027 AND n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "edge-1",
+    "query": "MATCH (n) WHERE n.absent\u003d\u0027x\u0027 AND n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.id AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "edge-1",
+    "query": "MATCH (n) WHERE n.absent\u003d\u0027x\u0027 AND n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.id AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "edge-2",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND n.absent\u003d\u0027x\u0027 RETURN n.id AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "edge-2",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND n.absent\u003d\u0027x\u0027 RETURN n.id AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "edge-3",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND n.absent\u003d\u0027x\u0027 RETURN DISTINCT n.id AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "edge-3",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND n.absent\u003d\u0027x\u0027 RETURN DISTINCT n.id AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "edge-4",
+    "query": "MATCH (n) WHERE n.absent CONTAINS \u0027x\u0027 AND n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "edge-4",
+    "query": "MATCH (n) WHERE n.absent CONTAINS \u0027x\u0027 AND n.caller_name CONTAINS \u0027other\u0027 RETURN n.id AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "edge-5",
+    "query": "MATCH (n) WHERE n.absent CONTAINS \u0027x\u0027 AND n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.id AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "edge-5",
+    "query": "MATCH (n) WHERE n.absent CONTAINS \u0027x\u0027 AND n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.id AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "edge-6",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND n.absent CONTAINS \u0027x\u0027 RETURN n.id AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "edge-6",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND n.absent CONTAINS \u0027x\u0027 RETURN n.id AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "edge-7",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND n.absent CONTAINS \u0027x\u0027 RETURN DISTINCT n.id AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "edge-7",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND n.absent CONTAINS \u0027x\u0027 RETURN DISTINCT n.id AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "edge-8",
+    "query": "MATCH (n) WHERE (n.caller_name CONTAINS \u0027other\u0027 OR n.caller_name CONTAINS \u0027other\u0027) AND n.callee_name CONTAINS \u0027invoke\u0027 RETURN n.id AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "edge-8",
+    "query": "MATCH (n) WHERE (n.caller_name CONTAINS \u0027other\u0027 OR n.caller_name CONTAINS \u0027other\u0027) AND n.callee_name CONTAINS \u0027invoke\u0027 RETURN n.id AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "edge-9",
+    "query": "MATCH (n) WHERE (n.caller_name CONTAINS \u0027other\u0027 OR n.caller_name CONTAINS \u0027other\u0027) AND n.callee_name CONTAINS \u0027invoke\u0027 RETURN DISTINCT n.id AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "edge-9",
+    "query": "MATCH (n) WHERE (n.caller_name CONTAINS \u0027other\u0027 OR n.caller_name CONTAINS \u0027other\u0027) AND n.callee_name CONTAINS \u0027invoke\u0027 RETURN DISTINCT n.id AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "name": "edge-10",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND (n.absent\u003d\u0027x\u0027 OR n.absent\u003d\u0027y\u0027) RETURN n.id AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "edge-10",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND (n.absent\u003d\u0027x\u0027 OR n.absent\u003d\u0027y\u0027) RETURN n.id AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "edge-11",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND (n.absent\u003d\u0027x\u0027 OR n.absent\u003d\u0027y\u0027) RETURN DISTINCT n.id AS x LIMIT 1",
+    "cross": false,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "edge-11",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND (n.absent\u003d\u0027x\u0027 OR n.absent\u003d\u0027y\u0027) RETURN DISTINCT n.id AS x LIMIT 1",
+    "cross": true,
+    "mode": "MAPPED",
+    "params": {},
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  }
+]

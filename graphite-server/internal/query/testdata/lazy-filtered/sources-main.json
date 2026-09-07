@@ -1,0 +1,426 @@
+[
+  {
+    "count": 2,
+    "missingIndex": false,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND true RETURN n.id AS x LIMIT 1",
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "count": 2,
+    "missingIndex": false,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND true RETURN DISTINCT n.id AS x LIMIT 1",
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "count": 2,
+    "missingIndex": false,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND true RETURN id(n) AS x LIMIT 1",
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": [
+            "g0"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "count": 2,
+    "missingIndex": false,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND true RETURN DISTINCT id(n) AS x LIMIT 1",
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "count": 2,
+    "missingIndex": false,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND true RETURN [n.id,n.caller_name] AS x LIMIT 1",
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": [
+          2,
+          "other"
+        ],
+        "$metadata": {
+          "graphIds": [
+            "g0"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "count": 2,
+    "missingIndex": false,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND true RETURN DISTINCT [n.id,n.caller_name] AS x LIMIT 1",
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "count": 2,
+    "missingIndex": true,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND true RETURN n.id AS x LIMIT 1",
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "count": 2,
+    "missingIndex": true,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND true RETURN DISTINCT n.id AS x LIMIT 1",
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "count": 2,
+    "missingIndex": true,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND true RETURN id(n) AS x LIMIT 1",
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": [
+            "g0"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "count": 2,
+    "missingIndex": true,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND true RETURN DISTINCT id(n) AS x LIMIT 1",
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "count": 2,
+    "missingIndex": true,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND true RETURN [n.id,n.caller_name] AS x LIMIT 1",
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": [
+          2,
+          "other"
+        ],
+        "$metadata": {
+          "graphIds": [
+            "g0"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "count": 2,
+    "missingIndex": true,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND true RETURN DISTINCT [n.id,n.caller_name] AS x LIMIT 1",
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "count": 9,
+    "missingIndex": false,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND true RETURN n.id AS x LIMIT 1",
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "count": 9,
+    "missingIndex": false,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND true RETURN DISTINCT n.id AS x LIMIT 1",
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "count": 9,
+    "missingIndex": false,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND true RETURN id(n) AS x LIMIT 1",
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": [
+            "g0"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "count": 9,
+    "missingIndex": false,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND true RETURN DISTINCT id(n) AS x LIMIT 1",
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "count": 9,
+    "missingIndex": false,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND true RETURN [n.id,n.caller_name] AS x LIMIT 1",
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": [
+          2,
+          "other"
+        ],
+        "$metadata": {
+          "graphIds": [
+            "g0"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "count": 9,
+    "missingIndex": false,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND true RETURN DISTINCT [n.id,n.caller_name] AS x LIMIT 1",
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "count": 9,
+    "missingIndex": true,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND true RETURN n.id AS x LIMIT 1",
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "count": 9,
+    "missingIndex": true,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND true RETURN DISTINCT n.id AS x LIMIT 1",
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "count": 9,
+    "missingIndex": true,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND true RETURN id(n) AS x LIMIT 1",
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": [
+            "g0"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "count": 9,
+    "missingIndex": true,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND true RETURN DISTINCT id(n) AS x LIMIT 1",
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "count": 9,
+    "missingIndex": true,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND true RETURN [n.id,n.caller_name] AS x LIMIT 1",
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": [
+          2,
+          "other"
+        ],
+        "$metadata": {
+          "graphIds": [
+            "g0"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "count": 9,
+    "missingIndex": true,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND true RETURN DISTINCT [n.id,n.caller_name] AS x LIMIT 1",
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "count": 40,
+    "missingIndex": false,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND true RETURN n.id AS x LIMIT 1",
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": [
+            "g0"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "count": 40,
+    "missingIndex": false,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND true RETURN DISTINCT n.id AS x LIMIT 1",
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "count": 40,
+    "missingIndex": false,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND true RETURN id(n) AS x LIMIT 1",
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": [
+            "g0"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "count": 40,
+    "missingIndex": false,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND true RETURN DISTINCT id(n) AS x LIMIT 1",
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "count": 40,
+    "missingIndex": false,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND true RETURN [n.id,n.caller_name] AS x LIMIT 1",
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": [
+          2,
+          "other"
+        ],
+        "$metadata": {
+          "graphIds": [
+            "g0"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "count": 40,
+    "missingIndex": false,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND true RETURN DISTINCT [n.id,n.caller_name] AS x LIMIT 1",
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "count": 40,
+    "missingIndex": true,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND true RETURN n.id AS x LIMIT 1",
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": [
+            "g0"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "count": 40,
+    "missingIndex": true,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND true RETURN DISTINCT n.id AS x LIMIT 1",
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "count": 40,
+    "missingIndex": true,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND true RETURN id(n) AS x LIMIT 1",
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": 2,
+        "$metadata": {
+          "graphIds": [
+            "g0"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "count": 40,
+    "missingIndex": true,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND true RETURN DISTINCT id(n) AS x LIMIT 1",
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  },
+  {
+    "count": 40,
+    "missingIndex": true,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND true RETURN [n.id,n.caller_name] AS x LIMIT 1",
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": [
+          2,
+          "other"
+        ],
+        "$metadata": {
+          "graphIds": [
+            "g0"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "count": 40,
+    "missingIndex": true,
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND true RETURN DISTINCT [n.id,n.caller_name] AS x LIMIT 1",
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)"
+  }
+]

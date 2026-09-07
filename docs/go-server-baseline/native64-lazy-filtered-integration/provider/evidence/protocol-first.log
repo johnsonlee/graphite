@@ -1,0 +1,34 @@
+--- FAIL: TestLazyFilteredCancellationAndClose (0.04s)
+panic: store is closed [recovered]
+	panic: store is closed [recovered]
+	panic: store is closed
+
+goroutine 9 [running]:
+testing.tRunner.func1.2({0x100dece80, 0x1012c5b80})
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/testing/testing.go:1631 +0x1c4
+testing.tRunner.func1()
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/testing/testing.go:1634 +0x33c
+panic({0x100dece80?, 0x1012c5b80?})
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/panic.go:770 +0x124
+github.com/johnsonlee/graphite/graphite-server/internal/query.executeSources.func1()
+	/private/tmp/graphite-go-lazy-cde-87aaf0ad/graphite-server/internal/query/engine.go:51 +0x1ec
+panic({0x100dece80?, 0x1012c5b80?})
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/panic.go:770 +0x124
+github.com/johnsonlee/graphite/graphite-server/internal/query.failMainStringRead({0x100e60f98, 0x1012c5b80})
+	/private/tmp/graphite-go-lazy-cde-87aaf0ad/graphite-server/internal/query/main_string_source.go:188 +0x64
+github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.lazyFiltered({0x0, {0x100e621e0, 0x101343260}, 0x0, {0x0, 0x0, 0x0}, 0x0, 0x0, 0x140004140c0}, ...)
+	/private/tmp/graphite-go-lazy-cde-87aaf0ad/graphite-server/internal/query/lazy_filtered.go:143 +0x7cc
+github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.branch({0x0, {0x100e621e0, 0x101343260}, 0x0, {0x0, 0x0, 0x0}, 0x0, 0x0, 0x140004140c0}, ...)
+	/private/tmp/graphite-go-lazy-cde-87aaf0ad/graphite-server/internal/query/engine.go:160 +0x274
+github.com/johnsonlee/graphite/graphite-server/internal/query.executeSources({0x100e621e0, 0x101343260}, 0x14000204908, {0x0, 0x0, 0x0}, 0x0, {0x100d2b445, 0x28}, 0x0, ...)
+	/private/tmp/graphite-go-lazy-cde-87aaf0ad/graphite-server/internal/query/engine.go:81 +0x578
+github.com/johnsonlee/graphite/graphite-server/internal/query.Execute(...)
+	/private/tmp/graphite-go-lazy-cde-87aaf0ad/graphite-server/internal/query/engine.go:25
+github.com/johnsonlee/graphite/graphite-server/internal/query.TestLazyFilteredCancellationAndClose(0x140000bc340)
+	/private/tmp/graphite-go-lazy-cde-87aaf0ad/graphite-server/internal/query/lazy_filtered_protocol_test.go:104 +0x510
+testing.tRunner(0x140000bc340, 0x100e5e910)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/testing/testing.go:1689 +0xec
+created by testing.(*T).Run in goroutine 1
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/testing/testing.go:1742 +0x318
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/query	0.283s
+FAIL

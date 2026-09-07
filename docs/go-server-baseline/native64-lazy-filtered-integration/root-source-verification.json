@@ -1,0 +1,6 @@
+{
+  "base": "9ada2bf1",
+  "sourceFiles": 2401,
+  "allInputsEqualFullModuleTestedCandidate": true,
+  "excludedExistingIgnoredBinary": "graphite-server/graphite-server"
+}
