@@ -162,7 +162,7 @@ func (d *decoder) str() string {
 		return ""
 	}
 	if i < 0 || int(i) >= len(d.strings) {
-		d.fail("string index %d outside table of %d", i, len(d.strings))
+		d.err = &StringTableReferenceError{Index: i, Size: len(d.strings)}
 		return ""
 	}
 	return d.strings[i]

@@ -148,6 +148,9 @@ func (e evaluator) branch(graph *store.Store, branch cypher.SingleQuery) Result 
 	if empty, ok := filteredLiteralEmpty(branch); ok {
 		return empty
 	}
+	if result, ok := e.ordinaryProjection(graph, branch); ok {
+		return result
+	}
 	if result, ok := e.indexedDistinct(graph, branch); ok {
 		return result
 	}

@@ -1,0 +1,5 @@
+{
+  "exitCode": 1,
+  "file": "ordinary-native/rolling-native.json",
+  "reason": "Full artifact equality included speculative mappedView diagnostic states; frozen provider documents these as schedule-dependent and preserves full responses as the deterministic contract. Full module race/vet had both already passed. All differences retained for classification."
+}

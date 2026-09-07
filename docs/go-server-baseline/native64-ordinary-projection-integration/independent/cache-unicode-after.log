@@ -1,0 +1,12 @@
+=== RUN   TestOrdinaryIntegrationJavaUTF16CacheIdentity
+    ordinary_cache_integration_test.go:58: step0 bytes1650
+    ordinary_cache_integration_test.go:58: step1 bytes1650
+    ordinary_cache_integration_test.go:58: step2 bytes2110
+    ordinary_cache_integration_test.go:58: step3 bytes2570
+    ordinary_cache_integration_test.go:58: step4 bytes2570
+    ordinary_cache_integration_test.go:58: step5 bytes2570
+    ordinary_cache_integration_test.go:58: step6 bytes2770
+    ordinary_cache_integration_test.go:58: step7 bytes2770
+--- PASS: TestOrdinaryIntegrationJavaUTF16CacheIdentity (0.02s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/query	1.305s

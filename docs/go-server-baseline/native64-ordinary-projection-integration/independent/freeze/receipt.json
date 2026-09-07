@@ -1,0 +1,50 @@
+{
+  "base": "87aaf0ad39c89189d52c859672e5420b26c3f5e9",
+  "providerAppliedTree": "defef393a387274f1284369f941131b9d40787a3",
+  "finalTree": "e348726c51bc291bf6978b3ca78aa12525754042",
+  "providerManifestSHA256": "9c4a34ebd960d20609625be0fdd3de49b154600235f0567b7343643fa37ca24c",
+  "providerPatchSHA256": "4f753a75e179eb47fd77ff92eceb613833111457e59473766e8449ed72dae925",
+  "changedFileCount": 487,
+  "patches": {
+    "independent-fix.patch": "2d23112e13452764be3b3a1a2c091abeab0f30e100263fdfdf76d1e8de3fa68e",
+    "integrated.patch": "78c0952ffece1eea29d96324c5d0a3e6d5dd2509bc0bac8b328e3d40e74b1792",
+    "provider-integration.patch": "d614296095ff744e45a4f385122b0e9d60cbf3567b00c9dcb41c9813b81fc28b"
+  },
+  "commands": [
+    {
+      "cwd": "/tmp/graphite-go-ordinary-integration-87aaf0ad/graphite-server",
+      "command": "ORDINARY_HISTORY_OUTPUT=/tmp/graphite-go-ordinary-integration-87aaf0ad-evidence/ordinary-native-final INDEXED_DISTINCT_OUTPUT=/tmp/graphite-go-ordinary-integration-87aaf0ad-evidence/indexed-native-final go test -race ./... -count=1",
+      "exitCode": 0,
+      "log": "../race-final.log"
+    },
+    {
+      "cwd": "/tmp/graphite-go-ordinary-integration-87aaf0ad/graphite-server",
+      "command": "go vet ./...",
+      "exitCode": 0,
+      "log": "../vet-final.log"
+    },
+    {
+      "cwd": "/tmp/graphite-go-ordinary-integration-87aaf0ad/graphite-server",
+      "command": "python3 internal/query/testdata/ordinary-projection/capture-writer.py --output /tmp/graphite-go-ordinary-integration-87aaf0ad-evidence/writer-roundtrip",
+      "exitCode": 0,
+      "log": "../writer-roundtrip.log"
+    }
+  ],
+  "tests": {
+    "originalCorpus": 1048,
+    "equal": 966,
+    "mainSuccessNativeError": 58,
+    "bothErrorDifferent": 20,
+    "bothSuccessDifferent": 4,
+    "priorDistinctEligibleEqual": 580,
+    "ordinaryEligibleEqual": 122,
+    "independentJavaCacheHistorySteps": 8,
+    "nativeSidecarsReadByMain": 2,
+    "sidecarFullResponsesEqual": 4
+  },
+  "independentProductionFix": [
+    "graphite-server/internal/query/ordinary_cache.go"
+  ],
+  "no64OrPerformanceRun": true,
+  "noCommit": true
+}

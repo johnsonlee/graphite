@@ -1,0 +1,99 @@
+{
+  "queries": {
+    "global-wide-distribution-broad-all-64": {
+      "base": {
+        "seconds": 11.974313334,
+        "allocationBytes": 5474297528,
+        "cpuSeconds": 11.514676000000012,
+        "numGC": 0,
+        "completeMainOutputEqual": true
+      },
+      "candidate": {
+        "seconds": 0.00184225,
+        "allocationBytes": 1632032,
+        "cpuSeconds": 0.001873000000012226,
+        "numGC": 0,
+        "completeMainOutputEqual": true
+      }
+    },
+    "global-wide-wrapped-case-insensitive-distinct-dense": {
+      "base": {
+        "seconds": 4.466852667,
+        "allocationBytes": 5804045408,
+        "cpuSeconds": 23.659388000000003,
+        "numGC": 0,
+        "completeMainOutputEqual": true
+      },
+      "candidate": {
+        "seconds": 4.104695625,
+        "allocationBytes": 5804039896,
+        "cpuSeconds": 22.679239999999982,
+        "numGC": 1,
+        "completeMainOutputEqual": true
+      }
+    },
+    "global-wide-wrapped-case-insensitive-distinct-dense-repeat": {
+      "base": {
+        "seconds": 4.434057375,
+        "allocationBytes": 367935816,
+        "cpuSeconds": 20.621451000000008,
+        "numGC": 0,
+        "completeMainOutputEqual": true
+      },
+      "candidate": {
+        "seconds": 4.256716958,
+        "allocationBytes": 367941448,
+        "cpuSeconds": 19.70986200000002,
+        "numGC": 0,
+        "completeMainOutputEqual": true
+      }
+    },
+    "wrapped-firstLastGraphBimodalClassPrefix": {
+      "base": {
+        "seconds": 18.687653,
+        "allocationBytes": 9102927064,
+        "cpuSeconds": 24.853196999999994,
+        "numGC": 1,
+        "completeMainOutputEqual": true
+      },
+      "candidate": {
+        "seconds": 18.566692625,
+        "allocationBytes": 9102938920,
+        "cpuSeconds": 24.821632,
+        "numGC": 1,
+        "completeMainOutputEqual": true
+      }
+    },
+    "wrapped-firstLastGraphBimodalClassPrefix-repeat": {
+      "base": {
+        "seconds": 12.227225916,
+        "allocationBytes": 8320011320,
+        "cpuSeconds": 18.817421,
+        "numGC": 1,
+        "completeMainOutputEqual": true
+      },
+      "candidate": {
+        "seconds": 12.113652667,
+        "allocationBytes": 8319987200,
+        "cpuSeconds": 18.942993000000005,
+        "numGC": 1,
+        "completeMainOutputEqual": true
+      }
+    }
+  },
+  "verification": {
+    "base": {
+      "unchangedSourceFiles": 1618,
+      "binarySHA256": "a87040cc651d2ace48b31a5db037199aacbddc442fa6f5ccb90454d3c9a8e98d",
+      "fixtureVerified": true,
+      "exitCode": 0
+    },
+    "candidate": {
+      "unchangedSourceFiles": 2097,
+      "binarySHA256": "972b6e11f855075951e23e43e87c240532d39056fb65649ca40263f230f330ac",
+      "fixtureVerified": true,
+      "exitCode": 0
+    }
+  },
+  "scope": "Functional ordinary projection integration diagnostic, not independent performance optimization. Ordinary query is fifth after two prefix and two indexed DISTINCT queries; cold/isolated/HTTP/P95 not measured."
+}

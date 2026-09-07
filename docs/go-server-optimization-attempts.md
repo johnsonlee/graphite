@@ -401,3 +401,30 @@ sources, commands, provider/independent/integration checks, counters and full
 responses. The shipping verifier's initial temporary post-exit port-binding
 failure is preserved; its unchanged final verification passed. Ordinary projection
 and the replacement generic DISTINCT iterator remain separate work.
+
+
+### 2026-09-07 follow-up: ordinary projection compatibility integration
+
+This functional change reproduces main's ordinary raw projection, source
+consumption, cache history and real Close-time sidecar handoff. It is not a
+separate transport/decoder optimization; the paired diagnostic checks its
+performance impact after the exact combined compatibility checks.
+
+| Item | Evidence / status |
+|---|---|
+| Native base / candidate | `2e2d8b52`; ordinary independent patch `78c0952ffece1eea29d96324c5d0a3e6d5dd2509bc0bac8b328e3d40e74b1792`, combined with retained Attempt12/13 changes |
+| Functional coverage | Original1048 improves739→966 full main matches; all580 original DISTINCT and122 ordinary eligible match. Remaining82 preserved (58 main-success/native-error,20 differing errors,4 differing results) |
+| Independent correction | Java-equivalent UTF16 predicate terms share ordinary cache keys; eight actual-main history steps preserve lone surrogates, aliases, duplicate fields and exact cache bytes |
+| Integration checks | Full-module race/vet; all2095 files unchanged and equal root.33/34 whole oracle artifacts equal; rolling48 full responses equal,24 speculative mappedView state booleans differ and remain recorded |
+| Persistence | Two native-generated sidecars read by actual main, four subsequent full responses equal. Real Close remains enabled in64 runs; original and isolated COW fixture hashes unchanged afterward |
+| HTTP | Independent actual shipping42/42 HTTP200, complete typed main bodies/headers/all64catalog equal, default60s/capacity4; normal SIGTERM143, no forced kill, process gone/port free |
+| Real64 diagnostic | Five ordered full responses equal main. Ordinary query after two prefix and two dense DISTINCT requests:11.974313→0.001842s, allocation5,474,297,528→1,632,032bytes, CPU11.514676→0.001873s |
+| Other paths / limits | Prefix and indexed DISTINCT largely retain their prior allocation; exact counters retained. Single instrumented prewarmed-history observation, not cold/isolated ordinary, HTTP/P95, peak RSS or main-relative acceptance |
+| Decision | Keep functional correction and fixed-workload parity; generic streaming, exact tuple and other documented gaps remain. Overall100% parity and main-relative10x P95 are not established |
+
+Evidence is in `docs/go-server-baseline/native64-ordinary-projection-integration/`.
+The baseline and candidate freshly verify all1152 real graph files on a COW
+copy; no64 execution overlaps another. Background correctness/build work and
+fixture-hash I/O are recorded. Collector/setup failures remain preserved: an
+unaccounted Attempt12 test delta, speculative-state artifact equality, and the
+PATH GNU cp clone flag. None is counted as a successful execution or discarded.

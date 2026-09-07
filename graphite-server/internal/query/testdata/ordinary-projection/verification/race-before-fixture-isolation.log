@@ -1,0 +1,13 @@
+?   	github.com/johnsonlee/graphite/graphite-server/internal/cypher/cmd/normalize	[no test files]
+?   	github.com/johnsonlee/graphite/graphite-server/internal/cypher/generated	[no test files]
+?   	github.com/johnsonlee/graphite/graphite-server/internal/web	[no test files]
+ok  	github.com/johnsonlee/graphite/graphite-server/cmd/graphite-server	1.892s
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/analysis	2.437s
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/analysis/c4	2.961s
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/cypher	2.941s
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/javamath	1.722s
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/javaregex	1.977s
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/javastring	1.873s
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/query	25.542s
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/server	3.313s
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/store	3.047s

@@ -1,0 +1,92 @@
+{
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "jarSHA256": "91c3a1d154ca96004c55df195d9f752e077cab3e33ca1570b2c88b872d9bc34d",
+  "sources": {
+    "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedCallSiteStringIndex.kt": "c1c4f07d818a4a25f712ad25094b30723fa25fa7531f424b2391bba792938a77",
+    "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt": "9133289c4382b59f4bc880f9de3d8aee0930d449a32f9a487893dabb56255cb7",
+    "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/QueryPipeline.kt": "9522dff099e2843f32115ae52f01adfb29c14d147dd3b9919daf907181c4f4ae",
+    "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-core/src/main/kotlin/io/johnsonlee/graphite/graph/Graph.kt": "9f82ae8246869468415967f95c0107670c662e79f4baa3276b4ed389aa8638b2"
+  },
+  "contractReferenceFiles": {
+    "/tmp/graphite-go-ordinary-raw-bbdfae2a/graphite-server/internal/query/testdata/ordinary-projection/CacheThresholdOracle.java": "d6f8a8ec6a560accc7c569fc6ea1196fc9f3b808364776b993bd38c872f046c9",
+    "/tmp/graphite-go-ordinary-raw-bbdfae2a/graphite-server/internal/query/testdata/ordinary-projection/cache-threshold-main.json": "11b1a7ff6a4c6ad9bfb15c96e59b172205ba7fc4ddfbc0560fbe42c7cff280a6",
+    "/tmp/graphite-go-ordinary-raw-bbdfae2a/graphite-server/internal/query/testdata/ordinary-projection/cache-threshold-command.json": "691dc8cf1394380c02afa2ed127c344cfcc9482a4d1283a005e75f62c785f3ae"
+  },
+  "fixture": {
+    "/tmp/ordinary-cache-threshold-fixtures/clean/forward.graph": "e4ff5e7d7a7f08e9800a3e25cb774533cb20040df30b6ba10f956f9acd0eb3f7",
+    "/tmp/ordinary-cache-threshold-fixtures/clean/forward.offsets": "88aa3e3b1f22c616b1817981215e7d1e75fa32b22233ebb8477f64600a5ace1f",
+    "/tmp/ordinary-cache-threshold-fixtures/clean/forward.properties": "bcfc3f5f3bfa334f7f81e0e90aa12b3963aaf2f6cc36ecb36599990affda8785",
+    "/tmp/ordinary-cache-threshold-fixtures/clean/graph.callsite-string-content.identity": "da856e8a016eda8bde9d407f1d34a58723c8df103183470c8c70639c01d7b5c2",
+    "/tmp/ordinary-cache-threshold-fixtures/clean/graph.callsite-string-index": "614a08a1d7b70b128952b93ff13706e8515b50fc61df7f56caef737c199c99a8",
+    "/tmp/ordinary-cache-threshold-fixtures/clean/graph.classoverview": "c88d666d83af00976e4b57908e6ef72e18c640917ccf0ab590e800dc6bfdf604",
+    "/tmp/ordinary-cache-threshold-fixtures/clean/graph.comparisons": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8",
+    "/tmp/ordinary-cache-threshold-fixtures/clean/graph.labelprefix": "15ec7bf0b50732b49f8228e07d24365338f9e3ab994b00af08e5a3bffe55fd8b",
+    "/tmp/ordinary-cache-threshold-fixtures/clean/graph.labels": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "/tmp/ordinary-cache-threshold-fixtures/clean/graph.metadata": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb",
+    "/tmp/ordinary-cache-threshold-fixtures/clean/graph.nodedata": "cf2a486b25541d938f6ad12669a5b2aaec9c1b76bf33c1f046fcd48a30fcc075",
+    "/tmp/ordinary-cache-threshold-fixtures/clean/graph.nodeindex": "6aac8eea5991342eec1971080d4d3053b11aa6435ff071b9a779e273a8560388",
+    "/tmp/ordinary-cache-threshold-fixtures/clean/graph.nodeoffsets": "572fc0c0cd1090d751b86ccc5c6a95ff54c831ede3e54b4bebd63f262dd36e71",
+    "/tmp/ordinary-cache-threshold-fixtures/clean/graph.resources": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17",
+    "/tmp/ordinary-cache-threshold-fixtures/clean/graph.strings": "2609e8faec13f202913467df84775a5e5fdd4f3b554b20763c48afa14dc3440e",
+    "/tmp/ordinary-cache-threshold-fixtures/clean/graph.strings.identity": "3f97e029309ba718aee84b6deaa0b3cd358aafb5727498d93a1cbccde5dc4fe6",
+    "/tmp/ordinary-cache-threshold-fixtures/clean/graph.typeindex": "745a0b571f91db324f4894336a9fdeb15543d444432fcf8aeec4dd72b0311ce9"
+  },
+  "commands": [
+    {
+      "command": [
+        "/opt/homebrew/opt/openjdk@17/bin/javac",
+        "-encoding",
+        "UTF-8",
+        "-cp",
+        "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "-d",
+        "/tmp/graphite-main-cache-lifecycle-audit",
+        "/tmp/graphite-main-cache-lifecycle-audit/CacheLifecycleOracle.java"
+      ],
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/openjdk@17/bin/java",
+        "-Dfile.encoding=UTF-8",
+        "-Xmx256m",
+        "-XX:ActiveProcessorCount=2",
+        "-cp",
+        "/tmp/graphite-main-cache-lifecycle-audit:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "CacheLifecycleOracle",
+        "/tmp/ordinary-cache-threshold-fixtures/clean",
+        "/tmp/graphite-main-cache-lifecycle-audit/main.json"
+      ],
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "/opt/homebrew/opt/openjdk@17/bin/java",
+        "-Dfile.encoding=UTF-8",
+        "-Xmx256m",
+        "-XX:ActiveProcessorCount=2",
+        "-cp",
+        "/tmp/graphite-main-cache-lifecycle-audit:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+        "CacheLifecycleOracle",
+        "/tmp/ordinary-cache-threshold-fixtures/clean",
+        "/tmp/graphite-main-cache-lifecycle-audit/main-replay.json"
+      ],
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "python3",
+        "/tmp/graphite-main-cache-lifecycle-audit/verify.py"
+      ],
+      "exitCode": 0
+    }
+  ],
+  "files": {
+    "CacheLifecycleOracle.class": "0163028ffd7ec9c6fcb17f42aafd1a055cef3689089e436e01b07821d287a9b8",
+    "CacheLifecycleOracle.java": "bebccc891cd0de44ac5cd3d8cb0172a155daa6fcb70ecdcdba3566fb9ee5c823",
+    "README.md": "1013dc82635963a441eb4e1d81961669131eaddd8ed4722cd69fd9b8639d3345",
+    "main-replay.json": "43d5c09e2c9bc9ea1b98cd2849432e452e87853bcc5da2047c146375d7a57066",
+    "main.json": "eda8bd94df779449b3bb220cd5c2877652268e3b995b0f5b81f1a5e8202a7ce5",
+    "verify.py": "0bb473ea7e88b68f491a4deb2aac31a936745e7f4e3034dbc706ea669046a2e4"
+  }
+}

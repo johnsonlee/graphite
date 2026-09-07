@@ -1,0 +1,11 @@
+{
+  "command": [
+    "python3",
+    "internal/query/testdata/ordinary-projection/summarize.py",
+    "--verification",
+    "/tmp/graphite-go-ordinary-integration-87aaf0ad-evidence"
+  ],
+  "exitCode": 0,
+  "stdout": "{'total': 1048, 'comparison': {'equal': 966, 'main-success-native-error': 58, 'both-error-difference': 20, 'both-success-difference': 4}, 'priorDistinct': {'equal': 580}, 'ordinary': {'equal': 122}}\n",
+  "stderr": ""
+}

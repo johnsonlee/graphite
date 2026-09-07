@@ -241,6 +241,7 @@ func (s *Store) Close() error {
 		}
 		return nil
 	}
+	s.persistProjectionOnCloseLocked()
 	st.closed = true
 	s.distinctProjection = distinctProjectionState{}
 	if st.closing != nil {

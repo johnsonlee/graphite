@@ -1,0 +1,13 @@
+{
+  "command": [
+    "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+    "-Xmx256m",
+    "-cp",
+    "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/ordinary-cache-java-k2243s8f:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+    "CacheThresholdOracle",
+    "/tmp/ordinary-cache-threshold-fixtures",
+    "/private/tmp/graphite-go-ordinary-raw-bbdfae2a/graphite-server/internal/query/testdata/candidate-index/clean",
+    "/private/tmp/graphite-go-ordinary-raw-bbdfae2a/graphite-server/internal/query/testdata/ordinary-projection/cache-threshold-main.json"
+  ],
+  "exitCode": 0
+}

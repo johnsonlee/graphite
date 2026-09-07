@@ -1,0 +1,65 @@
+{
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "mainJar": "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+  "mainJarSHA256": "91c3a1d154ca96004c55df195d9f752e077cab3e33ca1570b2c88b872d9bc34d",
+  "java": "/opt/homebrew/opt/openjdk@17/bin/java",
+  "javaVersion": "17.0.18 ARM64",
+  "fixtureFiles": {
+    "forward.graph": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4",
+    "forward.offsets": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458",
+    "forward.properties": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc",
+    "graph.callsite-string-content.identity": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0",
+    "graph.callsite-string-index": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
+    "graph.classoverview": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea",
+    "graph.comparisons": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8",
+    "graph.labelprefix": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23",
+    "graph.labels": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "graph.metadata": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb",
+    "graph.nodedata": "f0a4462a820a7daa557704796992c79b9ddafcb80475aaafa020592cb4e19e1a",
+    "graph.nodeindex": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c",
+    "graph.nodeoffsets": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf",
+    "graph.resources": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17",
+    "graph.strings": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b",
+    "graph.strings.identity": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb",
+    "graph.typeindex": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849"
+  },
+  "sourceSHA256": "021d719adcd2bb8e18518c60fc70cf983a76a33b67416e042144b80eafc95097",
+  "oracleSHA256": "1bb78180a8a84858884e5a5c63ca9a4b4233da23c31a1b91b2e31fe8b05ae5d0",
+  "commands": [
+    [
+      "/opt/homebrew/opt/openjdk@17/bin/javac",
+      "-encoding",
+      "UTF-8",
+      "-cp",
+      "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "-d",
+      "/tmp/graphite-go-ordinary-integration-87aaf0ad-evidence/cache-unicode-oracle",
+      "/tmp/graphite-go-ordinary-integration-87aaf0ad-evidence/cache-unicode-oracle/CacheUnicodeOracle.java"
+    ],
+    [
+      "/opt/homebrew/opt/openjdk@17/bin/java",
+      "-Dfile.encoding=UTF-8",
+      "-Xmx256m",
+      "-XX:ActiveProcessorCount=2",
+      "-cp",
+      "/tmp/graphite-go-ordinary-integration-87aaf0ad-evidence/cache-unicode-oracle:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "CacheUnicodeOracle",
+      "/tmp/graphite-go-ordinary-integration-87aaf0ad/graphite-server/internal/query/testdata/candidate-index/clean",
+      "/tmp/graphite-go-ordinary-integration-87aaf0ad-evidence/cache-unicode-oracle/main-final.json"
+    ]
+  ],
+  "before": [
+    1650,
+    2110
+  ],
+  "mainAndFixed": [
+    1650,
+    1650,
+    2110,
+    2570,
+    2570,
+    2570,
+    2770,
+    2770
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "command": [
+    "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+    "-Xmx256m",
+    "-cp",
+    "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/ordinary-validtag-main-ebs8o8es/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+    "ValidTagHistoryOracle",
+    "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/ordinary-validtag-main-ebs8o8es/fixture",
+    "/private/tmp/graphite-go-ordinary-raw-bbdfae2a/graphite-server/internal/query/testdata/ordinary-projection/valid-tag-main.json"
+  ],
+  "exitCode": 0,
+  "mutation": {
+    "file": "graph.nodedata",
+    "offset": 69,
+    "value": 0
+  }
+}

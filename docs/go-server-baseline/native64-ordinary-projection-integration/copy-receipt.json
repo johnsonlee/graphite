@@ -1,0 +1,13 @@
+{
+  "providerManifestSHA256": "9c4a34ebd960d20609625be0fdd3de49b154600235f0567b7343643fa37ca24c",
+  "independentManifestSHA256": "e75212fb175a7029512d1a70ed6660df6ea7ee309d1f8057eaeb47d92df50dca",
+  "all172IndependentEvidenceFilesVerified": true,
+  "compiledClassesExcluded": [
+    {
+      "path": "cache-unicode-oracle/CacheUnicodeOracle.class",
+      "sha256": "c737f15bff4d1335f91309d3156a60f86115f381aa88c2ea8b5e95366e8a3455",
+      "reason": "Compiled Java class stays outside Git; exact hash verified before copying. Java source and generation commands retained."
+    }
+  ],
+  "all481ProviderFilesVerified": true
+}

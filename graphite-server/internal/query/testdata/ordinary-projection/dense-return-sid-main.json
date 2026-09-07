@@ -1,0 +1,191 @@
+[
+  {
+    "mode": "partial",
+    "initial": [
+      {
+        "retained": false,
+        "id": "single",
+        "mappedView": false
+      }
+    ],
+    "targets": [
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "retained": false,
+            "id": "single",
+            "mappedView": false
+          }
+        ],
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other"
+          }
+        ],
+        "after": [
+          {
+            "retained": false,
+            "id": "single",
+            "mappedView": false
+          }
+        ]
+      },
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "retained": false,
+            "id": "single",
+            "mappedView": false
+          }
+        ],
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other"
+          }
+        ],
+        "after": [
+          {
+            "retained": false,
+            "id": "single",
+            "mappedView": false
+          }
+        ]
+      }
+    ],
+    "indexFileAfter": true
+  },
+  {
+    "mode": "complete-miss",
+    "initial": [
+      {
+        "retained": false,
+        "id": "single",
+        "mappedView": false
+      }
+    ],
+    "targets": [
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027absent\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "retained": false,
+            "id": "single",
+            "mappedView": false
+          }
+        ],
+        "columns": [
+          "x"
+        ],
+        "rows": [],
+        "after": [
+          {
+            "retained": true,
+            "id": "single",
+            "mappedView": false
+          }
+        ]
+      },
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "retained": true,
+            "id": "single",
+            "mappedView": false
+          }
+        ],
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "single"
+              ]
+            }
+          }
+        ],
+        "after": [
+          {
+            "retained": true,
+            "id": "single",
+            "mappedView": false
+          }
+        ]
+      }
+    ],
+    "indexFileAfter": true
+  },
+  {
+    "mode": "limit-count",
+    "initial": [
+      {
+        "retained": false,
+        "id": "single",
+        "mappedView": false
+      }
+    ],
+    "targets": [
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 4096",
+        "before": [
+          {
+            "retained": false,
+            "id": "single",
+            "mappedView": false
+          }
+        ],
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)",
+        "after": [
+          {
+            "retained": true,
+            "id": "single",
+            "mappedView": false
+          }
+        ]
+      },
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "retained": true,
+            "id": "single",
+            "mappedView": false
+          }
+        ],
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "single"
+              ]
+            }
+          }
+        ],
+        "after": [
+          {
+            "retained": true,
+            "id": "single",
+            "mappedView": false
+          }
+        ]
+      }
+    ],
+    "indexFileAfter": true
+  }
+]

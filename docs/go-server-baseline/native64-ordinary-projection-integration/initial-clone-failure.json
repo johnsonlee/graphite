@@ -1,0 +1,10 @@
+{
+  "command": [
+    "cp",
+    "-cRp",
+    "/private/tmp/pr113-exp037-fixture.nXn4fg/fixture-android-00",
+    "/tmp/graphite-ordinary-profile-real64-2e2d8b52/fixture-android-00"
+  ],
+  "exitCode": 1,
+  "error": "PATH cp was GNU cp and rejected -c; no graph copy or runtime started. Use explicit macOS /bin/cp for copy-on-write clone."
+}

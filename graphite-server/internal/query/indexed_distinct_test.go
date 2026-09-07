@@ -97,7 +97,7 @@ func TestIndexedDistinctRawAudit(t *testing.T) {
 							}
 							e := evaluator{ctx: context.Background(), parameters: spec.Params, cross: cross}
 							eligible := e.compileIndexedDistinct(ast.Branches[0]) != nil
-							eligibility = append(eligibility, map[string]any{"fixture": fixture, "name": spec.Name, "cross": cross, "eligible": eligible})
+							eligibility = append(eligibility, map[string]any{"fixture": fixture, "name": spec.Name, "cross": cross, "eligible": eligible, "ordinaryEligible": e.compileOrdinaryProjection(ast.Branches[0]) != nil})
 							if eligible && !reflect.DeepEqual(actual, expected) {
 								t.Fatalf("main=%#v\nnative=%#v", expected, actual)
 							}
@@ -184,7 +184,7 @@ func TestIndexedDistinctAdditionalMain(t *testing.T) {
 		var g *store.Store
 		if fixture == "annotation-after" {
 			var err error
-			g, err = store.OpenMode("testdata/indexed-distinct/annotation-after", "MAPPED")
+			g, err = store.OpenMode(ordinaryCopyFixture(t, "testdata/indexed-distinct/annotation-after"), "MAPPED")
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -230,6 +230,7 @@ func TestIndexedDistinctSourcePairAudit(t *testing.T) {
 	readDistinctJSON(t, "testdata/indexed-distinct/audit-source-pairs/main.json", &oracle)
 	good, bad := candidateGraph(t, "clean"), candidateGraph(t, "bad-matched")
 	output := []map[string]any{}
+	eligibility := []map[string]any{}
 	for _, spec := range oracle {
 		q := spec["query"].(string)
 		badFirst := spec["badFirst"].(bool)
@@ -245,11 +246,13 @@ func TestIndexedDistinctSourcePairAudit(t *testing.T) {
 			t.Fatal(parseErr)
 		}
 		e := evaluator{ctx: context.Background(), cross: true}
+		eligibility = append(eligibility, map[string]any{"eligible": e.compileIndexedDistinct(ast.Branches[0]) != nil, "ordinaryEligible": e.compileOrdinaryProjection(ast.Branches[0]) != nil})
 		if e.compileIndexedDistinct(ast.Branches[0]) != nil && !reflect.DeepEqual(actual, spec) {
 			t.Errorf("main=%#v\nnative=%#v", spec, actual)
 		}
 	}
 	writeDistinctEvidence(t, "source-pairs-native.json", output)
+	writeDistinctEvidence(t, "source-pairs-eligibility.json", eligibility)
 }
 
 func TestIndexedDistinctSplitStorageMain(t *testing.T) {

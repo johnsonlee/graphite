@@ -1,0 +1,10 @@
+{
+  "command": [
+    "git",
+    "diff",
+    "--cached",
+    "--check"
+  ],
+  "exitCode": 2,
+  "reason": "Unmodified go list output keeps separator when EmbedFiles is empty; preserve raw bytes with one-path attribute."
+}

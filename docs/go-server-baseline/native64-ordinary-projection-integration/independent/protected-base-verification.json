@@ -1,0 +1,9 @@
+{
+  "graphite-server/internal/query/distinct_string_id.go": "27480147a00d731c9d5452e9a6113a93eeefc4c8c729b3c0f50e0e74f47b17b4",
+  "graphite-server/internal/query/candidate.go": "e84e32589c490ab13d155416987e3df5314078f45e2d3dba2f6e14d4b83f275c",
+  "graphite-server/internal/query/string_candidates.go": "c9be5b7067c83744e625eddd3a80aa03db24a57c9c5297884a4039be83d24bf3",
+  "graphite-server/internal/store/candidate_certificate.go": "49bf7397cca779b3cb576fa3f03dcbe329f373945fc4f3582e98a9e5582e7290",
+  "graphite-server/internal/store/trigram_certificate.go": "5868a1a37ad31a9b3f8f6441fc12fdd91327f85960f0307bbfa28d33330b3bac",
+  "graphite-server/internal/javastring/unicode.go": "56aa5e18232264f35aabea2cf0f22958acf8402344c4cd9f357b206f1e22d07b",
+  "indexedDistinctNilGraphGuardPreserved": true
+}

@@ -1,0 +1,7 @@
+{
+  "exitCode": 1,
+  "reason": "Collector expected all487 files byte-identical and had not accounted for the two preserved Attempt12 cancellation test constructor changes. No build or correctness process ran before this assertion.",
+  "file": "graphite-server/internal/query/string_candidates_test.go",
+  "independentSHA256": "f732d8c322fd8358a8367284a38323cb398385f0e49186866f183e03a942fb99",
+  "rootSHA256": "f31bd477a04e8696f70b30908b63a8a36ef649107f73ca1e5607f0b6d2dc2008"
+}

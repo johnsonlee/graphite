@@ -1,0 +1,368 @@
+diff --git a/graphite-server/internal/query/ordinary_cache.go b/graphite-server/internal/query/ordinary_cache.go
+index ff6fcc7e..9724649b 100644
+--- a/graphite-server/internal/query/ordinary_cache.go
++++ b/graphite-server/internal/query/ordinary_cache.go
+@@ -2,15 +2,25 @@ package query
+ 
+ import (
+ 	"github.com/johnsonlee/graphite/graphite-server/internal/store"
++	"unicode/utf8"
+ )
+ 
++// Keys use Java String identity: a WTF8-encoded surrogate pair and its UTF8
++// code point represent the same UTF16 sequence. Keep lone surrogates intact.
++func ordinaryJavaKeyString(value string) string {
++	if utf8.ValidString(value) {
++		return value
++	}
++	return javaFromUTF16(javaUTF16(value))
++}
++
+ func ordinaryStringKey(atom distinctStringAtom) string {
+-	return key([]any{atom.lower, atom.op, atom.term})
++	return key([]any{atom.lower, atom.op, ordinaryJavaKeyString(atom.term)})
+ }
+ func ordinaryNodeKey(plan *ordinaryProjectionPlan, limit int) string {
+ 	predicates := []any{}
+ 	for _, atom := range plan.atoms {
+-		predicates = append(predicates, []any{atom.property, atom.lower, atom.op, atom.term})
++		predicates = append(predicates, []any{atom.property, atom.lower, atom.op, ordinaryJavaKeyString(atom.term)})
+ 	}
+ 	return key([]any{predicates, limit})
+ }
+diff --git a/graphite-server/internal/query/ordinary_cache_integration_test.go b/graphite-server/internal/query/ordinary_cache_integration_test.go
+new file mode 100644
+index 00000000..57d588be
+--- /dev/null
++++ b/graphite-server/internal/query/ordinary_cache_integration_test.go
+@@ -0,0 +1,63 @@
++package query
++
++import (
++	"context"
++	"reflect"
++	"strings"
++	"testing"
++)
++
++func TestOrdinaryIntegrationJavaUTF16CacheIdentity(t *testing.T) {
++	g := candidateGraph(t, "clean")
++	ctx := context.Background()
++	warm := "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x LIMIT 2"
++	if _, err := Execute(ctx, g, warm, nil, -1); err != nil {
++		t.Fatal(err)
++	}
++	q := "MATCH (n) WHERE toLower(n.caller_name) CONTAINS $term RETURN n.caller_name AS x LIMIT 2"
++	index, ok, err := g.RetainedProjectionIndex(ctx)
++	if err != nil || !ok {
++		t.Fatalf("index %v %v", ok, err)
++	}
++	var oracle []struct {
++		UTF16         []uint16
++		Columns       []string
++		Rows          []map[string]any
++		RetainedBytes int64
++	}
++	readDistinctJSON(t, "testdata/ordinary-integration/cache-unicode-main.json", &oracle)
++	terms := []string{"😀x", "\xed\xa0\xbd\xed\xb8\x80x", "\xed\xa0\xbdxy", "\xed\xb8\x80xy", "😀x", "😀x", "😀x", "😀x"}
++	if len(oracle) != len(terms) {
++		t.Fatalf("oracle count=%d", len(oracle))
++	}
++	for at, term := range terms {
++		query := q
++		if at == 5 {
++			query = strings.Replace(q, "AS x", "AS `😀`", 1)
++		}
++		if at == 6 {
++			query = strings.Replace(q, "n.caller_name AS x", "n.caller_name AS a,n.caller_name AS b", 1)
++		}
++		if at == 7 {
++			query = strings.Replace(q, "n.caller_name AS x", "n.caller_name AS b,n.caller_name AS a", 1)
++		}
++		if !reflect.DeepEqual(javaUTF16(term), oracle[at].UTF16) {
++			t.Fatalf("step%d input units=%v", at, javaUTF16(term))
++		}
++		r, err := Execute(ctx, g, query, map[string]any{"term": term}, -1)
++		if err != nil {
++			t.Fatal(err)
++		}
++		if !reflect.DeepEqual(r.Columns, oracle[at].Columns) || !reflect.DeepEqual(r.Rows, oracle[at].Rows) {
++			t.Fatalf("step%d rows=%#v want=%#v", at, r, oracle[at])
++		}
++		size, err := index.ProjectionPlannerBytes(ctx)
++		if err != nil {
++			t.Fatal(err)
++		}
++		t.Logf("step%d bytes%d", at, size)
++		if size != oracle[at].RetainedBytes {
++			t.Fatalf("step%d Java cache bytes=%d native=%d", at, oracle[at].RetainedBytes, size)
++		}
++	}
++}
+diff --git a/graphite-server/internal/query/testdata/ordinary-integration/CacheUnicodeOracle.java b/graphite-server/internal/query/testdata/ordinary-integration/CacheUnicodeOracle.java
+new file mode 100644
+index 00000000..1101bf09
+--- /dev/null
++++ b/graphite-server/internal/query/testdata/ordinary-integration/CacheUnicodeOracle.java
+@@ -0,0 +1,5 @@
++import io.johnsonlee.graphite.cypher.*;import io.johnsonlee.graphite.graph.*;import io.johnsonlee.graphite.webgraph.*;import com.google.gson.*;import java.util.*;import java.nio.file.*;
++public class CacheUnicodeOracle {
++ static long bytes(Graph g)throws Exception {var f=g.getClass().getDeclaredField("callSiteStringIndex");f.setAccessible(true);Object i=f.get(g);return (long)i.getClass().getMethod("getRetainedBytes").invoke(i);}
++ public static void main(String[] a)throws Exception{Graph g=GraphStore.INSTANCE.loadMapped(Path.of(a[0]));var e=new CypherExecutor(g);e.execute("MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x LIMIT 2");var rows=new ArrayList<Object>();String q="MATCH (n) WHERE toLower(n.caller_name) CONTAINS $term RETURN n.caller_name AS x LIMIT 2";String[] terms={"😀x",new String(new char[]{0xd83d,0xde00,'x'}),new String(new char[]{0xd83d,'x','y'}),new String(new char[]{0xde00,'x','y'}),"😀x","😀x","😀x","😀x"};for(int at=0;at<terms.length;at++){String term=terms[at];String query=q;if(at==5)query=q.replace("AS x", "AS `😀`");if(at==6)query=q.replace("n.caller_name AS x", "n.caller_name AS a,n.caller_name AS b");if(at==7)query=q.replace("n.caller_name AS x", "n.caller_name AS b,n.caller_name AS a");var r=e.execute(query,Map.of("term",term));var row=new LinkedHashMap<String,Object>();row.put("utf16",term.chars().boxed().toList());row.put("columns",r.getColumns());row.put("rows",r.getRows());row.put("retainedBytes",bytes(g));rows.add(row);}((java.io.Closeable)g).close();Files.writeString(Path.of(a[1]),new GsonBuilder().serializeNulls().setPrettyPrinting().create().toJson(rows)+"\n");}
++}
+diff --git a/graphite-server/internal/query/testdata/ordinary-integration/README.md b/graphite-server/internal/query/testdata/ordinary-integration/README.md
+new file mode 100644
+index 00000000..0e8005d7
+--- /dev/null
++++ b/graphite-server/internal/query/testdata/ordinary-integration/README.md
+@@ -0,0 +1,17 @@
++# Independent ordinary projection integration regression
++
++Pinned main: `4e328b0109e13c896b74004823fb049fcb19251a`, Java 17.0.18 ARM64. `CacheUnicodeOracle.java` runs the public Cypher executor on the actual main-written `../candidate-index/clean` fixture. Reflection reads retained index bytes, which determine subsequent query execution strategy; these are logical Java accounting values, not a native memory or performance measurement.
++
++Eight sequential calls assert complete columns/rows and retained bytes. Canonical supplementary UTF8 and the equivalent WTF8 surrogate pair must share all three query caches: the first two calls retain 1650 bytes each. Before the local fix the second call retained 2110 bytes. Isolated high and low surrogates remain separate keys (2110 and 2570 bytes). Aliases do not affect cache identity, while repeated projected fields retain their ordered multiplicity (2770 bytes).
++
++The fix normalizes only cache predicate terms to Java UTF16 identity. Other reachable key constituents are constrained to ASCII properties (`caller_class`, `caller_name`, `callee_class`, `callee_name`), fixed ASCII operators, booleans and integer limits. Projection storage properties use the same gate; `graphId` is omitted from storage properties. Aliases are absent from keys. Stored values, output strings, predicate evaluation, global key/comparison helpers, and UTF16 byte estimates are unchanged.
++
++Reproduce from graphite-server with JDK 17 and the pinned main JAR:
++
++```sh
++javac -encoding UTF-8 -cp "$MAIN_JAR" -d "$ORACLE_CLASSES" internal/query/testdata/ordinary-integration/CacheUnicodeOracle.java
++java -Dfile.encoding=UTF-8 -Xmx256m -XX:ActiveProcessorCount=2 -cp "$ORACLE_CLASSES:$MAIN_JAR" CacheUnicodeOracle internal/query/testdata/candidate-index/clean "$ORACLE_OUTPUT"
++go test -race ./internal/query -run '^TestOrdinaryIntegrationJavaUTF16CacheIdentity$' -count=1 -v
++```
++
++The independent integration receipt preserves the failing pre-fix run, exact command arguments, final full-module race/vet runs, the original full 1048-case denominator, and the separate Store.Close/owned-value regression. No performance experiment was performed.
+diff --git a/graphite-server/internal/query/testdata/ordinary-integration/cache-unicode-main.json b/graphite-server/internal/query/testdata/ordinary-integration/cache-unicode-main.json
+new file mode 100644
+index 00000000..a8624f4b
+--- /dev/null
++++ b/graphite-server/internal/query/testdata/ordinary-integration/cache-unicode-main.json
+@@ -0,0 +1,100 @@
++[
++  {
++    "utf16": [
++      55357,
++      56832,
++      120
++    ],
++    "columns": [
++      "x"
++    ],
++    "rows": [],
++    "retainedBytes": 1650
++  },
++  {
++    "utf16": [
++      55357,
++      56832,
++      120
++    ],
++    "columns": [
++      "x"
++    ],
++    "rows": [],
++    "retainedBytes": 1650
++  },
++  {
++    "utf16": [
++      55357,
++      120,
++      121
++    ],
++    "columns": [
++      "x"
++    ],
++    "rows": [],
++    "retainedBytes": 2110
++  },
++  {
++    "utf16": [
++      56832,
++      120,
++      121
++    ],
++    "columns": [
++      "x"
++    ],
++    "rows": [],
++    "retainedBytes": 2570
++  },
++  {
++    "utf16": [
++      55357,
++      56832,
++      120
++    ],
++    "columns": [
++      "x"
++    ],
++    "rows": [],
++    "retainedBytes": 2570
++  },
++  {
++    "utf16": [
++      55357,
++      56832,
++      120
++    ],
++    "columns": [
++      "😀"
++    ],
++    "rows": [],
++    "retainedBytes": 2570
++  },
++  {
++    "utf16": [
++      55357,
++      56832,
++      120
++    ],
++    "columns": [
++      "a",
++      "b"
++    ],
++    "rows": [],
++    "retainedBytes": 2770
++  },
++  {
++    "utf16": [
++      55357,
++      56832,
++      120
++    ],
++    "columns": [
++      "b",
++      "a"
++    ],
++    "rows": [],
++    "retainedBytes": 2770
++  }
++]
+diff --git a/graphite-server/internal/query/testdata/ordinary-integration/receipt.json b/graphite-server/internal/query/testdata/ordinary-integration/receipt.json
+new file mode 100644
+index 00000000..ef5fe523
+--- /dev/null
++++ b/graphite-server/internal/query/testdata/ordinary-integration/receipt.json
+@@ -0,0 +1,65 @@
++{
++  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
++  "mainJar": "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
++  "mainJarSHA256": "91c3a1d154ca96004c55df195d9f752e077cab3e33ca1570b2c88b872d9bc34d",
++  "java": "/opt/homebrew/opt/openjdk@17/bin/java",
++  "javaVersion": "17.0.18 ARM64",
++  "fixtureFiles": {
++    "forward.graph": "4470e95d150221192b72f3c0c91367a374ec6c5ee3a21fb4fc81e73b0cd13ec4",
++    "forward.offsets": "01f438b693e20932696841108613b1810f9586ad767a36555789b8e766607458",
++    "forward.properties": "7adbd1fc0fd88c22cf5ccf33b8cc95cddbf97a07e70b377d1bcadc1496e522dc",
++    "graph.callsite-string-content.identity": "071023ed7d70a76403d0b0a583e5ee69edf35bcb9f19d5591536444cce4b42a0",
++    "graph.callsite-string-index": "742822d29f3e71693ac55cfd979db13a01f648a15121a94e64df7a43cbb8232f",
++    "graph.classoverview": "7ce7caead4a0cc08ebdaae397c19680fe6481f8ab16a595e0111a9d1777563ea",
++    "graph.comparisons": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8",
++    "graph.labelprefix": "71818ecc26433c32172dd9a3544657971c7078daa2257da7c3c303e08693cb23",
++    "graph.labels": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
++    "graph.metadata": "f507e23515ffdce74a11b4bd42d8b460686950c2d808e96e4fb2604c113640cb",
++    "graph.nodedata": "f0a4462a820a7daa557704796992c79b9ddafcb80475aaafa020592cb4e19e1a",
++    "graph.nodeindex": "1feecf121cc3da3eb66e4c6368d7fc520d77d96a40fa364c4018e6b4b1c1411c",
++    "graph.nodeoffsets": "1c50f426aa51fa02e087de29302bc64be4cb2c52b5b0861c80d16435093297cf",
++    "graph.resources": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17",
++    "graph.strings": "d85da57ad737ee1f5dca243a18c23db811facec65678c797ed37ee6b62a9bd5b",
++    "graph.strings.identity": "33e9dcebbb67a2ea7a07a122facc5ac4076e813bcb6270e975cc35f6fc6438eb",
++    "graph.typeindex": "b3a4796f30ebaa9fb46d7862fec406cc84458ad60678e154f216627cee3ec849"
++  },
++  "sourceSHA256": "021d719adcd2bb8e18518c60fc70cf983a76a33b67416e042144b80eafc95097",
++  "oracleSHA256": "1bb78180a8a84858884e5a5c63ca9a4b4233da23c31a1b91b2e31fe8b05ae5d0",
++  "commands": [
++    [
++      "/opt/homebrew/opt/openjdk@17/bin/javac",
++      "-encoding",
++      "UTF-8",
++      "-cp",
++      "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
++      "-d",
++      "/tmp/graphite-go-ordinary-integration-87aaf0ad-evidence/cache-unicode-oracle",
++      "/tmp/graphite-go-ordinary-integration-87aaf0ad-evidence/cache-unicode-oracle/CacheUnicodeOracle.java"
++    ],
++    [
++      "/opt/homebrew/opt/openjdk@17/bin/java",
++      "-Dfile.encoding=UTF-8",
++      "-Xmx256m",
++      "-XX:ActiveProcessorCount=2",
++      "-cp",
++      "/tmp/graphite-go-ordinary-integration-87aaf0ad-evidence/cache-unicode-oracle:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
++      "CacheUnicodeOracle",
++      "/tmp/graphite-go-ordinary-integration-87aaf0ad/graphite-server/internal/query/testdata/candidate-index/clean",
++      "/tmp/graphite-go-ordinary-integration-87aaf0ad-evidence/cache-unicode-oracle/main-final.json"
++    ]
++  ],
++  "before": [
++    1650,
++    2110
++  ],
++  "mainAndFixed": [
++    1650,
++    1650,
++    2110,
++    2570,
++    2570,
++    2570,
++    2770,
++    2770
++  ]
++}
+diff --git a/graphite-server/internal/store/projection_node_integration_test.go b/graphite-server/internal/store/projection_node_integration_test.go
+new file mode 100644
+index 00000000..78adf67b
+--- /dev/null
++++ b/graphite-server/internal/store/projection_node_integration_test.go
+@@ -0,0 +1,50 @@
++package store
++
++import (
++	"context"
++	"errors"
++	"reflect"
++	"sync"
++	"testing"
++)
++
++// Close and actual full-node consumption share the lifetime boundary, including
++// strings and nested collections returned before the mapping is released.
++func TestIntegrationProjectionCandidateCloseAndOwnedValues(t *testing.T) {
++	s := openIndexFixture(t, copyIndexFixture(t), "MAPPED")
++	expected, err := s.Node(17)
++	if err != nil {
++		t.Fatal(err)
++	}
++	first, ok, err := s.ProjectionCandidateNode(context.Background(), 17)
++	if err != nil || !ok {
++		t.Fatalf("first=%#v %v %v", first, ok, err)
++	}
++	start := make(chan struct{})
++	var wg sync.WaitGroup
++	for n := 0; n < 8; n++ {
++		wg.Add(1)
++		go func() {
++			defer wg.Done()
++			<-start
++			node, present, err := s.ProjectionCandidateNode(context.Background(), 17)
++			if errors.Is(err, ErrStoreClosed) {
++				return
++			}
++			if err != nil || !present || node.ID != 17 || node.Kind != "CallSiteNode" || !reflect.DeepEqual(node.Caller, expected.Caller) || !reflect.DeepEqual(node.Callee, expected.Callee) {
++				t.Errorf("read/close node=%#v present=%v err=%v", node, present, err)
++			}
++		}()
++	}
++	close(start)
++	if err := s.Close(); err != nil {
++		t.Fatal(err)
++	}
++	wg.Wait()
++	if first.ID != 17 || first.Kind != "CallSiteNode" || !reflect.DeepEqual(first.Caller, expected.Caller) || !reflect.DeepEqual(first.Callee, expected.Callee) || !reflect.DeepEqual(first.Arguments, expected.Arguments) {
++		t.Fatalf("closed mapping invalidated returned node: %#v", first)
++	}
++	if _, _, err := s.ProjectionCandidateNode(context.Background(), 17); !errors.Is(err, ErrStoreClosed) {
++		t.Fatalf("read after close=%v", err)
++	}
++}

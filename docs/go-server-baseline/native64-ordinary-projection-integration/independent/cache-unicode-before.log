@@ -1,0 +1,8 @@
+=== RUN   TestOrdinaryIntegrationJavaUTF16CacheIdentity
+    ordinary_cache_integration_test.go:33: step0 bytes1650
+    ordinary_cache_integration_test.go:33: step1 bytes2110
+    ordinary_cache_integration_test.go:35: same Java UTF16 parameter created a second cache entry: before=1650 after=2110
+--- FAIL: TestOrdinaryIntegrationJavaUTF16CacheIdentity (0.00s)
+FAIL
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/query	0.239s
+FAIL

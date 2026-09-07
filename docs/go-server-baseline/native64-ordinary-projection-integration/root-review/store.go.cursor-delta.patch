@@ -1,0 +1,28 @@
+--- /tmp/graphite-go-ordinary-root-df8d2b40/graphite-server/internal/store/store.go	2026-09-07 10:25:15
++++ /tmp/graphite-go-ordinary-root-2e2d8b52/graphite-server/internal/store/store.go	2026-09-07 10:36:33
+@@ -2,7 +2,6 @@
+ 
+ import (
+ 	"bufio"
+-	"bytes"
+ 	"errors"
+ 	"fmt"
+ 	"io"
+@@ -282,13 +281,13 @@
+ 	if !ok {
+ 		return Node{}, fmt.Errorf("%w: %d", ErrNodeNotFound, id)
+ 	}
+-	var reader io.Reader
++	var d *decoder
+ 	if s.mappedData != nil {
+-		reader = bytes.NewReader(s.mappedData[loc.offset:])
++		d = newMappedNodeDecoder(s.mappedData[loc.offset:], s.Strings)
+ 	} else {
+-		reader = bufio.NewReader(io.NewSectionReader(s.file, loc.offset, s.size-loc.offset))
++		reader := bufio.NewReader(io.NewSectionReader(s.file, loc.offset, s.size-loc.offset))
++		d = newDecoder(reader, s.size-loc.offset, s.Strings)
+ 	}
+-	d := newDecoder(reader, s.size-loc.offset, s.Strings)
+ 	d.version = s.FormatVersion
+ 	n := d.node()
+ 	if d.err != nil {

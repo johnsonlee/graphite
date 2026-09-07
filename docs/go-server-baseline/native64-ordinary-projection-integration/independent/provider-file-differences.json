@@ -1,0 +1,6 @@
+[
+  "graphite-server/internal/query/indexed_distinct.go",
+  "graphite-server/internal/query/ordinary_cache.go",
+  "graphite-server/internal/query/string_candidates_test.go",
+  "graphite-server/internal/store/store.go"
+]

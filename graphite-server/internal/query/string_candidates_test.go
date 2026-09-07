@@ -493,8 +493,8 @@ func TestStringCandidateCorruptBaselinePreservation(t *testing.T) {
 	if err = json.Unmarshal(raw, &cases); err != nil {
 		t.Fatal(err)
 	}
-	// This feature intentionally repairs the indexed DISTINCT projection entries
-	// in the historical native baseline; preserve every declined entry unchanged.
+	// Raw projection repairs use main oracles. Preserve other historical results,
+	// while applying the separately evidenced typed SID consumption error class.
 	mainCases := append(cases[:0:0], cases...)
 	mainCases = mainCases[:0]
 	for _, fixture := range []string{"clean", "bad-first-unmatched", "bad-last-unmatched", "bad-matched"} {
@@ -517,7 +517,11 @@ func TestStringCandidateCorruptBaselinePreservation(t *testing.T) {
 			t.Fatal(parseErr)
 		}
 		e := evaluator{ctx: context.Background(), cross: c.Cross}
-		if e.compileIndexedDistinct(ast.Branches[0]) == nil {
+		if e.compileIndexedDistinct(ast.Branches[0]) == nil && e.compileOrdinaryProjection(ast.Branches[0]) == nil {
+			if c.Error == "CypherException" && strings.Contains(c.Message, "string index 2147483647 outside table of 9") {
+				cases[i].Error = "IndexOutOfBoundsException"
+				cases[i].Message = "Index (2147483647) is greater than or equal to list size (9)"
+			}
 			continue
 		}
 		for _, m := range mainCases {

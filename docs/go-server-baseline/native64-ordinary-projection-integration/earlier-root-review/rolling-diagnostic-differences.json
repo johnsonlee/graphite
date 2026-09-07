@@ -1,0 +1,312 @@
+{
+  "fullArtifactEqual": false,
+  "changedDiagnosticLeaves": [
+    {
+      "path": "$[9].targets[0].after[3].mappedView",
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": "$[9].targets[0].after[4].mappedView",
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": "$[9].targets[0].after[5].mappedView",
+      "base": false,
+      "candidate": true
+    },
+    {
+      "path": "$[9].targets[0].after[6].mappedView",
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": "$[9].targets[0].after[7].mappedView",
+      "base": false,
+      "candidate": true
+    },
+    {
+      "path": "$[9].targets[1].after[6].mappedView",
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": "$[9].targets[1].before[3].mappedView",
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": "$[9].targets[1].before[4].mappedView",
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": "$[9].targets[1].before[5].mappedView",
+      "base": false,
+      "candidate": true
+    },
+    {
+      "path": "$[9].targets[1].before[6].mappedView",
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": "$[9].targets[1].before[7].mappedView",
+      "base": false,
+      "candidate": true
+    },
+    {
+      "path": "$[9].targets[2].before[6].mappedView",
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": "$[10].targets[0].after[3].mappedView",
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": "$[10].targets[0].after[4].mappedView",
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": "$[10].targets[0].after[5].mappedView",
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": "$[10].targets[0].after[6].mappedView",
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": "$[10].targets[0].after[7].mappedView",
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": "$[10].targets[1].after[4].mappedView",
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": "$[10].targets[1].after[5].mappedView",
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": "$[10].targets[1].after[6].mappedView",
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": "$[10].targets[1].before[3].mappedView",
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": "$[10].targets[1].before[4].mappedView",
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": "$[10].targets[1].before[5].mappedView",
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": "$[10].targets[1].before[6].mappedView",
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": "$[10].targets[1].before[7].mappedView",
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": "$[10].targets[2].before[4].mappedView",
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": "$[10].targets[2].before[5].mappedView",
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": "$[10].targets[2].before[6].mappedView",
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": "$[11].targets[0].after[3].mappedView",
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": "$[11].targets[0].after[4].mappedView",
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": "$[11].targets[0].after[6].mappedView",
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": "$[11].targets[0].after[7].mappedView",
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": "$[11].targets[0].after[8].mappedView",
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": "$[11].targets[1].after[3].mappedView",
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": "$[11].targets[1].after[4].mappedView",
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": "$[11].targets[1].after[5].mappedView",
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": "$[11].targets[1].after[7].mappedView",
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": "$[11].targets[1].before[3].mappedView",
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": "$[11].targets[1].before[4].mappedView",
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": "$[11].targets[1].before[6].mappedView",
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": "$[11].targets[1].before[7].mappedView",
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": "$[11].targets[1].before[8].mappedView",
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": "$[11].targets[2].before[3].mappedView",
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": "$[11].targets[2].before[4].mappedView",
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": "$[11].targets[2].before[5].mappedView",
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": "$[11].targets[2].before[7].mappedView",
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": "$[12].targets[0].after[8].mappedView",
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": "$[12].targets[1].after[11].mappedView",
+      "base": false,
+      "candidate": true
+    },
+    {
+      "path": "$[12].targets[1].before[8].mappedView",
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": "$[12].targets[2].after[9].mappedView",
+      "base": false,
+      "candidate": true
+    },
+    {
+      "path": "$[12].targets[2].after[11].mappedView",
+      "base": false,
+      "candidate": true
+    },
+    {
+      "path": "$[12].targets[2].before[11].mappedView",
+      "base": false,
+      "candidate": true
+    },
+    {
+      "path": "$[13].targets[0].after[10].mappedView",
+      "base": false,
+      "candidate": true
+    },
+    {
+      "path": "$[13].targets[1].after[9].mappedView",
+      "base": false,
+      "candidate": true
+    },
+    {
+      "path": "$[13].targets[1].after[10].mappedView",
+      "base": false,
+      "candidate": true
+    },
+    {
+      "path": "$[13].targets[1].before[10].mappedView",
+      "base": false,
+      "candidate": true
+    },
+    {
+      "path": "$[13].targets[2].after[9].mappedView",
+      "base": false,
+      "candidate": true
+    },
+    {
+      "path": "$[13].targets[2].after[10].mappedView",
+      "base": false,
+      "candidate": true
+    },
+    {
+      "path": "$[13].targets[2].after[11].mappedView",
+      "base": true,
+      "candidate": false
+    },
+    {
+      "path": "$[13].targets[2].before[9].mappedView",
+      "base": false,
+      "candidate": true
+    },
+    {
+      "path": "$[13].targets[2].before[10].mappedView",
+      "base": false,
+      "candidate": true
+    }
+  ],
+  "completeResponsePairsEqual": 48,
+  "interpretation": "Only speculative 40-source mappedView booleans differ. Full before/after diagnostics retained; no state-equivalence or exact scheduling claim."
+}

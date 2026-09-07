@@ -1,0 +1,52 @@
+{
+  "queryResult": {
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 4096",
+    "before": [
+      {
+        "id": "single",
+        "mappedView": false,
+        "retained": false
+      }
+    ],
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "after": [
+      {
+        "id": "single",
+        "mappedView": false,
+        "retained": true
+      }
+    ]
+  },
+  "loadedFromPersistence": true,
+  "rawResult": {
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 1",
+    "before": [
+      {
+        "id": "single",
+        "mappedView": false,
+        "retained": true
+      }
+    ],
+    "columns": [
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        }
+      }
+    ],
+    "after": [
+      {
+        "id": "single",
+        "mappedView": false,
+        "retained": true
+      }
+    ]
+  }
+}

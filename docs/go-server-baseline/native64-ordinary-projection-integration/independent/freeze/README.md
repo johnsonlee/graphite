@@ -1,0 +1,23 @@
+# Ordinary raw projection: independent integration freeze
+
+Base: `87aaf0ad39c89189d52c859672e5420b26c3f5e9`. The provider's complete 481-file freeze was SHA-verified against its archive and applied with `git apply --3way` without conflicts. No root/provider files were edited, no commit made, and no 64-graph or performance run performed. Root later revisions, including evaluator Done checkpoint Attempt12, are deliberately not included in this source identity.
+
+Use `integrated.patch` against the stated base. `provider-integration.patch` is the clean provider merge before the independent correction. `independent-fix.patch` is the separate local fix and regressions, against that merged tree. Exact Git trees, patch hashes, commands and counts are in receipt.json; source-files.json lists all 487 changed files. production-files.json identifies native production sources/resources, while the manifest hashes all captured evidence.
+
+## Independent findings
+
+One new concrete bug was found and corrected only in ordinary_cache.go. Equivalent Java strings encoded as canonical UTF8 or surrogate-pair WTF8 had different native cache keys. Main retained 1650 bytes for both successive inputs; native before correction grew to 2110. This is observable planner state, not a performance claim. Normalize only predicate terms to Java UTF16 identity in ordinaryStringKey and ordinaryNodeKey (the row key embeds the node key). Preserve isolated surrogates, raw cached payloads/outputs, and UTF16 logical byte accounting. Reachable property/operator components are ASCII-gated and aliases are not keys; duplicate projected properties retain their ordered multiplicity. The independent eight-step actual main oracle asserts values, columns and bytes including both lone surrogate forms, alias changes, and duplicate fields. The failing before log and successful after log are retained.
+
+The new Store test races eight actual full candidate reads with Close, permits only complete owned values or ErrStoreClosed, verifies nested values remain intact after unmapping, and checks post-Close rejection. The full module race detector passed.
+
+Review retained the three distinct capabilities (A6 certified view, projection mapped view, retained index). No global only-CallSite assertion was introduced: valid wrong tags intentionally differ between serial, retained and mapped/parallel consumers. Typed string SID errors preserve Store diagnostics and are mapped at the consumed query boundary. ProjectionCandidateNode's CallSite collection decoding consumes element-by-element; non-CallSite decoding remains the existing decoder. Complete copied cache payloads publish at the documented iterator/materialization boundary; exceptions do not blanket-rollback prior cache state. Exclusive lifetime locking around Close protects decoding and best-effort persistence before unmapping.
+
+Protected base verification confirms A10 binary findID, nil graph guard, A6 candidate consumption/error mapping, A7 certificate and A8 Unicode source remain intact. Four provider files differ from provider SHA for explicitly accounted reasons: indexed_distinct.go (root lookup/nil changes), string_candidates_test.go (root cancellation regression), store.go (root lifecycle context), ordinary_cache.go (the new local key fix). Provider-file differences and exact protected source hashes are stored alongside this freeze.
+
+## Verification and limits
+
+Both initial provider-integrated and final corrected full-module race runs passed; final go vet passed. All original 1048 requests were compared, with 966 complete main matches: all 580 original DISTINCT-eligible and all 122 ordinary-eligible cases. Remaining 82 are visible in original-summary.json: 58 main-success/native-error, 20 different errors, 4 different successful bodies. This is not 1048/1048 parity. The separate 144-request Annotation corpus retains 12 declined generic differences; 84 eligible and 48 declined cases match.
+
+Actual native Close output was loaded by pinned main for two generated sidecars, with loadedFromPersistence=true and all four complete subsequent responses equal. Writer command records and full responses are in writer-roundtrip. The main JAR/source and fixture hashes for the independent eight-step Unicode oracle are included in its receipt.
+
+Known remaining boundaries are unchanged: DISTINCT exact tuple preparation/state; JVM-global memory budget admission and custom configuration; precise direct GraphWork callback/Thread.interrupt publication timing; non-CallSite/general declined decode/expression timing. No equivalence is claimed beyond these explicit checks. This delivery is a functional integration, not a performance or P95 result.

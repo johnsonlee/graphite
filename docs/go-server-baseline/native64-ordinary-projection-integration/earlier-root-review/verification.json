@@ -1,0 +1,266 @@
+{
+  "commands": [
+    {
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./...",
+        "-count=1"
+      ],
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "exitCode": 0
+    }
+  ],
+  "oracleArtifacts": [
+    {
+      "group": "indexed-native",
+      "file": "annotation-after-native.json",
+      "rootSHA256": "d9d5a2bf4ef573f75cae34d9e5d5fff5941bf29af93d0e97ca301a7871bbece0",
+      "independentSHA256": "d9d5a2bf4ef573f75cae34d9e5d5fff5941bf29af93d0e97ca301a7871bbece0",
+      "fullArtifactEqual": true
+    },
+    {
+      "group": "indexed-native",
+      "file": "annotation-native.json",
+      "rootSHA256": "6f56ae01e2f4149f959a1f10290e70e5a347af697d210859b85902244a916aed",
+      "independentSHA256": "6f56ae01e2f4149f959a1f10290e70e5a347af697d210859b85902244a916aed",
+      "fullArtifactEqual": true
+    },
+    {
+      "group": "indexed-native",
+      "file": "late-native.json",
+      "rootSHA256": "ecee3443a9b07b945d278f9a5d3af3717ac4624950438f299db9ff0b87f1b2ae",
+      "independentSHA256": "ecee3443a9b07b945d278f9a5d3af3717ac4624950438f299db9ff0b87f1b2ae",
+      "fullArtifactEqual": true
+    },
+    {
+      "group": "indexed-native",
+      "file": "mixed-native.json",
+      "rootSHA256": "114d94abea54aa36cd40a32f881e4bf3014167d31ef678dc83ef28dcc22dbfac",
+      "independentSHA256": "114d94abea54aa36cd40a32f881e4bf3014167d31ef678dc83ef28dcc22dbfac",
+      "fullArtifactEqual": true
+    },
+    {
+      "group": "indexed-native",
+      "file": "primary-eligibility.json",
+      "rootSHA256": "977f48131d1b9001e7f3be0095912b2ce6c35b3a908d4083a64edca131d90ad1",
+      "independentSHA256": "977f48131d1b9001e7f3be0095912b2ce6c35b3a908d4083a64edca131d90ad1",
+      "fullArtifactEqual": true
+    },
+    {
+      "group": "indexed-native",
+      "file": "primary-native.json",
+      "rootSHA256": "b6d27b00aafec952b97731704a075a086662ae4c408c1e9b9c958ccdc0faf55a",
+      "independentSHA256": "b6d27b00aafec952b97731704a075a086662ae4c408c1e9b9c958ccdc0faf55a",
+      "fullArtifactEqual": true
+    },
+    {
+      "group": "indexed-native",
+      "file": "required-missing-identity-native.json",
+      "rootSHA256": "fa7e6ff32f74410593471ed4b137628d9f20d30798ca388cf397f81021dc9bad",
+      "independentSHA256": "fa7e6ff32f74410593471ed4b137628d9f20d30798ca388cf397f81021dc9bad",
+      "fullArtifactEqual": true
+    },
+    {
+      "group": "indexed-native",
+      "file": "required-missing-index-native.json",
+      "rootSHA256": "3ac51f08eb2f4ca63449c1a35ead4e7910cb72d580b798d68ccd747db6fee63d",
+      "independentSHA256": "3ac51f08eb2f4ca63449c1a35ead4e7910cb72d580b798d68ccd747db6fee63d",
+      "fullArtifactEqual": true
+    },
+    {
+      "group": "indexed-native",
+      "file": "required-native.json",
+      "rootSHA256": "c4edae9b06d42b06d86085fa3a20d99ca32d796f00a8e1ff5c071348460117e0",
+      "independentSHA256": "c4edae9b06d42b06d86085fa3a20d99ca32d796f00a8e1ff5c071348460117e0",
+      "fullArtifactEqual": true
+    },
+    {
+      "group": "indexed-native",
+      "file": "source-pairs-eligibility.json",
+      "rootSHA256": "19401f838902bc5aaa6bfaa610a30ba5626f1d03cc541cee21a6dbc543c4a54d",
+      "independentSHA256": "19401f838902bc5aaa6bfaa610a30ba5626f1d03cc541cee21a6dbc543c4a54d",
+      "fullArtifactEqual": true
+    },
+    {
+      "group": "indexed-native",
+      "file": "source-pairs-native.json",
+      "rootSHA256": "ddf828b712903ad3d6f05a2eb5873156f28de7955e83bc8c743a5a6a2a7ce783",
+      "independentSHA256": "ddf828b712903ad3d6f05a2eb5873156f28de7955e83bc8c743a5a6a2a7ce783",
+      "fullArtifactEqual": true
+    },
+    {
+      "group": "indexed-native",
+      "file": "split-bad-callee-native.json",
+      "rootSHA256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254",
+      "independentSHA256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254",
+      "fullArtifactEqual": true
+    },
+    {
+      "group": "indexed-native",
+      "file": "split-bad-count-native.json",
+      "rootSHA256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254",
+      "independentSHA256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254",
+      "fullArtifactEqual": true
+    },
+    {
+      "group": "indexed-native",
+      "file": "split-bad-tag-native.json",
+      "rootSHA256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254",
+      "independentSHA256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254",
+      "fullArtifactEqual": true
+    },
+    {
+      "group": "indexed-native",
+      "file": "split-clean-native.json",
+      "rootSHA256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254",
+      "independentSHA256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254",
+      "fullArtifactEqual": true
+    },
+    {
+      "group": "indexed-native",
+      "file": "split-missing-index-native.json",
+      "rootSHA256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254",
+      "independentSHA256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254",
+      "fullArtifactEqual": true
+    },
+    {
+      "group": "indexed-native",
+      "file": "supplementary-eligibility.json",
+      "rootSHA256": "1f4b1a4795f3065837822f71510d07b770905e54bc6384732065a3b375417117",
+      "independentSHA256": "1f4b1a4795f3065837822f71510d07b770905e54bc6384732065a3b375417117",
+      "fullArtifactEqual": true
+    },
+    {
+      "group": "indexed-native",
+      "file": "supplementary-native.json",
+      "rootSHA256": "f81b9d426455fb800b1038e77619294035e26cbe8794e02ddd35e6085c838705",
+      "independentSHA256": "f81b9d426455fb800b1038e77619294035e26cbe8794e02ddd35e6085c838705",
+      "fullArtifactEqual": true
+    },
+    {
+      "group": "ordinary-native",
+      "file": "annotation-after-classification.json",
+      "rootSHA256": "425757c7f23251e3cca37f4e0c3002e8e95f5d8acb467ff800d03f5faef40391",
+      "independentSHA256": "425757c7f23251e3cca37f4e0c3002e8e95f5d8acb467ff800d03f5faef40391",
+      "fullArtifactEqual": true
+    },
+    {
+      "group": "ordinary-native",
+      "file": "annotation-after-native.json",
+      "rootSHA256": "c90e4bc5bf201570d33b6540e0887576bc80214b1223d08c85e4f9e9096508ab",
+      "independentSHA256": "c90e4bc5bf201570d33b6540e0887576bc80214b1223d08c85e4f9e9096508ab",
+      "fullArtifactEqual": true
+    },
+    {
+      "group": "ordinary-native",
+      "file": "annotation-classification.json",
+      "rootSHA256": "b67f17a70da8168c56d9dda9ac84baa82e9b6546d640e8f09032ebf3cd36d46c",
+      "independentSHA256": "b67f17a70da8168c56d9dda9ac84baa82e9b6546d640e8f09032ebf3cd36d46c",
+      "fullArtifactEqual": true
+    },
+    {
+      "group": "ordinary-native",
+      "file": "annotation-native.json",
+      "rootSHA256": "1a7d408b2c018cf087ea6eacd957a153500db5a6cacf03e72675735774faa1d8",
+      "independentSHA256": "1a7d408b2c018cf087ea6eacd957a153500db5a6cacf03e72675735774faa1d8",
+      "fullArtifactEqual": true
+    },
+    {
+      "group": "ordinary-native",
+      "file": "cache-threshold-native.json",
+      "rootSHA256": "615da41096d8f018f4c5192733f1f47bd37b1aa7a2ef618f1492c04b8cc453e2",
+      "independentSHA256": "615da41096d8f018f4c5192733f1f47bd37b1aa7a2ef618f1492c04b8cc453e2",
+      "fullArtifactEqual": true
+    },
+    {
+      "group": "ordinary-native",
+      "file": "dense-callee-sid-missing-native.json",
+      "rootSHA256": "47a4722409271ee7405077e7b50cab8ddaf7770d5ab6759398165b5f2446a35e",
+      "independentSHA256": "47a4722409271ee7405077e7b50cab8ddaf7770d5ab6759398165b5f2446a35e",
+      "fullArtifactEqual": true
+    },
+    {
+      "group": "ordinary-native",
+      "file": "dense-callee-sid-native.json",
+      "rootSHA256": "b17de139c2b7da1fc28625a6c3963d901a65f1f42bae2713b9fa58708d14f0bd",
+      "independentSHA256": "b17de139c2b7da1fc28625a6c3963d901a65f1f42bae2713b9fa58708d14f0bd",
+      "fullArtifactEqual": true
+    },
+    {
+      "group": "ordinary-native",
+      "file": "dense-clean-missing-native.json",
+      "rootSHA256": "7710f4e96383cae1b164b5c0d7a755a406aa2c3345a943a2323580abc406a532",
+      "independentSHA256": "7710f4e96383cae1b164b5c0d7a755a406aa2c3345a943a2323580abc406a532",
+      "fullArtifactEqual": true
+    },
+    {
+      "group": "ordinary-native",
+      "file": "dense-clean-native.json",
+      "rootSHA256": "4cb15597a5bc69c1dd815fe6d69ec013f47e459b0fc8ca37404ddc89f8e4af6c",
+      "independentSHA256": "4cb15597a5bc69c1dd815fe6d69ec013f47e459b0fc8ca37404ddc89f8e4af6c",
+      "fullArtifactEqual": true
+    },
+    {
+      "group": "ordinary-native",
+      "file": "dense-return-sid-missing-native.json",
+      "rootSHA256": "4845a2616e930d4cfd266646790ba68d27eb7c1089142161f9315df3870647f1",
+      "independentSHA256": "4845a2616e930d4cfd266646790ba68d27eb7c1089142161f9315df3870647f1",
+      "fullArtifactEqual": true
+    },
+    {
+      "group": "ordinary-native",
+      "file": "dense-return-sid-native.json",
+      "rootSHA256": "96737d4470f289fac3d9f0c56711fd88443e130fd288ff1b932dac3a36c08ced",
+      "independentSHA256": "96737d4470f289fac3d9f0c56711fd88443e130fd288ff1b932dac3a36c08ced",
+      "fullArtifactEqual": true
+    },
+    {
+      "group": "ordinary-native",
+      "file": "history-native.json",
+      "rootSHA256": "e8a0427ca2e06854045ce5f293da3298818fb385d2a028e9dd4a45ba90ec198f",
+      "independentSHA256": "e8a0427ca2e06854045ce5f293da3298818fb385d2a028e9dd4a45ba90ec198f",
+      "fullArtifactEqual": true
+    },
+    {
+      "group": "ordinary-native",
+      "file": "mixed-classification.json",
+      "rootSHA256": "425757c7f23251e3cca37f4e0c3002e8e95f5d8acb467ff800d03f5faef40391",
+      "independentSHA256": "425757c7f23251e3cca37f4e0c3002e8e95f5d8acb467ff800d03f5faef40391",
+      "fullArtifactEqual": true
+    },
+    {
+      "group": "ordinary-native",
+      "file": "mixed-native.json",
+      "rootSHA256": "398572afea1af7f69e645d770f20be8d89980c52d9b6e1fc70a005edc56e0650",
+      "independentSHA256": "398572afea1af7f69e645d770f20be8d89980c52d9b6e1fc70a005edc56e0650",
+      "fullArtifactEqual": true
+    },
+    {
+      "group": "ordinary-native",
+      "file": "rolling-native.json",
+      "rootSHA256": "9063fecbf9273192971b8d20bd8394a1ef1672606c8c3be605e92e78662d1ae9",
+      "independentSHA256": "d775394bbe6989138a32acbfc7f9f7d717e0129e019a620e86eda06ba2304298",
+      "fullArtifactEqual": false
+    },
+    {
+      "group": "ordinary-native",
+      "file": "wide-history-native.json",
+      "rootSHA256": "bf77c86004beae2f01e932680af9b8d30c09859b90266b85c9ce37112a9de569",
+      "independentSHA256": "bf77c86004beae2f01e932680af9b8d30c09859b90266b85c9ce37112a9de569",
+      "fullArtifactEqual": true
+    }
+  ],
+  "exactArtifacts": 33,
+  "rollingResponsePairsEqual": 48,
+  "rollingDiagnosticLeavesDifferent": 61,
+  "initialCollectorFailuresRetained": true
+}

@@ -1,0 +1,129 @@
+[
+  {
+    "state": {
+      "bytes": 888,
+      "serial": true,
+      "matchingStringIds": [],
+      "matchingNodeIds": [],
+      "projectedRows": []
+    },
+    "phase": "structural"
+  },
+  {
+    "state": {
+      "bytes": 1190,
+      "serial": true,
+      "matchingStringIds": [
+        "CallSitePredicateKey(transform\u003dnull, mode\u003dCONTAINS, expected\u003dother)"
+      ],
+      "matchingNodeIds": [
+        "CallSiteNodeMatchKey(predicates\u003d[StringPropertyPredicate(property\u003dcaller_name, transform\u003dnull, mode\u003dCONTAINS, expected\u003dother)], limit\u003d2)"
+      ],
+      "projectedRows": []
+    },
+    "phase": "prime-node-cache"
+  },
+  {
+    "phase": "interrupt-without-throw-on-node-hit",
+    "state": {
+      "bytes": 1121950,
+      "serial": false,
+      "matchingStringIds": [
+        "CallSitePredicateKey(transform\u003dnull, mode\u003dCONTAINS, expected\u003dother)"
+      ],
+      "matchingNodeIds": [
+        "CallSiteNodeMatchKey(predicates\u003d[StringPropertyPredicate(property\u003dcaller_name, transform\u003dnull, mode\u003dCONTAINS, expected\u003dother)], limit\u003d2)"
+      ],
+      "projectedRows": [
+        "CallSiteProjectionKey(predicates\u003d[StringPropertyPredicate(property\u003dcaller_name, transform\u003dnull, mode\u003dCONTAINS, expected\u003dother)], projectedProperties\u003d[caller_name, caller_name, caller_name, caller_name], limit\u003d2)"
+      ]
+    },
+    "interrupted": true
+  },
+  {
+    "state": {
+      "bytes": 1122380,
+      "serial": false,
+      "matchingStringIds": [
+        "CallSitePredicateKey(transform\u003dnull, mode\u003dCONTAINS, expected\u003dother)"
+      ],
+      "matchingNodeIds": [
+        "CallSiteNodeMatchKey(predicates\u003d[StringPropertyPredicate(property\u003dcaller_name, transform\u003dnull, mode\u003dCONTAINS, expected\u003dother)], limit\u003d2)"
+      ],
+      "projectedRows": [
+        "CallSiteProjectionKey(predicates\u003d[StringPropertyPredicate(property\u003dcaller_name, transform\u003dnull, mode\u003dCONTAINS, expected\u003dother)], projectedProperties\u003d[caller_name, caller_name, caller_name, caller_name], limit\u003d2)",
+        "CallSiteProjectionKey(predicates\u003d[StringPropertyPredicate(property\u003dcaller_name, transform\u003dnull, mode\u003dCONTAINS, expected\u003dother)], projectedProperties\u003d[callee_name], limit\u003d2)"
+      ]
+    },
+    "phase": "second-projection"
+  },
+  {
+    "phase": "throw-on-cached-projection-hit",
+    "error": "CancellationException",
+    "message": "AUDIT_CANCEL",
+    "state": {
+      "bytes": 1122380,
+      "serial": false,
+      "matchingStringIds": [
+        "CallSitePredicateKey(transform\u003dnull, mode\u003dCONTAINS, expected\u003dother)"
+      ],
+      "matchingNodeIds": [
+        "CallSiteNodeMatchKey(predicates\u003d[StringPropertyPredicate(property\u003dcaller_name, transform\u003dnull, mode\u003dCONTAINS, expected\u003dother)], limit\u003d2)"
+      ],
+      "projectedRows": [
+        "CallSiteProjectionKey(predicates\u003d[StringPropertyPredicate(property\u003dcaller_name, transform\u003dnull, mode\u003dCONTAINS, expected\u003dother)], projectedProperties\u003d[callee_name], limit\u003d2)",
+        "CallSiteProjectionKey(predicates\u003d[StringPropertyPredicate(property\u003dcaller_name, transform\u003dnull, mode\u003dCONTAINS, expected\u003dother)], projectedProperties\u003d[caller_name, caller_name, caller_name, caller_name], limit\u003d2)"
+      ]
+    }
+  },
+  {
+    "state": {
+      "bytes": 1122380,
+      "serial": false,
+      "matchingStringIds": [
+        "CallSitePredicateKey(transform\u003dnull, mode\u003dCONTAINS, expected\u003dother)"
+      ],
+      "matchingNodeIds": [
+        "CallSiteNodeMatchKey(predicates\u003d[StringPropertyPredicate(property\u003dcaller_name, transform\u003dnull, mode\u003dCONTAINS, expected\u003dother)], limit\u003d2)"
+      ],
+      "projectedRows": [
+        "CallSiteProjectionKey(predicates\u003d[StringPropertyPredicate(property\u003dcaller_name, transform\u003dnull, mode\u003dCONTAINS, expected\u003dother)], projectedProperties\u003d[callee_name], limit\u003d2)",
+        "CallSiteProjectionKey(predicates\u003d[StringPropertyPredicate(property\u003dcaller_name, transform\u003dnull, mode\u003dCONTAINS, expected\u003dother)], projectedProperties\u003d[caller_name, caller_name, caller_name, caller_name], limit\u003d2)"
+      ]
+    },
+    "phase": "zero-limit"
+  },
+  {
+    "state": {
+      "bytes": 1122742,
+      "serial": false,
+      "matchingStringIds": [
+        "CallSitePredicateKey(transform\u003dnull, mode\u003dCONTAINS, expected\u003dother)"
+      ],
+      "matchingNodeIds": [
+        "CallSiteNodeMatchKey(predicates\u003d[StringPropertyPredicate(property\u003dcaller_name, transform\u003dnull, mode\u003dCONTAINS, expected\u003dother)], limit\u003d2)",
+        "CallSiteNodeMatchKey(predicates\u003d[StringPropertyPredicate(property\u003dcaller_name, transform\u003dnull, mode\u003dEQUALS, expected\u003dabsent)], limit\u003d2)"
+      ],
+      "projectedRows": [
+        "CallSiteProjectionKey(predicates\u003d[StringPropertyPredicate(property\u003dcaller_name, transform\u003dnull, mode\u003dCONTAINS, expected\u003dother)], projectedProperties\u003d[callee_name], limit\u003d2)",
+        "CallSiteProjectionKey(predicates\u003d[StringPropertyPredicate(property\u003dcaller_name, transform\u003dnull, mode\u003dCONTAINS, expected\u003dother)], projectedProperties\u003d[caller_name, caller_name, caller_name, caller_name], limit\u003d2)",
+        "CallSiteProjectionKey(predicates\u003d[StringPropertyPredicate(property\u003dcaller_name, transform\u003dnull, mode\u003dEQUALS, expected\u003dabsent)], projectedProperties\u003d[callee_name], limit\u003d2)"
+      ]
+    },
+    "phase": "zero-hit"
+  },
+  {
+    "state": {
+      "bytes": 888,
+      "serial": true,
+      "matchingStringIds": [],
+      "matchingNodeIds": [],
+      "projectedRows": []
+    },
+    "phase": "clear"
+  },
+  {
+    "indexCleared": true,
+    "phase": "close"
+  }
+]

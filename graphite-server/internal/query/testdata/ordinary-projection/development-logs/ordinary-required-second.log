@@ -1,0 +1,6 @@
+--- FAIL: TestOrdinaryProjectionRequiredHistoryMain (0.37s)
+    --- FAIL: TestOrdinaryProjectionRequiredHistoryMain/caller-count-outside (0.01s)
+        ordinary_projection_required_test.go:54: count=40 main={"columns":["x"],"query":"MATCH (n) WHERE n.caller_name='other' RETURN n.caller_name AS x LIMIT 1","rows":[{"$metadata":{"graphIds":["g0"]},"x":"other"}]} native={"error":"IndexOutOfBoundsException","message":null,"query":"MATCH (n) WHERE n.caller_name='other' RETURN n.caller_name AS x LIMIT 1"}
+FAIL
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/query	0.764s
+FAIL

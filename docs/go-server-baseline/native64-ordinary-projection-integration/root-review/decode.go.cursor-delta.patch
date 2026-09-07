@@ -1,0 +1,78 @@
+--- /tmp/graphite-go-ordinary-root-df8d2b40/graphite-server/internal/store/decode.go	2026-09-07 10:25:15
++++ /tmp/graphite-go-ordinary-root-2e2d8b52/graphite-server/internal/store/decode.go	2026-09-07 10:36:33
+@@ -67,11 +67,13 @@
+ var nodeKinds = [...]string{"IntConstant", "StringConstant", "LongConstant", "FloatConstant", "DoubleConstant", "BooleanConstant", "NullConstant", "EnumConstant", "LocalVariable", "FieldNode", "ParameterNode", "ReturnNode", "CallSiteNode", "AnnotationNode", "ResourceValueNode", "ResourceFileNode"}
+ 
+ type decoder struct {
+-	r         io.Reader
+-	strings   []string
+-	version   int
+-	err       error
+-	remaining int64
++	mappedNode   []byte
++	isMappedNode bool
++	r            io.Reader
++	strings      []string
++	version      int
++	err          error
++	remaining    int64
+ }
+ 
+ func newDecoder(r io.Reader, size int64, table []string) *decoder {
+@@ -95,29 +97,52 @@
+ 	d.remaining -= int64(n)
+ 	return b
+ }
++
++// newMappedNodeDecoder borrows only the current Node call's mapped suffix.
++// Complete node decoding consumes scalar bytes immediately; returned Node values
++// never retain this slice. Reader-backed bytes keeps its owning-copy contract.
++func newMappedNodeDecoder(data []byte, table []string) *decoder {
++	return &decoder{mappedNode: data, isMappedNode: true, remaining: int64(len(data)), strings: table}
++}
++func (d *decoder) scalarBytes(n int) []byte {
++	if !d.isMappedNode {
++		return d.bytes(n)
++	}
++	if d.err != nil {
++		return nil
++	}
++	if n < 0 || int64(n) > d.remaining {
++		d.fail("truncated data: need %d bytes, have %d", n, d.remaining)
++		return nil
++	}
++	b := d.mappedNode[:n]
++	d.mappedNode = d.mappedNode[n:]
++	d.remaining -= int64(n)
++	return b
++}
+ func (d *decoder) u8() byte {
+-	b := d.bytes(1)
++	b := d.scalarBytes(1)
+ 	if b == nil {
+ 		return 0
+ 	}
+ 	return b[0]
+ }
+ func (d *decoder) u16() uint16 {
+-	b := d.bytes(2)
++	b := d.scalarBytes(2)
+ 	if b == nil {
+ 		return 0
+ 	}
+ 	return binary.BigEndian.Uint16(b)
+ }
+ func (d *decoder) i32() int32 {
+-	b := d.bytes(4)
++	b := d.scalarBytes(4)
+ 	if b == nil {
+ 		return 0
+ 	}
+ 	return int32(binary.BigEndian.Uint32(b))
+ }
+ func (d *decoder) i64() int64 {
+-	b := d.bytes(8)
++	b := d.scalarBytes(8)
+ 	if b == nil {
+ 		return 0
+ 	}

@@ -1,0 +1,37 @@
+--- /Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-trigram-anchor-attempt7/replay-http.py
++++ /tmp/graphite-ordinary-http-independent-evidence/replay-http.py
+@@ -18,18 +18,18 @@
+ p.add_argument('--port', type=int, default=18856)
+ a = p.parse_args()
+ here = pathlib.Path(__file__).resolve().parent
+-root = here.parents[2]
++root = pathlib.Path('/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite')
+ out = a.out.resolve()
+ out.mkdir()
+ spec = importlib.util.spec_from_file_location('parity', root / 'graphite-server/scripts/http_parity.py')
+ parity = importlib.util.module_from_spec(spec)
+ spec.loader.exec_module(parity)
+ cfg = json.loads((here / 'config.json').read_text())
+-source = here.parent / 'native64-preflight/queries/observations.json'
++source = pathlib.Path('/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-preflight/queries/observations.json')
+ frozen = json.loads(source.read_text())
+ assert len(cfg['graphs']) == 64 and len(frozen) == 42
+ binary = a.binary.resolve()
+-command = [str(binary), '--data', '/tmp/pr113-exp037-fixture.nXn4fg', '--port', str(a.port), '--max-concurrent-cypher', '4']
++command = [str(binary), '--data', '/tmp/graphite-ordinary-http-real64-cow-2e2d8b52', '--port', str(a.port), '--max-concurrent-cypher', '4']
+ for g in cfg['graphs']:
+     command += ['--graph', g['id'] + ':' + g['path']]
+ 
+@@ -90,8 +90,12 @@
+         })
+     finally:
+         server.terminate()
++        forced = False
+         try:
+             server.wait(timeout=15)
+         except subprocess.TimeoutExpired:
++            forced = True
+             server.kill()
+             server.wait()
++
++        save('server-exit.json', {'pid': server.pid, 'returnCode': server.returncode, 'forcedKill': forced})

@@ -1,0 +1,100 @@
+[
+  {
+    "utf16": [
+      55357,
+      56832,
+      120
+    ],
+    "columns": [
+      "x"
+    ],
+    "rows": [],
+    "retainedBytes": 1650
+  },
+  {
+    "utf16": [
+      55357,
+      56832,
+      120
+    ],
+    "columns": [
+      "x"
+    ],
+    "rows": [],
+    "retainedBytes": 1650
+  },
+  {
+    "utf16": [
+      55357,
+      120,
+      121
+    ],
+    "columns": [
+      "x"
+    ],
+    "rows": [],
+    "retainedBytes": 2110
+  },
+  {
+    "utf16": [
+      56832,
+      120,
+      121
+    ],
+    "columns": [
+      "x"
+    ],
+    "rows": [],
+    "retainedBytes": 2570
+  },
+  {
+    "utf16": [
+      55357,
+      56832,
+      120
+    ],
+    "columns": [
+      "x"
+    ],
+    "rows": [],
+    "retainedBytes": 2570
+  },
+  {
+    "utf16": [
+      55357,
+      56832,
+      120
+    ],
+    "columns": [
+      "😀"
+    ],
+    "rows": [],
+    "retainedBytes": 2570
+  },
+  {
+    "utf16": [
+      55357,
+      56832,
+      120
+    ],
+    "columns": [
+      "a",
+      "b"
+    ],
+    "rows": [],
+    "retainedBytes": 2770
+  },
+  {
+    "utf16": [
+      55357,
+      56832,
+      120
+    ],
+    "columns": [
+      "b",
+      "a"
+    ],
+    "rows": [],
+    "retainedBytes": 2770
+  }
+]

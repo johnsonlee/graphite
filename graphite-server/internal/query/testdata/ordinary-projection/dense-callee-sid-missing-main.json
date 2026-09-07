@@ -1,0 +1,181 @@
+[
+  {
+    "mode": "partial",
+    "initial": [
+      {
+        "mappedView": false,
+        "retained": false,
+        "id": "single"
+      }
+    ],
+    "targets": [
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "mappedView": false,
+            "retained": false,
+            "id": "single"
+          }
+        ],
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other"
+          }
+        ],
+        "after": [
+          {
+            "mappedView": false,
+            "retained": false,
+            "id": "single"
+          }
+        ]
+      },
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "mappedView": false,
+            "retained": false,
+            "id": "single"
+          }
+        ],
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other"
+          }
+        ],
+        "after": [
+          {
+            "mappedView": false,
+            "retained": false,
+            "id": "single"
+          }
+        ]
+      }
+    ],
+    "indexFileAfter": false
+  },
+  {
+    "mode": "complete-miss",
+    "initial": [
+      {
+        "mappedView": false,
+        "retained": false,
+        "id": "single"
+      }
+    ],
+    "targets": [
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027absent\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "mappedView": false,
+            "retained": false,
+            "id": "single"
+          }
+        ],
+        "columns": [
+          "x"
+        ],
+        "rows": [],
+        "after": [
+          {
+            "mappedView": false,
+            "retained": false,
+            "id": "single"
+          }
+        ]
+      },
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "mappedView": false,
+            "retained": false,
+            "id": "single"
+          }
+        ],
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other"
+          }
+        ],
+        "after": [
+          {
+            "mappedView": false,
+            "retained": false,
+            "id": "single"
+          }
+        ]
+      }
+    ],
+    "indexFileAfter": false
+  },
+  {
+    "mode": "limit-count",
+    "initial": [
+      {
+        "mappedView": false,
+        "retained": false,
+        "id": "single"
+      }
+    ],
+    "targets": [
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 4096",
+        "before": [
+          {
+            "mappedView": false,
+            "retained": false,
+            "id": "single"
+          }
+        ],
+        "error": "ArrayIndexOutOfBoundsException",
+        "message": "Index 2147483647 out of bounds for length 9",
+        "after": [
+          {
+            "mappedView": false,
+            "retained": false,
+            "id": "single"
+          }
+        ]
+      },
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "mappedView": false,
+            "retained": false,
+            "id": "single"
+          }
+        ],
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other"
+          }
+        ],
+        "after": [
+          {
+            "mappedView": false,
+            "retained": false,
+            "id": "single"
+          }
+        ]
+      }
+    ],
+    "indexFileAfter": false
+  }
+]

@@ -1,0 +1,80 @@
+[
+  {
+    "name": "clean",
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx256m",
+      "-cp",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-ordinary-dense-history-jshqm4g7/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "DenseHistoryOracle",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-ordinary-dense-history-jshqm4g7/clean",
+      "/private/tmp/graphite-go-ordinary-raw-bbdfae2a/graphite-server/internal/query/testdata/ordinary-projection/dense-clean-main.json"
+    ],
+    "exitCode": 0
+  },
+  {
+    "name": "clean-missing",
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx256m",
+      "-cp",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-ordinary-dense-history-jshqm4g7/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "DenseHistoryOracle",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-ordinary-dense-history-jshqm4g7/clean-missing",
+      "/private/tmp/graphite-go-ordinary-raw-bbdfae2a/graphite-server/internal/query/testdata/ordinary-projection/dense-clean-missing-main.json"
+    ],
+    "exitCode": 0
+  },
+  {
+    "name": "return-sid",
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx256m",
+      "-cp",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-ordinary-dense-history-jshqm4g7/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "DenseHistoryOracle",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-ordinary-dense-history-jshqm4g7/return-sid",
+      "/private/tmp/graphite-go-ordinary-raw-bbdfae2a/graphite-server/internal/query/testdata/ordinary-projection/dense-return-sid-main.json"
+    ],
+    "exitCode": 0
+  },
+  {
+    "name": "return-sid-missing",
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx256m",
+      "-cp",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-ordinary-dense-history-jshqm4g7/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "DenseHistoryOracle",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-ordinary-dense-history-jshqm4g7/return-sid-missing",
+      "/private/tmp/graphite-go-ordinary-raw-bbdfae2a/graphite-server/internal/query/testdata/ordinary-projection/dense-return-sid-missing-main.json"
+    ],
+    "exitCode": 0
+  },
+  {
+    "name": "callee-sid",
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx256m",
+      "-cp",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-ordinary-dense-history-jshqm4g7/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "DenseHistoryOracle",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-ordinary-dense-history-jshqm4g7/callee-sid",
+      "/private/tmp/graphite-go-ordinary-raw-bbdfae2a/graphite-server/internal/query/testdata/ordinary-projection/dense-callee-sid-main.json"
+    ],
+    "exitCode": 0
+  },
+  {
+    "name": "callee-sid-missing",
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx256m",
+      "-cp",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-ordinary-dense-history-jshqm4g7/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "DenseHistoryOracle",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-ordinary-dense-history-jshqm4g7/callee-sid-missing",
+      "/private/tmp/graphite-go-ordinary-raw-bbdfae2a/graphite-server/internal/query/testdata/ordinary-projection/dense-callee-sid-missing-main.json"
+    ],
+    "exitCode": 0
+  }
+]

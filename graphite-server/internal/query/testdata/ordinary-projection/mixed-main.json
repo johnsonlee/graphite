@@ -1,0 +1,1715 @@
+[
+  {
+    "name": "annotation-direct",
+    "query": "MATCH (odd) WHERE odd.caller_class CONTAINS \u0027Other\u0027 RETURN odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x",
+      "y",
+      "z"
+    ],
+    "rows": [
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other"
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke"
+      }
+    ]
+  },
+  {
+    "name": "annotation-direct",
+    "query": "MATCH (odd) WHERE odd.caller_class CONTAINS \u0027Other\u0027 RETURN odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x",
+      "y",
+      "z"
+    ],
+    "rows": [
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other",
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "annotation-lower",
+    "query": "MATCH (odd) WHERE toLower(coalesce(odd.caller_class,\u0027\u0027)) CONTAINS \u0027other\u0027 RETURN odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x",
+      "y",
+      "z"
+    ],
+    "rows": [
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other",
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "annotation-lower",
+    "query": "MATCH (odd) WHERE toLower(coalesce(odd.caller_class,\u0027\u0027)) CONTAINS \u0027other\u0027 RETURN odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x",
+      "y",
+      "z"
+    ],
+    "rows": [
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other",
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "four-or",
+    "query": "MATCH (odd) WHERE toLower(coalesce(odd.caller_class,\u0027\u0027)) CONTAINS \u0027other\u0027 OR toLower(coalesce(odd.caller_name,\u0027\u0027)) CONTAINS \u0027other\u0027 OR toLower(coalesce(odd.callee_class,\u0027\u0027)) CONTAINS \u0027other\u0027 OR toLower(coalesce(odd.callee_name,\u0027\u0027)) CONTAINS \u0027other\u0027 RETURN odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x",
+      "y",
+      "z"
+    ],
+    "rows": [
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other",
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "four-or",
+    "query": "MATCH (odd) WHERE toLower(coalesce(odd.caller_class,\u0027\u0027)) CONTAINS \u0027other\u0027 OR toLower(coalesce(odd.caller_name,\u0027\u0027)) CONTAINS \u0027other\u0027 OR toLower(coalesce(odd.callee_class,\u0027\u0027)) CONTAINS \u0027other\u0027 OR toLower(coalesce(odd.callee_name,\u0027\u0027)) CONTAINS \u0027other\u0027 RETURN odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x",
+      "y",
+      "z"
+    ],
+    "rows": [
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other",
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "mixed-class-name",
+    "query": "MATCH (odd) WHERE odd.caller_class CONTAINS \u0027Other\u0027 OR odd.name CONTAINS \u0027sample\u0027 OR odd.class CONTAINS \u0027Mark\u0027 RETURN odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x",
+      "y",
+      "z"
+    ],
+    "rows": [
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other"
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke"
+      }
+    ]
+  },
+  {
+    "name": "mixed-class-name",
+    "query": "MATCH (odd) WHERE odd.caller_class CONTAINS \u0027Other\u0027 OR odd.name CONTAINS \u0027sample\u0027 OR odd.class CONTAINS \u0027Mark\u0027 RETURN odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x",
+      "y",
+      "z"
+    ],
+    "rows": [
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other",
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "node-label",
+    "query": "MATCH (odd:Node) WHERE odd.caller_class CONTAINS \u0027Other\u0027 RETURN odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x",
+      "y",
+      "z"
+    ],
+    "rows": [
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other",
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "node-label",
+    "query": "MATCH (odd:Node) WHERE odd.caller_class CONTAINS \u0027Other\u0027 RETURN odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x",
+      "y",
+      "z"
+    ],
+    "rows": [
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other",
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "callsite-label",
+    "query": "MATCH (odd:CallSite) WHERE odd.caller_class CONTAINS \u0027Other\u0027 RETURN odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x",
+      "y",
+      "z"
+    ],
+    "rows": [
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other",
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "callsite-label",
+    "query": "MATCH (odd:CallSite) WHERE odd.caller_class CONTAINS \u0027Other\u0027 RETURN odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x",
+      "y",
+      "z"
+    ],
+    "rows": [
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other",
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "in",
+    "query": "MATCH (odd) WHERE odd.caller_class IN [\u0027Other\u0027,\u0027example.Other\u0027] RETURN odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x",
+      "y",
+      "z"
+    ],
+    "rows": [
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other",
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "in",
+    "query": "MATCH (odd) WHERE odd.caller_class IN [\u0027Other\u0027,\u0027example.Other\u0027] RETURN odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x",
+      "y",
+      "z"
+    ],
+    "rows": [
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other",
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "exists",
+    "query": "MATCH (odd) WHERE exists(odd.caller_class) AND odd.caller_class CONTAINS \u0027Other\u0027 RETURN odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x",
+      "y",
+      "z"
+    ],
+    "rows": [
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other",
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "exists",
+    "query": "MATCH (odd) WHERE exists(odd.caller_class) AND odd.caller_class CONTAINS \u0027Other\u0027 RETURN odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x",
+      "y",
+      "z"
+    ],
+    "rows": [
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other",
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "parameter",
+    "query": "MATCH (odd) WHERE odd.caller_class CONTAINS $term RETURN odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x",
+      "y",
+      "z"
+    ],
+    "rows": [
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other",
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "parameter",
+    "query": "MATCH (odd) WHERE odd.caller_class CONTAINS $term RETURN odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x",
+      "y",
+      "z"
+    ],
+    "rows": [
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other",
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "scope",
+    "query": "MATCH (odd) WHERE odd.caller_class CONTAINS \u0027Other\u0027 AND odd.graphId\u003d\u0027a\u0027 RETURN odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x",
+      "y",
+      "z"
+    ],
+    "rows": []
+  },
+  {
+    "name": "scope",
+    "query": "MATCH (odd) WHERE odd.caller_class CONTAINS \u0027Other\u0027 AND odd.graphId\u003d\u0027a\u0027 RETURN odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x",
+      "y",
+      "z"
+    ],
+    "rows": [
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "graph-function-scope",
+    "query": "MATCH (odd) WHERE odd.caller_class CONTAINS \u0027Other\u0027 AND graphId(odd) IN [\u0027a\u0027,\u0027b\u0027] RETURN odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x",
+      "y",
+      "z"
+    ],
+    "rows": []
+  },
+  {
+    "name": "graph-function-scope",
+    "query": "MATCH (odd) WHERE odd.caller_class CONTAINS \u0027Other\u0027 AND graphId(odd) IN [\u0027a\u0027,\u0027b\u0027] RETURN odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x",
+      "y",
+      "z"
+    ],
+    "rows": [
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other",
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "scope-skip-decline",
+    "query": "MATCH (odd) WHERE odd.caller_class CONTAINS \u0027Other\u0027 AND odd.graphId\u003d\u0027a\u0027 RETURN odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z SKIP 1 LIMIT 10",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x",
+      "y",
+      "z"
+    ],
+    "rows": []
+  },
+  {
+    "name": "scope-skip-decline",
+    "query": "MATCH (odd) WHERE odd.caller_class CONTAINS \u0027Other\u0027 AND odd.graphId\u003d\u0027a\u0027 RETURN odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z SKIP 1 LIMIT 10",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x",
+      "y",
+      "z"
+    ],
+    "rows": [
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "skip",
+    "query": "MATCH (odd) WHERE odd.caller_class CONTAINS \u0027Other\u0027 RETURN odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z SKIP 1 LIMIT 10",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x",
+      "y",
+      "z"
+    ],
+    "rows": [
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke"
+      }
+    ]
+  },
+  {
+    "name": "skip",
+    "query": "MATCH (odd) WHERE odd.caller_class CONTAINS \u0027Other\u0027 RETURN odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z SKIP 1 LIMIT 10",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x",
+      "y",
+      "z"
+    ],
+    "rows": [
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other",
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "metadata-alias",
+    "query": "MATCH (odd) WHERE odd.caller_class CONTAINS \u0027Other\u0027 RETURN odd.caller_class AS `$metadata` LIMIT 10",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "$metadata"
+    ],
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        }
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "metadata-alias",
+    "query": "MATCH (odd) WHERE odd.caller_class CONTAINS \u0027Other\u0027 RETURN odd.caller_class AS `$metadata` LIMIT 10",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "$metadata"
+    ],
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "duplicate-alias",
+    "query": "MATCH (odd) WHERE odd.caller_class CONTAINS \u0027Other\u0027 RETURN odd.caller_class AS x,odd.caller_name AS x LIMIT 10",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x",
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        }
+      },
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "duplicate-alias",
+    "query": "MATCH (odd) WHERE odd.caller_class CONTAINS \u0027Other\u0027 RETURN odd.caller_class AS x,odd.caller_name AS x LIMIT 10",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x",
+      "x"
+    ],
+    "rows": [
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "x": "other",
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "nulls-graph",
+    "query": "MATCH (odd) WHERE odd.caller_class CONTAINS \u0027Other\u0027 RETURN odd.class AS x,odd.name AS y,odd.graphId AS z LIMIT 10",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x",
+      "y",
+      "z"
+    ],
+    "rows": [
+      {
+        "x": null,
+        "y": null,
+        "z": null
+      },
+      {
+        "x": null,
+        "y": null,
+        "z": null
+      }
+    ]
+  },
+  {
+    "name": "nulls-graph",
+    "query": "MATCH (odd) WHERE odd.caller_class CONTAINS \u0027Other\u0027 RETURN odd.class AS x,odd.name AS y,odd.graphId AS z LIMIT 10",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x",
+      "y",
+      "z"
+    ],
+    "rows": [
+      {
+        "x": null,
+        "y": null,
+        "z": "a",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": null,
+        "y": null,
+        "z": "a",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": null,
+        "y": null,
+        "z": "b",
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "x": null,
+        "y": null,
+        "z": "b",
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "null-term-decline",
+    "query": "MATCH (odd) WHERE odd.caller_class CONTAINS $term RETURN odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x",
+      "y",
+      "z"
+    ],
+    "rows": []
+  },
+  {
+    "name": "null-term-decline",
+    "query": "MATCH (odd) WHERE odd.caller_class CONTAINS $term RETURN odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x",
+      "y",
+      "z"
+    ],
+    "rows": []
+  },
+  {
+    "name": "empty-wrapper-decline",
+    "query": "MATCH (odd) WHERE toLower(coalesce(odd.caller_class,\u0027\u0027)) CONTAINS \u0027\u0027 RETURN odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x",
+      "y",
+      "z"
+    ],
+    "rows": [
+      {
+        "x": "example.İD\ud800Caller",
+        "y": "caller",
+        "z": "invoke"
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other"
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke"
+      },
+      {
+        "x": "example.İD\ud800Caller",
+        "y": "caller",
+        "z": "invoke"
+      },
+      {
+        "x": null,
+        "y": null,
+        "z": null
+      }
+    ]
+  },
+  {
+    "name": "empty-wrapper-decline",
+    "query": "MATCH (odd) WHERE toLower(coalesce(odd.caller_class,\u0027\u0027)) CONTAINS \u0027\u0027 RETURN odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x",
+      "y",
+      "z"
+    ],
+    "rows": [
+      {
+        "x": "example.İD\ud800Caller",
+        "y": "caller",
+        "z": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": "example.İD\ud800Caller",
+        "y": "caller",
+        "z": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": null,
+        "y": null,
+        "z": null,
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": "example.İD\ud800Caller",
+        "y": "caller",
+        "z": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other",
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "x": "example.İD\ud800Caller",
+        "y": "caller",
+        "z": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "x": null,
+        "y": null,
+        "z": null,
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "eager-extra-decline",
+    "query": "MATCH (odd) WHERE toLower(odd.caller_class,substring(\u0027x\u0027,\u0027bad\u0027)) CONTAINS \u0027other\u0027 RETURN odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "cross": false,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "eager-extra-decline",
+    "query": "MATCH (odd) WHERE toLower(odd.caller_class,substring(\u0027x\u0027,\u0027bad\u0027)) CONTAINS \u0027other\u0027 RETURN odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "cross": true,
+    "empty": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader \u0027bootstrap\u0027)"
+  },
+  {
+    "name": "cast-wrapper-decline",
+    "query": "MATCH (odd) WHERE toLower(toString(odd.caller_class)) CONTAINS \u0027other\u0027 RETURN odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x",
+      "y",
+      "z"
+    ],
+    "rows": [
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other"
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke"
+      }
+    ]
+  },
+  {
+    "name": "cast-wrapper-decline",
+    "query": "MATCH (odd) WHERE toLower(toString(odd.caller_class)) CONTAINS \u0027other\u0027 RETURN odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x",
+      "y",
+      "z"
+    ],
+    "rows": [
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other",
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "order-decline",
+    "query": "MATCH (odd) WHERE odd.caller_class CONTAINS \u0027Other\u0027 RETURN odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z ORDER BY x LIMIT 10",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x",
+      "y",
+      "z"
+    ],
+    "rows": [
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other"
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke"
+      }
+    ]
+  },
+  {
+    "name": "order-decline",
+    "query": "MATCH (odd) WHERE odd.caller_class CONTAINS \u0027Other\u0027 RETURN odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z ORDER BY x LIMIT 10",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x",
+      "y",
+      "z"
+    ],
+    "rows": [
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other",
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "inline-decline",
+    "query": "MATCH (odd {caller_class:\u0027example.Other\u0027}) WHERE odd.caller_class CONTAINS \u0027Other\u0027 RETURN odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x",
+      "y",
+      "z"
+    ],
+    "rows": [
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other"
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke"
+      }
+    ]
+  },
+  {
+    "name": "inline-decline",
+    "query": "MATCH (odd {caller_class:\u0027example.Other\u0027}) WHERE odd.caller_class CONTAINS \u0027Other\u0027 RETURN odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x",
+      "y",
+      "z"
+    ],
+    "rows": [
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other",
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "optional-decline",
+    "query": "OPTIONAL MATCH (odd) WHERE odd.caller_class CONTAINS \u0027Other\u0027 RETURN odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x",
+      "y",
+      "z"
+    ],
+    "rows": [
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other"
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke"
+      }
+    ]
+  },
+  {
+    "name": "optional-decline",
+    "query": "OPTIONAL MATCH (odd) WHERE odd.caller_class CONTAINS \u0027Other\u0027 RETURN odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 10",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x",
+      "y",
+      "z"
+    ],
+    "rows": [
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other",
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      },
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "invoke",
+        "$metadata": {
+          "graphIds": [
+            "b"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "wide-limit",
+    "query": "MATCH (odd) WHERE odd.caller_class CONTAINS \u0027Other\u0027 RETURN odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 1",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x",
+      "y",
+      "z"
+    ],
+    "rows": [
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other",
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "wide-limit",
+    "query": "MATCH (odd) WHERE odd.caller_class CONTAINS \u0027Other\u0027 RETURN odd.caller_class AS x,odd.caller_name AS y,odd.callee_name AS z LIMIT 1",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x",
+      "y",
+      "z"
+    ],
+    "rows": [
+      {
+        "x": "example.Other",
+        "y": "other",
+        "z": "other",
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        }
+      }
+    ]
+  }
+]

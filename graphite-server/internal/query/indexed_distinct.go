@@ -273,6 +273,16 @@ func runDistinctTasks[T any](ctx context.Context, count, parallel int, orderedSt
 }
 func (e evaluator) distinctMatchingIDs(source Graph, index *store.DistinctStringIndex, plan *indexedDistinctPlan) []int32 {
 	selected := map[int32]bool{}
+	cachedMatches := map[distinctStringAtom]map[int32]bool{}
+	for _, atom := range plan.atoms {
+		if ids, ok := e.indexStringMatches(source, index, atom); ok {
+			set := map[int32]bool{}
+			for _, sid := range ids {
+				set[sid] = true
+			}
+			cachedMatches[atom] = set
+		}
+	}
 	for property := store.CallerClass; property <= store.CalleeName; property++ {
 		atoms := []distinctStringAtom{}
 		for _, atom := range plan.atoms {
@@ -291,6 +301,13 @@ func (e evaluator) distinctMatchingIDs(source Graph, index *store.DistinctString
 			failProjectionRead(err)
 			matched := false
 			for _, atom := range atoms {
+				if cached, ok := cachedMatches[atom]; ok {
+					if cached[entry.StringID] {
+						matched = true
+						break
+					}
+					continue
+				}
 				if e.distinctAtomMatches(atom, value) {
 					matched = true
 					break

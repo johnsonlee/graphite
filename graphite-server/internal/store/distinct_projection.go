@@ -40,6 +40,7 @@ type distinctProjectionState struct {
 	offsetsLoaded bool
 	offsets       []byte
 	index         *DistinctStringIndex
+	mappedView    *DistinctStringIndex
 }
 type DistinctStringIndex struct {
 	owner       *Store
@@ -47,6 +48,7 @@ type DistinctStringIndex struct {
 	entries     [4]map[int32][]int32
 	Raw         bool
 	ParallelRaw bool
+	ordinary    *ordinaryIndexState
 }
 
 func (s *Store) prepareProjectionOffsets(ctx context.Context) error {
@@ -229,9 +231,11 @@ func (s *Store) RetainedDistinctStringIndex(ctx context.Context) (bool, error) {
 // DistinctProjectionOptions reflects main's storage work consumer, independently
 // of query spelling. CannotMatch is invoked only after no retained index loads.
 type DistinctProjectionOptions struct {
-	SourceCount, Limit int
-	PreferMappedView   bool
-	CannotMatch        func() bool
+	SourceCount, Limit     int
+	PreferMappedView       bool
+	InitializeMappedView   bool
+	SkipPreparedPreference bool
+	CannotMatch            func() bool
 }
 
 // PrepareDistinctStringIndex validates only the representation consumed by
@@ -268,7 +272,7 @@ func (s *Store) PrepareDistinctStringIndex(ctx context.Context, options Distinct
 	}
 	// Prepared is a file-presence capability in main, not a successful load.
 	// A one-source query chooses serial storage even if this file is rejected.
-	if info, err := os.Stat(filepath.Join(s.dir, callSiteIndexFile)); options.SourceCount == 1 && err == nil && info.Mode().IsRegular() {
+	if info, err := os.Stat(filepath.Join(s.dir, callSiteIndexFile)); !options.SkipPreparedPreference && options.SourceCount == 1 && err == nil && info.Mode().IsRegular() {
 		rawFallback = true
 	}
 	view, available, err := s.TryCallSiteStringIndex(ctx)
@@ -306,10 +310,13 @@ func (s *Store) PrepareDistinctStringIndex(ctx context.Context, options Distinct
 			}
 		}
 	}
-	index := &DistinctStringIndex{owner: s}
+	index := &DistinctStringIndex{owner: s, ordinary: &ordinaryIndexState{}}
 	if available {
 		index.view = view
 	} else {
+		if options.InitializeMappedView {
+			return nil, false, nil
+		}
 		if options.CannotMatch != nil && options.CannotMatch() {
 			return index, true, nil
 		}
@@ -335,10 +342,35 @@ func (s *Store) PrepareDistinctStringIndex(ctx context.Context, options Distinct
 			}
 		}
 	}
+	if available && options.InitializeMappedView {
+		s.callSiteIndex.mu.Lock()
+		defer s.callSiteIndex.mu.Unlock()
+		if s.callSiteIndex.closed {
+			return nil, false, ErrStoreClosed
+		}
+		if err := ctx.Err(); err != nil {
+			return nil, false, err
+		}
+		s.distinctProjection.mappedView = index
+		return adapt(index), true, nil
+	}
 	// Preferred mapped views support split projection without making the retained
 	// index capability visible to subsequent ordinary projection requests.
-	if available && parallelRaw && options.PreferMappedView {
-		return adapt(index), true, nil
+	if available && options.PreferMappedView && options.SourceCount >= 40 {
+		s.callSiteIndex.mu.Lock()
+		if s.callSiteIndex.closed {
+			s.callSiteIndex.mu.Unlock()
+			return nil, false, ErrStoreClosed
+		}
+		if err := ctx.Err(); err != nil {
+			s.callSiteIndex.mu.Unlock()
+			return nil, false, err
+		}
+		s.distinctProjection.mappedView = index
+		s.callSiteIndex.mu.Unlock()
+		if parallelRaw {
+			return adapt(index), true, nil
+		}
 	}
 	s.callSiteIndex.mu.Lock()
 	defer s.callSiteIndex.mu.Unlock()

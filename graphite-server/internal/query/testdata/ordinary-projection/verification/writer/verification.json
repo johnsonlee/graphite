@@ -1,0 +1,32 @@
+[
+  {
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx256m",
+      "-cp",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/ordinary-writer-verification-f14ut84n/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "WriterRoundTripOracle",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/ordinary-writer-verification-f14ut84n/fixtures/clean-missing",
+      "/private/tmp/graphite-go-ordinary-raw-bbdfae2a/graphite-server/internal/query/testdata/ordinary-projection/verification/writer/clean-missing-main.json"
+    ],
+    "exitCode": 0,
+    "indexSHA256": "532b818238cc5644178153625693f26fc00265f310d3ff50680ceceb7d76fc8a",
+    "loadedFromPersistence": true,
+    "fullResponsesEqual": true
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx256m",
+      "-cp",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/ordinary-writer-verification-f14ut84n/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "WriterRoundTripOracle",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/ordinary-writer-verification-f14ut84n/fixtures/return-sid-missing",
+      "/private/tmp/graphite-go-ordinary-raw-bbdfae2a/graphite-server/internal/query/testdata/ordinary-projection/verification/writer/return-sid-missing-main.json"
+    ],
+    "exitCode": 0,
+    "indexSHA256": "532b818238cc5644178153625693f26fc00265f310d3ff50680ceceb7d76fc8a",
+    "loadedFromPersistence": true,
+    "fullResponsesEqual": true
+  }
+]

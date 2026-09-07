@@ -1,0 +1,2160 @@
+[
+  {
+    "scenario": "scoped-bad",
+    "warm": "none",
+    "initial": [
+      {
+        "id": "single",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "targets": [
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "id": "single",
+            "retained": false,
+            "mappedView": false
+          }
+        ],
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)",
+        "after": [
+          {
+            "id": "single",
+            "retained": true,
+            "mappedView": false
+          }
+        ]
+      },
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "id": "single",
+            "retained": true,
+            "mappedView": false
+          }
+        ],
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "single"
+              ]
+            }
+          }
+        ],
+        "after": [
+          {
+            "id": "single",
+            "retained": true,
+            "mappedView": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "scenario": "scoped-bad",
+    "warm": "distinct",
+    "initial": [
+      {
+        "id": "single",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "warmResult": {
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.caller_name AS x LIMIT 1",
+      "before": [
+        {
+          "id": "single",
+          "retained": false,
+          "mappedView": false
+        }
+      ],
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "single"
+            ]
+          }
+        }
+      ],
+      "after": [
+        {
+          "id": "single",
+          "retained": true,
+          "mappedView": false
+        }
+      ]
+    },
+    "targets": [
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "id": "single",
+            "retained": true,
+            "mappedView": false
+          }
+        ],
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "single"
+              ]
+            }
+          }
+        ],
+        "after": [
+          {
+            "id": "single",
+            "retained": true,
+            "mappedView": false
+          }
+        ]
+      },
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "id": "single",
+            "retained": true,
+            "mappedView": false
+          }
+        ],
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "single"
+              ]
+            }
+          }
+        ],
+        "after": [
+          {
+            "id": "single",
+            "retained": true,
+            "mappedView": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "scenario": "scoped-bad",
+    "warm": "zero-distinct",
+    "initial": [
+      {
+        "id": "single",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "warmResult": {
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027absent\u0027 RETURN DISTINCT n.caller_name AS x LIMIT 1",
+      "before": [
+        {
+          "id": "single",
+          "retained": false,
+          "mappedView": false
+        }
+      ],
+      "columns": [
+        "x"
+      ],
+      "rows": [],
+      "after": [
+        {
+          "id": "single",
+          "retained": true,
+          "mappedView": false
+        }
+      ]
+    },
+    "targets": [
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "id": "single",
+            "retained": true,
+            "mappedView": false
+          }
+        ],
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "single"
+              ]
+            }
+          }
+        ],
+        "after": [
+          {
+            "id": "single",
+            "retained": true,
+            "mappedView": false
+          }
+        ]
+      },
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "id": "single",
+            "retained": true,
+            "mappedView": false
+          }
+        ],
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "single"
+              ]
+            }
+          }
+        ],
+        "after": [
+          {
+            "id": "single",
+            "retained": true,
+            "mappedView": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "scenario": "scoped-bad",
+    "warm": "ordinary",
+    "initial": [
+      {
+        "id": "single",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "warmResult": {
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 1",
+      "before": [
+        {
+          "id": "single",
+          "retained": false,
+          "mappedView": false
+        }
+      ],
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "after": [
+        {
+          "id": "single",
+          "retained": true,
+          "mappedView": false
+        }
+      ]
+    },
+    "targets": [
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "id": "single",
+            "retained": true,
+            "mappedView": false
+          }
+        ],
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "single"
+              ]
+            }
+          }
+        ],
+        "after": [
+          {
+            "id": "single",
+            "retained": true,
+            "mappedView": false
+          }
+        ]
+      },
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "id": "single",
+            "retained": true,
+            "mappedView": false
+          }
+        ],
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "single"
+              ]
+            }
+          }
+        ],
+        "after": [
+          {
+            "id": "single",
+            "retained": true,
+            "mappedView": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "scenario": "cross-clean-bad",
+    "warm": "none",
+    "initial": [
+      {
+        "id": "a",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "b",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "targets": [
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "id": "a",
+            "retained": false,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ],
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)",
+        "after": [
+          {
+            "id": "a",
+            "retained": false,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ]
+      },
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "id": "a",
+            "retained": false,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ],
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)",
+        "after": [
+          {
+            "id": "a",
+            "retained": false,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "scenario": "cross-clean-bad",
+    "warm": "distinct",
+    "initial": [
+      {
+        "id": "a",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "b",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "warmResult": {
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.caller_name AS x LIMIT 1",
+      "before": [
+        {
+          "id": "a",
+          "retained": false,
+          "mappedView": false
+        },
+        {
+          "id": "b",
+          "retained": false,
+          "mappedView": false
+        }
+      ],
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        }
+      ],
+      "after": [
+        {
+          "id": "a",
+          "retained": true,
+          "mappedView": false
+        },
+        {
+          "id": "b",
+          "retained": true,
+          "mappedView": false
+        }
+      ]
+    },
+    "targets": [
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "id": "a",
+            "retained": true,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": true,
+            "mappedView": false
+          }
+        ],
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            }
+          }
+        ],
+        "after": [
+          {
+            "id": "a",
+            "retained": true,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": true,
+            "mappedView": false
+          }
+        ]
+      },
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "id": "a",
+            "retained": true,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": true,
+            "mappedView": false
+          }
+        ],
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            }
+          }
+        ],
+        "after": [
+          {
+            "id": "a",
+            "retained": true,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": true,
+            "mappedView": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "scenario": "cross-clean-bad",
+    "warm": "zero-distinct",
+    "initial": [
+      {
+        "id": "a",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "b",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "warmResult": {
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027absent\u0027 RETURN DISTINCT n.caller_name AS x LIMIT 1",
+      "before": [
+        {
+          "id": "a",
+          "retained": false,
+          "mappedView": false
+        },
+        {
+          "id": "b",
+          "retained": false,
+          "mappedView": false
+        }
+      ],
+      "columns": [
+        "x"
+      ],
+      "rows": [],
+      "after": [
+        {
+          "id": "a",
+          "retained": false,
+          "mappedView": false
+        },
+        {
+          "id": "b",
+          "retained": false,
+          "mappedView": false
+        }
+      ]
+    },
+    "targets": [
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "id": "a",
+            "retained": false,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ],
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)",
+        "after": [
+          {
+            "id": "a",
+            "retained": false,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ]
+      },
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "id": "a",
+            "retained": false,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ],
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)",
+        "after": [
+          {
+            "id": "a",
+            "retained": false,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "scenario": "cross-clean-bad",
+    "warm": "ordinary",
+    "initial": [
+      {
+        "id": "a",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "b",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "warmResult": {
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 1",
+      "before": [
+        {
+          "id": "a",
+          "retained": false,
+          "mappedView": false
+        },
+        {
+          "id": "b",
+          "retained": false,
+          "mappedView": false
+        }
+      ],
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "after": [
+        {
+          "id": "a",
+          "retained": false,
+          "mappedView": false
+        },
+        {
+          "id": "b",
+          "retained": false,
+          "mappedView": false
+        }
+      ]
+    },
+    "targets": [
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "id": "a",
+            "retained": false,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ],
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)",
+        "after": [
+          {
+            "id": "a",
+            "retained": false,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ]
+      },
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "id": "a",
+            "retained": false,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ],
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)",
+        "after": [
+          {
+            "id": "a",
+            "retained": false,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "scenario": "cross-bad-clean",
+    "warm": "none",
+    "initial": [
+      {
+        "id": "a",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "b",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "targets": [
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "id": "a",
+            "retained": false,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ],
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)",
+        "after": [
+          {
+            "id": "a",
+            "retained": false,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ]
+      },
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "id": "a",
+            "retained": false,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ],
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)",
+        "after": [
+          {
+            "id": "a",
+            "retained": false,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "scenario": "cross-bad-clean",
+    "warm": "distinct",
+    "initial": [
+      {
+        "id": "a",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "b",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "warmResult": {
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.caller_name AS x LIMIT 1",
+      "before": [
+        {
+          "id": "a",
+          "retained": false,
+          "mappedView": false
+        },
+        {
+          "id": "b",
+          "retained": false,
+          "mappedView": false
+        }
+      ],
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        }
+      ],
+      "after": [
+        {
+          "id": "a",
+          "retained": true,
+          "mappedView": false
+        },
+        {
+          "id": "b",
+          "retained": true,
+          "mappedView": false
+        }
+      ]
+    },
+    "targets": [
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "id": "a",
+            "retained": true,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": true,
+            "mappedView": false
+          }
+        ],
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)",
+        "after": [
+          {
+            "id": "a",
+            "retained": true,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": true,
+            "mappedView": false
+          }
+        ]
+      },
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "id": "a",
+            "retained": true,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": true,
+            "mappedView": false
+          }
+        ],
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)",
+        "after": [
+          {
+            "id": "a",
+            "retained": true,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": true,
+            "mappedView": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "scenario": "cross-bad-clean",
+    "warm": "zero-distinct",
+    "initial": [
+      {
+        "id": "a",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "b",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "warmResult": {
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027absent\u0027 RETURN DISTINCT n.caller_name AS x LIMIT 1",
+      "before": [
+        {
+          "id": "a",
+          "retained": false,
+          "mappedView": false
+        },
+        {
+          "id": "b",
+          "retained": false,
+          "mappedView": false
+        }
+      ],
+      "columns": [
+        "x"
+      ],
+      "rows": [],
+      "after": [
+        {
+          "id": "a",
+          "retained": false,
+          "mappedView": false
+        },
+        {
+          "id": "b",
+          "retained": false,
+          "mappedView": false
+        }
+      ]
+    },
+    "targets": [
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "id": "a",
+            "retained": false,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ],
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)",
+        "after": [
+          {
+            "id": "a",
+            "retained": false,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ]
+      },
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "id": "a",
+            "retained": false,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ],
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)",
+        "after": [
+          {
+            "id": "a",
+            "retained": false,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "scenario": "cross-bad-clean",
+    "warm": "ordinary",
+    "initial": [
+      {
+        "id": "a",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "b",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "warmResult": {
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 1",
+      "before": [
+        {
+          "id": "a",
+          "retained": false,
+          "mappedView": false
+        },
+        {
+          "id": "b",
+          "retained": false,
+          "mappedView": false
+        }
+      ],
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "after": [
+        {
+          "id": "a",
+          "retained": false,
+          "mappedView": false
+        },
+        {
+          "id": "b",
+          "retained": false,
+          "mappedView": false
+        }
+      ]
+    },
+    "targets": [
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "id": "a",
+            "retained": false,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ],
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)",
+        "after": [
+          {
+            "id": "a",
+            "retained": false,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ]
+      },
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "id": "a",
+            "retained": false,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ],
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)",
+        "after": [
+          {
+            "id": "a",
+            "retained": false,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "scenario": "graphscope-bad-clean",
+    "warm": "none",
+    "initial": [
+      {
+        "id": "a",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "b",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "targets": [
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND n.graphId\u003d\u0027a\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "id": "a",
+            "retained": false,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ],
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)",
+        "after": [
+          {
+            "id": "a",
+            "retained": true,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ]
+      },
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND n.graphId\u003d\u0027a\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "id": "a",
+            "retained": true,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ],
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            }
+          }
+        ],
+        "after": [
+          {
+            "id": "a",
+            "retained": true,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "scenario": "graphscope-bad-clean",
+    "warm": "distinct",
+    "initial": [
+      {
+        "id": "a",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "b",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "warmResult": {
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.caller_name AS x LIMIT 1",
+      "before": [
+        {
+          "id": "a",
+          "retained": false,
+          "mappedView": false
+        },
+        {
+          "id": "b",
+          "retained": false,
+          "mappedView": false
+        }
+      ],
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        }
+      ],
+      "after": [
+        {
+          "id": "a",
+          "retained": true,
+          "mappedView": false
+        },
+        {
+          "id": "b",
+          "retained": true,
+          "mappedView": false
+        }
+      ]
+    },
+    "targets": [
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND n.graphId\u003d\u0027a\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "id": "a",
+            "retained": true,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": true,
+            "mappedView": false
+          }
+        ],
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            }
+          }
+        ],
+        "after": [
+          {
+            "id": "a",
+            "retained": true,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": true,
+            "mappedView": false
+          }
+        ]
+      },
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND n.graphId\u003d\u0027a\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "id": "a",
+            "retained": true,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": true,
+            "mappedView": false
+          }
+        ],
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            }
+          }
+        ],
+        "after": [
+          {
+            "id": "a",
+            "retained": true,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": true,
+            "mappedView": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "scenario": "graphscope-bad-clean",
+    "warm": "zero-distinct",
+    "initial": [
+      {
+        "id": "a",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "b",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "warmResult": {
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027absent\u0027 RETURN DISTINCT n.caller_name AS x LIMIT 1",
+      "before": [
+        {
+          "id": "a",
+          "retained": false,
+          "mappedView": false
+        },
+        {
+          "id": "b",
+          "retained": false,
+          "mappedView": false
+        }
+      ],
+      "columns": [
+        "x"
+      ],
+      "rows": [],
+      "after": [
+        {
+          "id": "a",
+          "retained": false,
+          "mappedView": false
+        },
+        {
+          "id": "b",
+          "retained": false,
+          "mappedView": false
+        }
+      ]
+    },
+    "targets": [
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND n.graphId\u003d\u0027a\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "id": "a",
+            "retained": false,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ],
+        "error": "IndexOutOfBoundsException",
+        "message": "Index (2147483647) is greater than or equal to list size (9)",
+        "after": [
+          {
+            "id": "a",
+            "retained": true,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ]
+      },
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND n.graphId\u003d\u0027a\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "id": "a",
+            "retained": true,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ],
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            }
+          }
+        ],
+        "after": [
+          {
+            "id": "a",
+            "retained": true,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "scenario": "graphscope-bad-clean",
+    "warm": "ordinary",
+    "initial": [
+      {
+        "id": "a",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "b",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "warmResult": {
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND n.graphId\u003d\u0027a\u0027 RETURN n.caller_name AS x LIMIT 1",
+      "before": [
+        {
+          "id": "a",
+          "retained": false,
+          "mappedView": false
+        },
+        {
+          "id": "b",
+          "retained": false,
+          "mappedView": false
+        }
+      ],
+      "error": "IndexOutOfBoundsException",
+      "message": "Index (2147483647) is greater than or equal to list size (9)",
+      "after": [
+        {
+          "id": "a",
+          "retained": true,
+          "mappedView": false
+        },
+        {
+          "id": "b",
+          "retained": false,
+          "mappedView": false
+        }
+      ]
+    },
+    "targets": [
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND n.graphId\u003d\u0027a\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "id": "a",
+            "retained": true,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ],
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            }
+          }
+        ],
+        "after": [
+          {
+            "id": "a",
+            "retained": true,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ]
+      },
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND n.graphId\u003d\u0027a\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "id": "a",
+            "retained": true,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ],
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            }
+          }
+        ],
+        "after": [
+          {
+            "id": "a",
+            "retained": true,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "scenario": "graphscope-clean-bad",
+    "warm": "none",
+    "initial": [
+      {
+        "id": "a",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "b",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "targets": [
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND n.graphId\u003d\u0027a\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "id": "a",
+            "retained": false,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ],
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            }
+          }
+        ],
+        "after": [
+          {
+            "id": "a",
+            "retained": true,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ]
+      },
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND n.graphId\u003d\u0027a\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "id": "a",
+            "retained": true,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ],
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            }
+          }
+        ],
+        "after": [
+          {
+            "id": "a",
+            "retained": true,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "scenario": "graphscope-clean-bad",
+    "warm": "distinct",
+    "initial": [
+      {
+        "id": "a",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "b",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "warmResult": {
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.caller_name AS x LIMIT 1",
+      "before": [
+        {
+          "id": "a",
+          "retained": false,
+          "mappedView": false
+        },
+        {
+          "id": "b",
+          "retained": false,
+          "mappedView": false
+        }
+      ],
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          }
+        }
+      ],
+      "after": [
+        {
+          "id": "a",
+          "retained": true,
+          "mappedView": false
+        },
+        {
+          "id": "b",
+          "retained": true,
+          "mappedView": false
+        }
+      ]
+    },
+    "targets": [
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND n.graphId\u003d\u0027a\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "id": "a",
+            "retained": true,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": true,
+            "mappedView": false
+          }
+        ],
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            }
+          }
+        ],
+        "after": [
+          {
+            "id": "a",
+            "retained": true,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": true,
+            "mappedView": false
+          }
+        ]
+      },
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND n.graphId\u003d\u0027a\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "id": "a",
+            "retained": true,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": true,
+            "mappedView": false
+          }
+        ],
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            }
+          }
+        ],
+        "after": [
+          {
+            "id": "a",
+            "retained": true,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": true,
+            "mappedView": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "scenario": "graphscope-clean-bad",
+    "warm": "zero-distinct",
+    "initial": [
+      {
+        "id": "a",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "b",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "warmResult": {
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027absent\u0027 RETURN DISTINCT n.caller_name AS x LIMIT 1",
+      "before": [
+        {
+          "id": "a",
+          "retained": false,
+          "mappedView": false
+        },
+        {
+          "id": "b",
+          "retained": false,
+          "mappedView": false
+        }
+      ],
+      "columns": [
+        "x"
+      ],
+      "rows": [],
+      "after": [
+        {
+          "id": "a",
+          "retained": false,
+          "mappedView": false
+        },
+        {
+          "id": "b",
+          "retained": false,
+          "mappedView": false
+        }
+      ]
+    },
+    "targets": [
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND n.graphId\u003d\u0027a\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "id": "a",
+            "retained": false,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ],
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            }
+          }
+        ],
+        "after": [
+          {
+            "id": "a",
+            "retained": true,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ]
+      },
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND n.graphId\u003d\u0027a\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "id": "a",
+            "retained": true,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ],
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            }
+          }
+        ],
+        "after": [
+          {
+            "id": "a",
+            "retained": true,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "scenario": "graphscope-clean-bad",
+    "warm": "ordinary",
+    "initial": [
+      {
+        "id": "a",
+        "retained": false,
+        "mappedView": false
+      },
+      {
+        "id": "b",
+        "retained": false,
+        "mappedView": false
+      }
+    ],
+    "warmResult": {
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND n.graphId\u003d\u0027a\u0027 RETURN n.caller_name AS x LIMIT 1",
+      "before": [
+        {
+          "id": "a",
+          "retained": false,
+          "mappedView": false
+        },
+        {
+          "id": "b",
+          "retained": false,
+          "mappedView": false
+        }
+      ],
+      "columns": [
+        "x"
+      ],
+      "rows": [
+        {
+          "x": "other",
+          "$metadata": {
+            "graphIds": [
+              "a"
+            ]
+          }
+        }
+      ],
+      "after": [
+        {
+          "id": "a",
+          "retained": true,
+          "mappedView": false
+        },
+        {
+          "id": "b",
+          "retained": false,
+          "mappedView": false
+        }
+      ]
+    },
+    "targets": [
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND n.graphId\u003d\u0027a\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "id": "a",
+            "retained": true,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ],
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            }
+          }
+        ],
+        "after": [
+          {
+            "id": "a",
+            "retained": true,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ]
+      },
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 AND n.graphId\u003d\u0027a\u0027 RETURN n.caller_name AS x LIMIT 1",
+        "before": [
+          {
+            "id": "a",
+            "retained": true,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ],
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": "other",
+            "$metadata": {
+              "graphIds": [
+                "a"
+              ]
+            }
+          }
+        ],
+        "after": [
+          {
+            "id": "a",
+            "retained": true,
+            "mappedView": false
+          },
+          {
+            "id": "b",
+            "retained": false,
+            "mappedView": false
+          }
+        ]
+      }
+    ]
+  }
+]

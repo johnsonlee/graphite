@@ -1,0 +1,1662 @@
+[
+  {
+    "initial": [
+      {
+        "id": "single",
+        "retained": false
+      }
+    ],
+    "scenario": "scoped-bad",
+    "targets": [
+      {
+        "after": [
+          {
+            "id": "single",
+            "retained": false
+          }
+        ],
+        "before": [
+          {
+            "id": "single",
+            "retained": false
+          }
+        ],
+        "error": "CypherException",
+        "message": "node 2: string index 2147483647 outside table of 9",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+      },
+      {
+        "after": [
+          {
+            "id": "single",
+            "retained": false
+          }
+        ],
+        "before": [
+          {
+            "id": "single",
+            "retained": false
+          }
+        ],
+        "error": "CypherException",
+        "message": "node 2: string index 2147483647 outside table of 9",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+      }
+    ],
+    "warm": "none"
+  },
+  {
+    "initial": [
+      {
+        "id": "single",
+        "retained": false
+      }
+    ],
+    "scenario": "scoped-bad",
+    "targets": [
+      {
+        "after": [
+          {
+            "id": "single",
+            "retained": true
+          }
+        ],
+        "before": [
+          {
+            "id": "single",
+            "retained": true
+          }
+        ],
+        "error": "CypherException",
+        "message": "node 2: string index 2147483647 outside table of 9",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+      },
+      {
+        "after": [
+          {
+            "id": "single",
+            "retained": true
+          }
+        ],
+        "before": [
+          {
+            "id": "single",
+            "retained": true
+          }
+        ],
+        "error": "CypherException",
+        "message": "node 2: string index 2147483647 outside table of 9",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+      }
+    ],
+    "warm": "distinct",
+    "warmResult": {
+      "after": [
+        {
+          "id": "single",
+          "retained": true
+        }
+      ],
+      "before": [
+        {
+          "id": "single",
+          "retained": false
+        }
+      ],
+      "columns": [
+        "x"
+      ],
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+      "rows": [
+        {
+          "$metadata": {
+            "graphIds": [
+              "single"
+            ]
+          },
+          "x": "other"
+        }
+      ]
+    }
+  },
+  {
+    "initial": [
+      {
+        "id": "single",
+        "retained": false
+      }
+    ],
+    "scenario": "scoped-bad",
+    "targets": [
+      {
+        "after": [
+          {
+            "id": "single",
+            "retained": true
+          }
+        ],
+        "before": [
+          {
+            "id": "single",
+            "retained": true
+          }
+        ],
+        "error": "CypherException",
+        "message": "node 2: string index 2147483647 outside table of 9",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+      },
+      {
+        "after": [
+          {
+            "id": "single",
+            "retained": true
+          }
+        ],
+        "before": [
+          {
+            "id": "single",
+            "retained": true
+          }
+        ],
+        "error": "CypherException",
+        "message": "node 2: string index 2147483647 outside table of 9",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+      }
+    ],
+    "warm": "zero-distinct",
+    "warmResult": {
+      "after": [
+        {
+          "id": "single",
+          "retained": true
+        }
+      ],
+      "before": [
+        {
+          "id": "single",
+          "retained": false
+        }
+      ],
+      "columns": [
+        "x"
+      ],
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'absent' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+      "rows": []
+    }
+  },
+  {
+    "initial": [
+      {
+        "id": "single",
+        "retained": false
+      }
+    ],
+    "scenario": "scoped-bad",
+    "targets": [
+      {
+        "after": [
+          {
+            "id": "single",
+            "retained": false
+          }
+        ],
+        "before": [
+          {
+            "id": "single",
+            "retained": false
+          }
+        ],
+        "error": "CypherException",
+        "message": "node 2: string index 2147483647 outside table of 9",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+      },
+      {
+        "after": [
+          {
+            "id": "single",
+            "retained": false
+          }
+        ],
+        "before": [
+          {
+            "id": "single",
+            "retained": false
+          }
+        ],
+        "error": "CypherException",
+        "message": "node 2: string index 2147483647 outside table of 9",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+      }
+    ],
+    "warm": "ordinary",
+    "warmResult": {
+      "after": [
+        {
+          "id": "single",
+          "retained": false
+        }
+      ],
+      "before": [
+        {
+          "id": "single",
+          "retained": false
+        }
+      ],
+      "error": "CypherException",
+      "message": "node 2: string index 2147483647 outside table of 9",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+    }
+  },
+  {
+    "initial": [
+      {
+        "id": "a",
+        "retained": false
+      },
+      {
+        "id": "b",
+        "retained": false
+      }
+    ],
+    "scenario": "cross-clean-bad",
+    "targets": [
+      {
+        "after": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "before": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "error": "CypherException",
+        "message": "node 2: string index 2147483647 outside table of 9",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+      },
+      {
+        "after": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "before": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "error": "CypherException",
+        "message": "node 2: string index 2147483647 outside table of 9",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+      }
+    ],
+    "warm": "none"
+  },
+  {
+    "initial": [
+      {
+        "id": "a",
+        "retained": false
+      },
+      {
+        "id": "b",
+        "retained": false
+      }
+    ],
+    "scenario": "cross-clean-bad",
+    "targets": [
+      {
+        "after": [
+          {
+            "id": "a",
+            "retained": true
+          },
+          {
+            "id": "b",
+            "retained": true
+          }
+        ],
+        "before": [
+          {
+            "id": "a",
+            "retained": true
+          },
+          {
+            "id": "b",
+            "retained": true
+          }
+        ],
+        "error": "CypherException",
+        "message": "node 2: string index 2147483647 outside table of 9",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+      },
+      {
+        "after": [
+          {
+            "id": "a",
+            "retained": true
+          },
+          {
+            "id": "b",
+            "retained": true
+          }
+        ],
+        "before": [
+          {
+            "id": "a",
+            "retained": true
+          },
+          {
+            "id": "b",
+            "retained": true
+          }
+        ],
+        "error": "CypherException",
+        "message": "node 2: string index 2147483647 outside table of 9",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+      }
+    ],
+    "warm": "distinct",
+    "warmResult": {
+      "after": [
+        {
+          "id": "a",
+          "retained": true
+        },
+        {
+          "id": "b",
+          "retained": true
+        }
+      ],
+      "before": [
+        {
+          "id": "a",
+          "retained": false
+        },
+        {
+          "id": "b",
+          "retained": false
+        }
+      ],
+      "columns": [
+        "x"
+      ],
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+      "rows": [
+        {
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          },
+          "x": "other"
+        }
+      ]
+    }
+  },
+  {
+    "initial": [
+      {
+        "id": "a",
+        "retained": false
+      },
+      {
+        "id": "b",
+        "retained": false
+      }
+    ],
+    "scenario": "cross-clean-bad",
+    "targets": [
+      {
+        "after": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "before": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "error": "CypherException",
+        "message": "node 2: string index 2147483647 outside table of 9",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+      },
+      {
+        "after": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "before": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "error": "CypherException",
+        "message": "node 2: string index 2147483647 outside table of 9",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+      }
+    ],
+    "warm": "zero-distinct",
+    "warmResult": {
+      "after": [
+        {
+          "id": "a",
+          "retained": false
+        },
+        {
+          "id": "b",
+          "retained": false
+        }
+      ],
+      "before": [
+        {
+          "id": "a",
+          "retained": false
+        },
+        {
+          "id": "b",
+          "retained": false
+        }
+      ],
+      "columns": [
+        "x"
+      ],
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'absent' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+      "rows": []
+    }
+  },
+  {
+    "initial": [
+      {
+        "id": "a",
+        "retained": false
+      },
+      {
+        "id": "b",
+        "retained": false
+      }
+    ],
+    "scenario": "cross-clean-bad",
+    "targets": [
+      {
+        "after": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "before": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "error": "CypherException",
+        "message": "node 2: string index 2147483647 outside table of 9",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+      },
+      {
+        "after": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "before": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "error": "CypherException",
+        "message": "node 2: string index 2147483647 outside table of 9",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+      }
+    ],
+    "warm": "ordinary",
+    "warmResult": {
+      "after": [
+        {
+          "id": "a",
+          "retained": false
+        },
+        {
+          "id": "b",
+          "retained": false
+        }
+      ],
+      "before": [
+        {
+          "id": "a",
+          "retained": false
+        },
+        {
+          "id": "b",
+          "retained": false
+        }
+      ],
+      "error": "CypherException",
+      "message": "node 2: string index 2147483647 outside table of 9",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+    }
+  },
+  {
+    "initial": [
+      {
+        "id": "a",
+        "retained": false
+      },
+      {
+        "id": "b",
+        "retained": false
+      }
+    ],
+    "scenario": "cross-bad-clean",
+    "targets": [
+      {
+        "after": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "before": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "error": "CypherException",
+        "message": "node 2: string index 2147483647 outside table of 9",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+      },
+      {
+        "after": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "before": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "error": "CypherException",
+        "message": "node 2: string index 2147483647 outside table of 9",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+      }
+    ],
+    "warm": "none"
+  },
+  {
+    "initial": [
+      {
+        "id": "a",
+        "retained": false
+      },
+      {
+        "id": "b",
+        "retained": false
+      }
+    ],
+    "scenario": "cross-bad-clean",
+    "targets": [
+      {
+        "after": [
+          {
+            "id": "a",
+            "retained": true
+          },
+          {
+            "id": "b",
+            "retained": true
+          }
+        ],
+        "before": [
+          {
+            "id": "a",
+            "retained": true
+          },
+          {
+            "id": "b",
+            "retained": true
+          }
+        ],
+        "error": "CypherException",
+        "message": "node 2: string index 2147483647 outside table of 9",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+      },
+      {
+        "after": [
+          {
+            "id": "a",
+            "retained": true
+          },
+          {
+            "id": "b",
+            "retained": true
+          }
+        ],
+        "before": [
+          {
+            "id": "a",
+            "retained": true
+          },
+          {
+            "id": "b",
+            "retained": true
+          }
+        ],
+        "error": "CypherException",
+        "message": "node 2: string index 2147483647 outside table of 9",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+      }
+    ],
+    "warm": "distinct",
+    "warmResult": {
+      "after": [
+        {
+          "id": "a",
+          "retained": true
+        },
+        {
+          "id": "b",
+          "retained": true
+        }
+      ],
+      "before": [
+        {
+          "id": "a",
+          "retained": false
+        },
+        {
+          "id": "b",
+          "retained": false
+        }
+      ],
+      "columns": [
+        "x"
+      ],
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+      "rows": [
+        {
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          },
+          "x": "other"
+        }
+      ]
+    }
+  },
+  {
+    "initial": [
+      {
+        "id": "a",
+        "retained": false
+      },
+      {
+        "id": "b",
+        "retained": false
+      }
+    ],
+    "scenario": "cross-bad-clean",
+    "targets": [
+      {
+        "after": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "before": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "error": "CypherException",
+        "message": "node 2: string index 2147483647 outside table of 9",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+      },
+      {
+        "after": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "before": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "error": "CypherException",
+        "message": "node 2: string index 2147483647 outside table of 9",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+      }
+    ],
+    "warm": "zero-distinct",
+    "warmResult": {
+      "after": [
+        {
+          "id": "a",
+          "retained": false
+        },
+        {
+          "id": "b",
+          "retained": false
+        }
+      ],
+      "before": [
+        {
+          "id": "a",
+          "retained": false
+        },
+        {
+          "id": "b",
+          "retained": false
+        }
+      ],
+      "columns": [
+        "x"
+      ],
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'absent' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+      "rows": []
+    }
+  },
+  {
+    "initial": [
+      {
+        "id": "a",
+        "retained": false
+      },
+      {
+        "id": "b",
+        "retained": false
+      }
+    ],
+    "scenario": "cross-bad-clean",
+    "targets": [
+      {
+        "after": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "before": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "error": "CypherException",
+        "message": "node 2: string index 2147483647 outside table of 9",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+      },
+      {
+        "after": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "before": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "error": "CypherException",
+        "message": "node 2: string index 2147483647 outside table of 9",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+      }
+    ],
+    "warm": "ordinary",
+    "warmResult": {
+      "after": [
+        {
+          "id": "a",
+          "retained": false
+        },
+        {
+          "id": "b",
+          "retained": false
+        }
+      ],
+      "before": [
+        {
+          "id": "a",
+          "retained": false
+        },
+        {
+          "id": "b",
+          "retained": false
+        }
+      ],
+      "error": "CypherException",
+      "message": "node 2: string index 2147483647 outside table of 9",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+    }
+  },
+  {
+    "initial": [
+      {
+        "id": "a",
+        "retained": false
+      },
+      {
+        "id": "b",
+        "retained": false
+      }
+    ],
+    "scenario": "graphscope-bad-clean",
+    "targets": [
+      {
+        "after": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "before": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "error": "CypherException",
+        "message": "node 2: string index 2147483647 outside table of 9",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId='a' RETURN n.caller_name AS x LIMIT 1"
+      },
+      {
+        "after": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "before": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "error": "CypherException",
+        "message": "node 2: string index 2147483647 outside table of 9",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId='a' RETURN n.caller_name AS x LIMIT 1"
+      }
+    ],
+    "warm": "none"
+  },
+  {
+    "initial": [
+      {
+        "id": "a",
+        "retained": false
+      },
+      {
+        "id": "b",
+        "retained": false
+      }
+    ],
+    "scenario": "graphscope-bad-clean",
+    "targets": [
+      {
+        "after": [
+          {
+            "id": "a",
+            "retained": true
+          },
+          {
+            "id": "b",
+            "retained": true
+          }
+        ],
+        "before": [
+          {
+            "id": "a",
+            "retained": true
+          },
+          {
+            "id": "b",
+            "retained": true
+          }
+        ],
+        "error": "CypherException",
+        "message": "node 2: string index 2147483647 outside table of 9",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId='a' RETURN n.caller_name AS x LIMIT 1"
+      },
+      {
+        "after": [
+          {
+            "id": "a",
+            "retained": true
+          },
+          {
+            "id": "b",
+            "retained": true
+          }
+        ],
+        "before": [
+          {
+            "id": "a",
+            "retained": true
+          },
+          {
+            "id": "b",
+            "retained": true
+          }
+        ],
+        "error": "CypherException",
+        "message": "node 2: string index 2147483647 outside table of 9",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId='a' RETURN n.caller_name AS x LIMIT 1"
+      }
+    ],
+    "warm": "distinct",
+    "warmResult": {
+      "after": [
+        {
+          "id": "a",
+          "retained": true
+        },
+        {
+          "id": "b",
+          "retained": true
+        }
+      ],
+      "before": [
+        {
+          "id": "a",
+          "retained": false
+        },
+        {
+          "id": "b",
+          "retained": false
+        }
+      ],
+      "columns": [
+        "x"
+      ],
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+      "rows": [
+        {
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          },
+          "x": "other"
+        }
+      ]
+    }
+  },
+  {
+    "initial": [
+      {
+        "id": "a",
+        "retained": false
+      },
+      {
+        "id": "b",
+        "retained": false
+      }
+    ],
+    "scenario": "graphscope-bad-clean",
+    "targets": [
+      {
+        "after": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "before": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "error": "CypherException",
+        "message": "node 2: string index 2147483647 outside table of 9",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId='a' RETURN n.caller_name AS x LIMIT 1"
+      },
+      {
+        "after": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "before": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "error": "CypherException",
+        "message": "node 2: string index 2147483647 outside table of 9",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId='a' RETURN n.caller_name AS x LIMIT 1"
+      }
+    ],
+    "warm": "zero-distinct",
+    "warmResult": {
+      "after": [
+        {
+          "id": "a",
+          "retained": false
+        },
+        {
+          "id": "b",
+          "retained": false
+        }
+      ],
+      "before": [
+        {
+          "id": "a",
+          "retained": false
+        },
+        {
+          "id": "b",
+          "retained": false
+        }
+      ],
+      "columns": [
+        "x"
+      ],
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'absent' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+      "rows": []
+    }
+  },
+  {
+    "initial": [
+      {
+        "id": "a",
+        "retained": false
+      },
+      {
+        "id": "b",
+        "retained": false
+      }
+    ],
+    "scenario": "graphscope-bad-clean",
+    "targets": [
+      {
+        "after": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "before": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "error": "CypherException",
+        "message": "node 2: string index 2147483647 outside table of 9",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId='a' RETURN n.caller_name AS x LIMIT 1"
+      },
+      {
+        "after": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "before": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "error": "CypherException",
+        "message": "node 2: string index 2147483647 outside table of 9",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId='a' RETURN n.caller_name AS x LIMIT 1"
+      }
+    ],
+    "warm": "ordinary",
+    "warmResult": {
+      "after": [
+        {
+          "id": "a",
+          "retained": false
+        },
+        {
+          "id": "b",
+          "retained": false
+        }
+      ],
+      "before": [
+        {
+          "id": "a",
+          "retained": false
+        },
+        {
+          "id": "b",
+          "retained": false
+        }
+      ],
+      "error": "CypherException",
+      "message": "node 2: string index 2147483647 outside table of 9",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId='a' RETURN n.caller_name AS x LIMIT 1"
+    }
+  },
+  {
+    "initial": [
+      {
+        "id": "a",
+        "retained": false
+      },
+      {
+        "id": "b",
+        "retained": false
+      }
+    ],
+    "scenario": "graphscope-clean-bad",
+    "targets": [
+      {
+        "after": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "before": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "error": "CypherException",
+        "message": "node 2: string index 2147483647 outside table of 9",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId='a' RETURN n.caller_name AS x LIMIT 1"
+      },
+      {
+        "after": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "before": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "error": "CypherException",
+        "message": "node 2: string index 2147483647 outside table of 9",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId='a' RETURN n.caller_name AS x LIMIT 1"
+      }
+    ],
+    "warm": "none"
+  },
+  {
+    "initial": [
+      {
+        "id": "a",
+        "retained": false
+      },
+      {
+        "id": "b",
+        "retained": false
+      }
+    ],
+    "scenario": "graphscope-clean-bad",
+    "targets": [
+      {
+        "after": [
+          {
+            "id": "a",
+            "retained": true
+          },
+          {
+            "id": "b",
+            "retained": true
+          }
+        ],
+        "before": [
+          {
+            "id": "a",
+            "retained": true
+          },
+          {
+            "id": "b",
+            "retained": true
+          }
+        ],
+        "error": "CypherException",
+        "message": "node 2: string index 2147483647 outside table of 9",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId='a' RETURN n.caller_name AS x LIMIT 1"
+      },
+      {
+        "after": [
+          {
+            "id": "a",
+            "retained": true
+          },
+          {
+            "id": "b",
+            "retained": true
+          }
+        ],
+        "before": [
+          {
+            "id": "a",
+            "retained": true
+          },
+          {
+            "id": "b",
+            "retained": true
+          }
+        ],
+        "error": "CypherException",
+        "message": "node 2: string index 2147483647 outside table of 9",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId='a' RETURN n.caller_name AS x LIMIT 1"
+      }
+    ],
+    "warm": "distinct",
+    "warmResult": {
+      "after": [
+        {
+          "id": "a",
+          "retained": true
+        },
+        {
+          "id": "b",
+          "retained": true
+        }
+      ],
+      "before": [
+        {
+          "id": "a",
+          "retained": false
+        },
+        {
+          "id": "b",
+          "retained": false
+        }
+      ],
+      "columns": [
+        "x"
+      ],
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+      "rows": [
+        {
+          "$metadata": {
+            "graphIds": [
+              "a",
+              "b"
+            ]
+          },
+          "x": "other"
+        }
+      ]
+    }
+  },
+  {
+    "initial": [
+      {
+        "id": "a",
+        "retained": false
+      },
+      {
+        "id": "b",
+        "retained": false
+      }
+    ],
+    "scenario": "graphscope-clean-bad",
+    "targets": [
+      {
+        "after": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "before": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "error": "CypherException",
+        "message": "node 2: string index 2147483647 outside table of 9",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId='a' RETURN n.caller_name AS x LIMIT 1"
+      },
+      {
+        "after": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "before": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "error": "CypherException",
+        "message": "node 2: string index 2147483647 outside table of 9",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId='a' RETURN n.caller_name AS x LIMIT 1"
+      }
+    ],
+    "warm": "zero-distinct",
+    "warmResult": {
+      "after": [
+        {
+          "id": "a",
+          "retained": false
+        },
+        {
+          "id": "b",
+          "retained": false
+        }
+      ],
+      "before": [
+        {
+          "id": "a",
+          "retained": false
+        },
+        {
+          "id": "b",
+          "retained": false
+        }
+      ],
+      "columns": [
+        "x"
+      ],
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'absent' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+      "rows": []
+    }
+  },
+  {
+    "initial": [
+      {
+        "id": "a",
+        "retained": false
+      },
+      {
+        "id": "b",
+        "retained": false
+      }
+    ],
+    "scenario": "graphscope-clean-bad",
+    "targets": [
+      {
+        "after": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "before": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "error": "CypherException",
+        "message": "node 2: string index 2147483647 outside table of 9",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId='a' RETURN n.caller_name AS x LIMIT 1"
+      },
+      {
+        "after": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "before": [
+          {
+            "id": "a",
+            "retained": false
+          },
+          {
+            "id": "b",
+            "retained": false
+          }
+        ],
+        "error": "CypherException",
+        "message": "node 2: string index 2147483647 outside table of 9",
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId='a' RETURN n.caller_name AS x LIMIT 1"
+      }
+    ],
+    "warm": "ordinary",
+    "warmResult": {
+      "after": [
+        {
+          "id": "a",
+          "retained": false
+        },
+        {
+          "id": "b",
+          "retained": false
+        }
+      ],
+      "before": [
+        {
+          "id": "a",
+          "retained": false
+        },
+        {
+          "id": "b",
+          "retained": false
+        }
+      ],
+      "error": "CypherException",
+      "message": "node 2: string index 2147483647 outside table of 9",
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId='a' RETURN n.caller_name AS x LIMIT 1"
+    }
+  }
+]

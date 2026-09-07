@@ -1,0 +1,113 @@
+--- FAIL: TestStringCandidateCorruptBaselinePreservation (0.06s)
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-first-unmatched/untyped-raw/scoped (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 17: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-first-unmatched/untyped-raw/cross (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 17: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-first-unmatched/untyped-raw-throwing-projection/scoped (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 17: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-first-unmatched/untyped-raw-throwing-projection/cross (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 17: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-first-unmatched/untyped-wrapped/scoped (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 17: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-first-unmatched/untyped-wrapped/cross (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 17: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-first-unmatched/untyped-wrapped-throwing-projection/scoped (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 17: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-first-unmatched/untyped-wrapped-throwing-projection/cross (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 17: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-first-unmatched/typed-raw/scoped (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 17: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-first-unmatched/typed-raw/cross (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 17: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-first-unmatched/typed-raw-throwing-projection/scoped (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 17: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-first-unmatched/typed-raw-throwing-projection/cross (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 17: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-first-unmatched/typed-wrapped/scoped (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 17: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-first-unmatched/typed-wrapped/cross (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 17: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-first-unmatched/typed-wrapped-throwing-projection/scoped (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 17: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-first-unmatched/typed-wrapped-throwing-projection/cross (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 17: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-first-unmatched/fourfields-wrapped-distinct-limit/scoped (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 17: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-first-unmatched/fourfields-wrapped-distinct-limit/cross (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 17: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-last-unmatched/untyped-raw/scoped (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 90: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-last-unmatched/untyped-raw/cross (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 90: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-last-unmatched/untyped-raw-throwing-projection/scoped (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 90: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-last-unmatched/untyped-raw-throwing-projection/cross (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 90: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-last-unmatched/untyped-wrapped/scoped (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 90: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-last-unmatched/untyped-wrapped/cross (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 90: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-last-unmatched/untyped-wrapped-throwing-projection/scoped (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 90: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-last-unmatched/untyped-wrapped-throwing-projection/cross (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 90: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-last-unmatched/typed-raw/scoped (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 90: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-last-unmatched/typed-raw/cross (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 90: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-last-unmatched/typed-raw-throwing-projection/scoped (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 90: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-last-unmatched/typed-raw-throwing-projection/cross (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 90: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-last-unmatched/typed-wrapped/scoped (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 90: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-last-unmatched/typed-wrapped/cross (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 90: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-last-unmatched/typed-wrapped-throwing-projection/scoped (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 90: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-last-unmatched/typed-wrapped-throwing-projection/cross (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 90: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-last-unmatched/fourfields-wrapped-distinct-limit/scoped (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 90: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-last-unmatched/fourfields-wrapped-distinct-limit/cross (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 90: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-matched/untyped-raw/scoped (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 2: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-matched/untyped-raw/cross (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 2: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-matched/untyped-raw-throwing-projection/scoped (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 2: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-matched/untyped-raw-throwing-projection/cross (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 2: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-matched/untyped-wrapped/scoped (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 2: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-matched/untyped-wrapped/cross (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 2: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-matched/untyped-wrapped-throwing-projection/scoped (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 2: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-matched/untyped-wrapped-throwing-projection/cross (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 2: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-matched/typed-raw/scoped (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 2: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-matched/typed-raw/cross (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 2: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-matched/typed-raw-throwing-projection/scoped (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 2: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-matched/typed-raw-throwing-projection/cross (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 2: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-matched/typed-wrapped/scoped (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 2: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-matched/typed-wrapped/cross (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 2: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-matched/typed-wrapped-throwing-projection/scoped (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 2: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-matched/typed-wrapped-throwing-projection/cross (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 2: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-matched/fourfields-wrapped-distinct-limit/scoped (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 2: string index 2147483647 outside table of 9
+    --- FAIL: TestStringCandidateCorruptBaselinePreservation/bad-matched/fourfields-wrapped-distinct-limit/cross (0.00s)
+        string_candidates_test.go:548: got Index (2147483647) is greater than or equal to list size (9) want CypherException: node 2: string index 2147483647 outside table of 9
+FAIL
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/query	2.274s
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/store	0.423s
+FAIL

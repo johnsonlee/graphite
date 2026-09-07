@@ -1,0 +1,20 @@
+--- /tmp/graphite-go-ordinary-integration-87aaf0ad/graphite-server/internal/query/string_candidates_test.go	2026-09-07 10:03:44
++++ /tmp/graphite-go-ordinary-root-df8d2b40/graphite-server/internal/query/string_candidates_test.go	2026-09-07 10:25:14
+@@ -390,7 +390,7 @@
+ 	if warm.indexedNodeWalker(g, clause, &candidateSlot{}) == nil {
+ 		t.Fatal("warm preparation unavailable")
+ 	}
+-	counter := &traversalCancelContext{Context: context.WithValue(context.Background(), candidateDirectoryOnlyKey{}, true), cancelAt: int(^uint(0) >> 1)}
++	counter := newTraversalCancelContext(t, context.WithValue(context.Background(), candidateDirectoryOnlyKey{}, true), int(^uint(0)>>1))
+ 	e := evaluator{ctx: counter, indexFirst: true}
+ 	if e.indexedNodeWalker(g, clause, &candidateSlot{}) == nil {
+ 		t.Fatal("counted preparation unavailable")
+@@ -398,7 +398,7 @@
+ 	canceledChecks := 0
+ 	for at := 1; at <= counter.checks; at++ {
+ 		func() {
+-			ctx := &traversalCancelContext{Context: context.WithValue(context.Background(), candidateDirectoryOnlyKey{}, true), cancelAt: at}
++			ctx := newTraversalCancelContext(t, context.WithValue(context.Background(), candidateDirectoryOnlyKey{}, true), at)
+ 			e := evaluator{ctx: ctx, indexFirst: true}
+ 			defer func() {
+ 				caught := recover()

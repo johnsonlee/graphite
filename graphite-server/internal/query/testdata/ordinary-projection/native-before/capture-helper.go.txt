@@ -1,0 +1,108 @@
+package query
+
+import (
+	"context"
+	"encoding/json"
+	"os"
+	"path/filepath"
+	"reflect"
+	"testing"
+)
+
+func ordinaryHistoryState(t *testing.T, sources []Graph) []map[string]any {
+	t.Helper()
+	out := []map[string]any{}
+	for _, source := range sources {
+		retained, err := source.Store.RetainedDistinctStringIndex(context.Background())
+		if err != nil {
+			t.Fatal(err)
+		}
+		out = append(out, map[string]any{"id": source.ID, "retained": retained})
+	}
+	return out
+}
+func ordinaryHistoryResult(t *testing.T, sources []Graph, cross bool, q string) map[string]any {
+	t.Helper()
+	out := map[string]any{"query": q, "before": ordinaryHistoryState(t, sources)}
+	var result Result
+	var err error
+	if cross {
+		result, err = ExecuteCross(context.Background(), sources, q, nil, -1)
+	} else {
+		result, err = Execute(context.Background(), sources[0].Store, q, nil, -1)
+	}
+	out = distinctOracleResult(out, result, err)
+	out["after"] = ordinaryHistoryState(t, sources)
+	return out
+}
+func TestOrdinaryProjectionHistoryMain(t *testing.T) {
+	var cases []map[string]any
+	readDistinctJSON(t, "testdata/ordinary-projection/history-main-0.json", &cases)
+	outputs := []map[string]any{}
+	for _, spec := range cases {
+		scenario := spec["scenario"].(string)
+		warm := spec["warm"].(string)
+		t.Run(scenario+"/"+warm, func(t *testing.T) {
+			cross := scenario != "scoped-bad"
+			cleanFirst := scenario == "cross-clean-bad" || scenario == "graphscope-clean-bad"
+			a, b := candidateGraph(t, "bad-matched"), candidateGraph(t, "clean")
+			if cleanFirst {
+				a, b = b, a
+			}
+			sources := []Graph{{"single", a}}
+			if cross {
+				sources = []Graph{{"a", a}, {"b", b}}
+			}
+			actual := map[string]any{"scenario": scenario, "warm": warm, "initial": ordinaryHistoryState(t, sources)}
+			if input, ok := spec["warmResult"].(map[string]any); ok {
+				actual["warmResult"] = ordinaryHistoryResult(t, sources, cross, input["query"].(string))
+			}
+			targets := []map[string]any{}
+			for _, target := range spec["targets"].([]any) {
+				targets = append(targets, ordinaryHistoryResult(t, sources, cross, target.(map[string]any)["query"].(string)))
+			}
+			actual["targets"] = targets
+			raw, _ := json.Marshal(actual)
+			var normalized map[string]any
+			_ = json.Unmarshal(raw, &normalized)
+			outputs = append(outputs, normalized)
+			// This suite is initially captured against the unchanged effective base.
+			// Freeze verification will compare all retained-state and response fields.
+			if os.Getenv("ORDINARY_HISTORY_CAPTURE_ONLY") != "1" {
+				expectedBytes, _ := json.Marshal(spec)
+				var expected map[string]any
+				_ = json.Unmarshal(expectedBytes, &expected)
+				var strip func(any)
+				strip = func(v any) {
+					switch x := v.(type) {
+					case map[string]any:
+						delete(x, "mappedView")
+						for _, value := range x {
+							strip(value)
+						}
+					case []any:
+						for _, value := range x {
+							strip(value)
+						}
+					}
+				}
+				strip(expected)
+				if !reflect.DeepEqual(normalized, expected) {
+					t.Errorf("main=%s\nnative=%s", mustJSON(expected), mustJSON(normalized))
+				}
+			}
+		})
+	}
+	if dir := os.Getenv("ORDINARY_HISTORY_OUTPUT"); dir != "" {
+		if err := os.MkdirAll(dir, 0700); err != nil {
+			t.Fatal(err)
+		}
+		raw, err := json.MarshalIndent(outputs, "", "  ")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err = os.WriteFile(filepath.Join(dir, "history-native.json"), append(raw, '\n'), 0600); err != nil {
+			t.Fatal(err)
+		}
+	}
+}

@@ -1,0 +1,15 @@
+{
+  "functionalIntegrationReady": true,
+  "rootIndependentlyVerified42FullTypedHTTPBodies": true,
+  "all232ShippingSourcesAndEmbedsEqualRoot": true,
+  "all64CatalogMatches": true,
+  "serverExitedPortFree": true,
+  "originalAndCOWFixturesUnchanged": true,
+  "providerManifestSHA256": "9c4a34ebd960d20609625be0fdd3de49b154600235f0567b7343643fa37ca24c",
+  "independentManifestSHA256": "e75212fb175a7029512d1a70ed6660df6ea7ee309d1f8057eaeb47d92df50dca",
+  "shippingHTTPManifestSHA256": "c8980d9bbe43cec1fc4624153921f0d546fde30bf704aef5165edff9f540922b",
+  "integrationSourceVerificationSHA256": "d83e1b079cef37e94211fc4b8e8d12e03338442c79c6d48c53b4cfd615fe0d25",
+  "performanceComparisonSHA256": "0f2a84410128287cc51c91d0c31b58f511b13fcbe8d3735be100f36a86ff9a8b",
+  "sourceSidecarPersistenceNotDisabled": true,
+  "remainingOriginalCorpusDifferences": 82
+}
