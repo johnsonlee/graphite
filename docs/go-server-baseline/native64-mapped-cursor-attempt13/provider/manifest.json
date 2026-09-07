@@ -1,0 +1,13 @@
+{
+  "files": {
+    "graphite-server/internal/store/decode.go": "ed599ac4a38c0c7b96dfa8d8ec533b4d8e02af0ce0560504bf7062f0ed9fab29",
+    "graphite-server/internal/store/store.go": "2897981c68aff3fa14ab0f14fcc4236c8f77a6de4cf12fbf379952a831bf3764",
+    "graphite-server/internal/store/mapped_cursor_test.go": "514f9c6bcaf0a14a686b6e2ff4da5009b02ad44f2f7df8f952736028dd4e156e",
+    "docs/go-server-baseline/native-mapped-node-cursor/README.md": "fbd374f3ea68fae7f1cf2d7db0e65f5393ae796f43bfb7aaadc846ad6857e789",
+    "docs/go-server-baseline/native-mapped-node-cursor/escape-analysis.log": "2aa4dfe59e4dd03048573ecc1949a37d702080c8e1cd6d2d93ebafe62af54bee",
+    "docs/go-server-baseline/native-mapped-node-cursor/identity.json": "726614b2339bcfa52c8f7054734d94ad996d59c7283922b8aea3eba846f91db2",
+    "docs/go-server-baseline/native-mapped-node-cursor/module-race.log": "520485165f5a339938f228c394348b78add5a28b2c5448c092ab674d8a09d559",
+    "docs/go-server-baseline/native-mapped-node-cursor/module-vet.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "docs/go-server-baseline/native-mapped-node-cursor/targeted-race.log": "0143cfb969140b501ccd2db84300ad223af50f66de5ab2ba0ae14293baa2db87"
+  }
+}

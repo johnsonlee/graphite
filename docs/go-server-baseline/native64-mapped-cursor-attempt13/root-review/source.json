@@ -1,0 +1,10 @@
+{
+  "base": "df8d2b40",
+  "patchSHA256": "03c32896f4adbb409f4a86a5cfa9909acf038e29d05582f8d5568490fb456959",
+  "cursorSources": {
+    "graphite-server/internal/store/decode.go": "ed599ac4a38c0c7b96dfa8d8ec533b4d8e02af0ce0560504bf7062f0ed9fab29",
+    "graphite-server/internal/store/store.go": "2897981c68aff3fa14ab0f14fcc4236c8f77a6de4cf12fbf379952a831bf3764",
+    "graphite-server/internal/store/mapped_cursor_test.go": "514f9c6bcaf0a14a686b6e2ff4da5009b02ad44f2f7df8f952736028dd4e156e"
+  },
+  "evalSHA256": "bea6ffc5ee0e56cc368389725e9fb2848a8b9fa15d90b374e06b8b837ea97cc8"
+}

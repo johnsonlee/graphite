@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/tmp/graphite-cursor-http-independent-evidence/verify.py", line 67, in <module>
+    s=socket.socket();s.bind(('127.0.0.1',18861));s.close()
+                      ~~~~~~^^^^^^^^^^^^^^^^^^^^^
+OSError: [Errno 48] Address already in use

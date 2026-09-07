@@ -1,0 +1,12 @@
+{
+  "decision": "keep",
+  "rootIndependentlyVerified42FullTypedHTTPBodies": true,
+  "sourceAndBinaryHashesUnchanged": true,
+  "shippingProductionEqualsRoot": true,
+  "all64CatalogMatches": true,
+  "serverExitedPortFree": true,
+  "providerManifestSHA256": "0bcde1f9035e16d1dbd5436cd47ff048020dbefc50cea0135a1e54fc5f44383b",
+  "shippingHTTPManifestSHA256": "b5aaaed4b92e7e341a71b13f9e1214b32015190c2bb326bd2a636a9063e5901c",
+  "integrationSourceSHA256": "26210795ed1684b0f1ff130fbd4c27815cd5f17b4c2b1e050d059785139f2234",
+  "performanceComparisonSHA256": "34f8d4b1d752265b9bfc001a95c4cc3c179aaf8dbd768e9f500dea3836f00a58"
+}

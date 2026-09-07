@@ -21,3 +21,4 @@ docs/go-server-baseline/native-release-integration/graphite.rb whitespace=-blank
 
 # Raw go list output retains its separator when EmbedFiles is empty.
 docs/go-server-baseline/native64-context-check-attempt12/http-independent/embed-inputs.txt whitespace=-blank-at-eol
+docs/go-server-baseline/native64-mapped-cursor-attempt13/http-independent/embed-inputs.txt whitespace=-blank-at-eol

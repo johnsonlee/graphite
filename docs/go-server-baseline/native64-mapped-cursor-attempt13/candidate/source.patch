@@ -1,0 +1,110 @@
+diff --git a/graphite-server/internal/store/decode.go b/graphite-server/internal/store/decode.go
+index 329f7c3d..14121dcd 100644
+--- a/graphite-server/internal/store/decode.go
++++ b/graphite-server/internal/store/decode.go
+@@ -67,11 +67,13 @@ type Metadata struct {
+ var nodeKinds = [...]string{"IntConstant", "StringConstant", "LongConstant", "FloatConstant", "DoubleConstant", "BooleanConstant", "NullConstant", "EnumConstant", "LocalVariable", "FieldNode", "ParameterNode", "ReturnNode", "CallSiteNode", "AnnotationNode", "ResourceValueNode", "ResourceFileNode"}
+ 
+ type decoder struct {
+-	r         io.Reader
+-	strings   []string
+-	version   int
+-	err       error
+-	remaining int64
++	mappedNode   []byte
++	isMappedNode bool
++	r            io.Reader
++	strings      []string
++	version      int
++	err          error
++	remaining    int64
+ }
+ 
+ func newDecoder(r io.Reader, size int64, table []string) *decoder {
+@@ -95,29 +97,52 @@ func (d *decoder) bytes(n int) []byte {
+ 	d.remaining -= int64(n)
+ 	return b
+ }
++
++// newMappedNodeDecoder borrows only the current Node call's mapped suffix.
++// Complete node decoding consumes scalar bytes immediately; returned Node values
++// never retain this slice. Reader-backed bytes keeps its owning-copy contract.
++func newMappedNodeDecoder(data []byte, table []string) *decoder {
++	return &decoder{mappedNode: data, isMappedNode: true, remaining: int64(len(data)), strings: table}
++}
++func (d *decoder) scalarBytes(n int) []byte {
++	if !d.isMappedNode {
++		return d.bytes(n)
++	}
++	if d.err != nil {
++		return nil
++	}
++	if n < 0 || int64(n) > d.remaining {
++		d.fail("truncated data: need %d bytes, have %d", n, d.remaining)
++		return nil
++	}
++	b := d.mappedNode[:n]
++	d.mappedNode = d.mappedNode[n:]
++	d.remaining -= int64(n)
++	return b
++}
+ func (d *decoder) u8() byte {
+-	b := d.bytes(1)
++	b := d.scalarBytes(1)
+ 	if b == nil {
+ 		return 0
+ 	}
+ 	return b[0]
+ }
+ func (d *decoder) u16() uint16 {
+-	b := d.bytes(2)
++	b := d.scalarBytes(2)
+ 	if b == nil {
+ 		return 0
+ 	}
+ 	return binary.BigEndian.Uint16(b)
+ }
+ func (d *decoder) i32() int32 {
+-	b := d.bytes(4)
++	b := d.scalarBytes(4)
+ 	if b == nil {
+ 		return 0
+ 	}
+ 	return int32(binary.BigEndian.Uint32(b))
+ }
+ func (d *decoder) i64() int64 {
+-	b := d.bytes(8)
++	b := d.scalarBytes(8)
+ 	if b == nil {
+ 		return 0
+ 	}
+diff --git a/graphite-server/internal/store/store.go b/graphite-server/internal/store/store.go
+index 8c463799..175ff6a8 100644
+--- a/graphite-server/internal/store/store.go
++++ b/graphite-server/internal/store/store.go
+@@ -2,7 +2,6 @@ package store
+ 
+ import (
+ 	"bufio"
+-	"bytes"
+ 	"errors"
+ 	"fmt"
+ 	"io"
+@@ -281,13 +280,13 @@ func (s *Store) Node(id int32) (Node, error) {
+ 	if !ok {
+ 		return Node{}, fmt.Errorf("%w: %d", ErrNodeNotFound, id)
+ 	}
+-	var reader io.Reader
++	var d *decoder
+ 	if s.mappedData != nil {
+-		reader = bytes.NewReader(s.mappedData[loc.offset:])
++		d = newMappedNodeDecoder(s.mappedData[loc.offset:], s.Strings)
+ 	} else {
+-		reader = bufio.NewReader(io.NewSectionReader(s.file, loc.offset, s.size-loc.offset))
++		reader := bufio.NewReader(io.NewSectionReader(s.file, loc.offset, s.size-loc.offset))
++		d = newDecoder(reader, s.size-loc.offset, s.Strings)
+ 	}
+-	d := newDecoder(reader, s.size-loc.offset, s.Strings)
+ 	d.version = s.FormatVersion
+ 	n := d.node()
+ 	if d.err != nil {

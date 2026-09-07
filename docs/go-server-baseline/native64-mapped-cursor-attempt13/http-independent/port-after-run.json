@@ -1,0 +1,9 @@
+{
+  "observed": "2026-09-07T01:31:14.155019+00:00",
+  "lsofExit": 1,
+  "lsofOutput": "",
+  "lsofStderr": "",
+  "pidExists": false,
+  "connectError": 61,
+  "reuseAddressBind": true
+}

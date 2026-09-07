@@ -1,0 +1,10 @@
+{
+  "exitCode": 2,
+  "command": [
+    "git",
+    "diff",
+    "--cached",
+    "--check"
+  ],
+  "reason": "Raw go list separator retained on empty EmbedFiles entries."
+}

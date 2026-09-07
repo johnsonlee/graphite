@@ -1,0 +1,14 @@
+/private/tmp/graphite-cursor-http-independent-df8d2b40/graphite-server/cmd/graphite-server explore-usage.txt serve-usage.txt
+/private/tmp/graphite-cursor-http-independent-df8d2b40/graphite-server/internal/analysis 
+/private/tmp/graphite-cursor-http-independent-df8d2b40/graphite-server/internal/analysis/c4 
+/private/tmp/graphite-cursor-http-independent-df8d2b40/graphite-server/internal/cypher 
+/private/tmp/graphite-cursor-http-independent-df8d2b40/graphite-server/internal/cypher/cmd/normalize 
+/private/tmp/graphite-cursor-http-independent-df8d2b40/graphite-server/internal/cypher/generated 
+/private/tmp/graphite-cursor-http-independent-df8d2b40/graphite-server/internal/javamath 
+/private/tmp/graphite-cursor-http-independent-df8d2b40/graphite-server/internal/javaregex java17_advanced.json java17_names.json.gz java17_unicode.json
+/private/tmp/graphite-cursor-http-independent-df8d2b40/graphite-server/internal/javastring 
+/private/tmp/graphite-cursor-http-independent-df8d2b40/graphite-server/internal/profiling report.html
+/private/tmp/graphite-cursor-http-independent-df8d2b40/graphite-server/internal/query 
+/private/tmp/graphite-cursor-http-independent-df8d2b40/graphite-server/internal/server spec/openapi.json
+/private/tmp/graphite-cursor-http-independent-df8d2b40/graphite-server/internal/store 
+/private/tmp/graphite-cursor-http-independent-df8d2b40/graphite-server/internal/web assets/app.js assets/index.html assets/style.css assets/ui-state.js

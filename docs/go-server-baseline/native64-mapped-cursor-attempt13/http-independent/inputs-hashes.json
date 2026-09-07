@@ -1,0 +1,10 @@
+{
+  "files": {
+    "config.json": "8b425fbc3249a7f47880dd1665d661f887429905606656787d129d9e4e25a9ba",
+    "decode.go": "ed599ac4a38c0c7b96dfa8d8ec533b4d8e02af0ce0560504bf7062f0ed9fab29",
+    "http_parity.py": "502731ed3780cae40ba75489f126e4686e59794ae19fed67ede9c0740b8f3d06",
+    "observations.json": "a435e053ea81a1333b5d16d530d9c7534c9cb4ee06aeffc44b68a45dd16bddd8",
+    "replay-http.py": "2898864c437f9de6db061183e360de55c30ff9aa01575845b6bb4131985d5b93",
+    "store.go": "2897981c68aff3fa14ab0f14fcc4236c8f77a6de4cf12fbf379952a831bf3764"
+  }
+}

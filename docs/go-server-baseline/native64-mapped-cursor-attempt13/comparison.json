@@ -1,0 +1,99 @@
+{
+  "queries": {
+    "global-wide-distribution-broad-all-64": {
+      "base": {
+        "seconds": 11.847227125,
+        "allocationBytes": 5640808432,
+        "cpuSeconds": 11.827442,
+        "numGC": 0,
+        "completeMainOutputEqual": true
+      },
+      "candidate": {
+        "seconds": 11.546730208,
+        "allocationBytes": 5474290592,
+        "cpuSeconds": 11.536043000000001,
+        "numGC": 0,
+        "completeMainOutputEqual": true
+      }
+    },
+    "global-wide-wrapped-case-insensitive-distinct-dense": {
+      "base": {
+        "seconds": 4.046677834,
+        "allocationBytes": 5804038496,
+        "cpuSeconds": 22.01144599999998,
+        "numGC": 1,
+        "completeMainOutputEqual": true
+      },
+      "candidate": {
+        "seconds": 4.132845916,
+        "allocationBytes": 5804041976,
+        "cpuSeconds": 22.59713599999999,
+        "numGC": 1,
+        "completeMainOutputEqual": true
+      }
+    },
+    "global-wide-wrapped-case-insensitive-distinct-dense-repeat": {
+      "base": {
+        "seconds": 4.078771917,
+        "allocationBytes": 367927024,
+        "cpuSeconds": 18.78081200000001,
+        "numGC": 0,
+        "completeMainOutputEqual": true
+      },
+      "candidate": {
+        "seconds": 4.05142825,
+        "allocationBytes": 367920320,
+        "cpuSeconds": 18.744124999999997,
+        "numGC": 0,
+        "completeMainOutputEqual": true
+      }
+    },
+    "wrapped-firstLastGraphBimodalClassPrefix": {
+      "base": {
+        "seconds": 21.474025375,
+        "allocationBytes": 11136059528,
+        "cpuSeconds": 27.125168,
+        "numGC": 1,
+        "completeMainOutputEqual": true
+      },
+      "candidate": {
+        "seconds": 18.449132541,
+        "allocationBytes": 9102986400,
+        "cpuSeconds": 24.838663999999998,
+        "numGC": 1,
+        "completeMainOutputEqual": true
+      }
+    },
+    "wrapped-firstLastGraphBimodalClassPrefix-repeat": {
+      "base": {
+        "seconds": 12.682880041,
+        "allocationBytes": 8549709704,
+        "cpuSeconds": 19.386897000000005,
+        "numGC": 1,
+        "completeMainOutputEqual": true
+      },
+      "candidate": {
+        "seconds": 12.011948042,
+        "allocationBytes": 8320020376,
+        "cpuSeconds": 18.71880300000001,
+        "numGC": 1,
+        "completeMainOutputEqual": true
+      }
+    }
+  },
+  "verification": {
+    "base": {
+      "unchangedSourceFiles": 1617,
+      "binarySHA256": "fbb54275c183ff73599e84427c1bd6377fc57eaeee9f68357799f8edc0dd925c",
+      "fixtureVerified": true,
+      "exitCode": 0
+    },
+    "candidate": {
+      "unchangedSourceFiles": 1618,
+      "binarySHA256": "998ddede57dd2792870fceaf6346da447c30dc8f1cec55634455e8cd65592dff",
+      "fixtureVerified": true,
+      "exitCode": 0
+    }
+  },
+  "decision": "Keep verified full-Node allocation reduction and fixed-workload parity; no uniform or main-relative P95 claim."
+}

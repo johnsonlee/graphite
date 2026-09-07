@@ -1,0 +1,22 @@
+{
+  "command": [
+    "env",
+    "-u",
+    "GRAPHITE_NATIVE_CPU_PROFILE",
+    "-u",
+    "GRAPHITE_PROFILE",
+    "python3",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-trigram-anchor-attempt7/replay-http.py",
+    "--binary",
+    "/tmp/graphite-cursor-http-independent-evidence/graphite-server",
+    "--out",
+    "/tmp/graphite-cursor-http-independent-evidence/http",
+    "--source-identity",
+    "/tmp/graphite-cursor-http-independent-evidence/source-identity.json",
+    "--port",
+    "18861"
+  ],
+  "started": "2026-09-07T01:28:30.254140+00:00",
+  "exitCode": 0,
+  "finished": "2026-09-07T01:30:37.771682+00:00"
+}

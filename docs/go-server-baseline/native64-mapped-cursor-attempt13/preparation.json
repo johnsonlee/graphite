@@ -1,0 +1,8 @@
+{
+  "attempt": 13,
+  "base": "df8d2b40",
+  "candidate": "/tmp/graphite-go-cursor-root-df8d2b40",
+  "providerPatchSHA256": "03c32896f4adbb409f4a86a5cfa9909acf038e29d05582f8d5568490fb456959",
+  "hypothesis": "Mapped Node scalar reads use checked synchronous slice cursor, retaining complete decode and error order; no cache, fields skipped, pooling, or locking changes.",
+  "scope": "Sequential paired real64 five-query diagnostic; CPU sampler disabled; background correctness/build co-tenancy; not HTTP/P95."
+}

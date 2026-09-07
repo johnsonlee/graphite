@@ -1,0 +1,109 @@
+{
+  "commands": [
+    {
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./...",
+        "-count=1"
+      ],
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "exitCode": 0
+    }
+  ],
+  "all17OracleFilesEqual": [
+    {
+      "file": "annotation-after-native.json",
+      "sha256": "d9d5a2bf4ef573f75cae34d9e5d5fff5941bf29af93d0e97ca301a7871bbece0",
+      "baseSHA256": "d9d5a2bf4ef573f75cae34d9e5d5fff5941bf29af93d0e97ca301a7871bbece0"
+    },
+    {
+      "file": "annotation-native.json",
+      "sha256": "6f56ae01e2f4149f959a1f10290e70e5a347af697d210859b85902244a916aed",
+      "baseSHA256": "6f56ae01e2f4149f959a1f10290e70e5a347af697d210859b85902244a916aed"
+    },
+    {
+      "file": "late-native.json",
+      "sha256": "ecee3443a9b07b945d278f9a5d3af3717ac4624950438f299db9ff0b87f1b2ae",
+      "baseSHA256": "ecee3443a9b07b945d278f9a5d3af3717ac4624950438f299db9ff0b87f1b2ae"
+    },
+    {
+      "file": "mixed-native.json",
+      "sha256": "114d94abea54aa36cd40a32f881e4bf3014167d31ef678dc83ef28dcc22dbfac",
+      "baseSHA256": "114d94abea54aa36cd40a32f881e4bf3014167d31ef678dc83ef28dcc22dbfac"
+    },
+    {
+      "file": "primary-eligibility.json",
+      "sha256": "2e5b8537f2e4754aa497edc8d502889edfec8b400b1bf56efcf60f3102d4fc48",
+      "baseSHA256": "2e5b8537f2e4754aa497edc8d502889edfec8b400b1bf56efcf60f3102d4fc48"
+    },
+    {
+      "file": "primary-native.json",
+      "sha256": "6db4aa802be2be1e8f0b5fda7a54c4b6b2e88c2f8e7ebbd260ca532a4113c463",
+      "baseSHA256": "6db4aa802be2be1e8f0b5fda7a54c4b6b2e88c2f8e7ebbd260ca532a4113c463"
+    },
+    {
+      "file": "required-missing-identity-native.json",
+      "sha256": "fa7e6ff32f74410593471ed4b137628d9f20d30798ca388cf397f81021dc9bad",
+      "baseSHA256": "fa7e6ff32f74410593471ed4b137628d9f20d30798ca388cf397f81021dc9bad"
+    },
+    {
+      "file": "required-missing-index-native.json",
+      "sha256": "3ac51f08eb2f4ca63449c1a35ead4e7910cb72d580b798d68ccd747db6fee63d",
+      "baseSHA256": "3ac51f08eb2f4ca63449c1a35ead4e7910cb72d580b798d68ccd747db6fee63d"
+    },
+    {
+      "file": "required-native.json",
+      "sha256": "c4edae9b06d42b06d86085fa3a20d99ca32d796f00a8e1ff5c071348460117e0",
+      "baseSHA256": "c4edae9b06d42b06d86085fa3a20d99ca32d796f00a8e1ff5c071348460117e0"
+    },
+    {
+      "file": "source-pairs-native.json",
+      "sha256": "073809a357d6d80beb0a3d59bb49718626e71e706c92e071a34960a38b9f12e1",
+      "baseSHA256": "073809a357d6d80beb0a3d59bb49718626e71e706c92e071a34960a38b9f12e1"
+    },
+    {
+      "file": "split-bad-callee-native.json",
+      "sha256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254",
+      "baseSHA256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254"
+    },
+    {
+      "file": "split-bad-count-native.json",
+      "sha256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254",
+      "baseSHA256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254"
+    },
+    {
+      "file": "split-bad-tag-native.json",
+      "sha256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254",
+      "baseSHA256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254"
+    },
+    {
+      "file": "split-clean-native.json",
+      "sha256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254",
+      "baseSHA256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254"
+    },
+    {
+      "file": "split-missing-index-native.json",
+      "sha256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254",
+      "baseSHA256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254"
+    },
+    {
+      "file": "supplementary-eligibility.json",
+      "sha256": "302430e5f3d35e9844328c42bd2a8c057c0264b16898a797986b5cf747be9699",
+      "baseSHA256": "302430e5f3d35e9844328c42bd2a8c057c0264b16898a797986b5cf747be9699"
+    },
+    {
+      "file": "supplementary-native.json",
+      "sha256": "d1306f211061769b9f5fb1c677082813d34218883c8027d9e59b1159dc603a8b",
+      "baseSHA256": "d1306f211061769b9f5fb1c677082813d34218883c8027d9e59b1159dc603a8b"
+    }
+  ]
+}

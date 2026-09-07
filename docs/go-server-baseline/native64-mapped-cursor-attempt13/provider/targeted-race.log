@@ -1,0 +1,102 @@
+=== RUN   TestDecoderAuditDeclaredBoundsAndStickyFirstError
+--- PASS: TestDecoderAuditDeclaredBoundsAndStickyFirstError (0.00s)
+=== RUN   TestDecoderAuditReaderShortReadDiffersFromDeclaredBounds
+--- PASS: TestDecoderAuditReaderShortReadDiffersFromDeclaredBounds (0.00s)
+=== RUN   TestDecoderAuditReturnedBytesAreIndependent
+--- PASS: TestDecoderAuditReturnedBytesAreIndependent (0.00s)
+=== RUN   TestDecoderAuditNodeSuffixHasNoNeighborBoundary
+--- PASS: TestDecoderAuditNodeSuffixHasNoNeighborBoundary (0.00s)
+=== RUN   TestDecoderAuditCompleteCallSiteTailAndTypedTag
+--- PASS: TestDecoderAuditCompleteCallSiteTailAndTypedTag (0.00s)
+=== RUN   TestDecoderAuditAllFixtureNodesRemainOwnedAfterClose
+=== RUN   TestDecoderAuditAllFixtureNodesRemainOwnedAfterClose/testdata/jvm-v3
+=== RUN   TestDecoderAuditAllFixtureNodesRemainOwnedAfterClose/testdata/callsite-index/store
+=== RUN   TestDecoderAuditAllFixtureNodesRemainOwnedAfterClose/testdata/stringtables/node-store
+--- PASS: TestDecoderAuditAllFixtureNodesRemainOwnedAfterClose (0.00s)
+    --- PASS: TestDecoderAuditAllFixtureNodesRemainOwnedAfterClose/testdata/jvm-v3 (0.00s)
+    --- PASS: TestDecoderAuditAllFixtureNodesRemainOwnedAfterClose/testdata/callsite-index/store (0.00s)
+    --- PASS: TestDecoderAuditAllFixtureNodesRemainOwnedAfterClose/testdata/stringtables/node-store (0.00s)
+=== RUN   TestMappedCursorEveryByteTruncationAllNodeKinds
+=== RUN   TestMappedCursorEveryByteTruncationAllNodeKinds/00-IntConstant
+=== RUN   TestMappedCursorEveryByteTruncationAllNodeKinds/01-StringConstant
+=== RUN   TestMappedCursorEveryByteTruncationAllNodeKinds/02-LongConstant
+=== RUN   TestMappedCursorEveryByteTruncationAllNodeKinds/03-FloatConstant
+=== RUN   TestMappedCursorEveryByteTruncationAllNodeKinds/04-DoubleConstant
+=== RUN   TestMappedCursorEveryByteTruncationAllNodeKinds/05-BooleanConstant
+=== RUN   TestMappedCursorEveryByteTruncationAllNodeKinds/06-NullConstant
+=== RUN   TestMappedCursorEveryByteTruncationAllNodeKinds/07-EnumConstant
+=== RUN   TestMappedCursorEveryByteTruncationAllNodeKinds/08-LocalVariable
+=== RUN   TestMappedCursorEveryByteTruncationAllNodeKinds/09-FieldNode
+=== RUN   TestMappedCursorEveryByteTruncationAllNodeKinds/10-ParameterNode
+=== RUN   TestMappedCursorEveryByteTruncationAllNodeKinds/11-ReturnNode
+=== RUN   TestMappedCursorEveryByteTruncationAllNodeKinds/12-CallSiteNode
+=== RUN   TestMappedCursorEveryByteTruncationAllNodeKinds/13-AnnotationNode
+=== RUN   TestMappedCursorEveryByteTruncationAllNodeKinds/14-ResourceValueNode
+=== RUN   TestMappedCursorEveryByteTruncationAllNodeKinds/15-ResourceFileNode
+=== NAME  TestMappedCursorEveryByteTruncationAllNodeKinds
+    mapped_cursor_test.go:190: all16 node kinds, 431 byte prefixes
+--- PASS: TestMappedCursorEveryByteTruncationAllNodeKinds (0.01s)
+    --- PASS: TestMappedCursorEveryByteTruncationAllNodeKinds/00-IntConstant (0.00s)
+    --- PASS: TestMappedCursorEveryByteTruncationAllNodeKinds/01-StringConstant (0.00s)
+    --- PASS: TestMappedCursorEveryByteTruncationAllNodeKinds/02-LongConstant (0.00s)
+    --- PASS: TestMappedCursorEveryByteTruncationAllNodeKinds/03-FloatConstant (0.00s)
+    --- PASS: TestMappedCursorEveryByteTruncationAllNodeKinds/04-DoubleConstant (0.00s)
+    --- PASS: TestMappedCursorEveryByteTruncationAllNodeKinds/05-BooleanConstant (0.00s)
+    --- PASS: TestMappedCursorEveryByteTruncationAllNodeKinds/06-NullConstant (0.00s)
+    --- PASS: TestMappedCursorEveryByteTruncationAllNodeKinds/07-EnumConstant (0.00s)
+    --- PASS: TestMappedCursorEveryByteTruncationAllNodeKinds/08-LocalVariable (0.00s)
+    --- PASS: TestMappedCursorEveryByteTruncationAllNodeKinds/09-FieldNode (0.00s)
+    --- PASS: TestMappedCursorEveryByteTruncationAllNodeKinds/10-ParameterNode (0.00s)
+    --- PASS: TestMappedCursorEveryByteTruncationAllNodeKinds/11-ReturnNode (0.00s)
+    --- PASS: TestMappedCursorEveryByteTruncationAllNodeKinds/12-CallSiteNode (0.00s)
+    --- PASS: TestMappedCursorEveryByteTruncationAllNodeKinds/13-AnnotationNode (0.00s)
+    --- PASS: TestMappedCursorEveryByteTruncationAllNodeKinds/14-ResourceValueNode (0.00s)
+    --- PASS: TestMappedCursorEveryByteTruncationAllNodeKinds/15-ResourceFileNode (0.00s)
+=== RUN   TestMappedCursorLegacyAnnotationsAndScalarFallback
+--- PASS: TestMappedCursorLegacyAnnotationsAndScalarFallback (0.01s)
+=== RUN   TestMappedCursorMalformedNodeAndRemainingParity
+=== RUN   TestMappedCursorMalformedNodeAndRemainingParity/0
+=== RUN   TestMappedCursorMalformedNodeAndRemainingParity/1
+=== RUN   TestMappedCursorMalformedNodeAndRemainingParity/2
+=== RUN   TestMappedCursorMalformedNodeAndRemainingParity/3
+=== RUN   TestMappedCursorMalformedNodeAndRemainingParity/4
+=== RUN   TestMappedCursorMalformedNodeAndRemainingParity/5
+=== RUN   TestMappedCursorMalformedNodeAndRemainingParity/6
+=== RUN   TestMappedCursorMalformedNodeAndRemainingParity/7
+=== RUN   TestMappedCursorMalformedNodeAndRemainingParity/8
+=== RUN   TestMappedCursorMalformedNodeAndRemainingParity/9
+=== RUN   TestMappedCursorMalformedNodeAndRemainingParity/10
+--- PASS: TestMappedCursorMalformedNodeAndRemainingParity (0.42s)
+    --- PASS: TestMappedCursorMalformedNodeAndRemainingParity/0 (0.00s)
+    --- PASS: TestMappedCursorMalformedNodeAndRemainingParity/1 (0.00s)
+    --- PASS: TestMappedCursorMalformedNodeAndRemainingParity/2 (0.00s)
+    --- PASS: TestMappedCursorMalformedNodeAndRemainingParity/3 (0.00s)
+    --- PASS: TestMappedCursorMalformedNodeAndRemainingParity/4 (0.00s)
+    --- PASS: TestMappedCursorMalformedNodeAndRemainingParity/5 (0.00s)
+    --- PASS: TestMappedCursorMalformedNodeAndRemainingParity/6 (0.00s)
+    --- PASS: TestMappedCursorMalformedNodeAndRemainingParity/7 (0.00s)
+    --- PASS: TestMappedCursorMalformedNodeAndRemainingParity/8 (0.00s)
+    --- PASS: TestMappedCursorMalformedNodeAndRemainingParity/9 (0.00s)
+    --- PASS: TestMappedCursorMalformedNodeAndRemainingParity/10 (0.42s)
+=== RUN   TestMappedCursorScalarBoundsAndBitParity
+--- PASS: TestMappedCursorScalarBoundsAndBitParity (0.00s)
+=== RUN   TestMappedCursorStoreErrorPrecedenceMatchesReader
+=== RUN   TestMappedCursorStoreErrorPrecedenceMatchesReader/decode-before-id-mismatch
+=== RUN   TestMappedCursorStoreErrorPrecedenceMatchesReader/id-mismatch
+=== RUN   TestMappedCursorStoreErrorPrecedenceMatchesReader/kind-mismatch
+=== RUN   TestMappedCursorStoreErrorPrecedenceMatchesReader/unknown-before-mismatch
+=== RUN   TestMappedCursorStoreErrorPrecedenceMatchesReader/trunc-before-mismatch
+--- PASS: TestMappedCursorStoreErrorPrecedenceMatchesReader (0.01s)
+    --- PASS: TestMappedCursorStoreErrorPrecedenceMatchesReader/decode-before-id-mismatch (0.00s)
+    --- PASS: TestMappedCursorStoreErrorPrecedenceMatchesReader/id-mismatch (0.00s)
+    --- PASS: TestMappedCursorStoreErrorPrecedenceMatchesReader/kind-mismatch (0.00s)
+    --- PASS: TestMappedCursorStoreErrorPrecedenceMatchesReader/unknown-before-mismatch (0.00s)
+    --- PASS: TestMappedCursorStoreErrorPrecedenceMatchesReader/trunc-before-mismatch (0.00s)
+=== RUN   TestMappedCursorFloatingPayloadBits
+--- PASS: TestMappedCursorFloatingPayloadBits (0.00s)
+=== RUN   TestUnknownNodeTagKeepsStoreDiagnostic
+--- PASS: TestUnknownNodeTagKeepsStoreDiagnostic (0.00s)
+=== RUN   TestJVMFixtureAllNodesAndMetadata
+--- PASS: TestJVMFixtureAllNodesAndMetadata (0.00s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/store	1.897s

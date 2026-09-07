@@ -375,3 +375,29 @@ change, source ordering, task scheduling, or Close/join change is included.
 provider and independent freezes, full response/counter evidence, actual shipping
 HTTP verification and final integrated identities. The rejected generic cursor
 and pending ordinary projection/cursor optimizations are not bundled here.
+
+
+## 2026-09-07 — Attempt 13: mapped Node scalar cursor
+
+Hypothesis: decode mapped Node primitive fields through a checked synchronous
+slice cursor, eliminating bytes.Reader and temporary scalar buffers while
+retaining complete decoding, field/error order, owning results and lifetime locks.
+
+| Item | Evidence / status |
+|---|---|
+| Native base / candidate | `df8d2b40`; provider patch `03c32896f4adbb409f4a86a5cfa9909acf038e29d05582f8d5568490fb456959`; exact two production files plus one test integrated, Attempt12 unchanged |
+| Fixture | All64 `/tmp/pr113-exp037-fixture.nXn4fg`; all1,152 files/10,338,207,518bytes and complete catalog freshly verified per sequential process |
+| Correctness | All16 JVM Node kinds/431 byte-prefix comparisons plus versions, malformed counts/SIDs/tags, IEEE bits, full consumption and Close ownership; independent combined module race/vet and all17 original oracle files unchanged (739/1048 match,309 existing differences) |
+| HTTP | Independent actual shipping42/42 HTTP200, complete typed main bodies/headers/catalog equal; default60s/capacity4, no profile helper; process exited and port released |
+| Prefix first | Execution+marshal21.474→18.449s; process CPU27.125→24.839s; allocation11,136,059,528→9,102,986,400bytes |
+| Prefix repeat | Execution+marshal12.683→12.012s; process CPU19.387→18.719s; allocation8,549,709,704→8,320,020,376bytes |
+| Ordinary dense | Execution+marshal11.847→11.547s; process CPU11.827→11.536s; allocation5,640,808,432→5,474,290,592bytes |
+| Raw DISTINCT controls | First4.047→4.133s and repeat4.079→4.051s; effectively unchanged allocation. Single-run variation is not a uniform improvement claim |
+| Decision | Keep full-Node allocation reduction and verified fixed-workload parity. No retained-heap/peak-RSS or main-relative10x P95 claim |
+| Limits | GC counts unchanged; CPU sampler off, getrusage counters, background correctness/build work; individual instrumented observations, not HTTP/P95 |
+
+`docs/go-server-baseline/native64-mapped-cursor-attempt13/` preserves exact
+sources, commands, provider/independent/integration checks, counters and full
+responses. The shipping verifier's initial temporary post-exit port-binding
+failure is preserved; its unchanged final verification passed. Ordinary projection
+and the replacement generic DISTINCT iterator remain separate work.

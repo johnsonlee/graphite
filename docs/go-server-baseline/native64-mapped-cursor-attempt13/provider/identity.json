@@ -1,0 +1,30 @@
+{
+  "base": "e6c3bd0c4a6f73ec85ce892bd173750dd7d62c0a",
+  "integrationPatchSHA256": "8b51d784f8d70674b24ef45ec4a1b4140086f416c0b3dbffa688dc51a3cc50c4",
+  "baselineProductionHashesMatchRootRevision": "f9dc0aac",
+  "baselineProductionFiles": {
+    "graphite-server/internal/store/decode.go": "be92b2080650352c3fa6e1929901fffc4326876f5b0d06db2518514eedff0887",
+    "graphite-server/internal/store/store.go": "6fd91600619ce99ab1a7443a6b4a5ef3a9937cacf4b27df54d6877bc3fa2b890"
+  },
+  "candidateSourceFiles": {
+    "graphite-server/internal/store/decode.go": "ed599ac4a38c0c7b96dfa8d8ec533b4d8e02af0ce0560504bf7062f0ed9fab29",
+    "graphite-server/internal/store/store.go": "2897981c68aff3fa14ab0f14fcc4236c8f77a6de4cf12fbf379952a831bf3764",
+    "graphite-server/internal/store/mapped_cursor_test.go": "514f9c6bcaf0a14a686b6e2ff4da5009b02ad44f2f7df8f952736028dd4e156e"
+  },
+  "unchangedMethods": [
+    "bytes",
+    "str",
+    "node",
+    "method",
+    "value"
+  ],
+  "go": "go version go1.22.0 darwin/arm64",
+  "validation": {
+    "targetedRace": true,
+    "moduleRace": true,
+    "moduleVet": true,
+    "compilerEscapeAnalysis": true
+  },
+  "performanceRun": false,
+  "commitCreated": false
+}

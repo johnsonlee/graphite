@@ -1,0 +1,23 @@
+{
+  "patch": "/tmp/graphite-mapped-cursor-delivery/mapped-cursor.patch",
+  "patchSHA256": "03c32896f4adbb409f4a86a5cfa9909acf038e29d05582f8d5568490fb456959",
+  "patchBytes": 506277,
+  "manifest": "/private/tmp/graphite-go-mapped-cursor-e6c3bd0c/docs/go-server-baseline/native-mapped-node-cursor/manifest.json",
+  "manifestSHA256": "0bcde1f9035e16d1dbd5436cd47ff048020dbefc50cea0135a1e54fc5f44383b",
+  "worktree": "/private/tmp/graphite-go-mapped-cursor-e6c3bd0c",
+  "base": "e6c3bd0c4a6f73ec85ce892bd173750dd7d62c0a",
+  "integratedPatchSHA256": "8b51d784f8d70674b24ef45ec4a1b4140086f416c0b3dbffa688dc51a3cc50c4",
+  "rootReadOnlyApplyCheckHead": "f9dc0aac1c1026797cc749f6ba8901ca6a0e0267",
+  "sourceFiles": [
+    "graphite-server/internal/store/decode.go",
+    "graphite-server/internal/store/store.go",
+    "graphite-server/internal/store/mapped_cursor_test.go"
+  ],
+  "frozen": true,
+  "testResults": {
+    "targetedRace": true,
+    "fullModuleRace": true,
+    "fullModuleVet": true
+  },
+  "noPerformanceRun": true
+}
