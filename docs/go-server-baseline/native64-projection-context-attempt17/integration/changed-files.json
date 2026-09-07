@@ -1,0 +1,8 @@
+[
+  "graphite-server/internal/query/main_string_source_test.go",
+  "graphite-server/internal/query/projection_context_test.go",
+  "graphite-server/internal/store/distinct_projection.go",
+  "graphite-server/internal/store/main_callsite_index_test.go",
+  "graphite-server/internal/store/projection_context_test.go",
+  "graphite-server/internal/store/projection_node.go"
+]

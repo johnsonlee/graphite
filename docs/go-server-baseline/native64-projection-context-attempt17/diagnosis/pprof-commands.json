@@ -1,0 +1,80 @@
+[
+  {
+    "argv": [
+      "go",
+      "tool",
+      "pprof",
+      "-sample_index=delay",
+      "-top",
+      "-nodecount=40",
+      "-base",
+      "/tmp/graphite-a15-mutex-root-62b92d20/control/wrapped-firstLastGraphBimodalClassPrefix-repeat/mutex-before.pprof",
+      "/tmp/graphite-a15-mutex-diagnostic/mutex-profile-query",
+      "/tmp/graphite-a15-mutex-root-62b92d20/control/wrapped-firstLastGraphBimodalClassPrefix-repeat/mutex-after.pprof"
+    ],
+    "exitCode": 0,
+    "output": "control-delay-top"
+  },
+  {
+    "argv": [
+      "go",
+      "tool",
+      "pprof",
+      "-sample_index=contentions",
+      "-top",
+      "-nodecount=40",
+      "-base",
+      "/tmp/graphite-a15-mutex-root-62b92d20/control/wrapped-firstLastGraphBimodalClassPrefix-repeat/mutex-before.pprof",
+      "/tmp/graphite-a15-mutex-diagnostic/mutex-profile-query",
+      "/tmp/graphite-a15-mutex-root-62b92d20/control/wrapped-firstLastGraphBimodalClassPrefix-repeat/mutex-after.pprof"
+    ],
+    "exitCode": 0,
+    "output": "control-contentions-top"
+  },
+  {
+    "argv": [
+      "go",
+      "tool",
+      "pprof",
+      "-sample_index=delay",
+      "-top",
+      "-nodecount=40",
+      "-base",
+      "/tmp/graphite-a15-mutex-root-62b92d20/rate16/wrapped-firstLastGraphBimodalClassPrefix-repeat/mutex-before.pprof",
+      "/tmp/graphite-a15-mutex-diagnostic/mutex-profile-query",
+      "/tmp/graphite-a15-mutex-root-62b92d20/rate16/wrapped-firstLastGraphBimodalClassPrefix-repeat/mutex-after.pprof"
+    ],
+    "exitCode": 0,
+    "output": "rate16-delay-top"
+  },
+  {
+    "argv": [
+      "go",
+      "tool",
+      "pprof",
+      "-sample_index=contentions",
+      "-top",
+      "-nodecount=40",
+      "-base",
+      "/tmp/graphite-a15-mutex-root-62b92d20/rate16/wrapped-firstLastGraphBimodalClassPrefix-repeat/mutex-before.pprof",
+      "/tmp/graphite-a15-mutex-diagnostic/mutex-profile-query",
+      "/tmp/graphite-a15-mutex-root-62b92d20/rate16/wrapped-firstLastGraphBimodalClassPrefix-repeat/mutex-after.pprof"
+    ],
+    "exitCode": 0,
+    "output": "rate16-contentions-top"
+  },
+  {
+    "argv": [
+      "go",
+      "tool",
+      "pprof",
+      "-sample_index=delay",
+      "-list=context.*Err|ProjectionCandidateNode|ProjectionNodeOrder",
+      "-base",
+      "/tmp/graphite-a15-mutex-root-62b92d20/rate16/wrapped-firstLastGraphBimodalClassPrefix-repeat/mutex-before.pprof",
+      "/tmp/graphite-a15-mutex-diagnostic/mutex-profile-query",
+      "/tmp/graphite-a15-mutex-root-62b92d20/rate16/wrapped-firstLastGraphBimodalClassPrefix-repeat/mutex-after.pprof"
+    ],
+    "exitCode": 0
+  }
+]

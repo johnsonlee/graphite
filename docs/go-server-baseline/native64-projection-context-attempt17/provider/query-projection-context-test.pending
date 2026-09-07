@@ -1,0 +1,55 @@
+package query
+
+import (
+ "context"
+ "math"
+ "runtime"
+ "strings"
+ "sync/atomic"
+ "testing"
+ "time"
+ "github.com/johnsonlee/graphite/graphite-server/internal/store"
+)
+
+// Pause at the worker's actual Store order checkpoint, then observe real task cancellation.
+type projectionWorkerContext struct {
+ context.Context
+ entered chan struct{}
+ once atomic.Bool
+}
+func(c *projectionWorkerContext) observe() {
+ pc,_,_,_:=runtime.Caller(2)
+ if f:=runtime.FuncForPC(pc);f!=nil&&strings.HasSuffix(f.Name(),".ProjectionNodeOrder")&&c.once.CompareAndSwap(false,true) {
+  close(c.entered)
+  <-c.Context.Done()
+ }
+}
+func(c *projectionWorkerContext) Done() <-chan struct{} {c.observe();return c.Context.Done()}
+func(c *projectionWorkerContext) Err() error {c.observe();return c.Context.Err()}
+
+func TestProjectionContextWorkerFailureJoinsOrderRead(t *testing.T) {
+ first,second:=candidateGraph(t,"clean"),candidateGraph(t,"clean")
+ parent,cancel:=context.WithCancel(context.Background());defer cancel()
+ entered,exited:=make(chan struct{}),make(chan struct{})
+ result:=make(chan any,1)
+ var sourceFailure error
+ go func(){result<-findIDCaught(func(){runDistinctTasks(parent,2,2,false,func(ctx context.Context,i int)int {
+  if i==0 {
+   defer close(exited)
+   probe:=&projectionWorkerContext{Context:ctx,entered:entered}
+   _,err:=first.ProjectionNodeOrder(probe,17)
+   if err!=context.Canceled||!probe.once.Load(){panic("worker order did not observe child cancellation")}
+   panic(err)
+  }
+  <-entered
+  _,_,sourceFailure=second.ProjectionCandidateNode(ctx,math.MaxInt32)
+  if sourceFailure==nil {panic("missing expected source read failure")}
+  panic(sourceFailure)
+ },func(int,int)bool {panic("failed wave produced output")})})}()
+ select{case failure:=<-result:if sourceFailure==nil||failure!=sourceFailure {t.Fatalf("source failure replaced: %v vs %v",failure,sourceFailure)};case<-time.After(5*time.Second):t.Fatal("worker failure did not cancel and join Store checkpoint")}
+ select{case<-exited:default:t.Fatal("Store worker escaped task join")}
+ if parent.Err()!=nil {t.Fatal("child task failure poisoned parent context")}
+ if _,err:=first.ProjectionNodeOrder(parent,17);err!=nil {t.Fatal("fresh owner read",err)}
+ if err:=first.Close();err!=nil {t.Fatal(err)}
+ if _,err:=first.ProjectionNodeOrder(parent,17);err!=store.ErrStoreClosed {t.Fatal("post-join close",err)}
+}

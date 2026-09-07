@@ -1,0 +1,112 @@
+{
+  "all10CompleteTypedResponsesEqual": true,
+  "allBeforeAfterSourceHistoriesEqual": true,
+  "measurements": [
+    {
+      "name": "wrapped-firstLastGraphBimodalClassPrefix",
+      "bothFullTypedResponsesEqual": true,
+      "completeSourceHistoryEqual": true,
+      "measurements": [
+        {
+          "phase": "control",
+          "seconds": 15.385592792,
+          "cpu": 75.10556899999999,
+          "allocatedBytes": 5966065976,
+          "numGC": 0
+        },
+        {
+          "phase": "rate16",
+          "seconds": 15.598831167,
+          "cpu": 76.611454,
+          "allocatedBytes": 5966065144,
+          "numGC": 0
+        }
+      ]
+    },
+    {
+      "name": "wrapped-firstLastGraphBimodalClassPrefix-repeat",
+      "bothFullTypedResponsesEqual": true,
+      "completeSourceHistoryEqual": true,
+      "measurements": [
+        {
+          "phase": "control",
+          "seconds": 9.874751667,
+          "cpu": 45.74605100000001,
+          "allocatedBytes": 444261976,
+          "numGC": 0
+        },
+        {
+          "phase": "rate16",
+          "seconds": 10.7366315,
+          "cpu": 49.193854,
+          "allocatedBytes": 444222704,
+          "numGC": 0
+        }
+      ]
+    },
+    {
+      "name": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "bothFullTypedResponsesEqual": true,
+      "completeSourceHistoryEqual": true,
+      "measurements": [
+        {
+          "phase": "control",
+          "seconds": 0.344999958,
+          "cpu": 1.8991160000000136,
+          "allocatedBytes": 268474992,
+          "numGC": 0
+        },
+        {
+          "phase": "rate16",
+          "seconds": 0.311753417,
+          "cpu": 2.058589000000005,
+          "allocatedBytes": 268451296,
+          "numGC": 0
+        }
+      ]
+    },
+    {
+      "name": "global-wide-wrapped-case-insensitive-distinct-dense-repeat",
+      "bothFullTypedResponsesEqual": true,
+      "completeSourceHistoryEqual": true,
+      "measurements": [
+        {
+          "phase": "control",
+          "seconds": 0.315054792,
+          "cpu": 2.074258000000011,
+          "allocatedBytes": 268433000,
+          "numGC": 0
+        },
+        {
+          "phase": "rate16",
+          "seconds": 0.310151416,
+          "cpu": 2.086098000000014,
+          "allocatedBytes": 268453608,
+          "numGC": 0
+        }
+      ]
+    },
+    {
+      "name": "global-wide-distribution-broad-all-64",
+      "bothFullTypedResponsesEqual": true,
+      "completeSourceHistoryEqual": true,
+      "measurements": [
+        {
+          "phase": "control",
+          "seconds": 0.002091417,
+          "cpu": 0.0021409999999910667,
+          "allocatedBytes": 1632320,
+          "numGC": 0
+        },
+        {
+          "phase": "rate16",
+          "seconds": 0.0017395,
+          "cpu": 0.0017709999999837578,
+          "allocatedBytes": 1632656,
+          "numGC": 0
+        }
+      ]
+    }
+  ],
+  "scope": "Diagnostic control versus sampled execution; no optimization/P95 claim"
+}

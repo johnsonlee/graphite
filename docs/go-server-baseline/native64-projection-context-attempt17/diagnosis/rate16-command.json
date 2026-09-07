@@ -1,0 +1,21 @@
+{
+  "argv": [
+    "/tmp/graphite-a15-mutex-diagnostic/mutex-profile-query",
+    "--config",
+    "/tmp/graphite-a15-mutex-root-62b92d20/config.json",
+    "--out",
+    "/tmp/graphite-a15-mutex-root-62b92d20/rate16",
+    "--mutex-rate",
+    "16",
+    "--mutex-query",
+    "wrapped-firstLastGraphBimodalClassPrefix-repeat"
+  ],
+  "startedUTC": "2026-09-07T04:08:27.619672+00:00",
+  "environment": {
+    "GOGC": null,
+    "GOMEMLIMIT": null,
+    "GOMAXPROCS": null,
+    "GODEBUG": null
+  },
+  "concurrency": "No other real64 process; independent correctness work may overlap; diagnostic only."
+}

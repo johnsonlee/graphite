@@ -1,0 +1,8 @@
+{
+  "archivedFilesChecked": 2405,
+  "changedExisting": [
+    "cmd/profile-query/main.go"
+  ],
+  "productionQueryStoreChanged": false,
+  "harnessBaseSHA256": "9f13d1d77cc641eb38fdcadc724de7283e7c926325242fb3ce12ee8e8adda70e"
+}

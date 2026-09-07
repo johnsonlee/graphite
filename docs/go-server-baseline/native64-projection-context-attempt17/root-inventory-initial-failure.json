@@ -1,0 +1,9 @@
+{
+  "failure": "First filesystem collector included three preexisting ignored Python bytecode files; no missing or changed expected source inputs.",
+  "extra": [
+    "internal/web/__pycache__/generate.cpython-314.pyc",
+    "scripts/__pycache__/benchmark_http.cpython-314.pyc",
+    "scripts/__pycache__/http_parity.cpython-314.pyc"
+  ],
+  "correction": "Enumerate Git tracked and nonignored untracked module inputs; leave ignored executable and caches untouched."
+}

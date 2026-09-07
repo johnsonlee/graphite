@@ -1,0 +1,8 @@
+{
+  "deltaFiles": 6,
+  "allSixExactAuthorBytes": true,
+  "productionFiles": 2,
+  "sites": 5,
+  "unchangedA16BInputs": true,
+  "scope": "Same-site ctx.Done select and ctx.Err only on closed Done; no Cause, context caching, locks, decoder bounds, error order or publication changes."
+}

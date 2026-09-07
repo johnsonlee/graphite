@@ -1,0 +1,101 @@
+{
+  "allNineCompleteTargetResponsesEqual": true,
+  "paths": [
+    {
+      "path": "/tmp/graphite-projection-context-attempt17-evidence/base-ordinary/rolling-native.json",
+      "sha256": "810c77fbb6f9719e3b76e7f08361bf723c315158a574ba9530399db9ae10f786"
+    },
+    {
+      "path": "/tmp/graphite-projection-context-attempt17-evidence/candidate-ordinary/rolling-native.json",
+      "sha256": "15c0542fdd629b5a36a40394d355812bdd82f44239788795270338ec15ae01de"
+    },
+    {
+      "path": "/tmp/graphite-projection-context-attempt17-evidence/original-rolling-repeat-0/rolling-native.json",
+      "sha256": "ffaf67b56dd53fc42da991f0342663931f0c64fe320db2e511f41f4003f98136"
+    },
+    {
+      "path": "/tmp/graphite-projection-context-attempt17-evidence/original-rolling-repeat-1/rolling-native.json",
+      "sha256": "5441ba998d51ade5bc621dfcb9aa2a9ea68da08bbb8f066becf61dfc6be6892a"
+    },
+    {
+      "path": "/tmp/graphite-projection-context-attempt17-evidence/original-rolling-repeat-2/rolling-native.json",
+      "sha256": "09aeea1bc7eaa894f0d7756dbb9d2d8776479f2e653d3b0f2d864f04ba65478e"
+    },
+    {
+      "path": "/tmp/graphite-projection-context-attempt17-evidence/original-rolling-repeat-3/rolling-native.json",
+      "sha256": "2ec92e5f31d7b04a4a415dd2370572f87ce87ff214a061f26ec993ae63654835"
+    },
+    {
+      "path": "/tmp/graphite-projection-context-attempt17-evidence/existing-main/rolling-main-0.json",
+      "sha256": "9020f17043c4704cf9f146c0dfc8d930a47188f0754c76252f6d71856d9421ae"
+    },
+    {
+      "path": "/tmp/graphite-projection-context-attempt17-evidence/existing-main/rolling-main-1.json",
+      "sha256": "d7fd9c68db15bb5c3cd012bf4487d7ae68c8b76e8db74e073c173893f72b824b"
+    },
+    {
+      "path": "/tmp/graphite-projection-context-attempt17-evidence/existing-main/rolling-main-2.json",
+      "sha256": "40372702a67948af8249fb20a174687ffe05df6a7aa5262c5a9269249a3c9031"
+    }
+  ],
+  "onlyExplainedRetainedLeaves": [
+    {
+      "path": "$[8].targets[0].after[5].retained",
+      "valuesInNineCaptureOrder": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "path": "$[8].targets[0].after[7].retained",
+      "valuesInNineCaptureOrder": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "path": "$[8].targets[1].before[5].retained",
+      "valuesInNineCaptureOrder": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "path": "$[8].targets[1].before[7].retained",
+      "valuesInNineCaptureOrder": [
+        false,
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        false,
+        false
+      ]
+    }
+  ],
+  "integrationRetainedDifferences": 0,
+  "limitation": "Reachable original andmain states, notequal schedule probability; initialoriginalnonrace vsrepeat/candidaterace instrumentation."
+}

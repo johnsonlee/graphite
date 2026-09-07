@@ -1,0 +1,1 @@
+First setup snippet failed before execution: SyntaxError in observations target-state comprehension (missing closing dictionary brace). No output proof or verifier changed by that snippet. Following verifier command still ran old verifier and exited 1 on same retained leaf; its log is preserved as verify-corpus-v2.log. Corrected setup script is retained separately.

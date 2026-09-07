@@ -1,0 +1,151 @@
+{
+  "purpose": "Read-only A15 ctx.Err lock audit and diagnostic-only mutex harness",
+  "productionChanges": false,
+  "graphQueriesExecuted": 0,
+  "performanceRuns": 0,
+  "jvmRuns": 0,
+  "baseRevision": "2ab90cdc11477166fcd84c63c1af03041bd7f940",
+  "baseSourceManifestSHA256": "e9440c4674f0f567b5559fc035cb34dac1005e374390499fa1b567b5abc1f743",
+  "baseHarnessSHA256": "9f13d1d77cc641eb38fdcadc724de7283e7c926325242fb3ce12ee8e8adda70e",
+  "binarySHA256": "b3026d383df953fdba3fb18d3ea49e3a2de7ed0ac25f2ea56aaf757d9c66c0f8",
+  "patchSHA256": "c570296d31c92d922ae4901e956fae76da6af8c09b421656f70fc492696d8a96",
+  "commands": [
+    {
+      "argv": [
+        "go",
+        "test",
+        "-race",
+        "./cmd/profile-query"
+      ],
+      "exitCode": 0,
+      "log": "helper-race.log"
+    },
+    {
+      "argv": [
+        "go",
+        "vet",
+        "./cmd/profile-query"
+      ],
+      "exitCode": 0,
+      "log": "helper-vet.log"
+    },
+    {
+      "argv": [
+        "go",
+        "build",
+        "-o",
+        "/tmp/graphite-a15-mutex-diagnostic/mutex-profile-query",
+        "./cmd/profile-query"
+      ],
+      "exitCode": 0
+    }
+  ],
+  "cwd": "/tmp/graphite-a15-mutex-diagnostic/module",
+  "files": {
+    "README.md": {
+      "sha256": "d42e1debb80587fdd36a071ee3219deeb0e21490614b4cc2088bf895751dbe41",
+      "bytes": 9341
+    },
+    "base-source-receipt.json": {
+      "sha256": "109345ef2ceac5c1843750f30b28e2b03fe514b45d851485ee3f81bcee254074",
+      "bytes": 274284
+    },
+    "baseline/config.json": {
+      "sha256": "6d98bca9a1155f79c2b0b6e0642739c3b2c020b27f51a15b725efdcdb3cc5e80",
+      "bytes": 416018
+    },
+    "baseline/identity.json": {
+      "sha256": "1dd3f22df557575cbe96b80a714079b057b2df64de6fde9abca278c1d9bf6b0a",
+      "bytes": 1265
+    },
+    "baseline/profile-main.go": {
+      "sha256": "9f13d1d77cc641eb38fdcadc724de7283e7c926325242fb3ce12ee8e8adda70e",
+      "bytes": 7525
+    },
+    "baseline/source-manifest.json": {
+      "sha256": "e9440c4674f0f567b5559fc035cb34dac1005e374390499fa1b567b5abc1f743",
+      "bytes": 465141
+    },
+    "binary-build-info.txt": {
+      "sha256": "4cbdd2e6e147afc7b26b15e0fddc87e4f578170fe9e894e41f8d6592f036bcd4",
+      "bytes": 576
+    },
+    "harness-only.patch": {
+      "sha256": "c570296d31c92d922ae4901e956fae76da6af8c09b421656f70fc492696d8a96",
+      "bytes": 9885
+    },
+    "helper-race.log": {
+      "sha256": "b153e3ced8179fa50516c5ab4443d610f56b8c3791156e8e09ea8f449e80a0e7",
+      "bytes": 77
+    },
+    "helper-vet.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "mutex-profile-query": {
+      "sha256": "b3026d383df953fdba3fb18d3ea49e3a2de7ed0ac25f2ea56aaf757d9c66c0f8",
+      "bytes": 12490290
+    },
+    "production-unchanged.json": {
+      "sha256": "848f7fa759d54815622f75437639948e77d1025cbbe651c069fbb95709ae86e4",
+      "bytes": 226
+    },
+    "source-evidence/a15/internal/query/eval.go": {
+      "sha256": "bea6ffc5ee0e56cc368389725e9fb2848a8b9fa15d90b374e06b8b837ea97cc8",
+      "bytes": 14192
+    },
+    "source-evidence/a15/internal/query/generic_distinct.go": {
+      "sha256": "2827c1baaad96a832ca2502c6d9e7bcceb4fb20a39ed50d9c8deb4d699b117f1",
+      "bytes": 14034
+    },
+    "source-evidence/a15/internal/query/indexed_distinct.go": {
+      "sha256": "7dac3137908c8291fb32f06e0b1284c347a6afc0331ba611b722b4373e942ee8",
+      "bytes": 25118
+    },
+    "source-evidence/a15/internal/query/main_string_candidates.go": {
+      "sha256": "9c55befb82ba45e054d0e8e40813f134d4219185daee25ff77c3a9350cf627f9",
+      "bytes": 6346
+    },
+    "source-evidence/a15/internal/query/main_string_postings.go": {
+      "sha256": "6efb793fd745168525167112fa507c97e75c7bab8acd85dba2a8e4c825e4ddc7",
+      "bytes": 3957
+    },
+    "source-evidence/a15/internal/query/main_string_source.go": {
+      "sha256": "6acd635b256d9107895a9b9fc1e86bbd46122a3172795f4eb8ea5eb3f8403da4",
+      "bytes": 6237
+    },
+    "source-evidence/a15/internal/store/distinct_projection.go": {
+      "sha256": "0c9290ed92c6e174210420ea8ec5bc9c70d50c3b30b60a73a78bed8012464194",
+      "bytes": 13480
+    },
+    "source-evidence/a15/internal/store/ordinary_projection.go": {
+      "sha256": "a337a47ad844f18974bdc56a133ec3c27e7fb7a739c00393fefdb48e3830963f",
+      "bytes": 5156
+    },
+    "source-evidence/a15/internal/store/projection_node.go": {
+      "sha256": "fda887a49466b5c9c9663d1af76932df5df7cfd22849c867ce85fb0cc3577842",
+      "bytes": 2983
+    },
+    "source-evidence/go1.22/context/context.go": {
+      "sha256": "1f130bea835bec065d4867feb55374ac828bc3e78407e07aea3c11f80c6100b5",
+      "bytes": 24296
+    },
+    "source-evidence/go1.22/runtime/mprof.go": {
+      "sha256": "c4446dbde4d6589b6b81f0a8aab9161f69262eacbd5aec2d83b02aa239931cb6",
+      "bytes": 48536
+    },
+    "source-evidence/go1.22/runtime/pprof/pprof.go": {
+      "sha256": "7c3afd2541fc980cd3b0350e812db739d836bccfbebb95d1c8692c085ba5bf95",
+      "bytes": 30107
+    },
+    "source-evidence/go1.22/sync/mutex.go": {
+      "sha256": "bc38ff8baa185648ad3856eea516c37f86604afa21aacb24300da0617dc9bcb8",
+      "bytes": 8471
+    }
+  },
+  "overlay": {
+    "module/cmd/profile-query/main.go": "cb96b8aa1ede68c0e45e390e6714162b181a0881beda0a8b3a8c8abe9733b87e",
+    "module/cmd/profile-query/mutex_capture.go": "9ccb5f87f86b29747cc19e48fcbbbd0b1291878770a0a9281fdace03cf1d4003",
+    "module/cmd/profile-query/mutex_capture_test.go": "95dffb9ca8c795678dad10d69c65aaeed1ffb58d9f5b4dc70c6025e073150cad"
+  }
+}

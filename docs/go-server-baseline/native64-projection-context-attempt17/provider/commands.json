@@ -1,0 +1,167 @@
+[
+  {
+    "command": "INDEXED_DISTINCT_OUTPUT=/tmp/graphite-projection-context-attempt17-evidence/base-indexed ORDINARY_HISTORY_OUTPUT=/tmp/graphite-projection-context-attempt17-evidence/base-ordinary go test ./... -count=1",
+    "cwd": "/tmp/graphite-go-projection-context-attempt17-62b92d20/graphite-server",
+    "log": "base-tests.log",
+    "exit": 0,
+    "notes": "Clean original production before any edits; current same-worktree production was still exactly HEAD at this invocation."
+  },
+  {
+    "command": "go test -race ./internal/store ./internal/query -run '^TestProjectionContext' -count=1 -v",
+    "cwd": "/tmp/graphite-go-projection-context-attempt17-62b92d20/graphite-server",
+    "log": "new-tests-baseline-race.log",
+    "exit": 1,
+    "notes": "Initial new Close-test synchronization was invalid; store.test PID7346 explicitly sent SIGQUIT after blocked test cleanup. Raw stacks and original test are retained. No production edits yet."
+  },
+  {
+    "command": "go test -race ./internal/store ./internal/query -run '^TestProjectionContext' -count=1 -timeout=30s -v",
+    "cwd": "/tmp/graphite-go-projection-context-attempt17-62b92d20/graphite-server",
+    "log": "new-tests-baseline-race-v2.log",
+    "exit": 0,
+    "notes": "Corrected Close observation; still original production."
+  },
+  {
+    "command": "go test -race ./internal/store ./internal/query -run '^TestProjectionContext|^TestMainStringMappedColdWarmDemandAndCancellation$' -count=1 -timeout=45s -v",
+    "cwd": "/tmp/graphite-go-projection-context-attempt17-62b92d20/graphite-server",
+    "log": "after-production-before-observer.log",
+    "exit": 1,
+    "notes": "Five production replacements; new tests pass, four old query observer subcases fail as preserved."
+  },
+  {
+    "command": "go test -race ./internal/store ./internal/query -run '^TestProjectionContext|^TestMainStringMappedColdWarmDemandAndCancellation$' -count=10 -timeout=90s -v",
+    "cwd": "/tmp/graphite-go-projection-context-attempt17-62b92d20/graphite-server",
+    "log": "checkpoints-after-race10.log",
+    "exit": 0,
+    "notes": ""
+  },
+  {
+    "command": "INDEXED_DISTINCT_OUTPUT=/tmp/graphite-projection-context-attempt17-evidence/candidate-indexed ORDINARY_HISTORY_OUTPUT=/tmp/graphite-projection-context-attempt17-evidence/candidate-ordinary go test -race ./... -count=1 -timeout=180s",
+    "cwd": "/tmp/graphite-go-projection-context-attempt17-62b92d20/graphite-server",
+    "log": "candidate-full-race.log",
+    "exit": 1,
+    "notes": "Query full output passed; one affected Store Err counter failed. Outputs preserved under candidate-{indexed,ordinary}-before-store-observer before next run."
+  },
+  {
+    "command": "go vet ./...",
+    "cwd": "/tmp/graphite-go-projection-context-attempt17-62b92d20/graphite-server",
+    "log": "candidate-vet.log",
+    "exit": 0,
+    "notes": ""
+  },
+  {
+    "command": "go test -overlay=/tmp/graphite-projection-context-attempt17-evidence/original-overlay.json -race ./internal/store ./internal/query -run '^TestProjectionContext|^TestMainStringMappedColdWarmDemandAndCancellation$|^TestMainMappedRangeColdWarmAndCancellation$' -count=1 -timeout=45s -v",
+    "cwd": "/tmp/graphite-go-projection-context-attempt17-62b92d20/graphite-server",
+    "log": "final-tests-original-overlay.log",
+    "exit": 0,
+    "notes": "All final new/migrated tests against exact original two production files; canonical /private/tmp overlay paths recorded."
+  },
+  {
+    "command": "INDEXED_DISTINCT_OUTPUT=/tmp/graphite-projection-context-attempt17-evidence/candidate-indexed ORDINARY_HISTORY_OUTPUT=/tmp/graphite-projection-context-attempt17-evidence/candidate-ordinary go test -race ./... -count=1 -timeout=180s",
+    "cwd": "/tmp/graphite-go-projection-context-attempt17-62b92d20/graphite-server",
+    "log": "candidate-full-race-v2.log",
+    "exit": 0,
+    "notes": "Final complete module and final67 captures."
+  },
+  {
+    "command": "go vet ./...",
+    "cwd": "/tmp/graphite-go-projection-context-attempt17-62b92d20/graphite-server",
+    "log": "candidate-vet-v2.log",
+    "exit": 0,
+    "notes": "Final test sources."
+  },
+  {
+    "command": "python3 /tmp/graphite-projection-context-attempt17-evidence/compare.py",
+    "cwd": "/tmp/graphite-go-projection-context-attempt17-62b92d20/graphite-server",
+    "log": "compare.log",
+    "exit": 1,
+    "notes": "Strict raw comparison intentionally fails:64/67exact,95source-stateleaves retained."
+  },
+  {
+    "command": "python3 /tmp/graphite-projection-context-attempt17-evidence/verify-corpus-before-retained.py",
+    "cwd": "/tmp/graphite-go-projection-context-attempt17-62b92d20/graphite-server",
+    "log": "verify-corpus-before-retained.log",
+    "exit": 1,
+    "notes": "Initial classification fails on four previously unclassified retained paths; raw failure preserved."
+  },
+  {
+    "command": "python3 /tmp/graphite-projection-context-attempt17-evidence/verify-retained.py",
+    "cwd": "/tmp/graphite-go-projection-context-attempt17-62b92d20/graphite-server",
+    "log": "retained-state-proof.json",
+    "exit": 0,
+    "notes": "Corrected setup after syntax-error attempt; copies and verifies existing main outputs, no new JVM."
+  },
+  {
+    "command": "python3 /tmp/graphite-projection-context-attempt17-evidence/verify-corpus.py",
+    "cwd": "/tmp/graphite-go-projection-context-attempt17-62b92d20/graphite-server",
+    "log": "verify-corpus-v3.log",
+    "exit": 0,
+    "notes": "Exact bounded source-state classification after independent old-production evidence. Original1048responses allunchanged."
+  },
+  {
+    "command": "python3 /tmp/graphite-projection-context-attempt17-evidence/verify-source.py",
+    "cwd": "/tmp/graphite-go-projection-context-attempt17-62b92d20/graphite-server",
+    "log": "verify-source.log",
+    "exit": 0,
+    "notes": "Mechanically reverse only5select replacements and compare all remaining bytes to original2files."
+  },
+  {
+    "command": [
+      "go",
+      "test",
+      "-overlay=/tmp/graphite-projection-context-attempt17-evidence/original-overlay.json",
+      "-race",
+      "./internal/query",
+      "-run",
+      "^TestOrdinaryProjectionRollingSourcesMain$",
+      "-count=1",
+      "-timeout=45s"
+    ],
+    "output": "/tmp/graphite-projection-context-attempt17-evidence/original-rolling-repeat-0",
+    "exit": 0
+  },
+  {
+    "command": [
+      "go",
+      "test",
+      "-overlay=/tmp/graphite-projection-context-attempt17-evidence/original-overlay.json",
+      "-race",
+      "./internal/query",
+      "-run",
+      "^TestOrdinaryProjectionRollingSourcesMain$",
+      "-count=1",
+      "-timeout=45s"
+    ],
+    "output": "/tmp/graphite-projection-context-attempt17-evidence/original-rolling-repeat-1",
+    "exit": 0
+  },
+  {
+    "command": [
+      "go",
+      "test",
+      "-overlay=/tmp/graphite-projection-context-attempt17-evidence/original-overlay.json",
+      "-race",
+      "./internal/query",
+      "-run",
+      "^TestOrdinaryProjectionRollingSourcesMain$",
+      "-count=1",
+      "-timeout=45s"
+    ],
+    "output": "/tmp/graphite-projection-context-attempt17-evidence/original-rolling-repeat-2",
+    "exit": 0
+  },
+  {
+    "command": [
+      "go",
+      "test",
+      "-overlay=/tmp/graphite-projection-context-attempt17-evidence/original-overlay.json",
+      "-race",
+      "./internal/query",
+      "-run",
+      "^TestOrdinaryProjectionRollingSourcesMain$",
+      "-count=1",
+      "-timeout=45s"
+    ],
+    "output": "/tmp/graphite-projection-context-attempt17-evidence/original-rolling-repeat-3",
+    "exit": 0
+  }
+]

@@ -1,0 +1,39 @@
+{
+  "createdUTC": "2026-09-07T04:52:42.638931+00:00",
+  "base": "b7bb15a2",
+  "worktrees": {
+    "base": "/tmp/graphite-go-context-base-b7bb15a2",
+    "candidate": "/tmp/graphite-go-context-candidate-b7bb15a2",
+    "http": "/tmp/graphite-go-context-http-b7bb15a2"
+  },
+  "clones": {
+    "native": "/tmp/graphite-context-native-real64-b7bb15a2",
+    "http": "/tmp/graphite-context-http-real64-b7bb15a2"
+  },
+  "components": [
+    {
+      "component": "provider",
+      "manifestSHA256": "de59ed37748ee8c108b029142f61455f5c7a7818700e29e916333269a462dbef",
+      "allFilesRehashedAndCopied": 275
+    },
+    {
+      "component": "integration",
+      "manifestSHA256": "384788c19801786ceb8f715b4b0e0232e8ca0d45a2b5b0990c1c42973ef60584",
+      "allFilesRehashedAndCopied": 112
+    },
+    {
+      "component": "diagnosis",
+      "manifestSHA256": "7d161c4a8bdb1a77b798d1f28a8e3b085210a4c756b55c5a204ce42910405d58",
+      "allFilesRehashedAndCopied": 134
+    },
+    {
+      "component": "diagnostic-helper",
+      "manifestSHA256": "73a60c2cf55fdac5fe8264fc475d0afd7ddb0a93670505a7122ffc58cd387dd6",
+      "allFilesRehashedAndCopied": 25
+    }
+  ],
+  "all2436CandidateInputsMatchFullModuleTestedCombination": true,
+  "externalInputsAlsoMatch": true,
+  "base2434InputsMatchCommittedA16": true,
+  "knownCoTenancy": "AllthreeagentsconfirmedCPUheavyexecutionstoppedbeforepair; externalhostactivitynotcontrolled."
+}

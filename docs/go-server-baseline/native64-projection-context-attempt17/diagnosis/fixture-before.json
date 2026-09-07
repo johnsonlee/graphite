@@ -1,0 +1,19 @@
+{
+  "verifiedUTC": "2026-09-07T04:07:22.937784+00:00",
+  "checks": [
+    {
+      "root": "/tmp/pr113-exp037-fixture.nXn4fg",
+      "files": 1152,
+      "bytes": 10338207518,
+      "allHashesMatch": true,
+      "noExtraGraphFiles": true
+    },
+    {
+      "root": "/tmp/graphite-mutex-real64-62b92d20",
+      "files": 1152,
+      "bytes": 10338207518,
+      "allHashesMatch": true,
+      "noExtraGraphFiles": true
+    }
+  ]
+}

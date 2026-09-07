@@ -1,0 +1,6 @@
+{
+  "background": "process-global runtime contention may remain; no source workers survive the existing join boundary",
+  "profiling": "event-sampled contention; cumulative snapshots require pprof -base subtraction",
+  "rate": 16,
+  "scope": "ExecuteCross only; original pprof.Do context and query unchanged; marshal excluded"
+}

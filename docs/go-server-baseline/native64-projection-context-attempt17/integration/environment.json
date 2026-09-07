@@ -1,0 +1,9 @@
+{
+  "go": "go version go1.22.0 darwin/arm64",
+  "noJVM": true,
+  "no64": true,
+  "noPerformance": true,
+  "coTenancy": "Parent A16 shipping correctness process overlapped; no timing claims.",
+  "noRootOrProviderEdits": true,
+  "noCommit": true
+}

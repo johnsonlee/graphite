@@ -1,0 +1,472 @@
+diff --git a/graphite-server/internal/query/main_string_source_test.go b/graphite-server/internal/query/main_string_source_test.go
+index 3267db5d..a2913c7f 100644
+--- a/graphite-server/internal/query/main_string_source_test.go
++++ b/graphite-server/internal/query/main_string_source_test.go
+@@ -22,17 +22,22 @@ type mainOrderCheckpoint struct {
+ 	calls, cancelAt int
+ }
+ 
+-func (c *mainOrderCheckpoint) Err() error {
+-	pc, _, _, _ := runtime.Caller(1)
++func (c *mainOrderCheckpoint) observe() {
++	if c.Context.Err() != nil {
++		return
++	}
++	pc, _, _, _ := runtime.Caller(2)
+ 	if f := runtime.FuncForPC(pc); f != nil && strings.HasSuffix(f.Name(), ".ProjectionNodeOrder") {
+ 		c.calls++
+ 		if c.calls == c.cancelAt {
+ 			c.cancel()
+ 		}
+ 	}
+-	return c.Context.Err()
+ }
+ 
++func (c *mainOrderCheckpoint) Done() <-chan struct{} { c.observe(); return c.Context.Done() }
++func (c *mainOrderCheckpoint) Err() error            { c.observe(); return c.Context.Err() }
++
+ func TestMainStringMappedColdWarmDemandAndCancellation(t *testing.T) {
+ 	for _, warm := range []bool{false, true} {
+ 		for _, cancelAt := range []int{0, 2} {
+@@ -54,7 +59,7 @@ func TestMainStringMappedColdWarmDemandAndCancellation(t *testing.T) {
+ 				var next mainNodeNext
+ 				failure := findIDCaught(func() { next = (evaluator{ctx: ctx}).mainCandidateIterator(source, plan, 4) })
+ 				if !warm && cancelAt == 2 {
+-					if failure != context.Canceled || next != nil {
++					if failure != context.Canceled || next != nil || ctx.calls != cancelAt || base.Err() != context.Canceled {
+ 						t.Fatal("cold full validation must fail before sequence", failure, next != nil)
+ 					}
+ 					return
+@@ -75,7 +80,7 @@ func TestMainStringMappedColdWarmDemandAndCancellation(t *testing.T) {
+ 				}
+ 				failure = findIDCaught(func() { n, ok = next(ctx) })
+ 				if warm && cancelAt == 2 {
+-					if failure != context.Canceled {
++					if failure != context.Canceled || ctx.calls != cancelAt || base.Err() != context.Canceled {
+ 						t.Fatal("hot cancellation must occur after first node", failure)
+ 					}
+ 					return
+diff --git a/graphite-server/internal/query/projection_context_test.go b/graphite-server/internal/query/projection_context_test.go
+new file mode 100644
+index 00000000..6f828472
+--- /dev/null
++++ b/graphite-server/internal/query/projection_context_test.go
+@@ -0,0 +1,84 @@
++package query
++
++import (
++	"context"
++	"github.com/johnsonlee/graphite/graphite-server/internal/store"
++	"math"
++	"runtime"
++	"strings"
++	"sync/atomic"
++	"testing"
++	"time"
++)
++
++// Pause at the worker's actual Store order checkpoint, then observe real task cancellation.
++type projectionWorkerContext struct {
++	context.Context
++	entered chan struct{}
++	once    atomic.Bool
++}
++
++func (c *projectionWorkerContext) observe() {
++	pc, _, _, _ := runtime.Caller(2)
++	if f := runtime.FuncForPC(pc); f != nil && strings.HasSuffix(f.Name(), ".ProjectionNodeOrder") && c.once.CompareAndSwap(false, true) {
++		close(c.entered)
++		<-c.Context.Done()
++	}
++}
++func (c *projectionWorkerContext) Done() <-chan struct{} { c.observe(); return c.Context.Done() }
++func (c *projectionWorkerContext) Err() error            { c.observe(); return c.Context.Err() }
++
++func TestProjectionContextWorkerFailureJoinsOrderRead(t *testing.T) {
++	first, second := candidateGraph(t, "clean"), candidateGraph(t, "clean")
++	parent, cancel := context.WithCancel(context.Background())
++	defer cancel()
++	entered, exited := make(chan struct{}), make(chan struct{})
++	result := make(chan any, 1)
++	var sourceFailure error
++	go func() {
++		result <- findIDCaught(func() {
++			runDistinctTasks(parent, 2, 2, false, func(ctx context.Context, i int) int {
++				if i == 0 {
++					defer close(exited)
++					probe := &projectionWorkerContext{Context: ctx, entered: entered}
++					_, err := first.ProjectionNodeOrder(probe, 17)
++					if err != context.Canceled || !probe.once.Load() {
++						panic("worker order did not observe child cancellation")
++					}
++					panic(err)
++				}
++				<-entered
++				_, _, sourceFailure = second.ProjectionCandidateNode(ctx, math.MaxInt32)
++				if sourceFailure == nil {
++					panic("missing expected source read failure")
++				}
++				panic(sourceFailure)
++			}, func(int, int) bool { panic("failed wave produced output") })
++		})
++	}()
++	select {
++	case failure := <-result:
++		if sourceFailure == nil || failure != sourceFailure {
++			t.Fatalf("source failure replaced: %v vs %v", failure, sourceFailure)
++		}
++	case <-time.After(5 * time.Second):
++		t.Fatal("worker failure did not cancel and join Store checkpoint")
++	}
++	select {
++	case <-exited:
++	default:
++		t.Fatal("Store worker escaped task join")
++	}
++	if parent.Err() != nil {
++		t.Fatal("child task failure poisoned parent context")
++	}
++	if _, err := first.ProjectionNodeOrder(parent, 17); err != nil {
++		t.Fatal("fresh owner read", err)
++	}
++	if err := first.Close(); err != nil {
++		t.Fatal(err)
++	}
++	if _, err := first.ProjectionNodeOrder(parent, 17); err != store.ErrStoreClosed {
++		t.Fatal("post-join close", err)
++	}
++}
+diff --git a/graphite-server/internal/store/distinct_projection.go b/graphite-server/internal/store/distinct_projection.go
+index 404cd5c5..e71759f3 100644
+--- a/graphite-server/internal/store/distinct_projection.go
++++ b/graphite-server/internal/store/distinct_projection.go
+@@ -57,8 +57,12 @@ func (s *Store) prepareProjectionOffsets(ctx context.Context) error {
+ 	if s.callSiteIndex.closed {
+ 		return ErrStoreClosed
+ 	}
+-	if err := ctx.Err(); err != nil {
+-		return err
++	select {
++	case <-ctx.Done():
++		if err := ctx.Err(); err != nil {
++			return err
++		}
++	default:
+ 	}
+ 	if s.distinctProjection.offsetsLoaded {
+ 		return nil
+@@ -70,8 +74,12 @@ func (s *Store) prepareProjectionOffsets(ctx context.Context) error {
+ 	if err == nil && len(data) < 8 {
+ 		return &ProjectionReadError{}
+ 	}
+-	if err := ctx.Err(); err != nil {
+-		return err
++	select {
++	case <-ctx.Done():
++		if err := ctx.Err(); err != nil {
++			return err
++		}
++	default:
+ 	}
+ 	s.distinctProjection.offsets = data
+ 	s.distinctProjection.offsetsLoaded = true
+@@ -107,8 +115,12 @@ func (s *Store) ProjectionNodeOrder(ctx context.Context, id int32) (int64, error
+ 	if s.callSiteIndex.closed {
+ 		return 0, ErrStoreClosed
+ 	}
+-	if err := ctx.Err(); err != nil {
+-		return 0, err
++	select {
++	case <-ctx.Done():
++		if err := ctx.Err(); err != nil {
++			return 0, err
++		}
++	default:
+ 	}
+ 	return s.projectionOffsetLocked(id)
+ }
+diff --git a/graphite-server/internal/store/main_callsite_index_test.go b/graphite-server/internal/store/main_callsite_index_test.go
+index 49544333..70dc7164 100644
+--- a/graphite-server/internal/store/main_callsite_index_test.go
++++ b/graphite-server/internal/store/main_callsite_index_test.go
+@@ -197,8 +197,10 @@ func TestMainMappedRangeColdWarmAndCancellation(t *testing.T) {
+ 	// partial orders must not become a warm validation certificate.
+ 	base, cancel := context.WithCancel(ctx)
+ 	defer cancel()
+-	poll := &cancelAtPoll{Context: base, cancel: cancel, at: 5}
+-	if _, _, _, err := index.MainMappedProjectionRange(poll, CallerClass, 3); err != context.Canceled {
++	// The old fifth Err poll was the second node's offset-preparation check.
++	// Observe that same boundary via either API over a real cancellable context.
++	poll := &projectionCheckpointContext{Context: base, target: ".prepareProjectionOffsets", at: 2, action: cancel}
++	if _, _, _, err := index.MainMappedProjectionRange(poll, CallerClass, 3); err != context.Canceled || poll.calls != 2 || base.Err() != context.Canceled {
+ 		t.Fatal(err)
+ 	}
+ 	ids, orders, valid, err = index.MainMappedProjectionRange(ctx, CallerClass, 3)
+diff --git a/graphite-server/internal/store/projection_context_test.go b/graphite-server/internal/store/projection_context_test.go
+new file mode 100644
+index 00000000..fccc8190
+--- /dev/null
++++ b/graphite-server/internal/store/projection_context_test.go
+@@ -0,0 +1,228 @@
++package store
++
++import (
++	"context"
++	"errors"
++	"math"
++	"os"
++	"path/filepath"
++	"reflect"
++	"runtime"
++	"strings"
++	"sync"
++	"testing"
++	"time"
++)
++
++// Observes the actual named checkpoint over an ordinary cancellable context.
++// Both APIs delegate their real state, and Err after a closed Done is not a second poll.
++type projectionCheckpointContext struct {
++	context.Context
++	target    string
++	calls, at int
++	action    func()
++}
++
++func (c *projectionCheckpointContext) observe() {
++	if c.Context.Err() != nil {
++		return
++	}
++	pc, _, _, _ := runtime.Caller(2)
++	if f := runtime.FuncForPC(pc); f != nil && strings.HasSuffix(f.Name(), c.target) {
++		c.calls++
++		if c.calls == c.at && c.action != nil {
++			c.action()
++		}
++	}
++}
++func (c *projectionCheckpointContext) Done() <-chan struct{} { c.observe(); return c.Context.Done() }
++func (c *projectionCheckpointContext) Err() error            { c.observe(); return c.Context.Err() }
++
++func TestProjectionContextStandardStatesAndPrecedence(t *testing.T) {
++	s := openIndexFixture(t, copyIndexFixture(t), "MAPPED")
++	want, err := s.Node(17)
++	if err != nil {
++		t.Fatal(err)
++	}
++	order := s.locations[17].offset
++	cancelled, cancel := context.WithCancel(context.Background())
++	cancel()
++	deadline, stop := context.WithDeadline(context.Background(), time.Unix(1, 0))
++	defer stop()
++	cause := errors.New("distinct cause")
++	caused, cancelCause := context.WithCancelCause(context.Background())
++	cancelCause(cause)
++	parent, cancelParent := context.WithCancel(context.Background())
++	defer cancelParent()
++	child, cancelChild := context.WithCancel(parent)
++	cancelChild()
++	states := []struct {
++		name string
++		ctx  context.Context
++		want error
++	}{
++		{"background", context.Background(), nil}, {"todo", context.TODO(), nil}, {"cancelled", cancelled, context.Canceled},
++		{"deadline", deadline, context.DeadlineExceeded}, {"cause", caused, context.Canceled},
++		{"value-child", context.WithValue(child, struct{}{}, 1), context.Canceled}, {"live-parent", parent, nil},
++		{"without-cancel", context.WithoutCancel(cancelled), nil},
++	}
++	for _, state := range states {
++		t.Run(state.name, func(t *testing.T) {
++			if err := s.prepareProjectionOffsets(state.ctx); err != state.want {
++				t.Fatalf("prepare=%v want=%v", err, state.want)
++			}
++			got, e := s.ProjectionNodeOrder(state.ctx, 17)
++			if e != state.want || e == nil && got != order {
++				t.Fatalf("order=%v/%v want=%v/%v", got, e, order, state.want)
++			}
++			node, ok, e := s.ProjectionCandidateNode(state.ctx, 17)
++			if e != state.want || e == nil && (!ok || !reflect.DeepEqual(node, want)) {
++				t.Fatalf("node=%+v/%v/%v want=%+v/%v", node, ok, e, want, state.want)
++			}
++			if state.want != nil && ok {
++				t.Fatal("canceled read published a node")
++			}
++		})
++	}
++	if context.Cause(caused) != cause || parent.Err() != nil {
++		t.Fatal("cause or parent changed")
++	}
++	if _, err := s.ProjectionNodeOrder(cancelled, math.MaxInt32); err != context.Canceled {
++		t.Fatal("offset error moved before cancellation", err)
++	}
++	if _, _, err := s.ProjectionCandidateNode(cancelled, math.MaxInt32); err != context.Canceled {
++		t.Fatal("decoder offset error moved before cancellation", err)
++	}
++	if err := s.Close(); err != nil {
++		t.Fatal(err)
++	}
++	if err := s.prepareProjectionOffsets(cancelled); err != ErrStoreClosed {
++		t.Fatal("closed must precede cancel", err)
++	}
++	if _, err := s.ProjectionNodeOrder(cancelled, 17); err != ErrStoreClosed {
++		t.Fatal(err)
++	}
++	if _, _, err := s.ProjectionCandidateNode(cancelled, 17); err != ErrStoreClosed {
++		t.Fatal(err)
++	}
++}
++
++func TestProjectionContextPreparationPublicationAndFormatOrder(t *testing.T) {
++	t.Run("cancel after read before publication", func(t *testing.T) {
++		s := openIndexFixture(t, copyIndexFixture(t), "MAPPED")
++		base, cancel := context.WithCancel(context.Background())
++		defer cancel()
++		ctx := &projectionCheckpointContext{Context: base, target: ".prepareProjectionOffsets", at: 2, action: cancel}
++		err := s.prepareProjectionOffsets(ctx)
++		if err != context.Canceled || ctx.calls != 2 || base.Err() != context.Canceled || s.distinctProjection.offsetsLoaded {
++			t.Fatalf("err=%v calls=%d state=%+v", err, ctx.calls, s.distinctProjection)
++		}
++		if err = s.prepareProjectionOffsets(context.Background()); err != nil || !s.distinctProjection.offsetsLoaded {
++			t.Fatal("retry", err)
++		}
++	})
++	t.Run("format failure before postread checkpoint", func(t *testing.T) {
++		dir := copyIndexFixture(t)
++		s := openIndexFixture(t, dir, "MAPPED")
++		if err := os.WriteFile(filepath.Join(dir, "graph.nodeoffsets"), []byte{1}, 0600); err != nil {
++			t.Fatal(err)
++		}
++		base, cancel := context.WithCancel(context.Background())
++		defer cancel()
++		ctx := &projectionCheckpointContext{Context: base, target: ".prepareProjectionOffsets", at: 2, action: cancel}
++		err := s.prepareProjectionOffsets(ctx)
++		var format *ProjectionReadError
++		if !errors.As(err, &format) || format.Message != nil || ctx.calls != 1 || base.Err() != nil || s.distinctProjection.offsetsLoaded {
++			t.Fatalf("err=%v calls=%d canceled=%v published=%v", err, ctx.calls, base.Err(), s.distinctProjection.offsetsLoaded)
++		}
++	})
++}
++
++func TestProjectionContextDecoderCancelAndFreshRequest(t *testing.T) {
++	s := openIndexFixture(t, copyIndexFixture(t), "MAPPED")
++	want, err := s.Node(17)
++	if err != nil {
++		t.Fatal(err)
++	}
++	base, cancel := context.WithCancel(context.Background())
++	defer cancel()
++	ctx := &projectionCheckpointContext{Context: base, target: ".ProjectionCandidateNode.func1", at: 2, action: cancel}
++	node, ok, err := s.ProjectionCandidateNode(ctx, 17)
++	if err != context.Canceled || ok || ctx.calls != 2 || base.Err() != context.Canceled {
++		t.Fatalf("node=%+v ok=%v err=%v actual polls=%d", node, ok, err, ctx.calls)
++	}
++	node, ok, err = s.ProjectionCandidateNode(context.Background(), 17)
++	if err != nil || !ok || !reflect.DeepEqual(node, want) {
++		t.Fatalf("fresh request %+v %v %v", node, ok, err)
++	}
++}
++
++func TestProjectionContextCloseWaitsForCanceledDecoder(t *testing.T) {
++	s := openIndexFixture(t, copyIndexFixture(t), "MAPPED")
++	base, cancel := context.WithCancel(context.Background())
++	defer cancel()
++	entered, release := make(chan struct{}), make(chan struct{})
++	var once sync.Once
++	releaseRead := func() { once.Do(func() { close(release) }) }
++	defer releaseRead()
++	ctx := &projectionCheckpointContext{Context: base, target: ".ProjectionCandidateNode.func1", at: 1, action: func() { close(entered); <-release }}
++	result := make(chan error, 1)
++	go func() { _, _, err := s.ProjectionCandidateNode(ctx, 17); result <- err }()
++	select {
++	case <-entered:
++	case <-time.After(5 * time.Second):
++		t.Fatal("decoder checkpoint not observed")
++	}
++	closed := make(chan error, 1)
++	go func() { closed <- s.Close() }()
++	// Close publishes its closing channel only after acquiring the write lock.
++	// Observe the actual blocked Close stack while the decoder owns its RLock.
++	deadline := time.Now().Add(5 * time.Second)
++	for {
++		stacks := make([]byte, 1<<20)
++		stacks = stacks[:runtime.Stack(stacks, true)]
++		waiting := false
++		for _, stack := range strings.Split(string(stacks), "\n\n") {
++			if strings.Contains(stack, "internal/store.(*Store).Close(") && strings.Contains(stack, "sync.(*RWMutex).Lock(") {
++				waiting = true
++				break
++			}
++		}
++		if waiting {
++			break
++		}
++		if time.Now().After(deadline) {
++			t.Fatal("Close was not observed waiting on decoder lifetime lock")
++		}
++		runtime.Gosched()
++	}
++	select {
++	case err := <-closed:
++		t.Fatal("close released in-flight decoder", err)
++	default:
++	}
++	cancel()
++	releaseRead()
++	select {
++	case err := <-result:
++		if err != context.Canceled {
++			t.Fatal(err)
++		}
++	case <-time.After(5 * time.Second):
++		t.Fatal("decoder did not leave lifetime lock")
++	}
++	select {
++	case err := <-closed:
++		if err != nil {
++			t.Fatal(err)
++		}
++	case <-time.After(5 * time.Second):
++		t.Fatal("Close did not join read")
++	}
++	if ctx.calls != 1 {
++		t.Fatal("required read boundary not reached exactly once", ctx.calls)
++	}
++	if _, _, err := s.ProjectionCandidateNode(base, 17); err != ErrStoreClosed {
++		t.Fatal("closed/canceled precedence", err)
++	}
++}
+diff --git a/graphite-server/internal/store/projection_node.go b/graphite-server/internal/store/projection_node.go
+index 33568db3..77f0bf3f 100644
+--- a/graphite-server/internal/store/projection_node.go
++++ b/graphite-server/internal/store/projection_node.go
+@@ -19,8 +19,12 @@ func (s *Store) ProjectionCandidateNode(ctx context.Context, id int32) (Node, bo
+ 	if s.callSiteIndex.closed {
+ 		return Node{}, false, ErrStoreClosed
+ 	}
+-	if err := ctx.Err(); err != nil {
+-		return Node{}, false, err
++	select {
++	case <-ctx.Done():
++		if err := ctx.Err(); err != nil {
++			return Node{}, false, err
++		}
++	default:
+ 	}
+ 	offset, err := s.projectionOffsetLocked(id)
+ 	if err != nil {
+@@ -35,8 +39,12 @@ func (s *Store) ProjectionCandidateNode(ctx context.Context, id int32) (Node, bo
+ 		if failure != nil {
+ 			return nil
+ 		}
+-		if failure = ctx.Err(); failure != nil {
+-			return nil
++		select {
++		case <-ctx.Done():
++			if failure = ctx.Err(); failure != nil {
++				return nil
++			}
++		default:
+ 		}
+ 		if position < 0 || int64(position) > int64(len(s.mappedData))-int64(width) {
+ 			failure = &ProjectionReadError{Class: "EOFException"}

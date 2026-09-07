@@ -1,0 +1,14 @@
+{
+  "verifiedUTC": "2026-09-07T04:07:22.812231+00:00",
+  "rootRevision": "62b92d20",
+  "coreFiles": 2402,
+  "archivedInputs": 2405,
+  "harnessOverlay": {
+    "cmd/profile-query/main.go": "cb96b8aa1ede68c0e45e390e6714162b181a0881beda0a8b3a8c8abe9733b87e",
+    "cmd/profile-query/mutex_capture.go": "9ccb5f87f86b29747cc19e48fcbbbd0b1291878770a0a9281fdace03cf1d4003",
+    "cmd/profile-query/mutex_capture_test.go": "95dffb9ca8c795678dad10d69c65aaeed1ffb58d9f5b4dc70c6025e073150cad"
+  },
+  "binarySHA256": "b3026d383df953fdba3fb18d3ea49e3a2de7ed0ac25f2ea56aaf757d9c66c0f8",
+  "providerManifest": "73a60c2cf55fdac5fe8264fc475d0afd7ddb0a93670505a7122ffc58cd387dd6",
+  "allHashesMatch": true
+}

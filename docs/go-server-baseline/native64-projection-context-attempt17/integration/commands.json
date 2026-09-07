@@ -1,0 +1,31 @@
+[
+  {
+    "command": "git apply --check ../integration/attempt17.patch; git apply ../integration/attempt17.patch",
+    "cwd": "/tmp/graphite-go-a17-on-a16-b/candidate",
+    "exitCode": 0
+  },
+  {
+    "command": "INDEXED_DISTINCT_OUTPUT=/tmp/graphite-go-a17-on-a16-b/integration/output/original-corpus ORDINARY_HISTORY_OUTPUT=/tmp/graphite-go-a17-on-a16-b/integration/output/history go test -race -count=1 ./...",
+    "cwd": "/tmp/graphite-go-a17-on-a16-b/candidate/graphite-server",
+    "exitCode": 0,
+    "log": "module-race.log"
+  },
+  {
+    "command": "go vet ./...",
+    "cwd": "/tmp/graphite-go-a17-on-a16-b/candidate/graphite-server",
+    "exitCode": 0,
+    "log": "module-vet.log"
+  },
+  {
+    "command": "go test -race -v -count=10 ./internal/store -run '^TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint$'",
+    "cwd": "/tmp/graphite-go-a17-on-a16-b/review-module",
+    "exitCode": 0,
+    "log": "review-failure-race-final.log"
+  },
+  {
+    "command": "go test -race -v -count=3 ./internal/store ./internal/query -run '^(TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint|TestProjectionContext|TestMainMappedRangeColdWarmAndCancellation|TestMainStringMappedColdWarmDemandAndCancellation)'",
+    "cwd": "/tmp/graphite-go-a17-on-a16-b/review-original",
+    "exitCode": 0,
+    "log": "original-production-checkpoints-race.log"
+  }
+]

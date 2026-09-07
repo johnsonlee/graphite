@@ -1,0 +1,123 @@
+{
+  "name": "b-ordinary-order-parallel",
+  "query": "MATCH (n:CallSiteNode) WHERE n.caller_class = 'com.google.android.mms.util.PduCache' RETURN n.id AS id, n.caller_name AS name ORDER BY name, id SKIP 2 LIMIT 12",
+  "source": "Pinned-main real64 B pagination HTTP oracle; ordinary direct-string ORDER; source parallel eligible when main strategy permits",
+  "expected": {
+    "columns": [
+      "id",
+      "name"
+    ],
+    "graphCount": 64,
+    "rowCount": 12,
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "id": 1840,
+        "name": "\u003cclinit\u003e"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "id": 1843,
+        "name": "\u003cclinit\u003e"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "id": 1847,
+        "name": "\u003cclinit\u003e"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "id": 1851,
+        "name": "\u003cclinit\u003e"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "id": 1855,
+        "name": "\u003cclinit\u003e"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "id": 1859,
+        "name": "\u003cclinit\u003e"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "id": 1862,
+        "name": "\u003cclinit\u003e"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "id": 1866,
+        "name": "\u003cclinit\u003e"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "id": 1869,
+        "name": "\u003cclinit\u003e"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "id": 1874,
+        "name": "\u003cclinit\u003e"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "id": 1878,
+        "name": "\u003cclinit\u003e"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "id": 1880,
+        "name": "\u003cclinit\u003e"
+      }
+    ]
+  }
+}

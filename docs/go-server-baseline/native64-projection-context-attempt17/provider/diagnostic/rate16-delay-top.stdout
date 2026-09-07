@@ -1,0 +1,29 @@
+File: mutex-profile-query
+Type: delay
+Time: Sep 7, 2026 at 1:09pm (KST)
+Showing nodes accounting for 24.99s, 100% of 24.99s total
+Dropped 12 nodes (cum <= 0.12s)
+      flat  flat%   sum%        cum   cum%
+    13.77s 55.10% 55.10%     13.77s 55.10%  sync.(*Mutex).Unlock (inline)
+    11.22s 44.90%   100%     11.22s 44.90%  runtime._LostContendedRuntimeLock
+         0     0%   100%     13.77s 55.10%  context.(*cancelCtx).Err
+         0     0%   100%     13.77s 55.10%  github.com/johnsonlee/graphite/graphite-server/internal/query.(*genericDistinctCursor).next
+         0     0%   100%     13.24s 52.96%  github.com/johnsonlee/graphite/graphite-server/internal/query.(*genericDistinctCursor).read
+         0     0%   100%     13.77s 55.10%  github.com/johnsonlee/graphite/graphite-server/internal/query.(*genericDistinctScanner).next
+         0     0%   100%     13.70s 54.81%  github.com/johnsonlee/graphite/graphite-server/internal/query.(*genericDistinctScanner).remaining
+         0     0%   100%     13.70s 54.81%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.genericDistinct.func5
+         0     0%   100%     12.69s 50.79%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainCandidateIterator.func4
+         0     0%   100%      7.90s 31.60%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainIndexNodeIDs.func4
+         0     0%   100%      7.90s 31.60%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainIndexNodeIDs.func4.1
+         0     0%   100%      7.90s 31.60%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainIndexNodeIDs.func4.2
+         0     0%   100%     13.16s 52.65%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainStringCandidatesWithPolicy.evaluator.mainMergeNodeSequences.func3
+         0     0%   100%     13.16s 52.65%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainStringCandidatesWithPolicy.evaluator.mainMergeNodeSequences.func3.1
+         0     0%   100%     13.24s 52.96%  github.com/johnsonlee/graphite/graphite-server/internal/query.newGenericDistinctCursor.func1
+         0     0%   100%     13.70s 54.81%  github.com/johnsonlee/graphite/graphite-server/internal/query.runDistinctTasks[go.shape.map[int]bool].func1.1
+         0     0%   100%      4.80s 19.19%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionCandidateNode
+         0     0%   100%      4.33s 17.34%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionCandidateNode.func1
+         0     0%   100%      4.08s 16.35%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionCandidateNode.func2 (partial-inline)
+         0     0%   100%      2.26s  9.03%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionCandidateNode.func3
+         0     0%   100%      2.76s 11.06%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionCandidateNode.func4
+         0     0%   100%      8.36s 33.46%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionNodeOrder
+         0     0%   100%      4.11s 16.44%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).prepareProjectionOffsets

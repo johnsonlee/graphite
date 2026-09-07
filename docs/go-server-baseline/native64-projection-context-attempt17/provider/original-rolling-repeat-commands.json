@@ -1,0 +1,62 @@
+[
+  {
+    "command": [
+      "go",
+      "test",
+      "-overlay=/tmp/graphite-projection-context-attempt17-evidence/original-overlay.json",
+      "-race",
+      "./internal/query",
+      "-run",
+      "^TestOrdinaryProjectionRollingSourcesMain$",
+      "-count=1",
+      "-timeout=45s"
+    ],
+    "output": "/tmp/graphite-projection-context-attempt17-evidence/original-rolling-repeat-0",
+    "exit": 0
+  },
+  {
+    "command": [
+      "go",
+      "test",
+      "-overlay=/tmp/graphite-projection-context-attempt17-evidence/original-overlay.json",
+      "-race",
+      "./internal/query",
+      "-run",
+      "^TestOrdinaryProjectionRollingSourcesMain$",
+      "-count=1",
+      "-timeout=45s"
+    ],
+    "output": "/tmp/graphite-projection-context-attempt17-evidence/original-rolling-repeat-1",
+    "exit": 0
+  },
+  {
+    "command": [
+      "go",
+      "test",
+      "-overlay=/tmp/graphite-projection-context-attempt17-evidence/original-overlay.json",
+      "-race",
+      "./internal/query",
+      "-run",
+      "^TestOrdinaryProjectionRollingSourcesMain$",
+      "-count=1",
+      "-timeout=45s"
+    ],
+    "output": "/tmp/graphite-projection-context-attempt17-evidence/original-rolling-repeat-2",
+    "exit": 0
+  },
+  {
+    "command": [
+      "go",
+      "test",
+      "-overlay=/tmp/graphite-projection-context-attempt17-evidence/original-overlay.json",
+      "-race",
+      "./internal/query",
+      "-run",
+      "^TestOrdinaryProjectionRollingSourcesMain$",
+      "-count=1",
+      "-timeout=45s"
+    ],
+    "output": "/tmp/graphite-projection-context-attempt17-evidence/original-rolling-repeat-3",
+    "exit": 0
+  }
+]

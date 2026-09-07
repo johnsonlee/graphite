@@ -1,0 +1,38 @@
+[
+  {
+    "path": "internal/query/main_string_source_test.go",
+    "size": 15499,
+    "sha256": "4e6a47faa7a0017aec38ca583d7b6c0da0b93a6670609ff5abf3ad17a41631ce",
+    "production": false
+  },
+  {
+    "path": "internal/query/projection_context_test.go",
+    "size": 2603,
+    "sha256": "fca4d4da6340e6dbe30796232de0dd40c6a5a881e182c3677288a4f3e44c7e55",
+    "production": false
+  },
+  {
+    "path": "internal/store/distinct_projection.go",
+    "size": 13618,
+    "sha256": "fc874544826c50972643f312dbcb3e0fe15987e7dc84ef40ad05d6785cac7c85",
+    "production": true
+  },
+  {
+    "path": "internal/store/main_callsite_index_test.go",
+    "size": 8563,
+    "sha256": "0fe27ef2f6fe5b29438a71c7385264269a6868095056afe8425c5bb530875eae",
+    "production": false
+  },
+  {
+    "path": "internal/store/projection_context_test.go",
+    "size": 8022,
+    "sha256": "77a2b9291dce99adee30e61fd0ae4683a2183c12b0e57772d3aafcaeeea92ae2",
+    "production": false
+  },
+  {
+    "path": "internal/store/projection_node.go",
+    "size": 3079,
+    "sha256": "fa1b8a55a6da9783823884f8f0418d722808cd9ef0fd2f650271e5bd0a1edc02",
+    "production": true
+  }
+]

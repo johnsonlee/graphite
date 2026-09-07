@@ -1,0 +1,10 @@
+{
+  "total": 1048,
+  "comparison": {
+    "equal": 1016,
+    "main-success-native-error": 24,
+    "both-error-difference": 4,
+    "both-success-difference": 4
+  },
+  "baseCandidateEqual": 1048
+}

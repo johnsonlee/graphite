@@ -1,0 +1,108 @@
+loaded 1/64 fixture-android-00
+loaded 2/64 fixture-android-01
+loaded 3/64 fixture-android-02
+loaded 4/64 fixture-android-03
+loaded 5/64 fixture-android-04
+loaded 6/64 fixture-android-05
+loaded 7/64 fixture-android-06
+loaded 8/64 fixture-android-07
+loaded 9/64 fixture-android-08
+loaded 10/64 fixture-android-09
+loaded 11/64 fixture-android-10
+loaded 12/64 fixture-android-11
+loaded 13/64 fixture-android-12
+loaded 14/64 fixture-android-13
+loaded 15/64 fixture-android-14
+loaded 16/64 fixture-android-15
+loaded 17/64 fixture-hive-00
+loaded 18/64 fixture-hive-01
+loaded 19/64 fixture-hive-02
+loaded 20/64 fixture-hive-03
+loaded 21/64 fixture-hive-04
+loaded 22/64 fixture-hive-05
+loaded 23/64 fixture-hive-06
+loaded 24/64 fixture-hive-07
+loaded 25/64 fixture-hive-08
+loaded 26/64 fixture-hive-09
+loaded 27/64 fixture-hive-10
+loaded 28/64 fixture-hive-11
+loaded 29/64 fixture-hive-12
+loaded 30/64 fixture-hive-13
+loaded 31/64 fixture-hive-14
+loaded 32/64 fixture-hive-15
+loaded 33/64 fixture-kotlin-compiler-00
+loaded 34/64 fixture-kotlin-compiler-01
+loaded 35/64 fixture-kotlin-compiler-02
+loaded 36/64 fixture-kotlin-compiler-03
+loaded 37/64 fixture-kotlin-compiler-04
+loaded 38/64 fixture-kotlin-compiler-05
+loaded 39/64 fixture-kotlin-compiler-06
+loaded 40/64 fixture-kotlin-compiler-07
+loaded 41/64 fixture-kotlin-compiler-08
+loaded 42/64 fixture-kotlin-compiler-09
+loaded 43/64 fixture-kotlin-compiler-10
+loaded 44/64 fixture-kotlin-compiler-11
+loaded 45/64 fixture-kotlin-compiler-12
+loaded 46/64 fixture-kotlin-compiler-13
+loaded 47/64 fixture-kotlin-compiler-14
+loaded 48/64 fixture-kotlin-compiler-15
+loaded 49/64 fixture-tika-00
+loaded 50/64 fixture-tika-01
+loaded 51/64 fixture-tika-02
+loaded 52/64 fixture-tika-03
+loaded 53/64 fixture-tika-04
+loaded 54/64 fixture-tika-05
+loaded 55/64 fixture-tika-06
+loaded 56/64 fixture-tika-07
+loaded 57/64 fixture-tika-08
+loaded 58/64 fixture-tika-09
+loaded 59/64 fixture-tika-10
+loaded 60/64 fixture-tika-11
+loaded 61/64 fixture-tika-12
+loaded 62/64 fixture-tika-13
+loaded 63/64 fixture-tika-14
+loaded 64/64 fixture-tika-15
+CATALOG VERIFIED map[callSites:5046935 edges:20448885 methods:1374983 nodes:19431891]
+PROFILE START wrapped-firstLastGraphBimodalClassPrefix 2026-09-07T04:54:44.493977Z
+PROFILE DONE wrapped-firstLastGraphBimodalClassPrefix bytes=50764 hash=9c8299fdd85f475db72ade74389abd2376def9f5e494bf921b8e57589a2e12bd equal=true alloc=5965804912 GC=0
+PROFILE START wrapped-firstLastGraphBimodalClassPrefix-repeat 2026-09-07T04:54:47.880612Z
+PROFILE DONE wrapped-firstLastGraphBimodalClassPrefix-repeat bytes=50764 hash=9c8299fdd85f475db72ade74389abd2376def9f5e494bf921b8e57589a2e12bd equal=true alloc=443947144 GC=0
+PROFILE START global-wide-wrapped-case-insensitive-distinct-dense 2026-09-07T04:54:50.217508Z
+PROFILE DONE global-wide-wrapped-case-insensitive-distinct-dense bytes=43306 hash=77b68b7458bf7a78929fa43d57d910ab51823abab6eb98172bcc052ead550336 equal=true alloc=268461440 GC=0
+PROFILE START global-wide-wrapped-case-insensitive-distinct-dense-repeat 2026-09-07T04:54:51.867871Z
+PROFILE DONE global-wide-wrapped-case-insensitive-distinct-dense-repeat bytes=43306 hash=77b68b7458bf7a78929fa43d57d910ab51823abab6eb98172bcc052ead550336 equal=true alloc=268440360 GC=0
+PROFILE START global-wide-distribution-broad-all-64 2026-09-07T04:54:53.531932Z
+PROFILE DONE global-wide-distribution-broad-all-64 bytes=42178 hash=533473517a4e49aaeae4b8e91790854d92c6df28cd9c51e4ab3005ffe55baaa5 equal=true alloc=1637456 GC=0
+PROFILE START c-necessary-ordinary 2026-09-07T04:54:54.906355Z
+PROFILE DONE c-necessary-ordinary bytes=24162 hash=c8da2496dd433d150b82186d7147f3efc25abf540bd4308adeb814ec3c958702 equal=true alloc=2685096 GC=0
+PROFILE START c-necessary-ordinary-repeat 2026-09-07T04:54:56.341724Z
+PROFILE DONE c-necessary-ordinary-repeat bytes=24162 hash=c8da2496dd433d150b82186d7147f3efc25abf540bd4308adeb814ec3c958702 equal=true alloc=2258280 GC=0
+PROFILE START c-necessary-distinct 2026-09-07T04:54:57.689554Z
+PROFILE DONE c-necessary-distinct bytes=26200 hash=e7f4369ce2e170be13e1f7a186b012be05f43b975163f5df7526db4e3ad07a0e equal=true alloc=1192604552 GC=0
+PROFILE START c-necessary-distinct-repeat 2026-09-07T04:54:59.538965Z
+PROFILE DONE c-necessary-distinct-repeat bytes=26200 hash=e7f4369ce2e170be13e1f7a186b012be05f43b975163f5df7526db4e3ad07a0e equal=true alloc=1172599832 GC=0
+PROFILE START d-unbounded-android 2026-09-07T04:55:01.090671Z
+PROFILE DONE d-unbounded-android bytes=60 hash=acf3670efaf323d4bed226bb597f466e27e0eeda7d290c104967c6cabd840974 equal=true alloc=79407600 GC=0
+PROFILE START d-unbounded-kotlin 2026-09-07T04:55:02.542406Z
+PROFILE DONE d-unbounded-kotlin bytes=8146 hash=9a7e42c21fc4c3980e1a9d38c57964c604bdd06d15ea12879c58a6d014c41158 equal=true alloc=47949808 GC=0
+PROFILE START e-generic-ordinary 2026-09-07T04:55:04.087417Z
+PROFILE DONE e-generic-ordinary bytes=2424 hash=4de1bba0d2aa69bd3c2bceba6467b453139368eecc6bdd08f7fc213626df2a4f equal=true alloc=687608 GC=0
+PROFILE START e-generic-distinct 2026-09-07T04:55:05.536982Z
+PROFILE DONE e-generic-distinct bytes=2223 hash=e8537464f427227dbadb7278c1322538ba6ff12fa34312e59a2216d007f53288 equal=true alloc=5479522872 GC=0
+PROFILE START b-ordinary-skip 2026-09-07T04:55:12.465603Z
+PROFILE DONE b-ordinary-skip bytes=1675 hash=8f3570cb5b33767b67cc47ba0ffc04f9d4edd0f425d2196d8dc2082e09a88630 equal=true alloc=1032560 GC=0
+PROFILE START b-distinct-skip 2026-09-07T04:55:13.864427Z
+PROFILE DONE b-distinct-skip bytes=1403 hash=5b87e7e2fc88ccb77cb6d609108f31a49c44954d9be2306f2f604b6930118b63 equal=true alloc=1620068728 GC=0
+PROFILE START b-ordinary-order-parallel 2026-09-07T04:55:16.805705Z
+PROFILE DONE b-ordinary-order-parallel bytes=1120 hash=b51bfa838bbd846167ff3e741bb777f6cff3216ae92f08f17bdbc32db1d11eaf equal=true alloc=22598792 GC=0
+PROFILE START b-ordinary-order-generic-serial 2026-09-07T04:55:18.155486Z
+PROFILE DONE b-ordinary-order-generic-serial bytes=801 hash=c277095119591a8cb6c9abeb0eb447d2dca171ac395871fd65793e962ea7588e equal=true alloc=203450496 GC=0
+PROFILE START b-distinct-order-retained 2026-09-07T04:55:19.668677Z
+PROFILE DONE b-distinct-order-retained bytes=158 hash=b1b341a32fa392137c69990d27d2c346159d75d78d288a6ec31833e2d382ad77 equal=true alloc=22295336 GC=0
+PROFILE START b-distinct-order-eviction-candidate 2026-09-07T04:55:21.843498Z
+PROFILE DONE b-distinct-order-eviction-candidate bytes=207 hash=9f95f9e3602b3b119b16b6fb5e26cd5a3157876d490f136cb593f496f539b8c8 equal=true alloc=22334096 GC=0
+PROFILE START b-order-duplicate-alias-ties 2026-09-07T04:55:23.211502Z
+PROFILE DONE b-order-duplicate-alias-ties bytes=630 hash=45aa6475a0011bfa6bcfd01ac2db3dc47d318e1bc647e04735dc7f6b844df9d7 equal=true alloc=22556352 GC=0
+PROFILE START b-distinct-order-callee 2026-09-07T04:55:24.816275Z
+PROFILE DONE b-distinct-order-callee bytes=441 hash=d3b603c5f0f752f49836d50951dc65a1e1cf44ff77fd7edb9963e73838b3d468 equal=true alloc=22388920 GC=0
+COMPLETE

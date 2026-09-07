@@ -1,0 +1,33 @@
+=== RUN   TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint
+    review_projection_failure_test.go:19: open /var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint2327652392/001/graph.nodes: no such file or directory
+--- FAIL: TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint (0.00s)
+=== RUN   TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint
+    review_projection_failure_test.go:19: open /var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint4023811651/001/graph.nodes: no such file or directory
+--- FAIL: TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint (0.00s)
+=== RUN   TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint
+    review_projection_failure_test.go:19: open /var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint2598978056/001/graph.nodes: no such file or directory
+--- FAIL: TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint (0.00s)
+=== RUN   TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint
+    review_projection_failure_test.go:19: open /var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint3537056931/001/graph.nodes: no such file or directory
+--- FAIL: TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint (0.00s)
+=== RUN   TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint
+    review_projection_failure_test.go:19: open /var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint2453191613/001/graph.nodes: no such file or directory
+--- FAIL: TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint (0.00s)
+=== RUN   TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint
+    review_projection_failure_test.go:19: open /var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint2542897781/001/graph.nodes: no such file or directory
+--- FAIL: TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint (0.00s)
+=== RUN   TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint
+    review_projection_failure_test.go:19: open /var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint3675166044/001/graph.nodes: no such file or directory
+--- FAIL: TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint (0.00s)
+=== RUN   TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint
+    review_projection_failure_test.go:19: open /var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint742779615/001/graph.nodes: no such file or directory
+--- FAIL: TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint (0.00s)
+=== RUN   TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint
+    review_projection_failure_test.go:19: open /var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint3318051714/001/graph.nodes: no such file or directory
+--- FAIL: TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint (0.00s)
+=== RUN   TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint
+    review_projection_failure_test.go:19: open /var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint1851171753/001/graph.nodes: no such file or directory
+--- FAIL: TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint (0.00s)
+FAIL
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/store	0.418s
+FAIL

@@ -1,0 +1,17 @@
+{
+  "argv": [
+    "go",
+    "tool",
+    "pprof",
+    "-sample_index=delay",
+    "-top",
+    "-nodecount=0",
+    "-nodefraction=0",
+    "-edgefraction=0",
+    "-base",
+    "/tmp/graphite-a15-mutex-root-62b92d20/rate16/wrapped-firstLastGraphBimodalClassPrefix-repeat/mutex-before.pprof",
+    "/tmp/graphite-a15-mutex-diagnostic/mutex-profile-query",
+    "/tmp/graphite-a15-mutex-root-62b92d20/rate16/wrapped-firstLastGraphBimodalClassPrefix-repeat/mutex-after.pprof"
+  ],
+  "exitCode": 0
+}

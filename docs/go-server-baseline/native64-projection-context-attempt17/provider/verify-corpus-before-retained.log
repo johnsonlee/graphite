@@ -1,0 +1,15 @@
+{
+  "total": 1048,
+  "comparison": {
+    "equal": 1016,
+    "main-success-native-error": 24,
+    "both-error-difference": 4,
+    "both-success-difference": 4
+  },
+  "baseCandidateEqual": 1048
+}
+Traceback (most recent call last):
+  File "/tmp/graphite-projection-context-attempt17-evidence/verify-corpus.py", line 40, in <module>
+    assert re.fullmatch(r'\$\[\d+\]\.targets\[\d+\]\.(before|after)\[\d+\]\.mappedView',d['path']),d
+           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'path': '$[8].targets[0].after[5].retained', 'base': False, 'candidate': True, 'reason': 'value'}

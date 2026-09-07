@@ -1,0 +1,276 @@
+--- a/cmd/profile-query/main.go
++++ b/cmd/profile-query/main.go
+@@ -70,7 +70,16 @@
+ func main() {
+ 	configPath := flag.String("config", "", "fixed configuration")
+ 	out := flag.String("out", "", "new output directory")
++	mutexRate := flag.Int("mutex-rate", 0, "event sampling rate; 0 is diagnostic control, N samples roughly 1/N contended unlocks")
++	mutexQuery := flag.String("mutex-query", "", "exact diagnostic config query name to sample; other queries preserve warm history with rate0")
+ 	flag.Parse()
++	if *mutexRate < 0 || (*mutexRate > 0 && *mutexQuery == "") {
++		panic("nonzero mutex-rate requires mutex-query; rate cannot be negative")
++	}
++	if runtime.SetMutexProfileFraction(-1) != 0 {
++		panic("mutex sampler must be disabled before graph loading")
++	}
++
+ 	if *out == "" || *configPath == "" {
+ 		panic("config and out required")
+ 	}
+@@ -79,10 +88,19 @@
+ 	must(e)
+ 	var cfg config
+ 	must(json.Unmarshal(b, &cfg))
++	if *mutexRate > 0 {
++		found := false
++		for _, q := range cfg.Queries {
++			found = found || q.Name == *mutexQuery
++		}
++		if !found {
++			panic("mutex-query not found in fixed configuration")
++		}
++	}
+ 	if len(cfg.Graphs) != 64 {
+ 		panic("exactly 64 real graphs required")
+ 	}
+-	save(filepath.Join(*out, "runtime.json"), map[string]any{"goVersion": runtime.Version(), "GOOS": runtime.GOOS, "GOARCH": runtime.GOARCH, "NumCPU": runtime.NumCPU(), "GOMAXPROCS": runtime.GOMAXPROCS(0), "MemProfileRate": runtime.MemProfileRate, "GOGC": os.Getenv("GOGC"), "GOMEMLIMIT": os.Getenv("GOMEMLIMIT"), "pid": os.Getpid(), "scope": "loaded-64-store ExecuteCross plus root response JSON marshaling; not HTTP; one request at a time", "profiling": "CPU sampling disabled; heap alloc delta subtracts before profile; sampled allocation rate is default 512 KiB"})
++	save(filepath.Join(*out, "runtime.json"), map[string]any{"goVersion": runtime.Version(), "GOOS": runtime.GOOS, "GOARCH": runtime.GOARCH, "NumCPU": runtime.NumCPU(), "GOMAXPROCS": runtime.GOMAXPROCS(0), "MemProfileRate": runtime.MemProfileRate, "mutexRate": *mutexRate, "mutexQuery": *mutexQuery, "GOGC": os.Getenv("GOGC"), "GOMEMLIMIT": os.Getenv("GOMEMLIMIT"), "pid": os.Getpid(), "scope": "loaded-64-store ExecuteCross plus root response JSON marshaling; not HTTP; one request at a time", "profiling": "CPU sampling disabled; heap alloc delta subtracts before profile; sampled allocation rate is default 512 KiB"})
+ 	sources := []query.Graph{}
+ 	actual := []graphSpec{}
+ 	totals := map[string]int64{"nodes": 0, "edges": 0, "methods": 0, "callSites": 0}
+@@ -109,7 +127,11 @@
+ 	save(filepath.Join(*out, "catalog.json"), map[string]any{"count": len(actual), "graphs": actual, "totals": totals, "matchesMainCatalog": true})
+ 	fmt.Println("CATALOG VERIFIED", totals)
+ 	for _, q := range cfg.Queries {
+-		profile(*out, q, sources)
++		rate := 0
++		if q.Name == *mutexQuery {
++			rate = *mutexRate
++		}
++		profile(*out, q, sources, rate)
+ 	}
+ 	runtime.KeepAlive(sources)
+ 	for _, s := range sources {
+@@ -124,7 +146,7 @@
+ 	}
+ 	return states
+ }
+-func profile(out string, q querySpec, sources []query.Graph) {
++func profile(out string, q querySpec, sources []query.Graph, mutexRate int) {
+ 	dir := filepath.Join(out, q.Name)
+ 	must(os.Mkdir(dir, 0755))
+ 	save(filepath.Join(dir, "query.json"), q)
+@@ -133,12 +155,18 @@
+ 	runtime.GC()
+ 	heap(filepath.Join(dir, "heap-before.pprof"))
+ 	var e error // CPU sampling disabled for this measurement control.
++	capture, err := prepareMutexCapture(dir, mutexRate)
++	must(err)
++	defer capture.Release()
++	save(filepath.Join(dir, "mutex-window.json"), map[string]any{"rate": mutexRate, "scope": "ExecuteCross only; original pprof.Do context and query unchanged; marshal excluded", "profiling": "event-sampled contention; cumulative snapshots require pprof -base subtraction", "background": "process-global runtime contention may remain; no source workers survive the existing join boundary"})
+ 	before := snap()
+ 	fmt.Printf("PROFILE START %s %s\n", q.Name, before.Timestamp)
+ 	start := time.Now()
+ 	var result query.Result
+ 	var queryErr error
++	capture.Start()
+ 	pprof.Do(context.Background(), pprof.Labels("phase", "execute", "shape", q.Name), func(ctx context.Context) { result, queryErr = query.ExecuteCross(ctx, sources, q.Query, nil, 1000) })
++	capture.Stop()
+ 	querySeconds := time.Since(start).Seconds()
+ 	var output []byte
+ 	if queryErr == nil {
+@@ -149,6 +177,7 @@
+ 	}
+ 	elapsed := time.Since(start).Seconds()
+ 	after := snap()
++	must(capture.Write())
+ 	save(filepath.Join(dir, "projection-state-after.json"), projectionStates(sources))
+ 	// No CPU sampler was started.
+ 	runtime.GC()
+--- /dev/null
++++ b/cmd/profile-query/mutex_capture.go
+@@ -0,0 +1,75 @@
++package main
++
++import (
++	"fmt"
++	"os"
++	"path/filepath"
++	"runtime"
++	"runtime/pprof"
++	"sync"
++	"sync/atomic"
++)
++
++// Diagnostic-only process-global ownership. It does not wrap/replace the query
++// context, participate in worker scheduling, or touch Store/evaluator state.
++var mutexWindowActive atomic.Bool
++
++type mutexCapture struct {
++	directory string
++	rate      int
++	stop      sync.Once
++}
++
++func writeMutexSnapshot(path string) error {
++	f, err := os.Create(path)
++	if err != nil {
++		return err
++	}
++	if err = pprof.Lookup("mutex").WriteTo(f, 0); err != nil {
++		f.Close()
++		return err
++	}
++	return f.Close()
++}
++
++// Preparation and baseline serialization occur with sampling disabled and
++// outside the request interval. Start must immediately precede ExecuteCross.
++func prepareMutexCapture(directory string, rate int) (*mutexCapture, error) {
++	if rate < 0 {
++		return nil, fmt.Errorf("mutex rate must be nonnegative")
++	}
++	if !mutexWindowActive.CompareAndSwap(false, true) {
++		return nil, fmt.Errorf("another mutex window owns this process")
++	}
++	fail := true
++	defer func() {
++		if fail {
++			mutexWindowActive.Store(false)
++		}
++	}()
++	if old := runtime.SetMutexProfileFraction(-1); old != 0 {
++		return nil, fmt.Errorf("mutex profiling already enabled at rate %d", old)
++	}
++	if err := writeMutexSnapshot(filepath.Join(directory, "mutex-before.pprof")); err != nil {
++		return nil, err
++	}
++	fail = false
++	return &mutexCapture{directory: directory, rate: rate}, nil
++}
++func (m *mutexCapture) Start() {
++	runtime.SetMutexProfileFraction(m.rate)
++}
++func (m *mutexCapture) Stop() {
++	m.stop.Do(func() { runtime.SetMutexProfileFraction(0) })
++}
++func (m *mutexCapture) Write() error {
++	m.Stop()
++	return writeMutexSnapshot(filepath.Join(m.directory, "mutex-after.pprof"))
++}
++
++// Panic paths still restore the global runtime setting without swallowing the
++// query panic. Normal paths serialize only after snapshots/request deltas.
++func (m *mutexCapture) Release() {
++	m.Stop()
++	mutexWindowActive.Store(false)
++}
+--- /dev/null
++++ b/cmd/profile-query/mutex_capture_test.go
+@@ -0,0 +1,106 @@
++package main
++
++import (
++	"compress/gzip"
++	"errors"
++	"io"
++	"os"
++	"path/filepath"
++	"runtime"
++	"testing"
++)
++
++func TestMutexWindowGlobalBoundaryAndControl(t *testing.T) {
++	old := runtime.SetMutexProfileFraction(0)
++	defer runtime.SetMutexProfileFraction(old)
++	for _, rate := range []int{0, 16} {
++		dir := t.TempDir()
++		capture, err := prepareMutexCapture(dir, rate)
++		if err != nil {
++			t.Fatal(err)
++		}
++		if got := runtime.SetMutexProfileFraction(-1); got != 0 {
++			t.Fatal("sampling began during preparation", got)
++		}
++		capture.Start()
++		if got := runtime.SetMutexProfileFraction(-1); got != rate {
++			t.Fatal("wrong sampling rate", got)
++		}
++		capture.Stop()
++		if got := runtime.SetMutexProfileFraction(-1); got != 0 {
++			t.Fatal("sampling includes serialization", got)
++		}
++		if err := capture.Write(); err != nil {
++			t.Fatal(err)
++		}
++		capture.Release()
++		for _, name := range []string{"mutex-before.pprof", "mutex-after.pprof"} {
++			f, err := os.Open(filepath.Join(dir, name))
++			if err != nil {
++				t.Fatal(err)
++			}
++			z, err := gzip.NewReader(f)
++			if err != nil {
++				t.Fatal(err)
++			}
++			b, err := io.ReadAll(z)
++			z.Close()
++			f.Close()
++			if err != nil || len(b) == 0 {
++				t.Fatal("missing profile protobuf", len(b), err)
++			}
++		}
++	}
++}
++func TestMutexWindowRejectsForeignOwnerAndBadRate(t *testing.T) {
++	old := runtime.SetMutexProfileFraction(7)
++	defer runtime.SetMutexProfileFraction(old)
++	if _, err := prepareMutexCapture(t.TempDir(), 16); err == nil {
++		t.Fatal("foreign sampler overridden")
++	}
++	if got := runtime.SetMutexProfileFraction(-1); got != 7 {
++		t.Fatal(got)
++	}
++	runtime.SetMutexProfileFraction(0)
++	if _, err := prepareMutexCapture(t.TempDir(), -1); err == nil {
++		t.Fatal("negative rate accepted")
++	}
++	capture, err := prepareMutexCapture(t.TempDir(), 16)
++	if err != nil {
++		t.Fatal(err)
++	}
++	defer capture.Release()
++	if _, err := prepareMutexCapture(t.TempDir(), 1); err == nil {
++		t.Fatal("concurrent owner accepted")
++	}
++}
++func TestMutexWindowPanicRestoresSettingWithoutReplacingFailure(t *testing.T) {
++	old := runtime.SetMutexProfileFraction(0)
++	defer runtime.SetMutexProfileFraction(old)
++	marker := errors.New("query failure")
++	var failure any
++	func() {
++		defer func() { failure = recover() }()
++		capture, err := prepareMutexCapture(t.TempDir(), 16)
++		if err != nil {
++			t.Fatal(err)
++		}
++		defer capture.Release()
++		capture.Start()
++		panic(marker)
++	}()
++	if failure != marker || runtime.SetMutexProfileFraction(-1) != 0 || mutexWindowActive.Load() {
++		t.Fatal("failure/rate/ownership changed", failure)
++	}
++}
++func TestMutexWindowPreparationFailureReleasesOwnership(t *testing.T) {
++	old := runtime.SetMutexProfileFraction(0)
++	defer runtime.SetMutexProfileFraction(old)
++	bad := filepath.Join(t.TempDir(), "absent", "nested")
++	if _, err := prepareMutexCapture(bad, 16); err == nil {
++		t.Fatal("missing directory accepted")
++	}
++	if mutexWindowActive.Load() || runtime.SetMutexProfileFraction(-1) != 0 {
++		t.Fatal("failed preparation retained global state")
++	}
++}

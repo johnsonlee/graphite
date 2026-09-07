@@ -1,0 +1,175 @@
+Total: 24.99s
+ROUTINE ======================== context.(*cancelCtx).Err in /opt/homebrew/Cellar/go/1.22.0/libexec/src/context/context.go
+         0     13.77s (flat, cum) 55.10% of Total
+         .          .    453:func (c *cancelCtx) Err() error {
+         .          .    454:	c.mu.Lock()
+         .          .    455:	err := c.err
+         .     13.77s    456:	c.mu.Unlock()
+         .          .    457:	return err
+         .          .    458:}
+         .          .    459:
+         .          .    460:// propagateCancel arranges for child to be canceled when parent is.
+         .          .    461:// It sets the parent context of cancelCtx.
+ROUTINE ======================== github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionCandidateNode in /private/tmp/graphite-a15-mutex-diagnostic/module/internal/store/projection_node.go
+         0      4.80s (flat, cum) 19.19% of Total
+         .          .     13:func (s *Store) ProjectionCandidateNode(ctx context.Context, id int32) (Node, bool, error) {
+         .   229.38ms     14:	if err := s.prepareProjectionOffsets(ctx); err != nil {
+         .          .     15:		return Node{}, false, err
+         .          .     16:	}
+         .          .     17:	s.callSiteIndex.mu.RLock()
+         .          .     18:	defer s.callSiteIndex.mu.RUnlock()
+         .          .     19:	if s.callSiteIndex.closed {
+         .          .     20:		return Node{}, false, ErrStoreClosed
+         .          .     21:	}
+         .   233.97ms     22:	if err := ctx.Err(); err != nil {
+         .          .     23:		return Node{}, false, err
+         .          .     24:	}
+         .          .     25:	offset, err := s.projectionOffsetLocked(id)
+         .          .     26:	if err != nil {
+         .          .     27:		return Node{}, false, err
+         .          .     28:	}
+         .          .     29:	if offset == -1 {
+         .          .     30:		return Node{}, false, nil
+         .          .     31:	}
+         .          .     32:	position := int32(offset)
+         .          .     33:	var failure error
+         .          .     34:	read := func(width int32) []byte {
+         .          .     35:		if failure != nil {
+         .          .     36:			return nil
+         .          .     37:		}
+         .          .     38:		if failure = ctx.Err(); failure != nil {
+         .          .     39:			return nil
+         .          .     40:		}
+         .          .     41:		if position < 0 || int64(position) > int64(len(s.mappedData))-int64(width) {
+         .          .     42:			failure = &ProjectionReadError{Class: "EOFException"}
+         .          .     43:			return nil
+         .          .     44:		}
+         .          .     45:		value := s.mappedData[int(position):int(position+width)]
+         .          .     46:		position += width
+         .          .     47:		return value
+         .          .     48:	}
+         .          .     49:	i32 := func() int32 {
+         .          .     50:		data := read(4)
+         .          .     51:		if data == nil {
+         .          .     52:			return 0
+         .          .     53:		}
+         .          .     54:		return int32(binary.BigEndian.Uint32(data))
+         .          .     55:	}
+         .          .     56:	str := func() string {
+         .          .     57:		sid := i32()
+         .          .     58:		if failure != nil {
+         .          .     59:			return ""
+         .          .     60:		}
+         .          .     61:		if sid < 0 || int64(sid) >= int64(len(s.Strings)) {
+         .          .     62:			failure = &StringTableReferenceError{Index: sid, Size: len(s.Strings)}
+         .          .     63:			return ""
+         .          .     64:		}
+         .          .     65:		return s.Strings[sid]
+         .          .     66:	}
+         .   260.66ms     67:	n := Node{ID: i32()}
+         .   248.25ms     68:	tagBytes := read(1)
+         .          .     69:	if failure != nil {
+         .          .     70:		return Node{}, false, failure
+         .          .     71:	}
+         .          .     72:	tag := tagBytes[0]
+         .          .     73:	if int(tag) >= len(nodeKinds) {
+         .          .     74:		return Node{}, false, &UnknownNodeTagError{Tag: tag}
+         .          .     75:	}
+         .          .     76:	if tag != 12 {
+         .          .     77:		// Runtime class acceptance depends on the storage branch, so return the
+         .          .     78:		// fully consumed node to the query boundary.
+         .          .     79:		d := newDecoder(bytes.NewReader(s.mappedData[int32(offset):]), int64(len(s.mappedData))-int64(int32(offset)), s.Strings)
+         .          .     80:		d.version = s.FormatVersion
+         .          .     81:		node := d.node()
+         .          .     82:		return node, d.err == nil, d.err
+         .          .     83:	}
+         .          .     84:	n.Kind = "CallSiteNode"
+         .          .     85:	method := func() MethodDescriptor {
+         .          .     86:		m := MethodDescriptor{DeclaringClass: str(), Name: str(), ParameterTypes: []string{}}
+         .          .     87:		count := i32()
+         .          .     88:		for at := int32(0); at < count && failure == nil; at++ {
+         .          .     89:			m.ParameterTypes = append(m.ParameterTypes, str())
+         .          .     90:		}
+         .          .     91:		m.ReturnType = str()
+         .          .     92:		return m
+         .          .     93:	}
+         .      1.50s     94:	n.Caller = method()
+         .      1.26s     95:	n.Callee = method()
+         .   266.74ms     96:	line := i32()
+         .          .     97:	if line != -1 {
+         .          .     98:		n.LineNumber = &line
+         .          .     99:	}
+         .   264.23ms    100:	receiver := i32()
+         .          .    101:	if receiver != -1 {
+         .          .    102:		n.Receiver = &receiver
+         .          .    103:	}
+         .   273.59ms    104:	count := i32()
+         .          .    105:	n.Arguments = []int32{}
+         .          .    106:	for at := int32(0); at < count && failure == nil; at++ {
+         .   256.38ms    107:		n.Arguments = append(n.Arguments, i32())
+         .          .    108:	}
+         .          .    109:	if failure != nil {
+         .          .    110:		return Node{}, false, failure
+         .          .    111:	}
+         .          .    112:	return n, true, nil
+ROUTINE ======================== github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionCandidateNode.func1 in /private/tmp/graphite-a15-mutex-diagnostic/module/internal/store/projection_node.go
+         0      4.33s (flat, cum) 17.34% of Total
+         .          .     34:	read := func(width int32) []byte {
+         .          .     35:		if failure != nil {
+         .          .     36:			return nil
+         .          .     37:		}
+         .      4.33s     38:		if failure = ctx.Err(); failure != nil {
+         .          .     39:			return nil
+         .          .     40:		}
+         .          .     41:		if position < 0 || int64(position) > int64(len(s.mappedData))-int64(width) {
+         .          .     42:			failure = &ProjectionReadError{Class: "EOFException"}
+         .          .     43:			return nil
+ROUTINE ======================== github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionCandidateNode.func2 in /private/tmp/graphite-a15-mutex-diagnostic/module/internal/store/projection_node.go
+         0      4.08s (flat, cum) 16.35% of Total
+         .          .     49:	i32 := func() int32 {
+         .      4.08s     50:		data := read(4)
+         .          .     51:		if data == nil {
+         .          .     52:			return 0
+         .          .     53:		}
+         .          .     54:		return int32(binary.BigEndian.Uint32(data))
+         .          .     55:	}
+ROUTINE ======================== github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionCandidateNode.func3 in /private/tmp/graphite-a15-mutex-diagnostic/module/internal/store/projection_node.go
+         0      2.26s (flat, cum)  9.03% of Total
+         .          .     56:	str := func() string {
+         .      2.26s     57:		sid := i32()
+         .          .     58:		if failure != nil {
+         .          .     59:			return ""
+         .          .     60:		}
+         .          .     61:		if sid < 0 || int64(sid) >= int64(len(s.Strings)) {
+         .          .     62:			failure = &StringTableReferenceError{Index: sid, Size: len(s.Strings)}
+ROUTINE ======================== github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionCandidateNode.func4 in /private/tmp/graphite-a15-mutex-diagnostic/module/internal/store/projection_node.go
+         0      2.76s (flat, cum) 11.06% of Total
+         .          .     85:	method := func() MethodDescriptor {
+         .      1.06s     86:		m := MethodDescriptor{DeclaringClass: str(), Name: str(), ParameterTypes: []string{}}
+         .   506.54ms     87:		count := i32()
+         .          .     88:		for at := int32(0); at < count && failure == nil; at++ {
+         .   715.77ms     89:			m.ParameterTypes = append(m.ParameterTypes, str())
+         .          .     90:		}
+         .   478.68ms     91:		m.ReturnType = str()
+         .          .     92:		return m
+         .          .     93:	}
+         .          .     94:	n.Caller = method()
+         .          .     95:	n.Callee = method()
+         .          .     96:	line := i32()
+ROUTINE ======================== github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionNodeOrder in /private/tmp/graphite-a15-mutex-diagnostic/module/internal/store/distinct_projection.go
+         0      8.36s (flat, cum) 33.46% of Total
+         .          .    101:func (s *Store) ProjectionNodeOrder(ctx context.Context, id int32) (int64, error) {
+         .      3.88s    102:	if err := s.prepareProjectionOffsets(ctx); err != nil {
+         .          .    103:		return 0, err
+         .          .    104:	}
+         .          .    105:	s.callSiteIndex.mu.RLock()
+         .          .    106:	defer s.callSiteIndex.mu.RUnlock()
+         .          .    107:	if s.callSiteIndex.closed {
+         .          .    108:		return 0, ErrStoreClosed
+         .          .    109:	}
+         .      4.48s    110:	if err := ctx.Err(); err != nil {
+         .          .    111:		return 0, err
+         .          .    112:	}
+         .          .    113:	return s.projectionOffsetLocked(id)
+         .          .    114:}
+         .          .    115:

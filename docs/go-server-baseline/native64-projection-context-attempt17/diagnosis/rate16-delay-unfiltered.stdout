@@ -1,0 +1,40 @@
+File: mutex-profile-query
+Type: delay
+Time: Sep 7, 2026 at 1:09pm (KST)
+Showing nodes accounting for 24991.15ms, 100% of 24991.15ms total
+      flat  flat%   sum%        cum   cum%
+13769.91ms 55.10% 55.10% 13769.91ms 55.10%  sync.(*Mutex).Unlock (inline)
+11221.24ms 44.90%   100% 11221.24ms 44.90%  runtime._LostContendedRuntimeLock
+         0     0%   100% 13769.91ms 55.10%  context.(*cancelCtx).Err
+         0     0%   100% 13769.91ms 55.10%  github.com/johnsonlee/graphite/graphite-server/internal/query.(*genericDistinctCursor).next
+         0     0%   100% 13236.28ms 52.96%  github.com/johnsonlee/graphite/graphite-server/internal/query.(*genericDistinctCursor).read
+         0     0%   100%    71.45ms  0.29%  github.com/johnsonlee/graphite/graphite-server/internal/query.(*genericDistinctScanner).batch
+         0     0%   100% 13769.91ms 55.10%  github.com/johnsonlee/graphite/graphite-server/internal/query.(*genericDistinctScanner).next
+         0     0%   100% 13698.46ms 54.81%  github.com/johnsonlee/graphite/graphite-server/internal/query.(*genericDistinctScanner).remaining
+         0     0%   100%    71.45ms  0.29%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.genericDistinct.func3
+         0     0%   100% 13698.46ms 54.81%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.genericDistinct.func5
+         0     0%   100%    77.53ms  0.31%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainCandidateIterator
+         0     0%   100%    12693ms 50.79%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainCandidateIterator.func4
+         0     0%   100%    77.53ms  0.31%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainIndexNodeIDs
+         0     0%   100%  7896.52ms 31.60%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainIndexNodeIDs.func4
+         0     0%   100%  7896.52ms 31.60%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainIndexNodeIDs.func4.1
+         0     0%   100%  7896.52ms 31.60%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainIndexNodeIDs.func4.2
+         0     0%   100%    77.53ms  0.31%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainStringCandidates (inline)
+         0     0%   100%    77.53ms  0.31%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainStringCandidatesWithPolicy
+         0     0%   100% 13158.75ms 52.65%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainStringCandidatesWithPolicy.evaluator.mainMergeNodeSequences.func3
+         0     0%   100% 13158.75ms 52.65%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainStringCandidatesWithPolicy.evaluator.mainMergeNodeSequences.func3.1
+         0     0%   100% 13236.28ms 52.96%  github.com/johnsonlee/graphite/graphite-server/internal/query.newGenericDistinctCursor.func1
+         0     0%   100%    71.45ms  0.29%  github.com/johnsonlee/graphite/graphite-server/internal/query.runDistinctTasks[go.shape.[]map[string]interface {}].func1.1
+         0     0%   100% 13698.46ms 54.81%  github.com/johnsonlee/graphite/graphite-server/internal/query.runDistinctTasks[go.shape.map[int]bool].func1.1
+         0     0%   100%     0.03ms 0.0001%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*CallSiteStringIndex).Directory
+         0     0%   100%    77.51ms  0.31%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*CallSiteStringIndex).Postings
+         0     0%   100%    54.41ms  0.22%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*CallSiteStringIndex).readLock
+         0     0%   100%     0.03ms 0.0001%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*DistinctStringIndex).Directory
+         0     0%   100%    77.51ms  0.31%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*DistinctStringIndex).Postings
+         0     0%   100%  4796.48ms 19.19%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionCandidateNode
+         0     0%   100%  4333.13ms 17.34%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionCandidateNode.func1
+         0     0%   100%  4084.88ms 16.35%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionCandidateNode.func2 (partial-inline)
+         0     0%   100%  2256.75ms  9.03%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionCandidateNode.func3
+         0     0%   100%  2763.28ms 11.06%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionCandidateNode.func4
+         0     0%   100%  8362.27ms 33.46%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionNodeOrder
+         0     0%   100%  4108.06ms 16.44%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).prepareProjectionOffsets

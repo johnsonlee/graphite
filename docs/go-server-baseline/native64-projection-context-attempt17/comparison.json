@@ -1,0 +1,408 @@
+{
+  "all42CompleteTypedResponsesEqual": true,
+  "allSourceHistoriesEqual": true,
+  "sourceAndBinaryUnchanged": true,
+  "bothProcessesClosedStoresAndExited0": true,
+  "observations": [
+    {
+      "name": "wrapped-firstLastGraphBimodalClassPrefix",
+      "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) STARTS WITH 'android.'\n   OR toLower(coalesce(n.callee_class, '')) STARTS WITH 'android.'\n   OR toLower(coalesce(n.caller_class, '')) STARTS WITH 'org.jetbrains.kotlin.'\n   OR toLower(coalesce(n.callee_class, '')) STARTS WITH 'org.jetbrains.kotlin.'\nRETURN DISTINCT n.graph_id, n.caller_class AS caller, n.caller_name AS callerMethod,\n    n.callee_class AS callee, n.callee_name AS calleeMethod\nLIMIT 250",
+      "bothCompleteTypedResponsesEqual": true,
+      "base": {
+        "seconds": 15.676782625,
+        "cpuSeconds": 76.806707,
+        "allocatedBytes": 5966082120,
+        "numGC": 1,
+        "pauseTotalNs": 143333
+      },
+      "candidate": {
+        "seconds": 1.754574334,
+        "cpuSeconds": 13.262512999999998,
+        "allocatedBytes": 5965804912,
+        "numGC": 0,
+        "pauseTotalNs": 0
+      }
+    },
+    {
+      "name": "wrapped-firstLastGraphBimodalClassPrefix-repeat",
+      "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) STARTS WITH 'android.'\n   OR toLower(coalesce(n.callee_class, '')) STARTS WITH 'android.'\n   OR toLower(coalesce(n.caller_class, '')) STARTS WITH 'org.jetbrains.kotlin.'\n   OR toLower(coalesce(n.callee_class, '')) STARTS WITH 'org.jetbrains.kotlin.'\nRETURN DISTINCT n.graph_id, n.caller_class AS caller, n.caller_name AS callerMethod,\n    n.callee_class AS callee, n.callee_name AS calleeMethod\nLIMIT 250",
+      "bothCompleteTypedResponsesEqual": true,
+      "base": {
+        "seconds": 11.31183975,
+        "cpuSeconds": 52.87930599999999,
+        "allocatedBytes": 444206968,
+        "numGC": 0,
+        "pauseTotalNs": 0
+      },
+      "candidate": {
+        "seconds": 0.997778042,
+        "cpuSeconds": 6.837112999999999,
+        "allocatedBytes": 443947144,
+        "numGC": 0,
+        "pauseTotalNs": 0
+      }
+    },
+    {
+      "name": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'get' OR toLower(coalesce(n.caller_name, '')) CONTAINS 'get' OR toLower(coalesce(n.callee_class, '')) CONTAINS 'get' OR toLower(coalesce(n.callee_name, '')) CONTAINS 'get'\nRETURN DISTINCT n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "bothCompleteTypedResponsesEqual": true,
+      "base": {
+        "seconds": 0.318997584,
+        "cpuSeconds": 2.135822999999995,
+        "allocatedBytes": 268469336,
+        "numGC": 0,
+        "pauseTotalNs": 0
+      },
+      "candidate": {
+        "seconds": 0.305078292,
+        "cpuSeconds": 2.026588999999996,
+        "allocatedBytes": 268461440,
+        "numGC": 0,
+        "pauseTotalNs": 0
+      }
+    },
+    {
+      "name": "global-wide-wrapped-case-insensitive-distinct-dense-repeat",
+      "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'get' OR toLower(coalesce(n.caller_name, '')) CONTAINS 'get' OR toLower(coalesce(n.callee_class, '')) CONTAINS 'get' OR toLower(coalesce(n.callee_name, '')) CONTAINS 'get'\nRETURN DISTINCT n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "bothCompleteTypedResponsesEqual": true,
+      "base": {
+        "seconds": 0.300063875,
+        "cpuSeconds": 1.972063999999996,
+        "allocatedBytes": 268437768,
+        "numGC": 0,
+        "pauseTotalNs": 0
+      },
+      "candidate": {
+        "seconds": 0.288996125,
+        "cpuSeconds": 1.7900749999999954,
+        "allocatedBytes": 268440360,
+        "numGC": 0,
+        "pauseTotalNs": 0
+      }
+    },
+    {
+      "name": "global-wide-distribution-broad-all-64",
+      "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'get' OR toLower(coalesce(n.caller_name, '')) CONTAINS 'get' OR toLower(coalesce(n.callee_class, '')) CONTAINS 'get' OR toLower(coalesce(n.callee_name, '')) CONTAINS 'get'\nRETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200",
+      "bothCompleteTypedResponsesEqual": true,
+      "base": {
+        "seconds": 0.001844833,
+        "cpuSeconds": 0.0018849999999979161,
+        "allocatedBytes": 1635120,
+        "numGC": 0,
+        "pauseTotalNs": 0
+      },
+      "candidate": {
+        "seconds": 0.001843292,
+        "cpuSeconds": 0.0018890000000082452,
+        "allocatedBytes": 1637456,
+        "numGC": 0,
+        "pauseTotalNs": 0
+      }
+    },
+    {
+      "name": "c-necessary-ordinary",
+      "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'get' AND n.id >= 0 RETURN n.caller_class AS caller, n.caller_name AS name LIMIT 200",
+      "bothCompleteTypedResponsesEqual": true,
+      "base": {
+        "seconds": 0.002328375,
+        "cpuSeconds": 0.0023529999999887252,
+        "allocatedBytes": 2685464,
+        "numGC": 0,
+        "pauseTotalNs": 0
+      },
+      "candidate": {
+        "seconds": 0.002466541,
+        "cpuSeconds": 0.002501999999999782,
+        "allocatedBytes": 2685096,
+        "numGC": 0,
+        "pauseTotalNs": 0
+      }
+    },
+    {
+      "name": "c-necessary-ordinary-repeat",
+      "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'get' AND n.id >= 0 RETURN n.caller_class AS caller, n.caller_name AS name LIMIT 200",
+      "bothCompleteTypedResponsesEqual": true,
+      "base": {
+        "seconds": 0.001659042,
+        "cpuSeconds": 0.001682999999999879,
+        "allocatedBytes": 2258328,
+        "numGC": 0,
+        "pauseTotalNs": 0
+      },
+      "candidate": {
+        "seconds": 0.001677708,
+        "cpuSeconds": 0.0017139999999891131,
+        "allocatedBytes": 2258280,
+        "numGC": 0,
+        "pauseTotalNs": 0
+      }
+    },
+    {
+      "name": "c-necessary-distinct",
+      "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'get' AND n.id >= 0 RETURN DISTINCT n.caller_class AS caller, n.caller_name AS name LIMIT 200",
+      "bothCompleteTypedResponsesEqual": true,
+      "base": {
+        "seconds": 2.0856365,
+        "cpuSeconds": 9.994054999999971,
+        "allocatedBytes": 1192559128,
+        "numGC": 0,
+        "pauseTotalNs": 0
+      },
+      "candidate": {
+        "seconds": 0.207867083,
+        "cpuSeconds": 1.537486999999981,
+        "allocatedBytes": 1192604552,
+        "numGC": 0,
+        "pauseTotalNs": 0
+      }
+    },
+    {
+      "name": "c-necessary-distinct-repeat",
+      "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'get' AND n.id >= 0 RETURN DISTINCT n.caller_class AS caller, n.caller_name AS name LIMIT 200",
+      "bothCompleteTypedResponsesEqual": true,
+      "base": {
+        "seconds": 2.158655166,
+        "cpuSeconds": 10.247791999999993,
+        "allocatedBytes": 1172553872,
+        "numGC": 0,
+        "pauseTotalNs": 0
+      },
+      "candidate": {
+        "seconds": 0.177637458,
+        "cpuSeconds": 1.2977799999999826,
+        "allocatedBytes": 1172599832,
+        "numGC": 0,
+        "pauseTotalNs": 0
+      }
+    },
+    {
+      "name": "d-unbounded-android",
+      "query": "MATCH (n:CallSiteNode) WHERE n.graphId = 'fixture-android-00' AND n.caller_name = 'getTopMostActivity' RETURN [n.caller_class, n.caller_name] AS value",
+      "bothCompleteTypedResponsesEqual": true,
+      "base": {
+        "seconds": 0.074509708,
+        "cpuSeconds": 0.07459499999998087,
+        "allocatedBytes": 79408704,
+        "numGC": 0,
+        "pauseTotalNs": 0
+      },
+      "candidate": {
+        "seconds": 0.075234458,
+        "cpuSeconds": 0.07521999999998297,
+        "allocatedBytes": 79407600,
+        "numGC": 0,
+        "pauseTotalNs": 0
+      }
+    },
+    {
+      "name": "d-unbounded-kotlin",
+      "query": "MATCH (n:CallSiteNode) WHERE n.graphId = 'fixture-kotlin-compiler-00' AND n.caller_name = 'getName' RETURN [n.caller_class, n.caller_name] AS value",
+      "bothCompleteTypedResponsesEqual": true,
+      "base": {
+        "seconds": 0.043483583,
+        "cpuSeconds": 0.04338599999998749,
+        "allocatedBytes": 47950064,
+        "numGC": 0,
+        "pauseTotalNs": 0
+      },
+      "candidate": {
+        "seconds": 0.045542125,
+        "cpuSeconds": 0.04561400000001292,
+        "allocatedBytes": 47949808,
+        "numGC": 0,
+        "pauseTotalNs": 0
+      }
+    },
+    {
+      "name": "e-generic-ordinary",
+      "query": "MATCH (n:CallSiteNode) WHERE toString(toString(n.caller_name)) CONTAINS 'get' RETURN [n.caller_class, n.caller_name] AS value LIMIT 20",
+      "bothCompleteTypedResponsesEqual": true,
+      "base": {
+        "seconds": 0.000506459,
+        "cpuSeconds": 0.0005329999999936774,
+        "allocatedBytes": 687032,
+        "numGC": 0,
+        "pauseTotalNs": 0
+      },
+      "candidate": {
+        "seconds": 0.000511458,
+        "cpuSeconds": 0.0005499999999889482,
+        "allocatedBytes": 687608,
+        "numGC": 0,
+        "pauseTotalNs": 0
+      }
+    },
+    {
+      "name": "e-generic-distinct",
+      "query": "MATCH (n:CallSiteNode) WHERE toString(toString(n.caller_name)) CONTAINS 'get' RETURN DISTINCT [n.caller_class, n.caller_name] AS value LIMIT 20",
+      "bothCompleteTypedResponsesEqual": true,
+      "base": {
+        "seconds": 5.4096885,
+        "cpuSeconds": 5.368748999999983,
+        "allocatedBytes": 5479519272,
+        "numGC": 0,
+        "pauseTotalNs": 0
+      },
+      "candidate": {
+        "seconds": 5.415944583,
+        "cpuSeconds": 5.410814000000005,
+        "allocatedBytes": 5479522872,
+        "numGC": 0,
+        "pauseTotalNs": 0
+      }
+    },
+    {
+      "name": "b-ordinary-skip",
+      "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'get' RETURN n.id AS id, n.caller_class AS caller, n.caller_name AS name SKIP 3 LIMIT 12",
+      "bothCompleteTypedResponsesEqual": true,
+      "base": {
+        "seconds": 0.001089083,
+        "cpuSeconds": 0.001126000000002847,
+        "allocatedBytes": 1033216,
+        "numGC": 0,
+        "pauseTotalNs": 0
+      },
+      "candidate": {
+        "seconds": 0.001100583,
+        "cpuSeconds": 0.0011359999999944748,
+        "allocatedBytes": 1032560,
+        "numGC": 0,
+        "pauseTotalNs": 0
+      }
+    },
+    {
+      "name": "b-distinct-skip",
+      "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'get' RETURN DISTINCT n.graph_id AS missing, n.caller_class AS caller, n.caller_name AS name SKIP 3 LIMIT 12",
+      "bothCompleteTypedResponsesEqual": true,
+      "base": {
+        "seconds": 1.4828198750000001,
+        "cpuSeconds": 1.4819430000000047,
+        "allocatedBytes": 1620066496,
+        "numGC": 0,
+        "pauseTotalNs": 0
+      },
+      "candidate": {
+        "seconds": 1.501467292,
+        "cpuSeconds": 1.5002599999999529,
+        "allocatedBytes": 1620068728,
+        "numGC": 0,
+        "pauseTotalNs": 0
+      }
+    },
+    {
+      "name": "b-ordinary-order-parallel",
+      "query": "MATCH (n:CallSiteNode) WHERE n.caller_class = 'com.google.android.mms.util.PduCache' RETURN n.id AS id, n.caller_name AS name ORDER BY name, id SKIP 2 LIMIT 12",
+      "bothCompleteTypedResponsesEqual": true,
+      "base": {
+        "seconds": 0.001449083,
+        "cpuSeconds": 0.004666000000014492,
+        "allocatedBytes": 22600536,
+        "numGC": 0,
+        "pauseTotalNs": 0
+      },
+      "candidate": {
+        "seconds": 0.001347334,
+        "cpuSeconds": 0.0049180000000124124,
+        "allocatedBytes": 22598792,
+        "numGC": 0,
+        "pauseTotalNs": 0
+      }
+    },
+    {
+      "name": "b-ordinary-order-generic-serial",
+      "query": "MATCH (n:CallSiteNode) WHERE n.graphId = 'fixture-android-00' AND n.id >= 0 RETURN n.id AS id ORDER BY id DESC SKIP 2 LIMIT 12",
+      "bothCompleteTypedResponsesEqual": true,
+      "base": {
+        "seconds": 0.148916083,
+        "cpuSeconds": 0.1489860000000185,
+        "allocatedBytes": 203450288,
+        "numGC": 0,
+        "pauseTotalNs": 0
+      },
+      "candidate": {
+        "seconds": 0.15251875,
+        "cpuSeconds": 0.15256399999998393,
+        "allocatedBytes": 203450496,
+        "numGC": 0,
+        "pauseTotalNs": 0
+      }
+    },
+    {
+      "name": "b-distinct-order-retained",
+      "query": "MATCH (n:CallSiteNode) WHERE n.caller_class = 'com.google.android.mms.util.PduCache' RETURN DISTINCT n.caller_class AS caller ORDER BY caller SKIP 0 LIMIT 2",
+      "bothCompleteTypedResponsesEqual": true,
+      "base": {
+        "seconds": 0.0025715,
+        "cpuSeconds": 0.002613999999994121,
+        "allocatedBytes": 22295128,
+        "numGC": 0,
+        "pauseTotalNs": 0
+      },
+      "candidate": {
+        "seconds": 0.002525167,
+        "cpuSeconds": 0.002564999999963291,
+        "allocatedBytes": 22295336,
+        "numGC": 0,
+        "pauseTotalNs": 0
+      }
+    },
+    {
+      "name": "b-distinct-order-eviction-candidate",
+      "query": "MATCH (n:CallSiteNode) WHERE n.caller_class = 'com.google.android.mms.util.PduCache' RETURN DISTINCT n.caller_name AS name ORDER BY n.callee_name DESC SKIP 0 LIMIT 2",
+      "bothCompleteTypedResponsesEqual": true,
+      "base": {
+        "seconds": 0.002638,
+        "cpuSeconds": 0.0026799999999980173,
+        "allocatedBytes": 22334208,
+        "numGC": 0,
+        "pauseTotalNs": 0
+      },
+      "candidate": {
+        "seconds": 0.002649917,
+        "cpuSeconds": 0.0027239999999952857,
+        "allocatedBytes": 22334096,
+        "numGC": 0,
+        "pauseTotalNs": 0
+      }
+    },
+    {
+      "name": "b-order-duplicate-alias-ties",
+      "query": "MATCH (n:CallSiteNode) WHERE n.caller_class = 'com.google.android.mms.util.PduCache' RETURN n.caller_name AS x, n.callee_name AS x ORDER BY x SKIP 2 LIMIT 8",
+      "bothCompleteTypedResponsesEqual": true,
+      "base": {
+        "seconds": 0.001293916,
+        "cpuSeconds": 0.004559000000014635,
+        "allocatedBytes": 22563088,
+        "numGC": 0,
+        "pauseTotalNs": 0
+      },
+      "candidate": {
+        "seconds": 0.001394458,
+        "cpuSeconds": 0.004553000000035112,
+        "allocatedBytes": 22556352,
+        "numGC": 0,
+        "pauseTotalNs": 0
+      }
+    },
+    {
+      "name": "b-distinct-order-callee",
+      "query": "MATCH (n:CallSiteNode) WHERE n.caller_class = 'com.google.android.mms.util.PduCache' RETURN DISTINCT n.callee_class AS callee, n.callee_name AS name ORDER BY name DESC, callee SKIP 1 LIMIT 3",
+      "bothCompleteTypedResponsesEqual": true,
+      "base": {
+        "seconds": 0.002673167,
+        "cpuSeconds": 0.0027110000000369894,
+        "allocatedBytes": 22388024,
+        "numGC": 0,
+        "pauseTotalNs": 0
+      },
+      "candidate": {
+        "seconds": 0.002631167,
+        "cpuSeconds": 0.0026800000000086754,
+        "allocatedBytes": 22388920,
+        "numGC": 0,
+        "pauseTotalNs": 0
+      }
+    }
+  ],
+  "scope": "Single sequential instrumented same-history measurements, allknownagentexecutionpaused; not P95/peakRSS/main-relative10x."
+}

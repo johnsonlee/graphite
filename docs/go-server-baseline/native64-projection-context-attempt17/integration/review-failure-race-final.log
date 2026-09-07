@@ -1,0 +1,22 @@
+=== RUN   TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint
+--- PASS: TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint (0.00s)
+=== RUN   TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint
+--- PASS: TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint (0.00s)
+=== RUN   TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint
+--- PASS: TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint (0.00s)
+=== RUN   TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint
+--- PASS: TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint (0.00s)
+=== RUN   TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint
+--- PASS: TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint (0.00s)
+=== RUN   TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint
+--- PASS: TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint (0.00s)
+=== RUN   TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint
+--- PASS: TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint (0.00s)
+=== RUN   TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint
+--- PASS: TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint (0.00s)
+=== RUN   TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint
+--- PASS: TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint (0.00s)
+=== RUN   TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint
+--- PASS: TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint (0.00s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/store	1.306s

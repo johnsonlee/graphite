@@ -1,0 +1,9 @@
+{
+  "cases": 21,
+  "required": 21,
+  "complete": true,
+  "mismatches": [],
+  "started": "2026-09-07T04:56:47.227359+00:00",
+  "finished": "2026-09-07T04:57:15.193320+00:00",
+  "purpose": "Correctness only; no P95 result"
+}

@@ -1,0 +1,249 @@
+=== RUN   TestProjectionContextStandardStatesAndPrecedence
+=== RUN   TestProjectionContextStandardStatesAndPrecedence/background
+=== RUN   TestProjectionContextStandardStatesAndPrecedence/todo
+=== RUN   TestProjectionContextStandardStatesAndPrecedence/cancelled
+=== RUN   TestProjectionContextStandardStatesAndPrecedence/deadline
+=== RUN   TestProjectionContextStandardStatesAndPrecedence/cause
+=== RUN   TestProjectionContextStandardStatesAndPrecedence/value-child
+=== RUN   TestProjectionContextStandardStatesAndPrecedence/live-parent
+=== RUN   TestProjectionContextStandardStatesAndPrecedence/without-cancel
+--- PASS: TestProjectionContextStandardStatesAndPrecedence (0.00s)
+    --- PASS: TestProjectionContextStandardStatesAndPrecedence/background (0.00s)
+    --- PASS: TestProjectionContextStandardStatesAndPrecedence/todo (0.00s)
+    --- PASS: TestProjectionContextStandardStatesAndPrecedence/cancelled (0.00s)
+    --- PASS: TestProjectionContextStandardStatesAndPrecedence/deadline (0.00s)
+    --- PASS: TestProjectionContextStandardStatesAndPrecedence/cause (0.00s)
+    --- PASS: TestProjectionContextStandardStatesAndPrecedence/value-child (0.00s)
+    --- PASS: TestProjectionContextStandardStatesAndPrecedence/live-parent (0.00s)
+    --- PASS: TestProjectionContextStandardStatesAndPrecedence/without-cancel (0.00s)
+=== RUN   TestProjectionContextPreparationPublicationAndFormatOrder
+=== RUN   TestProjectionContextPreparationPublicationAndFormatOrder/cancel_after_read_before_publication
+=== RUN   TestProjectionContextPreparationPublicationAndFormatOrder/format_failure_before_postread_checkpoint
+--- PASS: TestProjectionContextPreparationPublicationAndFormatOrder (0.01s)
+    --- PASS: TestProjectionContextPreparationPublicationAndFormatOrder/cancel_after_read_before_publication (0.00s)
+    --- PASS: TestProjectionContextPreparationPublicationAndFormatOrder/format_failure_before_postread_checkpoint (0.00s)
+=== RUN   TestProjectionContextDecoderCancelAndFreshRequest
+--- PASS: TestProjectionContextDecoderCancelAndFreshRequest (0.00s)
+=== RUN   TestProjectionContextCloseWaitsForCanceledDecoder
+    projection_context_test.go:177: close did not start
+SIGQUIT: quit
+PC=0x18616f9c0 m=0 sigcode=0
+
+goroutine 0 gp=0x1007b6500 m=0 mp=0x1007b75c0 [idle]:
+runtime.kevent(0x3, 0x0, 0x0, 0x16fad1f60, 0x40, 0x16fad1f38)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/sys_darwin.go:458 +0x20 fp=0x16fad1ed0 sp=0x16fad1eb0 pc=0x1003cd690
+runtime.netpoll(0x8a87b4f93b)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/netpoll_kqueue.go:141 +0x100 fp=0x16fad2770 sp=0x16fad1ed0 pc=0x1003a6a70
+runtime.findRunnable()
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:3470 +0x9ec fp=0x16fad28e0 sp=0x16fad2770 pc=0x1003b2a0c
+runtime.schedule()
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:3868 +0x98 fp=0x16fad2920 sp=0x16fad28e0 pc=0x1003b4448
+runtime.park_m(0xc000003340)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:4036 +0x240 fp=0x16fad2980 sp=0x16fad2920 pc=0x1003b4ae0
+runtime.mcall()
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/asm_arm64.s:192 +0x54 fp=0x16fad2990 sp=0x16fad2980 pc=0x1003e3d94
+
+goroutine 1 gp=0xc0000021c0 m=nil [chan receive]:
+runtime.gopark(0x0?, 0xc00000c6c0?, 0x18?, 0x0?, 0x1003f143c?)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:402 +0xc8 fp=0xc0001956d0 sp=0xc0001956b0 pc=0x1003ac608
+runtime.chanrecv(0xc0000271f0, 0xc0001957df, 0x1)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/chan.go:583 +0x3a8 fp=0xc000195760 sp=0xc0001956d0 pc=0x100376d58
+runtime.chanrecv1(0x1007b5fe0?, 0x100613380?)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/chan.go:442 +0x14 fp=0xc000195790 sp=0xc000195760 pc=0x100376974
+testing.(*T).Run(0xc0001864e0, {0x10059a3eb, 0x31}, 0x10064dcd0)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/testing/testing.go:1750 +0x604 fp=0xc0001958b0 sp=0xc000195790 pc=0x10048dd04
+testing.runTests.func1(0xc0001864e0)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/testing/testing.go:2161 +0x84 fp=0xc000195900 sp=0xc0001958b0 pc=0x100491154
+testing.tRunner(0xc0001864e0, 0xc000195b08)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/testing/testing.go:1689 +0x184 fp=0xc0001959d0 sp=0xc000195900 pc=0x10048ca64
+testing.runTests(0xc00000c0a8, {0x1007b3ea0, 0x59, 0x59}, {0x1003302e4?, 0x0?, 0x1007b6260?})
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/testing/testing.go:2159 +0x6e4 fp=0xc000195b30 sp=0xc0001959d0 pc=0x100490fe4
+testing.(*M).Run(0xc00007c0a0)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/testing/testing.go:2027 +0xb70 fp=0xc000195eb0 sp=0xc000195b30 pc=0x10048ee20
+main.main()
+	_testmain.go:223 +0x298 fp=0xc000195f40 sp=0xc000195eb0 pc=0x100588af8
+runtime.main()
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:271 +0x28c fp=0xc000195fd0 sp=0xc000195f40 pc=0x1003ac1ac
+runtime.goexit({})
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/asm_arm64.s:1222 +0x4 fp=0xc000195fd0 sp=0xc000195fd0 pc=0x1003e61a4
+
+goroutine 17 gp=0xc000094380 m=nil [force gc (idle)]:
+runtime.gopark(0x0?, 0x0?, 0x0?, 0x0?, 0x0?)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:402 +0xc8 fp=0xc00005e790 sp=0xc00005e770 pc=0x1003ac608
+runtime.goparkunlock(...)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:408
+runtime.forcegchelper()
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:326 +0xb8 fp=0xc00005e7d0 sp=0xc00005e790 pc=0x1003ac468
+runtime.goexit({})
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/asm_arm64.s:1222 +0x4 fp=0xc00005e7d0 sp=0xc00005e7d0 pc=0x1003e61a4
+created by runtime.init.6 in goroutine 1
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:314 +0x24
+
+goroutine 18 gp=0xc000094540 m=nil [GC sweep wait]:
+runtime.gopark(0x0?, 0x0?, 0x0?, 0x0?, 0x0?)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:402 +0xc8 fp=0xc000079f60 sp=0xc000079f40 pc=0x1003ac608
+runtime.goparkunlock(...)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:408
+runtime.bgsweep(0xc0000a0000)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcsweep.go:278 +0xa0 fp=0xc000079fb0 sp=0xc000079f60 pc=0x100396e10
+runtime.gcenable.gowrap1()
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgc.go:203 +0x28 fp=0xc000079fd0 sp=0xc000079fb0 pc=0x10038b068
+runtime.goexit({})
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/asm_arm64.s:1222 +0x4 fp=0xc000079fd0 sp=0xc000079fd0 pc=0x1003e61a4
+created by runtime.gcenable in goroutine 1
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgc.go:203 +0x6c
+
+goroutine 19 gp=0xc000094700 m=nil [GC scavenge wait]:
+runtime.gopark(0xc0000a0000?, 0x1005ecb20?, 0x1?, 0x0?, 0xc000094700?)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:402 +0xc8 fp=0xc000074f60 sp=0xc000074f40 pc=0x1003ac608
+runtime.goparkunlock(...)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:408
+runtime.(*scavengerState).park(0x1007b6380)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcscavenge.go:425 +0x5c fp=0xc000074f90 sp=0xc000074f60 pc=0x10039483c
+runtime.bgscavenge(0xc0000a0000)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgcscavenge.go:653 +0x44 fp=0xc000074fb0 sp=0xc000074f90 pc=0x100394d64
+runtime.gcenable.gowrap2()
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgc.go:204 +0x28 fp=0xc000074fd0 sp=0xc000074fb0 pc=0x10038b008
+runtime.goexit({})
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/asm_arm64.s:1222 +0x4 fp=0xc000074fd0 sp=0xc000074fd0 pc=0x1003e61a4
+created by runtime.gcenable in goroutine 1
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mgc.go:204 +0xac
+
+goroutine 2 gp=0xc000002e00 m=nil [finalizer wait]:
+runtime.gopark(0x0?, 0x0?, 0x0?, 0x0?, 0x0?)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:402 +0xc8 fp=0xc000204d80 sp=0xc000204d60 pc=0x1003ac608
+runtime.runfinq()
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mfinal.go:194 +0x12c fp=0xc000204fd0 sp=0xc000204d80 pc=0x10038a13c
+runtime.goexit({})
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/asm_arm64.s:1222 +0x4 fp=0xc000204fd0 sp=0xc000204fd0 pc=0x1003e61a4
+created by runtime.createfing in goroutine 1
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/mfinal.go:164 +0x80
+
+goroutine 16 gp=0xc000002fc0 m=nil [sync.Mutex.Lock]:
+runtime.gopark(0x1007c2860?, 0x1003cd3a4?, 0x40?, 0xa2?, 0xc00002d138?)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:402 +0xc8 fp=0xc00002d0e0 sp=0xc00002d0c0 pc=0x1003ac608
+runtime.goparkunlock(...)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:408
+runtime.semacquire1(0xc000332c1c, 0x0, 0x3, 0x1, 0x15)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/sema.go:160 +0x208 fp=0xc00002d130 sp=0xc00002d0e0 pc=0x1003c1af8
+sync.runtime_SemacquireMutex(0xc00002d188?, 0x2c?, 0xc00002d1b8?)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/sema.go:77 +0x28 fp=0xc00002d170 sp=0xc00002d130 pc=0x1003e1f68
+sync.(*Mutex).lockSlow(0xc000332c18)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/sync/mutex.go:171 +0x1e8 fp=0xc00002d1c0 sp=0xc00002d170 pc=0x1003f2878
+sync.(*Mutex).Lock(0xc000332c18)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/sync/mutex.go:90 +0x60 fp=0xc00002d1e0 sp=0xc00002d1c0 pc=0x1003f2660
+sync.(*RWMutex).Lock(0xc000332c18)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/sync/rwmutex.go:146 +0x44 fp=0xc00002d220 sp=0xc00002d1e0 pc=0x1003f4424
+github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).Close(0xc000332c08)
+	/private/tmp/graphite-go-projection-context-attempt17-62b92d20/graphite-server/internal/store/store.go:235 +0x40 fp=0xc00002d490 sp=0xc00002d220 pc=0x100542cf0
+github.com/johnsonlee/graphite/graphite-server/internal/store.openIndexFixture.func1()
+	/private/tmp/graphite-go-projection-context-attempt17-62b92d20/graphite-server/internal/store/callsite_index_test.go:46 +0x30 fp=0xc00002d4c0 sp=0xc00002d490 pc=0x10054a180
+testing.(*common).Cleanup.func1()
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/testing/testing.go:1175 +0x148 fp=0xc00002d560 sp=0xc00002d4c0 pc=0x10048b848
+testing.(*common).runCleanup(0xc000187ba0, 0x0)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/testing/testing.go:1353 +0x1ac fp=0xc00002d690 sp=0xc00002d560 pc=0x10048c27c
+testing.tRunner.func2()
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/testing/testing.go:1683 +0x4c fp=0xc00002d6c0 sp=0xc00002d690 pc=0x10048cb2c
+runtime.Goexit()
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/panic.go:626 +0x60 fp=0xc00002d750 sp=0xc00002d6c0 pc=0x1003a8a60
+testing.(*common).FailNow(0xc000187ba0)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/testing/testing.go:1005 +0x70 fp=0xc00002d7b0 sp=0xc00002d750 pc=0x100489eb0
+testing.(*common).Fatal(0xc000187ba0, {0xc00002de38, 0x1, 0x1})
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/testing/testing.go:1082 +0x7c fp=0xc00002d810 sp=0xc00002d7b0 pc=0x10048aa4c
+github.com/johnsonlee/graphite/graphite-server/internal/store.TestProjectionContextCloseWaitsForCanceledDecoder(0xc000187ba0)
+	/private/tmp/graphite-go-projection-context-attempt17-62b92d20/graphite-server/internal/store/projection_context_test.go:177 +0x58c fp=0xc00002ded0 sp=0xc00002d810 pc=0x10056776c
+testing.tRunner(0xc000187ba0, 0x10064dcd0)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/testing/testing.go:1689 +0x184 fp=0xc00002dfa0 sp=0xc00002ded0 pc=0x10048ca64
+testing.(*T).Run.gowrap1()
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/testing/testing.go:1742 +0x44 fp=0xc00002dfd0 sp=0xc00002dfa0 pc=0x10048df04
+runtime.goexit({})
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/asm_arm64.s:1222 +0x4 fp=0xc00002dfd0 sp=0xc00002dfd0 pc=0x1003e61a4
+created by testing.(*T).Run in goroutine 1
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/testing/testing.go:1742 +0x5e8
+
+goroutine 33 gp=0xc000003180 m=nil [chan receive]:
+runtime.gopark(0xc000196d98?, 0x100376868?, 0x30?, 0x2a?, 0x0?)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:402 +0xc8 fp=0xc000196d60 sp=0xc000196d40 pc=0x1003ac608
+runtime.chanrecv(0xc000022a80, 0x0, 0x1)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/chan.go:583 +0x3a8 fp=0xc000196df0 sp=0xc000196d60 pc=0x100376d58
+runtime.chanrecv1(0xc000022a20?, 0x0?)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/chan.go:442 +0x14 fp=0xc000196e20 sp=0xc000196df0 pc=0x100376974
+github.com/johnsonlee/graphite/graphite-server/internal/store.TestProjectionContextCloseWaitsForCanceledDecoder.func1()
+	/private/tmp/graphite-go-projection-context-attempt17-62b92d20/graphite-server/internal/store/projection_context_test.go:164 +0x44 fp=0xc000196e50 sp=0xc000196e20 pc=0x100567e84
+github.com/johnsonlee/graphite/graphite-server/internal/store.(*projectionCheckpointContext).observe(0xc000370800)
+	/private/tmp/graphite-go-projection-context-attempt17-62b92d20/graphite-server/internal/store/projection_context_test.go:33 +0x178 fp=0xc000196ea0 sp=0xc000196e50 pc=0x100565558
+github.com/johnsonlee/graphite/graphite-server/internal/store.(*projectionCheckpointContext).Err(0xc000370800)
+	/private/tmp/graphite-go-projection-context-attempt17-62b92d20/graphite-server/internal/store/projection_context_test.go:38 +0x2c fp=0xc000196ed0 sp=0xc000196ea0 pc=0x10056564c
+github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionCandidateNode.func1(0x4)
+	/private/tmp/graphite-go-projection-context-attempt17-62b92d20/graphite-server/internal/store/projection_node.go:38 +0x74 fp=0xc000196f80 sp=0xc000196ed0 pc=0x1005378b4
+github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionCandidateNode.func2(...)
+	/private/tmp/graphite-go-projection-context-attempt17-62b92d20/graphite-server/internal/store/projection_node.go:50
+github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionCandidateNode(_, {_, _}, _)
+	/private/tmp/graphite-go-projection-context-attempt17-62b92d20/graphite-server/internal/store/projection_node.go:67 +0x224 fp=0xc000197b20 sp=0xc000196f80 pc=0x1005365a4
+github.com/johnsonlee/graphite/graphite-server/internal/store.TestProjectionContextCloseWaitsForCanceledDecoder.func2()
+	/private/tmp/graphite-go-projection-context-attempt17-62b92d20/graphite-server/internal/store/projection_context_test.go:166 +0x7c fp=0xc000197fd0 sp=0xc000197b20 pc=0x100567ddc
+runtime.goexit({})
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/asm_arm64.s:1222 +0x4 fp=0xc000197fd0 sp=0xc000197fd0 pc=0x1003e61a4
+created by github.com/johnsonlee/graphite/graphite-server/internal/store.TestProjectionContextCloseWaitsForCanceledDecoder in goroutine 16
+	/private/tmp/graphite-go-projection-context-attempt17-62b92d20/graphite-server/internal/store/projection_context_test.go:166 +0x34c
+
+goroutine 34 gp=0xc000003340 m=nil [sync.RWMutex.Lock]:
+runtime.gopark(0x1007c28e0?, 0x1003e72a8?, 0x20?, 0x13?, 0x1003e8a68?)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:402 +0xc8 fp=0xc000078c50 sp=0xc000078c30 pc=0x1003ac608
+runtime.goparkunlock(...)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/proc.go:408
+runtime.semacquire1(0xc000332c20, 0x0, 0x3, 0x0, 0x17)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/sema.go:160 +0x208 fp=0xc000078ca0 sp=0xc000078c50 pc=0x1003c1af8
+sync.runtime_SemacquireRWMutex(0xc000332c2c?, 0x1?, 0x10048c8e0?)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/sema.go:87 +0x28 fp=0xc000078ce0 sp=0xc000078ca0 pc=0x1003e2028
+sync.(*RWMutex).Lock(0xc000332c18)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/sync/rwmutex.go:151 +0x88 fp=0xc000078d20 sp=0xc000078ce0 pc=0x1003f4468
+github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).Close(0xc000332c08)
+	/private/tmp/graphite-go-projection-context-attempt17-62b92d20/graphite-server/internal/store/store.go:235 +0x40 fp=0xc000078f90 sp=0xc000078d20 pc=0x100542cf0
+github.com/johnsonlee/graphite/graphite-server/internal/store.TestProjectionContextCloseWaitsForCanceledDecoder.func3()
+	/private/tmp/graphite-go-projection-context-attempt17-62b92d20/graphite-server/internal/store/projection_context_test.go:173 +0x38 fp=0xc000078fd0 sp=0xc000078f90 pc=0x100567d28
+runtime.goexit({})
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/asm_arm64.s:1222 +0x4 fp=0xc000078fd0 sp=0xc000078fd0 pc=0x1003e61a4
+created by github.com/johnsonlee/graphite/graphite-server/internal/store.TestProjectionContextCloseWaitsForCanceledDecoder in goroutine 16
+	/private/tmp/graphite-go-projection-context-attempt17-62b92d20/graphite-server/internal/store/projection_context_test.go:173 +0x4b8
+
+r0      0x4
+r1      0x0
+r2      0x0
+r3      0x16fad1f60
+r4      0x40
+r5      0x16fad1f38
+r6      0x0
+r7      0xc26ac7f5bf120
+r8      0x1007b75c0
+r9      0x1
+r10     0x0
+r11     0x10
+r12     0x0
+r13     0x16fad1e60
+r14     0x0
+r15     0x0
+r16     0x16b
+r17     0x18616f9b8
+r18     0x0
+r19     0x16fad2698
+r20     0x16fad1ed0
+r21     0x3
+r22     0x10081c81c
+r23     0x16fad2a90
+r24     0x16fad2ad0
+r25     0x185ea862b
+r26     0x10064e250
+r27     0x100788000
+r28     0x1007b6500
+r29     0x16fad1e48
+lr      0x1003e7a58
+sp      0x16fad1e50
+pc      0x18616f9c0
+fault   0x18616f9c0
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/store	247.032s
+=== RUN   TestProjectionContextWorkerFailureJoinsOrderRead
+--- PASS: TestProjectionContextWorkerFailureJoinsOrderRead (0.00s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/query	1.301s
+FAIL

@@ -1,0 +1,15 @@
+{
+  "originalProductionNamedTests": [
+    "TestProjectionContextStandardStatesAndPrecedence",
+    "TestProjectionContextPreparationPublicationAndFormatOrder",
+    "TestProjectionContextDecoderCancelAndFreshRequest",
+    "TestProjectionContextCloseWaitsForCanceledDecoder",
+    "TestProjectionContextWorkerFailureJoinsOrderRead",
+    "TestMainMappedRangeColdWarmAndCancellation",
+    "TestMainStringMappedColdWarmDemandAndCancellation",
+    "TestReviewProjectionSIDFailureStopsLaterCancelCheckpoint"
+  ],
+  "originalProductionRepetitions": 3,
+  "newIndependentFailureTestCandidateRepetitions": 10,
+  "allNamedPass": true
+}

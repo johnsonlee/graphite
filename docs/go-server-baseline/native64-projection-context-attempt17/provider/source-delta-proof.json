@@ -1,0 +1,18 @@
+{
+  "base": "62b92d2061b72150d76767cd07c18e351dddc7a3",
+  "baseFiles": 2402,
+  "candidateFiles": 2404,
+  "unchangedBaseFiles": 2398,
+  "changedExisting": [
+    "graphite-server/internal/query/main_string_source_test.go",
+    "graphite-server/internal/store/distinct_projection.go",
+    "graphite-server/internal/store/main_callsite_index_test.go",
+    "graphite-server/internal/store/projection_node.go"
+  ],
+  "newTests": [
+    "graphite-server/internal/query/projection_context_test.go",
+    "graphite-server/internal/store/projection_context_test.go"
+  ],
+  "productionFiles": 2,
+  "pollingSites": 5
+}

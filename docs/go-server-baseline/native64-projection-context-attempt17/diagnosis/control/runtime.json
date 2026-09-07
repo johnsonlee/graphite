@@ -1,0 +1,15 @@
+{
+  "GOARCH": "arm64",
+  "GOGC": "",
+  "GOMAXPROCS": 16,
+  "GOMEMLIMIT": "",
+  "GOOS": "darwin",
+  "MemProfileRate": 524288,
+  "NumCPU": 16,
+  "goVersion": "go1.22.0",
+  "mutexQuery": "",
+  "mutexRate": 0,
+  "pid": 98285,
+  "profiling": "CPU sampling disabled; heap alloc delta subtracts before profile; sampled allocation rate is default 512 KiB",
+  "scope": "loaded-64-store ExecuteCross plus root response JSON marshaling; not HTTP; one request at a time"
+}

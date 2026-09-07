@@ -1,0 +1,148 @@
+diff --git a/graphite-server/internal/query/main_string_source_test.go b/graphite-server/internal/query/main_string_source_test.go
+index 3267db5d..a2913c7f 100644
+--- a/graphite-server/internal/query/main_string_source_test.go
++++ b/graphite-server/internal/query/main_string_source_test.go
+@@ -22,17 +22,22 @@ type mainOrderCheckpoint struct {
+ 	calls, cancelAt int
+ }
+ 
+-func (c *mainOrderCheckpoint) Err() error {
+-	pc, _, _, _ := runtime.Caller(1)
++func (c *mainOrderCheckpoint) observe() {
++	if c.Context.Err() != nil {
++		return
++	}
++	pc, _, _, _ := runtime.Caller(2)
+ 	if f := runtime.FuncForPC(pc); f != nil && strings.HasSuffix(f.Name(), ".ProjectionNodeOrder") {
+ 		c.calls++
+ 		if c.calls == c.cancelAt {
+ 			c.cancel()
+ 		}
+ 	}
+-	return c.Context.Err()
+ }
+ 
++func (c *mainOrderCheckpoint) Done() <-chan struct{} { c.observe(); return c.Context.Done() }
++func (c *mainOrderCheckpoint) Err() error            { c.observe(); return c.Context.Err() }
++
+ func TestMainStringMappedColdWarmDemandAndCancellation(t *testing.T) {
+ 	for _, warm := range []bool{false, true} {
+ 		for _, cancelAt := range []int{0, 2} {
+@@ -54,7 +59,7 @@ func TestMainStringMappedColdWarmDemandAndCancellation(t *testing.T) {
+ 				var next mainNodeNext
+ 				failure := findIDCaught(func() { next = (evaluator{ctx: ctx}).mainCandidateIterator(source, plan, 4) })
+ 				if !warm && cancelAt == 2 {
+-					if failure != context.Canceled || next != nil {
++					if failure != context.Canceled || next != nil || ctx.calls != cancelAt || base.Err() != context.Canceled {
+ 						t.Fatal("cold full validation must fail before sequence", failure, next != nil)
+ 					}
+ 					return
+@@ -75,7 +80,7 @@ func TestMainStringMappedColdWarmDemandAndCancellation(t *testing.T) {
+ 				}
+ 				failure = findIDCaught(func() { n, ok = next(ctx) })
+ 				if warm && cancelAt == 2 {
+-					if failure != context.Canceled {
++					if failure != context.Canceled || ctx.calls != cancelAt || base.Err() != context.Canceled {
+ 						t.Fatal("hot cancellation must occur after first node", failure)
+ 					}
+ 					return
+diff --git a/graphite-server/internal/store/distinct_projection.go b/graphite-server/internal/store/distinct_projection.go
+index 404cd5c5..e71759f3 100644
+--- a/graphite-server/internal/store/distinct_projection.go
++++ b/graphite-server/internal/store/distinct_projection.go
+@@ -57,8 +57,12 @@ func (s *Store) prepareProjectionOffsets(ctx context.Context) error {
+ 	if s.callSiteIndex.closed {
+ 		return ErrStoreClosed
+ 	}
+-	if err := ctx.Err(); err != nil {
+-		return err
++	select {
++	case <-ctx.Done():
++		if err := ctx.Err(); err != nil {
++			return err
++		}
++	default:
+ 	}
+ 	if s.distinctProjection.offsetsLoaded {
+ 		return nil
+@@ -70,8 +74,12 @@ func (s *Store) prepareProjectionOffsets(ctx context.Context) error {
+ 	if err == nil && len(data) < 8 {
+ 		return &ProjectionReadError{}
+ 	}
+-	if err := ctx.Err(); err != nil {
+-		return err
++	select {
++	case <-ctx.Done():
++		if err := ctx.Err(); err != nil {
++			return err
++		}
++	default:
+ 	}
+ 	s.distinctProjection.offsets = data
+ 	s.distinctProjection.offsetsLoaded = true
+@@ -107,8 +115,12 @@ func (s *Store) ProjectionNodeOrder(ctx context.Context, id int32) (int64, error
+ 	if s.callSiteIndex.closed {
+ 		return 0, ErrStoreClosed
+ 	}
+-	if err := ctx.Err(); err != nil {
+-		return 0, err
++	select {
++	case <-ctx.Done():
++		if err := ctx.Err(); err != nil {
++			return 0, err
++		}
++	default:
+ 	}
+ 	return s.projectionOffsetLocked(id)
+ }
+diff --git a/graphite-server/internal/store/main_callsite_index_test.go b/graphite-server/internal/store/main_callsite_index_test.go
+index 49544333..70dc7164 100644
+--- a/graphite-server/internal/store/main_callsite_index_test.go
++++ b/graphite-server/internal/store/main_callsite_index_test.go
+@@ -197,8 +197,10 @@ func TestMainMappedRangeColdWarmAndCancellation(t *testing.T) {
+ 	// partial orders must not become a warm validation certificate.
+ 	base, cancel := context.WithCancel(ctx)
+ 	defer cancel()
+-	poll := &cancelAtPoll{Context: base, cancel: cancel, at: 5}
+-	if _, _, _, err := index.MainMappedProjectionRange(poll, CallerClass, 3); err != context.Canceled {
++	// The old fifth Err poll was the second node's offset-preparation check.
++	// Observe that same boundary via either API over a real cancellable context.
++	poll := &projectionCheckpointContext{Context: base, target: ".prepareProjectionOffsets", at: 2, action: cancel}
++	if _, _, _, err := index.MainMappedProjectionRange(poll, CallerClass, 3); err != context.Canceled || poll.calls != 2 || base.Err() != context.Canceled {
+ 		t.Fatal(err)
+ 	}
+ 	ids, orders, valid, err = index.MainMappedProjectionRange(ctx, CallerClass, 3)
+diff --git a/graphite-server/internal/store/projection_node.go b/graphite-server/internal/store/projection_node.go
+index 33568db3..77f0bf3f 100644
+--- a/graphite-server/internal/store/projection_node.go
++++ b/graphite-server/internal/store/projection_node.go
+@@ -19,8 +19,12 @@ func (s *Store) ProjectionCandidateNode(ctx context.Context, id int32) (Node, bo
+ 	if s.callSiteIndex.closed {
+ 		return Node{}, false, ErrStoreClosed
+ 	}
+-	if err := ctx.Err(); err != nil {
+-		return Node{}, false, err
++	select {
++	case <-ctx.Done():
++		if err := ctx.Err(); err != nil {
++			return Node{}, false, err
++		}
++	default:
+ 	}
+ 	offset, err := s.projectionOffsetLocked(id)
+ 	if err != nil {
+@@ -35,8 +39,12 @@ func (s *Store) ProjectionCandidateNode(ctx context.Context, id int32) (Node, bo
+ 		if failure != nil {
+ 			return nil
+ 		}
+-		if failure = ctx.Err(); failure != nil {
+-			return nil
++		select {
++		case <-ctx.Done():
++			if failure = ctx.Err(); failure != nil {
++				return nil
++			}
++		default:
+ 		}
+ 		if position < 0 || int64(position) > int64(len(s.mappedData))-int64(width) {
+ 			failure = &ProjectionReadError{Class: "EOFException"}

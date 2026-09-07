@@ -1,0 +1,29 @@
+File: mutex-profile-query
+Type: contentions
+Time: Sep 7, 2026 at 1:09pm (KST)
+Showing nodes accounting for 6801776, 100% of 6801776 total
+Dropped 12 nodes (cum <= 34008)
+      flat  flat%   sum%        cum   cum%
+   3772784 55.47% 55.47%    3772784 55.47%  sync.(*Mutex).Unlock (inline)
+   3028992 44.53%   100%    3028992 44.53%  runtime._LostContendedRuntimeLock
+         0     0%   100%    3772784 55.47%  context.(*cancelCtx).Err
+         0     0%   100%    3772784 55.47%  github.com/johnsonlee/graphite/graphite-server/internal/query.(*genericDistinctCursor).next
+         0     0%   100%    3633376 53.42%  github.com/johnsonlee/graphite/graphite-server/internal/query.(*genericDistinctCursor).read
+         0     0%   100%    3772784 55.47%  github.com/johnsonlee/graphite/graphite-server/internal/query.(*genericDistinctScanner).next
+         0     0%   100%    3752368 55.17%  github.com/johnsonlee/graphite/graphite-server/internal/query.(*genericDistinctScanner).remaining
+         0     0%   100%    3752368 55.17%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.genericDistinct.func5
+         0     0%   100%    3491328 51.33%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainCandidateIterator.func4
+         0     0%   100%    2190032 32.20%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainIndexNodeIDs.func4
+         0     0%   100%    2190032 32.20%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainIndexNodeIDs.func4.1
+         0     0%   100%    2190032 32.20%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainIndexNodeIDs.func4.2
+         0     0%   100%    3613072 53.12%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainStringCandidatesWithPolicy.evaluator.mainMergeNodeSequences.func3
+         0     0%   100%    3613072 53.12%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainStringCandidatesWithPolicy.evaluator.mainMergeNodeSequences.func3.1
+         0     0%   100%    3633376 53.42%  github.com/johnsonlee/graphite/graphite-server/internal/query.newGenericDistinctCursor.func1
+         0     0%   100%    3752368 55.17%  github.com/johnsonlee/graphite/graphite-server/internal/query.runDistinctTasks[go.shape.map[int]bool].func1.1
+         0     0%   100%    1301296 19.13%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionCandidateNode
+         0     0%   100%    1174640 17.27%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionCandidateNode.func1
+         0     0%   100%    1108304 16.29%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionCandidateNode.func2 (partial-inline)
+         0     0%   100%     616720  9.07%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionCandidateNode.func3
+         0     0%   100%     753984 11.09%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionCandidateNode.func4
+         0     0%   100%    2311776 33.99%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionNodeOrder
+         0     0%   100%    1114320 16.38%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).prepareProjectionOffsets

@@ -1,0 +1,16 @@
+[
+  {
+    "file": "source/internal/store/distinct_projection.go",
+    "baseSHA256": "0c9290ed92c6e174210420ea8ec5bc9c70d50c3b30b60a73a78bed8012464194",
+    "candidateSHA256": "fc874544826c50972643f312dbcb3e0fe15987e7dc84ef40ad05d6785cac7c85",
+    "mechanicalCheckSubstitutions": 3,
+    "allOtherBytesEqual": true
+  },
+  {
+    "file": "source/internal/store/projection_node.go",
+    "baseSHA256": "fda887a49466b5c9c9663d1af76932df5df7cfd22849c867ce85fb0cc3577842",
+    "candidateSHA256": "fa1b8a55a6da9783823884f8f0418d722808cd9ef0fd2f650271e5bd0a1edc02",
+    "mechanicalCheckSubstitutions": 2,
+    "allOtherBytesEqual": true
+  }
+]

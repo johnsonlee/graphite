@@ -1,0 +1,7 @@
+{
+  "base": "b7bb15a2",
+  "allBaseGitBlobsVerified": 2434,
+  "allRootModuleInputsEqualFullyTestedCandidate": 2436,
+  "enumeration": "git ls-files --cached --others --exclude-standard",
+  "patchSHA256": "271f166fc60570ee329ebbd8cb1b1786194328bb1bfc3c82c5d343316605905d"
+}

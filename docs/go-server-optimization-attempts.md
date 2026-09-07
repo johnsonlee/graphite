@@ -622,3 +622,27 @@ This is a functional follow-up; Attempts16/17 remain separate hypotheses.
 `docs/go-server-baseline/native64-label-alias-attempt16/` preserves exact source,
 full frozen author/integrator evidence,old-reference checks,all21-query raw
 profiles/receipts,HTTP63 verification andpost-exit fixture identities.
+
+
+## 2026-09-07 — Attempt 17: projection context cancellation fast checks
+
+| Item | Evidence / status |
+|---|---|
+| Hypothesis | Avoid shared cancelCtx.Err mutex acquisition while Done remains open at five existing Store projection checkpoints; preserve current-context cancellation and failure ordering |
+| Native base / candidate | b7bb15a2; six-file patch271f166fc60570ee329ebbd8cb1b1786194328bb1bfc3c82c5d343316605905d; two production files; all2436 root inputs equal full tested candidate |
+| Diagnosis | A15 same-binary mutex sample estimates13.77s cancelCtx.Err delay of24.99 aggregate; sampling perturbs repeat9.874752->10.736632s. Delay is not CPU/wall fraction or speed prediction |
+| Correctness | Fullmodule race/vet; actual original-production named tests24PASS; independent typed-SID-first-error race10; original1044/1048,F4 retained; generic432/B595 unchanged |
+| Historical state | 76 complete artifacts74rawexact,2only61mappedView leaves; no retained differences in integration. Author four retained coordinates independently shown reachable by original repeats, raw failures retained;166 B numeric spellings retained |
+| Real64 | 64 persisted graphs/1152files/10,338,207,518bytes; two fresh fixed21 processes;42 fulltyped responses and all source histories equal; both Close/exit0,original/clone/source/binary unchanged |
+| Prefix first | 15.676783->1.754574s,CPU76.806707->13.262513s,allocation5,966,082,120->5,965,804,912bytes |
+| Prefix repeat | 11.311840->0.997778s,CPU52.879306->6.837113s,allocation444,206,968->443,947,144bytes |
+| Necessary DISTINCT | First2.085637->0.207867s,repeat2.158655->0.177637s;first CPU9.994055->1.537487s;allocation virtually unchanged |
+| Remaining controls | Dense first0.318998->0.305078s;generic DISTINCT5.409688->5.415945s/about5.48GB unchanged;slower generic routes and B controls retained |
+| Shipping | 63 fulltyped main responses/headers/catalog64;152active compiler/embed+2436module inputs;two fresh default60s/cap4 processes exit143/no forcedkill/portsfree;1152original/HTTPclone hashes unchanged |
+| Decision | Keep substantial measured prefix/necessary-DISTINCT latency and CPU benefit; no allocation or established GC-pause claim; generic slot optimization remains separate |
+| Limits | Single instrumented pair vs preceding Go,known agents quiet/external host activity uncontrolled;not main-relative P95/10x proof;full compatibility and final benchmark gate remain open |
+
+`docs/go-server-baseline/native64-projection-context-attempt17/` preserves the
+diagnosis, exact provider/integration/source evidence, all raw query profiles,
+complete bodies and state histories, actual HTTP verification, fixture receipts,
+and initial observer/collector failures. No async CPU sampler enters shipping.

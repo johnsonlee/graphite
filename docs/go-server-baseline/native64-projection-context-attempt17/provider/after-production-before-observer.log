@@ -1,0 +1,49 @@
+=== RUN   TestProjectionContextStandardStatesAndPrecedence
+=== RUN   TestProjectionContextStandardStatesAndPrecedence/background
+=== RUN   TestProjectionContextStandardStatesAndPrecedence/todo
+=== RUN   TestProjectionContextStandardStatesAndPrecedence/cancelled
+=== RUN   TestProjectionContextStandardStatesAndPrecedence/deadline
+=== RUN   TestProjectionContextStandardStatesAndPrecedence/cause
+=== RUN   TestProjectionContextStandardStatesAndPrecedence/value-child
+=== RUN   TestProjectionContextStandardStatesAndPrecedence/live-parent
+=== RUN   TestProjectionContextStandardStatesAndPrecedence/without-cancel
+--- PASS: TestProjectionContextStandardStatesAndPrecedence (0.00s)
+    --- PASS: TestProjectionContextStandardStatesAndPrecedence/background (0.00s)
+    --- PASS: TestProjectionContextStandardStatesAndPrecedence/todo (0.00s)
+    --- PASS: TestProjectionContextStandardStatesAndPrecedence/cancelled (0.00s)
+    --- PASS: TestProjectionContextStandardStatesAndPrecedence/deadline (0.00s)
+    --- PASS: TestProjectionContextStandardStatesAndPrecedence/cause (0.00s)
+    --- PASS: TestProjectionContextStandardStatesAndPrecedence/value-child (0.00s)
+    --- PASS: TestProjectionContextStandardStatesAndPrecedence/live-parent (0.00s)
+    --- PASS: TestProjectionContextStandardStatesAndPrecedence/without-cancel (0.00s)
+=== RUN   TestProjectionContextPreparationPublicationAndFormatOrder
+=== RUN   TestProjectionContextPreparationPublicationAndFormatOrder/cancel_after_read_before_publication
+=== RUN   TestProjectionContextPreparationPublicationAndFormatOrder/format_failure_before_postread_checkpoint
+--- PASS: TestProjectionContextPreparationPublicationAndFormatOrder (0.01s)
+    --- PASS: TestProjectionContextPreparationPublicationAndFormatOrder/cancel_after_read_before_publication (0.00s)
+    --- PASS: TestProjectionContextPreparationPublicationAndFormatOrder/format_failure_before_postread_checkpoint (0.00s)
+=== RUN   TestProjectionContextDecoderCancelAndFreshRequest
+--- PASS: TestProjectionContextDecoderCancelAndFreshRequest (0.00s)
+=== RUN   TestProjectionContextCloseWaitsForCanceledDecoder
+--- PASS: TestProjectionContextCloseWaitsForCanceledDecoder (0.00s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/store	1.301s
+=== RUN   TestMainStringMappedColdWarmDemandAndCancellation
+=== RUN   TestMainStringMappedColdWarmDemandAndCancellation/warm=false/cancel=0
+    main_string_source_test.go:70: construction order checks 0 2
+=== RUN   TestMainStringMappedColdWarmDemandAndCancellation/warm=false/cancel=2
+    main_string_source_test.go:58: cold full validation must fail before sequence <nil> true
+=== RUN   TestMainStringMappedColdWarmDemandAndCancellation/warm=true/cancel=0
+    main_string_source_test.go:70: construction order checks 0 1
+=== RUN   TestMainStringMappedColdWarmDemandAndCancellation/warm=true/cancel=2
+    main_string_source_test.go:70: construction order checks 0 1
+--- FAIL: TestMainStringMappedColdWarmDemandAndCancellation (0.00s)
+    --- FAIL: TestMainStringMappedColdWarmDemandAndCancellation/warm=false/cancel=0 (0.00s)
+    --- FAIL: TestMainStringMappedColdWarmDemandAndCancellation/warm=false/cancel=2 (0.00s)
+    --- FAIL: TestMainStringMappedColdWarmDemandAndCancellation/warm=true/cancel=0 (0.00s)
+    --- FAIL: TestMainStringMappedColdWarmDemandAndCancellation/warm=true/cancel=2 (0.00s)
+=== RUN   TestProjectionContextWorkerFailureJoinsOrderRead
+--- PASS: TestProjectionContextWorkerFailureJoinsOrderRead (0.00s)
+FAIL
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/query	0.255s
+FAIL

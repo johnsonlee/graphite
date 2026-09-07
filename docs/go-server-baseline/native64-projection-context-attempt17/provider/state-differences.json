@@ -1,0 +1,674 @@
+{
+  "rawArtifacts": 67,
+  "rawExactArtifacts": 64,
+  "fullResponseChanges": 0,
+  "changedLeaves": 95,
+  "scope": "91 mappedView leaves plus exactly four retained leaves in rolling case8/sourceg5,g7: independent old-production/JVM variation recorded in retained-state-proof.json. No other states ignored. Full raw artifacts retained, not normalized or called exact",
+  "differences": [
+    {
+      "artifact": "base-indexed/main-string-source-main.json-native.json",
+      "path": "$[10].targets[0].after[0].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-indexed/main-string-source-main.json-native.json",
+      "path": "$[10].targets[0].after[2].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-indexed/main-string-source-main.json-native.json",
+      "path": "$[10].targets[0].after[3].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-indexed/main-string-source-main.json-native.json",
+      "path": "$[10].targets[0].after[6].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-indexed/main-string-source-main.json-native.json",
+      "path": "$[10].targets[0].after[7].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-indexed/main-string-source-main.json-native.json",
+      "path": "$[10].targets[1].after[0].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-indexed/main-string-source-main.json-native.json",
+      "path": "$[10].targets[1].after[1].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-indexed/main-string-source-main.json-native.json",
+      "path": "$[10].targets[1].after[2].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-indexed/main-string-source-main.json-native.json",
+      "path": "$[10].targets[1].after[3].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-indexed/main-string-source-main.json-native.json",
+      "path": "$[10].targets[1].after[5].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-indexed/main-string-source-main.json-native.json",
+      "path": "$[10].targets[1].after[6].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-indexed/main-string-source-main.json-native.json",
+      "path": "$[10].targets[1].before[0].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-indexed/main-string-source-main.json-native.json",
+      "path": "$[10].targets[1].before[2].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-indexed/main-string-source-main.json-native.json",
+      "path": "$[10].targets[1].before[3].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-indexed/main-string-source-main.json-native.json",
+      "path": "$[10].targets[1].before[6].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-indexed/main-string-source-main.json-native.json",
+      "path": "$[10].targets[1].before[7].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-indexed/main-string-source-main.json-native.json",
+      "path": "$[14].targets[0].after[3].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-indexed/main-string-source-main.json-native.json",
+      "path": "$[14].targets[0].after[5].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-indexed/main-string-source-main.json-native.json",
+      "path": "$[14].targets[0].after[6].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-indexed/main-string-source-main.json-native.json",
+      "path": "$[14].targets[0].after[7].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-indexed/main-string-source-main.json-native.json",
+      "path": "$[14].targets[1].after[3].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-indexed/main-string-source-main.json-native.json",
+      "path": "$[14].targets[1].after[5].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-indexed/main-string-source-main.json-native.json",
+      "path": "$[14].targets[1].after[6].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-indexed/main-string-source-main.json-native.json",
+      "path": "$[14].targets[1].after[7].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-indexed/main-string-source-main.json-native.json",
+      "path": "$[14].targets[1].before[3].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-indexed/main-string-source-main.json-native.json",
+      "path": "$[14].targets[1].before[5].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-indexed/main-string-source-main.json-native.json",
+      "path": "$[14].targets[1].before[6].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-indexed/main-string-source-main.json-native.json",
+      "path": "$[14].targets[1].before[7].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-indexed/main-string-source-offset-main.json-native.json",
+      "path": "$[5].targets[0].after[0].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-indexed/main-string-source-offset-main.json-native.json",
+      "path": "$[5].targets[0].after[1].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-indexed/main-string-source-offset-main.json-native.json",
+      "path": "$[5].targets[0].after[2].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-indexed/main-string-source-offset-main.json-native.json",
+      "path": "$[5].targets[0].after[3].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-indexed/main-string-source-offset-main.json-native.json",
+      "path": "$[5].targets[0].after[4].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-indexed/main-string-source-offset-main.json-native.json",
+      "path": "$[5].targets[0].after[6].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-indexed/main-string-source-offset-main.json-native.json",
+      "path": "$[5].targets[1].after[0].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-indexed/main-string-source-offset-main.json-native.json",
+      "path": "$[5].targets[1].after[4].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-indexed/main-string-source-offset-main.json-native.json",
+      "path": "$[5].targets[1].after[6].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-indexed/main-string-source-offset-main.json-native.json",
+      "path": "$[5].targets[1].before[0].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-indexed/main-string-source-offset-main.json-native.json",
+      "path": "$[5].targets[1].before[1].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-indexed/main-string-source-offset-main.json-native.json",
+      "path": "$[5].targets[1].before[2].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-indexed/main-string-source-offset-main.json-native.json",
+      "path": "$[5].targets[1].before[3].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-indexed/main-string-source-offset-main.json-native.json",
+      "path": "$[5].targets[1].before[4].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-indexed/main-string-source-offset-main.json-native.json",
+      "path": "$[5].targets[1].before[6].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[8].targets[0].after[5].retained",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[8].targets[0].after[7].retained",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[8].targets[1].before[5].retained",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[8].targets[1].before[7].retained",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[9].targets[0].after[4].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[9].targets[0].after[5].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[9].targets[0].after[7].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[9].targets[1].after[5].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[9].targets[1].after[7].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[9].targets[1].before[4].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[9].targets[1].before[5].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[9].targets[1].before[7].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[9].targets[2].after[5].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[9].targets[2].after[7].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[9].targets[2].before[5].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[9].targets[2].before[7].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[10].targets[0].after[2].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[10].targets[0].after[4].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[10].targets[1].after[3].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[10].targets[1].after[5].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[10].targets[1].after[6].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[10].targets[1].after[7].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[10].targets[1].before[2].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[10].targets[1].before[4].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[10].targets[2].after[5].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[10].targets[2].after[7].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[10].targets[2].before[3].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[10].targets[2].before[5].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[10].targets[2].before[6].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[10].targets[2].before[7].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[11].targets[0].after[4].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[11].targets[0].after[5].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[11].targets[0].after[6].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[11].targets[0].after[7].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[11].targets[1].after[5].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[11].targets[1].after[6].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[11].targets[1].after[7].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[11].targets[1].before[4].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[11].targets[1].before[5].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[11].targets[1].before[6].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[11].targets[1].before[7].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[11].targets[2].after[5].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[11].targets[2].after[6].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[11].targets[2].after[7].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[11].targets[2].before[5].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[11].targets[2].before[6].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[11].targets[2].before[7].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[12].targets[0].after[7].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[12].targets[1].after[7].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[12].targets[1].before[7].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[12].targets[2].after[7].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "artifact": "base-ordinary/rolling-native.json",
+      "path": "$[12].targets[2].before[7].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    }
+  ]
+}

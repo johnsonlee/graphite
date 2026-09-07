@@ -1,0 +1,11 @@
+{
+  "command": [
+    "git",
+    "apply",
+    "--check",
+    "/tmp/graphite-projection-context-attempt17-evidence/attempt17.patch"
+  ],
+  "cwd": "/tmp/graphite-projection-context-attempt17-evidence/apply-check",
+  "exit": 0,
+  "originalFilesFrom": "62b92d2061b72150d76767cd07c18e351dddc7a3"
+}

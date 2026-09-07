@@ -1,0 +1,14 @@
+{
+  "recordedUTC": "2026-09-07T04:39:10.619542+00:00",
+  "platform": "macOS-14.3-arm64-arm-64bit-Mach-O",
+  "cpuCount": 16,
+  "go": "go version go1.22.0 darwin/arm64",
+  "GOOS_GOARCH": [
+    "darwin",
+    "arm64"
+  ],
+  "base": "62b92d2061b72150d76767cd07c18e351dddc7a3",
+  "pinnedMain": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "performanceRun": false,
+  "newJVMOrReal64Process": false
+}
