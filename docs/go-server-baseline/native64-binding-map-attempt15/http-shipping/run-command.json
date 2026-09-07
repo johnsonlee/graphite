@@ -1,0 +1,60 @@
+{
+  "removedEnvironment": {
+    "GRAPHITE_NATIVE_CPU_PROFILE": null,
+    "GRAPHITE_PROFILE": null,
+    "GOGC": null,
+    "GODEBUG": null,
+    "GOMEMLIMIT": null,
+    "GOMAXPROCS": null
+  },
+  "completed": [
+    {
+      "name": "lazy13",
+      "command": [
+        "python3",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-binding-map-attempt15/http-shipping/replay-http.py",
+        "--binary",
+        "/tmp/graphite-binding-http-binary-2ab90cdc",
+        "--out",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-binding-map-attempt15/http-shipping/lazy13",
+        "--source-identity",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-binding-map-attempt15/http-shipping/source-identity.json",
+        "--port",
+        "18874",
+        "--frozen",
+        "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-binding-map-attempt15/http-shipping/lazy-main.json",
+        "--required",
+        "13"
+      ],
+      "required": 13,
+      "oracleSHA256": "69842417619547b7611ad5a66e46a5b34e3b2ddce5b35a88ed515cac8ff07e5d",
+      "all1152FixtureHashesVerifiedBefore": true,
+      "startedUTC": "2026-09-07T03:51:44.508880+00:00",
+      "exitCode": 0,
+      "finishedUTC": "2026-09-07T03:52:37.177381+00:00"
+    }
+  ],
+  "current": {
+    "name": "regression42",
+    "command": [
+      "python3",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-binding-map-attempt15/http-shipping/replay-http.py",
+      "--binary",
+      "/tmp/graphite-binding-http-binary-2ab90cdc",
+      "--out",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-binding-map-attempt15/http-shipping/regression42",
+      "--source-identity",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-binding-map-attempt15/http-shipping/source-identity.json",
+      "--port",
+      "18875",
+      "--frozen",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-preflight/queries/observations.json",
+      "--required",
+      "42"
+    ],
+    "required": 42,
+    "oracleSHA256": "a435e053ea81a1333b5d16d530d9c7534c9cb4ee06aeffc44b68a45dd16bddd8",
+    "all1152FixtureHashesVerifiedBefore": true,
+    "startedUTC": "2026-09-07T03:52:42.367906+00:00"
+  }
+}

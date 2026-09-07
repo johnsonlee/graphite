@@ -1,0 +1,14 @@
+{
+  "at": "2026-09-07T03:19:43.038703+00:00",
+  "revision": "9ada2bf15867c192e7a53fa9a27828de6fd02075",
+  "argv": [
+    "go",
+    "test",
+    "./...",
+    "-count=1"
+  ],
+  "cwd": "/tmp/graphite-binding-map-attempt15-evidence/base-module/graphite-server",
+  "env": {
+    "INDEXED_DISTINCT_OUTPUT": "/tmp/graphite-binding-map-attempt15-evidence/base-observations"
+  }
+}

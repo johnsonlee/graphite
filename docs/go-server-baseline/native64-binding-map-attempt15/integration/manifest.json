@@ -1,0 +1,327 @@
+{
+  "base": "2ab90cdc",
+  "createdUTC": "2026-09-07T03:45:03.186325+00:00",
+  "worktree": "/tmp/graphite-go-binding-root-2ab90cdc",
+  "sourceFiles": 2402,
+  "originalCorpusEqual": 1016,
+  "denominator": 1048,
+  "sourceUnchanged": true,
+  "files": {
+    "input-verification.json": {
+      "sha256": "a4782ead04e2edcce7f001aa673e7aad4c076ac3a5461975e92881e5b85046bf",
+      "bytes": 203
+    },
+    "independent-verification.json": {
+      "sha256": "8ec4d09f55adc2b368be24fcb4fd7b31e4908ae54fa4571c3b19c05805d1142c",
+      "bytes": 433
+    },
+    "vet.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "source.json": {
+      "sha256": "4c719dfce3b30d94bbf7f613eec53772b30c4b73514a093a184e8655dbfe9d74",
+      "bytes": 343718
+    },
+    "oracle-verification.json": {
+      "sha256": "edad1d3df821178f29f52c1d5f2e826525699d2708e48d9588961a66943d491c",
+      "bytes": 14474
+    },
+    "worktree.log": {
+      "sha256": "0d75d3bf5e548a97c5008da6ff96aa8c5696dd0bb4e87f38353770d7a5b9d930",
+      "bytes": 1978
+    },
+    "module-verification.json": {
+      "sha256": "f3627b832e45ec425dbb92fe56a889b57686a07f43658be87cc5d91c096a6e40",
+      "bytes": 570
+    },
+    "apply.log": {
+      "sha256": "9bf92ac3ce79ce7ffa3fc8f4eb85d3848527d0f0db6973d01800adb368b35b33",
+      "bytes": 117
+    },
+    "race.log": {
+      "sha256": "ef4578ad9cd92e97271a72497a219fe0b5659d74163a8040e934399c699a8c1c",
+      "bytes": 1120
+    },
+    "initial-manifest-root-failure.json": {
+      "sha256": "5bf4b9b98b7c84248facb9df5c80da15f9a29e8f63473a389959c4deb1dd7fce",
+      "bytes": 319
+    },
+    "root_binding_ownership_test.go": {
+      "sha256": "3e34773479e13b25ac30100351202acdea0c70c1e81dbdb31c87e501eeb665e3",
+      "bytes": 1646
+    },
+    "independent-race.log": {
+      "sha256": "be42d094cfae20061aba2cdb1228f3baa9672ee4e28c8d58240a9e5a7de591d5",
+      "bytes": 2479
+    },
+    "ordinary-native/annotation-native.json": {
+      "sha256": "1a7d408b2c018cf087ea6eacd957a153500db5a6cacf03e72675735774faa1d8",
+      "bytes": 40545
+    },
+    "ordinary-native/dense-clean-native.json": {
+      "sha256": "4cb15597a5bc69c1dd815fe6d69ec013f47e459b0fc8ca37404ddc89f8e4af6c",
+      "bytes": 106320
+    },
+    "ordinary-native/cache-threshold-native.json": {
+      "sha256": "615da41096d8f018f4c5192733f1f47bd37b1aa7a2ef618f1492c04b8cc453e2",
+      "bytes": 840235
+    },
+    "ordinary-native/dense-callee-sid-native.json": {
+      "sha256": "b17de139c2b7da1fc28625a6c3963d901a65f1f42bae2713b9fa58708d14f0bd",
+      "bytes": 3867
+    },
+    "ordinary-native/annotation-after-classification.json": {
+      "sha256": "425757c7f23251e3cca37f4e0c3002e8e95f5d8acb467ff800d03f5faef40391",
+      "bytes": 4709
+    },
+    "ordinary-native/rolling-native.json": {
+      "sha256": "02ea1b6ea271d294d1945707d506ec28e438c2d740c8e019ca797705b79685c3",
+      "bytes": 282342
+    },
+    "ordinary-native/dense-callee-sid-missing-native.json": {
+      "sha256": "47a4722409271ee7405077e7b50cab8ddaf7770d5ab6759398165b5f2446a35e",
+      "bytes": 3750
+    },
+    "ordinary-native/history-native.json": {
+      "sha256": "e8a0427ca2e06854045ce5f293da3298818fb385d2a028e9dd4a45ba90ec198f",
+      "bytes": 46764
+    },
+    "ordinary-native/annotation-after-native.json": {
+      "sha256": "c90e4bc5bf201570d33b6540e0887576bc80214b1223d08c85e4f9e9096508ab",
+      "bytes": 40552
+    },
+    "ordinary-native/dense-return-sid-missing-native.json": {
+      "sha256": "4845a2616e930d4cfd266646790ba68d27eb7c1089142161f9315df3870647f1",
+      "bytes": 3977
+    },
+    "ordinary-native/mixed-classification.json": {
+      "sha256": "425757c7f23251e3cca37f4e0c3002e8e95f5d8acb467ff800d03f5faef40391",
+      "bytes": 4709
+    },
+    "ordinary-native/dense-clean-missing-native.json": {
+      "sha256": "7710f4e96383cae1b164b5c0d7a755a406aa2c3345a943a2323580abc406a532",
+      "bytes": 106322
+    },
+    "ordinary-native/annotation-classification.json": {
+      "sha256": "b67f17a70da8168c56d9dda9ac84baa82e9b6546d640e8f09032ebf3cd36d46c",
+      "bytes": 4715
+    },
+    "ordinary-native/mixed-native.json": {
+      "sha256": "398572afea1af7f69e645d770f20be8d89980c52d9b6e1fc70a005edc56e0650",
+      "bytes": 34908
+    },
+    "ordinary-native/dense-return-sid-native.json": {
+      "sha256": "96737d4470f289fac3d9f0c56711fd88443e130fd288ff1b932dac3a36c08ced",
+      "bytes": 3975
+    },
+    "ordinary-native/wide-history-native.json": {
+      "sha256": "bf77c86004beae2f01e932680af9b8d30c09859b90266b85c9ce37112a9de569",
+      "bytes": 341010
+    },
+    "indexed-native/split-bad-tag-native.json": {
+      "sha256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254",
+      "bytes": 7164
+    },
+    "indexed-native/main-string-source-property-main.json-native.json": {
+      "sha256": "8a5f0aa8c7041293bd0d7dd99795e66d4a86e5911188440768ea92c6a093a9a0",
+      "bytes": 25662
+    },
+    "indexed-native/main-string-source-offset-main.json-native.json": {
+      "sha256": "724862e90aee42eb72ddadd3630e9d803855c7be0d00612760339e2e51df66a7",
+      "bytes": 45301
+    },
+    "indexed-native/annotation-native.json": {
+      "sha256": "6f56ae01e2f4149f959a1f10290e70e5a347af697d210859b85902244a916aed",
+      "bytes": 34598
+    },
+    "indexed-native/required-missing-index-native.json": {
+      "sha256": "3ac51f08eb2f4ca63449c1a35ead4e7910cb72d580b798d68ccd747db6fee63d",
+      "bytes": 41647
+    },
+    "indexed-native/supplementary-native.json": {
+      "sha256": "94552b0cf04f55e805581bab71802f94211d7471096ca22f543c0f0ff68fe83a",
+      "bytes": 24439
+    },
+    "indexed-native/split-bad-callee-native.json": {
+      "sha256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254",
+      "bytes": 7164
+    },
+    "indexed-native/source-pairs-native.json": {
+      "sha256": "ddf828b712903ad3d6f05a2eb5873156f28de7955e83bc8c743a5a6a2a7ce783",
+      "bytes": 5066
+    },
+    "indexed-native/main-string-source-main.json-native.json": {
+      "sha256": "9116081757a7f0dd89beba408368bd816e530e26da1c7ba631d16c83ee36dc44",
+      "bytes": 197878
+    },
+    "indexed-native/generic-fault-audit.json": {
+      "sha256": "ce5fdd397837e827664b1a07d4e105de6d2df16a3c09d55f55b71c8987ee2b85",
+      "bytes": 591494
+    },
+    "indexed-native/split-bad-count-native.json": {
+      "sha256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254",
+      "bytes": 7164
+    },
+    "indexed-native/annotation-after-native.json": {
+      "sha256": "d9d5a2bf4ef573f75cae34d9e5d5fff5941bf29af93d0e97ca301a7871bbece0",
+      "bytes": 34590
+    },
+    "indexed-native/split-missing-index-native.json": {
+      "sha256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254",
+      "bytes": 7164
+    },
+    "indexed-native/source-pairs-eligibility.json": {
+      "sha256": "19401f838902bc5aaa6bfaa610a30ba5626f1d03cc541cee21a6dbc543c4a54d",
+      "bytes": 981
+    },
+    "indexed-native/late-native.json": {
+      "sha256": "ecee3443a9b07b945d278f9a5d3af3717ac4624950438f299db9ff0b87f1b2ae",
+      "bytes": 1886
+    },
+    "indexed-native/supplementary-eligibility.json": {
+      "sha256": "1f4b1a4795f3065837822f71510d07b770905e54bc6384732065a3b375417117",
+      "bytes": 9235
+    },
+    "indexed-native/split-clean-native.json": {
+      "sha256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254",
+      "bytes": 7164
+    },
+    "indexed-native/primary-eligibility.json": {
+      "sha256": "977f48131d1b9001e7f3be0095912b2ce6c35b3a908d4083a64edca131d90ad1",
+      "bytes": 62623
+    },
+    "indexed-native/lazy-filtered-480.json": {
+      "sha256": "94e66221c3e43ffb9efdb3491d507a86483b8702bda1d6f38041b36eafaf0384",
+      "bytes": 362089
+    },
+    "indexed-native/required-native.json": {
+      "sha256": "c4edae9b06d42b06d86085fa3a20d99ca32d796f00a8e1ff5c071348460117e0",
+      "bytes": 44651
+    },
+    "indexed-native/required-missing-identity-native.json": {
+      "sha256": "fa7e6ff32f74410593471ed4b137628d9f20d30798ca388cf397f81021dc9bad",
+      "bytes": 42025
+    },
+    "indexed-native/mixed-native.json": {
+      "sha256": "114d94abea54aa36cd40a32f881e4bf3014167d31ef678dc83ef28dcc22dbfac",
+      "bytes": 28746
+    },
+    "indexed-native/primary-native.json": {
+      "sha256": "458e9657b62b49a9edb4219cbeead479bdbca4ed16762536b9b387f2a612afc6",
+      "bytes": 169632
+    },
+    "ordinary-native/required/node-id-999-native.json": {
+      "sha256": "e73cd4b1117e742617b4385072399a4be21dc48e6d8fbd71ac45294113454a1d",
+      "bytes": 42786
+    },
+    "ordinary-native/required/node-tag-255-missing-native.json": {
+      "sha256": "2b9b881ad30fc0464c143d41fb11dd27e41211347f783529bc77b100377e30c9",
+      "bytes": 42928
+    },
+    "ordinary-native/required/caller-name-sid-minus-one-missing-native.json": {
+      "sha256": "d5278ff123b756fc783950b6d2deb7433f7da21efffafcfaa1b29e07120796a8",
+      "bytes": 42594
+    },
+    "ordinary-native/required/callee-class-sid-max-missing-native.json": {
+      "sha256": "8bc681ecff065baa3000a3fde5943efa29fc0b5b7773334627cbfaf1e37d6ada",
+      "bytes": 42738
+    },
+    "ordinary-native/required/offset-missing-native.json": {
+      "sha256": "a009c7623b396b45b589c80dcbc0545998ed9dc0d710b4aab14ed7b00f20e4a9",
+      "bytes": 42138
+    },
+    "ordinary-native/required/offset-outside-native.json": {
+      "sha256": "a009c7623b396b45b589c80dcbc0545998ed9dc0d710b4aab14ed7b00f20e4a9",
+      "bytes": 42138
+    },
+    "ordinary-native/required/caller-name-sid-minus-one-native.json": {
+      "sha256": "16c8f7ecffb9fb020fdf02b3c2f3a9177455c1b1dff5c5c9d76179015c44fd4b",
+      "bytes": 42734
+    },
+    "ordinary-native/required/caller-count-max-native.json": {
+      "sha256": "930e0ce13b55d3733fa2b05bccbb1f4c11eca050e347ca7911d56799421b3521",
+      "bytes": 42926
+    },
+    "ordinary-native/required/offset-missing-missing-native.json": {
+      "sha256": "a009c7623b396b45b589c80dcbc0545998ed9dc0d710b4aab14ed7b00f20e4a9",
+      "bytes": 42138
+    },
+    "ordinary-native/required/callee-class-sid-minus-one-missing-native.json": {
+      "sha256": "78ed380e25605191705c9e040280a38097ba9bbd7c88c16bda79d0052c202f8c",
+      "bytes": 42522
+    },
+    "ordinary-native/required/core-return-sid-max-native.json": {
+      "sha256": "266894d701d837c747683e4672a7ef6390cdecc48089dfa30ea7048bd7204bc6",
+      "bytes": 43250
+    },
+    "ordinary-native/required/caller-count-minus-one-missing-native.json": {
+      "sha256": "c6c962e3d267af9e42d68b96b618431bd8c739ee362174b3a949fe907778ac2a",
+      "bytes": 43874
+    },
+    "ordinary-native/required/offset-outside-missing-native.json": {
+      "sha256": "a009c7623b396b45b589c80dcbc0545998ed9dc0d710b4aab14ed7b00f20e4a9",
+      "bytes": 42138
+    },
+    "ordinary-native/required/node-tag-255-native.json": {
+      "sha256": "552d226acd4d71b0cd457f01f32fe1c1e06070906e7d29876db130934a1da7fb",
+      "bytes": 42922
+    },
+    "ordinary-native/required/offset-int-overflow-native.json": {
+      "sha256": "a009c7623b396b45b589c80dcbc0545998ed9dc0d710b4aab14ed7b00f20e4a9",
+      "bytes": 42138
+    },
+    "ordinary-native/required/caller-count-outside-native.json": {
+      "sha256": "f71e9a83dcd026e4bc44753501484f6b57ec692e72857e1615281defa7f73dae",
+      "bytes": 42524
+    },
+    "ordinary-native/required/caller-name-sid-max-missing-native.json": {
+      "sha256": "55c5b1b031ea923f22f07f3c1f67a77c0169c09a4bf15d2e3c5830f5ef6590d7",
+      "bytes": 42690
+    },
+    "ordinary-native/required/caller-count-minus-one-native.json": {
+      "sha256": "c41d66f7375f4368afe3ba441b6f41f54a941bd3da6bb7fb0f82a88756a8915c",
+      "bytes": 43868
+    },
+    "ordinary-native/required/core-return-sid-max-missing-native.json": {
+      "sha256": "f847d1b50b813fea48f2b46fe32eb78ab4adfe272528f813ae5d22a1335c62dd",
+      "bytes": 43256
+    },
+    "ordinary-native/required/caller-count-max-missing-native.json": {
+      "sha256": "ec5b42a34d1fd02f7fbb0daf451d922f9ea9083529060d7eac163c71818ade22",
+      "bytes": 42932
+    },
+    "ordinary-native/required/offset-other-node-native.json": {
+      "sha256": "5aa4390c36fe48b01008970cd19994c559ee339455e0233e9d610ff292e87c91",
+      "bytes": 43894
+    },
+    "ordinary-native/required/offset-other-node-missing-native.json": {
+      "sha256": "5aa4390c36fe48b01008970cd19994c559ee339455e0233e9d610ff292e87c91",
+      "bytes": 43894
+    },
+    "ordinary-native/required/caller-name-sid-max-native.json": {
+      "sha256": "f42f8d5855fa0d2ed2ce1991c937822eef4d9bde9c61d63353efbdf2dd9fb533",
+      "bytes": 42994
+    },
+    "ordinary-native/required/offset-int-overflow-missing-native.json": {
+      "sha256": "a009c7623b396b45b589c80dcbc0545998ed9dc0d710b4aab14ed7b00f20e4a9",
+      "bytes": 42138
+    },
+    "ordinary-native/required/caller-count-outside-missing-native.json": {
+      "sha256": "a009c7623b396b45b589c80dcbc0545998ed9dc0d710b4aab14ed7b00f20e4a9",
+      "bytes": 42138
+    },
+    "ordinary-native/required/callee-class-sid-max-native.json": {
+      "sha256": "e317b954b25c24255879dbca5bbafe2bdbff18445f56d6c3e3fe792f00c67e03",
+      "bytes": 43024
+    },
+    "ordinary-native/required/node-id-999-missing-native.json": {
+      "sha256": "f7e01b7fa0f92515d90b8640d33ecb07179820c20e39d33049de933a5c3882da",
+      "bytes": 42792
+    },
+    "ordinary-native/required/callee-class-sid-minus-one-native.json": {
+      "sha256": "b1df0a0a8b5218ff5abfdc79c3c8781d7093cacf0ccdf90d7d36f646a6493215",
+      "bytes": 42644
+    }
+  }
+}

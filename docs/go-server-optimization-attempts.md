@@ -549,3 +549,25 @@ measurements and actual command verification. An initial post-exit plain-bind
 failure and subsequent no-listener/refused-connect/successful-bind probes remain;
 the unchanged verifier later passed without restarting servers or changing data.
 The remaining32 in the old suite are not the complete product gap inventory.
+
+
+## 2026-09-07 — Attempt 15: scanner-owned projection binding map
+
+| Item | Evidence / status |
+|---|---|
+| Hypothesis | Reuse one private binding map per generic DISTINCT scanner instead of allocating one for every projected expression; preserve consumption/evaluation/ownership/cancellation |
+| Native base / candidate | `2ab90cdc`; provider patch `a2c0457f6c732f136711b58b2f5a73622d072de7882cd1258e236cd8fde30ef1`, one production file plus tests; all2402 combined inputs match root |
+| Correctness | Whole-module race/vet; independent two-task real-cancellation/join/fresh-wave race×20; all67 complete response artifacts unchanged,45 speculative mappedView leaves retained; original1016/1048 unchanged |
+| Real64 | All64 persisted graphs,1152files/10,338,207,518bytes; fixed five-query history, both full Go outputs equal pinned main; original/clone/source/binary unchanged after Close |
+| Prefix first | Execute+marshal13.965664→13.844310s,CPU69.276597→67.477911s,allocation9,281,813,272→5,966,132,840bytes |
+| Prefix repeat | 9.892465→9.800067s,CPU46.503897→45.741571s,allocation3,759,934,424→444,259,376bytes (88.18% reduction); latency virtually unchanged |
+| Dense controls | First0.313969→0.312444s;repeat0.309357→0.303839s;allocation approximately268.4MB unchanged; prior prefix history retained |
+| Ordinary control | 0.001809→0.001802s;allocation1,636,064→1,635,392bytes |
+| Shipping HTTP | 55/55 full typed main bodies/headers/catalogs;150 active compiler/embed and2402 source/testdata inputs; two fresh processes exit143/no forced kill/ports released;1152 original/clone files unchanged |
+| Decision | Keep substantial allocation reduction; no meaningful prefix latency or CPU breakthrough, no claim of reduced GC pauses; generic CDE DISTINCT regression remains separate |
+| Limits | Single instrumented observations,CPU sampler off,getrusageCPU,forcedGC outside request; no P95/peakRSS/main-relative10x claim; full final gate outstanding |
+
+`docs/go-server-baseline/native64-binding-map-attempt15/` retains the author,
+independent allocation audit, root combination, every complete raw output and
+counter/profile, shipping command evidence and setup/test collector failures.
+The mutex contention diagnostic and label-map switch are separate hypotheses.

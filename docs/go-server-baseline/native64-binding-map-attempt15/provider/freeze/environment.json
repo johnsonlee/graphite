@@ -1,0 +1,11 @@
+{
+  "utc": "2026-09-07T03:32:52.425095+00:00",
+  "platform": "macOS-14.3-arm64-arm-64bit-Mach-O",
+  "go": "go version go1.22.0 darwin/arm64",
+  "base": "9ada2bf15867c192e7a53fa9a27828de6fd02075",
+  "worktree": "/tmp/graphite-go-binding-map-attempt15-9ada2bf1",
+  "gitStatus": " M graphite-server/internal/query/generic_distinct.go\n?? graphite-server/internal/query/generic_distinct_binding_test.go\n",
+  "performanceRun": false,
+  "rootModified": false,
+  "commitCreated": false
+}

@@ -1,0 +1,22 @@
+{
+  "verifiedUTC": "2026-09-07T04:04:27.234959+00:00",
+  "components": [
+    {
+      "component": "provider",
+      "manifestSHA256": "2f1e2dbaf1bf517eb3add5e51645669bce636e8d9219f245c68c914c1f5c210a",
+      "verifiedFiles": 206
+    },
+    {
+      "component": "diagnosis",
+      "manifestSHA256": "d37470ed21540be035f46fd1430149c270e8ad82977d88d25b8fd67b037e041a",
+      "verifiedFiles": 62
+    },
+    {
+      "component": "integration",
+      "manifestSHA256": "d20fc2c5b80677829d58cf908515aaceea844b3d681dbe3065ea4ea30f989494",
+      "verifiedFiles": 79
+    }
+  ],
+  "rootModuleFiles": 2402,
+  "allRootSourceInputsEqualTestedCandidate": true
+}

@@ -1,0 +1,1032 @@
+{
+  "normalization": "none; object member order is not compared, all array order/types/nulls/errors/metadata/state values are compared",
+  "artifacts": 38,
+  "equal": 35,
+  "records": [
+    {
+      "base": "base-complete-observations/annotation-after-native.json",
+      "candidate": "candidate-observations/annotation-after-native.json",
+      "entries": 48,
+      "baseSHA256": "d9d5a2bf4ef573f75cae34d9e5d5fff5941bf29af93d0e97ca301a7871bbece0",
+      "candidateSHA256": "d9d5a2bf4ef573f75cae34d9e5d5fff5941bf29af93d0e97ca301a7871bbece0",
+      "byteEqual": true,
+      "typeSensitiveEqual": true,
+      "differences": []
+    },
+    {
+      "base": "base-complete-observations/annotation-native.json",
+      "candidate": "candidate-observations/annotation-native.json",
+      "entries": 48,
+      "baseSHA256": "6f56ae01e2f4149f959a1f10290e70e5a347af697d210859b85902244a916aed",
+      "candidateSHA256": "6f56ae01e2f4149f959a1f10290e70e5a347af697d210859b85902244a916aed",
+      "byteEqual": true,
+      "typeSensitiveEqual": true,
+      "differences": []
+    },
+    {
+      "base": "base-complete-observations/generic-fault-audit.json",
+      "candidate": "candidate-observations/generic-fault-audit.json",
+      "entries": 432,
+      "baseSHA256": "c3ae159bd245cfd71225ea8f67fccfec9f5921a951ee6fcb2bd94c5a8c50ccc8",
+      "candidateSHA256": "c3ae159bd245cfd71225ea8f67fccfec9f5921a951ee6fcb2bd94c5a8c50ccc8",
+      "byteEqual": true,
+      "typeSensitiveEqual": true,
+      "differences": []
+    },
+    {
+      "base": "base-complete-observations/late-native.json",
+      "candidate": "candidate-observations/late-native.json",
+      "entries": 6,
+      "baseSHA256": "ecee3443a9b07b945d278f9a5d3af3717ac4624950438f299db9ff0b87f1b2ae",
+      "candidateSHA256": "ecee3443a9b07b945d278f9a5d3af3717ac4624950438f299db9ff0b87f1b2ae",
+      "byteEqual": true,
+      "typeSensitiveEqual": true,
+      "differences": []
+    },
+    {
+      "base": "base-complete-observations/main-string-source-main.json-native.json",
+      "candidate": "candidate-observations/main-string-source-main.json-native.json",
+      "entries": 41,
+      "baseSHA256": "636adaf8b0927bda2f7847c4a89d4c26f82c6205f5c6162be8bf9a75b534cac0",
+      "candidateSHA256": "62516a090015d33f22d8686563f9eb077bd4844ce96667f206e3518ce6b88af3",
+      "byteEqual": false,
+      "typeSensitiveEqual": false,
+      "differences": [
+        {
+          "path": "$[10].targets[0].after[1].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[10].targets[0].after[3].mappedView",
+          "base": true,
+          "candidate": false,
+          "reason": "value"
+        },
+        {
+          "path": "$[10].targets[0].after[5].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[10].targets[0].after[7].mappedView",
+          "base": true,
+          "candidate": false,
+          "reason": "value"
+        },
+        {
+          "path": "$[10].targets[1].after[0].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[10].targets[1].after[1].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[10].targets[1].after[3].mappedView",
+          "base": true,
+          "candidate": false,
+          "reason": "value"
+        },
+        {
+          "path": "$[10].targets[1].after[4].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[10].targets[1].after[5].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[10].targets[1].after[7].mappedView",
+          "base": true,
+          "candidate": false,
+          "reason": "value"
+        },
+        {
+          "path": "$[10].targets[1].before[1].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[10].targets[1].before[3].mappedView",
+          "base": true,
+          "candidate": false,
+          "reason": "value"
+        },
+        {
+          "path": "$[10].targets[1].before[5].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[10].targets[1].before[7].mappedView",
+          "base": true,
+          "candidate": false,
+          "reason": "value"
+        },
+        {
+          "path": "$[14].targets[0].after[1].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[14].targets[0].after[3].mappedView",
+          "base": true,
+          "candidate": false,
+          "reason": "value"
+        },
+        {
+          "path": "$[14].targets[0].after[4].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[14].targets[0].after[5].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[14].targets[0].after[6].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[14].targets[0].after[7].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[14].targets[1].after[1].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[14].targets[1].after[3].mappedView",
+          "base": true,
+          "candidate": false,
+          "reason": "value"
+        },
+        {
+          "path": "$[14].targets[1].after[4].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[14].targets[1].after[5].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[14].targets[1].after[6].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[14].targets[1].after[7].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[14].targets[1].before[1].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[14].targets[1].before[3].mappedView",
+          "base": true,
+          "candidate": false,
+          "reason": "value"
+        },
+        {
+          "path": "$[14].targets[1].before[4].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[14].targets[1].before[5].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[14].targets[1].before[6].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[14].targets[1].before[7].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        }
+      ]
+    },
+    {
+      "base": "base-complete-observations/main-string-source-offset-main.json-native.json",
+      "candidate": "candidate-observations/main-string-source-offset-main.json-native.json",
+      "entries": 6,
+      "baseSHA256": "5d6fd27b8779ecee22243daa7888f643ed6b21cc101e36e8871af51d68e0f5f0",
+      "candidateSHA256": "724862e90aee42eb72ddadd3630e9d803855c7be0d00612760339e2e51df66a7",
+      "byteEqual": false,
+      "typeSensitiveEqual": false,
+      "differences": [
+        {
+          "path": "$[5].targets[0].after[1].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[5].targets[0].after[3].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[5].targets[0].after[6].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[5].targets[1].after[1].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[5].targets[1].after[3].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[5].targets[1].before[1].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[5].targets[1].before[3].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[5].targets[1].before[6].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        }
+      ]
+    },
+    {
+      "base": "base-complete-observations/main-string-source-property-main.json-native.json",
+      "candidate": "candidate-observations/main-string-source-property-main.json-native.json",
+      "entries": 11,
+      "baseSHA256": "8a5f0aa8c7041293bd0d7dd99795e66d4a86e5911188440768ea92c6a093a9a0",
+      "candidateSHA256": "8a5f0aa8c7041293bd0d7dd99795e66d4a86e5911188440768ea92c6a093a9a0",
+      "byteEqual": true,
+      "typeSensitiveEqual": true,
+      "differences": []
+    },
+    {
+      "base": "base-complete-observations/mixed-native.json",
+      "candidate": "candidate-observations/mixed-native.json",
+      "entries": 48,
+      "baseSHA256": "114d94abea54aa36cd40a32f881e4bf3014167d31ef678dc83ef28dcc22dbfac",
+      "candidateSHA256": "114d94abea54aa36cd40a32f881e4bf3014167d31ef678dc83ef28dcc22dbfac",
+      "byteEqual": true,
+      "typeSensitiveEqual": true,
+      "differences": []
+    },
+    {
+      "base": "base-complete-observations/primary-eligibility.json",
+      "candidate": "candidate-observations/primary-eligibility.json",
+      "entries": 432,
+      "baseSHA256": "977f48131d1b9001e7f3be0095912b2ce6c35b3a908d4083a64edca131d90ad1",
+      "candidateSHA256": "977f48131d1b9001e7f3be0095912b2ce6c35b3a908d4083a64edca131d90ad1",
+      "byteEqual": true,
+      "typeSensitiveEqual": true,
+      "differences": []
+    },
+    {
+      "base": "base-complete-observations/primary-native.json",
+      "candidate": "candidate-observations/primary-native.json",
+      "entries": 432,
+      "baseSHA256": "26c04254cf5350d265bb0e580756edd626670064638f3a4a6f1ee03c218dece8",
+      "candidateSHA256": "26c04254cf5350d265bb0e580756edd626670064638f3a4a6f1ee03c218dece8",
+      "byteEqual": true,
+      "typeSensitiveEqual": true,
+      "differences": []
+    },
+    {
+      "base": "base-complete-observations/required-missing-identity-native.json",
+      "candidate": "candidate-observations/required-missing-identity-native.json",
+      "entries": 112,
+      "baseSHA256": "fa7e6ff32f74410593471ed4b137628d9f20d30798ca388cf397f81021dc9bad",
+      "candidateSHA256": "fa7e6ff32f74410593471ed4b137628d9f20d30798ca388cf397f81021dc9bad",
+      "byteEqual": true,
+      "typeSensitiveEqual": true,
+      "differences": []
+    },
+    {
+      "base": "base-complete-observations/required-missing-index-native.json",
+      "candidate": "candidate-observations/required-missing-index-native.json",
+      "entries": 112,
+      "baseSHA256": "3ac51f08eb2f4ca63449c1a35ead4e7910cb72d580b798d68ccd747db6fee63d",
+      "candidateSHA256": "3ac51f08eb2f4ca63449c1a35ead4e7910cb72d580b798d68ccd747db6fee63d",
+      "byteEqual": true,
+      "typeSensitiveEqual": true,
+      "differences": []
+    },
+    {
+      "base": "base-complete-observations/required-native.json",
+      "candidate": "candidate-observations/required-native.json",
+      "entries": 112,
+      "baseSHA256": "c4edae9b06d42b06d86085fa3a20d99ca32d796f00a8e1ff5c071348460117e0",
+      "candidateSHA256": "c4edae9b06d42b06d86085fa3a20d99ca32d796f00a8e1ff5c071348460117e0",
+      "byteEqual": true,
+      "typeSensitiveEqual": true,
+      "differences": []
+    },
+    {
+      "base": "base-complete-observations/source-pairs-eligibility.json",
+      "candidate": "candidate-observations/source-pairs-eligibility.json",
+      "entries": 16,
+      "baseSHA256": "19401f838902bc5aaa6bfaa610a30ba5626f1d03cc541cee21a6dbc543c4a54d",
+      "candidateSHA256": "19401f838902bc5aaa6bfaa610a30ba5626f1d03cc541cee21a6dbc543c4a54d",
+      "byteEqual": true,
+      "typeSensitiveEqual": true,
+      "differences": []
+    },
+    {
+      "base": "base-complete-observations/source-pairs-native.json",
+      "candidate": "candidate-observations/source-pairs-native.json",
+      "entries": 16,
+      "baseSHA256": "ddf828b712903ad3d6f05a2eb5873156f28de7955e83bc8c743a5a6a2a7ce783",
+      "candidateSHA256": "ddf828b712903ad3d6f05a2eb5873156f28de7955e83bc8c743a5a6a2a7ce783",
+      "byteEqual": true,
+      "typeSensitiveEqual": true,
+      "differences": []
+    },
+    {
+      "base": "base-complete-observations/split-bad-callee-native.json",
+      "candidate": "candidate-observations/split-bad-callee-native.json",
+      "entries": 10,
+      "baseSHA256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254",
+      "candidateSHA256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254",
+      "byteEqual": true,
+      "typeSensitiveEqual": true,
+      "differences": []
+    },
+    {
+      "base": "base-complete-observations/split-bad-count-native.json",
+      "candidate": "candidate-observations/split-bad-count-native.json",
+      "entries": 10,
+      "baseSHA256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254",
+      "candidateSHA256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254",
+      "byteEqual": true,
+      "typeSensitiveEqual": true,
+      "differences": []
+    },
+    {
+      "base": "base-complete-observations/split-bad-tag-native.json",
+      "candidate": "candidate-observations/split-bad-tag-native.json",
+      "entries": 10,
+      "baseSHA256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254",
+      "candidateSHA256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254",
+      "byteEqual": true,
+      "typeSensitiveEqual": true,
+      "differences": []
+    },
+    {
+      "base": "base-complete-observations/split-clean-native.json",
+      "candidate": "candidate-observations/split-clean-native.json",
+      "entries": 10,
+      "baseSHA256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254",
+      "candidateSHA256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254",
+      "byteEqual": true,
+      "typeSensitiveEqual": true,
+      "differences": []
+    },
+    {
+      "base": "base-complete-observations/split-missing-index-native.json",
+      "candidate": "candidate-observations/split-missing-index-native.json",
+      "entries": 10,
+      "baseSHA256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254",
+      "candidateSHA256": "e40f33fc92d4d009a81e5a258ef11acb717bfa7c5f918b181589d2afabe13254",
+      "byteEqual": true,
+      "typeSensitiveEqual": true,
+      "differences": []
+    },
+    {
+      "base": "base-complete-observations/supplementary-eligibility.json",
+      "candidate": "candidate-observations/supplementary-eligibility.json",
+      "entries": 64,
+      "baseSHA256": "1f4b1a4795f3065837822f71510d07b770905e54bc6384732065a3b375417117",
+      "candidateSHA256": "1f4b1a4795f3065837822f71510d07b770905e54bc6384732065a3b375417117",
+      "byteEqual": true,
+      "typeSensitiveEqual": true,
+      "differences": []
+    },
+    {
+      "base": "base-complete-observations/supplementary-native.json",
+      "candidate": "candidate-observations/supplementary-native.json",
+      "entries": 64,
+      "baseSHA256": "f81b9d426455fb800b1038e77619294035e26cbe8794e02ddd35e6085c838705",
+      "candidateSHA256": "f81b9d426455fb800b1038e77619294035e26cbe8794e02ddd35e6085c838705",
+      "byteEqual": true,
+      "typeSensitiveEqual": true,
+      "differences": []
+    },
+    {
+      "base": "base-history-observations/annotation-after-classification.json",
+      "candidate": "candidate-history-observations/annotation-after-classification.json",
+      "entries": 48,
+      "baseSHA256": "425757c7f23251e3cca37f4e0c3002e8e95f5d8acb467ff800d03f5faef40391",
+      "candidateSHA256": "425757c7f23251e3cca37f4e0c3002e8e95f5d8acb467ff800d03f5faef40391",
+      "byteEqual": true,
+      "typeSensitiveEqual": true,
+      "differences": []
+    },
+    {
+      "base": "base-history-observations/annotation-after-native.json",
+      "candidate": "candidate-history-observations/annotation-after-native.json",
+      "entries": 48,
+      "baseSHA256": "c90e4bc5bf201570d33b6540e0887576bc80214b1223d08c85e4f9e9096508ab",
+      "candidateSHA256": "c90e4bc5bf201570d33b6540e0887576bc80214b1223d08c85e4f9e9096508ab",
+      "byteEqual": true,
+      "typeSensitiveEqual": true,
+      "differences": []
+    },
+    {
+      "base": "base-history-observations/annotation-classification.json",
+      "candidate": "candidate-history-observations/annotation-classification.json",
+      "entries": 48,
+      "baseSHA256": "b67f17a70da8168c56d9dda9ac84baa82e9b6546d640e8f09032ebf3cd36d46c",
+      "candidateSHA256": "b67f17a70da8168c56d9dda9ac84baa82e9b6546d640e8f09032ebf3cd36d46c",
+      "byteEqual": true,
+      "typeSensitiveEqual": true,
+      "differences": []
+    },
+    {
+      "base": "base-history-observations/annotation-native.json",
+      "candidate": "candidate-history-observations/annotation-native.json",
+      "entries": 48,
+      "baseSHA256": "1a7d408b2c018cf087ea6eacd957a153500db5a6cacf03e72675735774faa1d8",
+      "candidateSHA256": "1a7d408b2c018cf087ea6eacd957a153500db5a6cacf03e72675735774faa1d8",
+      "byteEqual": true,
+      "typeSensitiveEqual": true,
+      "differences": []
+    },
+    {
+      "base": "base-history-observations/cache-threshold-native.json",
+      "candidate": "candidate-history-observations/cache-threshold-native.json",
+      "entries": 38,
+      "baseSHA256": "615da41096d8f018f4c5192733f1f47bd37b1aa7a2ef618f1492c04b8cc453e2",
+      "candidateSHA256": "615da41096d8f018f4c5192733f1f47bd37b1aa7a2ef618f1492c04b8cc453e2",
+      "byteEqual": true,
+      "typeSensitiveEqual": true,
+      "differences": []
+    },
+    {
+      "base": "base-history-observations/dense-callee-sid-missing-native.json",
+      "candidate": "candidate-history-observations/dense-callee-sid-missing-native.json",
+      "entries": 3,
+      "baseSHA256": "47a4722409271ee7405077e7b50cab8ddaf7770d5ab6759398165b5f2446a35e",
+      "candidateSHA256": "47a4722409271ee7405077e7b50cab8ddaf7770d5ab6759398165b5f2446a35e",
+      "byteEqual": true,
+      "typeSensitiveEqual": true,
+      "differences": []
+    },
+    {
+      "base": "base-history-observations/dense-callee-sid-native.json",
+      "candidate": "candidate-history-observations/dense-callee-sid-native.json",
+      "entries": 3,
+      "baseSHA256": "b17de139c2b7da1fc28625a6c3963d901a65f1f42bae2713b9fa58708d14f0bd",
+      "candidateSHA256": "b17de139c2b7da1fc28625a6c3963d901a65f1f42bae2713b9fa58708d14f0bd",
+      "byteEqual": true,
+      "typeSensitiveEqual": true,
+      "differences": []
+    },
+    {
+      "base": "base-history-observations/dense-clean-missing-native.json",
+      "candidate": "candidate-history-observations/dense-clean-missing-native.json",
+      "entries": 3,
+      "baseSHA256": "7710f4e96383cae1b164b5c0d7a755a406aa2c3345a943a2323580abc406a532",
+      "candidateSHA256": "7710f4e96383cae1b164b5c0d7a755a406aa2c3345a943a2323580abc406a532",
+      "byteEqual": true,
+      "typeSensitiveEqual": true,
+      "differences": []
+    },
+    {
+      "base": "base-history-observations/dense-clean-native.json",
+      "candidate": "candidate-history-observations/dense-clean-native.json",
+      "entries": 3,
+      "baseSHA256": "4cb15597a5bc69c1dd815fe6d69ec013f47e459b0fc8ca37404ddc89f8e4af6c",
+      "candidateSHA256": "4cb15597a5bc69c1dd815fe6d69ec013f47e459b0fc8ca37404ddc89f8e4af6c",
+      "byteEqual": true,
+      "typeSensitiveEqual": true,
+      "differences": []
+    },
+    {
+      "base": "base-history-observations/dense-return-sid-missing-native.json",
+      "candidate": "candidate-history-observations/dense-return-sid-missing-native.json",
+      "entries": 3,
+      "baseSHA256": "4845a2616e930d4cfd266646790ba68d27eb7c1089142161f9315df3870647f1",
+      "candidateSHA256": "4845a2616e930d4cfd266646790ba68d27eb7c1089142161f9315df3870647f1",
+      "byteEqual": true,
+      "typeSensitiveEqual": true,
+      "differences": []
+    },
+    {
+      "base": "base-history-observations/dense-return-sid-native.json",
+      "candidate": "candidate-history-observations/dense-return-sid-native.json",
+      "entries": 3,
+      "baseSHA256": "96737d4470f289fac3d9f0c56711fd88443e130fd288ff1b932dac3a36c08ced",
+      "candidateSHA256": "96737d4470f289fac3d9f0c56711fd88443e130fd288ff1b932dac3a36c08ced",
+      "byteEqual": true,
+      "typeSensitiveEqual": true,
+      "differences": []
+    },
+    {
+      "base": "base-history-observations/history-native.json",
+      "candidate": "candidate-history-observations/history-native.json",
+      "entries": 20,
+      "baseSHA256": "e8a0427ca2e06854045ce5f293da3298818fb385d2a028e9dd4a45ba90ec198f",
+      "candidateSHA256": "e8a0427ca2e06854045ce5f293da3298818fb385d2a028e9dd4a45ba90ec198f",
+      "byteEqual": true,
+      "typeSensitiveEqual": true,
+      "differences": []
+    },
+    {
+      "base": "base-history-observations/mixed-classification.json",
+      "candidate": "candidate-history-observations/mixed-classification.json",
+      "entries": 48,
+      "baseSHA256": "425757c7f23251e3cca37f4e0c3002e8e95f5d8acb467ff800d03f5faef40391",
+      "candidateSHA256": "425757c7f23251e3cca37f4e0c3002e8e95f5d8acb467ff800d03f5faef40391",
+      "byteEqual": true,
+      "typeSensitiveEqual": true,
+      "differences": []
+    },
+    {
+      "base": "base-history-observations/mixed-native.json",
+      "candidate": "candidate-history-observations/mixed-native.json",
+      "entries": 48,
+      "baseSHA256": "398572afea1af7f69e645d770f20be8d89980c52d9b6e1fc70a005edc56e0650",
+      "candidateSHA256": "398572afea1af7f69e645d770f20be8d89980c52d9b6e1fc70a005edc56e0650",
+      "byteEqual": true,
+      "typeSensitiveEqual": true,
+      "differences": []
+    },
+    {
+      "base": "base-history-observations/rolling-native.json",
+      "candidate": "candidate-history-observations/rolling-native.json",
+      "entries": 16,
+      "baseSHA256": "746b3ffd5c1c361aa32bffd97a40602f74424408aae9b4cc21f3cb2da0531fe5",
+      "candidateSHA256": "50543477490c20dd3f6fe58c356d0fb951d13fbc8662fbdbef110e8e72137b51",
+      "byteEqual": false,
+      "typeSensitiveEqual": false,
+      "differences": [
+        {
+          "path": "$[9].targets[0].after[2].mappedView",
+          "base": true,
+          "candidate": false,
+          "reason": "value"
+        },
+        {
+          "path": "$[9].targets[0].after[3].mappedView",
+          "base": true,
+          "candidate": false,
+          "reason": "value"
+        },
+        {
+          "path": "$[9].targets[0].after[6].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[9].targets[0].after[7].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[9].targets[1].after[2].mappedView",
+          "base": true,
+          "candidate": false,
+          "reason": "value"
+        },
+        {
+          "path": "$[9].targets[1].after[3].mappedView",
+          "base": true,
+          "candidate": false,
+          "reason": "value"
+        },
+        {
+          "path": "$[9].targets[1].after[6].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[9].targets[1].after[7].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[9].targets[1].before[2].mappedView",
+          "base": true,
+          "candidate": false,
+          "reason": "value"
+        },
+        {
+          "path": "$[9].targets[1].before[3].mappedView",
+          "base": true,
+          "candidate": false,
+          "reason": "value"
+        },
+        {
+          "path": "$[9].targets[1].before[6].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[9].targets[1].before[7].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[9].targets[2].after[2].mappedView",
+          "base": true,
+          "candidate": false,
+          "reason": "value"
+        },
+        {
+          "path": "$[9].targets[2].after[3].mappedView",
+          "base": true,
+          "candidate": false,
+          "reason": "value"
+        },
+        {
+          "path": "$[9].targets[2].after[6].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[9].targets[2].after[7].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[9].targets[2].before[2].mappedView",
+          "base": true,
+          "candidate": false,
+          "reason": "value"
+        },
+        {
+          "path": "$[9].targets[2].before[3].mappedView",
+          "base": true,
+          "candidate": false,
+          "reason": "value"
+        },
+        {
+          "path": "$[9].targets[2].before[6].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[9].targets[2].before[7].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[10].targets[0].after[2].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[10].targets[0].after[3].mappedView",
+          "base": true,
+          "candidate": false,
+          "reason": "value"
+        },
+        {
+          "path": "$[10].targets[0].after[5].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[10].targets[1].after[2].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[10].targets[1].after[3].mappedView",
+          "base": true,
+          "candidate": false,
+          "reason": "value"
+        },
+        {
+          "path": "$[10].targets[1].before[2].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[10].targets[1].before[3].mappedView",
+          "base": true,
+          "candidate": false,
+          "reason": "value"
+        },
+        {
+          "path": "$[10].targets[1].before[5].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[10].targets[2].after[2].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[10].targets[2].after[3].mappedView",
+          "base": true,
+          "candidate": false,
+          "reason": "value"
+        },
+        {
+          "path": "$[10].targets[2].before[2].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[10].targets[2].before[3].mappedView",
+          "base": true,
+          "candidate": false,
+          "reason": "value"
+        },
+        {
+          "path": "$[11].targets[0].after[2].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[11].targets[0].after[3].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[11].targets[0].after[4].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[11].targets[0].after[5].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[11].targets[0].after[6].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[11].targets[0].after[7].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[11].targets[1].after[2].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[11].targets[1].after[3].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[11].targets[1].after[4].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[11].targets[1].after[5].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[11].targets[1].after[6].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[11].targets[1].after[7].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[11].targets[1].before[2].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[11].targets[1].before[3].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[11].targets[1].before[4].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[11].targets[1].before[5].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[11].targets[1].before[6].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[11].targets[1].before[7].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[11].targets[2].after[2].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[11].targets[2].after[3].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[11].targets[2].after[4].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[11].targets[2].after[5].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[11].targets[2].after[6].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[11].targets[2].after[7].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[11].targets[2].before[2].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[11].targets[2].before[3].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[11].targets[2].before[4].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[11].targets[2].before[5].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[11].targets[2].before[6].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[11].targets[2].before[7].mappedView",
+          "base": false,
+          "candidate": true,
+          "reason": "value"
+        },
+        {
+          "path": "$[12].targets[0].after[10].mappedView",
+          "base": true,
+          "candidate": false,
+          "reason": "value"
+        },
+        {
+          "path": "$[12].targets[1].after[10].mappedView",
+          "base": true,
+          "candidate": false,
+          "reason": "value"
+        },
+        {
+          "path": "$[12].targets[1].before[10].mappedView",
+          "base": true,
+          "candidate": false,
+          "reason": "value"
+        },
+        {
+          "path": "$[12].targets[2].after[10].mappedView",
+          "base": true,
+          "candidate": false,
+          "reason": "value"
+        },
+        {
+          "path": "$[12].targets[2].before[10].mappedView",
+          "base": true,
+          "candidate": false,
+          "reason": "value"
+        }
+      ]
+    },
+    {
+      "base": "base-history-observations/wide-history-native.json",
+      "candidate": "candidate-history-observations/wide-history-native.json",
+      "entries": 12,
+      "baseSHA256": "bf77c86004beae2f01e932680af9b8d30c09859b90266b85c9ce37112a9de569",
+      "candidateSHA256": "bf77c86004beae2f01e932680af9b8d30c09859b90266b85c9ce37112a9de569",
+      "byteEqual": true,
+      "typeSensitiveEqual": true,
+      "differences": []
+    }
+  ]
+}

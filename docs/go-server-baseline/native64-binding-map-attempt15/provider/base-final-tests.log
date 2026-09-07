@@ -1,0 +1,18 @@
+?   	github.com/johnsonlee/graphite/graphite-server/internal/cypher/cmd/normalize	[no test files]
+?   	github.com/johnsonlee/graphite/graphite-server/internal/cypher/generated	[no test files]
+?   	github.com/johnsonlee/graphite/graphite-server/internal/web	[no test files]
+ok  	github.com/johnsonlee/graphite/graphite-server/cmd/graphite-server	0.446s
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/analysis	0.483s
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/analysis/c4	0.981s
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/cypher	0.681s
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/javamath	0.400s
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/javaregex	1.610s
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/javastring	1.686s
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/profiling	2.022s
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/query	6.179s
+--- FAIL: TestOpenAPISnapshotSourcesHaveNotDrifted (0.00s)
+    spec_test.go:68: open ../../../graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli/OpenApiSpecBuilder.kt: no such file or directory
+FAIL
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/server	1.365s
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/store	1.024s
+FAIL

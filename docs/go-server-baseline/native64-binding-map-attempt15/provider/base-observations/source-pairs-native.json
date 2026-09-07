@@ -1,0 +1,201 @@
+[
+  {
+    "badFirst": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "name": "limit-direct",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+  },
+  {
+    "badFirst": false,
+    "columns": [
+      "x"
+    ],
+    "name": "distinct-direct",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        },
+        "x": "other"
+      }
+    ]
+  },
+  {
+    "badFirst": false,
+    "columns": [
+      "x"
+    ],
+    "name": "limit-id-function",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN id(n) AS x LIMIT 1",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "x": 2
+      }
+    ]
+  },
+  {
+    "badFirst": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "name": "distinct-id-function",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT id(n) AS x LIMIT 1"
+  },
+  {
+    "badFirst": false,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+    "name": "limit-throw-projection",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN substring(n.caller_name,'bad') AS x LIMIT 1"
+  },
+  {
+    "badFirst": false,
+    "columns": [
+      "x"
+    ],
+    "name": "where-no-hit",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'absent' RETURN n.caller_name AS x LIMIT 1",
+    "rows": []
+  },
+  {
+    "badFirst": false,
+    "columns": [
+      "x"
+    ],
+    "name": "where-graph-scope",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId='a' RETURN n.caller_name AS x LIMIT 1",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "x": "other"
+      }
+    ]
+  },
+  {
+    "badFirst": false,
+    "columns": [
+      "x",
+      "graph"
+    ],
+    "name": "distinct-graph",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x,n.graphId AS graph LIMIT 1",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "graph": "a",
+        "x": "other"
+      }
+    ]
+  },
+  {
+    "badFirst": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "name": "limit-direct",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN n.caller_name AS x LIMIT 1"
+  },
+  {
+    "badFirst": true,
+    "columns": [
+      "x"
+    ],
+    "name": "distinct-direct",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a",
+            "b"
+          ]
+        },
+        "x": "other"
+      }
+    ]
+  },
+  {
+    "badFirst": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "name": "limit-id-function",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN id(n) AS x LIMIT 1"
+  },
+  {
+    "badFirst": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "name": "distinct-id-function",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT id(n) AS x LIMIT 1"
+  },
+  {
+    "badFirst": true,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (9)",
+    "name": "limit-throw-projection",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN substring(n.caller_name,'bad') AS x LIMIT 1"
+  },
+  {
+    "badFirst": true,
+    "columns": [
+      "x"
+    ],
+    "name": "where-no-hit",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'absent' RETURN n.caller_name AS x LIMIT 1",
+    "rows": []
+  },
+  {
+    "badFirst": true,
+    "columns": [
+      "x"
+    ],
+    "name": "where-graph-scope",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' AND n.graphId='a' RETURN n.caller_name AS x LIMIT 1",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "x": "other"
+      }
+    ]
+  },
+  {
+    "badFirst": true,
+    "columns": [
+      "x",
+      "graph"
+    ],
+    "name": "distinct-graph",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x,n.graphId AS graph LIMIT 1",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "a"
+          ]
+        },
+        "graph": "a",
+        "x": "other"
+      }
+    ]
+  }
+]

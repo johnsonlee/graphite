@@ -1,0 +1,70 @@
+[
+  {
+    "mode": "base",
+    "name": "wrapped-firstLastGraphBimodalClassPrefix-repeat",
+    "seconds": 2.485200667,
+    "deltas": {
+      "frees": 3690605,
+      "mallocs": 45906719,
+      "numGC": 0,
+      "pauseTotalNs": 0,
+      "systemCPUSeconds": 1.703944,
+      "totalAllocBytes": 1054277592,
+      "userCPUSeconds": 14.51323699999999
+    },
+    "fullOutputMatchesExpected": true,
+    "outputSha256": "9c8299fdd85f475db72ade74389abd2376def9f5e494bf921b8e57589a2e12bd",
+    "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) STARTS WITH 'android.'\n   OR toLower(coalesce(n.callee_class, '')) STARTS WITH 'android.'\n   OR toLower(coalesce(n.caller_class, '')) STARTS WITH 'org.jetbrains.kotlin.'\n   OR toLower(coalesce(n.callee_class, '')) STARTS WITH 'org.jetbrains.kotlin.'\nRETURN DISTINCT n.graph_id, n.caller_class AS caller, n.caller_name AS callerMethod,\n    n.callee_class AS callee, n.callee_name AS calleeMethod\nLIMIT 250"
+  },
+  {
+    "mode": "base",
+    "name": "global-wide-wrapped-case-insensitive-distinct-dense-repeat",
+    "seconds": 4.50582875,
+    "deltas": {
+      "frees": 1044461,
+      "mallocs": 11411569,
+      "numGC": 0,
+      "pauseTotalNs": 0,
+      "systemCPUSeconds": 3.6317870000000028,
+      "totalAllocBytes": 367932272,
+      "userCPUSeconds": 17.476781999999986
+    },
+    "fullOutputMatchesExpected": true,
+    "outputSha256": "77b68b7458bf7a78929fa43d57d910ab51823abab6eb98172bcc052ead550336",
+    "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'get' OR toLower(coalesce(n.caller_name, '')) CONTAINS 'get' OR toLower(coalesce(n.callee_class, '')) CONTAINS 'get' OR toLower(coalesce(n.callee_name, '')) CONTAINS 'get'\nRETURN DISTINCT n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200"
+  },
+  {
+    "mode": "candidate",
+    "name": "wrapped-firstLastGraphBimodalClassPrefix-repeat",
+    "seconds": 11.54889,
+    "deltas": {
+      "frees": 3594358,
+      "mallocs": 40268749,
+      "numGC": 0,
+      "pauseTotalNs": 0,
+      "systemCPUSeconds": 10.181645,
+      "totalAllocBytes": 3759881000,
+      "userCPUSeconds": 44.78302500000001
+    },
+    "fullOutputMatchesExpected": true,
+    "outputSha256": "9c8299fdd85f475db72ade74389abd2376def9f5e494bf921b8e57589a2e12bd",
+    "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) STARTS WITH 'android.'\n   OR toLower(coalesce(n.callee_class, '')) STARTS WITH 'android.'\n   OR toLower(coalesce(n.caller_class, '')) STARTS WITH 'org.jetbrains.kotlin.'\n   OR toLower(coalesce(n.callee_class, '')) STARTS WITH 'org.jetbrains.kotlin.'\nRETURN DISTINCT n.graph_id, n.caller_class AS caller, n.caller_name AS callerMethod,\n    n.callee_class AS callee, n.callee_name AS calleeMethod\nLIMIT 250"
+  },
+  {
+    "mode": "candidate",
+    "name": "global-wide-wrapped-case-insensitive-distinct-dense-repeat",
+    "seconds": 0.295037458,
+    "deltas": {
+      "frees": 495374,
+      "mallocs": 9876119,
+      "numGC": 0,
+      "pauseTotalNs": 0,
+      "systemCPUSeconds": 0.155975999999999,
+      "totalAllocBytes": 268426608,
+      "userCPUSeconds": 1.6390840000000253
+    },
+    "fullOutputMatchesExpected": true,
+    "outputSha256": "77b68b7458bf7a78929fa43d57d910ab51823abab6eb98172bcc052ead550336",
+    "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'get' OR toLower(coalesce(n.caller_name, '')) CONTAINS 'get' OR toLower(coalesce(n.callee_class, '')) CONTAINS 'get' OR toLower(coalesce(n.callee_name, '')) CONTAINS 'get'\nRETURN DISTINCT n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200"
+  }
+]

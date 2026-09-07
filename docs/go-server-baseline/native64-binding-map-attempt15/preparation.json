@@ -1,0 +1,10 @@
+{
+  "base": "2ab90cdc",
+  "clones": {
+    "native": "/tmp/graphite-binding-native-real64-2ab90cdc",
+    "http": "/tmp/graphite-binding-http-real64-2ab90cdc"
+  },
+  "queries": 5,
+  "oracleSource": "docs/go-server-baseline/native64-lazy-filtered-integration/config.json",
+  "hypothesis": "Reuse one scanner-private projection binding map without changing source/evaluation/freeze/task semantics."
+}

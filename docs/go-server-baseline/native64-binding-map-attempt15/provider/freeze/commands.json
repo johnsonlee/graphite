@@ -1,0 +1,54 @@
+[
+  {
+    "cwd": "/tmp/graphite-binding-map-attempt15-evidence/base-module/graphite-server",
+    "command": "INDEXED_DISTINCT_OUTPUT=/tmp/graphite-binding-map-attempt15-evidence/base-complete-observations go test ./... -count=1",
+    "exit": 0,
+    "log": "base-complete-tests.log"
+  },
+  {
+    "cwd": "/tmp/graphite-go-binding-map-attempt15-9ada2bf1/graphite-server",
+    "command": "INDEXED_DISTINCT_OUTPUT=/tmp/graphite-binding-map-attempt15-evidence/candidate-observations go test -race ./... -count=1",
+    "exit": 0,
+    "log": "candidate-race.log"
+  },
+  {
+    "cwd": "/tmp/graphite-go-binding-map-attempt15-9ada2bf1/graphite-server",
+    "command": "go vet ./...",
+    "exit": 0,
+    "log": "candidate-vet.log"
+  },
+  {
+    "cwd": "/tmp/graphite-go-binding-map-attempt15-9ada2bf1/graphite-server",
+    "command": "go test -race ./internal/query -run 'TestGenericProjectionBinding|TestGenericSyncProjectionModesAndBorrowedScratch' -count=10",
+    "exit": 0,
+    "log": "binding-final-race.log"
+  },
+  {
+    "cwd": "/tmp/graphite-go-binding-map-attempt15-9ada2bf1/graphite-server",
+    "command": "go test -race ./internal/query -run '^TestExactTuple' -count=1 -v",
+    "exit": 0,
+    "log": "tuple-race.log"
+  },
+  {
+    "cwd": "/tmp/graphite-binding-map-attempt15-evidence/base-module/graphite-server",
+    "command": "ORDINARY_HISTORY_OUTPUT=/tmp/graphite-binding-map-attempt15-evidence/base-history-observations go test ./internal/query -run '^TestOrdinary' -count=1",
+    "exit": 0,
+    "log": "base-history.log"
+  },
+  {
+    "cwd": "/tmp/graphite-go-binding-map-attempt15-9ada2bf1/graphite-server",
+    "command": "ORDINARY_HISTORY_OUTPUT=/tmp/graphite-binding-map-attempt15-evidence/candidate-history-observations go test ./internal/query -run '^TestOrdinary' -count=1",
+    "exit": 0,
+    "log": "candidate-history.log"
+  },
+  {
+    "command": "python3 compare.py",
+    "exit": 1,
+    "note": "Intentional strict raw diff: 63/66 equal; remaining 107 leaves only speculative mappedView state; no raw normalization."
+  },
+  {
+    "command": "python3 verify-corpus.py",
+    "exit": 0,
+    "note": "66 root-relative paths verified; all response values/type/order equal; original1048 exact 994/54 preserved."
+  }
+]

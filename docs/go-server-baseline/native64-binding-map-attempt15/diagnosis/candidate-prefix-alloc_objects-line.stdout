@@ -1,0 +1,68 @@
+Total: 35810494
+ROUTINE ======================== github.com/johnsonlee/graphite/graphite-server/internal/query.(*genericDistinctScanner).next in /private/tmp/graphite-go-main-source-root-10236487/graphite-server/internal/query/generic_distinct.go
+         0   33990856 (flat, cum) 94.92% of Total
+         .          .    277:func (s *genericDistinctScanner) next(ctx context.Context, selected bool) ([]any, bool) {
+         .          .    278:	local := s.e
+         .          .    279:	local.ctx = ctx
+         .          .    280:	if s.cursor == nil {
+         .          .    281:		s.cursor = newGenericDistinctCursor(s.e, s.source, s.plan)
+         .          .    282:	}
+         .          .    283:	for !s.exhausted {
+         .    7471061    284:		value, ok := s.cursor.next(ctx)
+         .          .    285:		if !ok {
+         .          .    286:			s.exhausted = true
+         .          .    287:			return nil, false
+         .          .    288:		}
+         .          .    289:		matched := s.plan.mainSource
+         .          .    290:		for _, atom := range s.plan.atoms {
+         .          .    291:			if matched {
+         .          .    292:				break
+         .          .    293:			}
+         .          .    294:			if local.distinctAtomMatches(atom, value.(*candidateSlot).property(atom.property)) {
+         .          .    295:				matched = true
+         .          .    296:				break
+         .          .    297:			}
+         .          .    298:		}
+         .          .    299:		if !matched {
+         .          .    300:			continue
+         .          .    301:		}
+         .          .    302:		// The SKIP streaming path evaluates its complete WHERE after direct candidates.
+         .          .    303:		if s.plan.projection.Skip != nil && local.eval(s.plan.match.Where, map[string]any{s.plan.match.Patterns[0].Nodes[0].Variable: value}) != true {
+         .          .    304:			continue
+         .          .    305:		}
+         .          .    306:		get := func(item int) any {
+         .          .    307:			local.check()
+         .          .    308:			if s.plan.mainSource {
+         .          .    309:				return freezeCandidate(local.eval(s.plan.projection.Items[item].Expression, map[string]any{s.plan.match.Patterns[0].Nodes[0].Variable: value}))
+         .          .    310:			}
+         .          .    311:			switch x := s.plan.projection.Items[item].Expression.(type) {
+         .          .    312:			case cypher.Literal:
+         .          .    313:				return x.Value
+         .          .    314:			case cypher.Property:
+         .          .    315:				return value.(*candidateSlot).property(x.Key)
+         .          .    316:			}
+         .          .    317:			panic("invalid direct projection")
+         .          .    318:		}
+         .          .    319:		if selected {
+         .          .    320:			for slot, item := range s.plan.finalItems {
+         .   26501588    321:				s.scratch[slot] = get(item)
+         .          .    322:			}
+         .          .    323:		} else {
+         .          .    324:			for i := range s.plan.projection.Items {
+         .      18207    325:				s.scratch[s.plan.itemSlots[i]] = get(i)
+         .          .    326:			}
+         .          .    327:		}
+         .          .    328:		return s.scratch, true
+         .          .    329:	}
+         .          .    330:	return nil, false
+ROUTINE ======================== github.com/johnsonlee/graphite/graphite-server/internal/query.(*genericDistinctScanner).next.func1 in /private/tmp/graphite-go-main-source-root-10236487/graphite-server/internal/query/generic_distinct.go
+  19376262   26519795 (flat, cum) 74.06% of Total
+         .          .    306:		get := func(item int) any {
+         .          .    307:			local.check()
+         .          .    308:			if s.plan.mainSource {
+  19376262   26519795    309:				return freezeCandidate(local.eval(s.plan.projection.Items[item].Expression, map[string]any{s.plan.match.Patterns[0].Nodes[0].Variable: value}))
+         .          .    310:			}
+         .          .    311:			switch x := s.plan.projection.Items[item].Expression.(type) {
+         .          .    312:			case cypher.Literal:
+         .          .    313:				return x.Value
+         .          .    314:			case cypher.Property:

@@ -1,0 +1,1 @@
+Initial base full-module run: query/store and other Go packages passed, but server OpenAPI drift test requires Kotlin repository files outside the archived Go module. The failure is preserved in base-tests.log. Add the pinned graphite-explore source subtree to the isolated archive and rerun; no production/test expectation change.

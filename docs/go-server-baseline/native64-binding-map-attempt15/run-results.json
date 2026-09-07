@@ -1,0 +1,28 @@
+[
+  {
+    "name": "base",
+    "command": [
+      "python3",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-binding-map-attempt15/run-profile.py",
+      "--worktree",
+      "/tmp/graphite-go-binding-base-2ab90cdc",
+      "--out",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-binding-map-attempt15/base"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 58.50332307815552
+  },
+  {
+    "name": "candidate",
+    "command": [
+      "python3",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-binding-map-attempt15/run-profile.py",
+      "--worktree",
+      "/tmp/graphite-go-binding-root-2ab90cdc",
+      "--out",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-binding-map-attempt15/candidate"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 52.47772407531738
+  }
+]

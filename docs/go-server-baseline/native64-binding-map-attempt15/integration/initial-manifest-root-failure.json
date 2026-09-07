@@ -1,0 +1,5 @@
+{
+  "error": "Initial collector looked for freeze/base-command.json; manifest entries are relative to evidence parent, including explicit freeze/ paths.",
+  "stage": "Before any worktree creation or source application",
+  "correction": "Resolve every listed entry against evidence root; preserve exact paths/hashes."
+}

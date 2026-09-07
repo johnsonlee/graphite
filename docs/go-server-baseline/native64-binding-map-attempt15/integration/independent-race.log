@@ -1,0 +1,42 @@
+=== RUN   TestRootBindingTwoTaskCancellationAndNextWave
+--- PASS: TestRootBindingTwoTaskCancellationAndNextWave (0.02s)
+=== RUN   TestRootBindingTwoTaskCancellationAndNextWave
+--- PASS: TestRootBindingTwoTaskCancellationAndNextWave (0.01s)
+=== RUN   TestRootBindingTwoTaskCancellationAndNextWave
+--- PASS: TestRootBindingTwoTaskCancellationAndNextWave (0.01s)
+=== RUN   TestRootBindingTwoTaskCancellationAndNextWave
+--- PASS: TestRootBindingTwoTaskCancellationAndNextWave (0.00s)
+=== RUN   TestRootBindingTwoTaskCancellationAndNextWave
+--- PASS: TestRootBindingTwoTaskCancellationAndNextWave (0.00s)
+=== RUN   TestRootBindingTwoTaskCancellationAndNextWave
+--- PASS: TestRootBindingTwoTaskCancellationAndNextWave (0.01s)
+=== RUN   TestRootBindingTwoTaskCancellationAndNextWave
+--- PASS: TestRootBindingTwoTaskCancellationAndNextWave (0.00s)
+=== RUN   TestRootBindingTwoTaskCancellationAndNextWave
+--- PASS: TestRootBindingTwoTaskCancellationAndNextWave (0.00s)
+=== RUN   TestRootBindingTwoTaskCancellationAndNextWave
+--- PASS: TestRootBindingTwoTaskCancellationAndNextWave (0.00s)
+=== RUN   TestRootBindingTwoTaskCancellationAndNextWave
+--- PASS: TestRootBindingTwoTaskCancellationAndNextWave (0.00s)
+=== RUN   TestRootBindingTwoTaskCancellationAndNextWave
+--- PASS: TestRootBindingTwoTaskCancellationAndNextWave (0.00s)
+=== RUN   TestRootBindingTwoTaskCancellationAndNextWave
+--- PASS: TestRootBindingTwoTaskCancellationAndNextWave (0.00s)
+=== RUN   TestRootBindingTwoTaskCancellationAndNextWave
+--- PASS: TestRootBindingTwoTaskCancellationAndNextWave (0.00s)
+=== RUN   TestRootBindingTwoTaskCancellationAndNextWave
+--- PASS: TestRootBindingTwoTaskCancellationAndNextWave (0.00s)
+=== RUN   TestRootBindingTwoTaskCancellationAndNextWave
+--- PASS: TestRootBindingTwoTaskCancellationAndNextWave (0.00s)
+=== RUN   TestRootBindingTwoTaskCancellationAndNextWave
+--- PASS: TestRootBindingTwoTaskCancellationAndNextWave (0.00s)
+=== RUN   TestRootBindingTwoTaskCancellationAndNextWave
+--- PASS: TestRootBindingTwoTaskCancellationAndNextWave (0.00s)
+=== RUN   TestRootBindingTwoTaskCancellationAndNextWave
+--- PASS: TestRootBindingTwoTaskCancellationAndNextWave (0.00s)
+=== RUN   TestRootBindingTwoTaskCancellationAndNextWave
+--- PASS: TestRootBindingTwoTaskCancellationAndNextWave (0.00s)
+=== RUN   TestRootBindingTwoTaskCancellationAndNextWave
+--- PASS: TestRootBindingTwoTaskCancellationAndNextWave (0.00s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/query	1.359s

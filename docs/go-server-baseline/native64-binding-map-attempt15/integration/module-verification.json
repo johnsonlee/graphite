@@ -1,0 +1,32 @@
+{
+  "checks": [
+    {
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./...",
+        "-count=1"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 51.56290888786316,
+      "log": "race.log"
+    },
+    {
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 1.5091099739074707,
+      "log": "vet.log"
+    }
+  ],
+  "sourceFiles": 2402,
+  "sourceUnchanged": true,
+  "changedBaseFiles": [
+    "internal/query/generic_distinct.go"
+  ],
+  "allOther2400BaseInputsPreserved": true
+}

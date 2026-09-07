@@ -1,0 +1,248 @@
+{
+  "capturedAt": "2026-09-07T03:15:52.061292+00:00",
+  "files": {
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/base/identity.json": {
+      "sha256": "21bd45107a65ff2e9de7372818aac6eab48f4a1d9f904309123fe34473f2c852",
+      "bytes": 1264,
+      "copy": "inputs/base/identity.json"
+    },
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/base/source-manifest.json": {
+      "sha256": "7c05ada1ea40d3213ee093f56e47e574afdedf65007932b1f4afb6cbccb70abe",
+      "bytes": 439911,
+      "copy": "inputs/base/source-manifest.json"
+    },
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/base/completion.json": {
+      "sha256": "36f1e2f25d63b0a51c465f032f8737343202966e12556a9c7597be0088b8c903",
+      "bytes": 75,
+      "copy": "inputs/base/completion.json"
+    },
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/base/binary-build-info.txt": {
+      "sha256": "21886bf499b16025e3aa90b464d64307cd6ab12db6fb9a5d00b718b8c2cb609c",
+      "bytes": 615,
+      "copy": "inputs/base/binary-build-info.txt"
+    },
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/base/profiles/wrapped-firstLastGraphBimodalClassPrefix-repeat/receipt.json": {
+      "sha256": "5f84c312deef4341e3b318d65806f5329b198a29c38d37d0b92b9b2f83f239f4",
+      "bytes": 42880,
+      "copy": "inputs/base/wrapped-firstLastGraphBimodalClassPrefix-repeat/receipt.json"
+    },
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/base/profiles/wrapped-firstLastGraphBimodalClassPrefix-repeat/query.json": {
+      "sha256": "e166ee44f8deb20df5dcee9719b73b832de278272785c3f132f1a52059bfaa3a",
+      "bytes": 78765,
+      "copy": "inputs/base/wrapped-firstLastGraphBimodalClassPrefix-repeat/query.json"
+    },
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/base/profiles/wrapped-firstLastGraphBimodalClassPrefix-repeat/projection-state-before.json": {
+      "sha256": "38ea62896d212a9ab6381ffc9cae28d8ac17d17e4aed4125f9f62d420e228ac2",
+      "bytes": 6883,
+      "copy": "inputs/base/wrapped-firstLastGraphBimodalClassPrefix-repeat/projection-state-before.json"
+    },
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/base/profiles/wrapped-firstLastGraphBimodalClassPrefix-repeat/projection-state-after.json": {
+      "sha256": "38ea62896d212a9ab6381ffc9cae28d8ac17d17e4aed4125f9f62d420e228ac2",
+      "bytes": 6883,
+      "copy": "inputs/base/wrapped-firstLastGraphBimodalClassPrefix-repeat/projection-state-after.json"
+    },
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/base/profiles/wrapped-firstLastGraphBimodalClassPrefix-repeat/heap-before.pprof": {
+      "sha256": "0076cd4334fc421c3af5d361c96b2141c7f9709f69f64205eea8ad010298740f",
+      "bytes": 21795,
+      "copy": "inputs/base/wrapped-firstLastGraphBimodalClassPrefix-repeat/heap-before.pprof"
+    },
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/base/profiles/wrapped-firstLastGraphBimodalClassPrefix-repeat/heap-after.pprof": {
+      "sha256": "bb97e33315b9460d891d2e7845164a98a7036bd7a3ad76e2616a2513e3ae9039",
+      "bytes": 22617,
+      "copy": "inputs/base/wrapped-firstLastGraphBimodalClassPrefix-repeat/heap-after.pprof"
+    },
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/base/profiles/global-wide-wrapped-case-insensitive-distinct-dense-repeat/receipt.json": {
+      "sha256": "a42473d8fd0058c339130771f530b9cd3ad432eb951871e02192c130f85efa46",
+      "bytes": 43381,
+      "copy": "inputs/base/global-wide-wrapped-case-insensitive-distinct-dense-repeat/receipt.json"
+    },
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/base/profiles/global-wide-wrapped-case-insensitive-distinct-dense-repeat/query.json": {
+      "sha256": "1907d8df91f317f08c02d4d707a33e3234c96dca3e2c0eebff0a631e5113d32c",
+      "bytes": 65863,
+      "copy": "inputs/base/global-wide-wrapped-case-insensitive-distinct-dense-repeat/query.json"
+    },
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/base/profiles/global-wide-wrapped-case-insensitive-distinct-dense-repeat/projection-state-before.json": {
+      "sha256": "92a0a433005bd3bd1b781fe83a5e15daa32bea8eba8520c213f219a3972f94ee",
+      "bytes": 6819,
+      "copy": "inputs/base/global-wide-wrapped-case-insensitive-distinct-dense-repeat/projection-state-before.json"
+    },
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/base/profiles/global-wide-wrapped-case-insensitive-distinct-dense-repeat/projection-state-after.json": {
+      "sha256": "92a0a433005bd3bd1b781fe83a5e15daa32bea8eba8520c213f219a3972f94ee",
+      "bytes": 6819,
+      "copy": "inputs/base/global-wide-wrapped-case-insensitive-distinct-dense-repeat/projection-state-after.json"
+    },
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/base/profiles/global-wide-wrapped-case-insensitive-distinct-dense-repeat/heap-before.pprof": {
+      "sha256": "1f323cc9a4e3fd68333044f56fba190e59cfb957e217b1fe67efbf2a03e68f6c",
+      "bytes": 28290,
+      "copy": "inputs/base/global-wide-wrapped-case-insensitive-distinct-dense-repeat/heap-before.pprof"
+    },
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/base/profiles/global-wide-wrapped-case-insensitive-distinct-dense-repeat/heap-after.pprof": {
+      "sha256": "e74f7210df006530f665f446402ae586e2fae14802591fb69cadf2b49eb17726",
+      "bytes": 29341,
+      "copy": "inputs/base/global-wide-wrapped-case-insensitive-distinct-dense-repeat/heap-after.pprof"
+    },
+    "/tmp/graphite-go-main-source-base-10236487/graphite-server/internal/query/generic_distinct.go": {
+      "sha256": "bdef01c374d5ad809bd00f1bcbb3cd8bfdb36d130c88b08269abf3f7eec49765",
+      "bytes": 12434,
+      "copy": "sources/base/internal/query/generic_distinct.go"
+    },
+    "/tmp/graphite-go-main-source-base-10236487/graphite-server/internal/query/eval.go": {
+      "sha256": "bea6ffc5ee0e56cc368389725e9fb2848a8b9fa15d90b374e06b8b837ea97cc8",
+      "bytes": 14192,
+      "copy": "sources/base/internal/query/eval.go"
+    },
+    "/tmp/graphite-go-main-source-base-10236487/graphite-server/internal/query/candidate.go": {
+      "sha256": "e84e32589c490ab13d155416987e3df5314078f45e2d3dba2f6e14d4b83f275c",
+      "bytes": 1479,
+      "copy": "sources/base/internal/query/candidate.go"
+    },
+    "/tmp/graphite-go-main-source-base-10236487/graphite-server/internal/query/indexed_distinct_plan.go": {
+      "sha256": "37be958d3659f21cf57fcd4017b3f3cddd73f652171266adb8d7d2a32efe4155",
+      "bytes": 9120,
+      "copy": "sources/base/internal/query/indexed_distinct_plan.go"
+    },
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/base/profiles/runtime.json": {
+      "sha256": "c2118fffcc61b00a002f5b0ededc1cd320a68fdf622974d71b323c6ab11fc7a3",
+      "bytes": 423,
+      "copy": "inputs/base/runtime.json"
+    },
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/candidate/identity.json": {
+      "sha256": "bded4ad366e6b0dd005f8bf8a49c9d9824d98a62fe7a56a6c0353d7827bc4f86",
+      "bytes": 1269,
+      "copy": "inputs/candidate/identity.json"
+    },
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/candidate/source-manifest.json": {
+      "sha256": "adf8f31f4e8675daa7cdf69593759bed802b7280216afa8d4ad916432329ef2d",
+      "bytes": 445306,
+      "copy": "inputs/candidate/source-manifest.json"
+    },
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/candidate/completion.json": {
+      "sha256": "f9f93bcc3f783e5213f75afeafc181c3ad9df1ed5c9d108eae99ea3aa4019253",
+      "bytes": 75,
+      "copy": "inputs/candidate/completion.json"
+    },
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/candidate/binary-build-info.txt": {
+      "sha256": "a7fe51fd4a6f247f2538dba686c615fd0223d16f4c0ff33d78e52b9c7b390e07",
+      "bytes": 615,
+      "copy": "inputs/candidate/binary-build-info.txt"
+    },
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/candidate/profiles/wrapped-firstLastGraphBimodalClassPrefix-repeat/receipt.json": {
+      "sha256": "73c49dd03cb0d38351821898eadc7b2f31fbed30de323e305dbdb6a37e8bab40",
+      "bytes": 42863,
+      "copy": "inputs/candidate/wrapped-firstLastGraphBimodalClassPrefix-repeat/receipt.json"
+    },
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/candidate/profiles/wrapped-firstLastGraphBimodalClassPrefix-repeat/query.json": {
+      "sha256": "e166ee44f8deb20df5dcee9719b73b832de278272785c3f132f1a52059bfaa3a",
+      "bytes": 78765,
+      "copy": "inputs/candidate/wrapped-firstLastGraphBimodalClassPrefix-repeat/query.json"
+    },
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/candidate/profiles/wrapped-firstLastGraphBimodalClassPrefix-repeat/projection-state-before.json": {
+      "sha256": "d9205cb1f8a881048ce97e4a8246abf8fe1c873b43cf04d187f19f62d1b69868",
+      "bytes": 6755,
+      "copy": "inputs/candidate/wrapped-firstLastGraphBimodalClassPrefix-repeat/projection-state-before.json"
+    },
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/candidate/profiles/wrapped-firstLastGraphBimodalClassPrefix-repeat/projection-state-after.json": {
+      "sha256": "d9205cb1f8a881048ce97e4a8246abf8fe1c873b43cf04d187f19f62d1b69868",
+      "bytes": 6755,
+      "copy": "inputs/candidate/wrapped-firstLastGraphBimodalClassPrefix-repeat/projection-state-after.json"
+    },
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/candidate/profiles/wrapped-firstLastGraphBimodalClassPrefix-repeat/heap-before.pprof": {
+      "sha256": "ca9b806545bc3b669f394c655316cd904efff9dfc09c66ac6030776dfc88e91a",
+      "bytes": 22133,
+      "copy": "inputs/candidate/wrapped-firstLastGraphBimodalClassPrefix-repeat/heap-before.pprof"
+    },
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/candidate/profiles/wrapped-firstLastGraphBimodalClassPrefix-repeat/heap-after.pprof": {
+      "sha256": "5efaa6b56c66dcee20760afc5ba7e17e8134304d122b3a4af975c6cb276a62d0",
+      "bytes": 23152,
+      "copy": "inputs/candidate/wrapped-firstLastGraphBimodalClassPrefix-repeat/heap-after.pprof"
+    },
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/candidate/profiles/global-wide-wrapped-case-insensitive-distinct-dense-repeat/receipt.json": {
+      "sha256": "ccf91a8b738a8d70a8c0972505fbc90f4aa97793145fea89a384ef99910253ef",
+      "bytes": 43301,
+      "copy": "inputs/candidate/global-wide-wrapped-case-insensitive-distinct-dense-repeat/receipt.json"
+    },
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/candidate/profiles/global-wide-wrapped-case-insensitive-distinct-dense-repeat/query.json": {
+      "sha256": "1907d8df91f317f08c02d4d707a33e3234c96dca3e2c0eebff0a631e5113d32c",
+      "bytes": 65863,
+      "copy": "inputs/candidate/global-wide-wrapped-case-insensitive-distinct-dense-repeat/query.json"
+    },
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/candidate/profiles/global-wide-wrapped-case-insensitive-distinct-dense-repeat/projection-state-before.json": {
+      "sha256": "d9205cb1f8a881048ce97e4a8246abf8fe1c873b43cf04d187f19f62d1b69868",
+      "bytes": 6755,
+      "copy": "inputs/candidate/global-wide-wrapped-case-insensitive-distinct-dense-repeat/projection-state-before.json"
+    },
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/candidate/profiles/global-wide-wrapped-case-insensitive-distinct-dense-repeat/projection-state-after.json": {
+      "sha256": "d9205cb1f8a881048ce97e4a8246abf8fe1c873b43cf04d187f19f62d1b69868",
+      "bytes": 6755,
+      "copy": "inputs/candidate/global-wide-wrapped-case-insensitive-distinct-dense-repeat/projection-state-after.json"
+    },
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/candidate/profiles/global-wide-wrapped-case-insensitive-distinct-dense-repeat/heap-before.pprof": {
+      "sha256": "bc9e1dada0c86f231b9d6454bf9914aab884e09976f42767ed44bca91c90f1cc",
+      "bytes": 26265,
+      "copy": "inputs/candidate/global-wide-wrapped-case-insensitive-distinct-dense-repeat/heap-before.pprof"
+    },
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/candidate/profiles/global-wide-wrapped-case-insensitive-distinct-dense-repeat/heap-after.pprof": {
+      "sha256": "707a0b14c1429be5ca241e09074e36a726a72bf6f0572e56d3f1322cbaf866c0",
+      "bytes": 27360,
+      "copy": "inputs/candidate/global-wide-wrapped-case-insensitive-distinct-dense-repeat/heap-after.pprof"
+    },
+    "/tmp/graphite-go-main-source-root-10236487/graphite-server/internal/query/generic_distinct.go": {
+      "sha256": "5b5f536e09b3f15e981ed1ecb860ae1e9820e3514ed29dd138a206d92e1022d9",
+      "bytes": 13468,
+      "copy": "sources/candidate/internal/query/generic_distinct.go"
+    },
+    "/tmp/graphite-go-main-source-root-10236487/graphite-server/internal/query/eval.go": {
+      "sha256": "bea6ffc5ee0e56cc368389725e9fb2848a8b9fa15d90b374e06b8b837ea97cc8",
+      "bytes": 14192,
+      "copy": "sources/candidate/internal/query/eval.go"
+    },
+    "/tmp/graphite-go-main-source-root-10236487/graphite-server/internal/query/candidate.go": {
+      "sha256": "e84e32589c490ab13d155416987e3df5314078f45e2d3dba2f6e14d4b83f275c",
+      "bytes": 1479,
+      "copy": "sources/candidate/internal/query/candidate.go"
+    },
+    "/tmp/graphite-go-main-source-root-10236487/graphite-server/internal/query/indexed_distinct_plan.go": {
+      "sha256": "37be958d3659f21cf57fcd4017b3f3cddd73f652171266adb8d7d2a32efe4155",
+      "bytes": 9120,
+      "copy": "sources/candidate/internal/query/indexed_distinct_plan.go"
+    },
+    "/tmp/graphite-go-main-source-root-10236487/graphite-server/internal/query/main_string_source.go": {
+      "sha256": "6acd635b256d9107895a9b9fc1e86bbd46122a3172795f4eb8ea5eb3f8403da4",
+      "bytes": 6237,
+      "copy": "sources/candidate/internal/query/main_string_source.go"
+    },
+    "/tmp/graphite-go-main-source-root-10236487/graphite-server/internal/query/main_string_candidates.go": {
+      "sha256": "9c55befb82ba45e054d0e8e40813f134d4219185daee25ff77c3a9350cf627f9",
+      "bytes": 6346,
+      "copy": "sources/candidate/internal/query/main_string_candidates.go"
+    },
+    "/tmp/graphite-go-main-source-root-10236487/graphite-server/internal/query/main_string_postings.go": {
+      "sha256": "6efb793fd745168525167112fa507c97e75c7bab8acd85dba2a8e4c825e4ddc7",
+      "bytes": 3957,
+      "copy": "sources/candidate/internal/query/main_string_postings.go"
+    },
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/candidate/profiles/runtime.json": {
+      "sha256": "7b97157fe6d0436de298a811a32ab83a84bd5a55abb11cdecbe92ca1a3a222b5",
+      "bytes": 423,
+      "copy": "inputs/candidate/runtime.json"
+    }
+  },
+  "binaries": [
+    {
+      "mode": "base",
+      "path": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-p45kbohv/profile-query",
+      "recordedSHA256": "921c9df1b6cfbbbe1ef885b8c805ec9eeb46d0ead1ae3afef40c0fae41743fdc",
+      "available": true,
+      "actualSHA256": "921c9df1b6cfbbbe1ef885b8c805ec9eeb46d0ead1ae3afef40c0fae41743fdc"
+    },
+    {
+      "mode": "candidate",
+      "path": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-hq3p62c3/profile-query",
+      "recordedSHA256": "f124285325e1cb445fef6cecb25f6a61afddbf3e76295728edf9914afbb10cae",
+      "available": true,
+      "actualSHA256": "f124285325e1cb445fef6cecb25f6a61afddbf3e76295728edf9914afbb10cae"
+    }
+  ],
+  "sourceFilesCheckedAgainstRecordedManifests": true,
+  "profileType": "allocation only; never CPU profile"
+}

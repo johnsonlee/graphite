@@ -1,0 +1,16 @@
+{
+  "command": [
+    "go",
+    "test",
+    "-race",
+    "./internal/query",
+    "-run",
+    "^TestRootBindingTwoTaskCancellationAndNextWave$",
+    "-count=20",
+    "-v"
+  ],
+  "exitCode": 0,
+  "testSHA256": "3e34773479e13b25ac30100351202acdea0c70c1e81dbdb31c87e501eeb665e3",
+  "testOnlyFileRemoved": true,
+  "scope": "Two simultaneous source tasks cancel inside projection, both join/clear before fresh parallel wave returns ID2."
+}

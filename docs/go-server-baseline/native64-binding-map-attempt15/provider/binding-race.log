@@ -1,0 +1,23 @@
+--- FAIL: TestGenericProjectionBindingCancellationJoinsAndClears (5.00s)
+    generic_distinct_binding_test.go:134: projection callback not reached
+--- FAIL: TestGenericProjectionBindingCancellationJoinsAndClears (5.00s)
+    generic_distinct_binding_test.go:134: projection callback not reached
+--- FAIL: TestGenericProjectionBindingCancellationJoinsAndClears (5.00s)
+    generic_distinct_binding_test.go:134: projection callback not reached
+--- FAIL: TestGenericProjectionBindingCancellationJoinsAndClears (5.00s)
+    generic_distinct_binding_test.go:134: projection callback not reached
+--- FAIL: TestGenericProjectionBindingCancellationJoinsAndClears (5.01s)
+    generic_distinct_binding_test.go:134: projection callback not reached
+--- FAIL: TestGenericProjectionBindingCancellationJoinsAndClears (5.00s)
+    generic_distinct_binding_test.go:134: projection callback not reached
+--- FAIL: TestGenericProjectionBindingCancellationJoinsAndClears (5.01s)
+    generic_distinct_binding_test.go:134: projection callback not reached
+--- FAIL: TestGenericProjectionBindingCancellationJoinsAndClears (5.00s)
+    generic_distinct_binding_test.go:134: projection callback not reached
+--- FAIL: TestGenericProjectionBindingCancellationJoinsAndClears (5.00s)
+    generic_distinct_binding_test.go:134: projection callback not reached
+--- FAIL: TestGenericProjectionBindingCancellationJoinsAndClears (5.00s)
+    generic_distinct_binding_test.go:134: projection callback not reached
+FAIL
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/query	50.679s
+FAIL

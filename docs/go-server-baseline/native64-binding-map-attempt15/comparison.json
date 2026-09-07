@@ -1,0 +1,62 @@
+{
+  "all5CompleteResponsesEqual": true,
+  "sourceAndBinaryUnchanged": true,
+  "observations": [
+    {
+      "group": "global64",
+      "name": "wrapped-firstLastGraphBimodalClassPrefix",
+      "completeResponseEqual": true,
+      "baseSeconds": 13.965664208,
+      "candidateSeconds": 13.844309625,
+      "baseCPU": 69.276597,
+      "candidateCPU": 67.477911,
+      "baseAllocationBytes": 9281813272,
+      "candidateAllocationBytes": 5966132840
+    },
+    {
+      "group": "global64",
+      "name": "wrapped-firstLastGraphBimodalClassPrefix-repeat",
+      "completeResponseEqual": true,
+      "baseSeconds": 9.892465291,
+      "candidateSeconds": 9.800067458000001,
+      "baseCPU": 46.503897,
+      "candidateCPU": 45.74157100000001,
+      "baseAllocationBytes": 3759934424,
+      "candidateAllocationBytes": 444259376
+    },
+    {
+      "group": "global64",
+      "name": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "completeResponseEqual": true,
+      "baseSeconds": 0.313968833,
+      "candidateSeconds": 0.312444166,
+      "baseCPU": 2.1079060000000105,
+      "candidateCPU": 2.077882999999982,
+      "baseAllocationBytes": 268474248,
+      "candidateAllocationBytes": 268469520
+    },
+    {
+      "group": "global64",
+      "name": "global-wide-wrapped-case-insensitive-distinct-dense-repeat",
+      "completeResponseEqual": true,
+      "baseSeconds": 0.309356833,
+      "candidateSeconds": 0.303838583,
+      "baseCPU": 2.031272000000005,
+      "candidateCPU": 2.0121260000000127,
+      "baseAllocationBytes": 268435840,
+      "candidateAllocationBytes": 268440568
+    },
+    {
+      "group": "global64",
+      "name": "global-wide-distribution-broad-all-64",
+      "completeResponseEqual": true,
+      "baseSeconds": 0.001809416,
+      "candidateSeconds": 0.001801541,
+      "baseCPU": 0.0018420000000105574,
+      "candidateCPU": 0.0018360000000150478,
+      "baseAllocationBytes": 1636064,
+      "candidateAllocationBytes": 1635392
+    }
+  ],
+  "scope": "Single sequential instrumented observations, not P95 or main-relative speedup."
+}

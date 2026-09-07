@@ -1,0 +1,92 @@
+[
+  {
+    "name": "base-wrapped-firstLastGraphBimodalClassPrefix-repeat-alloc-space-top",
+    "argv": [
+      "go",
+      "tool",
+      "pprof",
+      "-sample_index=alloc_space",
+      "-top",
+      "-nodecount=20",
+      "-base",
+      "/tmp/graphite-prefix-regression-readonly-audit/inputs/base/wrapped-firstLastGraphBimodalClassPrefix-repeat/heap-before.pprof",
+      "/tmp/graphite-prefix-regression-readonly-audit/inputs/base/wrapped-firstLastGraphBimodalClassPrefix-repeat/heap-after.pprof"
+    ],
+    "exit": 0
+  },
+  {
+    "name": "base-global-wide-wrapped-case-insensitive-distinct-dense-repeat-alloc-space-top",
+    "argv": [
+      "go",
+      "tool",
+      "pprof",
+      "-sample_index=alloc_space",
+      "-top",
+      "-nodecount=20",
+      "-base",
+      "/tmp/graphite-prefix-regression-readonly-audit/inputs/base/global-wide-wrapped-case-insensitive-distinct-dense-repeat/heap-before.pprof",
+      "/tmp/graphite-prefix-regression-readonly-audit/inputs/base/global-wide-wrapped-case-insensitive-distinct-dense-repeat/heap-after.pprof"
+    ],
+    "exit": 0
+  },
+  {
+    "name": "candidate-wrapped-firstLastGraphBimodalClassPrefix-repeat-alloc-space-top",
+    "argv": [
+      "go",
+      "tool",
+      "pprof",
+      "-sample_index=alloc_space",
+      "-top",
+      "-nodecount=20",
+      "-base",
+      "/tmp/graphite-prefix-regression-readonly-audit/inputs/candidate/wrapped-firstLastGraphBimodalClassPrefix-repeat/heap-before.pprof",
+      "/tmp/graphite-prefix-regression-readonly-audit/inputs/candidate/wrapped-firstLastGraphBimodalClassPrefix-repeat/heap-after.pprof"
+    ],
+    "exit": 0
+  },
+  {
+    "name": "candidate-global-wide-wrapped-case-insensitive-distinct-dense-repeat-alloc-space-top",
+    "argv": [
+      "go",
+      "tool",
+      "pprof",
+      "-sample_index=alloc_space",
+      "-top",
+      "-nodecount=20",
+      "-base",
+      "/tmp/graphite-prefix-regression-readonly-audit/inputs/candidate/global-wide-wrapped-case-insensitive-distinct-dense-repeat/heap-before.pprof",
+      "/tmp/graphite-prefix-regression-readonly-audit/inputs/candidate/global-wide-wrapped-case-insensitive-distinct-dense-repeat/heap-after.pprof"
+    ],
+    "exit": 0
+  },
+  {
+    "name": "candidate-prefix-alloc_space-line",
+    "argv": [
+      "go",
+      "tool",
+      "pprof",
+      "-sample_index=alloc_space",
+      "-list",
+      "genericDistinctScanner.*next",
+      "-base",
+      "/tmp/graphite-prefix-regression-readonly-audit/inputs/candidate/wrapped-firstLastGraphBimodalClassPrefix-repeat/heap-before.pprof",
+      "/tmp/graphite-prefix-regression-readonly-audit/inputs/candidate/wrapped-firstLastGraphBimodalClassPrefix-repeat/heap-after.pprof"
+    ],
+    "exit": 0
+  },
+  {
+    "name": "candidate-prefix-alloc_objects-line",
+    "argv": [
+      "go",
+      "tool",
+      "pprof",
+      "-sample_index=alloc_objects",
+      "-list",
+      "genericDistinctScanner.*next",
+      "-base",
+      "/tmp/graphite-prefix-regression-readonly-audit/inputs/candidate/wrapped-firstLastGraphBimodalClassPrefix-repeat/heap-before.pprof",
+      "/tmp/graphite-prefix-regression-readonly-audit/inputs/candidate/wrapped-firstLastGraphBimodalClassPrefix-repeat/heap-after.pprof"
+    ],
+    "exit": 0
+  }
+]
