@@ -1,0 +1,8 @@
+=== RUN   TestReviewG8RetainedAllowedSchedule
+=== RUN   TestReviewG8RetainedAllowedSchedule/barrier=false
+=== RUN   TestReviewG8RetainedAllowedSchedule/barrier=true
+--- PASS: TestReviewG8RetainedAllowedSchedule (0.10s)
+    --- PASS: TestReviewG8RetainedAllowedSchedule/barrier=false (0.04s)
+    --- PASS: TestReviewG8RetainedAllowedSchedule/barrier=true (0.03s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/query	1.478s

@@ -1,0 +1,41 @@
+[
+  {
+    "name": "candidate-full-race",
+    "argv": [
+      "go",
+      "test",
+      "-race",
+      "./...",
+      "-count=1",
+      "-timeout=180s"
+    ],
+    "exitCode": 0,
+    "finishedUTC": "2026-09-07T05:41:32.017812+00:00"
+  },
+  {
+    "name": "candidate-vet",
+    "argv": [
+      "go",
+      "vet",
+      "./..."
+    ],
+    "exitCode": 0,
+    "finishedUTC": "2026-09-07T05:41:33.545830+00:00"
+  },
+  {
+    "name": "candidate-boundaries",
+    "argv": [
+      "go",
+      "test",
+      "-race",
+      "./internal/query",
+      "-run",
+      "^TestDistinctAtomPredicate|^TestStringPredicate",
+      "-count=3",
+      "-timeout=90s",
+      "-v"
+    ],
+    "exitCode": 0,
+    "finishedUTC": "2026-09-07T05:41:38.010475+00:00"
+  }
+]

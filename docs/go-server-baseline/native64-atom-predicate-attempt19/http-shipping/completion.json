@@ -1,0 +1,10 @@
+{
+  "complete": true,
+  "required": 63,
+  "phaseCounts": [
+    21,
+    42
+  ],
+  "allModuleSourcesAndBinaryUnchanged": true,
+  "purpose": "Correctness only; fresh process per phase, no performance claim"
+}

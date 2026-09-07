@@ -1,0 +1,30 @@
+[
+  {
+    "phase": "base",
+    "argv": [
+      "python3",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-atom-predicate-attempt19/run-profile.py",
+      "--worktree",
+      "/tmp/graphite-go-atom-base-39eedb33",
+      "--out",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-atom-predicate-attempt19/base"
+    ],
+    "exitCode": 0,
+    "startedUTC": "2026-09-07T05:58:52.638915+00:00",
+    "finishedUTC": "2026-09-07T05:59:57.717223+00:00"
+  },
+  {
+    "phase": "candidate",
+    "argv": [
+      "python3",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-atom-predicate-attempt19/run-profile.py",
+      "--worktree",
+      "/tmp/graphite-go-atom-candidate-39eedb33",
+      "--out",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-atom-predicate-attempt19/candidate"
+    ],
+    "exitCode": 0,
+    "startedUTC": "2026-09-07T05:59:57.717511+00:00",
+    "finishedUTC": "2026-09-07T06:01:01.427000+00:00"
+  }
+]

@@ -1,0 +1,42 @@
+{
+  "name": "b-distinct-order-callee",
+  "query": "MATCH (n:CallSiteNode) WHERE n.caller_class = 'com.google.android.mms.util.PduCache' RETURN DISTINCT n.callee_class AS callee, n.callee_name AS name ORDER BY name DESC, callee SKIP 1 LIMIT 3",
+  "source": "Pinned-main real64 B pagination HTTP oracle; retained DISTINCT heap, stable ties/eviction and provenance",
+  "expected": {
+    "columns": [
+      "callee",
+      "name"
+    ],
+    "graphCount": 64,
+    "rowCount": 3,
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "callee": "com.google.android.mms.util.PduCache",
+        "name": "setUpdating"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "callee": "com.google.android.mms.util.PduCache",
+        "name": "removeFromThreads"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "callee": "com.google.android.mms.util.PduCache",
+        "name": "removeFromMessageBoxes"
+      }
+    ]
+  }
+}

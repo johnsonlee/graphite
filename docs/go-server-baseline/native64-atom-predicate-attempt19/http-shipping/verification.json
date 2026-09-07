@@ -1,0 +1,397 @@
+{
+  "passed": true,
+  "completeHTTP200": 63,
+  "phaseCounts": [
+    21,
+    42
+  ],
+  "allFullTypedBodiesHeadersAndCatalogsEqual": true,
+  "compilerAndEmbedInputsVerified": 153,
+  "fullModuleInputsVerified": 2439,
+  "sourceComparisonWorktree": "/private/tmp/graphite-go-atom-http-39eedb33",
+  "binarySHA256": "b9ce9c826918698af318c2841d1fa07bee3e8b0069f48dc0bad73afce6ae250d",
+  "allTwoServersExited143": true,
+  "allPortsFree": true,
+  "noDynamicMasks": true,
+  "checks": [
+    {
+      "phase": "pagination21",
+      "case": "wrapped-firstLastGraphBimodalClassPrefix",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "pagination21",
+      "case": "wrapped-firstLastGraphBimodalClassPrefix-repeat",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "pagination21",
+      "case": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "pagination21",
+      "case": "global-wide-wrapped-case-insensitive-distinct-dense-repeat",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "pagination21",
+      "case": "global-wide-distribution-broad-all-64",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "pagination21",
+      "case": "c-necessary-ordinary",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "pagination21",
+      "case": "c-necessary-ordinary-repeat",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "pagination21",
+      "case": "c-necessary-distinct",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "pagination21",
+      "case": "c-necessary-distinct-repeat",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "pagination21",
+      "case": "d-unbounded-android",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "pagination21",
+      "case": "d-unbounded-kotlin",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "pagination21",
+      "case": "e-generic-ordinary",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "pagination21",
+      "case": "e-generic-distinct",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "pagination21",
+      "case": "b-ordinary-skip",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "pagination21",
+      "case": "b-distinct-skip",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "pagination21",
+      "case": "b-ordinary-order-parallel",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "pagination21",
+      "case": "b-ordinary-order-generic-serial",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "pagination21",
+      "case": "b-distinct-order-retained",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "pagination21",
+      "case": "b-distinct-order-eviction-candidate",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "pagination21",
+      "case": "b-order-duplicate-alias-ties",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "pagination21",
+      "case": "b-distinct-order-callee",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "wrapped-zeroHitBroadContains",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "wrapped-denseDistributedMethodContains",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "wrapped-earlyGraphClassPrefix",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "wrapped-middleGraphsClassPrefix",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "wrapped-lateGraphClassPrefix",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "wrapped-broadlyDistributedClassPrefix",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "wrapped-firstLastGraphBimodalClassPrefix",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "wrapped-skewedMixedClassMethodOperator",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-four-properties-zero",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-four-properties-targeted",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-four-properties-dense",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-class-pair-zero",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-class-pair-targeted",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-class-pair-dense",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-name-pair-zero",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-name-pair-targeted",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-name-pair-dense",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-caller-class-zero",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-caller-class-targeted",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-caller-class-dense",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-callee-class-zero",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-callee-class-targeted",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-callee-class-dense",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-provenance-zero",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-provenance-targeted",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-provenance-dense",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-aliased-zero",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-aliased-targeted",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-aliased-dense",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-parameterized-zero",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-parameterized-targeted",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-parameterized-dense",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-wrapped-case-insensitive-zero",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-wrapped-case-insensitive-targeted",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-wrapped-case-insensitive-dense",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-wrapped-case-insensitive-distinct-zero",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-distribution-broad-all-64",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-distribution-localized-early",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-distribution-localized-late",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    },
+    {
+      "phase": "regression42",
+      "case": "global-wide-distribution-localized-middle",
+      "fullTypedBodyEqual": true,
+      "status": 200
+    }
+  ],
+  "scope": "Independent complete-record verification; no performance/P95 claim."
+}

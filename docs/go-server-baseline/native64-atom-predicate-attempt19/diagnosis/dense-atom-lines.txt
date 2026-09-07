@@ -1,0 +1,17 @@
+Total: 268032232B
+ROUTINE ======================== github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctAtomMatches in /private/tmp/graphite-go-context-candidate-b7bb15a2/graphite-server/internal/query/indexed_distinct.go
+104334904B 153620604B (flat, cum) 57.31% of Total
+         .          .     44:func (e evaluator) distinctAtomMatches(atom distinctStringAtom, value any) bool {
+         .          .     45:	s, ok := value.(string)
+         .          .     46:	if !ok {
+         .          .     47:		return false
+         .          .     48:	}
+         .          .     49:	if atom.lower {
+         .  49285700B     50:		s = e.javaCase(s, false)
+         .          .     51:	}
+104334904B 104334904B     52:	return e.binary(cypher.Binary{Left: cypher.Literal{Value: s}, Op: atom.op, Right: cypher.Literal{Value: atom.term}}, nil) == true
+         .          .     53:}
+         .          .     54:func distinctVisibleKey(row map[string]any) string {
+         .          .     55:	visible := clone(row)
+         .          .     56:	delete(visible, provenanceKey)
+         .          .     57:	return key(visible)

@@ -1,0 +1,30 @@
+[
+  {
+    "argv": [
+      "go",
+      "test",
+      "-race",
+      "-v",
+      "-count=1",
+      "./internal/query",
+      "-run",
+      "^TestOrdinaryProjectionRollingSourcesMain$"
+    ],
+    "output": "/tmp/graphite-atom-attempt19-independent-review/original-rolling-1",
+    "exit": 0
+  },
+  {
+    "argv": [
+      "go",
+      "test",
+      "-race",
+      "-v",
+      "-count=1",
+      "./internal/query",
+      "-run",
+      "^TestOrdinaryProjectionRollingSourcesMain$"
+    ],
+    "output": "/tmp/graphite-atom-attempt19-independent-review/original-rolling-2",
+    "exit": 0
+  }
+]

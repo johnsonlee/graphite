@@ -671,3 +671,28 @@ and initial observer/collector failures. No async CPU sampler enters shipping.
 diagnosis, exact author and independent source/evidence freezes, initial test
 failures and negative controls, all real64 measurements and complete outputs,
 shipping verification and source/fixture identities.
+
+
+## 2026-09-07 — Attempt 19: compiled string atoms without temporary expressions
+
+| Item | Evidence / status |
+|---|---|
+| Hypothesis | Avoid Literal/Binary interface construction for three compiled string operators; share the exact old string matcher, retaining both literal checks and matching/type/lower/fallback order |
+| Native base / candidate | 39eedb33; patchdfadcbdadfc32ff638bfcce71b0774e60cdf60241e09e710d2c1512cb60c0dfc; four changed files;2439 root inputs equal full tested combination |
+| Correctness | Fullmodule race/vet; exact old helper and byte-exact matcher extraction;27×27×6×2 boundaries; original-eval-only overlay3named/60cancel subcases;66 independent operand/error controls |
+| History | Original1044/1048,B595/53traces and166 numeric spellings unchanged; independent76 outputs73exact,71mappedView+2g8retained leaves, full public bodies unchanged |
+| State proof | Exact-original39 task7/g8 delayed until scheduler's own LIMIT cancellation produces the two retained=false coordinates with all3 main responses equal; original strict failure and natural3true runs kept; no distribution equivalence or broad mask |
+| Real64 | 64 persisted graphs/1152files/10,338,207,518bytes; fixed21 paired processes Close/exit0;42 typed bodies andallsourcehistories equal; original/native/source/binary identities unchanged |
+| Dense first | 0.318904->0.306293s, CPU2.132667->2.027935s, allocation268,471,360->170,248,416bytes |
+| Dense repeat | 0.315795->0.288127s, CPU2.110352->1.849766s, allocation268,440,984->170,203,144bytes |
+| Prefix first control | 1.581503->1.670474s, CPU12.750241->13.238413s, allocation5,965,813,128->5,940,670,248bytes |
+| Prefix repeat control | 0.963427->0.976493s, CPU6.686479->6.735293s, allocation443,938,328->443,943,736bytes |
+| Generic E control | 4.998293->4.885424s, CPU4.934228->4.881990s, allocation2,249,485,336->2,249,487,240bytes |
+| Shipping | 63 typed main bodies/headers/catalog64;153 compiler/embed+2439module inputs;two default60s/cap4 processes exit143/no forcedkill/portsfree;1152original/HTTPclone hashes unchanged |
+| Decision | Keep dense allocation/CPU benefit; retain prefix andother control regressions;all42 measured requestsGC0, noGCpause improvement claim; no other optimization bundled |
+| Limits | Single instrumented pair vs preceding Go,known agents quiet/external activity uncontrolled; not main-relative P95/10x or universalcompatibility; full finalgate remains open |
+
+`docs/go-server-baseline/native64-atom-predicate-attempt19/` retains the exact
+author/reviewer/diagnostic evidence, initial quadratic-test timeout and strict
+state failures, permitted scheduling proof, all complete real64 outputs and
+counters, actual shipping verification and post-exit source/fixture identities.

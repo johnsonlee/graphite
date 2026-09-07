@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/tmp/graphite-atom-attempt19-independent-review/compare_outputs.py", line 26, in <module>
+    assert re.fullmatch(r'\$\[\d+\]\.targets\[\d+\]\.(before|after)\[\d+\]\.mappedView',x['path']),x
+           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'path': '$[8].targets[0].after[8].retained', 'base': True, 'candidate': False}

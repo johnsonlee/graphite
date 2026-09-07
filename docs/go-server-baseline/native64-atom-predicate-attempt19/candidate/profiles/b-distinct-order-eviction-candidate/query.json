@@ -1,0 +1,30 @@
+{
+  "name": "b-distinct-order-eviction-candidate",
+  "query": "MATCH (n:CallSiteNode) WHERE n.caller_class = 'com.google.android.mms.util.PduCache' RETURN DISTINCT n.caller_name AS name ORDER BY n.callee_name DESC SKIP 0 LIMIT 2",
+  "source": "Pinned-main real64 B pagination HTTP oracle; small retained heap with repeated method keys and varying ORDER; eviction/reappearance to be confirmed by actual capture, not asserted",
+  "expected": {
+    "columns": [
+      "name"
+    ],
+    "graphCount": 64,
+    "rowCount": 2,
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "name": "normalizeKey"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "name": "purgeByMessageBox"
+      }
+    ]
+  }
+}

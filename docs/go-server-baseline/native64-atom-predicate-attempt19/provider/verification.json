@@ -1,0 +1,638 @@
+{
+  "artifacts": 76,
+  "strictRawExact": 73,
+  "fullResponseChanges": 0,
+  "stateDifferences": 77,
+  "scope": "Only existing count40 mappedView bools; raw artifacts are retained and not called exact",
+  "changes": [
+    {
+      "file": "base-output/original-corpus/main-string-source-main.json-native.json",
+      "path": "$[10].targets[0].after[1].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/original-corpus/main-string-source-main.json-native.json",
+      "path": "$[10].targets[0].after[5].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/original-corpus/main-string-source-main.json-native.json",
+      "path": "$[10].targets[0].after[6].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/original-corpus/main-string-source-main.json-native.json",
+      "path": "$[10].targets[0].after[7].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/original-corpus/main-string-source-main.json-native.json",
+      "path": "$[10].targets[1].after[1].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/original-corpus/main-string-source-main.json-native.json",
+      "path": "$[10].targets[1].after[5].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/original-corpus/main-string-source-main.json-native.json",
+      "path": "$[10].targets[1].after[6].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/original-corpus/main-string-source-main.json-native.json",
+      "path": "$[10].targets[1].after[7].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/original-corpus/main-string-source-main.json-native.json",
+      "path": "$[10].targets[1].before[1].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/original-corpus/main-string-source-main.json-native.json",
+      "path": "$[10].targets[1].before[5].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/original-corpus/main-string-source-main.json-native.json",
+      "path": "$[10].targets[1].before[6].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/original-corpus/main-string-source-main.json-native.json",
+      "path": "$[10].targets[1].before[7].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/original-corpus/main-string-source-main.json-native.json",
+      "path": "$[14].targets[0].after[2].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/original-corpus/main-string-source-main.json-native.json",
+      "path": "$[14].targets[0].after[4].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/original-corpus/main-string-source-main.json-native.json",
+      "path": "$[14].targets[1].after[2].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/original-corpus/main-string-source-main.json-native.json",
+      "path": "$[14].targets[1].after[3].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/original-corpus/main-string-source-main.json-native.json",
+      "path": "$[14].targets[1].after[4].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/original-corpus/main-string-source-main.json-native.json",
+      "path": "$[14].targets[1].after[6].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/original-corpus/main-string-source-main.json-native.json",
+      "path": "$[14].targets[1].before[2].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/original-corpus/main-string-source-main.json-native.json",
+      "path": "$[14].targets[1].before[4].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/original-corpus/main-string-source-offset-main.json-native.json",
+      "path": "$[5].targets[0].after[1].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/original-corpus/main-string-source-offset-main.json-native.json",
+      "path": "$[5].targets[0].after[4].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/original-corpus/main-string-source-offset-main.json-native.json",
+      "path": "$[5].targets[0].after[7].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/original-corpus/main-string-source-offset-main.json-native.json",
+      "path": "$[5].targets[1].after[1].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/original-corpus/main-string-source-offset-main.json-native.json",
+      "path": "$[5].targets[1].after[3].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/original-corpus/main-string-source-offset-main.json-native.json",
+      "path": "$[5].targets[1].before[1].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/original-corpus/main-string-source-offset-main.json-native.json",
+      "path": "$[5].targets[1].before[4].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/original-corpus/main-string-source-offset-main.json-native.json",
+      "path": "$[5].targets[1].before[7].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[8].targets[0].after[2].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[8].targets[1].after[2].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[8].targets[1].before[2].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[8].targets[2].after[2].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[8].targets[2].before[2].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[9].targets[0].after[4].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[9].targets[0].after[7].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[9].targets[1].after[2].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[9].targets[1].after[3].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[9].targets[1].after[4].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[9].targets[1].after[5].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[9].targets[1].before[4].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[9].targets[1].before[7].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[9].targets[2].after[2].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[9].targets[2].after[4].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[9].targets[2].after[5].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[9].targets[2].before[2].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[9].targets[2].before[3].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[9].targets[2].before[4].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[9].targets[2].before[5].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[11].targets[0].after[2].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[11].targets[0].after[3].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[11].targets[0].after[5].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[11].targets[0].after[6].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[11].targets[0].after[7].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[11].targets[0].after[8].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[11].targets[1].after[5].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[11].targets[1].after[6].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[11].targets[1].after[8].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[11].targets[1].before[2].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[11].targets[1].before[3].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[11].targets[1].before[5].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[11].targets[1].before[6].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[11].targets[1].before[7].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[11].targets[1].before[8].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[11].targets[2].after[5].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[11].targets[2].after[6].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[11].targets[2].after[8].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[11].targets[2].before[5].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[11].targets[2].before[6].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[11].targets[2].before[8].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[12].targets[1].after[10].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[12].targets[2].after[10].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[12].targets[2].before[10].mappedView",
+      "base": true,
+      "candidate": false,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[13].targets[0].after[7].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[13].targets[1].after[7].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[13].targets[1].before[7].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[13].targets[2].after[10].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    },
+    {
+      "file": "base-output/history/rolling-native.json",
+      "path": "$[13].targets[2].before[7].mappedView",
+      "base": false,
+      "candidate": true,
+      "reason": "value"
+    }
+  ],
+  "priorA18CaptureInventory": [
+    {
+      "group": "original-corpus",
+      "count": 32,
+      "paths": [
+        "annotation-after-native.json",
+        "annotation-native.json",
+        "generic-fault-audit.json",
+        "late-native.json",
+        "lazy-filtered-480.json",
+        "main-string-source-main.json-native.json",
+        "main-string-source-offset-main.json-native.json",
+        "main-string-source-property-main.json-native.json",
+        "mixed-native.json",
+        "primary-eligibility.json",
+        "primary-native.json",
+        "required-missing-identity-native.json",
+        "required-missing-index-native.json",
+        "required-native.json",
+        "source-pairs-eligibility.json",
+        "source-pairs-native.json",
+        "split-bad-callee-native.json",
+        "split-bad-count-native.json",
+        "split-bad-tag-native.json",
+        "split-clean-native.json",
+        "split-missing-index-native.json",
+        "streaming-bad-first-unmatched-MAPPED-native.json",
+        "streaming-bad-last-unmatched-MAPPED-native.json",
+        "streaming-bad-matched-MAPPED-native.json",
+        "streaming-clean-EAGER-native.json",
+        "streaming-clean-MAPPED-native.json",
+        "streaming-design-native.json",
+        "streaming-sources-native.json",
+        "streaming-unknown-bad-matched-native.json",
+        "streaming-unknown-clean-native.json",
+        "supplementary-eligibility.json",
+        "supplementary-native.json"
+      ]
+    },
+    {
+      "group": "history",
+      "count": 44,
+      "paths": [
+        "annotation-after-classification.json",
+        "annotation-after-native.json",
+        "annotation-classification.json",
+        "annotation-native.json",
+        "cache-threshold-native.json",
+        "dense-callee-sid-missing-native.json",
+        "dense-callee-sid-native.json",
+        "dense-clean-missing-native.json",
+        "dense-clean-native.json",
+        "dense-return-sid-missing-native.json",
+        "dense-return-sid-native.json",
+        "history-native.json",
+        "mixed-classification.json",
+        "mixed-native.json",
+        "required/callee-class-sid-max-missing-native.json",
+        "required/callee-class-sid-max-native.json",
+        "required/callee-class-sid-minus-one-missing-native.json",
+        "required/callee-class-sid-minus-one-native.json",
+        "required/caller-count-max-missing-native.json",
+        "required/caller-count-max-native.json",
+        "required/caller-count-minus-one-missing-native.json",
+        "required/caller-count-minus-one-native.json",
+        "required/caller-count-outside-missing-native.json",
+        "required/caller-count-outside-native.json",
+        "required/caller-name-sid-max-missing-native.json",
+        "required/caller-name-sid-max-native.json",
+        "required/caller-name-sid-minus-one-missing-native.json",
+        "required/caller-name-sid-minus-one-native.json",
+        "required/core-return-sid-max-missing-native.json",
+        "required/core-return-sid-max-native.json",
+        "required/node-id-999-missing-native.json",
+        "required/node-id-999-native.json",
+        "required/node-tag-255-missing-native.json",
+        "required/node-tag-255-native.json",
+        "required/offset-int-overflow-missing-native.json",
+        "required/offset-int-overflow-native.json",
+        "required/offset-missing-missing-native.json",
+        "required/offset-missing-native.json",
+        "required/offset-other-node-missing-native.json",
+        "required/offset-other-node-native.json",
+        "required/offset-outside-missing-native.json",
+        "required/offset-outside-native.json",
+        "rolling-native.json",
+        "wide-history-native.json"
+      ]
+    }
+  ]
+}

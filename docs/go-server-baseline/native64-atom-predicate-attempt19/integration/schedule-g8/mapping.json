@@ -1,0 +1,13 @@
+{
+  "base": "39eedb33cec988f2b40ccf8086514adcb81cab4f",
+  "case": 8,
+  "sourceCount": 40,
+  "balancedLeadingSource": "g0",
+  "suffixCount": 39,
+  "taskIndex": 7,
+  "sourceIndex": 8,
+  "sourceId": "g8",
+  "sourceMapping": "ordinary_projection.go sources[i+1]",
+  "ordinarySHA": "b0835812b129c540f02dab733aa8e63cf5e4b32e15adb00f1983754f269eb612",
+  "instrumentation": "defer hook before original task(local,i); wait only original child Done; does not cancel parent/context or alter task arguments/results"
+}

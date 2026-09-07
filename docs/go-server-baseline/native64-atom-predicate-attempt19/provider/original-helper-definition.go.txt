@@ -1,0 +1,10 @@
+func (e evaluator) distinctAtomMatches(atom distinctStringAtom, value any) bool {
+	s, ok := value.(string)
+	if !ok {
+		return false
+	}
+	if atom.lower {
+		s = e.javaCase(s, false)
+	}
+	return e.binary(cypher.Binary{Left: cypher.Literal{Value: s}, Op: atom.op, Right: cypher.Literal{Value: atom.term}}, nil) == true
+}

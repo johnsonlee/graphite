@@ -1,0 +1,57 @@
+{
+  "observations": [
+    {
+      "controlled": false,
+      "after": {
+        "id": "g8",
+        "mappedView": false,
+        "retained": true
+      },
+      "beforeNext": {
+        "id": "g8",
+        "mappedView": false,
+        "retained": true
+      },
+      "allThreePublicResponsesEqual": true,
+      "events": null
+    },
+    {
+      "controlled": true,
+      "after": {
+        "id": "g8",
+        "mappedView": false,
+        "retained": false
+      },
+      "beforeNext": {
+        "id": "g8",
+        "mappedView": false,
+        "retained": false
+      },
+      "allThreePublicResponsesEqual": true,
+      "events": [
+        {
+          "childCanceled": false,
+          "count": 39,
+          "graphId": "g8",
+          "index": 7,
+          "phase": "before-original-source-task"
+        },
+        {
+          "childCanceled": true,
+          "count": 39,
+          "graphId": "g8",
+          "index": 7,
+          "phase": "scheduler-child-done"
+        },
+        {
+          "childCanceled": true,
+          "count": 39,
+          "graphId": "g8",
+          "index": 7,
+          "phase": "original-source-task-returned"
+        }
+      ]
+    }
+  ],
+  "scope": "Allowed schedule reachability, not natural frequency or equivalent distributions"
+}

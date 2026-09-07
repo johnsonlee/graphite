@@ -1,0 +1,35 @@
+{
+  "createdUTC": "2026-09-07T05:47:45.663867+00:00",
+  "base": "39eedb33",
+  "worktrees": {
+    "base": "/tmp/graphite-go-atom-base-39eedb33",
+    "candidate": "/tmp/graphite-go-atom-candidate-39eedb33",
+    "http": "/tmp/graphite-go-atom-http-39eedb33"
+  },
+  "clones": {
+    "native": "/tmp/graphite-atom-native-real64-39eedb33",
+    "http": "/tmp/graphite-atom-http-real64-39eedb33"
+  },
+  "components": [
+    {
+      "component": "provider",
+      "manifestSHA256": "46e5e952f4323e7a31e766636b0c7015837f8ce1b1f916ac2f82237e4a863ad7",
+      "allFilesRehashedAndCopied": 275
+    },
+    {
+      "component": "diagnosis",
+      "manifestSHA256": "12ec5886143f85ae9ff94c0af236bd2381b13e2e16dbf4d0184ee7817a7bda3e",
+      "allFilesRehashedAndCopied": 24
+    },
+    {
+      "component": "integration",
+      "manifestSHA256": "7b44ee3e5a1273be30671557a15481056717da3715fe144cf0c467b59b1bb071",
+      "allFilesRehashedAndCopied": 218
+    }
+  ],
+  "all2439CandidateInputsMatchRootPlusExactAuthorDelta": true,
+  "independentIntegrationVerified": true,
+  "performanceNotStarted": false,
+  "all2498CombinedInputsMatchIndependentlyTestedCandidate": true,
+  "knownCoTenancy": "All three known agents confirmed heavy execution terminal before pair; external host activity uncontrolled."
+}

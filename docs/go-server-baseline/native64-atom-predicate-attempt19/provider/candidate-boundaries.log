@@ -1,0 +1,2042 @@
+=== RUN   TestDistinctAtomPredicateEncodingAndFallback
+--- PASS: TestDistinctAtomPredicateEncodingAndFallback (0.03s)
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/CONTAINS/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/STARTS_WITH/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/ENDS_WITH/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/=/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/NOT_CONTAINS/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/UNSUPPORTED/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/CONTAINS/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/STARTS_WITH/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/ENDS_WITH/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/=/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/NOT_CONTAINS/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/UNSUPPORTED/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/CONTAINS/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/STARTS_WITH/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/ENDS_WITH/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/=/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/NOT_CONTAINS/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/UNSUPPORTED/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/CONTAINS/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/STARTS_WITH/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/ENDS_WITH/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/=/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/NOT_CONTAINS/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/UNSUPPORTED/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/CONTAINS/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/STARTS_WITH/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/ENDS_WITH/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/=/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/NOT_CONTAINS/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/UNSUPPORTED/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/CONTAINS/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/STARTS_WITH/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/ENDS_WITH/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/=/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/NOT_CONTAINS/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/UNSUPPORTED/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/CONTAINS/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/STARTS_WITH/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/ENDS_WITH/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/=/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/NOT_CONTAINS/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/UNSUPPORTED/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/CONTAINS/true
+    distinct_atom_predicate_test.go:89: long-input original checks=6004, lowercase=6000, sampled cancellation checkpoints=[1 2 3000 5999 6000 6001 6002 6003 6004 6005]
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/STARTS_WITH/true
+    distinct_atom_predicate_test.go:89: long-input original checks=6004, lowercase=6000, sampled cancellation checkpoints=[1 2 3000 5999 6000 6001 6002 6003 6004 6005]
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/ENDS_WITH/true
+    distinct_atom_predicate_test.go:89: long-input original checks=6004, lowercase=6000, sampled cancellation checkpoints=[1 2 3000 5999 6000 6001 6002 6003 6004 6005]
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/=/true
+    distinct_atom_predicate_test.go:89: long-input original checks=6002, lowercase=6000, sampled cancellation checkpoints=[1 2 3000 5999 6000 6001 6002 6003]
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/NOT_CONTAINS/true
+    distinct_atom_predicate_test.go:89: long-input original checks=6004, lowercase=6000, sampled cancellation checkpoints=[1 2 3000 5999 6000 6001 6002 6003 6004 6005]
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/UNSUPPORTED/true
+    distinct_atom_predicate_test.go:89: long-input original checks=6002, lowercase=6000, sampled cancellation checkpoints=[1 2 3000 5999 6000 6001 6002 6003]
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/CONTAINS/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/STARTS_WITH/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/ENDS_WITH/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/=/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/NOT_CONTAINS/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/UNSUPPORTED/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/CONTAINS/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/STARTS_WITH/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/ENDS_WITH/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/=/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/NOT_CONTAINS/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/UNSUPPORTED/true
+--- PASS: TestDistinctAtomPredicateEveryCancellationBoundary (0.40s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/CONTAINS/false (0.01s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/STARTS_WITH/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/ENDS_WITH/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/=/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/NOT_CONTAINS/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/UNSUPPORTED/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/CONTAINS/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/STARTS_WITH/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/ENDS_WITH/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/=/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/NOT_CONTAINS/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/UNSUPPORTED/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/CONTAINS/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/STARTS_WITH/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/ENDS_WITH/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/=/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/NOT_CONTAINS/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/UNSUPPORTED/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/CONTAINS/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/STARTS_WITH/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/ENDS_WITH/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/=/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/NOT_CONTAINS/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/UNSUPPORTED/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/CONTAINS/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/STARTS_WITH/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/ENDS_WITH/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/=/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/NOT_CONTAINS/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/UNSUPPORTED/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/CONTAINS/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/STARTS_WITH/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/ENDS_WITH/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/=/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/NOT_CONTAINS/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/UNSUPPORTED/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/CONTAINS/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/STARTS_WITH/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/ENDS_WITH/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/=/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/NOT_CONTAINS/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/UNSUPPORTED/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/CONTAINS/true (0.07s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/STARTS_WITH/true (0.07s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/ENDS_WITH/true (0.07s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/=/true (0.05s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/NOT_CONTAINS/true (0.07s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/UNSUPPORTED/true (0.05s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/CONTAINS/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/STARTS_WITH/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/ENDS_WITH/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/=/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/NOT_CONTAINS/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/UNSUPPORTED/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/CONTAINS/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/STARTS_WITH/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/ENDS_WITH/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/=/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/NOT_CONTAINS/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/UNSUPPORTED/true (0.00s)
+=== RUN   TestDistinctAtomPredicateNonstringReturnsBeforeCancellation
+--- PASS: TestDistinctAtomPredicateNonstringReturnsBeforeCancellation (0.00s)
+=== RUN   TestStringPredicatesMainJVMOracle
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-empty-empty
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-empty-needle
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-empty-haystack
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-equal
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-prefix
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-suffix
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-middle
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-absent
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-longer
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-case-sensitive
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-chinese
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-japanese
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-korean
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-supplementary
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-supplementary-middle
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-different-supplementary
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-combining
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-no-normalization
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-nul
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-high-half
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-low-half
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-isolated-high
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-isolated-low
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-reverse-halves
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-high-is-not-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-low-is-not-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-paired-surrogates
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-across-pair-boundary
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-high-empty
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-empty-low
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-null-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-number-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-list-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-map-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-null-right
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-number-right
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-list-right
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-right-error
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-left-error
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-right-function-null
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-right-class-error
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-empty-empty
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-empty-needle
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-empty-haystack
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-equal
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-prefix
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-suffix
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-middle
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-absent
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-longer
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-case-sensitive
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-chinese
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-japanese
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-korean
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-supplementary
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-supplementary-middle
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-different-supplementary
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-combining
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-no-normalization
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-nul
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-high-half
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-low-half
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-isolated-high
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-isolated-low
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-reverse-halves
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-high-is-not-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-low-is-not-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-paired-surrogates
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-across-pair-boundary
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-high-empty
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-empty-low
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-null-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-number-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-list-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-map-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-null-right
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-number-right
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-list-right
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-right-error
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-left-error
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-right-function-null
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-right-class-error
+=== RUN   TestStringPredicatesMainJVMOracle/contains-empty-empty
+=== RUN   TestStringPredicatesMainJVMOracle/contains-empty-needle
+=== RUN   TestStringPredicatesMainJVMOracle/contains-empty-haystack
+=== RUN   TestStringPredicatesMainJVMOracle/contains-equal
+=== RUN   TestStringPredicatesMainJVMOracle/contains-prefix
+=== RUN   TestStringPredicatesMainJVMOracle/contains-suffix
+=== RUN   TestStringPredicatesMainJVMOracle/contains-middle
+=== RUN   TestStringPredicatesMainJVMOracle/contains-absent
+=== RUN   TestStringPredicatesMainJVMOracle/contains-longer
+=== RUN   TestStringPredicatesMainJVMOracle/contains-case-sensitive
+=== RUN   TestStringPredicatesMainJVMOracle/contains-chinese
+=== RUN   TestStringPredicatesMainJVMOracle/contains-japanese
+=== RUN   TestStringPredicatesMainJVMOracle/contains-korean
+=== RUN   TestStringPredicatesMainJVMOracle/contains-supplementary
+=== RUN   TestStringPredicatesMainJVMOracle/contains-supplementary-middle
+=== RUN   TestStringPredicatesMainJVMOracle/contains-different-supplementary
+=== RUN   TestStringPredicatesMainJVMOracle/contains-combining
+=== RUN   TestStringPredicatesMainJVMOracle/contains-no-normalization
+=== RUN   TestStringPredicatesMainJVMOracle/contains-nul
+=== RUN   TestStringPredicatesMainJVMOracle/contains-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/contains-high-half
+=== RUN   TestStringPredicatesMainJVMOracle/contains-low-half
+=== RUN   TestStringPredicatesMainJVMOracle/contains-isolated-high
+=== RUN   TestStringPredicatesMainJVMOracle/contains-isolated-low
+=== RUN   TestStringPredicatesMainJVMOracle/contains-reverse-halves
+=== RUN   TestStringPredicatesMainJVMOracle/contains-high-is-not-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/contains-low-is-not-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/contains-paired-surrogates
+=== RUN   TestStringPredicatesMainJVMOracle/contains-across-pair-boundary
+=== RUN   TestStringPredicatesMainJVMOracle/contains-high-empty
+=== RUN   TestStringPredicatesMainJVMOracle/contains-empty-low
+=== RUN   TestStringPredicatesMainJVMOracle/contains-null-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/contains-number-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/contains-list-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/contains-map-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/contains-null-right
+=== RUN   TestStringPredicatesMainJVMOracle/contains-number-right
+=== RUN   TestStringPredicatesMainJVMOracle/contains-list-right
+=== RUN   TestStringPredicatesMainJVMOracle/contains-right-error
+=== RUN   TestStringPredicatesMainJVMOracle/contains-left-error
+=== RUN   TestStringPredicatesMainJVMOracle/contains-right-function-null
+=== RUN   TestStringPredicatesMainJVMOracle/contains-right-class-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-empty-empty
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-empty-needle
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-empty-haystack
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-equal
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-prefix
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-suffix
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-middle
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-absent
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-longer
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-case-sensitive
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-chinese
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-japanese
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-korean
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-supplementary
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-supplementary-middle
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-different-supplementary
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-combining
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-no-normalization
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-nul
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-high-half
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-low-half
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-isolated-high
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-isolated-low
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-reverse-halves
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-high-is-not-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-low-is-not-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-paired-surrogates
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-across-pair-boundary
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-high-empty
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-empty-low
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-null-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-number-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-list-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-map-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-null-right
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-number-right
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-list-right
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-right-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-left-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-right-function-null
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-right-class-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-empty-empty
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-empty-needle
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-empty-haystack
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-equal
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-prefix
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-suffix
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-middle
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-absent
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-longer
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-case-sensitive
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-chinese
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-japanese
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-korean
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-supplementary
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-supplementary-middle
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-different-supplementary
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-combining
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-no-normalization
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-nul
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-high-half
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-low-half
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-isolated-high
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-isolated-low
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-reverse-halves
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-high-is-not-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-low-is-not-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-paired-surrogates
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-across-pair-boundary
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-high-empty
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-empty-low
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-null-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-number-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-list-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-map-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-null-right
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-number-right
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-list-right
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-right-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-left-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-right-function-null
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-right-class-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-empty-empty
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-empty-needle
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-empty-haystack
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-equal
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-prefix
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-suffix
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-middle
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-absent
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-longer
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-case-sensitive
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-chinese
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-japanese
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-korean
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-supplementary
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-supplementary-middle
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-different-supplementary
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-combining
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-no-normalization
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-nul
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-high-half
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-low-half
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-isolated-high
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-isolated-low
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-reverse-halves
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-high-is-not-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-low-is-not-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-paired-surrogates
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-across-pair-boundary
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-high-empty
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-empty-low
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-null-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-number-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-list-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-map-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-null-right
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-number-right
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-list-right
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-right-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-left-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-right-function-null
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-right-class-error
+--- PASS: TestStringPredicatesMainJVMOracle (0.12s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-empty-empty (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-empty-needle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-empty-haystack (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-equal (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-prefix (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-suffix (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-middle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-absent (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-longer (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-case-sensitive (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-chinese (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-japanese (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-korean (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-supplementary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-supplementary-middle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-different-supplementary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-combining (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-no-normalization (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-nul (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-high-half (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-low-half (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-isolated-high (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-isolated-low (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-reverse-halves (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-high-is-not-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-low-is-not-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-paired-surrogates (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-across-pair-boundary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-high-empty (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-empty-low (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-null-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-number-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-list-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-map-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-null-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-number-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-list-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-right-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-left-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-right-function-null (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-right-class-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-empty-empty (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-empty-needle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-empty-haystack (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-equal (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-prefix (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-suffix (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-middle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-absent (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-longer (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-case-sensitive (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-chinese (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-japanese (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-korean (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-supplementary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-supplementary-middle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-different-supplementary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-combining (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-no-normalization (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-nul (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-high-half (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-low-half (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-isolated-high (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-isolated-low (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-reverse-halves (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-high-is-not-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-low-is-not-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-paired-surrogates (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-across-pair-boundary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-high-empty (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-empty-low (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-null-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-number-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-list-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-map-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-null-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-number-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-list-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-right-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-left-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-right-function-null (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-right-class-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-empty-empty (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-empty-needle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-empty-haystack (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-equal (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-prefix (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-suffix (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-middle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-absent (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-longer (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-case-sensitive (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-chinese (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-japanese (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-korean (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-supplementary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-supplementary-middle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-different-supplementary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-combining (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-no-normalization (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-nul (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-high-half (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-low-half (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-isolated-high (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-isolated-low (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-reverse-halves (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-high-is-not-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-low-is-not-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-paired-surrogates (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-across-pair-boundary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-high-empty (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-empty-low (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-null-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-number-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-list-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-map-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-null-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-number-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-list-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-right-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-left-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-right-function-null (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-right-class-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-empty-empty (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-empty-needle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-empty-haystack (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-equal (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-prefix (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-suffix (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-middle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-absent (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-longer (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-case-sensitive (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-chinese (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-japanese (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-korean (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-supplementary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-supplementary-middle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-different-supplementary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-combining (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-no-normalization (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-nul (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-high-half (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-low-half (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-isolated-high (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-isolated-low (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-reverse-halves (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-high-is-not-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-low-is-not-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-paired-surrogates (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-across-pair-boundary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-high-empty (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-empty-low (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-null-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-number-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-list-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-map-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-null-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-number-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-list-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-right-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-left-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-right-function-null (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-right-class-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-empty-empty (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-empty-needle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-empty-haystack (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-equal (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-prefix (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-suffix (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-middle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-absent (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-longer (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-case-sensitive (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-chinese (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-japanese (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-korean (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-supplementary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-supplementary-middle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-different-supplementary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-combining (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-no-normalization (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-nul (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-high-half (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-low-half (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-isolated-high (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-isolated-low (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-reverse-halves (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-high-is-not-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-low-is-not-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-paired-surrogates (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-across-pair-boundary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-high-empty (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-empty-low (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-null-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-number-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-list-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-map-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-null-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-number-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-list-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-right-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-left-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-right-function-null (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-right-class-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-empty-empty (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-empty-needle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-empty-haystack (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-equal (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-prefix (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-suffix (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-middle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-absent (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-longer (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-case-sensitive (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-chinese (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-japanese (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-korean (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-supplementary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-supplementary-middle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-different-supplementary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-combining (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-no-normalization (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-nul (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-high-half (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-low-half (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-isolated-high (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-isolated-low (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-reverse-halves (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-high-is-not-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-low-is-not-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-paired-surrogates (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-across-pair-boundary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-high-empty (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-empty-low (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-null-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-number-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-list-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-map-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-null-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-number-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-list-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-right-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-left-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-right-function-null (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-right-class-error (0.00s)
+=== RUN   TestStringPredicateEncodingBoundaries
+--- PASS: TestStringPredicateEncodingBoundaries (0.00s)
+=== RUN   TestStringPredicateParametersRetainUTF16Units
+=== RUN   TestStringPredicateParametersRetainUTF16Units/high-half
+=== RUN   TestStringPredicateParametersRetainUTF16Units/low-half
+=== RUN   TestStringPredicateParametersRetainUTF16Units/wtf8-pair
+=== RUN   TestStringPredicateParametersRetainUTF16Units/replacement-distinct
+=== RUN   TestStringPredicateParametersRetainUTF16Units/malformed-retained
+--- PASS: TestStringPredicateParametersRetainUTF16Units (0.00s)
+    --- PASS: TestStringPredicateParametersRetainUTF16Units/high-half (0.00s)
+    --- PASS: TestStringPredicateParametersRetainUTF16Units/low-half (0.00s)
+    --- PASS: TestStringPredicateParametersRetainUTF16Units/wtf8-pair (0.00s)
+    --- PASS: TestStringPredicateParametersRetainUTF16Units/replacement-distinct (0.00s)
+    --- PASS: TestStringPredicateParametersRetainUTF16Units/malformed-retained (0.00s)
+=== RUN   TestStringPredicateCancellationAtFastPathBoundaries
+=== RUN   TestStringPredicateCancellationAtFastPathBoundaries/STARTS_WITH/3
+=== RUN   TestStringPredicateCancellationAtFastPathBoundaries/STARTS_WITH/4
+=== RUN   TestStringPredicateCancellationAtFastPathBoundaries/ENDS_WITH/3
+=== RUN   TestStringPredicateCancellationAtFastPathBoundaries/ENDS_WITH/4
+=== RUN   TestStringPredicateCancellationAtFastPathBoundaries/CONTAINS/3
+=== RUN   TestStringPredicateCancellationAtFastPathBoundaries/CONTAINS/4
+=== RUN   TestStringPredicateCancellationAtFastPathBoundaries/NOT_STARTS_WITH/3
+=== RUN   TestStringPredicateCancellationAtFastPathBoundaries/NOT_STARTS_WITH/4
+=== RUN   TestStringPredicateCancellationAtFastPathBoundaries/NOT_ENDS_WITH/3
+=== RUN   TestStringPredicateCancellationAtFastPathBoundaries/NOT_ENDS_WITH/4
+=== RUN   TestStringPredicateCancellationAtFastPathBoundaries/NOT_CONTAINS/3
+=== RUN   TestStringPredicateCancellationAtFastPathBoundaries/NOT_CONTAINS/4
+--- PASS: TestStringPredicateCancellationAtFastPathBoundaries (0.00s)
+    --- PASS: TestStringPredicateCancellationAtFastPathBoundaries/STARTS_WITH/3 (0.00s)
+    --- PASS: TestStringPredicateCancellationAtFastPathBoundaries/STARTS_WITH/4 (0.00s)
+    --- PASS: TestStringPredicateCancellationAtFastPathBoundaries/ENDS_WITH/3 (0.00s)
+    --- PASS: TestStringPredicateCancellationAtFastPathBoundaries/ENDS_WITH/4 (0.00s)
+    --- PASS: TestStringPredicateCancellationAtFastPathBoundaries/CONTAINS/3 (0.00s)
+    --- PASS: TestStringPredicateCancellationAtFastPathBoundaries/CONTAINS/4 (0.00s)
+    --- PASS: TestStringPredicateCancellationAtFastPathBoundaries/NOT_STARTS_WITH/3 (0.00s)
+    --- PASS: TestStringPredicateCancellationAtFastPathBoundaries/NOT_STARTS_WITH/4 (0.00s)
+    --- PASS: TestStringPredicateCancellationAtFastPathBoundaries/NOT_ENDS_WITH/3 (0.00s)
+    --- PASS: TestStringPredicateCancellationAtFastPathBoundaries/NOT_ENDS_WITH/4 (0.00s)
+    --- PASS: TestStringPredicateCancellationAtFastPathBoundaries/NOT_CONTAINS/3 (0.00s)
+    --- PASS: TestStringPredicateCancellationAtFastPathBoundaries/NOT_CONTAINS/4 (0.00s)
+=== RUN   TestStringPredicateCancellationDuringUTF16Fallback
+--- PASS: TestStringPredicateCancellationDuringUTF16Fallback (0.00s)
+=== RUN   TestDistinctAtomPredicateEncodingAndFallback
+--- PASS: TestDistinctAtomPredicateEncodingAndFallback (0.02s)
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/CONTAINS/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/STARTS_WITH/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/ENDS_WITH/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/=/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/NOT_CONTAINS/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/UNSUPPORTED/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/CONTAINS/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/STARTS_WITH/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/ENDS_WITH/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/=/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/NOT_CONTAINS/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/UNSUPPORTED/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/CONTAINS/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/STARTS_WITH/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/ENDS_WITH/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/=/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/NOT_CONTAINS/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/UNSUPPORTED/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/CONTAINS/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/STARTS_WITH/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/ENDS_WITH/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/=/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/NOT_CONTAINS/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/UNSUPPORTED/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/CONTAINS/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/STARTS_WITH/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/ENDS_WITH/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/=/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/NOT_CONTAINS/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/UNSUPPORTED/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/CONTAINS/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/STARTS_WITH/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/ENDS_WITH/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/=/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/NOT_CONTAINS/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/UNSUPPORTED/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/CONTAINS/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/STARTS_WITH/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/ENDS_WITH/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/=/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/NOT_CONTAINS/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/UNSUPPORTED/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/CONTAINS/true
+    distinct_atom_predicate_test.go:89: long-input original checks=6004, lowercase=6000, sampled cancellation checkpoints=[1 2 3000 5999 6000 6001 6002 6003 6004 6005]
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/STARTS_WITH/true
+    distinct_atom_predicate_test.go:89: long-input original checks=6004, lowercase=6000, sampled cancellation checkpoints=[1 2 3000 5999 6000 6001 6002 6003 6004 6005]
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/ENDS_WITH/true
+    distinct_atom_predicate_test.go:89: long-input original checks=6004, lowercase=6000, sampled cancellation checkpoints=[1 2 3000 5999 6000 6001 6002 6003 6004 6005]
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/=/true
+    distinct_atom_predicate_test.go:89: long-input original checks=6002, lowercase=6000, sampled cancellation checkpoints=[1 2 3000 5999 6000 6001 6002 6003]
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/NOT_CONTAINS/true
+    distinct_atom_predicate_test.go:89: long-input original checks=6004, lowercase=6000, sampled cancellation checkpoints=[1 2 3000 5999 6000 6001 6002 6003 6004 6005]
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/UNSUPPORTED/true
+    distinct_atom_predicate_test.go:89: long-input original checks=6002, lowercase=6000, sampled cancellation checkpoints=[1 2 3000 5999 6000 6001 6002 6003]
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/CONTAINS/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/STARTS_WITH/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/ENDS_WITH/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/=/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/NOT_CONTAINS/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/UNSUPPORTED/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/CONTAINS/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/STARTS_WITH/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/ENDS_WITH/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/=/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/NOT_CONTAINS/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/UNSUPPORTED/true
+--- PASS: TestDistinctAtomPredicateEveryCancellationBoundary (0.39s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/CONTAINS/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/STARTS_WITH/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/ENDS_WITH/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/=/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/NOT_CONTAINS/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/UNSUPPORTED/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/CONTAINS/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/STARTS_WITH/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/ENDS_WITH/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/=/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/NOT_CONTAINS/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/UNSUPPORTED/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/CONTAINS/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/STARTS_WITH/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/ENDS_WITH/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/=/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/NOT_CONTAINS/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/UNSUPPORTED/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/CONTAINS/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/STARTS_WITH/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/ENDS_WITH/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/=/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/NOT_CONTAINS/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/UNSUPPORTED/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/CONTAINS/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/STARTS_WITH/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/ENDS_WITH/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/=/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/NOT_CONTAINS/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/UNSUPPORTED/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/CONTAINS/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/STARTS_WITH/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/ENDS_WITH/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/=/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/NOT_CONTAINS/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/UNSUPPORTED/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/CONTAINS/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/STARTS_WITH/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/ENDS_WITH/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/=/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/NOT_CONTAINS/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/UNSUPPORTED/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/CONTAINS/true (0.07s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/STARTS_WITH/true (0.07s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/ENDS_WITH/true (0.07s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/=/true (0.05s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/NOT_CONTAINS/true (0.07s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/UNSUPPORTED/true (0.05s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/CONTAINS/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/STARTS_WITH/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/ENDS_WITH/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/=/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/NOT_CONTAINS/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/UNSUPPORTED/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/CONTAINS/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/STARTS_WITH/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/ENDS_WITH/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/=/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/NOT_CONTAINS/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/UNSUPPORTED/true (0.00s)
+=== RUN   TestDistinctAtomPredicateNonstringReturnsBeforeCancellation
+--- PASS: TestDistinctAtomPredicateNonstringReturnsBeforeCancellation (0.00s)
+=== RUN   TestStringPredicatesMainJVMOracle
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-empty-empty
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-empty-needle
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-empty-haystack
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-equal
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-prefix
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-suffix
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-middle
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-absent
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-longer
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-case-sensitive
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-chinese
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-japanese
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-korean
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-supplementary
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-supplementary-middle
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-different-supplementary
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-combining
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-no-normalization
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-nul
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-high-half
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-low-half
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-isolated-high
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-isolated-low
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-reverse-halves
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-high-is-not-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-low-is-not-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-paired-surrogates
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-across-pair-boundary
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-high-empty
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-empty-low
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-null-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-number-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-list-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-map-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-null-right
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-number-right
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-list-right
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-right-error
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-left-error
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-right-function-null
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-right-class-error
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-empty-empty
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-empty-needle
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-empty-haystack
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-equal
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-prefix
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-suffix
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-middle
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-absent
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-longer
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-case-sensitive
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-chinese
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-japanese
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-korean
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-supplementary
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-supplementary-middle
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-different-supplementary
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-combining
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-no-normalization
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-nul
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-high-half
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-low-half
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-isolated-high
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-isolated-low
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-reverse-halves
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-high-is-not-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-low-is-not-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-paired-surrogates
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-across-pair-boundary
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-high-empty
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-empty-low
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-null-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-number-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-list-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-map-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-null-right
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-number-right
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-list-right
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-right-error
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-left-error
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-right-function-null
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-right-class-error
+=== RUN   TestStringPredicatesMainJVMOracle/contains-empty-empty
+=== RUN   TestStringPredicatesMainJVMOracle/contains-empty-needle
+=== RUN   TestStringPredicatesMainJVMOracle/contains-empty-haystack
+=== RUN   TestStringPredicatesMainJVMOracle/contains-equal
+=== RUN   TestStringPredicatesMainJVMOracle/contains-prefix
+=== RUN   TestStringPredicatesMainJVMOracle/contains-suffix
+=== RUN   TestStringPredicatesMainJVMOracle/contains-middle
+=== RUN   TestStringPredicatesMainJVMOracle/contains-absent
+=== RUN   TestStringPredicatesMainJVMOracle/contains-longer
+=== RUN   TestStringPredicatesMainJVMOracle/contains-case-sensitive
+=== RUN   TestStringPredicatesMainJVMOracle/contains-chinese
+=== RUN   TestStringPredicatesMainJVMOracle/contains-japanese
+=== RUN   TestStringPredicatesMainJVMOracle/contains-korean
+=== RUN   TestStringPredicatesMainJVMOracle/contains-supplementary
+=== RUN   TestStringPredicatesMainJVMOracle/contains-supplementary-middle
+=== RUN   TestStringPredicatesMainJVMOracle/contains-different-supplementary
+=== RUN   TestStringPredicatesMainJVMOracle/contains-combining
+=== RUN   TestStringPredicatesMainJVMOracle/contains-no-normalization
+=== RUN   TestStringPredicatesMainJVMOracle/contains-nul
+=== RUN   TestStringPredicatesMainJVMOracle/contains-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/contains-high-half
+=== RUN   TestStringPredicatesMainJVMOracle/contains-low-half
+=== RUN   TestStringPredicatesMainJVMOracle/contains-isolated-high
+=== RUN   TestStringPredicatesMainJVMOracle/contains-isolated-low
+=== RUN   TestStringPredicatesMainJVMOracle/contains-reverse-halves
+=== RUN   TestStringPredicatesMainJVMOracle/contains-high-is-not-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/contains-low-is-not-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/contains-paired-surrogates
+=== RUN   TestStringPredicatesMainJVMOracle/contains-across-pair-boundary
+=== RUN   TestStringPredicatesMainJVMOracle/contains-high-empty
+=== RUN   TestStringPredicatesMainJVMOracle/contains-empty-low
+=== RUN   TestStringPredicatesMainJVMOracle/contains-null-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/contains-number-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/contains-list-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/contains-map-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/contains-null-right
+=== RUN   TestStringPredicatesMainJVMOracle/contains-number-right
+=== RUN   TestStringPredicatesMainJVMOracle/contains-list-right
+=== RUN   TestStringPredicatesMainJVMOracle/contains-right-error
+=== RUN   TestStringPredicatesMainJVMOracle/contains-left-error
+=== RUN   TestStringPredicatesMainJVMOracle/contains-right-function-null
+=== RUN   TestStringPredicatesMainJVMOracle/contains-right-class-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-empty-empty
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-empty-needle
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-empty-haystack
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-equal
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-prefix
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-suffix
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-middle
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-absent
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-longer
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-case-sensitive
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-chinese
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-japanese
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-korean
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-supplementary
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-supplementary-middle
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-different-supplementary
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-combining
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-no-normalization
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-nul
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-high-half
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-low-half
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-isolated-high
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-isolated-low
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-reverse-halves
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-high-is-not-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-low-is-not-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-paired-surrogates
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-across-pair-boundary
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-high-empty
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-empty-low
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-null-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-number-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-list-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-map-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-null-right
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-number-right
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-list-right
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-right-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-left-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-right-function-null
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-right-class-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-empty-empty
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-empty-needle
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-empty-haystack
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-equal
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-prefix
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-suffix
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-middle
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-absent
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-longer
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-case-sensitive
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-chinese
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-japanese
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-korean
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-supplementary
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-supplementary-middle
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-different-supplementary
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-combining
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-no-normalization
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-nul
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-high-half
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-low-half
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-isolated-high
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-isolated-low
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-reverse-halves
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-high-is-not-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-low-is-not-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-paired-surrogates
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-across-pair-boundary
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-high-empty
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-empty-low
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-null-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-number-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-list-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-map-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-null-right
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-number-right
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-list-right
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-right-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-left-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-right-function-null
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-right-class-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-empty-empty
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-empty-needle
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-empty-haystack
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-equal
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-prefix
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-suffix
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-middle
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-absent
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-longer
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-case-sensitive
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-chinese
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-japanese
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-korean
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-supplementary
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-supplementary-middle
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-different-supplementary
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-combining
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-no-normalization
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-nul
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-high-half
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-low-half
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-isolated-high
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-isolated-low
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-reverse-halves
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-high-is-not-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-low-is-not-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-paired-surrogates
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-across-pair-boundary
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-high-empty
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-empty-low
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-null-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-number-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-list-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-map-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-null-right
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-number-right
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-list-right
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-right-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-left-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-right-function-null
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-right-class-error
+--- PASS: TestStringPredicatesMainJVMOracle (0.11s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-empty-empty (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-empty-needle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-empty-haystack (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-equal (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-prefix (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-suffix (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-middle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-absent (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-longer (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-case-sensitive (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-chinese (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-japanese (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-korean (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-supplementary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-supplementary-middle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-different-supplementary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-combining (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-no-normalization (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-nul (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-high-half (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-low-half (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-isolated-high (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-isolated-low (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-reverse-halves (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-high-is-not-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-low-is-not-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-paired-surrogates (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-across-pair-boundary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-high-empty (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-empty-low (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-null-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-number-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-list-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-map-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-null-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-number-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-list-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-right-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-left-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-right-function-null (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-right-class-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-empty-empty (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-empty-needle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-empty-haystack (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-equal (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-prefix (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-suffix (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-middle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-absent (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-longer (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-case-sensitive (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-chinese (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-japanese (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-korean (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-supplementary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-supplementary-middle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-different-supplementary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-combining (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-no-normalization (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-nul (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-high-half (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-low-half (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-isolated-high (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-isolated-low (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-reverse-halves (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-high-is-not-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-low-is-not-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-paired-surrogates (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-across-pair-boundary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-high-empty (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-empty-low (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-null-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-number-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-list-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-map-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-null-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-number-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-list-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-right-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-left-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-right-function-null (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-right-class-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-empty-empty (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-empty-needle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-empty-haystack (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-equal (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-prefix (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-suffix (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-middle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-absent (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-longer (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-case-sensitive (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-chinese (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-japanese (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-korean (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-supplementary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-supplementary-middle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-different-supplementary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-combining (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-no-normalization (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-nul (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-high-half (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-low-half (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-isolated-high (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-isolated-low (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-reverse-halves (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-high-is-not-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-low-is-not-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-paired-surrogates (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-across-pair-boundary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-high-empty (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-empty-low (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-null-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-number-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-list-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-map-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-null-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-number-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-list-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-right-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-left-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-right-function-null (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-right-class-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-empty-empty (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-empty-needle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-empty-haystack (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-equal (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-prefix (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-suffix (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-middle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-absent (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-longer (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-case-sensitive (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-chinese (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-japanese (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-korean (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-supplementary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-supplementary-middle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-different-supplementary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-combining (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-no-normalization (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-nul (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-high-half (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-low-half (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-isolated-high (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-isolated-low (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-reverse-halves (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-high-is-not-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-low-is-not-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-paired-surrogates (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-across-pair-boundary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-high-empty (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-empty-low (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-null-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-number-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-list-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-map-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-null-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-number-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-list-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-right-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-left-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-right-function-null (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-right-class-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-empty-empty (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-empty-needle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-empty-haystack (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-equal (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-prefix (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-suffix (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-middle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-absent (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-longer (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-case-sensitive (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-chinese (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-japanese (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-korean (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-supplementary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-supplementary-middle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-different-supplementary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-combining (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-no-normalization (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-nul (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-high-half (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-low-half (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-isolated-high (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-isolated-low (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-reverse-halves (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-high-is-not-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-low-is-not-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-paired-surrogates (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-across-pair-boundary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-high-empty (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-empty-low (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-null-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-number-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-list-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-map-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-null-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-number-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-list-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-right-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-left-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-right-function-null (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-right-class-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-empty-empty (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-empty-needle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-empty-haystack (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-equal (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-prefix (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-suffix (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-middle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-absent (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-longer (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-case-sensitive (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-chinese (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-japanese (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-korean (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-supplementary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-supplementary-middle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-different-supplementary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-combining (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-no-normalization (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-nul (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-high-half (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-low-half (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-isolated-high (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-isolated-low (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-reverse-halves (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-high-is-not-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-low-is-not-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-paired-surrogates (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-across-pair-boundary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-high-empty (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-empty-low (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-null-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-number-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-list-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-map-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-null-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-number-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-list-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-right-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-left-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-right-function-null (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-right-class-error (0.00s)
+=== RUN   TestStringPredicateEncodingBoundaries
+--- PASS: TestStringPredicateEncodingBoundaries (0.00s)
+=== RUN   TestStringPredicateParametersRetainUTF16Units
+=== RUN   TestStringPredicateParametersRetainUTF16Units/high-half
+=== RUN   TestStringPredicateParametersRetainUTF16Units/low-half
+=== RUN   TestStringPredicateParametersRetainUTF16Units/wtf8-pair
+=== RUN   TestStringPredicateParametersRetainUTF16Units/replacement-distinct
+=== RUN   TestStringPredicateParametersRetainUTF16Units/malformed-retained
+--- PASS: TestStringPredicateParametersRetainUTF16Units (0.00s)
+    --- PASS: TestStringPredicateParametersRetainUTF16Units/high-half (0.00s)
+    --- PASS: TestStringPredicateParametersRetainUTF16Units/low-half (0.00s)
+    --- PASS: TestStringPredicateParametersRetainUTF16Units/wtf8-pair (0.00s)
+    --- PASS: TestStringPredicateParametersRetainUTF16Units/replacement-distinct (0.00s)
+    --- PASS: TestStringPredicateParametersRetainUTF16Units/malformed-retained (0.00s)
+=== RUN   TestStringPredicateCancellationAtFastPathBoundaries
+=== RUN   TestStringPredicateCancellationAtFastPathBoundaries/STARTS_WITH/3
+=== RUN   TestStringPredicateCancellationAtFastPathBoundaries/STARTS_WITH/4
+=== RUN   TestStringPredicateCancellationAtFastPathBoundaries/ENDS_WITH/3
+=== RUN   TestStringPredicateCancellationAtFastPathBoundaries/ENDS_WITH/4
+=== RUN   TestStringPredicateCancellationAtFastPathBoundaries/CONTAINS/3
+=== RUN   TestStringPredicateCancellationAtFastPathBoundaries/CONTAINS/4
+=== RUN   TestStringPredicateCancellationAtFastPathBoundaries/NOT_STARTS_WITH/3
+=== RUN   TestStringPredicateCancellationAtFastPathBoundaries/NOT_STARTS_WITH/4
+=== RUN   TestStringPredicateCancellationAtFastPathBoundaries/NOT_ENDS_WITH/3
+=== RUN   TestStringPredicateCancellationAtFastPathBoundaries/NOT_ENDS_WITH/4
+=== RUN   TestStringPredicateCancellationAtFastPathBoundaries/NOT_CONTAINS/3
+=== RUN   TestStringPredicateCancellationAtFastPathBoundaries/NOT_CONTAINS/4
+--- PASS: TestStringPredicateCancellationAtFastPathBoundaries (0.00s)
+    --- PASS: TestStringPredicateCancellationAtFastPathBoundaries/STARTS_WITH/3 (0.00s)
+    --- PASS: TestStringPredicateCancellationAtFastPathBoundaries/STARTS_WITH/4 (0.00s)
+    --- PASS: TestStringPredicateCancellationAtFastPathBoundaries/ENDS_WITH/3 (0.00s)
+    --- PASS: TestStringPredicateCancellationAtFastPathBoundaries/ENDS_WITH/4 (0.00s)
+    --- PASS: TestStringPredicateCancellationAtFastPathBoundaries/CONTAINS/3 (0.00s)
+    --- PASS: TestStringPredicateCancellationAtFastPathBoundaries/CONTAINS/4 (0.00s)
+    --- PASS: TestStringPredicateCancellationAtFastPathBoundaries/NOT_STARTS_WITH/3 (0.00s)
+    --- PASS: TestStringPredicateCancellationAtFastPathBoundaries/NOT_STARTS_WITH/4 (0.00s)
+    --- PASS: TestStringPredicateCancellationAtFastPathBoundaries/NOT_ENDS_WITH/3 (0.00s)
+    --- PASS: TestStringPredicateCancellationAtFastPathBoundaries/NOT_ENDS_WITH/4 (0.00s)
+    --- PASS: TestStringPredicateCancellationAtFastPathBoundaries/NOT_CONTAINS/3 (0.00s)
+    --- PASS: TestStringPredicateCancellationAtFastPathBoundaries/NOT_CONTAINS/4 (0.00s)
+=== RUN   TestStringPredicateCancellationDuringUTF16Fallback
+--- PASS: TestStringPredicateCancellationDuringUTF16Fallback (0.00s)
+=== RUN   TestDistinctAtomPredicateEncodingAndFallback
+--- PASS: TestDistinctAtomPredicateEncodingAndFallback (0.02s)
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/CONTAINS/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/STARTS_WITH/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/ENDS_WITH/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/=/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/NOT_CONTAINS/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/UNSUPPORTED/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/CONTAINS/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/STARTS_WITH/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/ENDS_WITH/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/=/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/NOT_CONTAINS/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/UNSUPPORTED/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/CONTAINS/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/STARTS_WITH/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/ENDS_WITH/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/=/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/NOT_CONTAINS/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/UNSUPPORTED/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/CONTAINS/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/STARTS_WITH/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/ENDS_WITH/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/=/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/NOT_CONTAINS/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/UNSUPPORTED/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/CONTAINS/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/STARTS_WITH/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/ENDS_WITH/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/=/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/NOT_CONTAINS/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/UNSUPPORTED/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/CONTAINS/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/STARTS_WITH/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/ENDS_WITH/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/=/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/NOT_CONTAINS/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/UNSUPPORTED/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/CONTAINS/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/STARTS_WITH/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/ENDS_WITH/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/=/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/NOT_CONTAINS/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/UNSUPPORTED/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/CONTAINS/true
+    distinct_atom_predicate_test.go:89: long-input original checks=6004, lowercase=6000, sampled cancellation checkpoints=[1 2 3000 5999 6000 6001 6002 6003 6004 6005]
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/STARTS_WITH/true
+    distinct_atom_predicate_test.go:89: long-input original checks=6004, lowercase=6000, sampled cancellation checkpoints=[1 2 3000 5999 6000 6001 6002 6003 6004 6005]
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/ENDS_WITH/true
+    distinct_atom_predicate_test.go:89: long-input original checks=6004, lowercase=6000, sampled cancellation checkpoints=[1 2 3000 5999 6000 6001 6002 6003 6004 6005]
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/=/true
+    distinct_atom_predicate_test.go:89: long-input original checks=6002, lowercase=6000, sampled cancellation checkpoints=[1 2 3000 5999 6000 6001 6002 6003]
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/NOT_CONTAINS/true
+    distinct_atom_predicate_test.go:89: long-input original checks=6004, lowercase=6000, sampled cancellation checkpoints=[1 2 3000 5999 6000 6001 6002 6003 6004 6005]
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/UNSUPPORTED/true
+    distinct_atom_predicate_test.go:89: long-input original checks=6002, lowercase=6000, sampled cancellation checkpoints=[1 2 3000 5999 6000 6001 6002 6003]
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/CONTAINS/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/STARTS_WITH/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/ENDS_WITH/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/=/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/NOT_CONTAINS/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/UNSUPPORTED/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/CONTAINS/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/STARTS_WITH/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/ENDS_WITH/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/=/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/NOT_CONTAINS/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/UNSUPPORTED/true
+--- PASS: TestDistinctAtomPredicateEveryCancellationBoundary (0.39s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/CONTAINS/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/STARTS_WITH/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/ENDS_WITH/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/=/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/NOT_CONTAINS/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/UNSUPPORTED/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/CONTAINS/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/STARTS_WITH/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/ENDS_WITH/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/=/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/NOT_CONTAINS/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/UNSUPPORTED/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/CONTAINS/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/STARTS_WITH/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/ENDS_WITH/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/=/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/NOT_CONTAINS/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/UNSUPPORTED/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/CONTAINS/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/STARTS_WITH/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/ENDS_WITH/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/=/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/NOT_CONTAINS/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/UNSUPPORTED/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/CONTAINS/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/STARTS_WITH/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/ENDS_WITH/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/=/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/NOT_CONTAINS/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/UNSUPPORTED/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/CONTAINS/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/STARTS_WITH/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/ENDS_WITH/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/=/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/NOT_CONTAINS/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/UNSUPPORTED/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/CONTAINS/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/STARTS_WITH/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/ENDS_WITH/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/=/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/NOT_CONTAINS/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/UNSUPPORTED/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/CONTAINS/true (0.07s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/STARTS_WITH/true (0.07s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/ENDS_WITH/true (0.07s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/=/true (0.05s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/NOT_CONTAINS/true (0.07s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/UNSUPPORTED/true (0.05s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/CONTAINS/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/STARTS_WITH/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/ENDS_WITH/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/=/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/NOT_CONTAINS/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/UNSUPPORTED/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/CONTAINS/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/STARTS_WITH/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/ENDS_WITH/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/=/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/NOT_CONTAINS/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/UNSUPPORTED/true (0.00s)
+=== RUN   TestDistinctAtomPredicateNonstringReturnsBeforeCancellation
+--- PASS: TestDistinctAtomPredicateNonstringReturnsBeforeCancellation (0.00s)
+=== RUN   TestStringPredicatesMainJVMOracle
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-empty-empty
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-empty-needle
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-empty-haystack
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-equal
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-prefix
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-suffix
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-middle
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-absent
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-longer
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-case-sensitive
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-chinese
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-japanese
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-korean
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-supplementary
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-supplementary-middle
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-different-supplementary
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-combining
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-no-normalization
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-nul
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-high-half
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-low-half
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-isolated-high
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-isolated-low
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-reverse-halves
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-high-is-not-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-low-is-not-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-paired-surrogates
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-across-pair-boundary
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-high-empty
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-empty-low
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-null-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-number-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-list-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-map-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-null-right
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-number-right
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-list-right
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-right-error
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-left-error
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-right-function-null
+=== RUN   TestStringPredicatesMainJVMOracle/starts-with-right-class-error
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-empty-empty
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-empty-needle
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-empty-haystack
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-equal
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-prefix
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-suffix
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-middle
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-absent
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-longer
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-case-sensitive
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-chinese
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-japanese
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-korean
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-supplementary
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-supplementary-middle
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-different-supplementary
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-combining
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-no-normalization
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-nul
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-high-half
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-low-half
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-isolated-high
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-isolated-low
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-reverse-halves
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-high-is-not-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-low-is-not-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-paired-surrogates
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-across-pair-boundary
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-high-empty
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-empty-low
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-null-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-number-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-list-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-map-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-null-right
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-number-right
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-list-right
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-right-error
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-left-error
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-right-function-null
+=== RUN   TestStringPredicatesMainJVMOracle/ends-with-right-class-error
+=== RUN   TestStringPredicatesMainJVMOracle/contains-empty-empty
+=== RUN   TestStringPredicatesMainJVMOracle/contains-empty-needle
+=== RUN   TestStringPredicatesMainJVMOracle/contains-empty-haystack
+=== RUN   TestStringPredicatesMainJVMOracle/contains-equal
+=== RUN   TestStringPredicatesMainJVMOracle/contains-prefix
+=== RUN   TestStringPredicatesMainJVMOracle/contains-suffix
+=== RUN   TestStringPredicatesMainJVMOracle/contains-middle
+=== RUN   TestStringPredicatesMainJVMOracle/contains-absent
+=== RUN   TestStringPredicatesMainJVMOracle/contains-longer
+=== RUN   TestStringPredicatesMainJVMOracle/contains-case-sensitive
+=== RUN   TestStringPredicatesMainJVMOracle/contains-chinese
+=== RUN   TestStringPredicatesMainJVMOracle/contains-japanese
+=== RUN   TestStringPredicatesMainJVMOracle/contains-korean
+=== RUN   TestStringPredicatesMainJVMOracle/contains-supplementary
+=== RUN   TestStringPredicatesMainJVMOracle/contains-supplementary-middle
+=== RUN   TestStringPredicatesMainJVMOracle/contains-different-supplementary
+=== RUN   TestStringPredicatesMainJVMOracle/contains-combining
+=== RUN   TestStringPredicatesMainJVMOracle/contains-no-normalization
+=== RUN   TestStringPredicatesMainJVMOracle/contains-nul
+=== RUN   TestStringPredicatesMainJVMOracle/contains-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/contains-high-half
+=== RUN   TestStringPredicatesMainJVMOracle/contains-low-half
+=== RUN   TestStringPredicatesMainJVMOracle/contains-isolated-high
+=== RUN   TestStringPredicatesMainJVMOracle/contains-isolated-low
+=== RUN   TestStringPredicatesMainJVMOracle/contains-reverse-halves
+=== RUN   TestStringPredicatesMainJVMOracle/contains-high-is-not-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/contains-low-is-not-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/contains-paired-surrogates
+=== RUN   TestStringPredicatesMainJVMOracle/contains-across-pair-boundary
+=== RUN   TestStringPredicatesMainJVMOracle/contains-high-empty
+=== RUN   TestStringPredicatesMainJVMOracle/contains-empty-low
+=== RUN   TestStringPredicatesMainJVMOracle/contains-null-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/contains-number-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/contains-list-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/contains-map-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/contains-null-right
+=== RUN   TestStringPredicatesMainJVMOracle/contains-number-right
+=== RUN   TestStringPredicatesMainJVMOracle/contains-list-right
+=== RUN   TestStringPredicatesMainJVMOracle/contains-right-error
+=== RUN   TestStringPredicatesMainJVMOracle/contains-left-error
+=== RUN   TestStringPredicatesMainJVMOracle/contains-right-function-null
+=== RUN   TestStringPredicatesMainJVMOracle/contains-right-class-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-empty-empty
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-empty-needle
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-empty-haystack
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-equal
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-prefix
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-suffix
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-middle
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-absent
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-longer
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-case-sensitive
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-chinese
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-japanese
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-korean
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-supplementary
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-supplementary-middle
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-different-supplementary
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-combining
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-no-normalization
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-nul
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-high-half
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-low-half
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-isolated-high
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-isolated-low
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-reverse-halves
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-high-is-not-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-low-is-not-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-paired-surrogates
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-across-pair-boundary
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-high-empty
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-empty-low
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-null-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-number-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-list-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-map-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-null-right
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-number-right
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-list-right
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-right-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-left-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-right-function-null
+=== RUN   TestStringPredicatesMainJVMOracle/not-starts-with-right-class-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-empty-empty
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-empty-needle
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-empty-haystack
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-equal
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-prefix
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-suffix
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-middle
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-absent
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-longer
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-case-sensitive
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-chinese
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-japanese
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-korean
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-supplementary
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-supplementary-middle
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-different-supplementary
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-combining
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-no-normalization
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-nul
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-high-half
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-low-half
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-isolated-high
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-isolated-low
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-reverse-halves
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-high-is-not-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-low-is-not-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-paired-surrogates
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-across-pair-boundary
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-high-empty
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-empty-low
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-null-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-number-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-list-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-map-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-null-right
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-number-right
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-list-right
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-right-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-left-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-right-function-null
+=== RUN   TestStringPredicatesMainJVMOracle/not-ends-with-right-class-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-empty-empty
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-empty-needle
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-empty-haystack
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-equal
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-prefix
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-suffix
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-middle
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-absent
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-longer
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-case-sensitive
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-chinese
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-japanese
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-korean
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-supplementary
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-supplementary-middle
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-different-supplementary
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-combining
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-no-normalization
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-nul
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-high-half
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-low-half
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-isolated-high
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-isolated-low
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-reverse-halves
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-high-is-not-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-low-is-not-replacement
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-paired-surrogates
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-across-pair-boundary
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-high-empty
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-empty-low
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-null-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-number-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-list-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-map-left-skips-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-null-right
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-number-right
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-list-right
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-right-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-left-error
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-right-function-null
+=== RUN   TestStringPredicatesMainJVMOracle/not-contains-right-class-error
+--- PASS: TestStringPredicatesMainJVMOracle (0.11s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-empty-empty (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-empty-needle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-empty-haystack (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-equal (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-prefix (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-suffix (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-middle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-absent (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-longer (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-case-sensitive (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-chinese (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-japanese (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-korean (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-supplementary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-supplementary-middle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-different-supplementary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-combining (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-no-normalization (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-nul (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-high-half (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-low-half (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-isolated-high (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-isolated-low (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-reverse-halves (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-high-is-not-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-low-is-not-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-paired-surrogates (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-across-pair-boundary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-high-empty (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-empty-low (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-null-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-number-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-list-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-map-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-null-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-number-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-list-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-right-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-left-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-right-function-null (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/starts-with-right-class-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-empty-empty (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-empty-needle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-empty-haystack (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-equal (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-prefix (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-suffix (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-middle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-absent (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-longer (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-case-sensitive (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-chinese (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-japanese (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-korean (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-supplementary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-supplementary-middle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-different-supplementary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-combining (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-no-normalization (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-nul (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-high-half (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-low-half (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-isolated-high (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-isolated-low (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-reverse-halves (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-high-is-not-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-low-is-not-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-paired-surrogates (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-across-pair-boundary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-high-empty (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-empty-low (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-null-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-number-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-list-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-map-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-null-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-number-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-list-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-right-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-left-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-right-function-null (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/ends-with-right-class-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-empty-empty (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-empty-needle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-empty-haystack (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-equal (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-prefix (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-suffix (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-middle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-absent (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-longer (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-case-sensitive (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-chinese (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-japanese (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-korean (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-supplementary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-supplementary-middle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-different-supplementary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-combining (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-no-normalization (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-nul (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-high-half (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-low-half (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-isolated-high (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-isolated-low (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-reverse-halves (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-high-is-not-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-low-is-not-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-paired-surrogates (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-across-pair-boundary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-high-empty (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-empty-low (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-null-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-number-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-list-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-map-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-null-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-number-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-list-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-right-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-left-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-right-function-null (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/contains-right-class-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-empty-empty (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-empty-needle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-empty-haystack (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-equal (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-prefix (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-suffix (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-middle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-absent (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-longer (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-case-sensitive (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-chinese (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-japanese (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-korean (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-supplementary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-supplementary-middle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-different-supplementary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-combining (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-no-normalization (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-nul (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-high-half (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-low-half (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-isolated-high (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-isolated-low (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-reverse-halves (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-high-is-not-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-low-is-not-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-paired-surrogates (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-across-pair-boundary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-high-empty (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-empty-low (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-null-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-number-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-list-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-map-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-null-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-number-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-list-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-right-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-left-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-right-function-null (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-starts-with-right-class-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-empty-empty (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-empty-needle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-empty-haystack (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-equal (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-prefix (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-suffix (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-middle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-absent (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-longer (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-case-sensitive (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-chinese (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-japanese (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-korean (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-supplementary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-supplementary-middle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-different-supplementary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-combining (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-no-normalization (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-nul (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-high-half (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-low-half (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-isolated-high (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-isolated-low (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-reverse-halves (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-high-is-not-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-low-is-not-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-paired-surrogates (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-across-pair-boundary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-high-empty (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-empty-low (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-null-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-number-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-list-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-map-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-null-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-number-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-list-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-right-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-left-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-right-function-null (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-ends-with-right-class-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-empty-empty (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-empty-needle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-empty-haystack (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-equal (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-prefix (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-suffix (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-middle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-absent (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-longer (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-case-sensitive (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-chinese (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-japanese (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-korean (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-supplementary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-supplementary-middle (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-different-supplementary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-combining (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-no-normalization (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-nul (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-high-half (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-low-half (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-isolated-high (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-isolated-low (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-reverse-halves (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-high-is-not-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-low-is-not-replacement (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-paired-surrogates (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-across-pair-boundary (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-high-empty (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-empty-low (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-null-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-number-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-list-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-map-left-skips-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-null-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-number-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-list-right (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-right-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-left-error (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-right-function-null (0.00s)
+    --- PASS: TestStringPredicatesMainJVMOracle/not-contains-right-class-error (0.00s)
+=== RUN   TestStringPredicateEncodingBoundaries
+--- PASS: TestStringPredicateEncodingBoundaries (0.00s)
+=== RUN   TestStringPredicateParametersRetainUTF16Units
+=== RUN   TestStringPredicateParametersRetainUTF16Units/high-half
+=== RUN   TestStringPredicateParametersRetainUTF16Units/low-half
+=== RUN   TestStringPredicateParametersRetainUTF16Units/wtf8-pair
+=== RUN   TestStringPredicateParametersRetainUTF16Units/replacement-distinct
+=== RUN   TestStringPredicateParametersRetainUTF16Units/malformed-retained
+--- PASS: TestStringPredicateParametersRetainUTF16Units (0.00s)
+    --- PASS: TestStringPredicateParametersRetainUTF16Units/high-half (0.00s)
+    --- PASS: TestStringPredicateParametersRetainUTF16Units/low-half (0.00s)
+    --- PASS: TestStringPredicateParametersRetainUTF16Units/wtf8-pair (0.00s)
+    --- PASS: TestStringPredicateParametersRetainUTF16Units/replacement-distinct (0.00s)
+    --- PASS: TestStringPredicateParametersRetainUTF16Units/malformed-retained (0.00s)
+=== RUN   TestStringPredicateCancellationAtFastPathBoundaries
+=== RUN   TestStringPredicateCancellationAtFastPathBoundaries/STARTS_WITH/3
+=== RUN   TestStringPredicateCancellationAtFastPathBoundaries/STARTS_WITH/4
+=== RUN   TestStringPredicateCancellationAtFastPathBoundaries/ENDS_WITH/3
+=== RUN   TestStringPredicateCancellationAtFastPathBoundaries/ENDS_WITH/4
+=== RUN   TestStringPredicateCancellationAtFastPathBoundaries/CONTAINS/3
+=== RUN   TestStringPredicateCancellationAtFastPathBoundaries/CONTAINS/4
+=== RUN   TestStringPredicateCancellationAtFastPathBoundaries/NOT_STARTS_WITH/3
+=== RUN   TestStringPredicateCancellationAtFastPathBoundaries/NOT_STARTS_WITH/4
+=== RUN   TestStringPredicateCancellationAtFastPathBoundaries/NOT_ENDS_WITH/3
+=== RUN   TestStringPredicateCancellationAtFastPathBoundaries/NOT_ENDS_WITH/4
+=== RUN   TestStringPredicateCancellationAtFastPathBoundaries/NOT_CONTAINS/3
+=== RUN   TestStringPredicateCancellationAtFastPathBoundaries/NOT_CONTAINS/4
+--- PASS: TestStringPredicateCancellationAtFastPathBoundaries (0.00s)
+    --- PASS: TestStringPredicateCancellationAtFastPathBoundaries/STARTS_WITH/3 (0.00s)
+    --- PASS: TestStringPredicateCancellationAtFastPathBoundaries/STARTS_WITH/4 (0.00s)
+    --- PASS: TestStringPredicateCancellationAtFastPathBoundaries/ENDS_WITH/3 (0.00s)
+    --- PASS: TestStringPredicateCancellationAtFastPathBoundaries/ENDS_WITH/4 (0.00s)
+    --- PASS: TestStringPredicateCancellationAtFastPathBoundaries/CONTAINS/3 (0.00s)
+    --- PASS: TestStringPredicateCancellationAtFastPathBoundaries/CONTAINS/4 (0.00s)
+    --- PASS: TestStringPredicateCancellationAtFastPathBoundaries/NOT_STARTS_WITH/3 (0.00s)
+    --- PASS: TestStringPredicateCancellationAtFastPathBoundaries/NOT_STARTS_WITH/4 (0.00s)
+    --- PASS: TestStringPredicateCancellationAtFastPathBoundaries/NOT_ENDS_WITH/3 (0.00s)
+    --- PASS: TestStringPredicateCancellationAtFastPathBoundaries/NOT_ENDS_WITH/4 (0.00s)
+    --- PASS: TestStringPredicateCancellationAtFastPathBoundaries/NOT_CONTAINS/3 (0.00s)
+    --- PASS: TestStringPredicateCancellationAtFastPathBoundaries/NOT_CONTAINS/4 (0.00s)
+=== RUN   TestStringPredicateCancellationDuringUTF16Fallback
+--- PASS: TestStringPredicateCancellationDuringUTF16Fallback (0.00s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/query	2.857s

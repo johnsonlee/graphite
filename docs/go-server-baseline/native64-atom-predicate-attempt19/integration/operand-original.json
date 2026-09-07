@@ -1,0 +1,398 @@
+[
+  {
+    "checks": 1,
+    "leftCase": 0,
+    "op": "STARTS WITH",
+    "result": null
+  },
+  {
+    "checks": 1,
+    "leftCase": 1,
+    "op": "STARTS WITH",
+    "result": null
+  },
+  {
+    "checks": 1,
+    "leftCase": 2,
+    "op": "STARTS WITH",
+    "result": null
+  },
+  {
+    "checks": 1,
+    "leftCase": 3,
+    "op": "STARTS WITH",
+    "result": null
+  },
+  {
+    "checks": 1,
+    "leftCase": 4,
+    "op": "STARTS WITH",
+    "result": null
+  },
+  {
+    "checks": 1,
+    "leftCase": 5,
+    "op": "STARTS WITH",
+    "result": null
+  },
+  {
+    "checks": 2,
+    "op": "STARTS WITH",
+    "result": null,
+    "rightCase": 0
+  },
+  {
+    "checks": 2,
+    "op": "STARTS WITH",
+    "result": null,
+    "rightCase": 1
+  },
+  {
+    "checks": 2,
+    "op": "STARTS WITH",
+    "result": null,
+    "rightCase": 2
+  },
+  {
+    "checks": 2,
+    "op": "STARTS WITH",
+    "result": null,
+    "rightCase": 3
+  },
+  {
+    "checks": 5,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+    "op": "STARTS WITH"
+  },
+  {
+    "checks": 1,
+    "leftCase": 0,
+    "op": "ENDS WITH",
+    "result": null
+  },
+  {
+    "checks": 1,
+    "leftCase": 1,
+    "op": "ENDS WITH",
+    "result": null
+  },
+  {
+    "checks": 1,
+    "leftCase": 2,
+    "op": "ENDS WITH",
+    "result": null
+  },
+  {
+    "checks": 1,
+    "leftCase": 3,
+    "op": "ENDS WITH",
+    "result": null
+  },
+  {
+    "checks": 1,
+    "leftCase": 4,
+    "op": "ENDS WITH",
+    "result": null
+  },
+  {
+    "checks": 1,
+    "leftCase": 5,
+    "op": "ENDS WITH",
+    "result": null
+  },
+  {
+    "checks": 2,
+    "op": "ENDS WITH",
+    "result": null,
+    "rightCase": 0
+  },
+  {
+    "checks": 2,
+    "op": "ENDS WITH",
+    "result": null,
+    "rightCase": 1
+  },
+  {
+    "checks": 2,
+    "op": "ENDS WITH",
+    "result": null,
+    "rightCase": 2
+  },
+  {
+    "checks": 2,
+    "op": "ENDS WITH",
+    "result": null,
+    "rightCase": 3
+  },
+  {
+    "checks": 5,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+    "op": "ENDS WITH"
+  },
+  {
+    "checks": 1,
+    "leftCase": 0,
+    "op": "CONTAINS",
+    "result": null
+  },
+  {
+    "checks": 1,
+    "leftCase": 1,
+    "op": "CONTAINS",
+    "result": null
+  },
+  {
+    "checks": 1,
+    "leftCase": 2,
+    "op": "CONTAINS",
+    "result": null
+  },
+  {
+    "checks": 1,
+    "leftCase": 3,
+    "op": "CONTAINS",
+    "result": null
+  },
+  {
+    "checks": 1,
+    "leftCase": 4,
+    "op": "CONTAINS",
+    "result": null
+  },
+  {
+    "checks": 1,
+    "leftCase": 5,
+    "op": "CONTAINS",
+    "result": null
+  },
+  {
+    "checks": 2,
+    "op": "CONTAINS",
+    "result": null,
+    "rightCase": 0
+  },
+  {
+    "checks": 2,
+    "op": "CONTAINS",
+    "result": null,
+    "rightCase": 1
+  },
+  {
+    "checks": 2,
+    "op": "CONTAINS",
+    "result": null,
+    "rightCase": 2
+  },
+  {
+    "checks": 2,
+    "op": "CONTAINS",
+    "result": null,
+    "rightCase": 3
+  },
+  {
+    "checks": 5,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+    "op": "CONTAINS"
+  },
+  {
+    "checks": 1,
+    "leftCase": 0,
+    "op": "NOT STARTS WITH",
+    "result": null
+  },
+  {
+    "checks": 1,
+    "leftCase": 1,
+    "op": "NOT STARTS WITH",
+    "result": null
+  },
+  {
+    "checks": 1,
+    "leftCase": 2,
+    "op": "NOT STARTS WITH",
+    "result": null
+  },
+  {
+    "checks": 1,
+    "leftCase": 3,
+    "op": "NOT STARTS WITH",
+    "result": null
+  },
+  {
+    "checks": 1,
+    "leftCase": 4,
+    "op": "NOT STARTS WITH",
+    "result": null
+  },
+  {
+    "checks": 1,
+    "leftCase": 5,
+    "op": "NOT STARTS WITH",
+    "result": null
+  },
+  {
+    "checks": 2,
+    "op": "NOT STARTS WITH",
+    "result": null,
+    "rightCase": 0
+  },
+  {
+    "checks": 2,
+    "op": "NOT STARTS WITH",
+    "result": null,
+    "rightCase": 1
+  },
+  {
+    "checks": 2,
+    "op": "NOT STARTS WITH",
+    "result": null,
+    "rightCase": 2
+  },
+  {
+    "checks": 2,
+    "op": "NOT STARTS WITH",
+    "result": null,
+    "rightCase": 3
+  },
+  {
+    "checks": 5,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+    "op": "NOT STARTS WITH"
+  },
+  {
+    "checks": 1,
+    "leftCase": 0,
+    "op": "NOT ENDS WITH",
+    "result": null
+  },
+  {
+    "checks": 1,
+    "leftCase": 1,
+    "op": "NOT ENDS WITH",
+    "result": null
+  },
+  {
+    "checks": 1,
+    "leftCase": 2,
+    "op": "NOT ENDS WITH",
+    "result": null
+  },
+  {
+    "checks": 1,
+    "leftCase": 3,
+    "op": "NOT ENDS WITH",
+    "result": null
+  },
+  {
+    "checks": 1,
+    "leftCase": 4,
+    "op": "NOT ENDS WITH",
+    "result": null
+  },
+  {
+    "checks": 1,
+    "leftCase": 5,
+    "op": "NOT ENDS WITH",
+    "result": null
+  },
+  {
+    "checks": 2,
+    "op": "NOT ENDS WITH",
+    "result": null,
+    "rightCase": 0
+  },
+  {
+    "checks": 2,
+    "op": "NOT ENDS WITH",
+    "result": null,
+    "rightCase": 1
+  },
+  {
+    "checks": 2,
+    "op": "NOT ENDS WITH",
+    "result": null,
+    "rightCase": 2
+  },
+  {
+    "checks": 2,
+    "op": "NOT ENDS WITH",
+    "result": null,
+    "rightCase": 3
+  },
+  {
+    "checks": 5,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+    "op": "NOT ENDS WITH"
+  },
+  {
+    "checks": 1,
+    "leftCase": 0,
+    "op": "NOT CONTAINS",
+    "result": null
+  },
+  {
+    "checks": 1,
+    "leftCase": 1,
+    "op": "NOT CONTAINS",
+    "result": null
+  },
+  {
+    "checks": 1,
+    "leftCase": 2,
+    "op": "NOT CONTAINS",
+    "result": null
+  },
+  {
+    "checks": 1,
+    "leftCase": 3,
+    "op": "NOT CONTAINS",
+    "result": null
+  },
+  {
+    "checks": 1,
+    "leftCase": 4,
+    "op": "NOT CONTAINS",
+    "result": null
+  },
+  {
+    "checks": 1,
+    "leftCase": 5,
+    "op": "NOT CONTAINS",
+    "result": null
+  },
+  {
+    "checks": 2,
+    "op": "NOT CONTAINS",
+    "result": null,
+    "rightCase": 0
+  },
+  {
+    "checks": 2,
+    "op": "NOT CONTAINS",
+    "result": null,
+    "rightCase": 1
+  },
+  {
+    "checks": 2,
+    "op": "NOT CONTAINS",
+    "result": null,
+    "rightCase": 2
+  },
+  {
+    "checks": 2,
+    "op": "NOT CONTAINS",
+    "result": null,
+    "rightCase": 3
+  },
+  {
+    "checks": 5,
+    "error": "ClassCastException",
+    "message": "class java.lang.String cannot be cast to class java.lang.Number (java.lang.String and java.lang.Number are in module java.base of loader 'bootstrap')",
+    "op": "NOT CONTAINS"
+  }
+]

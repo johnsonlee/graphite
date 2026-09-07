@@ -1,0 +1,29 @@
+File: profile-query
+Type: alloc_space
+Time: Sep 7, 2026 at 1:54pm (KST)
+Showing nodes accounting for 434551518B, 98.70% of 440274637B total
+Dropped 23 nodes (cum <= 2201373B)
+Showing top 22 nodes out of 37
+      flat  flat%   sum%        cum   cum%
+157295696B 35.73% 35.73% 157295696B 35.73%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionCandidateNode.func4
+122160968B 27.75% 63.47% 122160968B 27.75%  github.com/johnsonlee/graphite/graphite-server/internal/query.NodeProperty
+ 58197300B 13.22% 76.69%  58197300B 13.22%  github.com/johnsonlee/graphite/graphite-server/internal/query.(*genericDistinctRows).find
+ 34496826B  7.84% 84.53%  52154475B 11.85%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainIndexNodeIDs
+ 24117632B  5.48% 90.00% 181413328B 41.20%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionCandidateNode
+ 19406142B  4.41% 94.41%  19406142B  4.41%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).NodesOfKind (inline)
+ 10018169B  2.28% 96.69%  10018169B  2.28%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*CallSiteStringIndex).Postings
+  7104885B  1.61% 98.30%   7104885B  1.61%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*CallSiteStringIndex).Directory
+   705084B  0.16% 98.46%   3235902B  0.73%  runtime/pprof.writeHeapInternal
+   524432B  0.12% 98.58%   2530818B  0.57%  runtime/pprof.writeHeapProto
+   524384B  0.12% 98.70%  71329514B 16.20%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainStringCandidatesWithPolicy
+         0     0% 98.70% 122160968B 27.75%  github.com/johnsonlee/graphite/graphite-server/internal/query.(*candidateSlot).property
+         0     0% 98.70% 252742842B 57.41%  github.com/johnsonlee/graphite/graphite-server/internal/query.(*genericDistinctCursor).next
+         0     0% 98.70% 252742842B 57.41%  github.com/johnsonlee/graphite/graphite-server/internal/query.(*genericDistinctCursor).read
+         0     0% 98.70%  18440670B  4.19%  github.com/johnsonlee/graphite/graphite-server/internal/query.(*genericDistinctScanner).batch
+         0     0% 98.70% 375428450B 85.27%  github.com/johnsonlee/graphite/graphite-server/internal/query.(*genericDistinctScanner).next
+         0     0% 98.70% 122160968B 27.75%  github.com/johnsonlee/graphite/graphite-server/internal/query.(*genericDistinctScanner).next.func1
+         0     0% 98.70% 417289096B 94.78%  github.com/johnsonlee/graphite/graphite-server/internal/query.(*genericDistinctScanner).remaining
+         0     0% 98.70% 122160968B 27.75%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.eval
+         0     0% 98.70%  18440670B  4.19%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.genericDistinct.func3
+         0     0% 98.70% 417289096B 94.78%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.genericDistinct.func5
+         0     0% 98.70%  52154475B 11.85%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainCandidateIterator

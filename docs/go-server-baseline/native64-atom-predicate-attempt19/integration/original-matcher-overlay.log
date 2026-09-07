@@ -1,0 +1,134 @@
+=== RUN   TestDistinctAtomPredicateEncodingAndFallback
+--- PASS: TestDistinctAtomPredicateEncodingAndFallback (0.03s)
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/CONTAINS/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/STARTS_WITH/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/ENDS_WITH/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/=/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/NOT_CONTAINS/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/UNSUPPORTED/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/CONTAINS/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/STARTS_WITH/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/ENDS_WITH/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/=/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/NOT_CONTAINS/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/UNSUPPORTED/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/CONTAINS/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/STARTS_WITH/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/ENDS_WITH/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/=/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/NOT_CONTAINS/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/UNSUPPORTED/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/CONTAINS/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/STARTS_WITH/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/ENDS_WITH/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/=/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/NOT_CONTAINS/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/UNSUPPORTED/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/CONTAINS/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/STARTS_WITH/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/ENDS_WITH/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/=/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/NOT_CONTAINS/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/UNSUPPORTED/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/CONTAINS/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/STARTS_WITH/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/ENDS_WITH/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/=/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/NOT_CONTAINS/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/UNSUPPORTED/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/CONTAINS/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/STARTS_WITH/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/ENDS_WITH/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/=/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/NOT_CONTAINS/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/UNSUPPORTED/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/CONTAINS/true
+    distinct_atom_predicate_test.go:89: long-input original checks=6004, lowercase=6000, sampled cancellation checkpoints=[1 2 3000 5999 6000 6001 6002 6003 6004 6005]
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/STARTS_WITH/true
+    distinct_atom_predicate_test.go:89: long-input original checks=6004, lowercase=6000, sampled cancellation checkpoints=[1 2 3000 5999 6000 6001 6002 6003 6004 6005]
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/ENDS_WITH/true
+    distinct_atom_predicate_test.go:89: long-input original checks=6004, lowercase=6000, sampled cancellation checkpoints=[1 2 3000 5999 6000 6001 6002 6003 6004 6005]
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/=/true
+    distinct_atom_predicate_test.go:89: long-input original checks=6002, lowercase=6000, sampled cancellation checkpoints=[1 2 3000 5999 6000 6001 6002 6003]
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/NOT_CONTAINS/true
+    distinct_atom_predicate_test.go:89: long-input original checks=6004, lowercase=6000, sampled cancellation checkpoints=[1 2 3000 5999 6000 6001 6002 6003 6004 6005]
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/UNSUPPORTED/true
+    distinct_atom_predicate_test.go:89: long-input original checks=6002, lowercase=6000, sampled cancellation checkpoints=[1 2 3000 5999 6000 6001 6002 6003]
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/CONTAINS/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/STARTS_WITH/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/ENDS_WITH/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/=/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/NOT_CONTAINS/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/UNSUPPORTED/false
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/CONTAINS/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/STARTS_WITH/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/ENDS_WITH/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/=/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/NOT_CONTAINS/true
+=== RUN   TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/UNSUPPORTED/true
+--- PASS: TestDistinctAtomPredicateEveryCancellationBoundary (0.40s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/CONTAINS/false (0.01s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/STARTS_WITH/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/ENDS_WITH/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/=/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/NOT_CONTAINS/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/UNSUPPORTED/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/CONTAINS/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/STARTS_WITH/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/ENDS_WITH/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/=/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/NOT_CONTAINS/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/6765744e616d65/UNSUPPORTED/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/CONTAINS/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/STARTS_WITH/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/ENDS_WITH/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/=/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/NOT_CONTAINS/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/UNSUPPORTED/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/CONTAINS/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/STARTS_WITH/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/ENDS_WITH/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/=/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/NOT_CONTAINS/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/e794b2f09f9880e4b999/UNSUPPORTED/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/CONTAINS/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/STARTS_WITH/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/ENDS_WITH/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/=/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/NOT_CONTAINS/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/UNSUPPORTED/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/CONTAINS/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/STARTS_WITH/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/ENDS_WITH/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/=/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/NOT_CONTAINS/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/616263646566eda0bd/UNSUPPORTED/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/CONTAINS/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/STARTS_WITH/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/ENDS_WITH/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/=/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/NOT_CONTAINS/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/UNSUPPORTED/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/CONTAINS/true (0.07s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/STARTS_WITH/true (0.07s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/ENDS_WITH/true (0.07s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/=/true (0.05s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/NOT_CONTAINS/true (0.07s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/414243414243414243414243/UNSUPPORTED/true (0.05s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/CONTAINS/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/STARTS_WITH/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/ENDS_WITH/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/=/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/NOT_CONTAINS/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/UNSUPPORTED/false (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/CONTAINS/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/STARTS_WITH/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/ENDS_WITH/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/=/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/NOT_CONTAINS/true (0.00s)
+    --- PASS: TestDistinctAtomPredicateEveryCancellationBoundary/ce9fcea320c4b0/UNSUPPORTED/true (0.00s)
+=== RUN   TestDistinctAtomPredicateNonstringReturnsBeforeCancellation
+--- PASS: TestDistinctAtomPredicateNonstringReturnsBeforeCancellation (0.00s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/query	1.688s

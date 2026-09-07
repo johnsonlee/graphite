@@ -1,0 +1,5 @@
+{
+  "exit": 1,
+  "failure": "Full query package reached180s timeout; exhaustive cancellation of6000-codepoint lowercasing causes quadratic test work. No production edited.",
+  "correction": "Short cases remain exhaustive; long ASCII uses observed case/matcher boundary checkpoints and middle point; original test and partial output retained."
+}

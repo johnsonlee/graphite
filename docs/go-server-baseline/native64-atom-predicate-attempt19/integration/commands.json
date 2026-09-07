@@ -1,0 +1,157 @@
+{
+  "base": "39eedb33cec988f2b40ccf8086514adcb81cab4f",
+  "go": "go1.22.0 darwin/arm64",
+  "cwd": "/private/tmp/graphite-atom-attempt19-independent-review/combined/candidate/graphite-server",
+  "commands": [
+    {
+      "argv": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "./..."
+      ],
+      "env": {
+        "INDEXED_DISTINCT_OUTPUT": "/private/tmp/graphite-atom-attempt19-independent-review/output/original-corpus",
+        "ORDINARY_HISTORY_OUTPUT": "/private/tmp/graphite-atom-attempt19-independent-review/output/history"
+      },
+      "log": "module-race.log",
+      "exit": 0
+    },
+    {
+      "argv": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "log": "module-vet.log",
+      "exit": 0
+    },
+    {
+      "argv": [
+        "go",
+        "test",
+        "-race",
+        "-v",
+        "-count=1",
+        "-overlay=/private/tmp/graphite-atom-attempt19-independent-review/original-eval-overlay.json",
+        "./internal/query",
+        "-run",
+        "^TestDistinctAtomPredicate"
+      ],
+      "log": "original-matcher-overlay.log",
+      "exit": 0
+    },
+    {
+      "cwd": "/private/tmp/graphite-atom-attempt19-independent-review/review-module",
+      "argv": [
+        "go",
+        "test",
+        "-race",
+        "-v",
+        "-count=1",
+        "./internal/query",
+        "-run",
+        "^TestReviewStringPredicateOperandOrder$"
+      ],
+      "env": {
+        "REVIEW_OPERAND_OUTPUT": "/private/tmp/graphite-atom-attempt19-independent-review/operand-candidate.json"
+      },
+      "log": "operand-candidate.log",
+      "exit": 0
+    },
+    {
+      "cwd": "/private/tmp/graphite-atom-attempt19-independent-review/review-module",
+      "argv": [
+        "go",
+        "test",
+        "-race",
+        "-v",
+        "-count=1",
+        "-overlay=/private/tmp/graphite-atom-attempt19-independent-review/review-original-eval-overlay.json",
+        "./internal/query",
+        "-run",
+        "^TestReviewStringPredicateOperandOrder$"
+      ],
+      "env": {
+        "REVIEW_OPERAND_OUTPUT": "/private/tmp/graphite-atom-attempt19-independent-review/operand-original.json"
+      },
+      "log": "operand-original.log",
+      "exit": 0
+    },
+    {
+      "cwd": "/private/tmp/graphite-atom-attempt19-independent-review/review-module",
+      "argv": [
+        "go",
+        "vet",
+        "./internal/query"
+      ],
+      "log": "review-vet.log",
+      "exit": 0
+    },
+    {
+      "cwd": "/private/tmp/graphite-atom-attempt19-independent-review/combined/base/graphite-server",
+      "argv": [
+        "go",
+        "test",
+        "-race",
+        "-v",
+        "-count=1",
+        "./internal/query",
+        "-run",
+        "^TestOrdinaryProjectionRollingSourcesMain$"
+      ],
+      "runs": [
+        0,
+        1,
+        2
+      ],
+      "outputPattern": "original-rolling-{i}",
+      "allExit": 0
+    },
+    {
+      "cwd": "/private/tmp/graphite-atom-attempt19-independent-review/schedule-g8/module",
+      "argv": [
+        "go",
+        "test",
+        "-race",
+        "-v",
+        "-count=1",
+        "./internal/query",
+        "-run",
+        "^TestReviewG8RetainedAllowedSchedule$"
+      ],
+      "env": {
+        "G8_SCHEDULE_OUTPUT": "/private/tmp/graphite-atom-attempt19-independent-review/schedule-g8/output"
+      },
+      "log": "schedule-g8/run.log",
+      "exit": 0
+    },
+    {
+      "cwd": "/private/tmp/graphite-atom-attempt19-independent-review/schedule-g8/module",
+      "argv": [
+        "go",
+        "vet",
+        "./internal/query"
+      ],
+      "log": "schedule-g8/vet.log",
+      "exit": 0
+    },
+    {
+      "argv": [
+        "python3",
+        "compare_outputs.py"
+      ],
+      "log": "strict-comparison-failure.log",
+      "exit": 1
+    },
+    {
+      "argv": [
+        "python3",
+        "final_verification.py"
+      ],
+      "exit": 0
+    }
+  ],
+  "noJVMHTTP64PerformanceOrCommit": true
+}

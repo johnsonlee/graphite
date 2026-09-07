@@ -1,0 +1,18 @@
+{
+  "verifiedUTC": "2026-09-07T06:03:09.807854+00:00",
+  "afterBothProcessesExit0": true,
+  "checks": [
+    {
+      "root": "/tmp/pr113-exp037-fixture.nXn4fg",
+      "files": 1152,
+      "allHashesMatch": true,
+      "noExtraGraphFiles": true
+    },
+    {
+      "root": "/tmp/graphite-atom-native-real64-39eedb33",
+      "files": 1152,
+      "allHashesMatch": true,
+      "noExtraGraphFiles": true
+    }
+  ]
+}

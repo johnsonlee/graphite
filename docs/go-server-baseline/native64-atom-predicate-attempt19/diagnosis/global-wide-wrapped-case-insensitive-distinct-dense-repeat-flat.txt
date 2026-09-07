@@ -1,0 +1,29 @@
+File: profile-query
+Type: alloc_space
+Time: Sep 7, 2026 at 1:54pm (KST)
+Showing nodes accounting for 266283857B, 99.35% of 268032232B total
+Dropped 34 nodes (cum <= 1340161B)
+Showing top 22 nodes out of 37
+      flat  flat%   sum%        cum   cum%
+104334904B 38.93% 38.93% 153620604B 57.31%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctAtomMatches
+ 49285700B 18.39% 57.31%  49285700B 18.39%  strings.(*Builder).grow
+ 28313960B 10.56% 67.88%  28313960B 10.56%  github.com/johnsonlee/graphite/graphite-server/internal/javastring.UTF16
+ 24068657B  8.98% 76.86%  24068657B  8.98%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).NodesOfKind (inline)
+ 17130988B  6.39% 83.25%  17130988B  6.39%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*CallSiteStringIndex).Directory
+ 14157192B  5.28% 88.53%  25167600B  9.39%  github.com/johnsonlee/graphite/graphite-server/internal/query.key
+  8015607B  2.99% 91.52% 231674248B 86.44%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctRawRows
+  4719888B  1.76% 93.28%   4719888B  1.76%  github.com/johnsonlee/graphite/graphite-server/internal/query.clone (inline)
+  4718720B  1.76% 95.04%   4718720B  1.76%  fmt.Sprintf
+  4194644B  1.56% 96.61%  16778132B  6.26%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctRawRange
+  2621584B  0.98% 97.59%   2621584B  0.98%  strconv.quoteWith (inline)
+  2097216B  0.78% 98.37%   2097216B  0.78%  strings.NewReader (inline)
+  1572888B  0.59% 98.96%   1572888B  0.59%  math/big.nat.make (inline)
+  1051909B  0.39% 99.35% 245080094B 91.44%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctSourceHits
+         0     0% 99.35%  49285700B 18.39%  github.com/johnsonlee/graphite/graphite-server/internal/javastring.Case
+         0     0% 99.35%   4950063B  1.85%  github.com/johnsonlee/graphite/graphite-server/internal/query.ExecuteCross
+         0     0% 99.35%  18877168B  7.04%  github.com/johnsonlee/graphite/graphite-server/internal/query.distinctVisibleKey
+         0     0% 99.35%   4950063B  1.85%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.branch
+         0     0% 99.35%  16778132B  6.26%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctRawRows.func1
+         0     0% 99.35%  16253700B  6.06%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctRawRows.func2
+         0     0% 99.35%   4950063B  1.85%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctSourcePrefix
+         0     0% 99.35%  28313960B 10.56%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.distinctStringTableID

@@ -1,0 +1,52 @@
+[
+  {
+    "name": "pagination21",
+    "command": [
+      "python3",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-atom-predicate-attempt19/http-shipping/replay-http.py",
+      "--binary",
+      "/tmp/graphite-atom-http-binary-39eedb33",
+      "--out",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-atom-predicate-attempt19/http-shipping/pagination21",
+      "--source-identity",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-atom-predicate-attempt19/http-shipping/source-identity.json",
+      "--port",
+      "18885",
+      "--frozen",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-atom-predicate-attempt19/http-shipping/pagination-main.json",
+      "--required",
+      "21"
+    ],
+    "required": 21,
+    "oracleSHA256": "afa043844875c5577716301639e43189e23ec4d6736e7121fd9fb5d090b90365",
+    "all1152FixtureHashesVerifiedBefore": true,
+    "startedUTC": "2026-09-07T06:09:12.803572+00:00",
+    "exitCode": 0,
+    "finishedUTC": "2026-09-07T06:09:39.730358+00:00"
+  },
+  {
+    "name": "regression42",
+    "command": [
+      "python3",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-atom-predicate-attempt19/http-shipping/replay-http.py",
+      "--binary",
+      "/tmp/graphite-atom-http-binary-39eedb33",
+      "--out",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-atom-predicate-attempt19/http-shipping/regression42",
+      "--source-identity",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-atom-predicate-attempt19/http-shipping/source-identity.json",
+      "--port",
+      "18886",
+      "--frozen",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-preflight/queries/observations.json",
+      "--required",
+      "42"
+    ],
+    "required": 42,
+    "oracleSHA256": "a435e053ea81a1333b5d16d530d9c7534c9cb4ee06aeffc44b68a45dd16bddd8",
+    "all1152FixtureHashesVerifiedBefore": true,
+    "startedUTC": "2026-09-07T06:09:44.186695+00:00",
+    "exitCode": 0,
+    "finishedUTC": "2026-09-07T06:10:08.596114+00:00"
+  }
+]

@@ -1,0 +1,73 @@
+diff --git a/graphite-server/internal/query/eval.go b/graphite-server/internal/query/eval.go
+index 8c000f9f..acbfc81d 100644
+--- a/graphite-server/internal/query/eval.go
++++ b/graphite-server/internal/query/eval.go
+@@ -8,7 +8,6 @@ import (
+ 	"math"
+ 	"strconv"
+ 	"strings"
+-	"unicode/utf8"
+ )
+ 
+ type Error struct {
+@@ -413,37 +412,7 @@ func (e evaluator) binary(x cypher.Binary, row map[string]any) any {
+ 		if !ok {
+ 			return nil
+ 		}
+-		op := strings.TrimPrefix(x.Op, "NOT ")
+-		var result bool
+-		e.check()
+-		// With two well-formed strings, a UTF-16 match cannot start or end
+-		// inside a surrogate pair. UTF-8 byte matches have the same complete
+-		// code-point boundaries. Isolated units still require the old path.
+-		if utf8.ValidString(l) && utf8.ValidString(r) {
+-			switch op {
+-			case "STARTS WITH":
+-				result = strings.HasPrefix(l, r)
+-			case "ENDS WITH":
+-				result = strings.HasSuffix(l, r)
+-			case "CONTAINS":
+-				result = strings.Contains(l, r)
+-			}
+-			e.check()
+-		} else {
+-			switch op {
+-			case "STARTS WITH":
+-				result = e.unitIndex(javaUTF16(l), javaUTF16(r), 0) == 0
+-			case "ENDS WITH":
+-				left, right := javaUTF16(l), javaUTF16(r)
+-				result = len(left) >= len(right) && e.unitIndex(left, right, len(left)-len(right)) >= 0
+-			case "CONTAINS":
+-				result = e.unitIndex(javaUTF16(l), javaUTF16(r), 0) >= 0
+-			}
+-		}
+-		if op != x.Op {
+-			return !result
+-		}
+-		return result
++		return e.stringPredicate(l, r, x.Op)
+ 	case "<":
+ 		return comparePredicate(a, b) < 0
+ 	case ">":
+diff --git a/graphite-server/internal/query/indexed_distinct.go b/graphite-server/internal/query/indexed_distinct.go
+index f0ad1f1c..cb9e0d50 100644
+--- a/graphite-server/internal/query/indexed_distinct.go
++++ b/graphite-server/internal/query/indexed_distinct.go
+@@ -49,7 +49,16 @@ func (e evaluator) distinctAtomMatches(atom distinctStringAtom, value any) bool
+ 	if atom.lower {
+ 		s = e.javaCase(s, false)
+ 	}
+-	return e.binary(cypher.Binary{Left: cypher.Literal{Value: s}, Op: atom.op, Right: cypher.Literal{Value: atom.term}}, nil) == true
++	switch atom.op {
++	case "CONTAINS", "STARTS WITH", "ENDS WITH":
++		// Preserve the two original literal operand checkpoints without
++		// constructing temporary expression interfaces for these strings.
++		e.check()
++		e.check()
++		return e.stringPredicate(s, atom.term, atom.op)
++	default:
++		return e.binary(cypher.Binary{Left: cypher.Literal{Value: s}, Op: atom.op, Right: cypher.Literal{Value: atom.term}}, nil) == true
++	}
+ }
+ func distinctVisibleKey(row map[string]any) string {
+ 	visible := clone(row)

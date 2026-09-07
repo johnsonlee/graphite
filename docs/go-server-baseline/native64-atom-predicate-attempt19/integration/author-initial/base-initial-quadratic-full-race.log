@@ -1,0 +1,106 @@
+?   	github.com/johnsonlee/graphite/graphite-server/internal/cypher/cmd/normalize	[no test files]
+?   	github.com/johnsonlee/graphite/graphite-server/internal/cypher/generated	[no test files]
+?   	github.com/johnsonlee/graphite/graphite-server/internal/web	[no test files]
+ok  	github.com/johnsonlee/graphite/graphite-server/cmd/graphite-server	1.594s
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/analysis	2.014s
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/analysis/c4	2.542s
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/cypher	1.898s
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/javamath	2.511s
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/javaregex	3.498s
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/javastring	2.774s
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/profiling	3.817s
+panic: test timed out after 3m0s
+running tests:
+	TestStringCandidateMainOracleAndForcedScan (0s)
+	TestStringCandidateMainOracleAndForcedScan/clean (0s)
+	TestStringCandidateMainOracleAndForcedScan/clean/lower-rhs-unchanged/scoped (0s)
+
+goroutine 15865 [running]:
+testing.(*M).startAlarm.func1()
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/testing/testing.go:2366 +0x1dc
+created by time.goFunc
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/time/sleep.go:177 +0x44
+
+goroutine 1 [chan receive]:
+testing.(*T).Run(0xc0001044e0, {0x1044fe25a, 0x2a}, 0x104688bb0)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/testing/testing.go:1750 +0x604
+testing.runTests.func1(0xc0001044e0)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/testing/testing.go:2161 +0x84
+testing.tRunner(0xc0001044e0, 0xc000113b08)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/testing/testing.go:1689 +0x184
+testing.runTests(0xc00000c0f0, {0x104b5d3c0, 0xb9, 0xb9}, {0x1040482e4?, 0x0?, 0x104b5f1c0?})
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/testing/testing.go:2159 +0x6e4
+testing.(*M).Run(0xc00007a460)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/testing/testing.go:2027 +0xb70
+main.main()
+	_testmain.go:415 +0x298
+
+goroutine 15696 [chan receive]:
+testing.(*T).Run(0xc0007664e0, {0x1044ed36b, 0x5}, 0xc0002d4000)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/testing/testing.go:1750 +0x604
+github.com/johnsonlee/graphite/graphite-server/internal/query.TestStringCandidateMainOracleAndForcedScan(0xc0007664e0)
+	/private/tmp/graphite-go-atom-attempt19-39eedb33/graphite-server/internal/query/string_candidates_test.go:269 +0x29c
+testing.tRunner(0xc0007664e0, 0x104688bb0)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/testing/testing.go:1689 +0x184
+created by testing.(*T).Run in goroutine 1
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/testing/testing.go:1742 +0x5e8
+
+goroutine 15661 [chan receive]:
+testing.(*T).Run(0xc000104340, {0xc000014180, 0x1a}, 0xc0002ec000)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/testing/testing.go:1750 +0x604
+github.com/johnsonlee/graphite/graphite-server/internal/query.TestStringCandidateMainOracleAndForcedScan.func1(0xc000104340)
+	/private/tmp/graphite-go-atom-attempt19-39eedb33/graphite-server/internal/query/string_candidates_test.go:285 +0x1e4
+testing.tRunner(0xc000104340, 0xc0002d4000)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/testing/testing.go:1689 +0x184
+created by testing.(*T).Run in goroutine 15696
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/testing/testing.go:1742 +0x5e8
+
+goroutine 15854 [runnable]:
+github.com/antlr4-go/antlr/v4.(*LexerATNSimulator).getExistingTargetState(0xc000c96000, 0xc000225e60, 0x4d)
+	/Users/johnsonlee/go/pkg/mod/github.com/antlr4-go/antlr/v4@v4.13.1/lexer_atn_simulator.go:226 +0x288
+github.com/antlr4-go/antlr/v4.(*LexerATNSimulator).execATN(0xc000c96000, {0x10468f1b8, 0xc0002d4020}, 0xc000225e60)
+	/Users/johnsonlee/go/pkg/mod/github.com/antlr4-go/antlr/v4@v4.13.1/lexer_atn_simulator.go:175 +0x2d4
+github.com/antlr4-go/antlr/v4.(*LexerATNSimulator).Match(0xc000c96000, {0x10468f1b8, 0xc0002d4020}, 0x0)
+	/Users/johnsonlee/go/pkg/mod/github.com/antlr4-go/antlr/v4@v4.13.1/lexer_atn_simulator.go:109 +0x274
+github.com/antlr4-go/antlr/v4.(*BaseLexer).safeMatch(0xc000972410)
+	/Users/johnsonlee/go/pkg/mod/github.com/antlr4-go/antlr/v4@v4.13.1/lexer.go:177 +0xec
+github.com/antlr4-go/antlr/v4.(*BaseLexer).NextToken(0xc000972410)
+	/Users/johnsonlee/go/pkg/mod/github.com/antlr4-go/antlr/v4@v4.13.1/lexer.go:210 +0x2b0
+github.com/antlr4-go/antlr/v4.(*CommonTokenStream).fetch(0xc00047e300, 0x1)
+	/Users/johnsonlee/go/pkg/mod/github.com/antlr4-go/antlr/v4@v4.13.1/common_token_stream.go:133 +0xa0
+github.com/antlr4-go/antlr/v4.(*CommonTokenStream).Sync(0xc00047e300, 0x0)
+	/Users/johnsonlee/go/pkg/mod/github.com/antlr4-go/antlr/v4@v4.13.1/common_token_stream.go:118 +0x5c
+github.com/antlr4-go/antlr/v4.(*CommonTokenStream).setup(0xc00047e300)
+	/Users/johnsonlee/go/pkg/mod/github.com/antlr4-go/antlr/v4@v4.13.1/common_token_stream.go:188 +0x30
+github.com/antlr4-go/antlr/v4.(*CommonTokenStream).lazyInit(...)
+	/Users/johnsonlee/go/pkg/mod/github.com/antlr4-go/antlr/v4@v4.13.1/common_token_stream.go:183
+github.com/antlr4-go/antlr/v4.(*CommonTokenStream).LT(0xc00047e300, 0x1)
+	/Users/johnsonlee/go/pkg/mod/github.com/antlr4-go/antlr/v4@v4.13.1/common_token_stream.go:405 +0x54
+github.com/johnsonlee/graphite/graphite-server/internal/cypher.(*contextTokens).LT(0xc000f82030, 0x1)
+	/private/tmp/graphite-go-atom-attempt19-39eedb33/graphite-server/internal/cypher/context.go:36 +0x68
+github.com/antlr4-go/antlr/v4.(*BaseParser).EnterRule(0xc0002ec120, {0x12d6b7598, 0xc000c96100}, 0x0, 0xe8?)
+	/Users/johnsonlee/go/pkg/mod/github.com/antlr4-go/antlr/v4@v4.13.1/parser.go:454 +0xc8
+github.com/johnsonlee/graphite/graphite-server/internal/cypher/generated.(*CypherParser).Script(0xc000480050)
+	/private/tmp/graphite-go-atom-attempt19-39eedb33/graphite-server/internal/cypher/generated/cypher_parser.go:752 +0x2e8
+github.com/johnsonlee/graphite/graphite-server/internal/cypher.parseContext({0x10468ca40, 0x104bc60c0}, {0xc0004df770, 0x4b})
+	/private/tmp/graphite-go-atom-attempt19-39eedb33/graphite-server/internal/cypher/antlr.go:119 +0x170
+github.com/johnsonlee/graphite/graphite-server/internal/cypher.ParseContext({0x10468ca40, 0x104bc60c0}, {0xc0004df770, 0x4b})
+	/private/tmp/graphite-go-atom-attempt19-39eedb33/graphite-server/internal/cypher/antlr.go:87 +0x90
+github.com/johnsonlee/graphite/graphite-server/internal/query.executeSources({0x10468ca40, 0x104bc60c0}, 0xc000a88008, {0x0, 0x0, 0x0}, 0x0, {0xc0004df770, 0x4b}, 0x0, ...)
+	/private/tmp/graphite-go-atom-attempt19-39eedb33/graphite-server/internal/query/engine.go:58 +0xe0
+github.com/johnsonlee/graphite/graphite-server/internal/query.Execute(...)
+	/private/tmp/graphite-go-atom-attempt19-39eedb33/graphite-server/internal/query/engine.go:25
+github.com/johnsonlee/graphite/graphite-server/internal/query.compareCandidateScan.func1({0x10468ca40, 0x104bc60c0})
+	/private/tmp/graphite-go-atom-attempt19-39eedb33/graphite-server/internal/query/string_candidates_test.go:108 +0x2bc
+github.com/johnsonlee/graphite/graphite-server/internal/query.compareCandidateScan(0xc000766000, 0xc000a88008, {0xc0004df770, 0x4b}, 0x0, 0x0)
+	/private/tmp/graphite-go-atom-attempt19-39eedb33/graphite-server/internal/query/string_candidates_test.go:110 +0xd4
+github.com/johnsonlee/graphite/graphite-server/internal/query.TestStringCandidateMainOracleAndForcedScan.func1.1(0xc000766000)
+	/private/tmp/graphite-go-atom-attempt19-39eedb33/graphite-server/internal/query/string_candidates_test.go:286 +0x88
+testing.tRunner(0xc000766000, 0xc0002ec000)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/testing/testing.go:1689 +0x184
+created by testing.(*T).Run in goroutine 15661
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/testing/testing.go:1742 +0x5e8
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/query	181.284s
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/server	3.027s
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/store	4.207s
+FAIL

@@ -1,0 +1,88 @@
+[
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-sample_index=alloc_space",
+      "-unit=bytes",
+      "-nodecount=22",
+      "-top",
+      "-base",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-projection-context-attempt17/candidate/profiles/global-wide-wrapped-case-insensitive-distinct-dense-repeat/heap-before.pprof",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-wf64_h41/profile-query",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-projection-context-attempt17/candidate/profiles/global-wide-wrapped-case-insensitive-distinct-dense-repeat/heap-after.pprof"
+    ],
+    "exitCode": 0,
+    "output": "global-wide-wrapped-case-insensitive-distinct-dense-repeat-flat.txt"
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-sample_index=alloc_space",
+      "-unit=bytes",
+      "-nodecount=22",
+      "-top",
+      "-cum",
+      "-base",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-projection-context-attempt17/candidate/profiles/global-wide-wrapped-case-insensitive-distinct-dense-repeat/heap-before.pprof",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-wf64_h41/profile-query",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-projection-context-attempt17/candidate/profiles/global-wide-wrapped-case-insensitive-distinct-dense-repeat/heap-after.pprof"
+    ],
+    "exitCode": 0,
+    "output": "global-wide-wrapped-case-insensitive-distinct-dense-repeat-cum.txt"
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-sample_index=alloc_space",
+      "-unit=bytes",
+      "-nodecount=22",
+      "-top",
+      "-base",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-projection-context-attempt17/candidate/profiles/wrapped-firstLastGraphBimodalClassPrefix-repeat/heap-before.pprof",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-wf64_h41/profile-query",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-projection-context-attempt17/candidate/profiles/wrapped-firstLastGraphBimodalClassPrefix-repeat/heap-after.pprof"
+    ],
+    "exitCode": 0,
+    "output": "wrapped-firstLastGraphBimodalClassPrefix-repeat-flat.txt"
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-sample_index=alloc_space",
+      "-unit=bytes",
+      "-nodecount=22",
+      "-top",
+      "-cum",
+      "-base",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-projection-context-attempt17/candidate/profiles/wrapped-firstLastGraphBimodalClassPrefix-repeat/heap-before.pprof",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-wf64_h41/profile-query",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-projection-context-attempt17/candidate/profiles/wrapped-firstLastGraphBimodalClassPrefix-repeat/heap-after.pprof"
+    ],
+    "exitCode": 0,
+    "output": "wrapped-firstLastGraphBimodalClassPrefix-repeat-cum.txt"
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-sample_index=alloc_space",
+      "-unit=bytes",
+      "-list=distinctAtomMatches",
+      "-base",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-projection-context-attempt17/candidate/profiles/global-wide-wrapped-case-insensitive-distinct-dense-repeat/heap-before.pprof",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-wf64_h41/profile-query",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-projection-context-attempt17/candidate/profiles/global-wide-wrapped-case-insensitive-distinct-dense-repeat/heap-after.pprof"
+    ],
+    "exitCode": 0,
+    "output": "dense-atom-lines.txt"
+  }
+]

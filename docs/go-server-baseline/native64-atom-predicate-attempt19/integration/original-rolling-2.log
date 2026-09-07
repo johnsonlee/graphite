@@ -1,0 +1,36 @@
+=== RUN   TestOrdinaryProjectionRollingSourcesMain
+=== RUN   TestOrdinaryProjectionRollingSourcesMain/8/early-match-later-error/n.caller_name
+=== RUN   TestOrdinaryProjectionRollingSourcesMain/8/early-match-later-error/substring(n.caller_name,0)
+=== RUN   TestOrdinaryProjectionRollingSourcesMain/8/error-before-match/n.caller_name
+=== RUN   TestOrdinaryProjectionRollingSourcesMain/8/error-before-match/substring(n.caller_name,0)
+=== RUN   TestOrdinaryProjectionRollingSourcesMain/8/window-match-later-error/n.caller_name
+=== RUN   TestOrdinaryProjectionRollingSourcesMain/8/window-match-later-error/substring(n.caller_name,0)
+=== RUN   TestOrdinaryProjectionRollingSourcesMain/8/all-miss/n.caller_name
+=== RUN   TestOrdinaryProjectionRollingSourcesMain/8/all-miss/substring(n.caller_name,0)
+=== RUN   TestOrdinaryProjectionRollingSourcesMain/40/early-match-later-error/n.caller_name
+=== RUN   TestOrdinaryProjectionRollingSourcesMain/40/early-match-later-error/substring(n.caller_name,0)
+=== RUN   TestOrdinaryProjectionRollingSourcesMain/40/error-before-match/n.caller_name
+=== RUN   TestOrdinaryProjectionRollingSourcesMain/40/error-before-match/substring(n.caller_name,0)
+=== RUN   TestOrdinaryProjectionRollingSourcesMain/40/window-match-later-error/n.caller_name
+=== RUN   TestOrdinaryProjectionRollingSourcesMain/40/window-match-later-error/substring(n.caller_name,0)
+=== RUN   TestOrdinaryProjectionRollingSourcesMain/40/all-miss/n.caller_name
+=== RUN   TestOrdinaryProjectionRollingSourcesMain/40/all-miss/substring(n.caller_name,0)
+--- PASS: TestOrdinaryProjectionRollingSourcesMain (0.31s)
+    --- PASS: TestOrdinaryProjectionRollingSourcesMain/8/early-match-later-error/n.caller_name (0.01s)
+    --- PASS: TestOrdinaryProjectionRollingSourcesMain/8/early-match-later-error/substring(n.caller_name,0) (0.01s)
+    --- PASS: TestOrdinaryProjectionRollingSourcesMain/8/error-before-match/n.caller_name (0.01s)
+    --- PASS: TestOrdinaryProjectionRollingSourcesMain/8/error-before-match/substring(n.caller_name,0) (0.01s)
+    --- PASS: TestOrdinaryProjectionRollingSourcesMain/8/window-match-later-error/n.caller_name (0.01s)
+    --- PASS: TestOrdinaryProjectionRollingSourcesMain/8/window-match-later-error/substring(n.caller_name,0) (0.01s)
+    --- PASS: TestOrdinaryProjectionRollingSourcesMain/8/all-miss/n.caller_name (0.00s)
+    --- PASS: TestOrdinaryProjectionRollingSourcesMain/8/all-miss/substring(n.caller_name,0) (0.01s)
+    --- PASS: TestOrdinaryProjectionRollingSourcesMain/40/early-match-later-error/n.caller_name (0.02s)
+    --- PASS: TestOrdinaryProjectionRollingSourcesMain/40/early-match-later-error/substring(n.caller_name,0) (0.02s)
+    --- PASS: TestOrdinaryProjectionRollingSourcesMain/40/error-before-match/n.caller_name (0.02s)
+    --- PASS: TestOrdinaryProjectionRollingSourcesMain/40/error-before-match/substring(n.caller_name,0) (0.02s)
+    --- PASS: TestOrdinaryProjectionRollingSourcesMain/40/window-match-later-error/n.caller_name (0.02s)
+    --- PASS: TestOrdinaryProjectionRollingSourcesMain/40/window-match-later-error/substring(n.caller_name,0) (0.02s)
+    --- PASS: TestOrdinaryProjectionRollingSourcesMain/40/all-miss/n.caller_name (0.02s)
+    --- PASS: TestOrdinaryProjectionRollingSourcesMain/40/all-miss/substring(n.caller_name,0) (0.02s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/query	1.541s

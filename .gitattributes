@@ -2,6 +2,8 @@
 docs/go-server-baseline/**/*.log -whitespace
 # Unified diffs retain context prefixes before tabs and blank lines.
 docs/go-server-baseline/**/*.patch -whitespace
+# Preserve context-prefix indentation in the frozen scheduling proof.
+docs/go-server-baseline/native64-atom-predicate-attempt19/integration/schedule-g8/instrumentation.diff -whitespace
 # Go build metadata includes a literal trailing tab on the module line.
 docs/go-server-baseline/**/binary-build-info.txt -whitespace
 # Raw Maven responses retain HTTP CRLF and directory-listing padding.

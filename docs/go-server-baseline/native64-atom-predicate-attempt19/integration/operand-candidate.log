@@ -1,0 +1,5 @@
+=== RUN   TestReviewStringPredicateOperandOrder
+    review_atom_operand_test.go:68: 66 complete operand-order/error/checkpoint records
+--- PASS: TestReviewStringPredicateOperandOrder (0.00s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/query	1.296s

@@ -1,0 +1,253 @@
+diff --git a/graphite-server/internal/query/distinct_atom_predicate_test.go b/graphite-server/internal/query/distinct_atom_predicate_test.go
+new file mode 100644
+index 00000000..ec180bae
+--- /dev/null
++++ b/graphite-server/internal/query/distinct_atom_predicate_test.go
+@@ -0,0 +1,126 @@
++package query
++
++import (
++	"context"
++	"fmt"
++	"reflect"
++	"slices"
++	"strings"
++	"testing"
++
++	"github.com/johnsonlee/graphite/graphite-server/internal/cypher"
++)
++
++// Exact pre-A19 helper: the source receipt separately checks this body against
++// the committed original, rather than assuming the reference stayed unchanged.
++func originalDistinctAtomMatches(e evaluator, atom distinctStringAtom, value any) bool {
++	s, ok := value.(string)
++	if !ok {
++		return false
++	}
++	if atom.lower {
++		s = e.javaCase(s, false)
++	}
++	return e.binary(cypher.Binary{Left: cypher.Literal{Value: s}, Op: atom.op, Right: cypher.Literal{Value: atom.term}}, nil) == true
++}
++
++func TestDistinctAtomPredicateEncodingAndFallback(t *testing.T) {
++	values := []string{"", "a", "abc", "GET", "甲中文乙", "中文", "한국어", "😀", "a😀b", "😁", "é", "e\u0301", "\x00", "�", "\xed\xa0\xbd", "\xed\xb8\x80", "\xed\xa0\xbd\xed\xb8\x80", "\xed\xb8\x80\xed\xa0\xbd", "\xff", "a\xc0\xafb", "\xf0\x9f", "\x80", "ΟΣ", "οσ", "İ", "I", "\u212a"}
++	e := evaluator{ctx: context.Background()}
++	for _, lower := range []bool{false, true} {
++		for _, left := range values {
++			for _, right := range values {
++				for _, op := range []string{"CONTAINS", "STARTS WITH", "ENDS WITH", "=", "NOT CONTAINS", "<>"} {
++					atom := distinctStringAtom{op: op, term: right, lower: lower}
++					got, want := e.distinctAtomMatches(atom, left), originalDistinctAtomMatches(e, atom, left)
++					if got != want {
++						t.Fatalf("%q %s %q lower=%v: %v vs %v", left, op, right, lower, got, want)
++					}
++					if op == "CONTAINS" || op == "STARTS WITH" || op == "ENDS WITH" {
++						text := left
++						if lower {
++							text = e.javaCase(text, false)
++						}
++						if want := utf16PredicateDefinition(text, right, op); got != want {
++							t.Fatalf("UTF16 definition: %q %s %q lower=%v: %v vs %v", left, op, right, lower, got, want)
++						}
++					}
++				}
++			}
++		}
++	}
++}
++
++func TestDistinctAtomPredicateEveryCancellationBoundary(t *testing.T) {
++	for _, input := range []struct{ text, term string }{
++		{"getName", "get"},
++		{"甲😀乙", "😀"},
++		{"abcdef\xed\xa0\xbd", "\xed\xa0\xbd"},
++		{strings.Repeat("ABC", 2000), "abc"},
++		{"ΟΣ İ", "ο"},
++	} {
++		for _, lower := range []bool{false, true} {
++			for _, op := range []string{"CONTAINS", "STARTS WITH", "ENDS WITH", "=", "NOT CONTAINS", "UNSUPPORTED"} {
++				t.Run(fmt.Sprintf("%x/%s/%v", input.text[:min(12, len(input.text))], op, lower), func(t *testing.T) {
++					atom := distinctStringAtom{op: op, term: input.term, lower: lower}
++					count := newTraversalCancelContext(t, context.Background(), 1<<30)
++					findIDCaught(func() { originalDistinctAtomMatches(evaluator{ctx: count}, atom, input.text) })
++					if count.checks < 2 {
++						t.Fatal("original operand checks not reached", count.checks)
++					}
++					ats := []int{}
++					if count.checks <= 128 {
++						for at := 1; at <= count.checks+1; at++ {
++							ats = append(ats, at)
++						}
++					} else {
++						lowerCount := newTraversalCancelContext(t, context.Background(), 1<<30)
++						if lower {
++							(evaluator{ctx: lowerCount}).javaCase(input.text, false)
++						}
++						n := lowerCount.checks
++						for _, at := range []int{1, 2, n / 2, n - 1, n, n + 1, n + 2, n + 3, count.checks - 1, count.checks, count.checks + 1} {
++							if at > 0 && at <= count.checks+1 {
++								ats = append(ats, at)
++							}
++						}
++						slices.Sort(ats)
++						ats = slices.Compact(ats)
++						t.Logf("long-input original checks=%d, lowercase=%d, sampled cancellation checkpoints=%v", count.checks, n, ats)
++					}
++					for _, at := range ats {
++						oldCtx := newTraversalCancelContext(t, context.Background(), at)
++						newCtx := newTraversalCancelContext(t, context.Background(), at)
++						var oldValue, newValue bool
++						oldFailure := findIDCaught(func() { oldValue = originalDistinctAtomMatches(evaluator{ctx: oldCtx}, atom, input.text) })
++						newFailure := findIDCaught(func() { newValue = (evaluator{ctx: newCtx}).distinctAtomMatches(atom, input.text) })
++						if oldValue != newValue || !reflect.DeepEqual(oldFailure, newFailure) || oldCtx.checks != newCtx.checks {
++							t.Fatalf("at%d: value %v/%v failure %#v/%#v checks %d/%d", at, oldValue, newValue, oldFailure, newFailure, oldCtx.checks, newCtx.checks)
++						}
++						if at <= count.checks && (newFailure != context.Canceled || newCtx.Context.Err() != context.Canceled || newCtx.checks != at) {
++							t.Fatalf("real cancellation did not fire at%d: %v, %d", at, newFailure, newCtx.checks)
++						}
++						if at > count.checks && newCtx.Context.Err() != nil {
++							t.Fatal("comparison introduced a later checkpoint")
++						}
++					}
++					if _, err := Execute(context.Background(), nil, "RETURN 1 AS fresh", nil, -1); err != nil {
++						t.Fatal("canceled helper poisoned fresh request", err)
++					}
++				})
++			}
++		}
++	}
++}
++
++func TestDistinctAtomPredicateNonstringReturnsBeforeCancellation(t *testing.T) {
++	for _, value := range []any{nil, true, int32(1), int64(2), float64(3), []any{"get"}, map[string]any{"s": "get"}} {
++		for _, lower := range []bool{false, true} {
++			ctx := newTraversalCancelContext(t, context.Background(), 1)
++			atom := distinctStringAtom{op: "CONTAINS", term: "get", lower: lower}
++			if (evaluator{ctx: ctx}).distinctAtomMatches(atom, value) || ctx.checks != 0 || ctx.Context.Err() != nil {
++				t.Fatalf("nonstring boundary changed for %#v lower=%v", value, lower)
++			}
++		}
++	}
++}
+diff --git a/graphite-server/internal/query/eval.go b/graphite-server/internal/query/eval.go
+index 8c000f9f..acbfc81d 100644
+--- a/graphite-server/internal/query/eval.go
++++ b/graphite-server/internal/query/eval.go
+@@ -8,7 +8,6 @@ import (
+ 	"math"
+ 	"strconv"
+ 	"strings"
+-	"unicode/utf8"
+ )
+ 
+ type Error struct {
+@@ -413,37 +412,7 @@ func (e evaluator) binary(x cypher.Binary, row map[string]any) any {
+ 		if !ok {
+ 			return nil
+ 		}
+-		op := strings.TrimPrefix(x.Op, "NOT ")
+-		var result bool
+-		e.check()
+-		// With two well-formed strings, a UTF-16 match cannot start or end
+-		// inside a surrogate pair. UTF-8 byte matches have the same complete
+-		// code-point boundaries. Isolated units still require the old path.
+-		if utf8.ValidString(l) && utf8.ValidString(r) {
+-			switch op {
+-			case "STARTS WITH":
+-				result = strings.HasPrefix(l, r)
+-			case "ENDS WITH":
+-				result = strings.HasSuffix(l, r)
+-			case "CONTAINS":
+-				result = strings.Contains(l, r)
+-			}
+-			e.check()
+-		} else {
+-			switch op {
+-			case "STARTS WITH":
+-				result = e.unitIndex(javaUTF16(l), javaUTF16(r), 0) == 0
+-			case "ENDS WITH":
+-				left, right := javaUTF16(l), javaUTF16(r)
+-				result = len(left) >= len(right) && e.unitIndex(left, right, len(left)-len(right)) >= 0
+-			case "CONTAINS":
+-				result = e.unitIndex(javaUTF16(l), javaUTF16(r), 0) >= 0
+-			}
+-		}
+-		if op != x.Op {
+-			return !result
+-		}
+-		return result
++		return e.stringPredicate(l, r, x.Op)
+ 	case "<":
+ 		return comparePredicate(a, b) < 0
+ 	case ">":
+diff --git a/graphite-server/internal/query/indexed_distinct.go b/graphite-server/internal/query/indexed_distinct.go
+index f0ad1f1c..cb9e0d50 100644
+--- a/graphite-server/internal/query/indexed_distinct.go
++++ b/graphite-server/internal/query/indexed_distinct.go
+@@ -49,7 +49,16 @@ func (e evaluator) distinctAtomMatches(atom distinctStringAtom, value any) bool
+ 	if atom.lower {
+ 		s = e.javaCase(s, false)
+ 	}
+-	return e.binary(cypher.Binary{Left: cypher.Literal{Value: s}, Op: atom.op, Right: cypher.Literal{Value: atom.term}}, nil) == true
++	switch atom.op {
++	case "CONTAINS", "STARTS WITH", "ENDS WITH":
++		// Preserve the two original literal operand checkpoints without
++		// constructing temporary expression interfaces for these strings.
++		e.check()
++		e.check()
++		return e.stringPredicate(s, atom.term, atom.op)
++	default:
++		return e.binary(cypher.Binary{Left: cypher.Literal{Value: s}, Op: atom.op, Right: cypher.Literal{Value: atom.term}}, nil) == true
++	}
+ }
+ func distinctVisibleKey(row map[string]any) string {
+ 	visible := clone(row)
+diff --git a/graphite-server/internal/query/string_predicate.go b/graphite-server/internal/query/string_predicate.go
+new file mode 100644
+index 00000000..8459a974
+--- /dev/null
++++ b/graphite-server/internal/query/string_predicate.go
+@@ -0,0 +1,42 @@
++package query
++
++import (
++	"strings"
++	"unicode/utf8"
++)
++
++// stringPredicate receives evaluated string operands. Both callers retain the
++// original operand checks before entering this unchanged matching algorithm.
++func (e evaluator) stringPredicate(l, r, operator string) bool {
++	op := strings.TrimPrefix(operator, "NOT ")
++	var result bool
++	e.check()
++	// With two well-formed strings, a UTF-16 match cannot start or end
++	// inside a surrogate pair. UTF-8 byte matches have the same complete
++	// code-point boundaries. Isolated units still require the old path.
++	if utf8.ValidString(l) && utf8.ValidString(r) {
++		switch op {
++		case "STARTS WITH":
++			result = strings.HasPrefix(l, r)
++		case "ENDS WITH":
++			result = strings.HasSuffix(l, r)
++		case "CONTAINS":
++			result = strings.Contains(l, r)
++		}
++		e.check()
++	} else {
++		switch op {
++		case "STARTS WITH":
++			result = e.unitIndex(javaUTF16(l), javaUTF16(r), 0) == 0
++		case "ENDS WITH":
++			left, right := javaUTF16(l), javaUTF16(r)
++			result = len(left) >= len(right) && e.unitIndex(left, right, len(left)-len(right)) >= 0
++		case "CONTAINS":
++			result = e.unitIndex(javaUTF16(l), javaUTF16(r), 0) >= 0
++		}
++	}
++	if op != operator {
++		return !result
++	}
++	return result
++}

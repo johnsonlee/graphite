@@ -1,0 +1,11 @@
+{
+  "originalMatcherMovedByteExactlyExceptIndentAndParameterName": true,
+  "nonstringAndLowerBeforeSwitchUnchanged": true,
+  "specializedAtoms": [
+    "CONTAINS",
+    "STARTS WITH",
+    "ENDS WITH"
+  ],
+  "otherAtomOperatorsKeepOriginalBinaryFallback": true,
+  "originalTwoLiteralCheckpointsExplicitlyRetained": true
+}

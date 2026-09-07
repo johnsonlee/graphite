@@ -1,0 +1,17 @@
+{
+  "argv": [
+    "go",
+    "test",
+    "-race",
+    "./...",
+    "-count=1",
+    "-timeout=180s"
+  ],
+  "cwd": "/tmp/graphite-go-atom-attempt19-39eedb33/graphite-server",
+  "exitCode": 0,
+  "outputs": {
+    "INDEXED_DISTINCT_OUTPUT": "/tmp/graphite-atom-attempt19-evidence/base-output/original-corpus",
+    "ORDINARY_HISTORY_OUTPUT": "/tmp/graphite-atom-attempt19-evidence/base-output/history"
+  },
+  "finishedUTC": "2026-09-07T05:40:19.007049+00:00"
+}

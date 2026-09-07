@@ -1,0 +1,13 @@
+{
+  "baseModuleFiles": 2437,
+  "unchanged": 2436,
+  "oneInsertedSchedulingLineRestoresOriginal": true,
+  "changed": [
+    "graphite-server/internal/query/indexed_distinct.go"
+  ],
+  "newInstrumentationFiles": [
+    "review_g8_schedule.go",
+    "review_g8_schedule_test.go"
+  ],
+  "doesNotAlterProductionCandidate": true
+}

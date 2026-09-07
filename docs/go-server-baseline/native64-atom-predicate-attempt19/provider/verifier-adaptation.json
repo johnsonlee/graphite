@@ -1,0 +1,7 @@
+{
+  "copiedFrom": "A18 author scripts",
+  "newFixtureSource": "exact A19 candidate unmodified B fixtures",
+  "inventoryReference": "frozen A18 integration76captures",
+  "strongerTraceCheck": "Explicit equal trace counts before ordered zip, full existing eq on IDs retained",
+  "normalizationUnchanged": "Only explicitly listed count40 mappedView boolean states, numeric spellings separately enumerated"
+}

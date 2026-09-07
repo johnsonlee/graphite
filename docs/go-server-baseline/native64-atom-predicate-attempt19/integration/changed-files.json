@@ -1,0 +1,40 @@
+[
+  {
+    "path": "graphite-server/internal/query/distinct_atom_predicate_test.go",
+    "base": null,
+    "candidate": {
+      "sha256": "db561964fe5e2b1d7b7fca4d332d70a5ecdd0315cc82081ccda7390962d08c0b",
+      "bytes": 5381
+    }
+  },
+  {
+    "path": "graphite-server/internal/query/eval.go",
+    "base": {
+      "sha256": "bea6ffc5ee0e56cc368389725e9fb2848a8b9fa15d90b374e06b8b837ea97cc8",
+      "bytes": 14192
+    },
+    "candidate": {
+      "sha256": "da83c73c99d306abe8137d332339b57abe49cc0a43a2a41ef53bb82f25d5fe1f",
+      "bytes": 13259
+    }
+  },
+  {
+    "path": "graphite-server/internal/query/indexed_distinct.go",
+    "base": {
+      "sha256": "7dac3137908c8291fb32f06e0b1284c347a6afc0331ba611b722b4373e942ee8",
+      "bytes": 25118
+    },
+    "candidate": {
+      "sha256": "e135b22abf4089556db5387568cb3f7df1f809635c630898899ab7e18e57283c",
+      "bytes": 25406
+    }
+  },
+  {
+    "path": "graphite-server/internal/query/string_predicate.go",
+    "base": null,
+    "candidate": {
+      "sha256": "7e31b11bea71987eda5329d1e51f1e44b79d3dc393a44ccc0d647eb48fc0a3fe",
+      "bytes": 1211
+    }
+  }
+]

@@ -1,0 +1,16 @@
+{
+  "matcherExactExceptIndentAndParameter": true,
+  "remainingEvalBytesExactExceptRemovedImport": true,
+  "originalAtomReferenceExact": true,
+  "oldEvalOverlayOnly": {
+    "Replace": {
+      "/private/tmp/graphite-atom-attempt19-independent-review/combined/candidate/graphite-server/internal/query/eval.go": "/private/tmp/graphite-atom-attempt19-independent-review/combined/base/graphite-server/internal/query/eval.go"
+    }
+  },
+  "operandRecords": 66,
+  "operandResultsErrorsAndChecksEqual": true,
+  "indexedFileOutsideAtomUnchanged": true,
+  "nonstringAndLowerPrefixExact": true,
+  "twoExplicitOperandChecks": true,
+  "fallbackReturnExact": true
+}

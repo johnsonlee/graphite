@@ -1,0 +1,8 @@
+{
+  "verifiedUTC": "2026-09-07T06:21:23.367810+00:00",
+  "base": "39eedb33",
+  "allRootModuleInputsEqualFullyTestedCandidate": 2439,
+  "allBaseGitBlobsEqualFrozenBase": 2437,
+  "inventory": "git ls-files --cached --others --exclude-standard -z -- graphite-server",
+  "candidateManifestSHA256": "60d4abd94529d59a8c3bec284a023927db84a72dbdd48dd8643c93eb0d9ad761"
+}

@@ -1,0 +1,10 @@
+--- original/indexed_distinct.go
++++ instrumented/indexed_distinct.go
+@@ -220,6 +220,7 @@
+ 		go func() {
+ 			out := outcome{index: i}
+ 			defer func() { out.failure = recover(); done <- out }()
++			defer reviewG8TaskSchedule(local, count, i)()
+ 			out.value = task(local, i)
+ 		}()
+ 	}

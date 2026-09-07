@@ -1,0 +1,29 @@
+File: profile-query
+Type: alloc_space
+Time: Sep 7, 2026 at 1:54pm (KST)
+Showing nodes accounting for 416198948B, 94.53% of 440274637B total
+Dropped 23 nodes (cum <= 2201373B)
+Showing top 22 nodes out of 37
+      flat  flat%   sum%        cum   cum%
+         0     0%     0% 417289096B 94.78%  github.com/johnsonlee/graphite/graphite-server/internal/query.(*genericDistinctScanner).remaining
+         0     0%     0% 417289096B 94.78%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.genericDistinct.func5
+         0     0%     0% 417289096B 94.78%  github.com/johnsonlee/graphite/graphite-server/internal/query.runDistinctTasks[go.shape.map[int]bool].func1.1
+         0     0%     0% 375428450B 85.27%  github.com/johnsonlee/graphite/graphite-server/internal/query.(*genericDistinctScanner).next
+         0     0%     0% 252742842B 57.41%  github.com/johnsonlee/graphite/graphite-server/internal/query.(*genericDistinctCursor).next
+         0     0%     0% 252742842B 57.41%  github.com/johnsonlee/graphite/graphite-server/internal/query.(*genericDistinctCursor).read
+         0     0%     0% 252742842B 57.41%  github.com/johnsonlee/graphite/graphite-server/internal/query.newGenericDistinctCursor.func1
+         0     0%     0% 181413328B 41.20%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainCandidateIterator.func4
+         0     0%     0% 181413328B 41.20%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainStringCandidatesWithPolicy.evaluator.mainMergeNodeSequences.func3
+         0     0%     0% 181413328B 41.20%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainStringCandidatesWithPolicy.evaluator.mainMergeNodeSequences.func3.1
+ 24117632B  5.48%  5.48% 181413328B 41.20%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionCandidateNode
+157295696B 35.73% 41.20% 157295696B 35.73%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionCandidateNode.func4
+         0     0% 41.20% 122160968B 27.75%  github.com/johnsonlee/graphite/graphite-server/internal/query.(*candidateSlot).property
+         0     0% 41.20% 122160968B 27.75%  github.com/johnsonlee/graphite/graphite-server/internal/query.(*genericDistinctScanner).next.func1
+122160968B 27.75% 68.95% 122160968B 27.75%  github.com/johnsonlee/graphite/graphite-server/internal/query.NodeProperty
+         0     0% 68.95% 122160968B 27.75%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.eval
+         0     0% 68.95%  71329514B 16.20%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainStringCandidates (inline)
+   524384B  0.12% 69.07%  71329514B 16.20%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainStringCandidatesWithPolicy
+ 58197300B 13.22% 82.29%  58197300B 13.22%  github.com/johnsonlee/graphite/graphite-server/internal/query.(*genericDistinctRows).find
+         0     0% 82.29%  52154475B 11.85%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainCandidateIterator
+ 34496826B  7.84% 90.12%  52154475B 11.85%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.mainIndexNodeIDs
+ 19406142B  4.41% 94.53%  19406142B  4.41%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).NodesOfKind (inline)

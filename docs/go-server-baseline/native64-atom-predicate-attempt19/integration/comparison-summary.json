@@ -1,0 +1,15 @@
+{
+  "artifacts": 76,
+  "rawExact": 73,
+  "mappedViewLeaves": 71,
+  "retainedLeavesExplainedByExactOriginalAllowedSchedule": [
+    "$[8].targets[0].after[8].retained",
+    "$[8].targets[1].before[8].retained"
+  ],
+  "publicResponseDifferences": 0,
+  "strictComparisonStillFails": true,
+  "original1048": 1044,
+  "B595": true,
+  "numericSpellings": 166,
+  "noDistributionClaim": true
+}

@@ -1,0 +1,101 @@
+{
+  "scope": "read-only A17 real64 allocation profiles",
+  "files": {
+    "README.md": {
+      "sha256": "d55b152f5c079356d101cbc14a3d2437a0d6dcabc157c0f22477707ae1b2c4ef",
+      "bytes": 2420
+    },
+    "commands.json": {
+      "sha256": "6654c9e9e2f8392fea97eeef52b223d5fccd313c9354801af286991e304b317d",
+      "bytes": 4324
+    },
+    "dense-atom-lines.txt": {
+      "sha256": "af522d2c7bce8726f00a4260a4c73e7246ccd80414dbe6ed0e21b2cef1083547",
+      "bytes": 1149
+    },
+    "global-wide-wrapped-case-insensitive-distinct-dense-repeat-cum.txt": {
+      "sha256": "9d98db1ba75fa8e0459286a8f810c32c0a6c9035ce12ebe835b1ecd5f558a8ba",
+      "bytes": 2882
+    },
+    "global-wide-wrapped-case-insensitive-distinct-dense-repeat-flat.txt": {
+      "sha256": "20899834aa4c27f8b443002b20127a388d1e2d4425f6731a47b7919a375bae49",
+      "bytes": 2779
+    },
+    "identity.json": {
+      "sha256": "1171900e3815c8b230209a6a65443f3fca7d4824722a38ea7795c752803dfcf4",
+      "bytes": 1279
+    },
+    "profiles/global-wide-wrapped-case-insensitive-distinct-dense-repeat/heap-after.pprof": {
+      "sha256": "128e97b5b2981501040199f965a65b53a10c34a6fde577d90c0893e7700275c3",
+      "bytes": 28007
+    },
+    "profiles/global-wide-wrapped-case-insensitive-distinct-dense-repeat/heap-before.pprof": {
+      "sha256": "10bfb4bcc19b790b73b5b455cad4fd1246d9c10c3f1086ba469cfc2054d7253e",
+      "bytes": 27435
+    },
+    "profiles/global-wide-wrapped-case-insensitive-distinct-dense-repeat/query.json": {
+      "sha256": "1907d8df91f317f08c02d4d707a33e3234c96dca3e2c0eebff0a631e5113d32c",
+      "bytes": 65863
+    },
+    "profiles/global-wide-wrapped-case-insensitive-distinct-dense-repeat/receipt.json": {
+      "sha256": "004c4fd045a83c3be4cfb96878bd2cd9827ee1038e04568b48b31018952fd786",
+      "bytes": 43262
+    },
+    "profiles/wrapped-firstLastGraphBimodalClassPrefix-repeat/heap-after.pprof": {
+      "sha256": "a169cc7173e684a3e3570cc907df23f18084c9b9276848f472a06b4e372b8a8f",
+      "bytes": 24036
+    },
+    "profiles/wrapped-firstLastGraphBimodalClassPrefix-repeat/heap-before.pprof": {
+      "sha256": "af9c75cf53c795073c394fe3b0af66f91784abdb5abc286db6f8ddea312d1c5d",
+      "bytes": 22963
+    },
+    "profiles/wrapped-firstLastGraphBimodalClassPrefix-repeat/query.json": {
+      "sha256": "e166ee44f8deb20df5dcee9719b73b832de278272785c3f132f1a52059bfaa3a",
+      "bytes": 78765
+    },
+    "profiles/wrapped-firstLastGraphBimodalClassPrefix-repeat/receipt.json": {
+      "sha256": "00f5c794e3afe49db9123748d1b94d202be2c2d767e9379d2c70ba8977fe94dd",
+      "bytes": 42826
+    },
+    "source/internal/query/distinct_string_id.go": {
+      "sha256": "27480147a00d731c9d5452e9a6113a93eeefc4c8c729b3c0f50e0e74f47b17b4",
+      "bytes": 898
+    },
+    "source/internal/query/eval.go": {
+      "sha256": "bea6ffc5ee0e56cc368389725e9fb2848a8b9fa15d90b374e06b8b837ea97cc8",
+      "bytes": 14192
+    },
+    "source/internal/query/indexed_distinct.go": {
+      "sha256": "7dac3137908c8291fb32f06e0b1284c347a6afc0331ba611b722b4373e942ee8",
+      "bytes": 25118
+    },
+    "source/internal/query/indexed_distinct_plan.go": {
+      "sha256": "37be958d3659f21cf57fcd4017b3f3cddd73f652171266adb8d7d2a32efe4155",
+      "bytes": 9120
+    },
+    "source/internal/query/java_string.go": {
+      "sha256": "317e2cff94ee476958d9f12d837a6235b2abec46acf8b7f88c1c89375f70c4f3",
+      "bytes": 2963
+    },
+    "source/internal/query/string_predicate_test.go": {
+      "sha256": "ffab2121a004d920b0c4d7199c16ad8135eac18d9c211ad5998f9361bb0a4252",
+      "bytes": 4461
+    },
+    "source-manifest.json": {
+      "sha256": "598521d6a350940e9963523ec4df10724a965fe1a7e134ecc2c2fc7f803a38f5",
+      "bytes": 471491
+    },
+    "source-verification.json": {
+      "sha256": "556c556d3aa56f5adecaf0ebd5e52d9767c513d337f759d697f6ec6e1e50466c",
+      "bytes": 201
+    },
+    "wrapped-firstLastGraphBimodalClassPrefix-repeat-cum.txt": {
+      "sha256": "4d7e4f6ea991bf86f4534f69e0394a1c315de42b35593760ae443da1e2ea4e0c",
+      "bytes": 3380
+    },
+    "wrapped-firstLastGraphBimodalClassPrefix-repeat-flat.txt": {
+      "sha256": "5d85ad7ffac171d3bd92f47881c435c7c402db64829f711e49b984637fd8260b",
+      "bytes": 3127
+    }
+  }
+}

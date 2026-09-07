@@ -1,0 +1,28 @@
+{
+  "baseRevision": "39eedb33cec988f2b40ccf8086514adcb81cab4f",
+  "binarySHA256": "665a746084528e2b0577d265bff108e7537708b7558d61b8e705e0cacab3d8f6",
+  "harnessSHA256": "9f13d1d77cc641eb38fdcadc724de7283e7c926325242fb3ce12ee8e8adda70e",
+  "sourceManifestSHA256": "a881b0b9525f7455f7a688b53ca6ba443028d8d4f04a3f7a39fe25692d815d7c",
+  "sourcePatchSHA256": "97cd75c564d22d21cd87b851d76e04ed895dd1b8707ea45fbfbb1ce56a32ef37",
+  "buildCommand": [
+    "go",
+    "build",
+    "-o",
+    "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-4b62kczr/profile-query",
+    "./cmd/profile-query"
+  ],
+  "command": [
+    "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-4b62kczr/profile-query",
+    "--config",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-atom-predicate-attempt19/config.json",
+    "--out",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-atom-predicate-attempt19/candidate/profiles"
+  ],
+  "environment": {
+    "GOGC": null,
+    "GOMEMLIMIT": null,
+    "GOMAXPROCS": null,
+    "GODEBUG": null
+  },
+  "purpose": "Allocation and CPU diagnostic on all 64 graphs; not HTTP or P95."
+}

@@ -1,0 +1,44 @@
+[
+  {
+    "name": "compare",
+    "argv": [
+      "python3",
+      "/tmp/graphite-atom-attempt19-evidence/compare.py"
+    ],
+    "exitCode": 1
+  },
+  {
+    "name": "verify-comparison",
+    "argv": [
+      "python3",
+      "/tmp/graphite-atom-attempt19-evidence/verify-comparison.py"
+    ],
+    "exitCode": 0
+  },
+  {
+    "name": "b595",
+    "argv": [
+      "python3",
+      "/tmp/graphite-atom-attempt19-evidence/verify_b595.py"
+    ],
+    "exitCode": 0
+  },
+  {
+    "name": "numeric-spellings",
+    "argv": [
+      "python3",
+      "/tmp/graphite-atom-attempt19-evidence/numeric-spelling-audit.py"
+    ],
+    "exitCode": 0
+  },
+  {
+    "name": "original1048",
+    "argv": [
+      "python3",
+      "/tmp/graphite-atom-attempt19-evidence/summarize_original.py",
+      "--verification",
+      "/tmp/graphite-atom-attempt19-evidence/candidate-output"
+    ],
+    "exitCode": 0
+  }
+]
