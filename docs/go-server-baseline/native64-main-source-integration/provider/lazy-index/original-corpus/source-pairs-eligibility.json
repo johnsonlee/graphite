@@ -1,0 +1,66 @@
+[
+  {
+    "eligible": false,
+    "ordinaryEligible": true
+  },
+  {
+    "eligible": true,
+    "ordinaryEligible": false
+  },
+  {
+    "eligible": false,
+    "ordinaryEligible": true
+  },
+  {
+    "eligible": false,
+    "ordinaryEligible": false
+  },
+  {
+    "eligible": false,
+    "ordinaryEligible": true
+  },
+  {
+    "eligible": false,
+    "ordinaryEligible": true
+  },
+  {
+    "eligible": false,
+    "ordinaryEligible": true
+  },
+  {
+    "eligible": true,
+    "ordinaryEligible": false
+  },
+  {
+    "eligible": false,
+    "ordinaryEligible": true
+  },
+  {
+    "eligible": true,
+    "ordinaryEligible": false
+  },
+  {
+    "eligible": false,
+    "ordinaryEligible": true
+  },
+  {
+    "eligible": false,
+    "ordinaryEligible": false
+  },
+  {
+    "eligible": false,
+    "ordinaryEligible": true
+  },
+  {
+    "eligible": false,
+    "ordinaryEligible": true
+  },
+  {
+    "eligible": false,
+    "ordinaryEligible": true
+  },
+  {
+    "eligible": true,
+    "ordinaryEligible": false
+  }
+]

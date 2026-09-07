@@ -1,0 +1,18 @@
+?   	github.com/johnsonlee/graphite/graphite-server/internal/cypher/cmd/normalize	[no test files]
+?   	github.com/johnsonlee/graphite/graphite-server/internal/cypher/generated	[no test files]
+?   	github.com/johnsonlee/graphite/graphite-server/internal/web	[no test files]
+ok  	github.com/johnsonlee/graphite/graphite-server/cmd/graphite-server	2.135s
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/analysis	1.406s
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/analysis/c4	2.430s
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/cypher	2.719s
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/javamath	2.982s
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/javaregex	2.937s
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/javastring	3.491s
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/profiling	3.775s
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/query	39.143s
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/server	3.832s
+--- FAIL: TestProjectionPropertyOffsetConsumption (0.00s)
+    projection_property_test.go:63: -9223372036854775808 true <nil>
+FAIL
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/store	2.441s
+FAIL

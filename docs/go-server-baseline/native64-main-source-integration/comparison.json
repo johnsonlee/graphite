@@ -1,0 +1,161 @@
+{
+  "all14CompleteResponsesEqual": true,
+  "sourceAndBinaryUnchanged": true,
+  "observations": [
+    {
+      "group": "global64",
+      "name": "wrapped-firstLastGraphBimodalClassPrefix",
+      "completeResponseEqual": true,
+      "baseSeconds": 13.1320735,
+      "candidateSeconds": 16.76249875,
+      "baseCPU": 72.69115,
+      "candidateCPU": 81.477525,
+      "baseAllocationBytes": 1837234128,
+      "candidateAllocationBytes": 9281741192
+    },
+    {
+      "group": "global64",
+      "name": "wrapped-firstLastGraphBimodalClassPrefix-repeat",
+      "completeResponseEqual": true,
+      "baseSeconds": 2.485200667,
+      "candidateSeconds": 11.54889,
+      "baseCPU": 16.21718099999999,
+      "candidateCPU": 54.96467000000001,
+      "baseAllocationBytes": 1054277592,
+      "candidateAllocationBytes": 3759881000
+    },
+    {
+      "group": "global64",
+      "name": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "completeResponseEqual": true,
+      "baseSeconds": 4.597433875,
+      "candidateSeconds": 0.314373125,
+      "baseCPU": 22.374278,
+      "candidateCPU": 2.066475000000004,
+      "baseAllocationBytes": 5804046248,
+      "candidateAllocationBytes": 268459048
+    },
+    {
+      "group": "global64",
+      "name": "global-wide-wrapped-case-insensitive-distinct-dense-repeat",
+      "completeResponseEqual": true,
+      "baseSeconds": 4.50582875,
+      "candidateSeconds": 0.295037458,
+      "baseCPU": 21.10856899999999,
+      "candidateCPU": 1.7950600000000243,
+      "baseAllocationBytes": 367932272,
+      "candidateAllocationBytes": 268426608
+    },
+    {
+      "group": "global64",
+      "name": "global-wide-distribution-broad-all-64",
+      "completeResponseEqual": true,
+      "baseSeconds": 0.001822333,
+      "candidateSeconds": 0.001886041,
+      "baseCPU": 0.0018429999999973745,
+      "candidateCPU": 0.0019220000000004234,
+      "baseAllocationBytes": 1631792,
+      "candidateAllocationBytes": 1635024
+    },
+    {
+      "group": "global64",
+      "name": "tuple-threshold255",
+      "completeResponseEqual": true,
+      "baseSeconds": 4.454308125,
+      "candidateSeconds": 0.300361584,
+      "baseCPU": 20.63160700000001,
+      "candidateCPU": 1.9617620000000073,
+      "baseAllocationBytes": 384879800,
+      "candidateAllocationBytes": 285363864
+    },
+    {
+      "group": "global64",
+      "name": "tuple-threshold256",
+      "completeResponseEqual": true,
+      "baseSeconds": 4.095798834,
+      "candidateSeconds": 0.314104583,
+      "baseCPU": 19.068118000000002,
+      "candidateCPU": 2.0749779999999944,
+      "baseAllocationBytes": 385153960,
+      "candidateAllocationBytes": 285640288
+    },
+    {
+      "group": "global64",
+      "name": "tuple-threshold256-repeat",
+      "completeResponseEqual": true,
+      "baseSeconds": 4.257777958,
+      "candidateSeconds": 0.306682375,
+      "baseCPU": 19.792587999999995,
+      "candidateCPU": 2.0329070000000087,
+      "baseAllocationBytes": 385155048,
+      "candidateAllocationBytes": 285649136
+    },
+    {
+      "group": "routed-tuples",
+      "name": "first32-tuple-255",
+      "completeResponseEqual": true,
+      "baseSeconds": 2.684839541,
+      "candidateSeconds": 2.721952333,
+      "baseCPU": 12.621267000000003,
+      "candidateCPU": 12.827751000000006,
+      "baseAllocationBytes": 2254873784,
+      "candidateAllocationBytes": 2254879168
+    },
+    {
+      "group": "routed-tuples",
+      "name": "first32-tuple-256",
+      "completeResponseEqual": true,
+      "baseSeconds": 0.657520291,
+      "candidateSeconds": 0.649121375,
+      "baseCPU": 3.0998550000000065,
+      "candidateCPU": 3.059645999999997,
+      "baseAllocationBytes": 263265024,
+      "candidateAllocationBytes": 263278016
+    },
+    {
+      "group": "routed-tuples",
+      "name": "first32-tuple-256-repeat",
+      "completeResponseEqual": true,
+      "baseSeconds": 0.108875,
+      "candidateSeconds": 0.105849917,
+      "baseCPU": 0.509089000000003,
+      "candidateCPU": 0.5277020000000037,
+      "baseAllocationBytes": 48146264,
+      "candidateAllocationBytes": 48153048
+    },
+    {
+      "group": "routed-tuples",
+      "name": "last32-tuple-255",
+      "completeResponseEqual": true,
+      "baseSeconds": 1.6980626669999999,
+      "candidateSeconds": 1.7198042500000001,
+      "baseCPU": 8.126435999999995,
+      "candidateCPU": 8.285312000000001,
+      "baseAllocationBytes": 3449737664,
+      "candidateAllocationBytes": 3449736272
+    },
+    {
+      "group": "routed-tuples",
+      "name": "last32-tuple-256",
+      "completeResponseEqual": true,
+      "baseSeconds": 0.407417833,
+      "candidateSeconds": 0.404614666,
+      "baseCPU": 1.9000479999999973,
+      "candidateCPU": 1.9052089999999975,
+      "baseAllocationBytes": 185390720,
+      "candidateAllocationBytes": 185387280
+    },
+    {
+      "group": "routed-tuples",
+      "name": "last32-tuple-256-repeat",
+      "completeResponseEqual": true,
+      "baseSeconds": 0.075704708,
+      "candidateSeconds": 0.075402209,
+      "baseCPU": 0.3477659999999787,
+      "candidateCPU": 0.36398500000001377,
+      "baseAllocationBytes": 47797152,
+      "candidateAllocationBytes": 47804384
+    }
+  ],
+  "scope": "Single sequential instrumented observations, not P95 or main-relative speedup."
+}

@@ -3,7 +3,6 @@ package query
 import (
 	"context"
 	"runtime"
-	"sort"
 
 	"github.com/johnsonlee/graphite/graphite-server/internal/cypher"
 	"github.com/johnsonlee/graphite/graphite-server/internal/store"
@@ -331,174 +330,16 @@ func (e evaluator) ordinarySourceRows(source Graph, plan *ordinaryProjectionPlan
 	return rows
 }
 func (e evaluator) ordinaryCandidateIterator(source Graph, plan *ordinaryProjectionPlan, limit int) ordinaryNodeIterator {
-	index, retained, err := source.Store.RetainedProjectionIndex(e.ctx)
-	failProjectionRead(err)
-	raw := false
-	var ids []int32
-	candidatesPrepared := false
-	if !retained {
-		forcePersisted := plan.forcePersisted || plan.scoped && plan.sourceCount < 40
-		if forcePersisted {
-			prepared, err := source.Store.PreparedProjectionFile(e.ctx)
+	defer ordinarySourceFailure()
+	next := e.mainCandidateIterator(source, plan.mainSourceSpec(), limit)
+	return func() (store.Node, bool) { defer ordinarySourceFailure(); return next(e.ctx) }
+}
+
+func ordinarySourceFailure() {
+	if value := recover(); value != nil {
+		if err, ok := value.(error); ok && err == store.ErrStoreClosed {
 			failProjectionRead(err)
-			if prepared {
-				index, _, err = source.Store.PrepareDistinctStringIndex(e.ctx, store.DistinctProjectionOptions{SourceCount: 1, Limit: limit})
-				failProjectionRead(err)
-				raw = index.Raw
-			} else {
-				raw = true
-			}
-		} else if plan.sourceCount >= 40 {
-			view, ok, err := source.Store.PrepareDistinctStringIndex(e.ctx, store.DistinctProjectionOptions{SourceCount: 40, Limit: limit, InitializeMappedView: true})
-			failProjectionRead(err)
-			var exact []map[int32]bool
-			mappedExact := false
-			if ok {
-				exact, mappedExact = e.ordinaryExactMatches(source, view, plan)
-			}
-			if mappedExact && !ordinaryAnyExact(exact) {
-				ids = []int32{}
-				candidatesPrepared = true
-			} else if mappedExact && ordinarySharedMatcher(plan) {
-				ids = e.ordinaryMappedIDs(source, view, plan, exact)
-				candidatesPrepared = true
-			} else {
-				waves := mappedExact && e.ordinaryExactCanFill(view, plan, exact, limit)
-				ids, candidatesPrepared = e.ordinaryParallelCandidates(source, plan, limit, exact, waves)
-				if !candidatesPrepared {
-					index, _, err = source.Store.PrepareDistinctStringIndex(e.ctx, store.DistinctProjectionOptions{SourceCount: 40, Limit: limit, SkipPreparedPreference: true})
-					failProjectionRead(err)
-					raw = index.Raw
-				}
-			}
-		} else if plan.sourceCount > 1 {
-			raw = true
-		} else {
-			ids, candidatesPrepared = e.ordinaryParallelCandidates(source, plan, limit, nil, false)
-			if !candidatesPrepared {
-				index, _, err = source.Store.PrepareDistinctStringIndex(e.ctx, store.DistinctProjectionOptions{SourceCount: 1, Limit: limit, SkipPreparedPreference: true, CannotMatch: func() bool { return e.distinctCannotMatch(source, plan.indexedDistinctPlan) }})
-				failProjectionRead(err)
-				raw = index.Raw
-			}
 		}
-	}
-	if !candidatesPrepared {
-		if raw {
-			ids = source.Store.NodesOfKind("CallSiteNode")
-		} else {
-			ids = e.ordinaryLimitedIndexIDs(source, index, plan, limit)
-		}
-	}
-	position := 0
-	callsite := func() (store.Node, bool) {
-		for position < len(ids) {
-			e.check()
-			id := ids[position]
-			position++
-			if raw {
-				sids, err := source.Store.ProjectionStringIDs(e.ctx, id)
-				failProjectionRead(err)
-				matched := false
-				for _, atom := range plan.atoms {
-					p := distinctCallSiteProperties[atom.property]
-					var text string
-					var err error
-					if len(source.Store.Strings) <= 1<<16 {
-						text, err = source.Store.ProjectionArrayString(e.ctx, sids[p])
-					} else {
-						text, err = source.Store.ProjectionString(e.ctx, sids[p])
-					}
-					failProjectionRead(err)
-					if e.distinctAtomMatches(atom, text) {
-						matched = true
-						break
-					}
-				}
-				if !matched {
-					continue
-				}
-			}
-			node, present, err := source.Store.ProjectionCandidateNode(e.ctx, id)
-			failProjectionRead(err)
-			if !present {
-				continue
-			}
-			if node.Kind != "CallSiteNode" && !raw {
-				if candidatesPrepared {
-					functionError("ClassCastException", "Cannot cast io.johnsonlee.graphite.core."+node.Kind+" to io.johnsonlee.graphite.core.CallSiteNode")
-				}
-				continue
-			}
-			if plan.generic {
-				_, err := source.Store.ProjectionNodeOrder(e.ctx, node.ID)
-				failProjectionRead(err)
-			}
-			return node, true
-		}
-		if index != nil && !raw && !candidatesPrepared {
-			e.ordinaryCacheNodes(index, plan, limit, ids)
-		}
-		return store.Node{}, false
-	}
-	if !plan.generic || len(source.Store.NodesOfKind("AnnotationNode")) == 0 {
-		return callsite
-	}
-	annotationIDs := source.Store.NodesOfKind("AnnotationNode")
-	ai := 0
-	annotation := func() (store.Node, bool) {
-		for ai < len(annotationIDs) {
-			id := annotationIDs[ai]
-			ai++
-			node, err := source.Store.CandidateNode(e.ctx, id)
-			failProjectionRead(err)
-			for _, atom := range plan.atoms {
-				if e.distinctAtomMatches(atom, NodeProperty(node, atom.property)) {
-					return node, true
-				}
-			}
-		}
-		return store.Node{}, false
-	}
-	// main's sequence merge obtains one node from each source before choosing the
-	// earliest offset. A later-position first candidate can therefore throw first.
-	iterators := []ordinaryNodeIterator{callsite, annotation}
-	heads := make([]store.Node, len(iterators))
-	present := make([]bool, len(iterators))
-	orders := make([]int64, len(iterators))
-	initialized := false
-	advance := -1
-	return func() (store.Node, bool) {
-		if !initialized {
-			for i, next := range iterators {
-				heads[i], present[i] = next()
-				if present[i] {
-					order, err := source.Store.ProjectionNodeOrder(e.ctx, heads[i].ID)
-					failProjectionRead(err)
-					orders[i] = order
-				}
-			}
-			initialized = true
-		}
-		if advance >= 0 {
-			heads[advance], present[advance] = iterators[advance]()
-			if present[advance] {
-				order, err := source.Store.ProjectionNodeOrder(e.ctx, heads[advance].ID)
-				failProjectionRead(err)
-				orders[advance] = order
-			}
-			advance = -1
-		}
-		available := []int{}
-		for i, yes := range present {
-			if yes {
-				available = append(available, i)
-			}
-		}
-		if len(available) == 0 {
-			return store.Node{}, false
-		}
-		sort.SliceStable(available, func(a, b int) bool { return orders[available[a]] < orders[available[b]] })
-		advance = available[0]
-		return heads[advance], true
+		panic(value)
 	}
 }

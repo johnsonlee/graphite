@@ -1,0 +1,28 @@
+{
+  "loader": [
+    "go test -race ./internal/store -run Test(Review.*|MainIndex.*)$ -count=20"
+  ],
+  "hot": [
+    "go test -race ./internal/query ./internal/store -run ^TestReviewMain|^TestReviewClose|^TestMainIndex|^TestMainMapped -count=10",
+    "go vet ./internal/query ./internal/store"
+  ],
+  "final": [
+    "go test -race ./internal/query ./internal/store -run ^TestReviewMain|^TestReviewClose|^TestMainIndex|^TestMainMapped|^TestMainStringSource -count=5"
+  ],
+  "rangeOracle": {
+    "javac": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/javac",
+      "-cp",
+      "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "-d",
+      "/tmp/graphite-main-source-independent-review/range-oracle/classes",
+      "/tmp/graphite-main-source-independent-review/range-oracle/RangeOracle.java"
+    ],
+    "java": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-cp",
+      "/tmp/graphite-main-source-independent-review/range-oracle/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "RangeOracle"
+    ]
+  }
+}

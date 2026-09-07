@@ -147,6 +147,10 @@ func (c *syncProjectionObserver) observe() {
 	frames := runtime.CallersFrames(pcs[:runtime.Callers(2, pcs)])
 	for {
 		f, more := frames.Next()
+		// Count the projection-entry checkpoint, not recursive evaluator checks.
+		if strings.HasSuffix(f.Function, "evaluator.eval") {
+			return
+		}
 		if strings.Contains(f.Function, "genericDistinctScanner).next.func1") {
 			c.gets++
 			break

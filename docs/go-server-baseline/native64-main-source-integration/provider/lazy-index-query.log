@@ -1,0 +1,4 @@
+# github.com/johnsonlee/graphite/graphite-server/internal/query [github.com/johnsonlee/graphite/graphite-server/internal/query.test]
+internal/query/main_string_postings.go:44:14: e.distinctStringID undefined (type evaluator has no field or method distinctStringID)
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/query [build failed]
+FAIL

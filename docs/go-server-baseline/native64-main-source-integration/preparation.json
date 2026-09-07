@@ -1,0 +1,14 @@
+{
+  "baseRevision": "10236487",
+  "candidateWorktree": "/tmp/graphite-go-main-source-root-10236487",
+  "fixture": "/tmp/graphite-main-source-native-real64-10236487",
+  "graphs": 64,
+  "globalQueries": 8,
+  "routedQueries": 6,
+  "copyCommand": [
+    "/bin/cp",
+    "-cRp"
+  ],
+  "oracleSource": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-exact-tuple-integration",
+  "purpose": "Functional integration of main lazy candidates with existing tuple index; fixed paired diagnostics, not P95 acceptance."
+}

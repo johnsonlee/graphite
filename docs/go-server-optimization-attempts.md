@@ -488,3 +488,33 @@ diagnostics, fresh main HTTP bodies, all shipping phases and source/fixture
 identities. Collector/setup failures remain recorded without source/test masking.
 This corrects a functional boundary; overall100% parity and main-relative10x P95
 still require their full independent acceptance evidence.
+
+
+### 2026-09-07 follow-up: main-semantic lazy candidate sources
+
+This functional correction separates main's selective candidate capability from
+the stricter A6/A7 certificate and shares ordinary source helpers. Generic
+DISTINCT now preserves selected-node decoding, concrete head ordering, owning
+values, current-task cancellation and mapped/retained loader lifetime.
+
+| Item | Evidence / status |
+|---|---|
+| Native base / candidate | `10236487`;41-file provider incremental `aee8349b9c860736ab6a7dd51efb3ac0841603f9e291a2942a9e8dd4631a1cc7`; synchronous executor, Attempts12/13 and exact tuples preserved |
+| Independent evidence |1205 provider and53 review files rehashed;14/16 production files byte-identical,2 existing tuple/decoder deltas reviewed;2260 untouched base module files preserved |
+| Correctness |Whole-module race/vet pass,2301 source/testdata files match root. Original1048 improves968→994,26 new full main matches;34 main-success/native-error,16 different errors,4 different rows retained.580 DISTINCT/122 ordinary preserved;58 new source scenarios give122 full actual-main responses |
+| History |All66 exported artifact responses match provider.45 speculative cancelled-task mappedView flag differences retained; no normalization of rows/errors or reduced denominator |
+| Real64 |1152 persisted files/10,338,207,518bytes; separate COW copies, four sequential paired global8/routed6 processes, all14 complete bodies equal pinned main. Original/clone source and graph hashes unchanged after Close |
+| Prefix first |Execute+marshal13.132074→16.762499s;CPU72.691150→81.477525s;allocation1,837,234,128→9,281,741,192bytes — explicit regression |
+| Prefix repeat |2.485201→11.548890s;CPU16.217181→54.964670s;allocation1,054,277,592→3,759,881,000bytes — explicit regression |
+| Dense history |First4.597434→0.314373s,CPU22.374278→2.066475s;repeat4.505829→0.295037s,CPU21.108569→1.795060s. Candidate prefix already built64 mapped views; not independent cold-query evidence |
+| Tuple controls |Routed six full states identical, actual table counts0→31→62; construction and repeat costs broadly unchanged. Global64 tables remain0; all raw before/after observations retained |
+| Shipping HTTP |Three fresh actual command processes,56/56 full typed main bodies/headers/catalogs;147 compiler/embed inputs and2301 source/fixture identities verified. Default60s/capacity4,no helpers; SIGTERM143/no forced kill/ports released |
+| Decision |Keep required functional fidelity and shared candidate foundation, explicitly retain prefix latency/CPU/allocation regressions for a separate measured optimization |
+| Limits |Single instrumented co-tenant observations,no CPU sampler,no P95/peakRSS/main-relative10x claim. B/C/D/E/relationship consumers and global JVM budget/GraphWork contracts remain separate incomplete work |
+
+`docs/go-server-baseline/native64-main-source-integration/` preserves all frozen
+inputs, root integration, full outputs, counter/state comparisons, shipping
+verification and cleanup. The build collector's initial `/tmp` versus
+`/private/tmp` error remains recorded; no source/test change masked it.
+This is a functional follow-up, leaving optimization attempt15 unused and the
+full compatibility/P95 objective and final benchmark-regression-gate open.

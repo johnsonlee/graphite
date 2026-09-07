@@ -240,6 +240,7 @@ type DistinctProjectionOptions struct {
 	PreferMappedView       bool
 	InitializeMappedView   bool
 	SkipPreparedPreference bool
+	MainSource             bool
 	CannotMatch            func() bool
 }
 
@@ -280,11 +281,18 @@ func (s *Store) PrepareDistinctStringIndex(ctx context.Context, options Distinct
 	if info, err := os.Stat(filepath.Join(s.dir, callSiteIndexFile)); !options.SkipPreparedPreference && options.SourceCount == 1 && err == nil && info.Mode().IsRegular() {
 		rawFallback = true
 	}
-	view, available, err := s.TryCallSiteStringIndex(ctx)
+	var view *CallSiteStringIndex
+	var available bool
+	var err error
+	if options.MainSource {
+		view, available, err = s.tryMainCallSiteStringIndex(ctx, options.InitializeMappedView)
+	} else {
+		view, available, err = s.TryCallSiteStringIndex(ctx)
+	}
 	if err != nil {
 		return nil, false, err
 	}
-	if available {
+	if available && !options.MainSource {
 		// Main's persisted reader validates each posting against its mapped offset
 		// accessor, independently of graph.nodeindex used by the general Go store.
 		for property := CallerClass; property <= CalleeName && available; property++ {

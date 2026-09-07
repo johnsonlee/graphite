@@ -1,0 +1,66 @@
+[
+  {
+    "name": "wrapped-firstLastGraphBimodalClassPrefix",
+    "completeStateEqual": false,
+    "baseTupleCount": 0,
+    "candidateTupleCount": 0,
+    "baseMappedCount": 0,
+    "candidateMappedCount": 64
+  },
+  {
+    "name": "wrapped-firstLastGraphBimodalClassPrefix-repeat",
+    "completeStateEqual": false,
+    "baseTupleCount": 0,
+    "candidateTupleCount": 0,
+    "baseMappedCount": 0,
+    "candidateMappedCount": 64
+  },
+  {
+    "name": "global-wide-wrapped-case-insensitive-distinct-dense",
+    "completeStateEqual": false,
+    "baseTupleCount": 0,
+    "candidateTupleCount": 0,
+    "baseMappedCount": 64,
+    "candidateMappedCount": 64
+  },
+  {
+    "name": "global-wide-wrapped-case-insensitive-distinct-dense-repeat",
+    "completeStateEqual": false,
+    "baseTupleCount": 0,
+    "candidateTupleCount": 0,
+    "baseMappedCount": 64,
+    "candidateMappedCount": 64
+  },
+  {
+    "name": "global-wide-distribution-broad-all-64",
+    "completeStateEqual": false,
+    "baseTupleCount": 0,
+    "candidateTupleCount": 0,
+    "baseMappedCount": 64,
+    "candidateMappedCount": 64
+  },
+  {
+    "name": "tuple-threshold255",
+    "completeStateEqual": false,
+    "baseTupleCount": 0,
+    "candidateTupleCount": 0,
+    "baseMappedCount": 64,
+    "candidateMappedCount": 64
+  },
+  {
+    "name": "tuple-threshold256",
+    "completeStateEqual": false,
+    "baseTupleCount": 0,
+    "candidateTupleCount": 0,
+    "baseMappedCount": 64,
+    "candidateMappedCount": 64
+  },
+  {
+    "name": "tuple-threshold256-repeat",
+    "completeStateEqual": false,
+    "baseTupleCount": 0,
+    "candidateTupleCount": 0,
+    "baseMappedCount": 64,
+    "candidateMappedCount": 64
+  }
+]

@@ -1,0 +1,12 @@
+--- FAIL: TestGenericDistinctCloseAtDemandBoundary (0.00s)
+    generic_distinct_edges_test.go:101: next after close=&query.Error{Message:"store is closed", Class:"CypherException", NullMessage:false}
+--- FAIL: TestGenericDistinctEligibility (0.00s)
+    --- FAIL: TestGenericDistinctEligibility/MATCH_(n)_WHERE_n.caller_class_STARTS_WITH_'x'_RETURN_DISTINCT_auditUnknown(n)_LIMIT_2 (0.00s)
+        generic_distinct_edges_test.go:132: accept=true want=false
+    --- FAIL: TestGenericDistinctEligibility/MATCH_(n)_WHERE_n.caller_class_STARTS_WITH_'x'_RETURN_DISTINCT_n_LIMIT_2 (0.00s)
+        generic_distinct_edges_test.go:132: accept=true want=false
+--- FAIL: TestGenericSyncProjectionModesAndBorrowedScratch (0.00s)
+    generic_distinct_sync_test.go:176: selectedfalse values[99] projections5 want2
+FAIL
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/query	4.930s
+FAIL

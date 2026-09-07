@@ -1,0 +1,77 @@
+[
+  {
+    "name": "global64",
+    "command": [
+      "python3",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/http-shipping/replay-http.py",
+      "--binary",
+      "/tmp/graphite-main-source-http-binary-10236487",
+      "--out",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/http-shipping/global64",
+      "--source-identity",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/http-shipping/source-identity.json",
+      "--port",
+      "18868",
+      "--frozen",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/http-shipping/threshold-main.json",
+      "--required",
+      "8"
+    ],
+    "required": 8,
+    "oracleSHA256": "9ae2b66170deb75a37bd6812faeae89fca67084b76fe21bbc97c75eddeb4de00",
+    "all1152FixtureHashesVerifiedBefore": true,
+    "startedUTC": "2026-09-07T03:11:56.078999+00:00",
+    "exitCode": 0,
+    "finishedUTC": "2026-09-07T03:12:38.017760+00:00"
+  },
+  {
+    "name": "routed32",
+    "command": [
+      "python3",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/http-shipping/replay-http.py",
+      "--binary",
+      "/tmp/graphite-main-source-http-binary-10236487",
+      "--out",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/http-shipping/routed32",
+      "--source-identity",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/http-shipping/source-identity.json",
+      "--port",
+      "18869",
+      "--frozen",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/http-shipping/routed-main.json",
+      "--required",
+      "6"
+    ],
+    "required": 6,
+    "oracleSHA256": "4f845fcb5b36ff9620176920a7086224ab16890f95fe491a943ec2539781c78f",
+    "all1152FixtureHashesVerifiedBefore": true,
+    "startedUTC": "2026-09-07T03:12:42.752778+00:00",
+    "exitCode": 0,
+    "finishedUTC": "2026-09-07T03:13:04.064412+00:00"
+  },
+  {
+    "name": "regression42",
+    "command": [
+      "python3",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/http-shipping/replay-http.py",
+      "--binary",
+      "/tmp/graphite-main-source-http-binary-10236487",
+      "--out",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/http-shipping/regression42",
+      "--source-identity",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/http-shipping/source-identity.json",
+      "--port",
+      "18870",
+      "--frozen",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-preflight/queries/observations.json",
+      "--required",
+      "42"
+    ],
+    "required": 42,
+    "oracleSHA256": "a435e053ea81a1333b5d16d530d9c7534c9cb4ee06aeffc44b68a45dd16bddd8",
+    "all1152FixtureHashesVerifiedBefore": true,
+    "startedUTC": "2026-09-07T03:13:08.496614+00:00",
+    "exitCode": 0,
+    "finishedUTC": "2026-09-07T03:14:24.020481+00:00"
+  }
+]

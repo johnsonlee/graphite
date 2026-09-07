@@ -1,0 +1,39 @@
+--- /tmp/graphite-go-main-candidate-87aaf0ad/graphite-server/internal/store/store.go	2026-09-07 11:33:53
++++ /tmp/graphite-go-main-source-root-10236487/graphite-server/internal/store/store.go	2026-09-07 12:03:51
+@@ -2,7 +2,6 @@
+ 
+ import (
+ 	"bufio"
+-	"bytes"
+ 	"errors"
+ 	"fmt"
+ 	"io"
+@@ -246,6 +245,9 @@
+ 	}
+ 	s.persistProjectionOnCloseLocked()
+ 	st.closed = true
++	if index := s.distinctProjection.index; index != nil && index.ordinary != nil {
++		index.ordinary.exactTuple = nil
++	}
+ 	s.distinctProjection = distinctProjectionState{}
+ 	if st.closing != nil {
+ 		close(st.closing)
+@@ -292,13 +294,13 @@
+ 	if !ok {
+ 		return Node{}, fmt.Errorf("%w: %d", ErrNodeNotFound, id)
+ 	}
+-	var reader io.Reader
+-	if s.mappedData != nil {
+-		reader = bytes.NewReader(s.mappedData[loc.offset:])
++	var d *decoder
++	if s.mappedData != nil {
++		d = newMappedNodeDecoder(s.mappedData[loc.offset:], s.Strings)
+ 	} else {
+-		reader = bufio.NewReader(io.NewSectionReader(s.file, loc.offset, s.size-loc.offset))
++		reader := bufio.NewReader(io.NewSectionReader(s.file, loc.offset, s.size-loc.offset))
++		d = newDecoder(reader, s.size-loc.offset, s.Strings)
+ 	}
+-	d := newDecoder(reader, s.size-loc.offset, s.Strings)
+ 	d.version = s.FormatVersion
+ 	n := d.node()
+ 	if d.err != nil {

@@ -1,0 +1,32 @@
+{
+  "enum-type": {
+    "node": 14,
+    "offset": 77,
+    "originalSID": 3,
+    "SID": 2147483647
+  },
+  "local-type": {
+    "node": 16,
+    "offset": 128,
+    "originalSID": 14,
+    "SID": 2147483647
+  },
+  "field-type": {
+    "node": 18,
+    "offset": 165,
+    "originalSID": 14,
+    "SID": 2147483647
+  },
+  "field-name": {
+    "node": 18,
+    "offset": 161,
+    "originalSID": 12,
+    "SID": 2147483647
+  },
+  "annotation-name": {
+    "node": 26,
+    "offset": 303,
+    "originalSID": 1,
+    "SID": 2147483647
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "files": 2301,
+  "allEqualFullModuleTestedCandidate": true,
+  "baseRevision": "10236487",
+  "excludedExistingIgnoredOutput": "graphite-server/graphite-server"
+}

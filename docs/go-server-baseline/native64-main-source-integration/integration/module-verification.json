@@ -1,0 +1,29 @@
+{
+  "checks": [
+    {
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./..."
+      ],
+      "cwd": "/tmp/graphite-go-main-source-root-10236487/graphite-server",
+      "exitCode": 0,
+      "elapsedSeconds": 48.64123892784119,
+      "log": "race.log"
+    },
+    {
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "cwd": "/tmp/graphite-go-main-source-root-10236487/graphite-server",
+      "exitCode": 0,
+      "elapsedSeconds": 1.495131015777588,
+      "log": "vet.log"
+    }
+  ],
+  "sourceFiles": 2301,
+  "sourceUnchanged": true
+}

@@ -1,0 +1,220 @@
+{
+  "frozenAt": "2026-09-07T02:49:53.160837+00:00",
+  "verdict": "No additional blocker found in bounded final review; corrected mapped validation history and copy cancellation issue verified. Not complete parity or performance acceptance.",
+  "authorProductionManifestSHA256": "6abf76a8bffd1cb2b44c7d6e066d9eb8dd108c5f57e2bdcac9f68dc134b8d862",
+  "moduleDirectoryPolicy": "Copied modules remain available outside this receipt file list. snapshot.json records full original copy hashes; final-production-receipt.json verifies all16 final changed production files; independent-tests contains the exact added tests.",
+  "files": {
+    "main.json": {
+      "sha256": "5bda11fe2f8f2e0d9112ab46104ebcd8abf8ea13f75703523311e680aa47b30a",
+      "bytes": 2381
+    },
+    "INITIAL-REVIEW.md": {
+      "sha256": "69adfab0034ad344460809b28c445465a616a8c4961ce0097457e871d2fa5ae7",
+      "bytes": 3620
+    },
+    "snapshot.json": {
+      "sha256": "e04c884e1cd81bc8d6cf47bd5896b0dc98d3e1ebf021dd10ebf4aad1f88ffdcb",
+      "bytes": 402999
+    },
+    "commands.json": {
+      "sha256": "3bcde5204f685cbbea3cc88745a58d0ec1619e48ef8e09781d9bc6a9aa07af7d",
+      "bytes": 1029
+    },
+    "author-production-files.json": {
+      "sha256": "6abf76a8bffd1cb2b44c7d6e066d9eb8dd108c5f57e2bdcac9f68dc134b8d862",
+      "bytes": 2008
+    },
+    "capture-heads.py": {
+      "sha256": "f0e2145663ac5b14584f1c4e2ffebe0d3a13fecb13997de93e41643d39c2733f",
+      "bytes": 2544
+    },
+    "setup-note.txt": {
+      "sha256": "179a8778d5dcbec56ab59cd5dfb8e465fb95fc8f4ac4f94a9e4e494aa17894ff",
+      "bytes": 453
+    },
+    "cases.json": {
+      "sha256": "d4f50c62f7e62fcceafb30960d2b9cd602312cf657a251988441ccaa9ffa9510",
+      "bytes": 610
+    },
+    "lifecycle-test-list.txt": {
+      "sha256": "0fcaad69224c86620be3a546079d68d3fa2fbfbc22ab3a3c6de18768c9ccb578",
+      "bytes": 587
+    },
+    "PlannerOracle.java": {
+      "sha256": "2c1e5ce7e92c571f8ceaae33d785e16aa386d7da56ab055d9bd12be68474ec03",
+      "bytes": 2098
+    },
+    "lifecycle-initial-race.log": {
+      "sha256": "28fcd0ba9f5272a34e9a516f58e744b30415add7fc56309b3fab4429d3b215f5",
+      "bytes": 74
+    },
+    "REVIEW.md": {
+      "sha256": "6f7c500f44ed6332f3fa8aaf881e9ad85660bd4eb4f8d39499b1f927310f3f77",
+      "bytes": 6083
+    },
+    "independent-initial-race.log": {
+      "sha256": "07ffdb9ca05183ca77b59b25a7feb4c2afc01b99629490661c5384997b801b50",
+      "bytes": 74
+    },
+    "final-production-receipt.json": {
+      "sha256": "9b210b8f8d9b5244a1701c52195c7f69a12d05fbcddae9555804ac66c17333fb",
+      "bytes": 5729
+    },
+    "independent-commands.json": {
+      "sha256": "ab96e1cf8fdc4a77fb71bd40fd7667c4cdbc545b4eaf2051f0d05da48745e9f6",
+      "bytes": 1210
+    },
+    "mutation.json": {
+      "sha256": "f1e4faff4daaf8c0517a5be5fd68d1f802a5715aa8d0f203ddf98acadc50f48c",
+      "bytes": 294
+    },
+    "javac.log": {
+      "sha256": "dd9f95dcb8d3c072111b1fdb39bcdeabb4f11a73837a8a2b59eeac0708355b5b",
+      "bytes": 166
+    },
+    "initial-vet.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "main.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "range-oracle/main.json": {
+      "sha256": "6bdc0b1331a72cad806beaf7a033817f00cb148333a43c4d3431e5e5b17d0fd9",
+      "bytes": 1999
+    },
+    "range-oracle/initial-path-error.json": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "range-oracle/javac.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "range-oracle/javac-final.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "range-oracle/RangeOracle.java": {
+      "sha256": "c12d47a265a5b56c3d32a81e27220d56c659395e4d5051f8c01924f00f3fc013",
+      "bytes": 2349
+    },
+    "range-oracle/main.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "range-oracle/initial-path-error.log": {
+      "sha256": "a8b7c9ccf1dc1f78a37060dedeb25d077d4c53399d421e1f7005760610547e83",
+      "bytes": 649
+    },
+    "fixture/graph.resources": {
+      "sha256": "fbe4481a9f205005bb0a8a6dbd944499310287ea7188f5443ddd1611a6a31ca3",
+      "bytes": 150
+    },
+    "fixture/graph.nodedata": {
+      "sha256": "548c95728eb3a03b3472fe0f5731babe98a3415f50bcb033a0fcadae9d103f89",
+      "bytes": 423
+    },
+    "fixture/graph.strings": {
+      "sha256": "a7e12e7636a6396f8adb3e64999c7d72d63b132ebb436df5873bfa4f6975d717",
+      "bytes": 669
+    },
+    "fixture/forward.graph": {
+      "sha256": "3679d417c7945e591afd5c0c09645bb9ea654fccc52438c7dc79ed0e0a8e9241",
+      "bytes": 8
+    },
+    "fixture/forward.properties": {
+      "sha256": "b6c52a66cf7bf62d3ffeac8e6c34272251446f4d64d10a757f4712f24c367036",
+      "bytes": 706
+    },
+    "fixture/graph.comparisons": {
+      "sha256": "99649b1c79a1a984dbaf78c3d77038852cf186e8b0adb7ecc97da5add24ab749",
+      "bytes": 24
+    },
+    "fixture/graph.labels": {
+      "sha256": "2c44818b3b600deba7bd6170bbc097269c98946e94ccb45541d46c8231f7597e",
+      "bytes": 4
+    },
+    "fixture/graph.typeindex": {
+      "sha256": "be67652c2a54b74f543e00bc696ba110e341dbb80a6a3d9297483faf6ac0484c",
+      "bytes": 280
+    },
+    "fixture/graph.nodeoffsets": {
+      "sha256": "aa71626c1b1d4050f042c10a7a69a2ff07c03d976eb865a80773922fcf0d3796",
+      "bytes": 256
+    },
+    "fixture/graph.metadata": {
+      "sha256": "4c8c47a145fea5dd4a37b858ace718f27587e02d37874e38e8d4c5ca53d04ad4",
+      "bytes": 240
+    },
+    "fixture/forward.offsets": {
+      "sha256": "d63273006a3020247605960f168572e50a4e3eda33cff2763dd81aae020351ad",
+      "bytes": 13
+    },
+    "fixture/graph.nodeindex": {
+      "sha256": "54cf522486908aa55f75f165bda0117cd48c5e3a57863f23714fcdf2740d5296",
+      "bytes": 216
+    },
+    "classes/PlannerOracle.class": {
+      "sha256": "3778d0f2d4b14c9f9c8b88949a9b70757594caae18889b09d955f6fed9e1124d",
+      "bytes": 5239
+    },
+    "latest/query-race.log": {
+      "sha256": "afed48fe3be3bdab4146ecbeabd55ffdf6343e258064634c2af467a45734d574",
+      "bytes": 74
+    },
+    "latest/snapshot.json": {
+      "sha256": "cb9e7beff47a9d5b0b35532f4cc6caf1ab242c85c903b3feea1f2616436cc24e",
+      "bytes": 330660
+    },
+    "latest/loader-race.log": {
+      "sha256": "602cdbd14a66efc14f99120a3077e23d2e89340690d16d949d69711bc4db7189",
+      "bytes": 74
+    },
+    "final-candidate/vet.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "final-candidate/snapshot.json": {
+      "sha256": "48b567fc8ec9b30a82bd24aecea906dc30bb625ced16145694430a35dcff5622",
+      "bytes": 330772
+    },
+    "final-candidate/final-race.log": {
+      "sha256": "f6189a9b7ba427bff9a376a1fe7683acceae6f80ad7dad38a913303bf10c0989",
+      "bytes": 148
+    },
+    "final-candidate/final-vet.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "final-candidate/main_posting_range.before-copy-check.go.txt": {
+      "sha256": "18b6e3766d2c7f1656fa9b3d1cbe40c65808c51d939eb48ecc2236abff234d0c",
+      "bytes": 2672
+    },
+    "final-candidate/independent-race.log": {
+      "sha256": "fb425fd2665c2f33ab6f76641c087dd5ac375aef30bd66120f8b259f9c035287",
+      "bytes": 148
+    },
+    "final-candidate/copy-check-delta.json": {
+      "sha256": "c191fee48649d46e148a6864b7f323f5a9a3451365fe4a44fe033885b4f297e4",
+      "bytes": 285
+    },
+    "independent-tests/main_index_review_test.go": {
+      "sha256": "7e35aad93f37887f6699ce6f44af143d385516e41c1af6f97751010c9dd05227",
+      "bytes": 3674
+    },
+    "independent-tests/main_source_review_test.go": {
+      "sha256": "4de01435800d8c29c12927b65e5471b5a9def060c54ba78b96d2502da172abac",
+      "bytes": 4161
+    },
+    "independent-tests/main_mapped_review_test.go": {
+      "sha256": "aff2be03832b056529eab1c1fd9a5c160ed40346e550a3526218e50f98b8f362",
+      "bytes": 2921
+    },
+    "range-oracle/classes/RangeOracle.class": {
+      "sha256": "66a25e1e02aa590d31ada7d22d3d27c773a23031d5a453c1469ddbe6b66f5390",
+      "bytes": 6582
+    }
+  }
+}

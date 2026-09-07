@@ -66,6 +66,12 @@ func genericJavaHash(value any) uint64 {
 			h += mix(text(k), genericJavaHash(item))
 		}
 		return mix(h, uint64(len(v)))
+	case store.Node:
+		return genericJavaHash(genericNodeFields(v))
+	case store.MethodDescriptor:
+		return genericJavaHash(genericMethodFields(v))
+	case qualifiedNode:
+		return mix(mix(12, text(v.GraphID)), uint64(v.Node.ID))
 	case store.EnumReference:
 		return mix(mix(11, text(v.EnumClass)), text(v.EnumName))
 	default:
@@ -77,6 +83,18 @@ func genericJavaEqual(a, b any) bool {
 		return a == nil && b == nil
 	}
 	switch x := a.(type) {
+	case store.Node:
+		y, ok := b.(store.Node)
+		return ok && genericJavaEqual(genericNodeFields(x), genericNodeFields(y))
+	case store.MethodDescriptor:
+		y, ok := b.(store.MethodDescriptor)
+		return ok && genericJavaEqual(genericMethodFields(x), genericMethodFields(y))
+	case store.EnumReference:
+		y, ok := b.(store.EnumReference)
+		return ok && genericJavaEqual(x.EnumClass, y.EnumClass) && genericJavaEqual(x.EnumName, y.EnumName)
+	case qualifiedNode:
+		y, ok := b.(qualifiedNode)
+		return ok && genericJavaEqual(x.GraphID, y.GraphID) && x.Node.ID == y.Node.ID
 	case int:
 		switch y := b.(type) {
 		case int:
@@ -142,4 +160,57 @@ func genericJavaEqual(a, b any) bool {
 	default:
 		return reflect.DeepEqual(a, b)
 	}
+}
+
+func genericMethodFields(m store.MethodDescriptor) []any {
+	parameters := make([]any, len(m.ParameterTypes))
+	for i, v := range m.ParameterTypes {
+		parameters[i] = v
+	}
+	return []any{m.DeclaringClass, m.Name, parameters, m.ReturnType}
+}
+
+// Kotlin Node data classes compare their semantic constructor fields. Preserve
+// boxed annotation values, but ignore Go's map emission-order bookkeeping.
+func genericNodeFields(n store.Node) []any {
+	values := []any{n.Kind, n.ID}
+	optionalString := func(p *string) any {
+		if p == nil {
+			return nil
+		}
+		return *p
+	}
+	optionalInt := func(p *int32) any {
+		if p == nil {
+			return nil
+		}
+		return *p
+	}
+	switch n.Kind {
+	case "EnumConstant":
+		values = append(values, n.EnumType, n.EnumName, n.EnumArguments)
+	case "LocalVariable":
+		values = append(values, n.Name, n.Type, n.Method)
+	case "FieldNode":
+		values = append(values, n.DeclaringClass, n.Name, n.Type, n.IsStatic)
+	case "ParameterNode":
+		values = append(values, n.Index, n.Type, n.Method)
+	case "ReturnNode":
+		values = append(values, n.Method, optionalString(n.ActualType))
+	case "CallSiteNode":
+		arguments := make([]any, len(n.Arguments))
+		for i, v := range n.Arguments {
+			arguments[i] = v
+		}
+		values = append(values, n.Caller, n.Callee, optionalInt(n.LineNumber), optionalInt(n.Receiver), arguments)
+	case "AnnotationNode":
+		values = append(values, n.Name, n.ClassName, n.MemberName, n.Values)
+	case "ResourceValueNode":
+		values = append(values, n.Path, n.Key, n.Value, n.Format, optionalString(n.Profile))
+	case "ResourceFileNode":
+		values = append(values, n.Path, n.Source, n.Format)
+	default:
+		values = append(values, n.Value)
+	}
+	return values
 }

@@ -1,0 +1,9 @@
+{
+  "unchangedBaseModuleFiles": 2260,
+  "patchFiles": 41,
+  "providerProductionExact": 14,
+  "providerProductionRootDeltas": [
+    "distinct_projection.go",
+    "store.go"
+  ]
+}

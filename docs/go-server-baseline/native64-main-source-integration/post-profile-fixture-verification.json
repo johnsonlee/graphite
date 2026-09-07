@@ -1,0 +1,14 @@
+[
+  {
+    "root": "/tmp/pr113-exp037-fixture.nXn4fg",
+    "files": 1152,
+    "allHashesMatch": true,
+    "noExtraGraphFiles": true
+  },
+  {
+    "root": "/tmp/graphite-main-source-native-real64-10236487",
+    "files": 1152,
+    "allHashesMatch": true,
+    "noExtraGraphFiles": true
+  }
+]

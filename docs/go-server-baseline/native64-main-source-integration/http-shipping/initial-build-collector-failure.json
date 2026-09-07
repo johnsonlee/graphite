@@ -1,0 +1,6 @@
+{
+  "stage": "After successful shipping build and go list, before any HTTP execution",
+  "error": "ValueError: /private/tmp Go package Dir is not in /tmp worktree subpath",
+  "correction": "Resolve worktree symlink in source identity collector only; no production or test change.",
+  "initialScriptSHA256": "806d4d4a0707304eeb6eb1355f933fa9a8c954c6ec8f3c2b9d884b7928b4cc3b"
+}

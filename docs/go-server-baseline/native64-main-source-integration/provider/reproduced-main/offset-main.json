@@ -1,0 +1,2002 @@
+[
+  {
+    "spec": {
+      "name": "offset-negative-90/1",
+      "sources": 1.0,
+      "fixtures": [
+        "offset-negative-90"
+      ],
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.id AS x LIMIT 1"
+    },
+    "targets": [
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.id AS x LIMIT 1",
+        "before": [
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "single"
+          }
+        ],
+        "error": "IndexOutOfBoundsException",
+        "message": null,
+        "after": [
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "single"
+          }
+        ]
+      },
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.id AS x LIMIT 1",
+        "before": [
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "single"
+          }
+        ],
+        "error": "IndexOutOfBoundsException",
+        "message": null,
+        "after": [
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "single"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "spec": {
+      "name": "offset-negative-90/2",
+      "sources": 2.0,
+      "fixtures": [
+        "offset-negative-90"
+      ],
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.id AS x LIMIT 1"
+    },
+    "targets": [
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.id AS x LIMIT 1",
+        "before": [
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g0"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g1"
+          }
+        ],
+        "error": "IndexOutOfBoundsException",
+        "message": null,
+        "after": [
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g0"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g1"
+          }
+        ]
+      },
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.id AS x LIMIT 1",
+        "before": [
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g0"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g1"
+          }
+        ],
+        "error": "IndexOutOfBoundsException",
+        "message": null,
+        "after": [
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g0"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g1"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "spec": {
+      "name": "offset-negative-90/40",
+      "sources": 40.0,
+      "fixtures": [
+        "offset-negative-90"
+      ],
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.id AS x LIMIT 1"
+    },
+    "targets": [
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.id AS x LIMIT 1",
+        "before": [
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g0"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g1"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g2"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g3"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g4"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g5"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g6"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g7"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g8"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g9"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g10"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g11"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g12"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g13"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g14"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g15"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g16"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g17"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g18"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g19"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g20"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g21"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g22"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g23"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g24"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g25"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g26"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g27"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g28"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g29"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g30"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g31"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g32"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g33"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g34"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g35"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g36"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g37"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g38"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g39"
+          }
+        ],
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": 2,
+            "$metadata": {
+              "graphIds": [
+                "g0",
+                "g1",
+                "g10",
+                "g11",
+                "g12",
+                "g13",
+                "g14",
+                "g15",
+                "g16",
+                "g17",
+                "g18",
+                "g19",
+                "g2",
+                "g20",
+                "g21",
+                "g22",
+                "g23",
+                "g24",
+                "g25",
+                "g26",
+                "g27",
+                "g28",
+                "g29",
+                "g3",
+                "g30",
+                "g31",
+                "g32",
+                "g33",
+                "g34",
+                "g35",
+                "g36",
+                "g37",
+                "g38",
+                "g39",
+                "g4",
+                "g5",
+                "g6",
+                "g7",
+                "g8",
+                "g9"
+              ]
+            }
+          }
+        ],
+        "after": [
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g0"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g1"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g2"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g3"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g4"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g5"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g6"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g7"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g8"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g9"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g10"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g11"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g12"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g13"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g14"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g15"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g16"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g17"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g18"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g19"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g20"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g21"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g22"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g23"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g24"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g25"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g26"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g27"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g28"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g29"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g30"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g31"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g32"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g33"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g34"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g35"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g36"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g37"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g38"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g39"
+          }
+        ]
+      },
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.id AS x LIMIT 1",
+        "before": [
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g0"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g1"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g2"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g3"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g4"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g5"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g6"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g7"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g8"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g9"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g10"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g11"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g12"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g13"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g14"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g15"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g16"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g17"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g18"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g19"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g20"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g21"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g22"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g23"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g24"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g25"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g26"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g27"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g28"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g29"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g30"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g31"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g32"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g33"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g34"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g35"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g36"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g37"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g38"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g39"
+          }
+        ],
+        "columns": [
+          "x"
+        ],
+        "rows": [
+          {
+            "x": 2,
+            "$metadata": {
+              "graphIds": [
+                "g0",
+                "g1",
+                "g10",
+                "g11",
+                "g12",
+                "g13",
+                "g14",
+                "g15",
+                "g16",
+                "g17",
+                "g18",
+                "g19",
+                "g2",
+                "g20",
+                "g21",
+                "g22",
+                "g23",
+                "g24",
+                "g25",
+                "g26",
+                "g27",
+                "g28",
+                "g29",
+                "g3",
+                "g30",
+                "g31",
+                "g32",
+                "g33",
+                "g34",
+                "g35",
+                "g36",
+                "g37",
+                "g38",
+                "g39",
+                "g4",
+                "g5",
+                "g6",
+                "g7",
+                "g8",
+                "g9"
+              ]
+            }
+          }
+        ],
+        "after": [
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g0"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g1"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g2"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g3"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g4"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g5"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g6"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g7"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g8"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g9"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g10"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g11"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g12"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g13"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g14"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g15"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g16"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g17"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g18"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g19"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g20"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g21"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g22"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g23"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g24"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g25"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g26"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g27"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g28"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g29"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g30"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g31"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g32"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g33"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g34"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g35"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g36"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g37"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g38"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g39"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "spec": {
+      "name": "offset-negative-2/1",
+      "sources": 1.0,
+      "fixtures": [
+        "offset-negative-2"
+      ],
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.id AS x LIMIT 1"
+    },
+    "targets": [
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.id AS x LIMIT 1",
+        "before": [
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "single"
+          }
+        ],
+        "error": "IndexOutOfBoundsException",
+        "message": null,
+        "after": [
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "single"
+          }
+        ]
+      },
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.id AS x LIMIT 1",
+        "before": [
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "single"
+          }
+        ],
+        "error": "IndexOutOfBoundsException",
+        "message": null,
+        "after": [
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "single"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "spec": {
+      "name": "offset-negative-2/2",
+      "sources": 2.0,
+      "fixtures": [
+        "offset-negative-2"
+      ],
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.id AS x LIMIT 1"
+    },
+    "targets": [
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.id AS x LIMIT 1",
+        "before": [
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g0"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g1"
+          }
+        ],
+        "error": "IndexOutOfBoundsException",
+        "message": null,
+        "after": [
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g0"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g1"
+          }
+        ]
+      },
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.id AS x LIMIT 1",
+        "before": [
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g0"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g1"
+          }
+        ],
+        "error": "IndexOutOfBoundsException",
+        "message": null,
+        "after": [
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g0"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g1"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "spec": {
+      "name": "offset-negative-2/40",
+      "sources": 40.0,
+      "fixtures": [
+        "offset-negative-2"
+      ],
+      "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.id AS x LIMIT 1"
+    },
+    "targets": [
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.id AS x LIMIT 1",
+        "before": [
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g0"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g1"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g2"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g3"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g4"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g5"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g6"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g7"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g8"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g9"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g10"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g11"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g12"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g13"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g14"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g15"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g16"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g17"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g18"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g19"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g20"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g21"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g22"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g23"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g24"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g25"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g26"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g27"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g28"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g29"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g30"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g31"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g32"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g33"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g34"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g35"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g36"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g37"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g38"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g39"
+          }
+        ],
+        "error": "IndexOutOfBoundsException",
+        "message": null,
+        "after": [
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g0"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g1"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g2"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g3"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g4"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g5"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g6"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g7"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g8"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g9"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g10"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g11"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g12"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g13"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g14"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g15"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g16"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g17"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g18"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g19"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g20"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g21"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g22"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g23"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g24"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g25"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g26"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g27"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g28"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g29"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g30"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g31"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g32"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g33"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g34"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g35"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g36"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g37"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g38"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g39"
+          }
+        ]
+      },
+      {
+        "query": "MATCH (n) WHERE n.caller_name CONTAINS \u0027other\u0027 RETURN DISTINCT n.id AS x LIMIT 1",
+        "before": [
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g0"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g1"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g2"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g3"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g4"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g5"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g6"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g7"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g8"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g9"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g10"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g11"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g12"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g13"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g14"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g15"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g16"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g17"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g18"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g19"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g20"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g21"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g22"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g23"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g24"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g25"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g26"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g27"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g28"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g29"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g30"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g31"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g32"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g33"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g34"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g35"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g36"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g37"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g38"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g39"
+          }
+        ],
+        "error": "IndexOutOfBoundsException",
+        "message": null,
+        "after": [
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g0"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g1"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g2"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g3"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g4"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g5"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g6"
+          },
+          {
+            "retained": false,
+            "mappedView": true,
+            "id": "g7"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g8"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g9"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g10"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g11"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g12"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g13"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g14"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g15"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g16"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g17"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g18"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g19"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g20"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g21"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g22"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g23"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g24"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g25"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g26"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g27"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g28"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g29"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g30"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g31"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g32"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g33"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g34"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g35"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g36"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g37"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g38"
+          },
+          {
+            "retained": false,
+            "mappedView": false,
+            "id": "g39"
+          }
+        ]
+      }
+    ]
+  }
+]

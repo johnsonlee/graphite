@@ -1,0 +1,15 @@
+{
+  "source": "/private/tmp/graphite-main-source-independent-review/module/internal/query/testdata/main-string-source/all-types",
+  "changes": [
+    {
+      "node": 14,
+      "offset": 76,
+      "tag": 127
+    },
+    {
+      "node": 18,
+      "offset": 165,
+      "SID": 2147483647
+    }
+  ]
+}

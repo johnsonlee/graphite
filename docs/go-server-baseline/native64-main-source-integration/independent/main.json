@@ -1,0 +1,70 @@
+[
+  {
+    "name": "later-filter-type-head-first",
+    "query": "MATCH (n) WHERE n.name \u003d \u0027field\u0027 OR n.name \u003d \u0027RED\u0027 RETURN DISTINCT n.id AS x LIMIT 1",
+    "cross": false,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: 127"
+  },
+  {
+    "name": "later-filter-type-head-first",
+    "query": "MATCH (n) WHERE n.name \u003d \u0027field\u0027 OR n.name \u003d \u0027RED\u0027 RETURN DISTINCT n.id AS x LIMIT 1",
+    "cross": true,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: 127"
+  },
+  {
+    "name": "reverse-filter-same-type-head",
+    "query": "MATCH (n) WHERE n.name \u003d \u0027RED\u0027 OR n.name \u003d \u0027field\u0027 RETURN DISTINCT n.id AS x LIMIT 1",
+    "cross": false,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: 127"
+  },
+  {
+    "name": "reverse-filter-same-type-head",
+    "query": "MATCH (n) WHERE n.name \u003d \u0027RED\u0027 OR n.name \u003d \u0027field\u0027 RETURN DISTINCT n.id AS x LIMIT 1",
+    "cross": true,
+    "empty": false,
+    "error": "IllegalArgumentException",
+    "message": "Unknown node tag: 127"
+  },
+  {
+    "name": "field-error-without-enum-stream",
+    "query": "MATCH (n:FieldNode) WHERE n.name \u003d \u0027field\u0027 RETURN DISTINCT n.id AS x LIMIT 1",
+    "cross": false,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (21)"
+  },
+  {
+    "name": "field-error-without-enum-stream",
+    "query": "MATCH (n:FieldNode) WHERE n.name \u003d \u0027field\u0027 RETURN DISTINCT n.id AS x LIMIT 1",
+    "cross": true,
+    "empty": false,
+    "error": "IndexOutOfBoundsException",
+    "message": "Index (2147483647) is greater than or equal to list size (21)"
+  },
+  {
+    "name": "bad-enum-unmatched-not-decoded",
+    "query": "MATCH (n:EnumConstant) WHERE n.name \u003d \u0027missing\u0027 RETURN DISTINCT n.id AS x LIMIT 1",
+    "cross": false,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  },
+  {
+    "name": "bad-enum-unmatched-not-decoded",
+    "query": "MATCH (n:EnumConstant) WHERE n.name \u003d \u0027missing\u0027 RETURN DISTINCT n.id AS x LIMIT 1",
+    "cross": true,
+    "empty": false,
+    "columns": [
+      "x"
+    ],
+    "rows": []
+  }
+]

@@ -1,0 +1,4 @@
+# github.com/johnsonlee/graphite/graphite-server/internal/query [github.com/johnsonlee/graphite/graphite-server/internal/query.test]
+internal/query/main_string_source_test.go:4:2: "context" imported and not used
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/query [build failed]
+FAIL

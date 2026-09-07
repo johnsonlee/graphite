@@ -1,0 +1,27 @@
+[
+  {
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/javac",
+      "-cp",
+      "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "-d",
+      "/private/tmp/graphite-main-source-independent-review/classes",
+      "/private/tmp/graphite-main-source-independent-review/PlannerOracle.java"
+    ],
+    "exitCode": 0,
+    "log": "javac.log"
+  },
+  {
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-cp",
+      "/private/tmp/graphite-main-source-independent-review/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "PlannerOracle",
+      "/private/tmp/graphite-main-source-independent-review/fixture",
+      "/private/tmp/graphite-main-source-independent-review/cases.json",
+      "/private/tmp/graphite-main-source-independent-review/main.json"
+    ],
+    "exitCode": 0,
+    "log": "main.log"
+  }
+]

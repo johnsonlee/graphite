@@ -1,0 +1,37 @@
+--- FAIL: TestGenericDistinctJavaAliasOrder (0.01s)
+    --- FAIL: TestGenericDistinctJavaAliasOrder/EAGER/1 (0.00s)
+panic: runtime error: invalid memory address or nil pointer dereference [recovered]
+	panic: runtime error: invalid memory address or nil pointer dereference [recovered]
+	panic: runtime error: invalid memory address or nil pointer dereference
+
+goroutine 988 [running]:
+testing.tRunner.func1.2({0x100ad4f40, 0x100fa17a0})
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/testing/testing.go:1631 +0x1c4
+testing.tRunner.func1()
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/testing/testing.go:1634 +0x33c
+panic({0x100ad4f40?, 0x100fa17a0?})
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/panic.go:770 +0x124
+github.com/johnsonlee/graphite/graphite-server/internal/query.executeSources.func1()
+	/private/tmp/graphite-go-main-candidate-87aaf0ad/graphite-server/internal/query/engine.go:51 +0x1ec
+panic({0x100ad4f40?, 0x100fa17a0?})
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/runtime/panic.go:770 +0x124
+github.com/johnsonlee/graphite/graphite-server/internal/query.(*genericDistinctCursor).next(0x14000370cc0, {0x100b44900, 0x10101efe0})
+	/private/tmp/graphite-go-main-candidate-87aaf0ad/graphite-server/internal/query/generic_distinct.go:221 +0x100
+github.com/johnsonlee/graphite/graphite-server/internal/query.(*genericDistinctScanner).next(0x1400010e320, {0x100b44900, 0x10101efe0}, 0x0)
+	/private/tmp/graphite-go-main-candidate-87aaf0ad/graphite-server/internal/query/generic_distinct.go:284 +0x120
+github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.genericDistinct({0x0, {0x100b44900, 0x10101efe0}, 0x0, {0x0, 0x0, 0x0}, 0x0, 0x14000370bd0, 0x140006eef20}, ...)
+	/private/tmp/graphite-go-main-candidate-87aaf0ad/graphite-server/internal/query/generic_distinct.go:426 +0xd0c
+github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.branch({0x0, {0x100b44900, 0x10101efe0}, 0x0, {0x0, 0x0, 0x0}, 0x0, 0x14000370bd0, 0x140006eef20}, ...)
+	/private/tmp/graphite-go-main-candidate-87aaf0ad/graphite-server/internal/query/engine.go:157 +0x204
+github.com/johnsonlee/graphite/graphite-server/internal/query.executeSources({0x100b44900, 0x10101efe0}, 0x14000a09348, {0x0, 0x0, 0x0}, 0x0, {0x14000c1e3c0, 0x9c}, 0x0, ...)
+	/private/tmp/graphite-go-main-candidate-87aaf0ad/graphite-server/internal/query/engine.go:81 +0x578
+github.com/johnsonlee/graphite/graphite-server/internal/query.Execute(...)
+	/private/tmp/graphite-go-main-candidate-87aaf0ad/graphite-server/internal/query/engine.go:25
+github.com/johnsonlee/graphite/graphite-server/internal/query.TestGenericDistinctJavaAliasOrder.func1(0x1400081c680)
+	/private/tmp/graphite-go-main-candidate-87aaf0ad/graphite-server/internal/query/generic_distinct_edges_test.go:30 +0xa8
+testing.tRunner(0x1400081c680, 0x140008f3e50)
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/testing/testing.go:1689 +0xec
+created by testing.(*T).Run in goroutine 1287
+	/opt/homebrew/Cellar/go/1.22.0/libexec/src/testing/testing.go:1742 +0x318
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/query	0.557s
+FAIL

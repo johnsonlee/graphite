@@ -234,10 +234,12 @@ func (s *Store) Close() error {
 	st := &s.callSiteIndex
 	st.mu.Lock()
 	if st.closed {
-		pending := st.loading
+		pending := []chan struct{}{st.loading, st.main[0].loading, st.main[1].loading}
 		st.mu.Unlock()
-		if pending != nil {
-			<-pending
+		for _, done := range pending {
+			if done != nil {
+				<-done
+			}
 		}
 		return nil
 	}
@@ -255,6 +257,12 @@ func (s *Store) Close() error {
 		err = unmapNodeData(st.view.data)
 		st.view.data = nil
 	}
+	for i := range st.main {
+		if v := st.main[i].view; v != nil {
+			err = errors.Join(err, unmapNodeData(v.data))
+			v.data = nil
+		}
+	}
 	if s.mappedData != nil {
 		err = errors.Join(err, unmapNodeData(s.mappedData))
 		s.mappedData = nil
@@ -263,10 +271,12 @@ func (s *Store) Close() error {
 		err = errors.Join(err, s.file.Close())
 		s.file = nil
 	}
-	pending := st.loading
+	pending := []chan struct{}{st.loading, st.main[0].loading, st.main[1].loading}
 	st.mu.Unlock()
-	if pending != nil {
-		<-pending
+	for _, done := range pending {
+		if done != nil {
+			<-done
+		}
 	}
 	return err
 }

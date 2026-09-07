@@ -15,13 +15,15 @@ import (
 type genericDistinctDisabledKey struct{}
 
 type genericDistinctPlan struct {
-	match                 cypher.MatchClause
-	projection            cypher.ProjectionClause
-	atoms                 []distinctStringAtom
-	columns, unique       []string
-	itemSlots, finalItems []int
-	limit, skip           int
-	graphIDs              map[string]bool
+	match                    cypher.MatchClause
+	projection               cypher.ProjectionClause
+	atoms                    []distinctStringAtom
+	columns, unique          []string
+	itemSlots, finalItems    []int
+	limit, skip              int
+	mainSource, parallelSafe bool
+	sourceCount              int
+	graphIDs                 map[string]bool
 }
 
 func (e evaluator) compileGenericDistinct(branch cypher.SingleQuery) *genericDistinctPlan {
@@ -55,18 +57,27 @@ func (e evaluator) compileGenericDistinct(branch cypher.SingleQuery) *genericDis
 	if skip < 0 || int64(skip)+int64(limit) > math.MaxInt32 {
 		return nil
 	}
-	p := &genericDistinctPlan{match: m, projection: r, limit: int(limit) + int(skip), skip: int(skip)}
+	p := &genericDistinctPlan{match: m, projection: r, limit: int(limit) + int(skip), skip: int(skip), mainSource: r.Skip == nil, parallelSafe: true}
 	positions := map[string]int{}
 	for i, item := range r.Items {
+		if containsAggregate(item.Expression) {
+			return nil
+		}
 		switch expr := item.Expression.(type) {
 		case cypher.Literal:
 		case cypher.Property:
 			owner, ok := expr.Object.(cypher.Variable)
 			if !ok || owner.Name != node.Variable {
-				return nil
+				p.parallelSafe = false
+				if !p.mainSource {
+					return nil
+				}
 			}
 		default:
-			return nil
+			p.parallelSafe = false
+			if !p.mainSource {
+				return nil
+			}
 		}
 		column := item.Alias
 		if column == "" {
@@ -113,12 +124,26 @@ type genericDistinctValue struct {
 
 func newGenericDistinctCursor(e evaluator, source Graph, p *genericDistinctPlan) *genericDistinctCursor {
 	initialized := false
+	var mainNext mainNodeNext
 	var indexed *candidateNodePositions
 	var ids []int32
 	position := 0
 	slot := &candidateSlot{}
 	return newGenericValueCursor(e.ctx, func(ctx context.Context) (any, bool) {
 		e.ctx = ctx
+		if p.mainSource {
+			if !initialized {
+				mainNext = e.mainStringCandidates(source, p.match.Patterns[0].Nodes[0], p.atoms, p.sourceCount)
+				initialized = true
+			}
+			node, ok := mainNext(ctx)
+			if !ok {
+				return nil, false
+			}
+			slot.graph, slot.graphID, slot.qualified = source.Store, source.ID, e.cross
+			slot.isMethod, slot.node = false, node
+			return slot, true
+		}
 		if !initialized {
 			e.graphs, e.rowOrders, e.indexFirst = []Graph{source}, nil, true
 			prepared, available := e.prepareIndexedNodePositions(source.Store, p.match)
@@ -261,8 +286,11 @@ func (s *genericDistinctScanner) next(ctx context.Context, selected bool) ([]any
 			s.exhausted = true
 			return nil, false
 		}
-		matched := false
+		matched := s.plan.mainSource
 		for _, atom := range s.plan.atoms {
+			if matched {
+				break
+			}
 			if local.distinctAtomMatches(atom, value.(*candidateSlot).property(atom.property)) {
 				matched = true
 				break
@@ -277,6 +305,9 @@ func (s *genericDistinctScanner) next(ctx context.Context, selected bool) ([]any
 		}
 		get := func(item int) any {
 			local.check()
+			if s.plan.mainSource {
+				return freezeCandidate(local.eval(s.plan.projection.Items[item].Expression, map[string]any{s.plan.match.Patterns[0].Nodes[0].Variable: value}))
+			}
 			switch x := s.plan.projection.Items[item].Expression.(type) {
 			case cypher.Literal:
 				return x.Value
@@ -355,6 +386,7 @@ func (e evaluator) genericDistinct(graph *store.Store, branch cypher.SingleQuery
 		}
 	}
 	sources = selectedSources
+	p.sourceCount = len(sources)
 	result := Result{Columns: p.columns, Rows: []map[string]any{}}
 	selected := newGenericDistinctRows(p.projection.Skip == nil)
 	scanners := make([]*genericDistinctScanner, len(sources))
@@ -388,7 +420,7 @@ func (e evaluator) genericDistinct(graph *store.Store, branch cypher.SingleQuery
 		parallel = min(len(sources), max(1, runtime.NumCPU()/2))
 	}
 	parallel = max(1, parallel)
-	if !e.cross || len(sources) < 2 || p.projection.Skip != nil {
+	if !e.cross || len(sources) < 2 || p.projection.Skip != nil || !p.parallelSafe || p.mainSource && !e.mainStringParallel(sources, p) {
 		for _, s := range scanners {
 			for {
 				values, ok := s.next(e.ctx, false)

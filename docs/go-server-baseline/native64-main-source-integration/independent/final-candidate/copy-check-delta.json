@@ -1,0 +1,9 @@
+{
+  "at": "2026-09-07T02:47:34.210618+00:00",
+  "changes": {
+    "internal/store/main_posting_range.go": {
+      "before": "18b6e3766d2c7f1656fa9b3d1cbe40c65808c51d939eb48ecc2236abff234d0c",
+      "after": "ed74265b2c7873dc238bbbaab1eb67090200616825052da480805dcb49adda61"
+    }
+  }
+}

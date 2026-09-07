@@ -1,0 +1,14 @@
+/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-hq3p62c3/profile-query: go1.22.0
+	path	github.com/johnsonlee/graphite/graphite-server/cmd/profile-query
+	mod	github.com/johnsonlee/graphite/graphite-server	(devel)	
+	dep	github.com/antlr4-go/antlr/v4	v4.13.1	h1:SqQKkuVZ+zWkMMNkjy5FZe5mr5WURWnlpmOuzYWrPrQ=
+	dep	golang.org/x/exp	v0.0.0-20240506185415-9bf2ced13842	h1:vr/HnozRka3pE4EsMEg1lgkXJkTFJCVUX+S/ZT6wYzM=
+	build	-buildmode=exe
+	build	-compiler=gc
+	build	CGO_ENABLED=1
+	build	CGO_CFLAGS=
+	build	CGO_CPPFLAGS=
+	build	CGO_CXXFLAGS=
+	build	CGO_LDFLAGS=
+	build	GOARCH=arm64
+	build	GOOS=darwin

@@ -46,6 +46,7 @@ type callSiteIndexState struct {
 	view        *CallSiteStringIndex
 	unavailable bool
 	reason      string
+	main        [2]mainCallSiteIndexState
 }
 
 // CallSiteStringIndex is an immutable Store-owned view. Methods return copied
@@ -57,6 +58,7 @@ type CallSiteStringIndex struct {
 	info                 CallSiteStringIndexInfo
 	regions              [4]callSiteIndexRegion
 	signatures, trigrams int
+	mainRanges           *mainPostingRangeCache
 }
 
 // TryCallSiteStringIndex lazily validates an optional main v2 index. Missing,
@@ -149,6 +151,10 @@ func indexCheck(ctx context.Context, closing <-chan struct{}) error {
 }
 
 func (s *Store) loadCallSiteStringIndex(ctx context.Context, closing <-chan struct{}) (view *CallSiteStringIndex, reason string, cache bool, err error) {
+	return s.loadCallSiteStringIndexWithPolicy(ctx, closing, strictCandidateIndex, 0)
+}
+
+func (s *Store) loadCallSiteStringIndexWithPolicy(ctx context.Context, closing <-chan struct{}, policy callSiteIndexPolicy, capacity int32) (view *CallSiteStringIndex, reason string, cache bool, err error) {
 	if err = indexCheck(ctx, closing); err != nil {
 		return
 	}
@@ -196,7 +202,7 @@ func (s *Store) loadCallSiteStringIndex(ctx context.Context, closing <-chan stru
 	// All counts are bounded int32. Widen before arithmetic; reject a computed
 	// layout outside the mapped int32 limit before converting offsets to int.
 	payload := 8*unique + 16*int64(info.CallSiteCount) + 8*int64(info.StringCount) + 8*int64(info.TrigramPostingCount)
-	if payload+84 != int64(len(data)) || info.RetainedBytes != payload+480 {
+	if payload+84 != int64(len(data)) || (policy != mainMappedIndex && info.RetainedBytes != payload+480) || (policy == mainMappedIndex && info.RetainedBytes <= 0) {
 		return fail("index layout/retained byte count mismatch")
 	}
 	expected, e := s.callSiteContentIdentity(ctx, closing)
@@ -214,6 +220,9 @@ func (s *Store) loadCallSiteStringIndex(ctx context.Context, closing <-chan stru
 		return fail("index CRC32 mismatch")
 	}
 	v := &CallSiteStringIndex{owner: s, data: data, info: info}
+	if policy == mainMappedIndex {
+		v.mainRanges = &mainPostingRangeCache{}
+	}
 	offset := callSiteIndexHeaderBytes
 	for p, n := range info.UniqueStringCounts {
 		r := callSiteIndexRegion{strings: offset, ends: offset + 4*int(n), nodes: offset + 8*int(n)}
@@ -229,6 +238,9 @@ func (s *Store) loadCallSiteStringIndex(ctx context.Context, closing <-chan stru
 				return fail("invalid CSR string directory or posting ends")
 			}
 			previousOrder := int64(-1)
+			if policy != strictCandidateIndex {
+				previousOrder = math.MinInt64
+			}
 			for pos := previousEnd; pos < end; pos++ {
 				if pos&1023 == 0 {
 					if e = indexCheck(ctx, closing); e != nil {
@@ -236,11 +248,32 @@ func (s *Store) loadCallSiteStringIndex(ctx context.Context, closing <-chan stru
 					}
 				}
 				nodeID := read32(r.nodes + int(pos)*4)
-				loc, ok := s.locations[nodeID]
-				if !ok || loc.offset < 0 || loc.offset <= previousOrder {
-					return fail("invalid CSR node ID or non-increasing node offset")
+				if policy == strictCandidateIndex {
+					loc, ok := s.locations[nodeID]
+					if !ok || loc.offset < 0 || loc.offset <= previousOrder {
+						return fail("invalid CSR node ID or non-increasing node offset")
+					}
+					previousOrder = loc.offset
+				} else {
+					if nodeID < 0 || nodeID >= capacity {
+						return fail("invalid CSR node ID capacity")
+					}
+					if policy == mainRetainedIndex {
+						order, e := s.ProjectionNodeOrder(ctx, nodeID)
+						if e != nil {
+							if ctx.Err() != nil || errors.Is(e, ErrStoreClosed) {
+								return nil, "", false, e
+							}
+							return fail("invalid persisted node order")
+						}
+						// The retained reader accepts a first negative order; the mapped
+						// view's selected-range validation deliberately does not.
+						if order <= previousOrder {
+							return fail("non-increasing persisted node order")
+						}
+						previousOrder = order
+					}
 				}
-				previousOrder = loc.offset
 			}
 			previousID = id
 			previousEnd = end

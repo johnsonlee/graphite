@@ -1,0 +1,90 @@
+[
+  {
+    "name": "enum-type/RED",
+    "sources": 1,
+    "fixtures": [
+      "enum-type"
+    ],
+    "query": "MATCH (n:EnumConstant) WHERE n.name = 'RED' RETURN DISTINCT n.id AS x LIMIT 1"
+  },
+  {
+    "name": "enum-type/missing",
+    "sources": 1,
+    "fixtures": [
+      "enum-type"
+    ],
+    "query": "MATCH (n:EnumConstant) WHERE n.name = 'missing' RETURN DISTINCT n.id AS x LIMIT 1"
+  },
+  {
+    "name": "local-type/x",
+    "sources": 1,
+    "fixtures": [
+      "local-type"
+    ],
+    "query": "MATCH (n:LocalVariable) WHERE n.name = 'x' RETURN DISTINCT n.id AS x LIMIT 1"
+  },
+  {
+    "name": "local-type/missing",
+    "sources": 1,
+    "fixtures": [
+      "local-type"
+    ],
+    "query": "MATCH (n:LocalVariable) WHERE n.name = 'missing' RETURN DISTINCT n.id AS x LIMIT 1"
+  },
+  {
+    "name": "field-type/field",
+    "sources": 1,
+    "fixtures": [
+      "field-type"
+    ],
+    "query": "MATCH (n:FieldNode) WHERE n.name = 'field' RETURN DISTINCT n.id AS x LIMIT 1"
+  },
+  {
+    "name": "field-type/missing",
+    "sources": 1,
+    "fixtures": [
+      "field-type"
+    ],
+    "query": "MATCH (n:FieldNode) WHERE n.name = 'missing' RETURN DISTINCT n.id AS x LIMIT 1"
+  },
+  {
+    "name": "annotation-head-error",
+    "sources": 1,
+    "fixtures": [
+      "annotation-name"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name = 'run' RETURN DISTINCT substring(n.caller_name,'bad') AS x LIMIT 1"
+  },
+  {
+    "name": "invalid-needed-name-SID",
+    "sources": 1,
+    "fixtures": [
+      "field-name"
+    ],
+    "query": "MATCH (n:Field) WHERE n.name CONTAINS 'field' RETURN DISTINCT n.id AS x LIMIT 1"
+  },
+  {
+    "name": "invalid-name-SID-after-true-class",
+    "sources": 1,
+    "fixtures": [
+      "field-name"
+    ],
+    "query": "MATCH (n:Field) WHERE n.class = 'Example' OR n.name CONTAINS 'field' RETURN DISTINCT n.id AS x LIMIT 1"
+  },
+  {
+    "name": "all-type-name-merge",
+    "sources": 1,
+    "fixtures": [
+      "all-types"
+    ],
+    "query": "MATCH (n) WHERE n.name CONTAINS '' RETURN DISTINCT n AS x LIMIT 10"
+  },
+  {
+    "name": "all-type-name-merge-cross",
+    "sources": 2,
+    "fixtures": [
+      "all-types"
+    ],
+    "query": "MATCH (n) WHERE n.name CONTAINS '' RETURN DISTINCT n AS x LIMIT 10"
+  }
+]

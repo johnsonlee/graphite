@@ -1,0 +1,12 @@
+[
+  {
+    "directory": "/tmp/graphite-go-main-candidate-87aaf0ad/main-candidate-review",
+    "manifestSHA256": "e33b63a7d43792ff65fa680c6024b5e91e7726f9fd8e6b53a7e4e26644f98bf0",
+    "verifiedFiles": 1205
+  },
+  {
+    "directory": "/tmp/graphite-main-source-independent-review",
+    "manifestSHA256": "630d335f04c0d91a14efdc596e354d7aa73d6eb880b767fa7d95cc50bfe78f52",
+    "verifiedFiles": 53
+  }
+]

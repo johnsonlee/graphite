@@ -1,0 +1,58 @@
+[
+  {
+    "group": "global64",
+    "label": "base",
+    "command": [
+      "python3",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/run-profile.py",
+      "--worktree",
+      "/tmp/graphite-go-main-source-base-10236487",
+      "--out",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/base"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 71.63764119148254
+  },
+  {
+    "group": "global64",
+    "label": "candidate",
+    "command": [
+      "python3",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/run-profile.py",
+      "--worktree",
+      "/tmp/graphite-go-main-source-root-10236487",
+      "--out",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/candidate"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 65.21523475646973
+  },
+  {
+    "group": "routed-tuples",
+    "label": "base",
+    "command": [
+      "python3",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/routed-tuples/run-profile.py",
+      "--worktree",
+      "/tmp/graphite-go-main-source-base-10236487",
+      "--out",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/routed-tuples/base"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 34.21691393852234
+  },
+  {
+    "group": "routed-tuples",
+    "label": "candidate",
+    "command": [
+      "python3",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/routed-tuples/run-profile.py",
+      "--worktree",
+      "/tmp/graphite-go-main-source-root-10236487",
+      "--out",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-main-source-integration/routed-tuples/candidate"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 34.288761138916016
+  }
+]

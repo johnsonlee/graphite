@@ -17,7 +17,7 @@ func ordinaryJavaKeyString(value string) string {
 func ordinaryStringKey(atom distinctStringAtom) string {
 	return key([]any{atom.lower, atom.op, ordinaryJavaKeyString(atom.term)})
 }
-func ordinaryNodeKey(plan *ordinaryProjectionPlan, limit int) string {
+func mainNodeKey(plan *mainStringSourceSpec, limit int) string {
 	predicates := []any{}
 	for _, atom := range plan.atoms {
 		predicates = append(predicates, []any{atom.property, atom.lower, atom.op, ordinaryJavaKeyString(atom.term)})
@@ -31,7 +31,7 @@ func ordinaryRowsKey(plan *ordinaryProjectionPlan, limit int) string {
 	}
 	return key([]any{ordinaryNodeKey(plan, limit), properties})
 }
-func ordinaryKeyCharacters(plan *ordinaryProjectionPlan) int64 {
+func mainKeyCharacters(plan *mainStringSourceSpec) int64 {
 	var n int64
 	for _, atom := range plan.atoms {
 		n += int64(len(javaUTF16(atom.property)) + len(javaUTF16(atom.term)))
@@ -39,6 +39,9 @@ func ordinaryKeyCharacters(plan *ordinaryProjectionPlan) int64 {
 	return n
 }
 func (e evaluator) indexStringMatches(source Graph, index *store.DistinctStringIndex, atom distinctStringAtom) ([]int32, bool) {
+	return e.stringIndexMatches(source, index, atom, failProjectionRead)
+}
+func (e evaluator) stringIndexMatches(source Graph, index *store.DistinctStringIndex, atom distinctStringAtom, failRead func(error)) ([]int32, bool) {
 	units := javaUTF16(atom.term)
 	if atom.op == "=" || len(units) < 3 {
 		return nil, false
@@ -52,13 +55,13 @@ func (e evaluator) indexStringMatches(source Graph, index *store.DistinctStringI
 	}
 	cacheKey := ordinaryStringKey(atom)
 	cached, ok, err := index.ProjectionCachedIDs(e.ctx, store.ProjectionStringMatches, cacheKey)
-	failProjectionRead(err)
+	failRead(err)
 	if ok {
 		return cached, true
 	}
-	failProjectionRead(index.PrepareProjectionTrigrams(e.ctx))
+	failRead(index.PrepareProjectionTrigrams(e.ctx))
 	ready, err := index.HasProjectionTrigrams(e.ctx)
-	failProjectionRead(err)
+	failRead(err)
 	if !ready {
 		return nil, false
 	}
@@ -83,7 +86,7 @@ func (e evaluator) indexStringMatches(source Graph, index *store.DistinctStringI
 		}
 		seen[hash] = true
 		ids, err := index.ProjectionTrigramStrings(e.ctx, hash)
-		failProjectionRead(err)
+		failRead(err)
 		if len(ids) == 0 {
 			anchor = []int32{}
 			break
@@ -95,21 +98,21 @@ func (e evaluator) indexStringMatches(source Graph, index *store.DistinctStringI
 	matches := []int32{}
 	for _, sid := range anchor {
 		value, err := source.Store.ProjectionString(e.ctx, sid)
-		failProjectionRead(err)
+		failRead(err)
 		if e.distinctAtomMatches(atom, value) {
 			matches = append(matches, sid)
 		}
 	}
 	bytes := int64(104 + 2*len(units) + 4*len(matches))
-	failProjectionRead(index.CacheProjectionIDs(e.ctx, store.ProjectionStringMatches, cacheKey, matches, bytes))
+	failRead(index.CacheProjectionIDs(e.ctx, store.ProjectionStringMatches, cacheKey, matches, bytes))
 	return matches, true
 }
-func (e evaluator) ordinaryCacheNodes(index *store.DistinctStringIndex, plan *ordinaryProjectionPlan, limit int, ids []int32) {
+func (e evaluator) mainCacheNodes(index *store.DistinctStringIndex, plan *mainStringSourceSpec, limit int, ids []int32) {
 	if limit > 200 {
 		return
 	}
-	bytes := 144 + 2*ordinaryKeyCharacters(plan) + 4*int64(len(ids))
-	failProjectionRead(index.CacheProjectionIDs(e.ctx, store.ProjectionNodeMatches, ordinaryNodeKey(plan, limit), ids, bytes))
+	bytes := 144 + 2*mainKeyCharacters(plan) + 4*int64(len(ids))
+	failMainStringRead(index.CacheProjectionIDs(e.ctx, store.ProjectionNodeMatches, mainNodeKey(plan, limit), ids, bytes))
 }
 func (e evaluator) ordinaryCacheRows(index *store.DistinctStringIndex, plan *ordinaryProjectionPlan, limit int, rows [][]string) {
 	characters := ordinaryKeyCharacters(plan)
@@ -142,4 +145,15 @@ func (e evaluator) ordinaryLimitedIndexIDs(source Graph, index *store.DistinctSt
 		e.ordinaryCacheNodes(index, plan, limit, ids)
 	}
 	return ids
+}
+
+func ordinaryNodeKey(plan *ordinaryProjectionPlan, limit int) string {
+	return mainNodeKey(plan.mainSourceSpec(), limit)
+}
+func ordinaryKeyCharacters(plan *ordinaryProjectionPlan) int64 {
+	return mainKeyCharacters(plan.mainSourceSpec())
+}
+func (e evaluator) ordinaryCacheNodes(index *store.DistinctStringIndex, plan *ordinaryProjectionPlan, limit int, ids []int32) {
+	defer ordinarySourceFailure()
+	e.mainCacheNodes(index, plan.mainSourceSpec(), limit, ids)
 }

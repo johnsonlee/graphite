@@ -1,0 +1,50 @@
+[
+  {
+    "name": "offset-negative-90/1",
+    "sources": 1,
+    "fixtures": [
+      "offset-negative-90"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1"
+  },
+  {
+    "name": "offset-negative-90/2",
+    "sources": 2,
+    "fixtures": [
+      "offset-negative-90"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1"
+  },
+  {
+    "name": "offset-negative-90/40",
+    "sources": 40,
+    "fixtures": [
+      "offset-negative-90"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1"
+  },
+  {
+    "name": "offset-negative-2/1",
+    "sources": 1,
+    "fixtures": [
+      "offset-negative-2"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1"
+  },
+  {
+    "name": "offset-negative-2/2",
+    "sources": 2,
+    "fixtures": [
+      "offset-negative-2"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1"
+  },
+  {
+    "name": "offset-negative-2/40",
+    "sources": 40,
+    "fixtures": [
+      "offset-negative-2"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1"
+  }
+]

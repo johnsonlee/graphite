@@ -1,0 +1,90 @@
+{
+  "at": "2026-09-07T02:49:31.606521+00:00",
+  "authorManifestSHA256": "6abf76a8bffd1cb2b44c7d6e066d9eb8dd108c5f57e2bdcac9f68dc134b8d862",
+  "all16ProductionFilesExact": true,
+  "files": {
+    "graphite-server/internal/query/generic_distinct.go": {
+      "expected": "5b5f536e09b3f15e981ed1ecb860ae1e9820e3514ed29dd138a206d92e1022d9",
+      "independent": "5b5f536e09b3f15e981ed1ecb860ae1e9820e3514ed29dd138a206d92e1022d9",
+      "author": "5b5f536e09b3f15e981ed1ecb860ae1e9820e3514ed29dd138a206d92e1022d9"
+    },
+    "graphite-server/internal/query/generic_distinct_values.go": {
+      "expected": "247a2b466edee9beedcfc33967c4a683cdb275be3e1c9006460c3f6bb3398854",
+      "independent": "247a2b466edee9beedcfc33967c4a683cdb275be3e1c9006460c3f6bb3398854",
+      "author": "247a2b466edee9beedcfc33967c4a683cdb275be3e1c9006460c3f6bb3398854"
+    },
+    "graphite-server/internal/query/main_string_candidates.go": {
+      "expected": "9c55befb82ba45e054d0e8e40813f134d4219185daee25ff77c3a9350cf627f9",
+      "independent": "9c55befb82ba45e054d0e8e40813f134d4219185daee25ff77c3a9350cf627f9",
+      "author": "9c55befb82ba45e054d0e8e40813f134d4219185daee25ff77c3a9350cf627f9"
+    },
+    "graphite-server/internal/query/main_string_mapped.go": {
+      "expected": "df18006eae436fc0ec48d15e4a76062c5a3b8e89907606e0a59f2ecbd61b5754",
+      "independent": "df18006eae436fc0ec48d15e4a76062c5a3b8e89907606e0a59f2ecbd61b5754",
+      "author": "df18006eae436fc0ec48d15e4a76062c5a3b8e89907606e0a59f2ecbd61b5754"
+    },
+    "graphite-server/internal/query/main_string_postings.go": {
+      "expected": "6efb793fd745168525167112fa507c97e75c7bab8acd85dba2a8e4c825e4ddc7",
+      "independent": "6efb793fd745168525167112fa507c97e75c7bab8acd85dba2a8e4c825e4ddc7",
+      "author": "6efb793fd745168525167112fa507c97e75c7bab8acd85dba2a8e4c825e4ddc7"
+    },
+    "graphite-server/internal/query/main_string_source.go": {
+      "expected": "6acd635b256d9107895a9b9fc1e86bbd46122a3172795f4eb8ea5eb3f8403da4",
+      "independent": "6acd635b256d9107895a9b9fc1e86bbd46122a3172795f4eb8ea5eb3f8403da4",
+      "author": "6acd635b256d9107895a9b9fc1e86bbd46122a3172795f4eb8ea5eb3f8403da4"
+    },
+    "graphite-server/internal/query/ordinary_cache.go": {
+      "expected": "7a86a1db1f249424480372279cf923ab27940fdd9e50a670c307cd0a14d556df",
+      "independent": "7a86a1db1f249424480372279cf923ab27940fdd9e50a670c307cd0a14d556df",
+      "author": "7a86a1db1f249424480372279cf923ab27940fdd9e50a670c307cd0a14d556df"
+    },
+    "graphite-server/internal/query/ordinary_leading.go": {
+      "expected": "51abb0813d057f43b4e1ec9a0cd767fbc5f0918d8e220b2ffef2213759c9dace",
+      "independent": "51abb0813d057f43b4e1ec9a0cd767fbc5f0918d8e220b2ffef2213759c9dace",
+      "author": "51abb0813d057f43b4e1ec9a0cd767fbc5f0918d8e220b2ffef2213759c9dace"
+    },
+    "graphite-server/internal/query/ordinary_parallel.go": {
+      "expected": "03960ead465a52e5aa5fe226c133e6dedd7a456c34708e66da1b87d080e1c18e",
+      "independent": "03960ead465a52e5aa5fe226c133e6dedd7a456c34708e66da1b87d080e1c18e",
+      "author": "03960ead465a52e5aa5fe226c133e6dedd7a456c34708e66da1b87d080e1c18e"
+    },
+    "graphite-server/internal/query/ordinary_projection.go": {
+      "expected": "b0835812b129c540f02dab733aa8e63cf5e4b32e15adb00f1983754f269eb612",
+      "independent": "b0835812b129c540f02dab733aa8e63cf5e4b32e15adb00f1983754f269eb612",
+      "author": "b0835812b129c540f02dab733aa8e63cf5e4b32e15adb00f1983754f269eb612"
+    },
+    "graphite-server/internal/store/callsite_index.go": {
+      "expected": "e7c10e5f10de7eb7fa9a3ccf020c2065f46ac680c0fed33e471898903d128856",
+      "independent": "e7c10e5f10de7eb7fa9a3ccf020c2065f46ac680c0fed33e471898903d128856",
+      "author": "e7c10e5f10de7eb7fa9a3ccf020c2065f46ac680c0fed33e471898903d128856"
+    },
+    "graphite-server/internal/store/distinct_projection.go": {
+      "expected": "a1475f90be8e4a765f91efff16557a0225c9d8c24b9616c1711635e45a27f60b",
+      "independent": "a1475f90be8e4a765f91efff16557a0225c9d8c24b9616c1711635e45a27f60b",
+      "author": "a1475f90be8e4a765f91efff16557a0225c9d8c24b9616c1711635e45a27f60b"
+    },
+    "graphite-server/internal/store/main_callsite_index.go": {
+      "expected": "ced412b61eabc63d46fc689a35e2c2868173e01a5be6aa00572994b834490e33",
+      "independent": "ced412b61eabc63d46fc689a35e2c2868173e01a5be6aa00572994b834490e33",
+      "author": "ced412b61eabc63d46fc689a35e2c2868173e01a5be6aa00572994b834490e33"
+    },
+    "graphite-server/internal/store/main_posting_range.go": {
+      "expected": "ed74265b2c7873dc238bbbaab1eb67090200616825052da480805dcb49adda61",
+      "independent": "ed74265b2c7873dc238bbbaab1eb67090200616825052da480805dcb49adda61",
+      "author": "ed74265b2c7873dc238bbbaab1eb67090200616825052da480805dcb49adda61"
+    },
+    "graphite-server/internal/store/projection_property.go": {
+      "expected": "c71f0126ecb61d48703fe40c312b65a58965f86b1a17f94b5e23e733d2b130ee",
+      "independent": "c71f0126ecb61d48703fe40c312b65a58965f86b1a17f94b5e23e733d2b130ee",
+      "author": "c71f0126ecb61d48703fe40c312b65a58965f86b1a17f94b5e23e733d2b130ee"
+    },
+    "graphite-server/internal/store/store.go": {
+      "expected": "e36fc77bb0939f9ec495d9b7e62cddc67c631a1c0487851fe00f9a77cc62d6b4",
+      "independent": "e36fc77bb0939f9ec495d9b7e62cddc67c631a1c0487851fe00f9a77cc62d6b4",
+      "author": "e36fc77bb0939f9ec495d9b7e62cddc67c631a1c0487851fe00f9a77cc62d6b4"
+    }
+  },
+  "mainJarSHA256": "91c3a1d154ca96004c55df195d9f752e077cab3e33ca1570b2c88b872d9bc34d",
+  "go": "go version go1.22.0 darwin/arm64",
+  "java": "openjdk version \"17.0.18\" 2026-01-20\nOpenJDK Runtime Environment Homebrew (build 17.0.18+0)\nOpenJDK 64-Bit Server VM Homebrew (build 17.0.18+0, mixed mode, sharing)"
+}

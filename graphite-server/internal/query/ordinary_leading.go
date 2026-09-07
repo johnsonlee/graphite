@@ -1,6 +1,6 @@
 package query
 
-func ordinarySharedMatcher(plan *ordinaryProjectionPlan) bool {
+func mainSharedMatcher(plan *mainStringSourceSpec) bool {
 	first := plan.atoms[0]
 	for _, atom := range plan.atoms[1:] {
 		if atom.op != first.op || atom.term != first.term || atom.lower != first.lower {
@@ -101,4 +101,8 @@ func (e evaluator) ordinaryRawRow(source Graph, plan *ordinaryProjectionPlan, si
 	}
 	addProvenance(row, source.ID)
 	return row
+}
+
+func ordinarySharedMatcher(plan *ordinaryProjectionPlan) bool {
+	return mainSharedMatcher(plan.mainSourceSpec())
 }

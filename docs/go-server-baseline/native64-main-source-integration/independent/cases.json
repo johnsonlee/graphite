@@ -1,0 +1,18 @@
+[
+  {
+    "name": "later-filter-type-head-first",
+    "query": "MATCH (n) WHERE n.name = 'field' OR n.name = 'RED' RETURN DISTINCT n.id AS x LIMIT 1"
+  },
+  {
+    "name": "reverse-filter-same-type-head",
+    "query": "MATCH (n) WHERE n.name = 'RED' OR n.name = 'field' RETURN DISTINCT n.id AS x LIMIT 1"
+  },
+  {
+    "name": "field-error-without-enum-stream",
+    "query": "MATCH (n:FieldNode) WHERE n.name = 'field' RETURN DISTINCT n.id AS x LIMIT 1"
+  },
+  {
+    "name": "bad-enum-unmatched-not-decoded",
+    "query": "MATCH (n:EnumConstant) WHERE n.name = 'missing' RETURN DISTINCT n.id AS x LIMIT 1"
+  }
+]

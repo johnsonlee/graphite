@@ -1,0 +1,4 @@
+# github.com/johnsonlee/graphite/graphite-server/internal/query [github.com/johnsonlee/graphite/graphite-server/internal/query.test]
+internal/query/main_string_source.go:51:51: cannot use plan (variable of type *mainStringSourceSpec) as *ordinaryProjectionPlan value in argument to ordinarySharedMatcher
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/query [build failed]
+FAIL

@@ -1,0 +1,338 @@
+[
+  {
+    "name": "valid-tag/1/= 'other'/False",
+    "sources": 1,
+    "fixtures": [
+      "valid-tag"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name = 'other' RETURN DISTINCT n.id AS x LIMIT 1"
+  },
+  {
+    "name": "valid-tag/1/= 'other'/True",
+    "sources": 1,
+    "fixtures": [
+      "valid-tag"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name = 'other' RETURN DISTINCT n.id AS x LIMIT 1",
+    "warm": "MATCH (n) WHERE n.caller_name = 'other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "valid-tag/1/CONTAINS 'other'/False",
+    "sources": 1,
+    "fixtures": [
+      "valid-tag"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1"
+  },
+  {
+    "name": "valid-tag/1/CONTAINS 'other'/True",
+    "sources": 1,
+    "fixtures": [
+      "valid-tag"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1",
+    "warm": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "valid-tag/2/= 'other'/False",
+    "sources": 2,
+    "fixtures": [
+      "valid-tag"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name = 'other' RETURN DISTINCT n.id AS x LIMIT 1"
+  },
+  {
+    "name": "valid-tag/2/= 'other'/True",
+    "sources": 2,
+    "fixtures": [
+      "valid-tag"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name = 'other' RETURN DISTINCT n.id AS x LIMIT 1",
+    "warm": "MATCH (n) WHERE n.caller_name = 'other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "valid-tag/2/CONTAINS 'other'/False",
+    "sources": 2,
+    "fixtures": [
+      "valid-tag"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1"
+  },
+  {
+    "name": "valid-tag/2/CONTAINS 'other'/True",
+    "sources": 2,
+    "fixtures": [
+      "valid-tag"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1",
+    "warm": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "valid-tag/40/= 'other'/False",
+    "sources": 40,
+    "fixtures": [
+      "valid-tag"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name = 'other' RETURN DISTINCT n.id AS x LIMIT 1"
+  },
+  {
+    "name": "valid-tag/40/= 'other'/True",
+    "sources": 40,
+    "fixtures": [
+      "valid-tag"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name = 'other' RETURN DISTINCT n.id AS x LIMIT 1",
+    "warm": "MATCH (n) WHERE n.caller_name = 'other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "valid-tag/40/CONTAINS 'other'/False",
+    "sources": 40,
+    "fixtures": [
+      "valid-tag"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1"
+  },
+  {
+    "name": "valid-tag/40/CONTAINS 'other'/True",
+    "sources": 40,
+    "fixtures": [
+      "valid-tag"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1",
+    "warm": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.caller_name AS x LIMIT 1"
+  },
+  {
+    "name": "unknown-tag/1",
+    "sources": 1,
+    "fixtures": [
+      "unknown-tag"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1"
+  },
+  {
+    "name": "unknown-tag/2",
+    "sources": 2,
+    "fixtures": [
+      "unknown-tag"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1"
+  },
+  {
+    "name": "unknown-tag/40",
+    "sources": 40,
+    "fixtures": [
+      "unknown-tag"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n.id AS x LIMIT 1"
+  },
+  {
+    "name": "source-order/clean,bad-matched",
+    "sources": 2,
+    "fixtures": [
+      "clean",
+      "bad-matched"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT substring(n.caller_name,'bad') AS x LIMIT 1"
+  },
+  {
+    "name": "source-order/bad-matched,clean",
+    "sources": 2,
+    "fixtures": [
+      "bad-matched",
+      "clean"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT substring(n.caller_name,'bad') AS x LIMIT 1"
+  },
+  {
+    "name": "clean/n AS x, n.id AS id",
+    "sources": 2,
+    "fixtures": [
+      "clean"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n AS x, n.id AS id LIMIT 1"
+  },
+  {
+    "name": "clean/n AS x, 1 AS x",
+    "sources": 2,
+    "fixtures": [
+      "clean"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n AS x, 1 AS x LIMIT 1"
+  },
+  {
+    "name": "clean/[n,n.id] AS x",
+    "sources": 2,
+    "fixtures": [
+      "clean"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT [n,n.id] AS x LIMIT 1"
+  },
+  {
+    "name": "clean/substring(n.caller_name,'bad') AS x, 1 AS x",
+    "sources": 2,
+    "fixtures": [
+      "clean"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT substring(n.caller_name,'bad') AS x, 1 AS x LIMIT 1"
+  },
+  {
+    "name": "bad-first-unmatched/n AS x, n.id AS id",
+    "sources": 2,
+    "fixtures": [
+      "bad-first-unmatched"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n AS x, n.id AS id LIMIT 1"
+  },
+  {
+    "name": "bad-first-unmatched/n AS x, 1 AS x",
+    "sources": 2,
+    "fixtures": [
+      "bad-first-unmatched"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n AS x, 1 AS x LIMIT 1"
+  },
+  {
+    "name": "bad-first-unmatched/[n,n.id] AS x",
+    "sources": 2,
+    "fixtures": [
+      "bad-first-unmatched"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT [n,n.id] AS x LIMIT 1"
+  },
+  {
+    "name": "bad-first-unmatched/substring(n.caller_name,'bad') AS x, 1 AS x",
+    "sources": 2,
+    "fixtures": [
+      "bad-first-unmatched"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT substring(n.caller_name,'bad') AS x, 1 AS x LIMIT 1"
+  },
+  {
+    "name": "bad-last-unmatched/n AS x, n.id AS id",
+    "sources": 2,
+    "fixtures": [
+      "bad-last-unmatched"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n AS x, n.id AS id LIMIT 1"
+  },
+  {
+    "name": "bad-last-unmatched/n AS x, 1 AS x",
+    "sources": 2,
+    "fixtures": [
+      "bad-last-unmatched"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n AS x, 1 AS x LIMIT 1"
+  },
+  {
+    "name": "bad-last-unmatched/[n,n.id] AS x",
+    "sources": 2,
+    "fixtures": [
+      "bad-last-unmatched"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT [n,n.id] AS x LIMIT 1"
+  },
+  {
+    "name": "bad-last-unmatched/substring(n.caller_name,'bad') AS x, 1 AS x",
+    "sources": 2,
+    "fixtures": [
+      "bad-last-unmatched"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT substring(n.caller_name,'bad') AS x, 1 AS x LIMIT 1"
+  },
+  {
+    "name": "bad-matched/n AS x, n.id AS id",
+    "sources": 2,
+    "fixtures": [
+      "bad-matched"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n AS x, n.id AS id LIMIT 1"
+  },
+  {
+    "name": "bad-matched/n AS x, 1 AS x",
+    "sources": 2,
+    "fixtures": [
+      "bad-matched"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n AS x, 1 AS x LIMIT 1"
+  },
+  {
+    "name": "bad-matched/[n,n.id] AS x",
+    "sources": 2,
+    "fixtures": [
+      "bad-matched"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT [n,n.id] AS x LIMIT 1"
+  },
+  {
+    "name": "bad-matched/substring(n.caller_name,'bad') AS x, 1 AS x",
+    "sources": 2,
+    "fixtures": [
+      "bad-matched"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT substring(n.caller_name,'bad') AS x, 1 AS x LIMIT 1"
+  },
+  {
+    "name": "annotation/n AS x, n.id AS id",
+    "sources": 2,
+    "fixtures": [
+      "annotation"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n AS x, n.id AS id LIMIT 1"
+  },
+  {
+    "name": "annotation/n AS x, 1 AS x",
+    "sources": 2,
+    "fixtures": [
+      "annotation"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n AS x, 1 AS x LIMIT 1"
+  },
+  {
+    "name": "annotation/[n,n.id] AS x",
+    "sources": 2,
+    "fixtures": [
+      "annotation"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT [n,n.id] AS x LIMIT 1"
+  },
+  {
+    "name": "annotation/substring(n.caller_name,'bad') AS x, 1 AS x",
+    "sources": 2,
+    "fixtures": [
+      "annotation"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT substring(n.caller_name,'bad') AS x, 1 AS x LIMIT 1"
+  },
+  {
+    "name": "mixed/n AS x, n.id AS id",
+    "sources": 2,
+    "fixtures": [
+      "mixed"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n AS x, n.id AS id LIMIT 1"
+  },
+  {
+    "name": "mixed/n AS x, 1 AS x",
+    "sources": 2,
+    "fixtures": [
+      "mixed"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT n AS x, 1 AS x LIMIT 1"
+  },
+  {
+    "name": "mixed/[n,n.id] AS x",
+    "sources": 2,
+    "fixtures": [
+      "mixed"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT [n,n.id] AS x LIMIT 1"
+  },
+  {
+    "name": "mixed/substring(n.caller_name,'bad') AS x, 1 AS x",
+    "sources": 2,
+    "fixtures": [
+      "mixed"
+    ],
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'other' RETURN DISTINCT substring(n.caller_name,'bad') AS x, 1 AS x LIMIT 1"
+  }
+]

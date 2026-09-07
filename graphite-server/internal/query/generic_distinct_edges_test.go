@@ -113,12 +113,12 @@ func TestGenericDistinctEligibility(t *testing.T) {
 		{"MATCH (n) WHERE n.caller_class STARTS WITH 'x' RETURN DISTINCT n.arbitrary AS a, null AS b LIMIT 2", true},
 		{"MATCH (n:Annotation) WHERE n.name IN ['x','y'] RETURN DISTINCT n.value LIMIT 2", true},
 		{"MATCH (n) WHERE toLower(coalesce(n.caller_class,'')) CONTAINS '' RETURN DISTINCT n.arbitrary LIMIT 2", false},
-		{"MATCH (n) WHERE n.caller_class STARTS WITH 'x' RETURN DISTINCT auditUnknown(n) LIMIT 2", false},
+		{"MATCH (n) WHERE n.caller_class STARTS WITH 'x' RETURN DISTINCT auditUnknown(n) LIMIT 2", true},
 		{"MATCH (n) WHERE n.caller_class STARTS WITH 'x' RETURN DISTINCT n.arbitrary ORDER BY n.arbitrary LIMIT 2", false},
 		{"OPTIONAL MATCH (n) WHERE n.caller_class STARTS WITH 'x' RETURN DISTINCT n.arbitrary LIMIT 2", false},
 		{"MATCH (n {x:1}) WHERE n.caller_class STARTS WITH 'x' RETURN DISTINCT n.arbitrary LIMIT 2", false},
 		{"MATCH (n)-[r]->(m) WHERE n.caller_class STARTS WITH 'x' RETURN DISTINCT n.arbitrary LIMIT 2", false},
-		{"MATCH (n) WHERE n.caller_class STARTS WITH 'x' RETURN DISTINCT n LIMIT 2", false},
+		{"MATCH (n) WHERE n.caller_class STARTS WITH 'x' RETURN DISTINCT n LIMIT 2", true},
 	}
 	for _, c := range cases {
 		t.Run(c.q, func(t *testing.T) {

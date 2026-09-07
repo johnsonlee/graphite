@@ -11,7 +11,7 @@ import (
 
 // The mapped view supports the main CONTAINS trigram capability only. Its
 // matching IDs are string-table IDs, not IDs restricted to a property directory.
-func (e evaluator) ordinaryExactMatches(source Graph, index *store.DistinctStringIndex, plan *ordinaryProjectionPlan) ([]map[int32]bool, bool) {
+func (e evaluator) mainExactMatches(source Graph, index *store.DistinctStringIndex, plan *mainStringSourceSpec) ([]map[int32]bool, bool) {
 	for _, atom := range plan.atoms {
 		units := javaUTF16(atom.term)
 		if atom.op != "CONTAINS" || len(units) < 3 {
@@ -41,7 +41,7 @@ func (e evaluator) ordinaryExactMatches(source Graph, index *store.DistinctStrin
 			}
 			seen[hash] = true
 			ids, err := index.ProjectionTrigramStrings(e.ctx, hash)
-			failProjectionRead(err)
+			failMainStringRead(err)
 			if len(ids) == 0 {
 				anchor = []int32{}
 				break
@@ -53,7 +53,7 @@ func (e evaluator) ordinaryExactMatches(source Graph, index *store.DistinctStrin
 		sets[i] = map[int32]bool{}
 		for _, sid := range anchor {
 			text, err := source.Store.ProjectionString(e.ctx, sid)
-			failProjectionRead(err)
+			failMainStringRead(err)
 			if e.distinctAtomMatches(atom, text) {
 				sets[i][sid] = true
 			}
@@ -69,11 +69,11 @@ func ordinaryAnyExact(sets []map[int32]bool) bool {
 	}
 	return false
 }
-func (e evaluator) ordinaryExactCanFill(index *store.DistinctStringIndex, plan *ordinaryProjectionPlan, sets []map[int32]bool, limit int) bool {
+func (e evaluator) mainExactCanFill(index *store.DistinctStringIndex, plan *mainStringSourceSpec, sets []map[int32]bool, limit int) bool {
 	count := 0
 	for i, atom := range plan.atoms {
 		entries, err := index.Directory(e.ctx, store.CallSiteStringProperty(distinctCallSiteProperties[atom.property]))
-		failProjectionRead(err)
+		failMainStringRead(err)
 		for _, entry := range entries {
 			if sets[i][entry.StringID] {
 				count += int(entry.PostingCount)
@@ -93,7 +93,7 @@ type ordinaryScanRange struct {
 	failure  any
 }
 
-func (e evaluator) ordinaryParallelCandidates(source Graph, plan *ordinaryProjectionPlan, limit int, exact []map[int32]bool, orderedWaves bool) ([]int32, bool) {
+func (e evaluator) mainParallelCandidates(source Graph, plan *mainStringSourceSpec, limit int, exact []map[int32]bool, orderedWaves bool) ([]int32, bool) {
 	ids := source.Store.NodesOfKind("CallSiteNode")
 	split := plan.sourceCount >= 40
 	if len(ids) < 4096 || limit >= len(ids) || limit >= int(^uint32(0)>>1) || (!split && runtime.NumCPU() <= 1) {
@@ -128,7 +128,7 @@ func (e evaluator) ordinaryParallelCandidates(source Graph, plan *ordinaryProjec
 			local.check()
 			id := ids[at]
 			sids, err := source.Store.ProjectionStringIDs(ctx, id)
-			failProjectionRead(err)
+			failMainStringRead(err)
 			if !split {
 				out.records = append(out.records, store.ProjectionRecord{NodeID: id, StringIDs: sids})
 			}
@@ -139,7 +139,7 @@ func (e evaluator) ordinaryParallelCandidates(source Graph, plan *ordinaryProjec
 					matched = exact[j][sid]
 				} else {
 					text, err := source.Store.ProjectionArrayString(ctx, sid)
-					failProjectionRead(err)
+					failMainStringRead(err)
 					matched = local.distinctAtomMatches(atom, text)
 				}
 				if matched {
@@ -208,7 +208,7 @@ func (e evaluator) ordinaryParallelCandidates(source Graph, plan *ordinaryProjec
 		if all {
 			err := source.Store.PublishProjectionScan(e.ctx, records)
 			if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) || errors.Is(err, store.ErrStoreClosed) {
-				failProjectionRead(err)
+				failMainStringRead(err)
 			}
 			// Publication is optional after a successful complete scan. Other build
 			// failures must not replace the already-established candidate result.
@@ -245,12 +245,12 @@ func (e evaluator) ordinaryMatchingIDs(source Graph, index *store.DistinctString
 	return e.distinctMatchingIDs(source, index, plan.indexedDistinctPlan)
 }
 
-func (e evaluator) ordinaryMappedIDs(source Graph, index *store.DistinctStringIndex, plan *ordinaryProjectionPlan, exact []map[int32]bool) []int32 {
+func (e evaluator) mainMappedIDs(source Graph, index *store.DistinctStringIndex, plan *mainStringSourceSpec, exact []map[int32]bool) []int32 {
 	selected := map[int32]bool{}
 	for i, atom := range plan.atoms {
 		for sid := range exact[i] {
 			ids, err := index.Postings(e.ctx, store.CallSiteStringProperty(distinctCallSiteProperties[atom.property]), sid)
-			failProjectionRead(err)
+			failMainStringRead(err)
 			for _, id := range ids {
 				e.check()
 				selected[id] = true
@@ -260,7 +260,7 @@ func (e evaluator) ordinaryMappedIDs(source Graph, index *store.DistinctStringIn
 	positions := []candidateNodePosition{}
 	for id := range selected {
 		offset, err := source.Store.ProjectionNodeOrder(e.ctx, id)
-		failProjectionRead(err)
+		failMainStringRead(err)
 		positions = append(positions, candidateNodePosition{id, offset})
 	}
 	sort.Slice(positions, func(i, j int) bool {
@@ -274,4 +274,21 @@ func (e evaluator) ordinaryMappedIDs(source Graph, index *store.DistinctStringIn
 		ids[i] = p.id
 	}
 	return ids
+}
+
+func (e evaluator) ordinaryExactMatches(source Graph, index *store.DistinctStringIndex, plan *ordinaryProjectionPlan) ([]map[int32]bool, bool) {
+	defer ordinarySourceFailure()
+	return e.mainExactMatches(source, index, plan.mainSourceSpec())
+}
+func (e evaluator) ordinaryExactCanFill(index *store.DistinctStringIndex, plan *ordinaryProjectionPlan, sets []map[int32]bool, limit int) bool {
+	defer ordinarySourceFailure()
+	return e.mainExactCanFill(index, plan.mainSourceSpec(), sets, limit)
+}
+func (e evaluator) ordinaryParallelCandidates(source Graph, plan *ordinaryProjectionPlan, limit int, exact []map[int32]bool, orderedWaves bool) ([]int32, bool) {
+	defer ordinarySourceFailure()
+	return e.mainParallelCandidates(source, plan.mainSourceSpec(), limit, exact, orderedWaves)
+}
+func (e evaluator) ordinaryMappedIDs(source Graph, index *store.DistinctStringIndex, plan *ordinaryProjectionPlan, exact []map[int32]bool) []int32 {
+	defer ordinarySourceFailure()
+	return e.mainMappedIDs(source, index, plan.mainSourceSpec(), exact)
 }

@@ -1,0 +1,8 @@
+--- FAIL: TestMainIndexOffsetsAreRepresentationSpecific (0.00s)
+    main_callsite_index_test.go:78: false false <nil>
+--- FAIL: TestMainIndexCancellationDoesNotPublish (0.01s)
+    --- FAIL: TestMainIndexCancellationDoesNotPublish/true/32 (0.00s)
+        main_callsite_index_test.go:105: true <nil>
+FAIL
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/store	0.395s
+FAIL

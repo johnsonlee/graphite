@@ -1,0 +1,143 @@
+[
+  {
+    "stage": "cold/created",
+    "reads": [
+      10,
+      20,
+      30
+    ],
+    "value": 1
+  },
+  {
+    "stage": "cold/hasNext0",
+    "reads": [],
+    "value": true
+  },
+  {
+    "stage": "cold/next0",
+    "reads": [],
+    "value": 10
+  },
+  {
+    "stage": "cold/hasNext1",
+    "reads": [],
+    "value": true
+  },
+  {
+    "stage": "cold/next1",
+    "reads": [],
+    "value": 20
+  },
+  {
+    "stage": "cold/hasNext2",
+    "reads": [],
+    "value": true
+  },
+  {
+    "stage": "cold/next2",
+    "reads": [],
+    "value": 30
+  },
+  {
+    "stage": "cold/hasNext3",
+    "reads": [],
+    "value": false
+  },
+  {
+    "stage": "hot/created",
+    "reads": [
+      10
+    ],
+    "value": 1
+  },
+  {
+    "stage": "hot/hasNext0",
+    "reads": [],
+    "value": true
+  },
+  {
+    "stage": "hot/next0",
+    "reads": [],
+    "value": 10
+  },
+  {
+    "stage": "hot/hasNext1",
+    "reads": [
+      20
+    ],
+    "value": true
+  },
+  {
+    "stage": "hot/next1",
+    "reads": [],
+    "value": 20
+  },
+  {
+    "stage": "hot/hasNext2",
+    "reads": [
+      30
+    ],
+    "value": true
+  },
+  {
+    "stage": "hot/next2",
+    "reads": [],
+    "value": 30
+  },
+  {
+    "stage": "hot/hasNext3",
+    "reads": [],
+    "value": false
+  },
+  {
+    "stage": "hot-fail-last/created",
+    "reads": [
+      10
+    ],
+    "value": 1
+  },
+  {
+    "stage": "hot-fail-last/hasNext0",
+    "reads": [],
+    "value": true
+  },
+  {
+    "stage": "hot-fail-last/next0",
+    "reads": [],
+    "value": 10
+  },
+  {
+    "stage": "hot-fail-last/hasNext1",
+    "reads": [
+      20
+    ],
+    "value": true
+  },
+  {
+    "stage": "hot-fail-last/next1",
+    "reads": [],
+    "value": 20
+  },
+  {
+    "stage": "hot-fail-last/error",
+    "reads": [
+      30
+    ],
+    "value": {
+      "class": "IllegalStateException",
+      "message": "ORDER_30"
+    }
+  },
+  {
+    "stage": "cold-fail-last/error",
+    "reads": [
+      10,
+      20,
+      30
+    ],
+    "value": {
+      "class": "IllegalStateException",
+      "message": "ORDER_30"
+    }
+  }
+]

@@ -1,0 +1,50 @@
+[
+  {
+    "name": "first32-tuple-255",
+    "completeStateEqual": true,
+    "baseTupleCount": 0,
+    "candidateTupleCount": 0,
+    "baseMappedCount": 0,
+    "candidateMappedCount": 0
+  },
+  {
+    "name": "first32-tuple-256",
+    "completeStateEqual": true,
+    "baseTupleCount": 31,
+    "candidateTupleCount": 31,
+    "baseMappedCount": 0,
+    "candidateMappedCount": 0
+  },
+  {
+    "name": "first32-tuple-256-repeat",
+    "completeStateEqual": true,
+    "baseTupleCount": 31,
+    "candidateTupleCount": 31,
+    "baseMappedCount": 0,
+    "candidateMappedCount": 0
+  },
+  {
+    "name": "last32-tuple-255",
+    "completeStateEqual": true,
+    "baseTupleCount": 31,
+    "candidateTupleCount": 31,
+    "baseMappedCount": 0,
+    "candidateMappedCount": 0
+  },
+  {
+    "name": "last32-tuple-256",
+    "completeStateEqual": true,
+    "baseTupleCount": 62,
+    "candidateTupleCount": 62,
+    "baseMappedCount": 0,
+    "candidateMappedCount": 0
+  },
+  {
+    "name": "last32-tuple-256-repeat",
+    "completeStateEqual": true,
+    "baseTupleCount": 62,
+    "candidateTupleCount": 62,
+    "baseMappedCount": 0,
+    "candidateMappedCount": 0
+  }
+]
