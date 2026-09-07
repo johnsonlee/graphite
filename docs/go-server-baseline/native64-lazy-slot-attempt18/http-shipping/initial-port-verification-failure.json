@@ -1,0 +1,36 @@
+{
+  "initialIndependentVerifierExit": 1,
+  "initialFailure": "verify.py line81 s.bind: OSError [Errno48] Address already in use",
+  "verifiedUTC": "2026-09-07T05:29:42.580321+00:00",
+  "serverExitRecords": {
+    "pagination21": {
+      "pid": 87281,
+      "returnCode": 143,
+      "forcedKill": false
+    },
+    "regression42": {
+      "pid": 87603,
+      "returnCode": 143,
+      "forcedKill": false
+    }
+  },
+  "checks": [
+    {
+      "port": 18883,
+      "lsofExit": 1,
+      "lsofStdout": "",
+      "lsofStderr": "",
+      "connect": "ConnectionRefusedError(61, 'Connection refused')",
+      "plainBind": "success"
+    },
+    {
+      "port": 18884,
+      "lsofExit": 1,
+      "lsofStdout": "",
+      "lsofStderr": "",
+      "connect": "ConnectionRefusedError(61, 'Connection refused')",
+      "plainBind": "success"
+    }
+  ],
+  "noRestartOrSourceChange": true
+}

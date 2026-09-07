@@ -1,0 +1,382 @@
+[
+  {
+    "columns": [
+      "x"
+    ],
+    "name": "caller",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "g0",
+            "g1",
+            "g2",
+            "g3",
+            "g4",
+            "g5",
+            "g6",
+            "g7",
+            "g8"
+          ]
+        },
+        "x": "other"
+      }
+    ],
+    "sources": 9
+  },
+  {
+    "columns": [
+      "x",
+      "y"
+    ],
+    "name": "tuple",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x,n.callee_name AS y LIMIT 2",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "g0",
+            "g1",
+            "g2",
+            "g3",
+            "g4",
+            "g5",
+            "g6",
+            "g7",
+            "g8"
+          ]
+        },
+        "x": "other",
+        "y": "invoke"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "g0",
+            "g1",
+            "g2",
+            "g3",
+            "g4",
+            "g5",
+            "g6",
+            "g7",
+            "g8"
+          ]
+        },
+        "x": "other",
+        "y": "other"
+      }
+    ],
+    "sources": 9
+  },
+  {
+    "columns": [
+      "x",
+      "g"
+    ],
+    "name": "graph",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x,n.graphId AS g LIMIT 1",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "g0"
+          ]
+        },
+        "g": "g0",
+        "x": "other"
+      }
+    ],
+    "sources": 9
+  },
+  {
+    "columns": [
+      "x",
+      "y"
+    ],
+    "name": "skip",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x,n.callee_name AS y SKIP 1 LIMIT 1",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "g0",
+            "g1",
+            "g2",
+            "g3",
+            "g4",
+            "g5",
+            "g6",
+            "g7",
+            "g8"
+          ]
+        },
+        "x": "other",
+        "y": "other"
+      }
+    ],
+    "sources": 9
+  },
+  {
+    "columns": [
+      "x"
+    ],
+    "name": "nohit",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'absent-long-needle-for-preflight' RETURN DISTINCT n.callee_name AS x LIMIT 1",
+    "rows": [],
+    "sources": 9
+  },
+  {
+    "columns": [
+      "x"
+    ],
+    "name": "caller",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x LIMIT 1",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "g0",
+            "g1",
+            "g10",
+            "g11",
+            "g12",
+            "g13",
+            "g14",
+            "g15",
+            "g16",
+            "g17",
+            "g18",
+            "g19",
+            "g2",
+            "g20",
+            "g21",
+            "g22",
+            "g23",
+            "g24",
+            "g25",
+            "g26",
+            "g27",
+            "g28",
+            "g29",
+            "g3",
+            "g30",
+            "g31",
+            "g32",
+            "g33",
+            "g34",
+            "g35",
+            "g36",
+            "g37",
+            "g38",
+            "g39",
+            "g4",
+            "g5",
+            "g6",
+            "g7",
+            "g8",
+            "g9"
+          ]
+        },
+        "x": "other"
+      }
+    ],
+    "sources": 40
+  },
+  {
+    "columns": [
+      "x",
+      "y"
+    ],
+    "name": "tuple",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x,n.callee_name AS y LIMIT 2",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "g0",
+            "g1",
+            "g10",
+            "g11",
+            "g12",
+            "g13",
+            "g14",
+            "g15",
+            "g16",
+            "g17",
+            "g18",
+            "g19",
+            "g2",
+            "g20",
+            "g21",
+            "g22",
+            "g23",
+            "g24",
+            "g25",
+            "g26",
+            "g27",
+            "g28",
+            "g29",
+            "g3",
+            "g30",
+            "g31",
+            "g32",
+            "g33",
+            "g34",
+            "g35",
+            "g36",
+            "g37",
+            "g38",
+            "g39",
+            "g4",
+            "g5",
+            "g6",
+            "g7",
+            "g8",
+            "g9"
+          ]
+        },
+        "x": "other",
+        "y": "invoke"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "g0",
+            "g1",
+            "g10",
+            "g11",
+            "g12",
+            "g13",
+            "g14",
+            "g15",
+            "g16",
+            "g17",
+            "g18",
+            "g19",
+            "g2",
+            "g20",
+            "g21",
+            "g22",
+            "g23",
+            "g24",
+            "g25",
+            "g26",
+            "g27",
+            "g28",
+            "g29",
+            "g3",
+            "g30",
+            "g31",
+            "g32",
+            "g33",
+            "g34",
+            "g35",
+            "g36",
+            "g37",
+            "g38",
+            "g39",
+            "g4",
+            "g5",
+            "g6",
+            "g7",
+            "g8",
+            "g9"
+          ]
+        },
+        "x": "other",
+        "y": "other"
+      }
+    ],
+    "sources": 40
+  },
+  {
+    "columns": [
+      "x",
+      "g"
+    ],
+    "name": "graph",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x,n.graphId AS g LIMIT 1",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "g0"
+          ]
+        },
+        "g": "g0",
+        "x": "other"
+      }
+    ],
+    "sources": 40
+  },
+  {
+    "columns": [
+      "x",
+      "y"
+    ],
+    "name": "skip",
+    "query": "MATCH (n) WHERE n.caller_name='other' RETURN DISTINCT n.caller_name AS x,n.callee_name AS y SKIP 1 LIMIT 1",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "g0",
+            "g1",
+            "g10",
+            "g11",
+            "g12",
+            "g13",
+            "g14",
+            "g15",
+            "g16",
+            "g17",
+            "g18",
+            "g19",
+            "g2",
+            "g20",
+            "g21",
+            "g22",
+            "g23",
+            "g24",
+            "g25",
+            "g26",
+            "g27",
+            "g28",
+            "g29",
+            "g3",
+            "g30",
+            "g31",
+            "g32",
+            "g33",
+            "g34",
+            "g35",
+            "g36",
+            "g37",
+            "g38",
+            "g39",
+            "g4",
+            "g5",
+            "g6",
+            "g7",
+            "g8",
+            "g9"
+          ]
+        },
+        "x": "other",
+        "y": "other"
+      }
+    ],
+    "sources": 40
+  },
+  {
+    "columns": [
+      "x"
+    ],
+    "name": "nohit",
+    "query": "MATCH (n) WHERE n.caller_name CONTAINS 'absent-long-needle-for-preflight' RETURN DISTINCT n.callee_name AS x LIMIT 1",
+    "rows": [],
+    "sources": 40
+  }
+]

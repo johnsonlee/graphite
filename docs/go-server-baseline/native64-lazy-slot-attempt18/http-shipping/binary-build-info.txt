@@ -1,0 +1,15 @@
+/tmp/graphite-lazyslot-http-binary-fb4434df: go1.22.0
+	path	github.com/johnsonlee/graphite/graphite-server/cmd/graphite-server
+	mod	github.com/johnsonlee/graphite/graphite-server	(devel)	
+	dep	github.com/antlr4-go/antlr/v4	v4.13.1	h1:SqQKkuVZ+zWkMMNkjy5FZe5mr5WURWnlpmOuzYWrPrQ=
+	dep	github.com/google/pprof	v0.0.0-20230811205829-9131a7e9cc17	h1:0h35ESZ02+hN/MFZb7XZOXg+Rl9+Rk8fBIf5YLws9gA=
+	dep	golang.org/x/exp	v0.0.0-20240506185415-9bf2ced13842	h1:vr/HnozRka3pE4EsMEg1lgkXJkTFJCVUX+S/ZT6wYzM=
+	build	-buildmode=exe
+	build	-compiler=gc
+	build	CGO_ENABLED=1
+	build	CGO_CFLAGS=
+	build	CGO_CPPFLAGS=
+	build	CGO_CXXFLAGS=
+	build	CGO_LDFLAGS=
+	build	GOARCH=arm64
+	build	GOOS=darwin

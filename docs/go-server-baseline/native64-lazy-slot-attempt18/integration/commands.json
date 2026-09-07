@@ -1,0 +1,80 @@
+{
+  "base": "fb4434df4545c195fdee379d109266bbdaaab4d1",
+  "go": "go version go1.22.0 darwin/arm64",
+  "commands": [
+    {
+      "cwd": "/private/tmp/graphite-go-a18-on-fb4434df/candidate/graphite-server",
+      "argv": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "./..."
+      ],
+      "env": {
+        "INDEXED_DISTINCT_OUTPUT": "/private/tmp/graphite-go-a18-on-fb4434df/integration/output/original-corpus",
+        "ORDINARY_HISTORY_OUTPUT": "/private/tmp/graphite-go-a18-on-fb4434df/integration/output/history"
+      },
+      "log": "module-race.log",
+      "exit": 0
+    },
+    {
+      "argv": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "log": "module-vet.log",
+      "exit": 0
+    },
+    {
+      "argv": [
+        "go",
+        "test",
+        "-race",
+        "-v",
+        "-count=1",
+        "-overlay=/private/tmp/graphite-go-a18-on-fb4434df/integration/original-overlay.json",
+        "./internal/query",
+        "-run",
+        "^TestLazySlot"
+      ],
+      "log": "original-production-named.log",
+      "exit": 0
+    },
+    {
+      "cwd": "/private/tmp/graphite-go-a18-on-fb4434df/review-module",
+      "argv": [
+        "go",
+        "test",
+        "-race",
+        "-v",
+        "-count=3",
+        "./internal/query",
+        "-run",
+        "^(TestReviewLazySlotInlineBindingsAcrossDistinctStores|TestLazySlotRealCancellationAndIndependentRequests|TestLazySlotRegistryUnionAndSurrogateOutputFallback|TestGenericProjectionBindingCancellationJoinsAndClears|TestStreamingPaginationWaveFailureCancellationJoin|TestGenericSyncCurrentRequestCancelsBlockedAdvanceAndJoinsTask)$"
+      ],
+      "log": "independent-boundaries.log",
+      "exit": 0,
+      "initialLog": "independent-boundaries-initial-compile.log",
+      "initialExit": 1
+    },
+    {
+      "cwd": "/private/tmp/graphite-go-a18-on-fb4434df/review-module",
+      "argv": [
+        "go",
+        "vet",
+        "./internal/query"
+      ],
+      "log": "review-vet.log",
+      "exit": 0
+    }
+  ],
+  "comparisonCommands": [
+    "python3 compare_b_outputs.py",
+    "python3 verify_b595.py",
+    "python3 numeric-spelling-audit.py",
+    "python3 summarize_original.py --verification /private/tmp/graphite-go-a18-on-fb4434df/integration/output"
+  ],
+  "coTenancy": "No 64/performance/JVM/HTTP launched by reviewer. Parent shipping correctness may overlap. All execution ends before parent A18 quiet pair."
+}

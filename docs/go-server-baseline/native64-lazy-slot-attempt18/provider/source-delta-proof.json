@@ -1,0 +1,16 @@
+{
+  "base": "b7bb15a219b5adc65526635997d069303ebc202f",
+  "baseFiles": 2434,
+  "candidateFiles": 2435,
+  "unchangedBaseFiles": 2432,
+  "changedExisting": [
+    "graphite-server/internal/query/candidate.go",
+    "graphite-server/internal/query/lazy_filtered.go"
+  ],
+  "newTests": [
+    "internal/query/lazy_filtered_slot_test.go"
+  ],
+  "functionalSourceFiles": 1,
+  "commentOnlyFiles": 1,
+  "noProfilerHelpersAdded": true
+}

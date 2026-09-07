@@ -1,0 +1,60 @@
+Total: 5576189942B
+ROUTINE ======================== github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.lazyFiltered in /private/tmp/graphite-go-label-candidate-4e94017f/graphite-server/internal/query/lazy_filtered.go
+187215868B 5572386377B (flat, cum) 99.93% of Total
+         .          .    113:func (e evaluator) lazyFiltered(graph *store.Store, branch cypher.SingleQuery) (Result, bool) {
+         .          .    114:	defer ordinarySourceFailure()
+         .          .    115:	p := e.compileLazyFiltered(branch)
+         .          .    116:	if p == nil {
+         .          .    117:		return Result{}, false
+         .          .    118:	}
+         .          .    119:	result := Result{Columns: p.columns, Rows: []map[string]any{}}
+         .          .    120:	if p.limit <= 0 {
+         .          .    121:		return result, true
+         .          .    122:	}
+         .          .    123:	sources := e.graphs
+         .          .    124:	if !e.cross {
+         .          .    125:		sources = nil
+         .          .    126:		if graph != nil {
+         .          .    127:			sources = []Graph{{ID: "single", Store: graph}}
+         .          .    128:		}
+         .          .    129:	}
+         .          .    130:	selectedSources := []Graph{}
+         .          .    131:	for _, source := range sources {
+         .          .    132:		if p.graphIDs == nil || p.graphIDs[source.ID] || (!e.cross && p.bounded && p.atoms == nil) {
+         .          .    133:			selectedSources = append(selectedSources, source)
+         .          .    134:		}
+         .          .    135:	}
+         .          .    136:	if p.atoms != nil {
+         .          .    137:		return e.lazyCandidateFiltered(p, selectedSources), true
+         .          .    138:	}
+         .          .    139:	seen := map[string]int{}
+         .          .    140:	bindings := map[string]any{p.node.Variable: nil}
+         .          .    141:	for _, source := range selectedSources {
+         .  25787507B    142:		next := e.lazyGenericNodes(source, p.node)
+         .          .    143:		for {
+         . 456680808B    144:			node, ok := next(e.ctx)
+         .          .    145:			if !ok {
+         .          .    146:				break
+         .          .    147:			}
+         . 3334933470B    148:			candidate := e.nodeValue(source.Store, source.ID, node)
+         .  78120104B    149:			if !e.matches(candidate, p.node, nil) {
+         .          .    150:				continue
+         .          .    151:			}
+         .          .    152:			bindings[p.node.Variable] = candidate
+         . 471866400B    153:			if e.eval(p.match.Where, bindings) != true {
+         .          .    154:				continue
+         .          .    155:			}
+         . 507084516B    156:			row := e.lazyProject(p, candidate, source.ID, false)
+         .          .    157:			if p.projection.Distinct {
+ 27788536B  27788536B    158:				visible := make(map[string]any, len(row))
+         .          .    159:				for k, v := range row {
+         .          .    160:					if k != provenanceKey {
+159427332B 159427332B    161:						visible[k] = v
+         .          .    162:					}
+         .          .    163:				}
+         . 510697704B    164:				k := key(visible)
+         .          .    165:				if i, exists := seen[k]; exists {
+         .          .    166:					mergeProvenance(result.Rows[i], row)
+         .          .    167:				} else if len(result.Rows) < p.limit {
+         .          .    168:					seen[k] = len(result.Rows)
+         .          .    169:					result.Rows = append(result.Rows, row)

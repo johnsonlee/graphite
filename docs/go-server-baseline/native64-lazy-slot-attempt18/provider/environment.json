@@ -1,0 +1,8 @@
+{
+  "recordedUTC": "2026-09-07T05:06:01.780662+00:00",
+  "platform": "macOS-14.3-arm64-arm-64bit-Mach-O",
+  "go": "go version go1.22.0 darwin/arm64",
+  "base": "b7bb15a219b5adc65526635997d069303ebc202f",
+  "parentQuietWindowRespected": true,
+  "newJVMOrReal64OrPerformanceRun": false
+}

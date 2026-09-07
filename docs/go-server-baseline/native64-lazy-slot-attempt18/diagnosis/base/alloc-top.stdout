@@ -1,0 +1,36 @@
+File: profile-query
+Type: alloc_space
+Time: Sep 7, 2026 at 1:36pm (KST)
+Showing nodes accounting for 8350241224B, 100% of 8350241224B total
+Showing top 30 nodes out of 68
+      flat  flat%   sum%        cum   cum%
+3256242260B 39.00% 39.00% 3256242260B 39.00%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.nodeValue (inline)
+2883592689B 34.53% 73.53% 2969052937B 35.56%  github.com/johnsonlee/graphite/graphite-server/internal/query.matchesLabel
+364402912B  4.36% 77.89% 364402912B  4.36%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionCandidateNode.func4
+308890455B  3.70% 81.59% 308890455B  3.70%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.bind
+268981492B  3.22% 84.81% 498637528B  5.97%  github.com/johnsonlee/graphite/graphite-server/internal/query.key
+201854348B  2.42% 87.23% 542122452B  6.49%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.eval
+198751692B  2.38% 89.61% 8346246226B   100%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.lazyFiltered
+168299016B  2.02% 91.63% 168299016B  2.02%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.callLegacy
+161483168B  1.93% 93.56% 161483168B  1.93%  strings.(*Builder).grow
+120596288B  1.44% 95.00% 120596288B  1.44%  fmt.Sprintf
+109059748B  1.31% 96.31% 109059748B  1.31%  strconv.quoteWith (inline)
+ 95946168B  1.15% 97.46%  95946168B  1.15%  github.com/johnsonlee/graphite/graphite-server/internal/query.NodeProperty
+ 77071536B  0.92% 98.38% 441474448B  5.29%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionCandidateNode
+ 51906888B  0.62% 99.00% 474045887B  5.68%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.lazyProject
+ 47711156B  0.57% 99.58%  47711156B  0.57%  github.com/johnsonlee/graphite/graphite-server/internal/query.addProvenance
+ 19397602B  0.23% 99.81%  19397602B  0.23%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).NodesOfKind (inline)
+ 12058808B  0.14%   100%  12058808B  0.14%  github.com/johnsonlee/graphite/graphite-server/internal/query.provenance (inline)
+   781444B 0.0094%   100%   2941624B 0.035%  runtime/pprof.writeHeapInternal
+   566314B 0.0068%   100%    566314B 0.0068%  runtime/pprof.(*profileBuilder).emitLocation
+   545034B 0.0065%   100%    545034B 0.0065%  runtime/pprof.(*protobuf).varint (inline)
+   529038B 0.0063%   100%    529038B 0.0063%  github.com/antlr4-go/antlr/v4.(*JMap[go.shape.*uint8,go.shape.*uint8,go.shape.interface { Equals2(*github.com/antlr4-go/antlr/v4.PredictionContext, *github.com/antlr4-go/antlr/v4.PredictionContext) bool; Hash1(*github.com/antlr4-go/antlr/v4.PredictionContext) int }]).Put
+   524432B 0.0063%   100%   2160180B 0.026%  runtime/pprof.writeHeapProto
+   524400B 0.0063%   100%    524400B 0.0063%  runtime/pprof.allFrames
+   524336B 0.0063%   100%    524336B 0.0063%  github.com/antlr4-go/antlr/v4.NewATNConfig5 (inline)
+         0     0%   100%    529038B 0.0063%  github.com/antlr4-go/antlr/v4.(*ATNConfigSet).OptimizeConfigs
+         0     0%   100%    529038B 0.0063%  github.com/antlr4-go/antlr/v4.(*BaseATNSimulator).getCachedContext
+         0     0%   100%    529038B 0.0063%  github.com/antlr4-go/antlr/v4.(*ParserATNSimulator).AdaptivePredict
+         0     0%   100%    529038B 0.0063%  github.com/antlr4-go/antlr/v4.(*ParserATNSimulator).addDFAEdge
+         0     0%   100%    529038B 0.0063%  github.com/antlr4-go/antlr/v4.(*ParserATNSimulator).addDFAState
+         0     0%   100%    524336B 0.0063%  github.com/antlr4-go/antlr/v4.(*ParserATNSimulator).closure

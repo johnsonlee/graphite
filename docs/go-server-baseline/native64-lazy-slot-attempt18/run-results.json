@@ -1,0 +1,30 @@
+[
+  {
+    "phase": "base",
+    "argv": [
+      "python3",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-lazy-slot-attempt18/run-profile.py",
+      "--worktree",
+      "/tmp/graphite-go-lazyslot-base-fb4434df",
+      "--out",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-lazy-slot-attempt18/base"
+    ],
+    "exitCode": 0,
+    "startedUTC": "2026-09-07T05:23:38.494696+00:00",
+    "finishedUTC": "2026-09-07T05:24:47.481638+00:00"
+  },
+  {
+    "phase": "candidate",
+    "argv": [
+      "python3",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-lazy-slot-attempt18/run-profile.py",
+      "--worktree",
+      "/tmp/graphite-go-lazyslot-candidate-fb4434df",
+      "--out",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-lazy-slot-attempt18/candidate"
+    ],
+    "exitCode": 0,
+    "startedUTC": "2026-09-07T05:24:47.481939+00:00",
+    "finishedUTC": "2026-09-07T05:25:53.462330+00:00"
+  }
+]

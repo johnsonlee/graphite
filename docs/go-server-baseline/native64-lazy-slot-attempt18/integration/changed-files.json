@@ -1,0 +1,35 @@
+[
+  {
+    "path": "graphite-server/internal/query/candidate.go",
+    "base": {
+      "sha256": "e84e32589c490ab13d155416987e3df5314078f45e2d3dba2f6e14d4b83f275c",
+      "bytes": 1479
+    },
+    "candidate": {
+      "sha256": "720fc6fb90126d30388f123aaf53d75207be640f8d7ea07ef47a9ea7858e6fd1",
+      "bytes": 1512
+    },
+    "exactAuthor": true
+  },
+  {
+    "path": "graphite-server/internal/query/lazy_filtered.go",
+    "base": {
+      "sha256": "97bdcccbf7d11fca261be34d452b3a3fffc8038fa0589e0e1185f72fde90904c",
+      "bytes": 8984
+    },
+    "candidate": {
+      "sha256": "a628a97a2a68052118ad2476e1dd9483a3bfcc9fdb5d554795fd6b93729da602",
+      "bytes": 9375
+    },
+    "exactAuthor": true
+  },
+  {
+    "path": "graphite-server/internal/query/lazy_filtered_slot_test.go",
+    "base": null,
+    "candidate": {
+      "sha256": "e747b12b863c02127e5b999fdcce36abc0f77ecc6c2692f52d6121e892abc6e4",
+      "bytes": 11395
+    },
+    "exactAuthor": true
+  }
+]

@@ -1,0 +1,35 @@
+{
+  "createdUTC": "2026-09-07T05:13:07.527077+00:00",
+  "base": "fb4434df",
+  "worktrees": {
+    "base": "/tmp/graphite-go-lazyslot-base-fb4434df",
+    "candidate": "/tmp/graphite-go-lazyslot-candidate-fb4434df",
+    "http": "/tmp/graphite-go-lazyslot-http-fb4434df"
+  },
+  "clones": {
+    "native": "/tmp/graphite-lazyslot-native-real64-fb4434df",
+    "http": "/tmp/graphite-lazyslot-http-real64-fb4434df"
+  },
+  "components": [
+    {
+      "component": "provider",
+      "manifestSHA256": "5565f5e27c2fac6367ef1054fc34372110769c3671d80a5d341230893580db0b",
+      "allFilesRehashedAndCopied": 276
+    },
+    {
+      "component": "diagnosis",
+      "manifestSHA256": "988c4e1fe77d5c10f4bf19325549d148f0f149fb6e4d4f72dec91df571d7227a",
+      "allFilesRehashedAndCopied": 65
+    },
+    {
+      "component": "integration",
+      "manifestSHA256": "da8bac62a76123aec765b30e33341db2c24b63e07f594ae437ae0f755e95a675",
+      "allFilesRehashedAndCopied": 189
+    }
+  ],
+  "all2437CandidateInputsMatchRootPlusExactAuthorDelta": true,
+  "independentIntegrationVerified": true,
+  "performanceNotStarted": false,
+  "all2496CombinedInputsMatchIndependentlyTestedCandidate": true,
+  "knownCoTenancy": "All three known agents confirmed heavy execution terminal before pair; external host activity uncontrolled."
+}

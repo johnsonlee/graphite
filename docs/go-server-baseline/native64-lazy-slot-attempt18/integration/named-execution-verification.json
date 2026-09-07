@@ -1,0 +1,38 @@
+{
+  "originalProductionOverlay": {
+    "passedNames": [
+      "TestLazySlotWholeNestedProjectionMatchesOwnedControl",
+      "TestLazySlotProjectionDoesNotRetainRefilledValue",
+      "TestLazySlotLaterDiscardedRowsAndReadErrors",
+      "TestLazySlotRealCancellationAndIndependentRequests",
+      "TestLazySlotRegistryUnionAndSurrogateOutputFallback"
+    ],
+    "subtestPasses": 152,
+    "actualExistingCanonicalFileOverlay": {
+      "Replace": {
+        "/private/tmp/graphite-go-a18-on-fb4434df/candidate/graphite-server/internal/query/lazy_filtered.go": "/private/tmp/graphite-go-a18-on-fb4434df/base/graphite-server/internal/query/lazy_filtered.go"
+      }
+    }
+  },
+  "independentBoundaryPasses": [
+    "TestGenericProjectionBindingCancellationJoinsAndClears",
+    "TestGenericSyncCurrentRequestCancelsBlockedAdvanceAndJoinsTask",
+    "TestLazySlotRealCancellationAndIndependentRequests",
+    "TestLazySlotRegistryUnionAndSurrogateOutputFallback",
+    "TestReviewLazySlotInlineBindingsAcrossDistinctStores",
+    "TestStreamingPaginationWaveFailureCancellationJoin",
+    "TestGenericProjectionBindingCancellationJoinsAndClears",
+    "TestGenericSyncCurrentRequestCancelsBlockedAdvanceAndJoinsTask",
+    "TestLazySlotRealCancellationAndIndependentRequests",
+    "TestLazySlotRegistryUnionAndSurrogateOutputFallback",
+    "TestReviewLazySlotInlineBindingsAcrossDistinctStores",
+    "TestStreamingPaginationWaveFailureCancellationJoin",
+    "TestGenericProjectionBindingCancellationJoinsAndClears",
+    "TestGenericSyncCurrentRequestCancelsBlockedAdvanceAndJoinsTask",
+    "TestLazySlotRealCancellationAndIndependentRequests",
+    "TestLazySlotRegistryUnionAndSurrogateOutputFallback",
+    "TestReviewLazySlotInlineBindingsAcrossDistinctStores",
+    "TestStreamingPaginationWaveFailureCancellationJoin"
+  ],
+  "repetitions": 3
+}

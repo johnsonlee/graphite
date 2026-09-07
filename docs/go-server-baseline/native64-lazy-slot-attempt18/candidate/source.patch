@@ -1,0 +1,52 @@
+diff --git a/graphite-server/internal/query/candidate.go b/graphite-server/internal/query/candidate.go
+index 3890f847..5613830d 100644
+--- a/graphite-server/internal/query/candidate.go
++++ b/graphite-server/internal/query/candidate.go
+@@ -7,10 +7,11 @@ import (
+ 	"github.com/johnsonlee/graphite/graphite-server/internal/store"
+ )
+ 
+-// candidateSlot is a borrowed view of one decoded scan candidate. Only the
+-// single-node WHERE scanner borrows it; no published row or container may keep
+-// this pointer. Node reads stay in the original enumeration phase. Properties
+-// avoid boxing the complete node; operations needing its whole value freeze it.
++// candidateSlot is a borrowed view of one decoded scan candidate. The single-node
++// WHERE scanner and unregistered generic lazy bindings may borrow it; published
++// rows and containers must not keep this pointer. Node reads stay in the original
++// enumeration phase. Properties avoid boxing the complete node; whole-value
++// operations freeze it.
+ type candidateSlot struct {
+ 	graph               *store.Store
+ 	graphID             string
+diff --git a/graphite-server/internal/query/lazy_filtered.go b/graphite-server/internal/query/lazy_filtered.go
+index 3b4f6869..adfecc64 100644
+--- a/graphite-server/internal/query/lazy_filtered.go
++++ b/graphite-server/internal/query/lazy_filtered.go
+@@ -138,6 +138,12 @@ func (e evaluator) lazyFiltered(graph *store.Store, branch cypher.SingleQuery) (
+ 	}
+ 	seen := map[string]int{}
+ 	bindings := map[string]any{p.node.Variable: nil}
++	// Only unregistered scratch bindings may borrow this query-owned slot.
++	// Tracked projection bindings retain the original owned-value path.
++	var slot *candidateSlot
++	if e.rowOrders == nil {
++		slot = &candidateSlot{qualified: e.cross}
++	}
+ 	for _, source := range selectedSources {
+ 		next := e.lazyGenericNodes(source, p.node)
+ 		for {
+@@ -145,7 +151,13 @@ func (e evaluator) lazyFiltered(graph *store.Store, branch cypher.SingleQuery) (
+ 			if !ok {
+ 				break
+ 			}
+-			candidate := e.nodeValue(source.Store, source.ID, node)
++			var candidate any
++			if slot != nil {
++				slot.graph, slot.graphID, slot.node = source.Store, source.ID, node
++				candidate = slot
++			} else {
++				candidate = e.nodeValue(source.Store, source.ID, node)
++			}
+ 			if !e.matches(candidate, p.node, nil) {
+ 				continue
+ 			}

@@ -1,0 +1,6 @@
+# github.com/johnsonlee/graphite/graphite-server/internal/query [github.com/johnsonlee/graphite/graphite-server/internal/query.test]
+internal/query/review_lazy_slot_test.go:40:8: n.graphID undefined (type qualifiedNode has no field or method graphID, but does have GraphID)
+internal/query/review_lazy_slot_test.go:40:34: n.graph undefined (type qualifiedNode has no field or method graph, but does have Graph)
+internal/query/review_lazy_slot_test.go:40:61: n.node undefined (type qualifiedNode has no field or method node, but does have Node)
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/query [build failed]
+FAIL

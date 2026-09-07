@@ -1,0 +1,132 @@
+[
+  {
+    "path": "internal/query/candidate.go",
+    "bytes": 1479,
+    "sha256": "e84e32589c490ab13d155416987e3df5314078f45e2d3dba2f6e14d4b83f275c"
+  },
+  {
+    "path": "internal/query/lazy_filtered.go",
+    "bytes": 8984,
+    "sha256": "97bdcccbf7d11fca261be34d452b3a3fffc8038fa0589e0e1185f72fde90904c"
+  },
+  {
+    "path": "internal/query/lazy_filtered_candidates.go",
+    "bytes": 6023,
+    "sha256": "f977c1a839e881f9edb86b78d29c2b8acc95c4a0f8dc2e5dbcce6f35323afad9"
+  },
+  {
+    "path": "internal/query/lazy_filtered_plan.go",
+    "bytes": 5444,
+    "sha256": "d7890f4753c04b6a5af8bd3efdfd57060a4ad6d5507bab51223ee5e0ff159f2b"
+  },
+  {
+    "path": "internal/query/eval.go",
+    "bytes": 14192,
+    "sha256": "bea6ffc5ee0e56cc368389725e9fb2848a8b9fa15d90b374e06b8b837ea97cc8"
+  },
+  {
+    "path": "internal/query/engine.go",
+    "bytes": 14578,
+    "sha256": "8bf53da8b83dab072d2013dcb5d4f174040d14e262a923fb365ed10557e67e60"
+  },
+  {
+    "path": "internal/query/row_order.go",
+    "bytes": 2892,
+    "sha256": "d67935abc7f8777b512c2a0aaf534cd82451e39582c490460a4cd275847cecc6"
+  },
+  {
+    "path": "internal/query/materialize.go",
+    "bytes": 3974,
+    "sha256": "340d69524aa325b1fedc7a021ca24f2752a4e03572816a6b9cfe481d7a87a1f3"
+  },
+  {
+    "path": "internal/query/functions.go",
+    "bytes": 8698,
+    "sha256": "796fe8140b5f5c8b64f1d240c39120ef07fb0240c217f627cd0e18c658107096"
+  },
+  {
+    "path": "internal/query/function_properties.go",
+    "bytes": 2924,
+    "sha256": "1195addcabde70d13a6fcc358897be1a1fcfb874286b84e5fa5a367ef275bbea"
+  },
+  {
+    "path": "internal/query/object_string.go",
+    "bytes": 5316,
+    "sha256": "fccde562ba016561d37845d499351664736e154e67965194006bc331f0c2fc7c"
+  },
+  {
+    "path": "internal/query/values.go",
+    "bytes": 9868,
+    "sha256": "c77ed3536aa23d44a54cd0e7450d1e251794abfb0cb78fee6146ad39c19f9bd4"
+  },
+  {
+    "path": "internal/query/cross.go",
+    "bytes": 1824,
+    "sha256": "c815b99ea24c66b65ffd4a8ed3fa77dfaf36c85263d163096b3e2df9ac676492"
+  },
+  {
+    "path": "internal/query/properties.go",
+    "bytes": 3317,
+    "sha256": "30d2e50b6767c5cc219c85f2edf19b650199432974007dae44ad4a178d68dfc6"
+  },
+  {
+    "path": "internal/query/scan.go",
+    "bytes": 2262,
+    "sha256": "bd4edd9fed796e474e2f9155d423f549bf44283444d34483448da2271dfc5962"
+  },
+  {
+    "path": "internal/query/traversal.go",
+    "bytes": 12888,
+    "sha256": "c83f3122a4ab61a9433323c3466c64612e2df7e1db703b989df8f5c98f9f0a33"
+  },
+  {
+    "path": "internal/query/indexed_distinct.go",
+    "bytes": 25118,
+    "sha256": "7dac3137908c8291fb32f06e0b1284c347a6afc0331ba611b722b4373e942ee8"
+  },
+  {
+    "path": "internal/query/streaming_pagination.go",
+    "bytes": 7798,
+    "sha256": "38f65e892cf3534134ec301665a86c8d3402470df4d77d75c7d91682447a8c8b"
+  },
+  {
+    "path": "internal/query/candidate_slot_test.go",
+    "bytes": 6774,
+    "sha256": "56a5dd91d2b91a5d911a87c33f61ced9ea01b3f7ca69c3607e55a3c3f30c7472"
+  },
+  {
+    "path": "internal/query/lazy_filtered_test.go",
+    "bytes": 6803,
+    "sha256": "07b764a8089bd589383d4ad870a81e9ef7396f1185f8306d9f8e700b390107c7"
+  },
+  {
+    "path": "internal/query/lazy_filtered_protocol_test.go",
+    "bytes": 4002,
+    "sha256": "c70a647235cbf3de05180e43dd87d5e67293977b25a9507da81d132ec7fdeb7f"
+  },
+  {
+    "path": "internal/query/generic_distinct_binding_test.go",
+    "bytes": 5753,
+    "sha256": "d53b68498c1229ff01fa348c9fd31aa763966ebe943708e76c4227b31c8db431"
+  },
+  {
+    "path": "internal/store/projection_node.go",
+    "bytes": 2983,
+    "sha256": "fda887a49466b5c9c9663d1af76932df5df7cfd22849c867ce85fb0cc3577842"
+  },
+  {
+    "path": "internal/store/distinct_projection.go",
+    "bytes": 13480,
+    "sha256": "0c9290ed92c6e174210420ea8ec5bc9c70d50c3b30b60a73a78bed8012464194"
+  },
+  {
+    "path": "internal/store/decode.go",
+    "bytes": 11199,
+    "sha256": "e52319eb020f907667a10ba718943f2a850c1aa211e8a13e83009e98e367c3a1"
+  },
+  {
+    "path": "internal/store/store.go",
+    "bytes": 8700,
+    "sha256": "7922d69906c1fd01bf2f6337abedc5272957d4536337cd9b133d78ec5cbaf935"
+  }
+]

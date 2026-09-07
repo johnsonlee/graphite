@@ -1,0 +1,11 @@
+Total: 5576189942B
+ROUTINE ======================== github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.nodeValue in /private/tmp/graphite-go-label-candidate-4e94017f/graphite-server/internal/query/traversal.go
+3334933470B 3334933470B (flat, cum) 59.81% of Total
+         .          .    225:func (e evaluator) nodeValue(source *store.Store, id string, node store.Node) any {
+         .          .    226:	if e.cross {
+3334933470B 3334933470B    227:		return qualifiedNode{id, source, node}
+         .          .    228:	}
+         .          .    229:	return node
+         .          .    230:}
+         .          .    231:func (e evaluator) targetNode(pattern cypher.NodePattern, value any, row map[string]any) (map[string]any, bool) {
+         .          .    232:	if name := pattern.Variable; name != "" {

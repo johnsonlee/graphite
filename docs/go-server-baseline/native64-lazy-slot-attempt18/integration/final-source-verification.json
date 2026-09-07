@@ -1,0 +1,13 @@
+{
+  "totalInputs": 2496,
+  "moduleInputs": 2437,
+  "allExact": true,
+  "changed": [
+    "graphite-server/internal/query/candidate.go",
+    "graphite-server/internal/query/lazy_filtered.go",
+    "graphite-server/internal/query/lazy_filtered_slot_test.go"
+  ],
+  "preservedOriginalInputs": 2493,
+  "includes": "fb4434df A17+A16+B+A15+CDE+tuple+A13+A12",
+  "excludes": "lazyedge and filtered relationship"
+}

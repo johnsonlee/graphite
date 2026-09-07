@@ -1,0 +1,124 @@
+{
+  "name": "b-distinct-skip",
+  "query": "MATCH (n:CallSiteNode) WHERE n.caller_name CONTAINS 'get' RETURN DISTINCT n.graph_id AS missing, n.caller_class AS caller, n.caller_name AS name SKIP 3 LIMIT 12",
+  "source": "Pinned-main real64 B pagination HTTP oracle; qualified DISTINCT exhausts sources for provenance",
+  "expected": {
+    "columns": [
+      "missing",
+      "caller",
+      "name"
+    ],
+    "graphCount": 64,
+    "rowCount": 12,
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "caller": "org.apache.http.conn.ssl.AbstractVerifier",
+        "name": "getDNSSubjectAlts"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "caller": "libcore.reflect.Types",
+        "name": "getTypeArray"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "caller": "libcore.reflect.Types",
+        "name": "getType"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "caller": "libcore.reflect.Types",
+        "name": "getSignature"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "caller": "javax.xml.validation.SchemaFactory",
+        "name": "getFeature"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "caller": "javax.xml.validation.SchemaFactory",
+        "name": "getProperty"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "caller": "javax.xml.datatype.Duration",
+        "name": "getXMLSchemaType"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "caller": "javax.xml.datatype.Duration",
+        "name": "getYears"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "caller": "javax.xml.datatype.Duration",
+        "name": "getMonths"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "caller": "javax.xml.datatype.Duration",
+        "name": "getDays"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "caller": "javax.xml.datatype.Duration",
+        "name": "getHours"
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "caller": "javax.xml.datatype.Duration",
+        "name": "getMinutes"
+      }
+    ]
+  }
+}

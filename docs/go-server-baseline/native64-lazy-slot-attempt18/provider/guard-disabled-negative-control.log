@@ -1,0 +1,6 @@
+=== RUN   TestLazySlotRegistryUnionAndSurrogateOutputFallback
+    lazy_filtered_slot_test.go:272: borrowed candidate escaped its evaluation scope
+--- FAIL: TestLazySlotRegistryUnionAndSurrogateOutputFallback (0.01s)
+FAIL
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/query	0.254s
+FAIL

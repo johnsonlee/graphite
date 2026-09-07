@@ -1,0 +1,20 @@
+[
+  {
+    "path": "internal/query/candidate.go",
+    "bytes": 1512,
+    "sha256": "720fc6fb90126d30388f123aaf53d75207be640f8d7ea07ef47a9ea7858e6fd1",
+    "role": "contract-comment-only"
+  },
+  {
+    "path": "internal/query/lazy_filtered.go",
+    "bytes": 9375,
+    "sha256": "a628a97a2a68052118ad2476e1dd9483a3bfcc9fdb5d554795fd6b93729da602",
+    "role": "production"
+  },
+  {
+    "path": "internal/query/lazy_filtered_slot_test.go",
+    "bytes": 11395,
+    "sha256": "e747b12b863c02127e5b999fdcce36abc0f77ecc6c2692f52d6121e892abc6e4",
+    "role": "test"
+  }
+]

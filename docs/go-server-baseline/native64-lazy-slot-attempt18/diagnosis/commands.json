@@ -1,0 +1,128 @@
+[
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-alloc_space",
+      "-unit=bytes",
+      "-nodefraction=0",
+      "-edgefraction=0",
+      "-top",
+      "-nodecount=30",
+      "-base",
+      "/private/tmp/graphite-cde-slot-readonly-audit/base/heap-before.pprof",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-y_i_hnq3/profile-query",
+      "/private/tmp/graphite-cde-slot-readonly-audit/base/heap-after.pprof"
+    ],
+    "cwd": "/tmp/graphite-go-label-candidate-4e94017f/graphite-server",
+    "exit": 0,
+    "stdout": "base/alloc-top.stdout",
+    "stderr": "base/alloc-top.stderr"
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-alloc_space",
+      "-unit=bytes",
+      "-nodefraction=0",
+      "-edgefraction=0",
+      "-list",
+      "nodeValue",
+      "-base",
+      "/private/tmp/graphite-cde-slot-readonly-audit/base/heap-before.pprof",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-y_i_hnq3/profile-query",
+      "/private/tmp/graphite-cde-slot-readonly-audit/base/heap-after.pprof"
+    ],
+    "cwd": "/tmp/graphite-go-label-candidate-4e94017f/graphite-server",
+    "exit": 0,
+    "stdout": "base/alloc-node-value.stdout",
+    "stderr": "base/alloc-node-value.stderr"
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-alloc_space",
+      "-unit=bytes",
+      "-nodefraction=0",
+      "-edgefraction=0",
+      "-list",
+      "lazyFiltered$",
+      "-base",
+      "/private/tmp/graphite-cde-slot-readonly-audit/base/heap-before.pprof",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-y_i_hnq3/profile-query",
+      "/private/tmp/graphite-cde-slot-readonly-audit/base/heap-after.pprof"
+    ],
+    "cwd": "/tmp/graphite-go-label-candidate-4e94017f/graphite-server",
+    "exit": 0,
+    "stdout": "base/alloc-lazy-filtered.stdout",
+    "stderr": "base/alloc-lazy-filtered.stderr"
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-alloc_space",
+      "-unit=bytes",
+      "-nodefraction=0",
+      "-edgefraction=0",
+      "-top",
+      "-nodecount=30",
+      "-base",
+      "/private/tmp/graphite-cde-slot-readonly-audit/candidate/heap-before.pprof",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-cuo0imja/profile-query",
+      "/private/tmp/graphite-cde-slot-readonly-audit/candidate/heap-after.pprof"
+    ],
+    "cwd": "/tmp/graphite-go-label-candidate-4e94017f/graphite-server",
+    "exit": 0,
+    "stdout": "candidate/alloc-top.stdout",
+    "stderr": "candidate/alloc-top.stderr"
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-alloc_space",
+      "-unit=bytes",
+      "-nodefraction=0",
+      "-edgefraction=0",
+      "-list",
+      "nodeValue",
+      "-base",
+      "/private/tmp/graphite-cde-slot-readonly-audit/candidate/heap-before.pprof",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-cuo0imja/profile-query",
+      "/private/tmp/graphite-cde-slot-readonly-audit/candidate/heap-after.pprof"
+    ],
+    "cwd": "/tmp/graphite-go-label-candidate-4e94017f/graphite-server",
+    "exit": 0,
+    "stdout": "candidate/alloc-node-value.stdout",
+    "stderr": "candidate/alloc-node-value.stderr"
+  },
+  {
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-alloc_space",
+      "-unit=bytes",
+      "-nodefraction=0",
+      "-edgefraction=0",
+      "-list",
+      "lazyFiltered$",
+      "-base",
+      "/private/tmp/graphite-cde-slot-readonly-audit/candidate/heap-before.pprof",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-cuo0imja/profile-query",
+      "/private/tmp/graphite-cde-slot-readonly-audit/candidate/heap-after.pprof"
+    ],
+    "cwd": "/tmp/graphite-go-label-candidate-4e94017f/graphite-server",
+    "exit": 0,
+    "stdout": "candidate/alloc-lazy-filtered.stdout",
+    "stderr": "candidate/alloc-lazy-filtered.stderr"
+  }
+]

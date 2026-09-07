@@ -646,3 +646,28 @@ profiles/receipts,HTTP63 verification andpost-exit fixture identities.
 diagnosis, exact provider/integration/source evidence, all raw query profiles,
 complete bodies and state histories, actual HTTP verification, fixture receipts,
 and initial observer/collector failures. No async CPU sampler enters shipping.
+
+
+## 2026-09-07 — Attempt 18: generic candidate slot without registry escape
+
+| Item | Evidence / status |
+|---|---|
+| Hypothesis | Reuse one private existing candidateSlot only in the generic lazyFiltered loop when rowOrders is nil; preserve complete-node decode and owned-value fallback for registry bindings |
+| Native base / candidate | fb4434df; patch259d1be1cef97757ec5a012f20d24c597c862e9c6b29d3840b34a268e973a26d; one functional production file, borrowing-comment update and one new test;2437 root inputs match full tested combination |
+| Correctness | Fullmodule race/vet; exact-original overlay5top-level+152subtests;18 independent named ownership/Close/cancel/join race executions; original1044/1048 andB595+53traces unchanged |
+| Historical state | 76 artifacts73rawexact,3only51mappedView40source leaves; no retained/public differences;166 numeric spellings preserved; guard-disabled negative control detects borrowed pointer escape |
+| Real64 | All64 persisted graphs/1152files/10,338,207,518bytes; both fixed21 processes Close/exit0;42 fulltyped main bodies andallsourcehistories equal; original/native/source/binary unchanged |
+| Generic DISTINCT | 5.391398->4.900908s, CPU5.385597->4.896566s, allocation5,479,520,024->2,249,485,384bytes |
+| Generic ordinary | 0.000529->0.000499s, CPU0.000558->0.000535s, allocation687,528->603,064bytes |
+| Unbounded Android | 0.074303->0.067068s, CPU0.074272->0.067060s, allocation79,409,296->15,021,024bytes |
+| Unbounded Kotlin | 0.044406->0.040840s, CPU0.044426->0.040844s, allocation47,950,624->10,026,672bytes |
+| Prefix control | 0.948603->1.006266s, CPU6.979380->7.420089s, allocation443,945,336->443,936,888bytes |
+| Dense control | 0.305769->0.318127s, CPU1.975691->2.150681s, allocation268,438,296->268,425,552bytes |
+| Shipping | 63 fulltyped main bodies/headers/catalog64;152active compiler/embed+2437module inputs;two default60s/cap4 processes exit143/no forcedkill/portsfree;1152original/HTTPclone hashes unchanged |
+| Decision | Keep measured generic allocation reduction; unchanged consumption/projection/ownership; retain every control and counter, no other map/decoder/source/equality optimization bundled |
+| Limits | Single instrumented pair vs preceding Go; known agents quiet/external activity uncontrolled; no main-relative P95/10x, peakRSS or established GC-pause claim; full compatibility/finalgate remain open |
+
+`docs/go-server-baseline/native64-lazy-slot-attempt18/` preserves the read-only
+diagnosis, exact author and independent source/evidence freezes, initial test
+failures and negative controls, all real64 measurements and complete outputs,
+shipping verification and source/fixture identities.

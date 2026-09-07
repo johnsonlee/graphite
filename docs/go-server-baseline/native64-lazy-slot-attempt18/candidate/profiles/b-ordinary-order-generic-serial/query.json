@@ -1,0 +1,110 @@
+{
+  "name": "b-ordinary-order-generic-serial",
+  "query": "MATCH (n:CallSiteNode) WHERE n.graphId = 'fixture-android-00' AND n.id \u003e= 0 RETURN n.id AS id ORDER BY id DESC SKIP 2 LIMIT 12",
+  "source": "Pinned-main real64 B pagination HTTP oracle; generic serial ORDER; route one actual source; complete source scan",
+  "expected": {
+    "columns": [
+      "id"
+    ],
+    "graphCount": 64,
+    "rowCount": 12,
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "id": 360209
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "id": 360206
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "id": 360204
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "id": 360148
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "id": 360143
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "id": 360141
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "id": 360140
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "id": 360139
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "id": 360137
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "id": 360134
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "id": 360133
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "id": 360131
+      }
+    ]
+  }
+}

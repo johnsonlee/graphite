@@ -1,0 +1,56 @@
+=== RUN   TestGenericProjectionBindingCancellationJoinsAndClears
+--- PASS: TestGenericProjectionBindingCancellationJoinsAndClears (0.02s)
+=== RUN   TestGenericSyncCurrentRequestCancelsBlockedAdvanceAndJoinsTask
+--- PASS: TestGenericSyncCurrentRequestCancelsBlockedAdvanceAndJoinsTask (0.00s)
+=== RUN   TestLazySlotRealCancellationAndIndependentRequests
+--- PASS: TestLazySlotRealCancellationAndIndependentRequests (0.02s)
+=== RUN   TestLazySlotRegistryUnionAndSurrogateOutputFallback
+--- PASS: TestLazySlotRegistryUnionAndSurrogateOutputFallback (0.01s)
+=== RUN   TestReviewLazySlotInlineBindingsAcrossDistinctStores
+--- PASS: TestReviewLazySlotInlineBindingsAcrossDistinctStores (0.02s)
+=== RUN   TestStreamingPaginationWaveFailureCancellationJoin
+=== RUN   TestStreamingPaginationWaveFailureCancellationJoin/source
+=== RUN   TestStreamingPaginationWaveFailureCancellationJoin/request
+=== RUN   TestStreamingPaginationWaveFailureCancellationJoin/projection
+--- PASS: TestStreamingPaginationWaveFailureCancellationJoin (0.00s)
+    --- PASS: TestStreamingPaginationWaveFailureCancellationJoin/source (0.00s)
+    --- PASS: TestStreamingPaginationWaveFailureCancellationJoin/request (0.00s)
+    --- PASS: TestStreamingPaginationWaveFailureCancellationJoin/projection (0.00s)
+=== RUN   TestGenericProjectionBindingCancellationJoinsAndClears
+--- PASS: TestGenericProjectionBindingCancellationJoinsAndClears (0.00s)
+=== RUN   TestGenericSyncCurrentRequestCancelsBlockedAdvanceAndJoinsTask
+--- PASS: TestGenericSyncCurrentRequestCancelsBlockedAdvanceAndJoinsTask (0.00s)
+=== RUN   TestLazySlotRealCancellationAndIndependentRequests
+--- PASS: TestLazySlotRealCancellationAndIndependentRequests (0.01s)
+=== RUN   TestLazySlotRegistryUnionAndSurrogateOutputFallback
+--- PASS: TestLazySlotRegistryUnionAndSurrogateOutputFallback (0.01s)
+=== RUN   TestReviewLazySlotInlineBindingsAcrossDistinctStores
+--- PASS: TestReviewLazySlotInlineBindingsAcrossDistinctStores (0.01s)
+=== RUN   TestStreamingPaginationWaveFailureCancellationJoin
+=== RUN   TestStreamingPaginationWaveFailureCancellationJoin/source
+=== RUN   TestStreamingPaginationWaveFailureCancellationJoin/request
+=== RUN   TestStreamingPaginationWaveFailureCancellationJoin/projection
+--- PASS: TestStreamingPaginationWaveFailureCancellationJoin (0.00s)
+    --- PASS: TestStreamingPaginationWaveFailureCancellationJoin/source (0.00s)
+    --- PASS: TestStreamingPaginationWaveFailureCancellationJoin/request (0.00s)
+    --- PASS: TestStreamingPaginationWaveFailureCancellationJoin/projection (0.00s)
+=== RUN   TestGenericProjectionBindingCancellationJoinsAndClears
+--- PASS: TestGenericProjectionBindingCancellationJoinsAndClears (0.00s)
+=== RUN   TestGenericSyncCurrentRequestCancelsBlockedAdvanceAndJoinsTask
+--- PASS: TestGenericSyncCurrentRequestCancelsBlockedAdvanceAndJoinsTask (0.00s)
+=== RUN   TestLazySlotRealCancellationAndIndependentRequests
+--- PASS: TestLazySlotRealCancellationAndIndependentRequests (0.01s)
+=== RUN   TestLazySlotRegistryUnionAndSurrogateOutputFallback
+--- PASS: TestLazySlotRegistryUnionAndSurrogateOutputFallback (0.01s)
+=== RUN   TestReviewLazySlotInlineBindingsAcrossDistinctStores
+--- PASS: TestReviewLazySlotInlineBindingsAcrossDistinctStores (0.01s)
+=== RUN   TestStreamingPaginationWaveFailureCancellationJoin
+=== RUN   TestStreamingPaginationWaveFailureCancellationJoin/source
+=== RUN   TestStreamingPaginationWaveFailureCancellationJoin/request
+=== RUN   TestStreamingPaginationWaveFailureCancellationJoin/projection
+--- PASS: TestStreamingPaginationWaveFailureCancellationJoin (0.00s)
+    --- PASS: TestStreamingPaginationWaveFailureCancellationJoin/source (0.00s)
+    --- PASS: TestStreamingPaginationWaveFailureCancellationJoin/request (0.00s)
+    --- PASS: TestStreamingPaginationWaveFailureCancellationJoin/projection (0.00s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/query	1.530s

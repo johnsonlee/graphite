@@ -1,0 +1,8 @@
+{
+  "normalization": "none; object member order is not compared, all array order/types/nulls/errors/metadata/state values are compared",
+  "artifacts": 76,
+  "equal": 73
+}
+base-output/original-corpus/main-string-source-main.json-native.json 27 [{'path': '$[10].targets[0].after[0].mappedView', 'base': False, 'candidate': True, 'reason': 'value'}, {'path': '$[10].targets[0].after[1].mappedView', 'base': False, 'candidate': True, 'reason': 'value'}, {'path': '$[10].targets[0].after[2].mappedView', 'base': False, 'candidate': True, 'reason': 'value'}]
+base-output/original-corpus/main-string-source-offset-main.json-native.json 8 [{'path': '$[5].targets[0].after[1].mappedView', 'base': True, 'candidate': False, 'reason': 'value'}, {'path': '$[5].targets[0].after[4].mappedView', 'base': False, 'candidate': True, 'reason': 'value'}, {'path': '$[5].targets[0].after[6].mappedView', 'base': False, 'candidate': True, 'reason': 'value'}]
+base-output/history/rolling-native.json 44 [{'path': '$[9].targets[0].after[4].mappedView', 'base': True, 'candidate': False, 'reason': 'value'}, {'path': '$[9].targets[0].after[8].mappedView', 'base': True, 'candidate': False, 'reason': 'value'}, {'path': '$[9].targets[1].after[8].mappedView', 'base': True, 'candidate': False, 'reason': 'value'}]

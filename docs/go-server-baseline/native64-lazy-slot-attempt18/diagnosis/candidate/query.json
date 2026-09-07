@@ -1,0 +1,236 @@
+{
+  "name": "e-generic-distinct",
+  "query": "MATCH (n:CallSiteNode) WHERE toString(toString(n.caller_name)) CONTAINS 'get' RETURN DISTINCT [n.caller_class, n.caller_name] AS value LIMIT 20",
+  "source": "Fresh pinned-main all64 HTTP capture for lazy filtered integration",
+  "expected": {
+    "columns": [
+      "value"
+    ],
+    "graphCount": 64,
+    "rowCount": 20,
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00",
+            "fixture-tika-00"
+          ]
+        },
+        "value": [
+          "org.ccil.cowan.tagsoup.Schema",
+          "getElementType"
+        ]
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00",
+            "fixture-tika-00"
+          ]
+        },
+        "value": [
+          "org.ccil.cowan.tagsoup.Schema",
+          "getEntity"
+        ]
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "value": [
+          "org.apache.http.conn.ssl.AbstractVerifier",
+          "getCNs"
+        ]
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "value": [
+          "org.apache.http.conn.ssl.AbstractVerifier",
+          "getDNSSubjectAlts"
+        ]
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "value": [
+          "libcore.reflect.Types",
+          "getTypeArray"
+        ]
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "value": [
+          "libcore.reflect.Types",
+          "getType"
+        ]
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "value": [
+          "libcore.reflect.Types",
+          "getSignature"
+        ]
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "value": [
+          "javax.xml.validation.SchemaFactory",
+          "getFeature"
+        ]
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "value": [
+          "javax.xml.validation.SchemaFactory",
+          "getProperty"
+        ]
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "value": [
+          "javax.xml.datatype.Duration",
+          "getXMLSchemaType"
+        ]
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "value": [
+          "javax.xml.datatype.Duration",
+          "getYears"
+        ]
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "value": [
+          "javax.xml.datatype.Duration",
+          "getMonths"
+        ]
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "value": [
+          "javax.xml.datatype.Duration",
+          "getDays"
+        ]
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "value": [
+          "javax.xml.datatype.Duration",
+          "getHours"
+        ]
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "value": [
+          "javax.xml.datatype.Duration",
+          "getMinutes"
+        ]
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "value": [
+          "javax.xml.datatype.Duration",
+          "getSeconds"
+        ]
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "value": [
+          "javax.xml.datatype.Duration",
+          "getTimeInMillis"
+        ]
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "value": [
+          "javax.xml.datatype.Duration",
+          "getFieldValueAsInt"
+        ]
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "value": [
+          "javax.xml.datatype.Duration",
+          "getCalendarTimeInMillis"
+        ]
+      },
+      {
+        "$metadata": {
+          "graphIds": [
+            "fixture-android-00"
+          ]
+        },
+        "value": [
+          "java.net.DefaultFileNameMap",
+          "getContentTypeFor"
+        ]
+      }
+    ]
+  }
+}

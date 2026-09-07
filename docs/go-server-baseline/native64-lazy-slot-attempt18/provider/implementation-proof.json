@@ -1,0 +1,14 @@
+{
+  "functionalFile": "internal/query/lazy_filtered.go",
+  "guard": "e.rowOrders == nil",
+  "scope": "Only generic branch after p.atoms != nil returns",
+  "candidateGoChange": "comment only",
+  "otherProductionFilesChanged": false,
+  "sourceChangesAfter76Capture": "None; only final test gained explicit duplicate alias control",
+  "newTestSubcases": 152,
+  "requiredStandardCancellationCheckpoints": [
+    "lazyProject",
+    "ProjectionCandidateNode.func1"
+  ],
+  "guardDisabledNegativeControl": "Fails registry pointer-escape assertion as expected"
+}

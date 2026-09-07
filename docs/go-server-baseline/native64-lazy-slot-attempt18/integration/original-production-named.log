@@ -1,0 +1,316 @@
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/n
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/coalesce(null,n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/CASE_WHEN_true_THEN_n_ELSE_null_END
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/+n
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/[n,{a:[n,{b:coalesce(n)}]}]
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/[x_IN_[1]_|_{a:coalesce(n)}]
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/[x_IN_[n]_|_[x,n]]
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/[n][0]
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/[n][0..1]
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/[]+n
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/n+[]
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/[n]+[n]
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/head([n])
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/last([n])
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/tail([0,n])
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/reverse([n,0])
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/properties(n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/keys(n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/toString([n,{n:n}])
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/nodes([n])
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/relationships([n])
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/labels(n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/[n.graphId,n.elementId,graphId(n),qualifiedId(n)]
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/n=n
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/n_IN_[n]
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/{x:n}={x:n}
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/any(x_IN_[n]_WHERE_x=n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/n.value
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/n.caller_signature
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/sqrt(n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/left('x',n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/coalesce(n,left('x','bad'))
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/unknownFunction(left('x','bad'))
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/reverse(n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/size(n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/toInteger(n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/toFloat(n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/n<coalesce(n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/n
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/coalesce(null,n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/CASE_WHEN_true_THEN_n_ELSE_null_END
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/+n
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/[n,{a:[n,{b:coalesce(n)}]}]
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/[x_IN_[1]_|_{a:coalesce(n)}]
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/[x_IN_[n]_|_[x,n]]
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/[n][0]
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/[n][0..1]
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/[]+n
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/n+[]
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/[n]+[n]
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/head([n])
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/last([n])
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/tail([0,n])
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/reverse([n,0])
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/properties(n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/keys(n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/toString([n,{n:n}])
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/nodes([n])
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/relationships([n])
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/labels(n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/[n.graphId,n.elementId,graphId(n),qualifiedId(n)]
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/n=n
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/n_IN_[n]
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/{x:n}={x:n}
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/any(x_IN_[n]_WHERE_x=n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/n.value
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/n.caller_signature
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/sqrt(n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/left('x',n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/coalesce(n,left('x','bad'))
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/unknownFunction(left('x','bad'))
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/reverse(n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/size(n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/toInteger(n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/toFloat(n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/n<coalesce(n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/n
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/coalesce(null,n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/CASE_WHEN_true_THEN_n_ELSE_null_END
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/+n
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/[n,{a:[n,{b:coalesce(n)}]}]
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/[x_IN_[1]_|_{a:coalesce(n)}]
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/[x_IN_[n]_|_[x,n]]
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/[n][0]
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/[n][0..1]
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/[]+n
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/n+[]
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/[n]+[n]
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/head([n])
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/last([n])
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/tail([0,n])
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/reverse([n,0])
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/properties(n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/keys(n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/toString([n,{n:n}])
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/nodes([n])
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/relationships([n])
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/labels(n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/[n.graphId,n.elementId,graphId(n),qualifiedId(n)]
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/n=n
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/n_IN_[n]
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/{x:n}={x:n}
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/any(x_IN_[n]_WHERE_x=n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/n.value
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/n.caller_signature
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/sqrt(n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/left('x',n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/coalesce(n,left('x','bad'))
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/unknownFunction(left('x','bad'))
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/reverse(n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/size(n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/toInteger(n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/toFloat(n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/n<coalesce(n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/n
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/coalesce(null,n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/CASE_WHEN_true_THEN_n_ELSE_null_END
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/+n
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/[n,{a:[n,{b:coalesce(n)}]}]
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/[x_IN_[1]_|_{a:coalesce(n)}]
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/[x_IN_[n]_|_[x,n]]
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/[n][0]
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/[n][0..1]
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/[]+n
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/n+[]
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/[n]+[n]
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/head([n])
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/last([n])
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/tail([0,n])
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/reverse([n,0])
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/properties(n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/keys(n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/toString([n,{n:n}])
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/nodes([n])
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/relationships([n])
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/labels(n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/[n.graphId,n.elementId,graphId(n),qualifiedId(n)]
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/n=n
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/n_IN_[n]
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/{x:n}={x:n}
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/any(x_IN_[n]_WHERE_x=n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/n.value
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/n.caller_signature
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/sqrt(n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/left('x',n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/coalesce(n,left('x','bad'))
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/unknownFunction(left('x','bad'))
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/reverse(n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/size(n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/toInteger(n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/toFloat(n)
+=== RUN   TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/n<coalesce(n)
+--- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl (1.07s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/n (0.02s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/coalesce(null,n) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/CASE_WHEN_true_THEN_n_ELSE_null_END (0.02s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/+n (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/[n,{a:[n,{b:coalesce(n)}]}] (0.02s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/[x_IN_[1]_|_{a:coalesce(n)}] (0.02s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/[x_IN_[n]_|_[x,n]] (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/[n][0] (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/[n][0..1] (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/[]+n (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/n+[] (0.00s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/[n]+[n] (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/head([n]) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/last([n]) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/tail([0,n]) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/reverse([n,0]) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/properties(n) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/keys(n) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/toString([n,{n:n}]) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/nodes([n]) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/relationships([n]) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/labels(n) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/[n.graphId,n.elementId,graphId(n),qualifiedId(n)] (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/n=n (0.00s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/n_IN_[n] (0.00s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/{x:n}={x:n} (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/any(x_IN_[n]_WHERE_x=n) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/n.value (0.00s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/n.caller_signature (0.00s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/sqrt(n) (0.00s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/left('x',n) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/coalesce(n,left('x','bad')) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/unknownFunction(left('x','bad')) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/reverse(n) (0.00s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/size(n) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/toInteger(n) (0.00s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/toFloat(n) (0.00s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDfalse/n<coalesce(n) (0.00s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/n (0.00s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/coalesce(null,n) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/CASE_WHEN_true_THEN_n_ELSE_null_END (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/+n (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/[n,{a:[n,{b:coalesce(n)}]}] (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/[x_IN_[1]_|_{a:coalesce(n)}] (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/[x_IN_[n]_|_[x,n]] (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/[n][0] (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/[n][0..1] (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/[]+n (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/n+[] (0.00s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/[n]+[n] (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/head([n]) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/last([n]) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/tail([0,n]) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/reverse([n,0]) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/properties(n) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/keys(n) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/toString([n,{n:n}]) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/nodes([n]) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/relationships([n]) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/labels(n) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/[n.graphId,n.elementId,graphId(n),qualifiedId(n)] (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/n=n (0.00s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/n_IN_[n] (0.00s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/{x:n}={x:n} (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/any(x_IN_[n]_WHERE_x=n) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/n.value (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/n.caller_signature (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/sqrt(n) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/left('x',n) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/coalesce(n,left('x','bad')) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/unknownFunction(left('x','bad')) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/reverse(n) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/size(n) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/toInteger(n) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/toFloat(n) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/MAPPEDtrue/n<coalesce(n) (0.00s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/n (0.00s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/coalesce(null,n) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/CASE_WHEN_true_THEN_n_ELSE_null_END (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/+n (0.00s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/[n,{a:[n,{b:coalesce(n)}]}] (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/[x_IN_[1]_|_{a:coalesce(n)}] (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/[x_IN_[n]_|_[x,n]] (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/[n][0] (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/[n][0..1] (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/[]+n (0.00s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/n+[] (0.00s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/[n]+[n] (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/head([n]) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/last([n]) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/tail([0,n]) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/reverse([n,0]) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/properties(n) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/keys(n) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/toString([n,{n:n}]) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/nodes([n]) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/relationships([n]) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/labels(n) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/[n.graphId,n.elementId,graphId(n),qualifiedId(n)] (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/n=n (0.00s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/n_IN_[n] (0.00s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/{x:n}={x:n} (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/any(x_IN_[n]_WHERE_x=n) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/n.value (0.00s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/n.caller_signature (0.00s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/sqrt(n) (0.00s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/left('x',n) (0.00s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/coalesce(n,left('x','bad')) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/unknownFunction(left('x','bad')) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/reverse(n) (0.00s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/size(n) (0.00s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/toInteger(n) (0.00s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/toFloat(n) (0.00s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERfalse/n<coalesce(n) (0.00s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/n (0.00s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/coalesce(null,n) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/CASE_WHEN_true_THEN_n_ELSE_null_END (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/+n (0.00s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/[n,{a:[n,{b:coalesce(n)}]}] (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/[x_IN_[1]_|_{a:coalesce(n)}] (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/[x_IN_[n]_|_[x,n]] (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/[n][0] (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/[n][0..1] (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/[]+n (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/n+[] (0.00s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/[n]+[n] (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/head([n]) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/last([n]) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/tail([0,n]) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/reverse([n,0]) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/properties(n) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/keys(n) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/toString([n,{n:n}]) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/nodes([n]) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/relationships([n]) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/labels(n) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/[n.graphId,n.elementId,graphId(n),qualifiedId(n)] (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/n=n (0.00s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/n_IN_[n] (0.00s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/{x:n}={x:n} (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/any(x_IN_[n]_WHERE_x=n) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/n.value (0.00s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/n.caller_signature (0.00s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/sqrt(n) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/left('x',n) (0.00s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/coalesce(n,left('x','bad')) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/unknownFunction(left('x','bad')) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/reverse(n) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/size(n) (0.00s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/toInteger(n) (0.01s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/toFloat(n) (0.00s)
+    --- PASS: TestLazySlotWholeNestedProjectionMatchesOwnedControl/EAGERtrue/n<coalesce(n) (0.00s)
+=== RUN   TestLazySlotProjectionDoesNotRetainRefilledValue
+--- PASS: TestLazySlotProjectionDoesNotRetainRefilledValue (0.01s)
+=== RUN   TestLazySlotLaterDiscardedRowsAndReadErrors
+--- PASS: TestLazySlotLaterDiscardedRowsAndReadErrors (0.06s)
+=== RUN   TestLazySlotRealCancellationAndIndependentRequests
+--- PASS: TestLazySlotRealCancellationAndIndependentRequests (0.02s)
+=== RUN   TestLazySlotRegistryUnionAndSurrogateOutputFallback
+--- PASS: TestLazySlotRegistryUnionAndSurrogateOutputFallback (0.01s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/query	2.540s

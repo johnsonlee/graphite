@@ -1,0 +1,25 @@
+{
+  "candidateSourceInputsRehashed": 2437,
+  "readOnlyPprofCommands": 6,
+  "allPprofExitsZero": true,
+  "beforeAndAfterBinaryChecks": [
+    {
+      "phase": "base",
+      "binary": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-y_i_hnq3/profile-query",
+      "binarySHA256": "c76e7da6e53f6063a4af62e37bd6841d5ce7e083c6cc942794b0d97937819f2a",
+      "sourceManifestSHA256": "191b745ebd209f7f9a9f55b0897cb85ca96805009db14aa0e0868ee37b28494d",
+      "outputSHA256": "e8537464f427227dbadb7278c1322538ba6ff12fa34312e59a2216d007f53288",
+      "fullOutputMatchesExpected": true
+    },
+    {
+      "phase": "candidate",
+      "binary": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-cuo0imja/profile-query",
+      "binarySHA256": "af0ef868bbadf188a7a1532ba89c7fbc5512965727f597fb35cc3b9a965a6640",
+      "sourceManifestSHA256": "a1b3d36f5d94a89816d082093d4551216f728bcce3bdeb86a417a788171be57e",
+      "outputSHA256": "e8537464f427227dbadb7278c1322538ba6ff12fa34312e59a2216d007f53288",
+      "fullOutputMatchesExpected": true
+    }
+  ],
+  "sourceExcerpts": 26,
+  "noApplicationExecution": true
+}

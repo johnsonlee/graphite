@@ -1,0 +1,113 @@
+[
+  {
+    "command": "INDEXED_DISTINCT_OUTPUT=/tmp/graphite-lazy-slot-attempt18-evidence/base-output/original-corpus ORDINARY_HISTORY_OUTPUT=/tmp/graphite-lazy-slot-attempt18-evidence/base-output/history go test ./... -count=1 -timeout=180s",
+    "cwd": "/tmp/graphite-go-lazy-slot-attempt18-b7bb15a2/graphite-server",
+    "log": "base-full-tests.log",
+    "exit": 1,
+    "notes": "Original production; one new test wrongly assumed sqrt(non-numeric-string) throws. Initial outputs moved intact to base-output-initial-new-test-failure."
+  },
+  {
+    "command": "go test -race ./internal/query -run '^TestLazySlot' -count=1 -timeout=90s -v",
+    "cwd": "/tmp/graphite-go-lazy-slot-attempt18-b7bb15a2/graphite-server",
+    "log": "new-tests-original-race.log",
+    "exit": 0,
+    "notes": "Corrected final tests on unchanged production."
+  },
+  {
+    "command": "INDEXED_DISTINCT_OUTPUT=/tmp/graphite-lazy-slot-attempt18-evidence/base-output/original-corpus ORDINARY_HISTORY_OUTPUT=/tmp/graphite-lazy-slot-attempt18-evidence/base-output/history go test ./... -count=1 -timeout=180s",
+    "cwd": "/tmp/graphite-go-lazy-slot-attempt18-b7bb15a2/graphite-server",
+    "log": "base-full-tests-v2.log",
+    "exit": 0,
+    "notes": "Successful complete original baseline before production changes."
+  },
+  {
+    "command": "go test -race ./internal/query -run '^TestLazySlot' -count=1 -timeout=90s -v",
+    "cwd": "/tmp/graphite-go-lazy-slot-attempt18-b7bb15a2/graphite-server",
+    "log": "new-tests-candidate-race.log",
+    "exit": 0,
+    "notes": ""
+  },
+  {
+    "command": "INDEXED_DISTINCT_OUTPUT=/tmp/graphite-lazy-slot-attempt18-evidence/candidate-output/original-corpus ORDINARY_HISTORY_OUTPUT=/tmp/graphite-lazy-slot-attempt18-evidence/candidate-output/history go test -race ./... -count=1 -timeout=180s",
+    "cwd": "/tmp/graphite-go-lazy-slot-attempt18-b7bb15a2/graphite-server",
+    "log": "candidate-full-race.log",
+    "exit": 0,
+    "notes": ""
+  },
+  {
+    "command": "go vet ./...",
+    "cwd": "/tmp/graphite-go-lazy-slot-attempt18-b7bb15a2/graphite-server",
+    "log": "candidate-vet.log",
+    "exit": 0,
+    "notes": ""
+  },
+  {
+    "command": "go test -overlay=/tmp/graphite-lazy-slot-attempt18-evidence/guard-disabled-overlay.json -race ./internal/query -run '^TestLazySlotRegistryUnionAndSurrogateOutputFallback$' -count=1 -timeout=45s -v",
+    "cwd": "/tmp/graphite-go-lazy-slot-attempt18-b7bb15a2/graphite-server",
+    "log": "guard-disabled-negative-control.log",
+    "exit": 1,
+    "notes": "Intentional unsafe-guard negative control; shipping source unchanged."
+  },
+  {
+    "command": "python3 /tmp/graphite-lazy-slot-attempt18-evidence/compare.py",
+    "cwd": "/tmp/graphite-go-lazy-slot-attempt18-b7bb15a2/graphite-server",
+    "log": "compare.log",
+    "exit": 1,
+    "notes": ""
+  },
+  {
+    "command": "python3 /tmp/graphite-lazy-slot-attempt18-evidence/verify-comparison.py",
+    "cwd": "/tmp/graphite-go-lazy-slot-attempt18-b7bb15a2/graphite-server",
+    "log": "verify-comparison.log",
+    "exit": 0,
+    "notes": ""
+  },
+  {
+    "command": "python3 /tmp/graphite-lazy-slot-attempt18-evidence/verify_b595.py",
+    "cwd": "/tmp/graphite-go-lazy-slot-attempt18-b7bb15a2/graphite-server",
+    "log": "b595.log",
+    "exit": 0,
+    "notes": ""
+  },
+  {
+    "command": "python3 /tmp/graphite-lazy-slot-attempt18-evidence/numeric-spelling-audit.py",
+    "cwd": "/tmp/graphite-go-lazy-slot-attempt18-b7bb15a2/graphite-server",
+    "log": "numeric-spelling.log",
+    "exit": 0,
+    "notes": ""
+  },
+  {
+    "command": "python3 /tmp/graphite-lazy-slot-attempt18-evidence/summarize_original.py --verification /tmp/graphite-lazy-slot-attempt18-evidence/candidate-output",
+    "cwd": "/tmp/graphite-go-lazy-slot-attempt18-b7bb15a2/graphite-server",
+    "log": "original1048.log",
+    "exit": 0,
+    "notes": ""
+  },
+  {
+    "command": "git apply --check /tmp/graphite-lazy-slot-attempt18-evidence/attempt18.patch",
+    "cwd": "/tmp/graphite-go-lazy-slot-attempt18-b7bb15a2/graphite-server",
+    "log": "apply-check.log",
+    "exit": 0,
+    "notes": "cwd is evidence/apply-check; exact original changed files extracted from HEAD."
+  },
+  {
+    "command": "go test -overlay=/tmp/graphite-lazy-slot-attempt18-evidence/original-overlay.json -race ./internal/query -run '^TestLazySlot' -count=1 -timeout=90s -v",
+    "cwd": "/tmp/graphite-go-lazy-slot-attempt18-b7bb15a2/graphite-server",
+    "log": "final-tests-original-overlay.log",
+    "exit": 0,
+    "notes": "Final test identity including duplicate alias control, exact original lazy_filtered.go."
+  },
+  {
+    "command": "go test -race ./... -count=1 -timeout=180s",
+    "cwd": "/tmp/graphite-go-lazy-slot-attempt18-b7bb15a2/graphite-server",
+    "log": "final-full-race.log",
+    "exit": 0,
+    "notes": "Final test identity; complete module passed without overwriting earlier complete76 capture."
+  },
+  {
+    "command": "go vet ./...",
+    "cwd": "/tmp/graphite-go-lazy-slot-attempt18-b7bb15a2/graphite-server",
+    "log": "final-vet.log",
+    "exit": 0
+  }
+]
