@@ -1,0 +1,21 @@
+{
+  "passed": true,
+  "all1267CasesAndFieldsEqualActualMainExport": true,
+  "allSourceAndReplayOrdersExact": true,
+  "allParameterMapsPreserved": true,
+  "parameterizedCases": 321,
+  "executionInputScopes": {
+    "preselected:64": 3,
+    "predicate-or-unscoped:64": 952,
+    "preselected:1": 192,
+    "preselected:2": 96,
+    "preselected:8": 24
+  },
+  "all1267ParsedByNativeANTLR": true,
+  "graphsOpened": 0,
+  "queryExecutions": 0,
+  "runtimeParityProven": false,
+  "performanceMeasured": false,
+  "mainExportSHA256": "378c200c5ab3053c53962f9d87c59924f732d0c012fcaff6009842a58e547023",
+  "goReportSHA256": "0168495ffece0fe839d350124e30d04a659871fddc7aea440e4e3dfee6604898"
+}

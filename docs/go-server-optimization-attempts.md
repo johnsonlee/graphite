@@ -717,3 +717,19 @@ coverage. Full testcase replication and result/source-state validation must
 precede per-case P95 acceptance. This corrects prior overbroad acceptance framing;
 earlier HTTP passes and single instrumented measurements keep only their stated
 local scope. The overall100% parity and10x goal remains incomplete.
+
+
+### 2026-09-08 — Functional follow-up: ingest all1,267 main64 cases in Go
+
+Added a strict workload loader and a definition/AST validation command. The
+committed fixture is the exact actual-main export378c200c5ab3053c53962f9d87c59924f732d0c012fcaff6009842a58e547023.
+Every case field, graph/replay order,321 parameter maps and original source
+selection is preserved. Independent comparison of the actual Go report confirms
+all1,267 records and inputs; all native parsers accept the unchanged queries.
+Concrete AST/binding/order/ownership/rejection tests and fullmodule race/vet pass.
+No graph loads, query executions or performance measurements occurred.
+
+`docs/go-server-baseline/native64-testcase-loader-20260908/` retains the complete
+Go case/AST report, independent verification and test receipts. Explicit
+request-selected scope propagation and main's index-state lifecycle remain
+runtime gaps to fix before full real64 replay and per-case P95 acceptance.

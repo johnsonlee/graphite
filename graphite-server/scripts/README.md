@@ -31,6 +31,19 @@ before measuring each testcase's P95. Per-case repeated measurements and the
 10x threshold apply to the full matrix; a mixed-case P95 cannot replace them.
 The original engine timing and HTTP timing are separate measurement layers.
 
+From `graphite-server`, validate the exact exported definitions with:
+
+```bash
+go run ./cmd/graphite-benchmark-cases \
+  --manifest internal/benchmarkcase/testdata/main64.json \
+  --sha256 378c200c5ab3053c53962f9d87c59924f732d0c012fcaff6009842a58e547023 \
+  --output /path/to/new-main64-case-report.json
+```
+
+This preserves every case, binding and source-selection input and emits concrete
+AST kinds. It performs no graph loading or query execution. Runtime parity,
+index-state preparation and P95 acceptance remain separate, unfinished gates.
+
 ## Legacy42-case HTTP diagnostic protocol
 
 The user explicitly requires64 simultaneously loaded graphs. Single-graph,

@@ -1,0 +1,12 @@
+{
+  "base": "0c3c9c4a",
+  "changedSourceFiles": {
+    "graphite-server/cmd/graphite-benchmark-cases/main.go": "fe30f9b5b011f65847f277ef0ab94905419174fd2e85ce423ba2eaeaaec31194",
+    "graphite-server/internal/benchmarkcase/workload.go": "790dbe96ca856d4acef98ec7a80473be86617729b0fad3121bdb1223b576b8bd",
+    "graphite-server/internal/benchmarkcase/workload_test.go": "8fae777f65f2ed298c83dc1424eaf031968380c6f09bbcc0e7d7c1868235e005",
+    "graphite-server/internal/benchmarkcase/testdata/main64.json": "378c200c5ab3053c53962f9d87c59924f732d0c012fcaff6009842a58e547023",
+    "graphite-server/internal/benchmarkcase/testdata/README.md": "45c730915b32d12772409030735cdea500c7421cb7e2d1a51069ae3d59fa5abe",
+    "graphite-server/scripts/README.md": "c552e2e6c6e12364f75081fb4a90031a455519eaab8a2ed51a2bb6c1446fee50"
+  },
+  "productionQueryAndStoreUnchanged": true
+}

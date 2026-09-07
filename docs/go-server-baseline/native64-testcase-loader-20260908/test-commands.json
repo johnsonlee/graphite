@@ -1,0 +1,35 @@
+{
+  "commands": [
+    {
+      "argv": [
+        "go",
+        "test",
+        "-race",
+        "./internal/benchmarkcase",
+        "-count=1"
+      ],
+      "exitCode": 0,
+      "reportedResult": "ok internal/benchmarkcase 6.077s"
+    },
+    {
+      "argv": [
+        "go",
+        "test",
+        "-race",
+        "./..."
+      ],
+      "exitCode": 0,
+      "log": "module-race.log"
+    },
+    {
+      "argv": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "exitCode": 0,
+      "log": "module-vet.log"
+    }
+  ],
+  "cwd": "graphite-server"
+}

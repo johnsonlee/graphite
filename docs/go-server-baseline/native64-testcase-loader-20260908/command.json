@@ -1,0 +1,11 @@
+[
+  "go",
+  "run",
+  "./cmd/graphite-benchmark-cases",
+  "--manifest",
+  "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/benchmarkcase/testdata/main64.json",
+  "--sha256",
+  "378c200c5ab3053c53962f9d87c59924f732d0c012fcaff6009842a58e547023",
+  "--output",
+  "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-testcase-loader-20260908/go-cases.json"
+]

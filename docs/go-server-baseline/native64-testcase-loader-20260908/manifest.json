@@ -1,0 +1,49 @@
+{
+  "scope": "Complete main64 testcase definition ingestion, no runtime/performance proof",
+  "files": {
+    "README.md": {
+      "sha256": "037bedcc42f0dc58af4f5fd830ffaea545e883be09565e02a62dc4dad4f2a6a1",
+      "bytes": 2683
+    },
+    "command.json": {
+      "sha256": "5388eac7865d8437618dbd54c49289eb5833fb2b38299bdc3104d5de945961e0",
+      "bytes": 474
+    },
+    "go-cases.json": {
+      "sha256": "0168495ffece0fe839d350124e30d04a659871fddc7aea440e4e3dfee6604898",
+      "bytes": 8035215
+    },
+    "input-verification.json": {
+      "sha256": "4db96741565079fc3e02b7b517e6aaf2050b300b9c535b9d469c28a90f2fd522",
+      "bytes": 677
+    },
+    "module-race.log": {
+      "sha256": "ced84c14a73b50780df3eea867a1b0dfed1fb86f37ae379d5f1ae650770e011c",
+      "bytes": 1307
+    },
+    "module-vet.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "source-identity.json": {
+      "sha256": "1c7b611447c17e640b6de1c5cd9e87f275dade24d811d3821df9765364914591",
+      "bytes": 861
+    },
+    "test-commands.json": {
+      "sha256": "fbb36b5bb4474e09c4b6cc6fc3115982220a07e27576183fb955fe1d18b9aa07",
+      "bytes": 558
+    },
+    "validator-exit.json": {
+      "sha256": "982b9e9bfb10ffe83cad665807abcfd3fa97b37822db5ab7831157a499548a9e",
+      "bytes": 16
+    },
+    "validator.log": {
+      "sha256": "7bbd564471b0af16cd4f5c2f34cf843f0acfe918da3f38d3c605b30f3a71e240",
+      "bytes": 95
+    },
+    "verify-inputs.py": {
+      "sha256": "2be3b321683876dd0d08ecea0390e7c962e45876831626eac885fdc1ddb16e76",
+      "bytes": 1961
+    }
+  }
+}
