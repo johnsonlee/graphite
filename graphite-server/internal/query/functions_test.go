@@ -172,7 +172,7 @@ func TestCollectionFunctionsCancelInsideExecution(t *testing.T) {
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			ctx := &traversalCancelContext{Context: context.Background(), cancelAt: 12}
+			ctx := newTraversalCancelContext(t, context.Background(), 12)
 			defer func() {
 				if got := recover(); got != context.Canceled {
 					t.Errorf("got %v, want context.Canceled", got)

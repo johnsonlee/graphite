@@ -206,7 +206,7 @@ func TestCandidateCancellationClearsScratchAndRetainsOrderBehavior(t *testing.T)
 	if err != nil {
 		t.Fatal(err)
 	}
-	ctx := &traversalCancelContext{Context: context.Background(), cancelAt: 9}
+	ctx := newTraversalCancelContext(t, context.Background(), 9)
 	e := evaluator{ctx: ctx, rowOrders: map[string]rowOrder{}}
 	defer func() {
 		if got := recover(); got != context.Canceled {

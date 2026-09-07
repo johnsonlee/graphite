@@ -1,0 +1,11 @@
+{
+  "command": [
+    "git",
+    "diff",
+    "--cached",
+    "--check"
+  ],
+  "exitCode": 0,
+  "rawMetadataUnmodified": true,
+  "attributeScope": "docs/go-server-baseline/native64-context-check-attempt12/http-independent/embed-inputs.txt"
+}

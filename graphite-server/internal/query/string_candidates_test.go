@@ -390,7 +390,7 @@ func TestStringCandidateCancellationAtEveryPreparationCheck(t *testing.T) {
 	if warm.indexedNodeWalker(g, clause, &candidateSlot{}) == nil {
 		t.Fatal("warm preparation unavailable")
 	}
-	counter := &traversalCancelContext{Context: context.WithValue(context.Background(), candidateDirectoryOnlyKey{}, true), cancelAt: int(^uint(0) >> 1)}
+	counter := newTraversalCancelContext(t, context.WithValue(context.Background(), candidateDirectoryOnlyKey{}, true), int(^uint(0)>>1))
 	e := evaluator{ctx: counter, indexFirst: true}
 	if e.indexedNodeWalker(g, clause, &candidateSlot{}) == nil {
 		t.Fatal("counted preparation unavailable")
@@ -398,7 +398,7 @@ func TestStringCandidateCancellationAtEveryPreparationCheck(t *testing.T) {
 	canceledChecks := 0
 	for at := 1; at <= counter.checks; at++ {
 		func() {
-			ctx := &traversalCancelContext{Context: context.WithValue(context.Background(), candidateDirectoryOnlyKey{}, true), cancelAt: at}
+			ctx := newTraversalCancelContext(t, context.WithValue(context.Background(), candidateDirectoryOnlyKey{}, true), at)
 			e := evaluator{ctx: ctx, indexFirst: true}
 			defer func() {
 				caught := recover()

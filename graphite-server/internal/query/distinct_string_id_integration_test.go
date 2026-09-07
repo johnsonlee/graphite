@@ -160,26 +160,19 @@ func TestDistinctStringIDCloseAndOriginalPostingsBoundary(t *testing.T) {
 	}
 }
 
-// Deterministic cancellation trigger; it verifies an in-search boundary rather
-// than relying on wall-clock timing or a separate goroutine.
-type findIDCancelPoll struct {
-	context.Context
-	polls int
-	at    int
-}
-
-func (c *findIDCancelPoll) Err() error {
-	c.polls++
-	if c.polls >= c.at {
-		return context.Canceled
-	}
-	return nil
-}
+// Cancel at a deterministic Done observation inside the search. A real standard
+// context supplies stable Done/Err state; the previous Err-only injector returned
+// Canceled with nil Done and did not satisfy the Context cancellation contract.
 func TestDistinctStringIDCancellationInsideSearch(t *testing.T) {
-	ctx := &findIDCancelPoll{Context: context.Background(), at: 3}
+	ctx := newTraversalCancelContext(t, context.Background(), 3)
 	e := evaluator{ctx: ctx}
 	caught := findIDCaught(func() { e.distinctStringTableID([]string{"a", "b", "c", "d", "e", "f", "g"}, "missing") })
-	if caught != context.Canceled || ctx.polls != 3 {
-		t.Fatalf("panic=%v polls=%d", caught, ctx.polls)
+	if caught != context.Canceled || ctx.checks != 3 {
+		t.Fatalf("panic=%v polls=%d", caught, ctx.checks)
+	}
+	select {
+	case <-ctx.Context.Done():
+	default:
+		t.Fatal("cancellation did not close Done")
 	}
 }

@@ -1,0 +1,15 @@
+// Cancel deterministically inside traversal, after parsing and start-node
+// lookup have finished. A deadline-only test could pass by cancelling parsing.
+type traversalCancelContext struct {
+	context.Context
+	checks   int
+	cancelAt int
+}
+
+func (c *traversalCancelContext) Err() error {
+	c.checks++
+	if c.checks >= c.cancelAt {
+		return context.Canceled
+	}
+	return nil
+}

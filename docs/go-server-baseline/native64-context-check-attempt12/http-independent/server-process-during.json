@@ -1,0 +1,13 @@
+{
+  "command": [
+    "lsof",
+    "-nP",
+    "-iTCP:18860",
+    "-sTCP:LISTEN",
+    "-Fpcn"
+  ],
+  "observed": "2026-09-07T01:12:54.945974+00:00",
+  "exitCode": 0,
+  "output": "p47678\ncgraphite-server\nf69\nn*:18860\n",
+  "stderr": ""
+}

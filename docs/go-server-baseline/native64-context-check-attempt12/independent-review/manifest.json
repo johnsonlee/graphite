@@ -1,0 +1,13 @@
+{
+  "frozen_utc": "2026-09-07T01:10:16.665616+00:00",
+  "verdict": "no blocking defect found within bounded review",
+  "files": {
+    "README.md": "04022f1628d735a3b09bcd6fc29f8ea426113feb59da10b6ac03164493fa8d19",
+    "context_check_independent_review_test.go": "10f0e5bcd472cdbc3f2908d346c637a44a199bf16d8d785700b3fc8e28757310",
+    "go1.22-context.go.txt": "1f130bea835bec065d4867feb55374ac828bc3e78407e07aea3c11f80c6100b5",
+    "module-race.log": "3512d674b36c21506534c486ea4a2da156b6ef0993f832b26d9fd6de96757c43",
+    "query-vet.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "receipt.json": "631f062ddebfcff4c4e068234875b19c9023faa60bc0791ae986143b3e8f0b17",
+    "repeated-targeted-race.log": "782c312beae5db2d6cb4aaabacb152771c2bce343c9dd449580aeb5c891d4b76"
+  }
+}

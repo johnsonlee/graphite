@@ -1,0 +1,38 @@
+{
+  "commands": [
+    {
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "./internal/query",
+        "-run",
+        "^TestIndependentContext",
+        "-count=1"
+      ],
+      "exitCode": 0
+    },
+    {
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "exitCode": 0
+    }
+  ],
+  "integratedFiles": {
+    "graphite-server/internal/query/candidate_slot_test.go": "56a5dd91d2b91a5d911a87c33f61ced9ea01b3f7ca69c3607e55a3c3f30c7472",
+    "graphite-server/internal/query/distinct_string_id_integration_test.go": "4f29144bd80b75674e7d9f3392496c9a9ac6457da3bfa878f03d0002de2fe848",
+    "graphite-server/internal/query/early_match_trace_test.go": "62f38c1ede019b152a1e0d0abb16fa12cf6cf4e6907582bd478966f6cbf4f72f",
+    "graphite-server/internal/query/eval.go": "bea6ffc5ee0e56cc368389725e9fb2848a8b9fa15d90b374e06b8b837ea97cc8",
+    "graphite-server/internal/query/functions_test.go": "6de31c37efcbd8ec0c896517a5c7a4037e3fb04328b32f7715babcffe25bf43d",
+    "graphite-server/internal/query/string_candidates_test.go": "83aa08217c08d33fce4550fedc3bc60dbeba013434e34541b375ada8e3f0f85f",
+    "graphite-server/internal/query/string_predicate_test.go": "ffab2121a004d920b0c4d7199c16ad8135eac18d9c211ad5998f9361bb0a4252",
+    "graphite-server/internal/query/traversal_test.go": "60bd72f1ab2a305bf7a63143740eaad9cfa8dc7782f7ce6282f1df2d17229ef5",
+    "graphite-server/internal/query/trigram_candidates_test.go": "44d9e47e3610919c14b14c2db54c44cc8a7f4fa1fe0b9a831c66f6bcfc29a140",
+    "graphite-server/internal/query/context_check_test.go": "ab4b47fd5e44a57b87f91b351aa4efb54907161b252beab8649d6a97c847db9a",
+    "graphite-server/internal/query/context_check_independent_review_test.go": "10f0e5bcd472cdbc3f2908d346c637a44a199bf16d8d785700b3fc8e28757310"
+  },
+  "fullModuleEvidence": "../root-review/verification.json and ../independent-review/receipt.json; same production and migrated tests"
+}

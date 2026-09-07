@@ -1,0 +1,9 @@
+{
+  "attempt": 12,
+  "base": "edefd884",
+  "candidate": "/tmp/graphite-go-context-root-edefd884",
+  "providerBase": "87aaf0ad",
+  "providerPatchSHA256": "734d415a8b13f638f7941b6e7bb1d09e33d9bdc4a85c6e864c5bdbd26963951c",
+  "productionHypothesis": "Use current evaluator context Done nonblocking select and preserve Err panic on closure; no cached channel, task or Store change.",
+  "scope": "Fresh paired sequential five-query real64 diagnostic after correctness; CPU sampler off, background correctness/build co-tenancy; not HTTP/P95."
+}

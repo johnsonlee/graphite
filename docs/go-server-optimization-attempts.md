@@ -349,3 +349,29 @@ provider freeze, independent equality failure/fix, both collector failures,
 complete responses, source identities, counters, commands and rejection.
 No shipping HTTP replay was spent on the rejected candidate. Full compatibility
 and the requested repeated main-relative10x P95 result remain unproven.
+
+
+## 2026-09-07 — Attempt 12: current-context cancellation checkpoint
+
+Hypothesis: check the current evaluator context's Done channel without blocking,
+retaining the original Err panic after closure, to avoid live cancelCtx mutex
+reads. No cached channel, new context wrapper, checkpoint relocation, Store/regex
+change, source ordering, task scheduling, or Close/join change is included.
+
+| Item | Evidence / status |
+|---|---|
+| Native base / candidate | `edefd884` (production identical to `87aaf0ad`); one production hunk in eval.go; provider patch `734d415a8b13f638f7941b6e7bb1d09e33d9bdc4a85c6e864c5bdbd26963951c` plus independent standard-context tests |
+| Fixture | All64 `/tmp/pr113-exp037-fixture.nXn4fg`; all1,152 files/10,338,207,518bytes and complete catalog freshly verified in each sequential process |
+| Correctness | Provider/independent/root race and vet checks; all17 complete original oracle files unchanged (739/1048 match,309 existing differences); seven actual evaluator/component tests and two independent external-cancellation/rebinding tests |
+| Test migration | Eight existing tests use valid WithCancel-backed observers instead of Err-only/nil-Done injection; original failure assertions and query/Store/regex checkpoints retained and independently audited |
+| HTTP | Independent actual shipping command42/42 HTTP200, complete typed main bodies/protocol headers/all64 catalog equal, default60s/capacity4, no profiling helper; server exited |
+| Dense first / repeat | Execution+marshal10.815→4.075s and9.558→4.094s; process CPU55.847→22.092s and45.110→18.961s |
+| Other paths / tradeoff | Prefix first20.290→21.873s, repeat12.033→12.735s; ordinary11.096→11.852s. Their CPU also increases; not labelled noise or a uniform speedup |
+| Allocation / GC | Effectively unchanged allocation and identical per-request collection counts; this is not a GC optimization |
+| Decision | Keep dense CPU/latency improvement with explicit unresolved other-path tradeoff. Full compatibility and main-relative10x P95 remain unproven |
+| Limits | Current-context rebinding/cancellation error semantics tested, not identical concurrent scheduling instants. Single instrumented co-tenant observations, CPU sampler off, not HTTP/P95 or peak RSS |
+
+`docs/go-server-baseline/native64-context-check-attempt12/` preserves commands,
+provider and independent freezes, full response/counter evidence, actual shipping
+HTTP verification and final integrated identities. The rejected generic cursor
+and pending ordinary projection/cursor optimizations are not bundled here.

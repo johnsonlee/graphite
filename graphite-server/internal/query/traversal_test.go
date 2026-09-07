@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"sync"
 	"testing"
 
 	"github.com/johnsonlee/graphite/graphite-server/internal/cypher"
@@ -65,21 +66,44 @@ func TestTraversalMainJVMOracle(t *testing.T) {
 }
 func mustJSON(v any) string { b, _ := json.Marshal(v); return string(b) }
 
-// Cancel deterministically inside traversal, after parsing and start-node
-// lookup have finished. A deadline-only test could pass by cancelling parsing.
+// This test observer covers evaluator Done checkpoints and the unchanged Store/
+// regex Err checkpoints. Both accessors return a real standard cancel context's
+// state; unlike the old Err-only injector, cancellation always closes Done.
+// Observations after cancellation do not advance the trigger again.
 type traversalCancelContext struct {
 	context.Context
-	checks   int
-	cancelAt int
+	mu         sync.Mutex
+	cancel     context.CancelFunc
+	checks     int
+	doneChecks int
+	errChecks  int
+	cancelAt   int
 }
 
-func (c *traversalCancelContext) Err() error {
+func newTraversalCancelContext(t *testing.T, parent context.Context, at int) *traversalCancelContext {
+	t.Helper()
+	ctx, cancel := context.WithCancel(parent)
+	t.Cleanup(cancel)
+	return &traversalCancelContext{Context: ctx, cancel: cancel, cancelAt: at}
+}
+func (c *traversalCancelContext) observe(done bool) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if c.Context.Err() != nil {
+		return
+	}
+	if done {
+		c.doneChecks++
+	} else {
+		c.errChecks++
+	}
 	c.checks++
 	if c.checks >= c.cancelAt {
-		return context.Canceled
+		c.cancel()
 	}
-	return nil
 }
+func (c *traversalCancelContext) Err() error            { c.observe(false); return c.Context.Err() }
+func (c *traversalCancelContext) Done() <-chan struct{} { c.observe(true); return c.Context.Done() }
 func TestVariableTraversalCancellation(t *testing.T) {
 	graph, err := store.Open("testdata/traversal")
 	if err != nil {
@@ -95,7 +119,7 @@ func TestVariableTraversalCancellation(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	ctx := &traversalCancelContext{Context: context.Background(), cancelAt: 30}
+	ctx := newTraversalCancelContext(t, context.Background(), 30)
 	e := evaluator{ctx: ctx}
 	defer func() {
 		recovered := recover()

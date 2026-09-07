@@ -18,3 +18,6 @@ docs/go-server-baseline/native64-trigram-anchor-attempt7/candidate/profiles/wrap
 # Preserve generated Homebrew formula heredoc indentation in raw release evidence.
 docs/go-server-baseline/native-release-packaging/generated-graphite.rb whitespace=-blank-at-eol
 docs/go-server-baseline/native-release-integration/graphite.rb whitespace=-blank-at-eol
+
+# Raw go list output retains its separator when EmbedFiles is empty.
+docs/go-server-baseline/native64-context-check-attempt12/http-independent/embed-inputs.txt whitespace=-blank-at-eol

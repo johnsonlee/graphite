@@ -1,0 +1,36 @@
+=== RUN   TestEvaluatorCheckStandardContexts
+=== RUN   TestEvaluatorCheckStandardContexts/background
+=== RUN   TestEvaluatorCheckStandardContexts/todo
+=== RUN   TestEvaluatorCheckStandardContexts/canceled
+=== RUN   TestEvaluatorCheckStandardContexts/deadline
+=== RUN   TestEvaluatorCheckStandardContexts/cause_keeps_Err
+=== RUN   TestEvaluatorCheckStandardContexts/value
+=== RUN   TestEvaluatorCheckStandardContexts/without_cancel
+--- PASS: TestEvaluatorCheckStandardContexts (0.00s)
+    --- PASS: TestEvaluatorCheckStandardContexts/background (0.00s)
+    --- PASS: TestEvaluatorCheckStandardContexts/todo (0.00s)
+    --- PASS: TestEvaluatorCheckStandardContexts/canceled (0.00s)
+    --- PASS: TestEvaluatorCheckStandardContexts/deadline (0.00s)
+    --- PASS: TestEvaluatorCheckStandardContexts/cause_keeps_Err (0.00s)
+    --- PASS: TestEvaluatorCheckStandardContexts/value (0.00s)
+    --- PASS: TestEvaluatorCheckStandardContexts/without_cancel (0.00s)
+=== RUN   TestEvaluatorCheckUsesReboundChildContext
+--- PASS: TestEvaluatorCheckUsesReboundChildContext (0.00s)
+=== RUN   TestEvaluatorCheckpointObserverMixedComponents
+=== RUN   TestEvaluatorCheckpointObserverMixedComponents/query
+=== RUN   TestEvaluatorCheckpointObserverMixedComponents/query_then_Store
+=== RUN   TestEvaluatorCheckpointObserverMixedComponents/query_then_regex_backtracking
+--- PASS: TestEvaluatorCheckpointObserverMixedComponents (0.01s)
+    --- PASS: TestEvaluatorCheckpointObserverMixedComponents/query (0.00s)
+    --- PASS: TestEvaluatorCheckpointObserverMixedComponents/query_then_Store (0.00s)
+    --- PASS: TestEvaluatorCheckpointObserverMixedComponents/query_then_regex_backtracking (0.01s)
+=== RUN   TestEvaluatorCheckCloseAndCancellationOrder
+--- PASS: TestEvaluatorCheckCloseAndCancellationOrder (0.00s)
+=== RUN   TestEvaluatorCheckRejectsErrOnlyInjectionAsCancellationEvidence
+--- PASS: TestEvaluatorCheckRejectsErrOnlyInjectionAsCancellationEvidence (0.00s)
+=== RUN   TestEvaluatorCheckOrderedTaskCancellationStillJoins
+--- PASS: TestEvaluatorCheckOrderedTaskCancellationStillJoins (0.00s)
+=== RUN   TestEvaluatorCheckUnorderedFailureStillJoins
+--- PASS: TestEvaluatorCheckUnorderedFailureStillJoins (0.00s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/query	1.381s

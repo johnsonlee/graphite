@@ -93,7 +93,7 @@ func TestStringPredicateCancellationAtFastPathBoundaries(t *testing.T) {
 	for _, op := range stringPredicateOps {
 		for _, cancelAt := range []int{3, 4} {
 			t.Run(fmt.Sprintf("%s/%d", op, cancelAt), func(t *testing.T) {
-				ctx := &traversalCancelContext{Context: context.Background(), cancelAt: cancelAt}
+				ctx := newTraversalCancelContext(t, context.Background(), cancelAt)
 				e := evaluator{ctx: ctx}
 				defer func() {
 					failure, ok := recover().(error)
@@ -109,7 +109,7 @@ func TestStringPredicateCancellationAtFastPathBoundaries(t *testing.T) {
 	}
 }
 func TestStringPredicateCancellationDuringUTF16Fallback(t *testing.T) {
-	ctx := &traversalCancelContext{Context: context.Background(), cancelAt: 6}
+	ctx := newTraversalCancelContext(t, context.Background(), 6)
 	e := evaluator{ctx: ctx}
 	defer func() {
 		failure, ok := recover().(error)

@@ -125,7 +125,7 @@ func TestTrigramPreparationCancellation(t *testing.T) {
 	if warm.indexedNodeWalker(g, clause, &candidateSlot{}) == nil {
 		t.Fatal("unavailable")
 	}
-	counter := &traversalCancelContext{Context: context.Background(), cancelAt: int(^uint(0) >> 1)}
+	counter := newTraversalCancelContext(t, context.Background(), int(^uint(0)>>1))
 	e := evaluator{ctx: counter, indexFirst: true}
 	if e.indexedNodeWalker(g, clause, &candidateSlot{}) == nil {
 		t.Fatal("unavailable")
@@ -133,7 +133,7 @@ func TestTrigramPreparationCancellation(t *testing.T) {
 	reached := 0
 	for at := 1; at <= counter.checks; at++ {
 		func() {
-			c := &traversalCancelContext{Context: context.Background(), cancelAt: at}
+			c := newTraversalCancelContext(t, context.Background(), at)
 			e := evaluator{ctx: c, indexFirst: true}
 			defer func() {
 				r := recover()

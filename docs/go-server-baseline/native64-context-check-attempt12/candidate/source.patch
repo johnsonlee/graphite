@@ -1,0 +1,277 @@
+diff --git a/graphite-server/internal/query/candidate_slot_test.go b/graphite-server/internal/query/candidate_slot_test.go
+index ce751660..c76fd413 100644
+--- a/graphite-server/internal/query/candidate_slot_test.go
++++ b/graphite-server/internal/query/candidate_slot_test.go
+@@ -206,7 +206,7 @@ func TestCandidateCancellationClearsScratchAndRetainsOrderBehavior(t *testing.T)
+ 	if err != nil {
+ 		t.Fatal(err)
+ 	}
+-	ctx := &traversalCancelContext{Context: context.Background(), cancelAt: 9}
++	ctx := newTraversalCancelContext(t, context.Background(), 9)
+ 	e := evaluator{ctx: ctx, rowOrders: map[string]rowOrder{}}
+ 	defer func() {
+ 		if got := recover(); got != context.Canceled {
+diff --git a/graphite-server/internal/query/distinct_string_id_integration_test.go b/graphite-server/internal/query/distinct_string_id_integration_test.go
+index f6a37e44..57a6a48e 100644
+--- a/graphite-server/internal/query/distinct_string_id_integration_test.go
++++ b/graphite-server/internal/query/distinct_string_id_integration_test.go
+@@ -160,26 +160,19 @@ func TestDistinctStringIDCloseAndOriginalPostingsBoundary(t *testing.T) {
+ 	}
+ }
+ 
+-// Deterministic cancellation trigger; it verifies an in-search boundary rather
+-// than relying on wall-clock timing or a separate goroutine.
+-type findIDCancelPoll struct {
+-	context.Context
+-	polls int
+-	at    int
+-}
+-
+-func (c *findIDCancelPoll) Err() error {
+-	c.polls++
+-	if c.polls >= c.at {
+-		return context.Canceled
+-	}
+-	return nil
+-}
++// Cancel at a deterministic Done observation inside the search. A real standard
++// context supplies stable Done/Err state; the previous Err-only injector returned
++// Canceled with nil Done and did not satisfy the Context cancellation contract.
+ func TestDistinctStringIDCancellationInsideSearch(t *testing.T) {
+-	ctx := &findIDCancelPoll{Context: context.Background(), at: 3}
++	ctx := newTraversalCancelContext(t, context.Background(), 3)
+ 	e := evaluator{ctx: ctx}
+ 	caught := findIDCaught(func() { e.distinctStringTableID([]string{"a", "b", "c", "d", "e", "f", "g"}, "missing") })
+-	if caught != context.Canceled || ctx.polls != 3 {
+-		t.Fatalf("panic=%v polls=%d", caught, ctx.polls)
++	if caught != context.Canceled || ctx.checks != 3 {
++		t.Fatalf("panic=%v polls=%d", caught, ctx.checks)
++	}
++	select {
++	case <-ctx.Context.Done():
++	default:
++		t.Fatal("cancellation did not close Done")
+ 	}
+ }
+diff --git a/graphite-server/internal/query/early_match_trace_test.go b/graphite-server/internal/query/early_match_trace_test.go
+index 0a6d7c2e..bf8a6e32 100644
+--- a/graphite-server/internal/query/early_match_trace_test.go
++++ b/graphite-server/internal/query/early_match_trace_test.go
+@@ -8,20 +8,22 @@ import (
+ 	"reflect"
+ 	"runtime"
+ 	"strings"
++	"sync"
+ 	"testing"
+ 
+ 	"github.com/johnsonlee/graphite/graphite-server/internal/cypher"
+ 	"github.com/johnsonlee/graphite/graphite-server/internal/store"
+ )
+ 
+-// Observe only the existing cancellation check at scalar-call entry. This
++// Observe the Done access at the existing cancellation check at scalar-call entry. This
+ // test context does not replace clocks, RNGs, evaluator functions or parameters.
+ type scalarCallTraceContext struct {
+ 	context.Context
++	mu     sync.Mutex
+ 	stages []string
+ }
+ 
+-func (c *scalarCallTraceContext) Err() error {
++func (c *scalarCallTraceContext) Done() <-chan struct{} {
+ 	pcs := make([]uintptr, 48)
+ 	frames := runtime.CallersFrames(pcs[:runtime.Callers(2, pcs)])
+ 	call, stage := false, ""
+@@ -39,9 +41,11 @@ func (c *scalarCallTraceContext) Err() error {
+ 		}
+ 	}
+ 	if call {
++		c.mu.Lock()
+ 		c.stages = append(c.stages, stage)
++		c.mu.Unlock()
+ 	}
+-	return nil
++	return c.Context.Done()
+ }
+ 
+ func TestEarlyMatchScalarEvaluationCount(t *testing.T) {
+@@ -118,7 +122,7 @@ func TestEarlyMatchTraversalCancellation(t *testing.T) {
+ 	if err != nil {
+ 		t.Fatal(err)
+ 	}
+-	ctx := &traversalCancelContext{Context: context.Background(), cancelAt: 30}
++	ctx := newTraversalCancelContext(t, context.Background(), 30)
+ 	e := evaluator{ctx: ctx, parameters: map[string]any{"l": 100}}
+ 	defer func() {
+ 		if recovered := recover(); recovered != context.Canceled {
+diff --git a/graphite-server/internal/query/eval.go b/graphite-server/internal/query/eval.go
+index 6aead133..8c000f9f 100644
+--- a/graphite-server/internal/query/eval.go
++++ b/graphite-server/internal/query/eval.go
+@@ -42,8 +42,12 @@ type evaluator struct {
+ }
+ 
+ func (e evaluator) check() {
+-	if err := e.ctx.Err(); err != nil {
+-		panic(err)
++	select {
++	case <-e.ctx.Done():
++		if err := e.ctx.Err(); err != nil {
++			panic(err)
++		}
++	default:
+ 	}
+ }
+ func clone(row map[string]any) map[string]any {
+diff --git a/graphite-server/internal/query/functions_test.go b/graphite-server/internal/query/functions_test.go
+index 0718ffad..b6bfd4a0 100644
+--- a/graphite-server/internal/query/functions_test.go
++++ b/graphite-server/internal/query/functions_test.go
+@@ -172,7 +172,7 @@ func TestCollectionFunctionsCancelInsideExecution(t *testing.T) {
+ 	}
+ 	for _, c := range cases {
+ 		t.Run(c.name, func(t *testing.T) {
+-			ctx := &traversalCancelContext{Context: context.Background(), cancelAt: 12}
++			ctx := newTraversalCancelContext(t, context.Background(), 12)
+ 			defer func() {
+ 				if got := recover(); got != context.Canceled {
+ 					t.Errorf("got %v, want context.Canceled", got)
+diff --git a/graphite-server/internal/query/string_candidates_test.go b/graphite-server/internal/query/string_candidates_test.go
+index bb2189e3..6f309896 100644
+--- a/graphite-server/internal/query/string_candidates_test.go
++++ b/graphite-server/internal/query/string_candidates_test.go
+@@ -390,7 +390,7 @@ func TestStringCandidateCancellationAtEveryPreparationCheck(t *testing.T) {
+ 	if warm.indexedNodeWalker(g, clause, &candidateSlot{}) == nil {
+ 		t.Fatal("warm preparation unavailable")
+ 	}
+-	counter := &traversalCancelContext{Context: context.WithValue(context.Background(), candidateDirectoryOnlyKey{}, true), cancelAt: int(^uint(0) >> 1)}
++	counter := newTraversalCancelContext(t, context.WithValue(context.Background(), candidateDirectoryOnlyKey{}, true), int(^uint(0)>>1))
+ 	e := evaluator{ctx: counter, indexFirst: true}
+ 	if e.indexedNodeWalker(g, clause, &candidateSlot{}) == nil {
+ 		t.Fatal("counted preparation unavailable")
+@@ -398,7 +398,7 @@ func TestStringCandidateCancellationAtEveryPreparationCheck(t *testing.T) {
+ 	canceledChecks := 0
+ 	for at := 1; at <= counter.checks; at++ {
+ 		func() {
+-			ctx := &traversalCancelContext{Context: context.WithValue(context.Background(), candidateDirectoryOnlyKey{}, true), cancelAt: at}
++			ctx := newTraversalCancelContext(t, context.WithValue(context.Background(), candidateDirectoryOnlyKey{}, true), at)
+ 			e := evaluator{ctx: ctx, indexFirst: true}
+ 			defer func() {
+ 				caught := recover()
+diff --git a/graphite-server/internal/query/string_predicate_test.go b/graphite-server/internal/query/string_predicate_test.go
+index 1c109858..3749d046 100644
+--- a/graphite-server/internal/query/string_predicate_test.go
++++ b/graphite-server/internal/query/string_predicate_test.go
+@@ -93,7 +93,7 @@ func TestStringPredicateCancellationAtFastPathBoundaries(t *testing.T) {
+ 	for _, op := range stringPredicateOps {
+ 		for _, cancelAt := range []int{3, 4} {
+ 			t.Run(fmt.Sprintf("%s/%d", op, cancelAt), func(t *testing.T) {
+-				ctx := &traversalCancelContext{Context: context.Background(), cancelAt: cancelAt}
++				ctx := newTraversalCancelContext(t, context.Background(), cancelAt)
+ 				e := evaluator{ctx: ctx}
+ 				defer func() {
+ 					failure, ok := recover().(error)
+@@ -109,7 +109,7 @@ func TestStringPredicateCancellationAtFastPathBoundaries(t *testing.T) {
+ 	}
+ }
+ func TestStringPredicateCancellationDuringUTF16Fallback(t *testing.T) {
+-	ctx := &traversalCancelContext{Context: context.Background(), cancelAt: 6}
++	ctx := newTraversalCancelContext(t, context.Background(), 6)
+ 	e := evaluator{ctx: ctx}
+ 	defer func() {
+ 		failure, ok := recover().(error)
+diff --git a/graphite-server/internal/query/traversal_test.go b/graphite-server/internal/query/traversal_test.go
+index ba5c1607..006d9231 100644
+--- a/graphite-server/internal/query/traversal_test.go
++++ b/graphite-server/internal/query/traversal_test.go
+@@ -6,6 +6,7 @@ import (
+ 	"fmt"
+ 	"os"
+ 	"reflect"
++	"sync"
+ 	"testing"
+ 
+ 	"github.com/johnsonlee/graphite/graphite-server/internal/cypher"
+@@ -65,21 +66,44 @@ func TestTraversalMainJVMOracle(t *testing.T) {
+ }
+ func mustJSON(v any) string { b, _ := json.Marshal(v); return string(b) }
+ 
+-// Cancel deterministically inside traversal, after parsing and start-node
+-// lookup have finished. A deadline-only test could pass by cancelling parsing.
++// This test observer covers evaluator Done checkpoints and the unchanged Store/
++// regex Err checkpoints. Both accessors return a real standard cancel context's
++// state; unlike the old Err-only injector, cancellation always closes Done.
++// Observations after cancellation do not advance the trigger again.
+ type traversalCancelContext struct {
+ 	context.Context
+-	checks   int
+-	cancelAt int
++	mu         sync.Mutex
++	cancel     context.CancelFunc
++	checks     int
++	doneChecks int
++	errChecks  int
++	cancelAt   int
+ }
+ 
+-func (c *traversalCancelContext) Err() error {
++func newTraversalCancelContext(t *testing.T, parent context.Context, at int) *traversalCancelContext {
++	t.Helper()
++	ctx, cancel := context.WithCancel(parent)
++	t.Cleanup(cancel)
++	return &traversalCancelContext{Context: ctx, cancel: cancel, cancelAt: at}
++}
++func (c *traversalCancelContext) observe(done bool) {
++	c.mu.Lock()
++	defer c.mu.Unlock()
++	if c.Context.Err() != nil {
++		return
++	}
++	if done {
++		c.doneChecks++
++	} else {
++		c.errChecks++
++	}
+ 	c.checks++
+ 	if c.checks >= c.cancelAt {
+-		return context.Canceled
++		c.cancel()
+ 	}
+-	return nil
+ }
++func (c *traversalCancelContext) Err() error            { c.observe(false); return c.Context.Err() }
++func (c *traversalCancelContext) Done() <-chan struct{} { c.observe(true); return c.Context.Done() }
+ func TestVariableTraversalCancellation(t *testing.T) {
+ 	graph, err := store.Open("testdata/traversal")
+ 	if err != nil {
+@@ -95,7 +119,7 @@ func TestVariableTraversalCancellation(t *testing.T) {
+ 	if err != nil {
+ 		t.Fatal(err)
+ 	}
+-	ctx := &traversalCancelContext{Context: context.Background(), cancelAt: 30}
++	ctx := newTraversalCancelContext(t, context.Background(), 30)
+ 	e := evaluator{ctx: ctx}
+ 	defer func() {
+ 		recovered := recover()
+diff --git a/graphite-server/internal/query/trigram_candidates_test.go b/graphite-server/internal/query/trigram_candidates_test.go
+index 7926989e..2f729fdd 100644
+--- a/graphite-server/internal/query/trigram_candidates_test.go
++++ b/graphite-server/internal/query/trigram_candidates_test.go
+@@ -125,7 +125,7 @@ func TestTrigramPreparationCancellation(t *testing.T) {
+ 	if warm.indexedNodeWalker(g, clause, &candidateSlot{}) == nil {
+ 		t.Fatal("unavailable")
+ 	}
+-	counter := &traversalCancelContext{Context: context.Background(), cancelAt: int(^uint(0) >> 1)}
++	counter := newTraversalCancelContext(t, context.Background(), int(^uint(0)>>1))
+ 	e := evaluator{ctx: counter, indexFirst: true}
+ 	if e.indexedNodeWalker(g, clause, &candidateSlot{}) == nil {
+ 		t.Fatal("unavailable")
+@@ -133,7 +133,7 @@ func TestTrigramPreparationCancellation(t *testing.T) {
+ 	reached := 0
+ 	for at := 1; at <= counter.checks; at++ {
+ 		func() {
+-			c := &traversalCancelContext{Context: context.Background(), cancelAt: at}
++			c := newTraversalCancelContext(t, context.Background(), at)
+ 			e := evaluator{ctx: c, indexFirst: true}
+ 			defer func() {
+ 				r := recover()

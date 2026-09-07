@@ -8,20 +8,22 @@ import (
 	"reflect"
 	"runtime"
 	"strings"
+	"sync"
 	"testing"
 
 	"github.com/johnsonlee/graphite/graphite-server/internal/cypher"
 	"github.com/johnsonlee/graphite/graphite-server/internal/store"
 )
 
-// Observe only the existing cancellation check at scalar-call entry. This
+// Observe the Done access at the existing cancellation check at scalar-call entry. This
 // test context does not replace clocks, RNGs, evaluator functions or parameters.
 type scalarCallTraceContext struct {
 	context.Context
+	mu     sync.Mutex
 	stages []string
 }
 
-func (c *scalarCallTraceContext) Err() error {
+func (c *scalarCallTraceContext) Done() <-chan struct{} {
 	pcs := make([]uintptr, 48)
 	frames := runtime.CallersFrames(pcs[:runtime.Callers(2, pcs)])
 	call, stage := false, ""
@@ -39,9 +41,11 @@ func (c *scalarCallTraceContext) Err() error {
 		}
 	}
 	if call {
+		c.mu.Lock()
 		c.stages = append(c.stages, stage)
+		c.mu.Unlock()
 	}
-	return nil
+	return c.Context.Done()
 }
 
 func TestEarlyMatchScalarEvaluationCount(t *testing.T) {
@@ -118,7 +122,7 @@ func TestEarlyMatchTraversalCancellation(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	ctx := &traversalCancelContext{Context: context.Background(), cancelAt: 30}
+	ctx := newTraversalCancelContext(t, context.Background(), 30)
 	e := evaluator{ctx: ctx, parameters: map[string]any{"l": 100}}
 	defer func() {
 		if recovered := recover(); recovered != context.Canceled {

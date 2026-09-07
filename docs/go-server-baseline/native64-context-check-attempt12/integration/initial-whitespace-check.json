@@ -1,0 +1,10 @@
+{
+  "command": [
+    "git",
+    "diff",
+    "--cached",
+    "--check"
+  ],
+  "exitCode": 2,
+  "reason": "Raw go list embed metadata emits trailing spaces for empty EmbedFiles. Preserve frozen bytes; scope a whitespace attribute to this one raw file."
+}
