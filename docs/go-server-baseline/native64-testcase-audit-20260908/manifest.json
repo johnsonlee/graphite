@@ -1,0 +1,81 @@
+{
+  "scope": "Actual pinned-main64 testcase replication audit; no performance run",
+  "files": {
+    "AllFixtureWrappedDiscoveryLatencyBenchmark.kt": {
+      "sha256": "78ca6a23e8f5e86674296d9f878a828ad8892ed6e18fc616a9ecbcdf2d21c492",
+      "bytes": 18468
+    },
+    "ExportBenchmarkCases.java": {
+      "sha256": "c7ae50c77bc18c906c3ccc0a202ab8a3dcfb5c8c10b971a56de57b0a40ae25c8",
+      "bytes": 4501
+    },
+    "LargeBroadQueryPressureBenchmark.kt": {
+      "sha256": "154a6ff739caac2600b769072d6861d1d8d04c4692c7eff8bca5c8d7477d499f",
+      "bytes": 96624
+    },
+    "README.md": {
+      "sha256": "108e29c4e0a2001e776739754a30dd464f936d1f6d32987d30e2ffc34a5ff8dd",
+      "bytes": 5176
+    },
+    "build-main-export.log": {
+      "sha256": "56c28bbc3a109383fa9145115357771f6ed539d3e1517302469bea1dfbf3a008",
+      "bytes": 2000
+    },
+    "export-classpath.init.gradle": {
+      "sha256": "59402b780a840ec82e1735a384532e7478d1cb6bcd6d5772188dfce437081dc0",
+      "bytes": 648
+    },
+    "export-command-0.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "export-command-1.log": {
+      "sha256": "4a2cf13401118ca40e0cfb912953d05fa9a2f0fed1a86707ea2db485be652fd1",
+      "bytes": 77
+    },
+    "export-commands.json": {
+      "sha256": "a9b194aac6dccac1ffc0d55be80f04875f2d914d72737f1f92ff0a3941ba05da",
+      "bytes": 9381
+    },
+    "exporter-classes/ExportBenchmarkCases.class": {
+      "sha256": "6fefb76581ec689daf254e93b8aa18393374d32ae477e043e3c01939eabd6b53",
+      "bytes": 6521
+    },
+    "graphs-relocated.tsv": {
+      "sha256": "ddbafaed4dd6c86f894a00ba2b59de1d621e97af0c6bb0a442273587aaa451a0",
+      "bytes": 26376
+    },
+    "http-coverage.json": {
+      "sha256": "47318fdc76df8814927c194fc0382bd2d24aa09ac81be9385a1b333be80e4dd9",
+      "bytes": 304637
+    },
+    "jvm-classpath.txt": {
+      "sha256": "dcdbc30f46a97a5ae98d87f543701c2e501601bb3a1b22198ef92d34337d94f9",
+      "bytes": 8465
+    },
+    "main-cases-repeat.json": {
+      "sha256": "378c200c5ab3053c53962f9d87c59924f732d0c012fcaff6009842a58e547023",
+      "bytes": 1555088
+    },
+    "main-cases.json": {
+      "sha256": "378c200c5ab3053c53962f9d87c59924f732d0c012fcaff6009842a58e547023",
+      "bytes": 1555088
+    },
+    "repeat-export.log": {
+      "sha256": "4a2cf13401118ca40e0cfb912953d05fa9a2f0fed1a86707ea2db485be652fd1",
+      "bytes": 77
+    },
+    "source-identity.json": {
+      "sha256": "9d245f54bd04df4b3c8034af5c495de24ed7772c06a692c7244c14f9d93784f3",
+      "bytes": 446
+    },
+    "verification.json": {
+      "sha256": "6f73e26752b3e9ee1b8301e7e6443c5a10e1c8da739014b5af8409275212bf97",
+      "bytes": 13007
+    },
+    "verify.py": {
+      "sha256": "946e68f3fc684e05d1d0c6216c41805b4e14afae7f2e63ac4d08c0f205feb718",
+      "bytes": 3460
+    }
+  }
+}

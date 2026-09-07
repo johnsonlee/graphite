@@ -13,7 +13,25 @@ performance workload. It currently exercises catalog/node/annotation routes and9
 Cypher shapes. Unknown annotation cases do not establish positive annotation
 parity: the checked Tika shard and full Tika fixture contain no member annotations.
 
-## Required64-graph benchmark protocol
+## Complete64-graph testcase acceptance
+
+The existing HTTP42 workload is a diagnostic subset, not the complete main
+benchmark. The actual pinned-main `LargeBroadQueryPressureBenchmark` generator
+produces **1,267 cases** with 64 graphs and `coverageFamily=all`. Only 34 are
+represented in HTTP42, three through literal substitution for parameters; the
+other eight HTTP cases come from a separate benchmark. The remaining 1,233 cases
+have not been covered by that HTTP manifest.
+
+The [testcase audit](../../docs/go-server-baseline/native64-testcase-audit-20260908/README.md)
+retains the actual JVM-generated case objects and every included/missing ID.
+First replicate those exact queries, parameter maps, source selections and order,
+plus cold/warm/startup-prepared index preparation and consumption in Go. Verify
+complete responses, errors, provenance and relevant source access against main
+before measuring each testcase's P95. Per-case repeated measurements and the
+10x threshold apply to the full matrix; a mixed-case P95 cannot replace them.
+The original engine timing and HTTP timing are separate measurement layers.
+
+## Legacy42-case HTTP diagnostic protocol
 
 The user explicitly requires64 simultaneously loaded graphs. Single-graph,
 4-graph, graph-subset, sequential per-graph fanout, and synthetic workloads cannot
@@ -71,7 +89,7 @@ Run `python3 -W error::ResourceWarning scripts/test_benchmark_http.py` from
 tests use fake transport solely to force failures before timing samples begin;
 they run no graph query and produce no performance measurements.
 
-Required matrix:
+Additional HTTP measurement matrix (does not replace the complete testcase gate):
 
 | State | Client concurrency | Execution and evidence |
 | --- | --- | --- |
@@ -123,9 +141,10 @@ also run uninstrumented controls. Current baseline-only captures lack these GC
 logs and allocation profiles, so they cannot answer whether GC is the latency
 bottleneck or establish the required final memory/GC evidence.
 
-The target remains main HTTP P95 / Go HTTP P95 >=10 on the full64 representative
-workload, both required load strata and declared cold/warm states, with full
-functional parity and no hidden failures. Per-case regressions must be reported
+The target remains main P95 / Go P95 >=10 for every testcase in the complete64
+matrix under matching declared conditions, with full functional parity and no
+hidden failures. HTTP endpoint results must be reported separately from engine
+timings. Per-case regressions must be reported
 alongside the aggregate. Baseline-only measurements, a partial native query
 engine, one successful warm stratum or one matching query set do not satisfy the
 goal. Chronological optimization logs and mandatory benchmark-regression-gate

@@ -1,0 +1,13 @@
+allprojects { project ->
+    if (project.path == ':webgraph') {
+        project.afterEvaluate {
+            project.tasks.register('exportNativeTestcaseAuditClasspath') {
+                dependsOn project.tasks.named('jmhClasses')
+                doLast {
+                    def sets = project.extensions.getByType(org.gradle.api.tasks.SourceSetContainer)
+                    new File('/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-testcase-audit-20260908/jvm-classpath.txt').text = sets.getByName('jmh').runtimeClasspath.asPath
+                }
+            }
+        }
+    }
+}

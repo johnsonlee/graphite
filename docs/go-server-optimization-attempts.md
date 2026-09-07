@@ -696,3 +696,24 @@ shipping verification and source/fixture identities.
 author/reviewer/diagnostic evidence, initial quadratic-test timeout and strict
 state failures, permitted scheduling proof, all complete real64 outputs and
 counters, actual shipping verification and post-exit source/fixture identities.
+
+
+### 2026-09-08 — Functional follow-up: audit the original64 benchmark testcases
+
+Actual invocation of the pinned-main workload generator exports1,267 cases for
+64 graphs and coverageFamily=all, with a second JVM export byte-exact. The old
+HTTP42 manifest maps only34 global-wide cases (31 query texts equal ignoring
+whitespace and3 parameter-to-literal adaptations);1,233 original cases are absent.
+Its extra8 wrapped queries originate in a separate four-corpus benchmark.
+Graph order, original replay order, cold/warm/startup-prepared preparation,
+parameter transport, request-selected source sets and timing boundaries also
+remain different or unreplicated. No performance run was started by this audit.
+
+The actual case objects, full coverage/missing-ID list, source hashes, exporter,
+build logs and verification are in
+`docs/go-server-baseline/native64-testcase-audit-20260908/`.
+`graphite-server/scripts/README.md` now explicitly treats HTTP42 as diagnostic
+coverage. Full testcase replication and result/source-state validation must
+precede per-case P95 acceptance. This corrects prior overbroad acceptance framing;
+earlier HTTP passes and single instrumented measurements keep only their stated
+local scope. The overall100% parity and10x goal remains incomplete.
