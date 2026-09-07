@@ -1,0 +1,28 @@
+[
+  {
+    "phase": "base",
+    "argv": [
+      "python3",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-label-alias-attempt16/run-profile.py",
+      "--worktree",
+      "/tmp/graphite-go-label-base-4e94017f",
+      "--out",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-label-alias-attempt16/base"
+    ],
+    "exitCode": 0,
+    "finishedUTC": "2026-09-07T04:37:07.444654+00:00"
+  },
+  {
+    "phase": "candidate",
+    "argv": [
+      "python3",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-label-alias-attempt16/run-profile.py",
+      "--worktree",
+      "/tmp/graphite-go-label-candidate-4e94017f",
+      "--out",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native64-label-alias-attempt16/candidate"
+    ],
+    "exitCode": 0,
+    "finishedUTC": "2026-09-07T04:38:36.556119+00:00"
+  }
+]

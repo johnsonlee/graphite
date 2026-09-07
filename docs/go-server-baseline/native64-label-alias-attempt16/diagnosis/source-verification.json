@@ -1,0 +1,98 @@
+[
+  {
+    "side": "base",
+    "path": "internal/query/traversal.go",
+    "sha256": "c83f3122a4ab61a9433323c3466c64612e2df7e1db703b989df8f5c98f9f0a33",
+    "matchesMeasuredSourceManifest": true
+  },
+  {
+    "side": "base",
+    "path": "internal/query/properties.go",
+    "sha256": "12de265f4bbfa5bdb500f7a99ac7c4124a4084523aec1c18706637000be531be",
+    "matchesMeasuredSourceManifest": true
+  },
+  {
+    "side": "base",
+    "path": "internal/query/candidate.go",
+    "sha256": "e84e32589c490ab13d155416987e3df5314078f45e2d3dba2f6e14d4b83f275c",
+    "matchesMeasuredSourceManifest": true
+  },
+  {
+    "side": "base",
+    "path": "internal/query/engine.go",
+    "sha256": "1f184ed4adc8e9d451404491e83de50a3f013c36bc31a5a19b8229d91ed0984a",
+    "matchesMeasuredSourceManifest": true
+  },
+  {
+    "side": "base",
+    "path": "internal/query/string_candidates.go",
+    "sha256": "63344549fe967273de844afa738c312809e422e8ed653bae7fc29f8fd8deaf8a",
+    "matchesMeasuredSourceManifest": true
+  },
+  {
+    "side": "base",
+    "path": "internal/query/indexed_distinct_plan.go",
+    "sha256": "37be958d3659f21cf57fcd4017b3f3cddd73f652171266adb8d7d2a32efe4155",
+    "matchesMeasuredSourceManifest": true
+  },
+  {
+    "side": "base",
+    "path": "internal/store/projection_node.go",
+    "sha256": "fda887a49466b5c9c9663d1af76932df5df7cfd22849c867ce85fb0cc3577842",
+    "matchesMeasuredSourceManifest": true
+  },
+  {
+    "side": "candidate",
+    "path": "internal/query/lazy_filtered.go",
+    "sha256": "97bdcccbf7d11fca261be34d452b3a3fffc8038fa0589e0e1185f72fde90904c",
+    "matchesMeasuredSourceManifest": true
+  },
+  {
+    "side": "candidate",
+    "path": "internal/query/lazy_filtered_plan.go",
+    "sha256": "d7890f4753c04b6a5af8bd3efdfd57060a4ad6d5507bab51223ee5e0ff159f2b",
+    "matchesMeasuredSourceManifest": true
+  },
+  {
+    "side": "candidate",
+    "path": "internal/query/traversal.go",
+    "sha256": "c83f3122a4ab61a9433323c3466c64612e2df7e1db703b989df8f5c98f9f0a33",
+    "matchesMeasuredSourceManifest": true
+  },
+  {
+    "side": "candidate",
+    "path": "internal/query/properties.go",
+    "sha256": "12de265f4bbfa5bdb500f7a99ac7c4124a4084523aec1c18706637000be531be",
+    "matchesMeasuredSourceManifest": true
+  },
+  {
+    "side": "candidate",
+    "path": "internal/query/candidate.go",
+    "sha256": "e84e32589c490ab13d155416987e3df5314078f45e2d3dba2f6e14d4b83f275c",
+    "matchesMeasuredSourceManifest": true
+  },
+  {
+    "side": "candidate",
+    "path": "internal/query/engine.go",
+    "sha256": "4da9e2b2051b5f6aedb66f5cde25054c06b0c4e5fce9080853f286230401f79b",
+    "matchesMeasuredSourceManifest": true
+  },
+  {
+    "side": "candidate",
+    "path": "internal/query/string_candidates.go",
+    "sha256": "63344549fe967273de844afa738c312809e422e8ed653bae7fc29f8fd8deaf8a",
+    "matchesMeasuredSourceManifest": true
+  },
+  {
+    "side": "candidate",
+    "path": "internal/query/indexed_distinct_plan.go",
+    "sha256": "37be958d3659f21cf57fcd4017b3f3cddd73f652171266adb8d7d2a32efe4155",
+    "matchesMeasuredSourceManifest": true
+  },
+  {
+    "side": "candidate",
+    "path": "internal/store/projection_node.go",
+    "sha256": "fda887a49466b5c9c9663d1af76932df5df7cfd22849c867ce85fb0cc3577842",
+    "matchesMeasuredSourceManifest": true
+  }
+]

@@ -1,0 +1,36 @@
+File: profile-query
+Type: alloc_space
+Time: Sep 7, 2026 at 12:29pm (KST)
+Showing nodes accounting for 7.74GB, 99.18% of 7.80GB total
+Dropped 19 nodes (cum <= 0.04GB)
+      flat  flat%   sum%        cum   cum%
+         0     0%     0%     7.80GB   100%  main.main
+         0     0%     0%     7.80GB   100%  main.profile
+         0     0%     0%     7.80GB   100%  runtime.main
+         0     0%     0%     7.80GB   100%  github.com/johnsonlee/graphite/graphite-server/internal/query.ExecuteCross
+         0     0%     0%     7.80GB   100%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.branch
+    0.20GB  2.59%  2.59%     7.80GB   100%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.lazyFiltered
+         0     0%  2.59%     7.80GB   100%  github.com/johnsonlee/graphite/graphite-server/internal/query.executeSources
+         0     0%  2.59%     7.80GB   100%  main.profile.func1
+         0     0%  2.59%     7.80GB   100%  runtime/pprof.Do
+       3GB 38.44% 41.03%        3GB 38.44%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.nodeValue (inline)
+    2.71GB 34.76% 75.79%     2.78GB 35.65%  github.com/johnsonlee/graphite/graphite-server/internal/query.matchesLabel
+         0     0% 75.79%     2.78GB 35.65%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.matches
+    0.17GB  2.17% 77.96%     0.49GB  6.27%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.eval
+    0.24GB  3.07% 81.03%     0.48GB  6.10%  github.com/johnsonlee/graphite/graphite-server/internal/query.key
+    0.05GB  0.61% 81.64%     0.46GB  5.84%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.lazyProject
+         0     0% 81.64%     0.44GB  5.63%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.binary
+         0     0% 81.64%     0.43GB  5.52%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.lazyGenericNodes.func1
+    0.07GB  0.84% 82.48%     0.43GB  5.52%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionCandidateNode
+    0.36GB  4.68% 87.15%     0.36GB  4.68%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionCandidateNode.func4
+    0.31GB  4.01% 91.16%     0.31GB  4.01%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.bind
+         0     0% 91.16%     0.23GB  2.90%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.call
+    0.16GB  2.05% 93.21%     0.16GB  2.05%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.callLegacy
+         0     0% 93.21%     0.14GB  1.75%  strings.(*Builder).Grow
+    0.14GB  1.75% 94.96%     0.14GB  1.75%  strings.(*Builder).grow
+         0     0% 94.96%     0.14GB  1.75%  strings.ToLower
+         0     0% 94.96%     0.12GB  1.52%  strconv.Quote (inline)
+    0.12GB  1.52% 96.48%     0.12GB  1.52%  strconv.quoteWith (inline)
+    0.12GB  1.50% 97.98%     0.12GB  1.50%  fmt.Sprintf
+    0.09GB  1.20% 99.18%     0.09GB  1.20%  github.com/johnsonlee/graphite/graphite-server/internal/query.NodeProperty
+         0     0% 99.18%     0.09GB  1.20%  github.com/johnsonlee/graphite/graphite-server/internal/query.qualifiedProperty

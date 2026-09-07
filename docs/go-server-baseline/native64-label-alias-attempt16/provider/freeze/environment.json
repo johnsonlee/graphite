@@ -1,0 +1,11 @@
+{
+  "utc": "2026-09-07T03:55:46.369596+00:00",
+  "platform": "macOS-14.3-arm64-arm-64bit-Mach-O",
+  "go": "go version go1.22.0 darwin/arm64",
+  "base": "2ab90cdc11477166fcd84c63c1af03041bd7f940",
+  "worktree": "/tmp/graphite-go-label-alias-attempt16-2ab90cdc",
+  "gitStatus": " M graphite-server/internal/query/properties.go\n?? graphite-server/internal/query/label_alias_test.go\n",
+  "performanceRun": false,
+  "rootModified": false,
+  "commitCreated": false
+}

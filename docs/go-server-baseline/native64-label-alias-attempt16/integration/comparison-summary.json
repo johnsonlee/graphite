@@ -1,0 +1,14 @@
+{
+  "artifacts": 76,
+  "exactArtifacts": 74,
+  "internalStateOnlyArtifacts": [
+    "history/rolling-native.json",
+    "original-corpus/main-string-source-main.json-native.json"
+  ],
+  "internalMappedViewLeaves": 51,
+  "publicResponseChanges": 0,
+  "original1048Equal": 1044,
+  "remainingF": 4,
+  "B595Equal": true,
+  "numericSpellings": 166
+}

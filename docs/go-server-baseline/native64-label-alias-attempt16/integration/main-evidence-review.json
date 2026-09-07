@@ -1,0 +1,16 @@
+{
+  "files": [
+    {
+      "path": "internal/query/constant_membership_test.go",
+      "sha256": "f484954e708ec8563960c0f386c1cbb2968c7fef2b2793219033526db542fdbb"
+    },
+    {
+      "path": "internal/query/testdata/constant-membership-jvm-oracle.json",
+      "sha256": "0a2964873289cd8e4a0ac3c9f82ca3ce10cc3dadf76254008e7b964800e15ef6"
+    }
+  ],
+  "originalOracleUnchanged": true,
+  "cases": 26,
+  "scope": "Pinned-main Constant membership and all concrete node-kind acceptance, covered again in combined fullmodule race; finite oracle, no new Java invocation.",
+  "BInteraction": "B streamingStringParallel uses matchesLabel for kind eligibility; new switch returns same exact bool before unchanged storage strategy. CDE and main candidate source similarly unchanged; no new label admission or earlier skipping of decode."
+}

@@ -599,3 +599,26 @@ DISTINCT retained/evicted evaluation, source scoping and cancellation boundaries
 provider/reviewer/root source evidence, setup and collector failures, fresh main
 bodies, complete sweeps, actual command replays and post-exit fixture identities.
 This is a functional follow-up; Attempts16/17 remain separate hypotheses.
+
+
+## 2026-09-07 — Attempt 16: fixed label alias switch
+
+| Item | Evidence / status |
+|---|---|
+| Hypothesis | Remove the per-call nine-entry alias map from matchesLabel while preserving lowercasing, Node/Constant precedence, exact alias comparison and EqualFold fallback |
+| Native base / candidate | `4e94017f`;two-file author patch `b86c4e149afe22e083c06725475ffa0b383dc73570c037169afe3788e8dc4ee3`,onlyproperties.go in production;2434 candidate/root inputs exact full tested combination |
+| Independent evidence |157author/102integration/56prior allocation-audit files rehashed;actual old helper body independently matched production;A12/A13/A15/B/CDE/tuple preserved |
+| Correctness | Fullmodule race/vet;4275 Unicode/invalidUTF8/kind boundaries plus9aliases×21kinds×3spellings;26main Constant responses unchanged;original1044/1048,generic432,B595 unchanged |
+| Historical state |76previous artifacts74rawexact,2only51speculative mappedView leaves;all complete publicresponses preserved;166Bnumeric spellings explicitly not byte equality |
+| Real64 |All64 persisted graphs/1152files/10,338,207,518bytes;two fresh fixed21-query processes,42/42 fulltyped main bodies andallsourcehistories equal;original/clone/source/binary unchanged afterClose |
+| Generic DISTINCT |6.516011→5.349303s,CPU6.437094→5.347743s,allocation8,392,826,728→5,479,520,392bytes (34.71%less);bothNumGC0/pause0 |
+| Generic routes |Android0.097497→0.077069s,allocation137,483,136→79,408,752bytes;Kotlin0.055697→0.043519s,allocation82,170,112→47,950,416bytes |
+| B generic ORDER |0.172548→0.149570s,allocation261,532,688→203,451,424bytes |
+| Prefix control |First13.657089→13.488717s,repeat9.952376→9.991023s;allocation broadly unchanged,no prefix breakthrough |
+| Shipping |63/63 fulltyped main bodies/headers/catalog64;152active compiler/embed+2434module inputs;two fresh default60s/cap4 processes exit143/no forcedkill/portsfree;all1152original/HTTPclone files unchanged |
+| Decision |Keep measured generic-path allocation/CPU/wall benefit;retain slightly slower dense controls andremaining generic regression.No node boxing/context/candidate changes bundled |
+| Limits |Single instrumented pair;known agents paused heavywork,external activityuncontrolled;no P95/peakRSS/GCpause/main-relative10x claim.Final benchmark gate andfullcompatibility remainopen |
+
+`docs/go-server-baseline/native64-label-alias-attempt16/` preserves exact source,
+full frozen author/integrator evidence,old-reference checks,all21-query raw
+profiles/receipts,HTTP63 verification andpost-exit fixture identities.

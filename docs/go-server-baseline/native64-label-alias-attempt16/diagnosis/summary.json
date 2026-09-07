@@ -1,0 +1,34 @@
+[
+  {
+    "side": "base",
+    "query": "MATCH (n:CallSiteNode) WHERE toString(toString(n.caller_name)) CONTAINS 'get' RETURN DISTINCT [n.caller_class, n.caller_name] AS value LIMIT 20",
+    "elapsed": 1.9286976660000001,
+    "deltas": {
+      "frees": 1677073,
+      "mallocs": 28473696,
+      "numGC": 0,
+      "pauseTotalNs": 0,
+      "systemCPUSeconds": 0.06585700000000116,
+      "totalAllocBytes": 2263578128,
+      "userCPUSeconds": 1.8755800000000136
+    },
+    "outputSHA256": "e8537464f427227dbadb7278c1322538ba6ff12fa34312e59a2216d007f53288",
+    "fullOutputMatchesExpected": true
+  },
+  {
+    "side": "candidate",
+    "query": "MATCH (n:CallSiteNode) WHERE toString(toString(n.caller_name)) CONTAINS 'get' RETURN DISTINCT [n.caller_class, n.caller_name] AS value LIMIT 20",
+    "elapsed": 6.49268225,
+    "deltas": {
+      "frees": 14418035,
+      "mallocs": 94325237,
+      "numGC": 0,
+      "pauseTotalNs": 0,
+      "systemCPUSeconds": 0.4535049999999998,
+      "totalAllocBytes": 8392767504,
+      "userCPUSeconds": 6.017464999999959
+    },
+    "outputSHA256": "e8537464f427227dbadb7278c1322538ba6ff12fa34312e59a2216d007f53288",
+    "fullOutputMatchesExpected": true
+  }
+]

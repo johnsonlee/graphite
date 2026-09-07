@@ -1,0 +1,63 @@
+=== RUN   TestConstantMembershipMainJVMOracle
+=== RUN   TestConstantMembershipMainJVMOracle/0-scoped
+=== RUN   TestConstantMembershipMainJVMOracle/0-cross
+=== RUN   TestConstantMembershipMainJVMOracle/1-scoped
+=== RUN   TestConstantMembershipMainJVMOracle/1-cross
+=== RUN   TestConstantMembershipMainJVMOracle/2-scoped
+=== RUN   TestConstantMembershipMainJVMOracle/2-cross
+=== RUN   TestConstantMembershipMainJVMOracle/3-scoped
+=== RUN   TestConstantMembershipMainJVMOracle/3-cross
+=== RUN   TestConstantMembershipMainJVMOracle/4-scoped
+=== RUN   TestConstantMembershipMainJVMOracle/4-cross
+=== RUN   TestConstantMembershipMainJVMOracle/5-scoped
+=== RUN   TestConstantMembershipMainJVMOracle/5-cross
+=== RUN   TestConstantMembershipMainJVMOracle/6-scoped
+=== RUN   TestConstantMembershipMainJVMOracle/6-cross
+=== RUN   TestConstantMembershipMainJVMOracle/7-scoped
+=== RUN   TestConstantMembershipMainJVMOracle/7-cross
+=== RUN   TestConstantMembershipMainJVMOracle/8-scoped
+=== RUN   TestConstantMembershipMainJVMOracle/8-cross
+=== RUN   TestConstantMembershipMainJVMOracle/9-scoped
+=== RUN   TestConstantMembershipMainJVMOracle/9-cross
+=== RUN   TestConstantMembershipMainJVMOracle/10-scoped
+=== RUN   TestConstantMembershipMainJVMOracle/10-cross
+=== RUN   TestConstantMembershipMainJVMOracle/11-scoped
+=== RUN   TestConstantMembershipMainJVMOracle/11-cross
+=== RUN   TestConstantMembershipMainJVMOracle/12-scoped
+=== RUN   TestConstantMembershipMainJVMOracle/12-cross
+--- PASS: TestConstantMembershipMainJVMOracle (0.04s)
+    --- PASS: TestConstantMembershipMainJVMOracle/0-scoped (0.01s)
+    --- PASS: TestConstantMembershipMainJVMOracle/0-cross (0.00s)
+    --- PASS: TestConstantMembershipMainJVMOracle/1-scoped (0.00s)
+    --- PASS: TestConstantMembershipMainJVMOracle/1-cross (0.00s)
+    --- PASS: TestConstantMembershipMainJVMOracle/2-scoped (0.00s)
+    --- PASS: TestConstantMembershipMainJVMOracle/2-cross (0.00s)
+    --- PASS: TestConstantMembershipMainJVMOracle/3-scoped (0.00s)
+    --- PASS: TestConstantMembershipMainJVMOracle/3-cross (0.00s)
+    --- PASS: TestConstantMembershipMainJVMOracle/4-scoped (0.00s)
+    --- PASS: TestConstantMembershipMainJVMOracle/4-cross (0.00s)
+    --- PASS: TestConstantMembershipMainJVMOracle/5-scoped (0.00s)
+    --- PASS: TestConstantMembershipMainJVMOracle/5-cross (0.00s)
+    --- PASS: TestConstantMembershipMainJVMOracle/6-scoped (0.00s)
+    --- PASS: TestConstantMembershipMainJVMOracle/6-cross (0.00s)
+    --- PASS: TestConstantMembershipMainJVMOracle/7-scoped (0.00s)
+    --- PASS: TestConstantMembershipMainJVMOracle/7-cross (0.00s)
+    --- PASS: TestConstantMembershipMainJVMOracle/8-scoped (0.00s)
+    --- PASS: TestConstantMembershipMainJVMOracle/8-cross (0.00s)
+    --- PASS: TestConstantMembershipMainJVMOracle/9-scoped (0.00s)
+    --- PASS: TestConstantMembershipMainJVMOracle/9-cross (0.00s)
+    --- PASS: TestConstantMembershipMainJVMOracle/10-scoped (0.00s)
+    --- PASS: TestConstantMembershipMainJVMOracle/10-cross (0.00s)
+    --- PASS: TestConstantMembershipMainJVMOracle/11-scoped (0.00s)
+    --- PASS: TestConstantMembershipMainJVMOracle/11-cross (0.00s)
+    --- PASS: TestConstantMembershipMainJVMOracle/12-scoped (0.00s)
+    --- PASS: TestConstantMembershipMainJVMOracle/12-cross (0.00s)
+=== RUN   TestConstantMembershipAllNodeKinds
+--- PASS: TestConstantMembershipAllNodeKinds (0.00s)
+=== RUN   TestLabelAliasKindsAndCase
+--- PASS: TestLabelAliasKindsAndCase (0.00s)
+=== RUN   TestLabelAliasOriginalDefinitionBoundary
+    label_alias_test.go:51: 4275 label/kind boundary comparisons against unchanged original definition
+--- PASS: TestLabelAliasOriginalDefinitionBoundary (0.01s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/query	1.384s

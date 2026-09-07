@@ -1,0 +1,22 @@
+File: profile-query
+Type: alloc_space
+Time: Sep 7, 2026 at 12:29pm (KST)
+Showing nodes accounting for 8305884204B, 99.18% of 8374392793B total
+Dropped 19 nodes (cum <= 41871963B)
+Showing top 15 nodes out of 30
+      flat  flat%   sum%        cum   cum%
+3218995088B 38.44% 38.44% 3218995088B 38.44%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.nodeValue (inline)
+2910870788B 34.76% 73.20% 2985845116B 35.65%  github.com/johnsonlee/graphite/graphite-server/internal/query.matchesLabel
+391667392B  4.68% 77.87% 391667392B  4.68%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionCandidateNode.func4
+335636488B  4.01% 81.88% 335636488B  4.01%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.bind
+257446604B  3.07% 84.96% 510697920B  6.10%  github.com/johnsonlee/graphite/graphite-server/internal/query.key
+217107532B  2.59% 87.55% 8370842324B   100%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.lazyFiltered
+181406804B  2.17% 89.72% 524820684B  6.27%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.eval
+171444792B  2.05% 91.76% 171444792B  2.05%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.callLegacy
+146278584B  1.75% 93.51% 146278584B  1.75%  strings.(*Builder).grow
+127411476B  1.52% 95.03% 127411476B  1.52%  strconv.quoteWith (inline)
+125839840B  1.50% 96.53% 125839840B  1.50%  fmt.Sprintf
+100664832B  1.20% 97.74% 100664832B  1.20%  github.com/johnsonlee/graphite/graphite-server/internal/query.NodeProperty
+ 70255720B  0.84% 98.57% 461923112B  5.52%  github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionCandidateNode
+ 50858264B  0.61% 99.18% 488733052B  5.84%  github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.lazyProject
+         0     0% 99.18% 8370842324B   100%  github.com/johnsonlee/graphite/graphite-server/internal/query.ExecuteCross

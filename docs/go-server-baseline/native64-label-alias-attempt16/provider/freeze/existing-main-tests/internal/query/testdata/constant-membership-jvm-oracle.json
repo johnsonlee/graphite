@@ -1,0 +1,1154 @@
+{
+  "mainCommit": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "jarSHA256": "91c3a1d154ca96004c55df195d9f752e077cab3e33ca1570b2c88b872d9bc34d",
+  "java": "17.0.18+0 Homebrew ARM64",
+  "fixture": "../store/testdata/jvm-v3",
+  "repetitionsPerCase": 3,
+  "cases": [
+    {
+      "query": "MATCH (n:Constant) RETURN id(n) AS id ORDER BY id",
+      "cross": false,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 0
+        },
+        {
+          "id": 2
+        },
+        {
+          "id": 4
+        },
+        {
+          "id": 6
+        },
+        {
+          "id": 8
+        },
+        {
+          "id": 10
+        },
+        {
+          "id": 12
+        },
+        {
+          "id": 14
+        },
+        {
+          "id": 28
+        }
+      ],
+      "name": "0-scoped"
+    },
+    {
+      "query": "MATCH (n:Constant) RETURN id(n) AS id ORDER BY id",
+      "cross": true,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 0,
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 0,
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 6,
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 6,
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 8,
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 8,
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 10,
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 10,
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 12,
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 12,
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 14,
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 14,
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 28,
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 28,
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        }
+      ],
+      "name": "0-cross"
+    },
+    {
+      "query": "MATCH (n:ConstantNode) RETURN id(n) AS id ORDER BY id",
+      "cross": false,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 0
+        },
+        {
+          "id": 2
+        },
+        {
+          "id": 4
+        },
+        {
+          "id": 6
+        },
+        {
+          "id": 8
+        },
+        {
+          "id": 10
+        },
+        {
+          "id": 12
+        },
+        {
+          "id": 14
+        },
+        {
+          "id": 28
+        }
+      ],
+      "name": "1-scoped"
+    },
+    {
+      "query": "MATCH (n:ConstantNode) RETURN id(n) AS id ORDER BY id",
+      "cross": true,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 0,
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 0,
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 6,
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 6,
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 8,
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 8,
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 10,
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 10,
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 12,
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 12,
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 14,
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 14,
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 28,
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 28,
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        }
+      ],
+      "name": "1-cross"
+    },
+    {
+      "query": "MATCH (n:CONSTANT) RETURN id(n) AS id ORDER BY id",
+      "cross": false,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 0
+        },
+        {
+          "id": 2
+        },
+        {
+          "id": 4
+        },
+        {
+          "id": 6
+        },
+        {
+          "id": 8
+        },
+        {
+          "id": 10
+        },
+        {
+          "id": 12
+        },
+        {
+          "id": 14
+        },
+        {
+          "id": 28
+        }
+      ],
+      "name": "2-scoped"
+    },
+    {
+      "query": "MATCH (n:CONSTANT) RETURN id(n) AS id ORDER BY id",
+      "cross": true,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 0,
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 0,
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 2,
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 6,
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 6,
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 8,
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 8,
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 10,
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 10,
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 12,
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 12,
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 14,
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 14,
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "id": 28,
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 28,
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        }
+      ],
+      "name": "2-cross"
+    },
+    {
+      "query": "MATCH (n:Constant {id:28}) RETURN n AS node,labels(n) AS labels,n.value AS value,n.type AS type",
+      "cross": false,
+      "columns": [
+        "node",
+        "labels",
+        "value",
+        "type"
+      ],
+      "rows": [
+        {
+          "node": {
+            "id": 28,
+            "type": "ResourceValueNode",
+            "path": "config.yml",
+            "key": "key",
+            "value": [
+              42,
+              {
+                "enumClass": "Color",
+                "enumName": "RED"
+              },
+              [
+                null,
+                "hello\u0000\u4e16\u754c\ud83d\ude00"
+              ]
+            ],
+            "format": "yaml",
+            "profile": "prod"
+          },
+          "labels": [
+            "ResourceValueNode",
+            "ResourceValue",
+            "Resource"
+          ],
+          "value": [
+            42,
+            {
+              "enumClass": "Color",
+              "enumName": "RED"
+            },
+            [
+              null,
+              "hello\u0000\u4e16\u754c\ud83d\ude00"
+            ]
+          ],
+          "type": "ResourceValueNode"
+        }
+      ],
+      "name": "3-scoped"
+    },
+    {
+      "query": "MATCH (n:Constant {id:28}) RETURN n AS node,labels(n) AS labels,n.value AS value,n.type AS type",
+      "cross": true,
+      "columns": [
+        "node",
+        "labels",
+        "value",
+        "type"
+      ],
+      "rows": [
+        {
+          "node": {
+            "id": 28,
+            "type": "ResourceValueNode",
+            "path": "config.yml",
+            "key": "key",
+            "value": [
+              42,
+              {
+                "enumClass": "Color",
+                "enumName": "RED"
+              },
+              [
+                null,
+                "hello\u0000\u4e16\u754c\ud83d\ude00"
+              ]
+            ],
+            "format": "yaml",
+            "profile": "prod",
+            "graphId": "orders",
+            "elementId": "orders:28",
+            "qualifiedId": "orders:28"
+          },
+          "labels": [
+            "ResourceValueNode",
+            "ResourceValue",
+            "Resource"
+          ],
+          "value": [
+            42,
+            {
+              "enumClass": "Color",
+              "enumName": "RED"
+            },
+            [
+              null,
+              "hello\u0000\u4e16\u754c\ud83d\ude00"
+            ]
+          ],
+          "type": "ResourceValueNode",
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "node": {
+            "id": 28,
+            "type": "ResourceValueNode",
+            "path": "config.yml",
+            "key": "key",
+            "value": [
+              42,
+              {
+                "enumClass": "Color",
+                "enumName": "RED"
+              },
+              [
+                null,
+                "hello\u0000\u4e16\u754c\ud83d\ude00"
+              ]
+            ],
+            "format": "yaml",
+            "profile": "prod",
+            "graphId": "billing",
+            "elementId": "billing:28",
+            "qualifiedId": "billing:28"
+          },
+          "labels": [
+            "ResourceValueNode",
+            "ResourceValue",
+            "Resource"
+          ],
+          "value": [
+            42,
+            {
+              "enumClass": "Color",
+              "enumName": "RED"
+            },
+            [
+              null,
+              "hello\u0000\u4e16\u754c\ud83d\ude00"
+            ]
+          ],
+          "type": "ResourceValueNode",
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        }
+      ],
+      "name": "3-cross"
+    },
+    {
+      "query": "MATCH (n:ConstantNode {id:28}) RETURN id(n) AS id",
+      "cross": false,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 28
+        }
+      ],
+      "name": "4-scoped"
+    },
+    {
+      "query": "MATCH (n:ConstantNode {id:28}) RETURN id(n) AS id",
+      "cross": true,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 28,
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 28,
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        }
+      ],
+      "name": "4-cross"
+    },
+    {
+      "query": "MATCH (n:Constant:ResourceValue) RETURN id(n) AS id",
+      "cross": false,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 28
+        }
+      ],
+      "name": "5-scoped"
+    },
+    {
+      "query": "MATCH (n:Constant:ResourceValue) RETURN id(n) AS id",
+      "cross": true,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 28,
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 28,
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        }
+      ],
+      "name": "5-cross"
+    },
+    {
+      "query": "MATCH (n:ResourceValue:Constant) RETURN id(n) AS id",
+      "cross": false,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 28
+        }
+      ],
+      "name": "6-scoped"
+    },
+    {
+      "query": "MATCH (n:ResourceValue:Constant) RETURN id(n) AS id",
+      "cross": true,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 28,
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 28,
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        }
+      ],
+      "name": "6-cross"
+    },
+    {
+      "query": "MATCH (n:Constant) WHERE id(n)=28 RETURN id(n) AS id",
+      "cross": false,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 28
+        }
+      ],
+      "name": "7-scoped"
+    },
+    {
+      "query": "MATCH (n:Constant) WHERE id(n)=28 RETURN id(n) AS id",
+      "cross": true,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 28,
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 28,
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        }
+      ],
+      "name": "7-cross"
+    },
+    {
+      "query": "OPTIONAL MATCH (n:Constant {id:28}) RETURN id(n) AS id",
+      "cross": false,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 28
+        }
+      ],
+      "name": "8-scoped"
+    },
+    {
+      "query": "OPTIONAL MATCH (n:Constant {id:28}) RETURN id(n) AS id",
+      "cross": true,
+      "columns": [
+        "id"
+      ],
+      "rows": [
+        {
+          "id": 28,
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "id": 28,
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        }
+      ],
+      "name": "8-cross"
+    },
+    {
+      "query": "UNWIND [28,30] AS wanted OPTIONAL MATCH (n:Constant) WHERE id(n)=wanted RETURN wanted,id(n) AS id",
+      "cross": false,
+      "columns": [
+        "wanted",
+        "id"
+      ],
+      "rows": [
+        {
+          "wanted": 28,
+          "id": 28
+        },
+        {
+          "wanted": 30,
+          "id": null
+        }
+      ],
+      "name": "9-scoped"
+    },
+    {
+      "query": "UNWIND [28,30] AS wanted OPTIONAL MATCH (n:Constant) WHERE id(n)=wanted RETURN wanted,id(n) AS id",
+      "cross": true,
+      "columns": [
+        "wanted",
+        "id"
+      ],
+      "rows": [
+        {
+          "wanted": 28,
+          "id": 28,
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "wanted": 28,
+          "id": 28,
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        },
+        {
+          "wanted": 30,
+          "id": null,
+          "$metadata": {
+            "graphIds": []
+          }
+        }
+      ],
+      "name": "9-cross"
+    },
+    {
+      "query": "MATCH (n:Constant) RETURN count(n) AS count",
+      "cross": false,
+      "columns": [
+        "count"
+      ],
+      "rows": [
+        {
+          "count": 9
+        }
+      ],
+      "name": "10-scoped"
+    },
+    {
+      "query": "MATCH (n:Constant) RETURN count(n) AS count",
+      "cross": true,
+      "columns": [
+        "count"
+      ],
+      "rows": [
+        {
+          "count": 18,
+          "$metadata": {
+            "graphIds": [
+              "billing",
+              "orders"
+            ]
+          }
+        }
+      ],
+      "name": "10-cross"
+    },
+    {
+      "query": "MATCH (n:ResourceFile:Constant) RETURN id(n) AS id",
+      "cross": false,
+      "columns": [
+        "id"
+      ],
+      "rows": [],
+      "name": "11-scoped"
+    },
+    {
+      "query": "MATCH (n:ResourceFile:Constant) RETURN id(n) AS id",
+      "cross": true,
+      "columns": [
+        "id"
+      ],
+      "rows": [],
+      "name": "11-cross"
+    },
+    {
+      "query": "MATCH (n:ResourceValue) RETURN labels(n) AS labels,n AS node",
+      "cross": false,
+      "columns": [
+        "labels",
+        "node"
+      ],
+      "rows": [
+        {
+          "labels": [
+            "ResourceValueNode",
+            "ResourceValue",
+            "Resource"
+          ],
+          "node": {
+            "id": 28,
+            "type": "ResourceValueNode",
+            "path": "config.yml",
+            "key": "key",
+            "value": [
+              42,
+              {
+                "enumClass": "Color",
+                "enumName": "RED"
+              },
+              [
+                null,
+                "hello\u0000\u4e16\u754c\ud83d\ude00"
+              ]
+            ],
+            "format": "yaml",
+            "profile": "prod"
+          }
+        }
+      ],
+      "name": "12-scoped"
+    },
+    {
+      "query": "MATCH (n:ResourceValue) RETURN labels(n) AS labels,n AS node",
+      "cross": true,
+      "columns": [
+        "labels",
+        "node"
+      ],
+      "rows": [
+        {
+          "labels": [
+            "ResourceValueNode",
+            "ResourceValue",
+            "Resource"
+          ],
+          "node": {
+            "id": 28,
+            "type": "ResourceValueNode",
+            "path": "config.yml",
+            "key": "key",
+            "value": [
+              42,
+              {
+                "enumClass": "Color",
+                "enumName": "RED"
+              },
+              [
+                null,
+                "hello\u0000\u4e16\u754c\ud83d\ude00"
+              ]
+            ],
+            "format": "yaml",
+            "profile": "prod",
+            "graphId": "orders",
+            "elementId": "orders:28",
+            "qualifiedId": "orders:28"
+          },
+          "$metadata": {
+            "graphIds": [
+              "orders"
+            ]
+          }
+        },
+        {
+          "labels": [
+            "ResourceValueNode",
+            "ResourceValue",
+            "Resource"
+          ],
+          "node": {
+            "id": 28,
+            "type": "ResourceValueNode",
+            "path": "config.yml",
+            "key": "key",
+            "value": [
+              42,
+              {
+                "enumClass": "Color",
+                "enumName": "RED"
+              },
+              [
+                null,
+                "hello\u0000\u4e16\u754c\ud83d\ude00"
+              ]
+            ],
+            "format": "yaml",
+            "profile": "prod",
+            "graphId": "billing",
+            "elementId": "billing:28",
+            "qualifiedId": "billing:28"
+          },
+          "$metadata": {
+            "graphIds": [
+              "billing"
+            ]
+          }
+        }
+      ],
+      "name": "12-cross"
+    }
+  ]
+}

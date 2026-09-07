@@ -1,0 +1,13 @@
+{
+  "base": "62b92d20 plus frozen B exact32files",
+  "BModuleInventory": "f051bc14f55140b99dbddd46e2d4406f44cf60bbead85a0b527ac0cef2e58cfd",
+  "changed": [
+    "graphite-server/internal/query/label_alias_test.go",
+    "graphite-server/internal/query/properties.go"
+  ],
+  "baseModuleFiles": 2433,
+  "candidateModuleFiles": 2434,
+  "exactOriginalHelperInTest": true,
+  "allOtherInputsByteEqual": true,
+  "review": "Nine disjoint exact label string branches preserve original map lookups. ToLower/Node/Constant/EqualFold remain unchanged. No decoder/source/context/tuple/binding changes."
+}

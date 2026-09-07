@@ -1,0 +1,639 @@
+[
+  {
+    "file": "history/annotation-after-classification.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "history/annotation-after-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "history/annotation-classification.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "history/annotation-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "history/cache-threshold-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "history/dense-callee-sid-missing-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "history/dense-callee-sid-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "history/dense-clean-missing-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "history/dense-clean-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "history/dense-return-sid-missing-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "history/dense-return-sid-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "history/history-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "history/mixed-classification.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "history/mixed-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "history/required/callee-class-sid-max-missing-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "history/required/callee-class-sid-max-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "history/required/callee-class-sid-minus-one-missing-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "history/required/callee-class-sid-minus-one-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "history/required/caller-count-max-missing-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "history/required/caller-count-max-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "history/required/caller-count-minus-one-missing-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "history/required/caller-count-minus-one-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "history/required/caller-count-outside-missing-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "history/required/caller-count-outside-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "history/required/caller-name-sid-max-missing-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "history/required/caller-name-sid-max-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "history/required/caller-name-sid-minus-one-missing-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "history/required/caller-name-sid-minus-one-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "history/required/core-return-sid-max-missing-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "history/required/core-return-sid-max-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "history/required/node-id-999-missing-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "history/required/node-id-999-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "history/required/node-tag-255-missing-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "history/required/node-tag-255-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "history/required/offset-int-overflow-missing-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "history/required/offset-int-overflow-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "history/required/offset-missing-missing-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "history/required/offset-missing-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "history/required/offset-other-node-missing-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "history/required/offset-other-node-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "history/required/offset-outside-missing-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "history/required/offset-outside-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "history/rolling-native.json",
+    "differences": [
+      {
+        "path": "$[9].targets[0].after[7].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[9].targets[1].before[7].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[10].targets[0].after[2].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[10].targets[0].after[3].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[10].targets[0].after[5].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[10].targets[0].after[7].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[10].targets[1].after[2].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[10].targets[1].after[3].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[10].targets[1].after[5].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[10].targets[1].after[7].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[10].targets[1].before[2].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[10].targets[1].before[3].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[10].targets[1].before[5].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[10].targets[1].before[7].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[10].targets[2].before[2].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[10].targets[2].before[3].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[10].targets[2].before[5].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[10].targets[2].before[7].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[11].targets[0].after[2].mappedView",
+        "base": true,
+        "candidate": false
+      },
+      {
+        "path": "$[11].targets[0].after[3].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[11].targets[0].after[4].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[11].targets[0].after[5].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[11].targets[0].after[8].mappedView",
+        "base": true,
+        "candidate": false
+      },
+      {
+        "path": "$[11].targets[1].before[2].mappedView",
+        "base": true,
+        "candidate": false
+      },
+      {
+        "path": "$[11].targets[1].before[3].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[11].targets[1].before[4].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[11].targets[1].before[5].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[11].targets[1].before[8].mappedView",
+        "base": true,
+        "candidate": false
+      },
+      {
+        "path": "$[12].targets[1].after[9].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[12].targets[2].before[9].mappedView",
+        "base": false,
+        "candidate": true
+      }
+    ],
+    "exact": false
+  },
+  {
+    "file": "history/wide-history-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "original-corpus/annotation-after-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "original-corpus/annotation-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "original-corpus/generic-fault-audit.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "original-corpus/late-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "original-corpus/lazy-filtered-480.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "original-corpus/main-string-source-main.json-native.json",
+    "differences": [
+      {
+        "path": "$[10].targets[0].after[0].mappedView",
+        "base": true,
+        "candidate": false
+      },
+      {
+        "path": "$[10].targets[0].after[1].mappedView",
+        "base": true,
+        "candidate": false
+      },
+      {
+        "path": "$[10].targets[0].after[5].mappedView",
+        "base": true,
+        "candidate": false
+      },
+      {
+        "path": "$[10].targets[0].after[7].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[10].targets[1].after[1].mappedView",
+        "base": true,
+        "candidate": false
+      },
+      {
+        "path": "$[10].targets[1].after[6].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[10].targets[1].after[7].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[10].targets[1].before[0].mappedView",
+        "base": true,
+        "candidate": false
+      },
+      {
+        "path": "$[10].targets[1].before[1].mappedView",
+        "base": true,
+        "candidate": false
+      },
+      {
+        "path": "$[10].targets[1].before[5].mappedView",
+        "base": true,
+        "candidate": false
+      },
+      {
+        "path": "$[10].targets[1].before[7].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[14].targets[0].after[2].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[14].targets[0].after[5].mappedView",
+        "base": true,
+        "candidate": false
+      },
+      {
+        "path": "$[14].targets[0].after[6].mappedView",
+        "base": true,
+        "candidate": false
+      },
+      {
+        "path": "$[14].targets[1].after[1].mappedView",
+        "base": true,
+        "candidate": false
+      },
+      {
+        "path": "$[14].targets[1].after[2].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[14].targets[1].after[5].mappedView",
+        "base": true,
+        "candidate": false
+      },
+      {
+        "path": "$[14].targets[1].after[6].mappedView",
+        "base": true,
+        "candidate": false
+      },
+      {
+        "path": "$[14].targets[1].before[2].mappedView",
+        "base": false,
+        "candidate": true
+      },
+      {
+        "path": "$[14].targets[1].before[5].mappedView",
+        "base": true,
+        "candidate": false
+      },
+      {
+        "path": "$[14].targets[1].before[6].mappedView",
+        "base": true,
+        "candidate": false
+      }
+    ],
+    "exact": false
+  },
+  {
+    "file": "original-corpus/main-string-source-offset-main.json-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "original-corpus/main-string-source-property-main.json-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "original-corpus/mixed-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "original-corpus/primary-eligibility.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "original-corpus/primary-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "original-corpus/required-missing-identity-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "original-corpus/required-missing-index-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "original-corpus/required-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "original-corpus/source-pairs-eligibility.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "original-corpus/source-pairs-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "original-corpus/split-bad-callee-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "original-corpus/split-bad-count-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "original-corpus/split-bad-tag-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "original-corpus/split-clean-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "original-corpus/split-missing-index-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "original-corpus/streaming-bad-first-unmatched-MAPPED-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "original-corpus/streaming-bad-last-unmatched-MAPPED-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "original-corpus/streaming-bad-matched-MAPPED-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "original-corpus/streaming-clean-EAGER-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "original-corpus/streaming-clean-MAPPED-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "original-corpus/streaming-design-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "original-corpus/streaming-sources-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "original-corpus/streaming-unknown-bad-matched-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "original-corpus/streaming-unknown-clean-native.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "original-corpus/supplementary-eligibility.json",
+    "differences": [],
+    "exact": true
+  },
+  {
+    "file": "original-corpus/supplementary-native.json",
+    "differences": [],
+    "exact": true
+  }
+]

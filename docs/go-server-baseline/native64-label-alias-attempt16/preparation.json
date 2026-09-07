@@ -1,0 +1,34 @@
+{
+  "createdUTC": "2026-09-07T04:35:35.941551+00:00",
+  "base": "4e94017f",
+  "worktrees": {
+    "base": "/tmp/graphite-go-label-base-4e94017f",
+    "candidate": "/tmp/graphite-go-label-candidate-4e94017f",
+    "http": "/tmp/graphite-go-label-http-4e94017f"
+  },
+  "clones": {
+    "native": "/tmp/graphite-label-native-real64-4e94017f",
+    "http": "/tmp/graphite-label-http-real64-4e94017f"
+  },
+  "components": [
+    {
+      "component": "provider",
+      "manifestSHA256": "f9fcb153796c725c79e4591ce05808bc7a8e94671d34ba2133d83d177a0da318",
+      "allFilesRehashedAndCopied": 157
+    },
+    {
+      "component": "integration",
+      "manifestSHA256": "021051bbcfad0403bda0864037c94d4f263c4ba6f92be10940c4e43075ba4b06",
+      "allFilesRehashedAndCopied": 102
+    },
+    {
+      "component": "diagnosis",
+      "manifestSHA256": "1e83b404f4c9bd5ffda80b0be91432f848e858a7dc849e7ef1425c0c1f821273",
+      "allFilesRehashedAndCopied": 56
+    }
+  ],
+  "all2434CandidateInputsMatchFullModuleTestedCombination": true,
+  "externalInputsAlsoMatch": true,
+  "base2433InputsMatchCommittedB": true,
+  "knownCoTenancy": "AllthreeagentsconfirmedCPUheavyexecutionstoppedbeforepair; externalhostactivitynotcontrolled."
+}

@@ -1,0 +1,27 @@
+Total: 7.80GB
+ROUTINE ======================== github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.nodeValue in /private/tmp/graphite-go-cde-root-9ada2bf1/graphite-server/internal/query/traversal.go
+       3GB        3GB (flat, cum) 38.44% of Total
+         .          .    225:func (e evaluator) nodeValue(source *store.Store, id string, node store.Node) any {
+         .          .    226:	if e.cross {
+       3GB        3GB    227:		return qualifiedNode{id, source, node}
+         .          .    228:	}
+         .          .    229:	return node
+         .          .    230:}
+         .          .    231:func (e evaluator) targetNode(pattern cypher.NodePattern, value any, row map[string]any) (map[string]any, bool) {
+         .          .    232:	if name := pattern.Variable; name != "" {
+ROUTINE ======================== github.com/johnsonlee/graphite/graphite-server/internal/query.matchesLabel in /private/tmp/graphite-go-cde-root-9ada2bf1/graphite-server/internal/query/properties.go
+    2.71GB     2.78GB (flat, cum) 35.65% of Total
+         .          .    132:func matchesLabel(n store.Node, label string) bool {
+         .    71.50MB    133:	label = strings.ToLower(label)
+         .          .    134:	if label == "node" {
+         .          .    135:		return true
+         .          .    136:	}
+         .          .    137:	if label == "constant" || label == "constantnode" {
+         .          .    138:		return strings.HasSuffix(n.Kind, "Constant") || n.Kind == "ResourceValueNode"
+         .          .    139:	}
+    2.71GB     2.71GB    140:	aliases := map[string]string{"callsite": "CallSiteNode", "field": "FieldNode", "parameter": "ParameterNode", "return": "ReturnNode", "resourcefile": "ResourceFileNode", "resourcevalue": "ResourceValueNode", "resource": "ResourceValueNode", "local": "LocalVariable", "annotation": "AnnotationNode"}
+         .          .    141:	if kind, ok := aliases[label]; ok {
+         .          .    142:		return n.Kind == kind
+         .          .    143:	}
+         .          .    144:	return strings.EqualFold(n.Kind, label)
+         .          .    145:}

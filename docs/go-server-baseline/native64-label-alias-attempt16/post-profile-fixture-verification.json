@@ -1,0 +1,18 @@
+{
+  "verifiedUTC": "2026-09-07T04:40:15.054603+00:00",
+  "afterBothProcessesExit0": true,
+  "checks": [
+    {
+      "root": "/tmp/pr113-exp037-fixture.nXn4fg",
+      "files": 1152,
+      "allHashesMatch": true,
+      "noExtraGraphFiles": true
+    },
+    {
+      "root": "/tmp/graphite-label-native-real64-4e94017f",
+      "files": 1152,
+      "allHashesMatch": true,
+      "noExtraGraphFiles": true
+    }
+  ]
+}

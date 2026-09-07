@@ -1,0 +1,229 @@
+Total: 7.80GB
+ROUTINE ======================== github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.lazyFiltered in /private/tmp/graphite-go-cde-root-9ada2bf1/graphite-server/internal/query/lazy_filtered.go
+  207.05MB     7.80GB (flat, cum)   100% of Total
+         .          .    113:func (e evaluator) lazyFiltered(graph *store.Store, branch cypher.SingleQuery) (Result, bool) {
+         .          .    114:	defer ordinarySourceFailure()
+         .          .    115:	p := e.compileLazyFiltered(branch)
+         .          .    116:	if p == nil {
+         .          .    117:		return Result{}, false
+         .          .    118:	}
+         .          .    119:	result := Result{Columns: p.columns, Rows: []map[string]any{}}
+         .          .    120:	if p.limit <= 0 {
+         .          .    121:		return result, true
+         .          .    122:	}
+         .          .    123:	sources := e.graphs
+         .          .    124:	if !e.cross {
+         .          .    125:		sources = nil
+         .          .    126:		if graph != nil {
+         .          .    127:			sources = []Graph{{ID: "single", Store: graph}}
+         .          .    128:		}
+         .          .    129:	}
+         .          .    130:	selectedSources := []Graph{}
+         .          .    131:	for _, source := range sources {
+         .          .    132:		if p.graphIDs == nil || p.graphIDs[source.ID] || (!e.cross && p.bounded && p.atoms == nil) {
+         .          .    133:			selectedSources = append(selectedSources, source)
+         .          .    134:		}
+         .          .    135:	}
+         .          .    136:	if p.atoms != nil {
+         .          .    137:		return e.lazyCandidateFiltered(p, selectedSources), true
+         .          .    138:	}
+         .          .    139:	seen := map[string]int{}
+         .          .    140:	bindings := map[string]any{p.node.Variable: nil}
+         .          .    141:	for _, source := range selectedSources {
+         .    15.45MB    142:		next := e.lazyGenericNodes(source, p.node)
+         .          .    143:		for {
+         .   440.52MB    144:			node, ok := next(e.ctx)
+         .          .    145:			if !ok {
+         .          .    146:				break
+         .          .    147:			}
+         .        3GB    148:			candidate := e.nodeValue(source.Store, source.ID, node)
+         .     2.78GB    149:			if !e.matches(candidate, p.node, nil) {
+         .          .    150:				continue
+         .          .    151:			}
+         .          .    152:			bindings[p.node.Variable] = candidate
+         .   450.01MB    153:			if e.eval(p.match.Where, bindings) != true {
+         .          .    154:				continue
+         .          .    155:			}
+         .   466.09MB    156:			row := e.lazyProject(p, candidate, source.ID, false)
+         .          .    157:			if p.projection.Distinct {
+   30.50MB    30.50MB    158:				visible := make(map[string]any, len(row))
+         .          .    159:				for k, v := range row {
+         .          .    160:					if k != provenanceKey {
+  176.55MB   176.55MB    161:						visible[k] = v
+         .          .    162:					}
+         .          .    163:				}
+         .   487.04MB    164:				k := key(visible)
+         .          .    165:				if i, exists := seen[k]; exists {
+         .          .    166:					mergeProvenance(result.Rows[i], row)
+         .          .    167:				} else if len(result.Rows) < p.limit {
+         .          .    168:					seen[k] = len(result.Rows)
+         .          .    169:					result.Rows = append(result.Rows, row)
+ROUTINE ======================== github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.lazyGenericNodes in /private/tmp/graphite-go-cde-root-9ada2bf1/graphite-server/internal/query/lazy_filtered.go
+         0    15.45MB (flat, cum)  0.19% of Total
+         .          .    287:func (e evaluator) lazyGenericNodes(source Graph, pattern cypher.NodePattern) mainNodeNext {
+         .    15.45MB    288:	ids := lazyGenericIDs(source.Store, pattern)
+         .          .    289:	position := 0
+         .          .    290:	return func(ctx context.Context) (store.Node, bool) {
+         .          .    291:		local := e
+         .          .    292:		local.ctx = ctx
+         .          .    293:		for position < len(ids) {
+ROUTINE ======================== github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.lazyGenericNodes.func1 in /private/tmp/graphite-go-cde-root-9ada2bf1/graphite-server/internal/query/lazy_filtered.go
+         0   440.52MB (flat, cum)  5.52% of Total
+         .          .    290:	return func(ctx context.Context) (store.Node, bool) {
+         .          .    291:		local := e
+         .          .    292:		local.ctx = ctx
+         .          .    293:		for position < len(ids) {
+         .          .    294:			local.check()
+         .          .    295:			id := ids[position]
+         .          .    296:			position++
+         .          .    297:			if source.Store.Mode == "MAPPED" {
+         .   440.52MB    298:				node, present, err := source.Store.ProjectionCandidateNode(ctx, id)
+         .          .    299:				failMainStringRead(err)
+         .          .    300:				if !present {
+         .          .    301:					continue
+         .          .    302:				}
+         .          .    303:				return node, true
+ROUTINE ======================== github.com/johnsonlee/graphite/graphite-server/internal/query.evaluator.lazyProject in /private/tmp/graphite-go-cde-root-9ada2bf1/graphite-server/internal/query/lazy_filtered.go
+   48.50MB   466.09MB (flat, cum)  5.84% of Total
+         .          .    218:func (e evaluator) lazyProject(p *lazyFilteredPlan, candidate any, graphID string, selected bool) map[string]any {
+   26.50MB    26.50MB    219:	bindings := map[string]any{}
+         .   163.54MB    220:	e.bind(bindings, p.node.Variable, candidate)
+         .          .    221:	if e.cross {
+         .    19.50MB    222:		addProvenance(bindings, graphID)
+         .          .    223:	}
+      22MB       22MB    224:	row := map[string]any{}
+         .          .    225:	for i, item := range p.projection.Items {
+         .          .    226:		if selected {
+         .          .    227:			overwritten := false
+         .          .    228:			for j := i + 1; j < len(p.columns); j++ {
+         .          .    229:				if p.columns[j] == p.columns[i] {
+         .          .    230:					overwritten = true
+         .          .    231:					break
+         .          .    232:				}
+         .          .    233:			}
+         .          .    234:			if overwritten {
+         .          .    235:				continue
+         .          .    236:			}
+         .          .    237:		}
+         .   207.04MB    238:		e.bind(row, p.columns[i], freezeCandidate(e.eval(item.Expression, bindings)))
+         .          .    239:	}
+         .    27.50MB    240:	mergeProvenance(row, bindings)
+         .          .    241:	return row
+         .          .    242:}
+         .          .    243:
+         .          .    244:func lazyElementEquality(expr cypher.Expr, variable string) bool {
+         .          .    245:	b, ok := expr.(cypher.Binary)
+ROUTINE ======================== github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionCandidateNode in /private/tmp/graphite-go-cde-root-9ada2bf1/graphite-server/internal/store/projection_node.go
+      67MB   440.52MB (flat, cum)  5.52% of Total
+         .          .     13:func (s *Store) ProjectionCandidateNode(ctx context.Context, id int32) (Node, bool, error) {
+         .          .     14:	if err := s.prepareProjectionOffsets(ctx); err != nil {
+         .          .     15:		return Node{}, false, err
+         .          .     16:	}
+         .          .     17:	s.callSiteIndex.mu.RLock()
+         .          .     18:	defer s.callSiteIndex.mu.RUnlock()
+         .          .     19:	if s.callSiteIndex.closed {
+         .          .     20:		return Node{}, false, ErrStoreClosed
+         .          .     21:	}
+         .          .     22:	if err := ctx.Err(); err != nil {
+         .          .     23:		return Node{}, false, err
+         .          .     24:	}
+         .          .     25:	offset, err := s.projectionOffsetLocked(id)
+         .          .     26:	if err != nil {
+         .          .     27:		return Node{}, false, err
+         .          .     28:	}
+         .          .     29:	if offset == -1 {
+         .          .     30:		return Node{}, false, nil
+         .          .     31:	}
+         .          .     32:	position := int32(offset)
+         .          .     33:	var failure error
+         .          .     34:	read := func(width int32) []byte {
+         .          .     35:		if failure != nil {
+         .          .     36:			return nil
+         .          .     37:		}
+         .          .     38:		if failure = ctx.Err(); failure != nil {
+         .          .     39:			return nil
+         .          .     40:		}
+         .          .     41:		if position < 0 || int64(position) > int64(len(s.mappedData))-int64(width) {
+         .          .     42:			failure = &ProjectionReadError{Class: "EOFException"}
+         .          .     43:			return nil
+         .          .     44:		}
+         .          .     45:		value := s.mappedData[int(position):int(position+width)]
+         .          .     46:		position += width
+         .          .     47:		return value
+         .          .     48:	}
+         .          .     49:	i32 := func() int32 {
+         .          .     50:		data := read(4)
+         .          .     51:		if data == nil {
+         .          .     52:			return 0
+         .          .     53:		}
+         .          .     54:		return int32(binary.BigEndian.Uint32(data))
+         .          .     55:	}
+         .          .     56:	str := func() string {
+         .          .     57:		sid := i32()
+         .          .     58:		if failure != nil {
+         .          .     59:			return ""
+         .          .     60:		}
+         .          .     61:		if sid < 0 || int64(sid) >= int64(len(s.Strings)) {
+         .          .     62:			failure = &StringTableReferenceError{Index: sid, Size: len(s.Strings)}
+         .          .     63:			return ""
+         .          .     64:		}
+         .          .     65:		return s.Strings[sid]
+         .          .     66:	}
+         .          .     67:	n := Node{ID: i32()}
+         .          .     68:	tagBytes := read(1)
+         .          .     69:	if failure != nil {
+         .          .     70:		return Node{}, false, failure
+         .          .     71:	}
+         .          .     72:	tag := tagBytes[0]
+         .          .     73:	if int(tag) >= len(nodeKinds) {
+         .          .     74:		return Node{}, false, &UnknownNodeTagError{Tag: tag}
+         .          .     75:	}
+         .          .     76:	if tag != 12 {
+         .          .     77:		// Runtime class acceptance depends on the storage branch, so return the
+         .          .     78:		// fully consumed node to the query boundary.
+         .          .     79:		d := newDecoder(bytes.NewReader(s.mappedData[int32(offset):]), int64(len(s.mappedData))-int64(int32(offset)), s.Strings)
+         .          .     80:		d.version = s.FormatVersion
+         .          .     81:		node := d.node()
+         .          .     82:		return node, d.err == nil, d.err
+         .          .     83:	}
+         .          .     84:	n.Kind = "CallSiteNode"
+         .          .     85:	method := func() MethodDescriptor {
+         .          .     86:		m := MethodDescriptor{DeclaringClass: str(), Name: str(), ParameterTypes: []string{}}
+         .          .     87:		count := i32()
+         .          .     88:		for at := int32(0); at < count && failure == nil; at++ {
+         .          .     89:			m.ParameterTypes = append(m.ParameterTypes, str())
+         .          .     90:		}
+         .          .     91:		m.ReturnType = str()
+         .          .     92:		return m
+         .          .     93:	}
+         .   254.52MB     94:	n.Caller = method()
+         .      119MB     95:	n.Callee = method()
+   36.50MB    36.50MB     96:	line := i32()
+         .          .     97:	if line != -1 {
+         .          .     98:		n.LineNumber = &line
+         .          .     99:	}
+         .          .    100:	receiver := i32()
+         .          .    101:	if receiver != -1 {
+         .          .    102:		n.Receiver = &receiver
+         .          .    103:	}
+         .          .    104:	count := i32()
+         .          .    105:	n.Arguments = []int32{}
+         .          .    106:	for at := int32(0); at < count && failure == nil; at++ {
+   30.50MB    30.50MB    107:		n.Arguments = append(n.Arguments, i32())
+         .          .    108:	}
+         .          .    109:	if failure != nil {
+         .          .    110:		return Node{}, false, failure
+         .          .    111:	}
+         .          .    112:	return n, true, nil
+ROUTINE ======================== github.com/johnsonlee/graphite/graphite-server/internal/store.(*Store).ProjectionCandidateNode.func4 in /private/tmp/graphite-go-cde-root-9ada2bf1/graphite-server/internal/store/projection_node.go
+  373.52MB   373.52MB (flat, cum)  4.68% of Total
+         .          .     85:	method := func() MethodDescriptor {
+         .          .     86:		m := MethodDescriptor{DeclaringClass: str(), Name: str(), ParameterTypes: []string{}}
+         .          .     87:		count := i32()
+         .          .     88:		for at := int32(0); at < count && failure == nil; at++ {
+  373.52MB   373.52MB     89:			m.ParameterTypes = append(m.ParameterTypes, str())
+         .          .     90:		}
+         .          .     91:		m.ReturnType = str()
+         .          .     92:		return m
+         .          .     93:	}
+         .          .     94:	n.Caller = method()

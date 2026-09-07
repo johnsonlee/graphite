@@ -1,0 +1,19 @@
+[
+  {
+    "command": "git apply --check ../integration/attempt16.patch && git apply ../integration/attempt16.patch",
+    "cwd": "/tmp/graphite-go-a16-on-b-62b92d20/candidate",
+    "exitCode": 0
+  },
+  {
+    "command": "INDEXED_DISTINCT_OUTPUT=/tmp/graphite-go-a16-on-b-62b92d20/integration/output/original-corpus ORDINARY_HISTORY_OUTPUT=/tmp/graphite-go-a16-on-b-62b92d20/integration/output/history go test -race -count=1 ./...",
+    "cwd": "/tmp/graphite-go-a16-on-b-62b92d20/candidate/graphite-server",
+    "exitCode": 0,
+    "log": "module-race.log"
+  },
+  {
+    "command": "go vet ./...",
+    "cwd": "/tmp/graphite-go-a16-on-b-62b92d20/candidate/graphite-server",
+    "exitCode": 0,
+    "log": "module-vet.log"
+  }
+]

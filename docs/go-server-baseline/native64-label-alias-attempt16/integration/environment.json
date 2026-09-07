@@ -1,0 +1,7 @@
+{
+  "go": "go version go1.22.0 darwin/arm64",
+  "platform": "macOS-14.3-arm64-arm-64bit-Mach-O",
+  "coTenancy": "Root B real64 profiling/main capture executed independently during this correctness run; no performance interpretation. This integration launched no JVM/real64/benchmark.",
+  "rootOrProviderEdited": false,
+  "committed": false
+}

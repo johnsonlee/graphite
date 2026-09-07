@@ -1,0 +1,12 @@
+[
+  {
+    "side": "base",
+    "binary": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-jv55xjqx/profile-query",
+    "sha256": "48e1eb7207d87f1e088a414363361f19e3660f6c69f9133f01124de010b68f3c"
+  },
+  {
+    "side": "candidate",
+    "binary": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-e4rgoydk/profile-query",
+    "sha256": "2128e6500d33b6fbf99cb77522d13156d18115406418962f86d7ebb556a81da3"
+  }
+]

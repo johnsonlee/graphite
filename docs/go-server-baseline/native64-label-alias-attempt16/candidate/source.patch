@@ -1,0 +1,31 @@
+diff --git a/graphite-server/internal/query/properties.go b/graphite-server/internal/query/properties.go
+index 22101d84..e3427502 100644
+--- a/graphite-server/internal/query/properties.go
++++ b/graphite-server/internal/query/properties.go
+@@ -137,9 +137,23 @@ func matchesLabel(n store.Node, label string) bool {
+ 	if label == "constant" || label == "constantnode" {
+ 		return strings.HasSuffix(n.Kind, "Constant") || n.Kind == "ResourceValueNode"
+ 	}
+-	aliases := map[string]string{"callsite": "CallSiteNode", "field": "FieldNode", "parameter": "ParameterNode", "return": "ReturnNode", "resourcefile": "ResourceFileNode", "resourcevalue": "ResourceValueNode", "resource": "ResourceValueNode", "local": "LocalVariable", "annotation": "AnnotationNode"}
+-	if kind, ok := aliases[label]; ok {
+-		return n.Kind == kind
++	switch label {
++	case "callsite":
++		return n.Kind == "CallSiteNode"
++	case "field":
++		return n.Kind == "FieldNode"
++	case "parameter":
++		return n.Kind == "ParameterNode"
++	case "return":
++		return n.Kind == "ReturnNode"
++	case "resourcefile":
++		return n.Kind == "ResourceFileNode"
++	case "resourcevalue", "resource":
++		return n.Kind == "ResourceValueNode"
++	case "local":
++		return n.Kind == "LocalVariable"
++	case "annotation":
++		return n.Kind == "AnnotationNode"
+ 	}
+ 	return strings.EqualFold(n.Kind, label)
+ }

@@ -1,0 +1,38 @@
+[
+  {
+    "cwd": "/tmp/graphite-go-label-alias-attempt16-2ab90cdc/graphite-server",
+    "command": "INDEXED_DISTINCT_OUTPUT=/tmp/graphite-label-alias-attempt16-evidence/base-indexed ORDINARY_HISTORY_OUTPUT=/tmp/graphite-label-alias-attempt16-evidence/base-ordinary go test ./... -count=1",
+    "source": "clean base before edits",
+    "exit": 0,
+    "log": "base-tests.log"
+  },
+  {
+    "cwd": "/tmp/graphite-go-label-alias-attempt16-2ab90cdc/graphite-server",
+    "command": "go test -race ./internal/query -run 'TestLabelAlias|TestConstantMembership' -count=1 -v",
+    "exit": 0,
+    "log": "label-race.log"
+  },
+  {
+    "cwd": "/tmp/graphite-go-label-alias-attempt16-2ab90cdc/graphite-server",
+    "command": "INDEXED_DISTINCT_OUTPUT=/tmp/graphite-label-alias-attempt16-evidence/candidate-indexed ORDINARY_HISTORY_OUTPUT=/tmp/graphite-label-alias-attempt16-evidence/candidate-ordinary go test -race ./... -count=1",
+    "exit": 0,
+    "log": "candidate-race.log"
+  },
+  {
+    "cwd": "/tmp/graphite-go-label-alias-attempt16-2ab90cdc/graphite-server",
+    "command": "go vet ./...",
+    "exit": 0,
+    "log": "candidate-vet.log"
+  },
+  {
+    "cwd": "/tmp/graphite-label-alias-attempt16-evidence",
+    "command": "python3 compare.py",
+    "exit": 1,
+    "note": "strict raw comparison: 64/67 exact; 87 state leaves differ, no silent normalization"
+  },
+  {
+    "cwd": "/tmp/graphite-label-alias-attempt16-evidence",
+    "command": "python3 verify-corpus.py",
+    "exit": 0
+  }
+]

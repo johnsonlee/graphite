@@ -1,0 +1,59 @@
+package query
+
+import (
+ "strings"
+ "testing"
+ "github.com/johnsonlee/graphite/graphite-server/internal/store"
+)
+
+func TestLabelAliasKindsAndCase(t *testing.T) {
+ aliases := []struct{ label, kind string }{
+  {"callsite","CallSiteNode"},{"field","FieldNode"},{"parameter","ParameterNode"},{"return","ReturnNode"},
+  {"resourcefile","ResourceFileNode"},{"resourcevalue","ResourceValueNode"},{"resource","ResourceValueNode"},
+  {"local","LocalVariable"},{"annotation","AnnotationNode"},
+ }
+ kinds:=append(append([]string(nil),lazyConcreteKinds...),"Method","Missing","","FIELDNODE","Resource")
+ for _, alias:=range aliases {
+  for _, spelling:=range []string{alias.label,strings.ToUpper(alias.label),strings.ToUpper(alias.label[:1])+alias.label[1:]} {
+   for _, kind:=range kinds {
+    if got:=matchesLabel(store.Node{Kind:kind},spelling);got!=(kind==alias.kind) {t.Fatalf("kind=%q label=%q got=%v want=%v",kind,spelling,got,kind==alias.kind)}
+   }
+  }
+ }
+ // Aliases retain exact concrete-kind comparison; canonical labels use EqualFold.
+ if matchesLabel(store.Node{Kind:"FIELDNODE"},"field") || !matchesLabel(store.Node{Kind:"FIELDNODE"},"FieldNode") {t.Fatal("alias and canonical label comparisons were conflated")}
+ if !matchesLabel(store.Node{Kind:"Unknown"},"NoDe") || matchesLabel(store.Node{Kind:"AnnotationNode"},"Constant") || !matchesLabel(store.Node{Kind:"ResourceValueNode"},"ConstantNode") {t.Fatal("Node/Constant precedence changed")}
+}
+
+func TestLabelAliasOriginalDefinitionBoundary(t *testing.T) {
+ kinds:=append(append([]string(nil),lazyConcreteKinds...),"Method","Missing","","FIELDNODE","CustomConstant","Kind","ſample","İntConstant","\xed\xa0\x80")
+ labels:=[]string{"","Node","Constant","ConstantNode","callsite","field","parameter","return","resourcefile","resourcevalue","resource","local","annotation","Unknown"," callsite","callsite ","CallSiteNodes","Kind","KIND","ſample","SAMPLE","İNTCONSTANT","ıNTCONSTANT","Σ","σ","ς","😀","\x00","\xed\xa0\x80","\xed\xb0\x80","\xff","\xef\xbf\xbd"}
+ labels=append(labels,kinds...)
+ count:=0
+ for _, label:=range labels {
+  for _, spelling:=range []string{label,strings.ToUpper(label),strings.ToLower(label)} {
+   for _, kind:=range kinds {
+    node:=store.Node{Kind:kind};want:=originalLabelAliasMap(node,spelling)
+    if got:=matchesLabel(node,spelling);got!=want {t.Fatalf("kind=%q label=%q new=%v original=%v",kind,spelling,got,want)}
+    count++
+   }
+  }
+ }
+ t.Logf("%d label/kind boundary comparisons against unchanged original definition",count)
+}
+
+// Exact pre-Attempt16 definition; tests preserve its Unicode and invalid-byte policy.
+func originalLabelAliasMap(n store.Node, label string) bool {
+	label = strings.ToLower(label)
+	if label == "node" {
+		return true
+	}
+	if label == "constant" || label == "constantnode" {
+		return strings.HasSuffix(n.Kind, "Constant") || n.Kind == "ResourceValueNode"
+	}
+	aliases := map[string]string{"callsite": "CallSiteNode", "field": "FieldNode", "parameter": "ParameterNode", "return": "ReturnNode", "resourcefile": "ResourceFileNode", "resourcevalue": "ResourceValueNode", "resource": "ResourceValueNode", "local": "LocalVariable", "annotation": "AnnotationNode"}
+	if kind, ok := aliases[label]; ok {
+		return n.Kind == kind
+	}
+	return strings.EqualFold(n.Kind, label)
+}

@@ -1,0 +1,133 @@
+[
+  {
+    "cwd": "/tmp/graphite-go-cde-base-9ada2bf1/graphite-server",
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-sample_index=alloc_space",
+      "-base",
+      "/private/tmp/graphite-cde-e-regression-readonly-audit/base/heap-before.pprof",
+      "-top",
+      "-nodecount=35",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-jv55xjqx/profile-query",
+      "/private/tmp/graphite-cde-e-regression-readonly-audit/base/heap-after.pprof"
+    ],
+    "exit": 0
+  },
+  {
+    "cwd": "/tmp/graphite-go-cde-base-9ada2bf1/graphite-server",
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-sample_index=alloc_space",
+      "-base",
+      "/private/tmp/graphite-cde-e-regression-readonly-audit/base/heap-before.pprof",
+      "-top",
+      "-cum",
+      "-nodecount=30",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-jv55xjqx/profile-query",
+      "/private/tmp/graphite-cde-e-regression-readonly-audit/base/heap-after.pprof"
+    ],
+    "exit": 0
+  },
+  {
+    "cwd": "/tmp/graphite-go-cde-base-9ada2bf1/graphite-server",
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-sample_index=alloc_space",
+      "-base",
+      "/private/tmp/graphite-cde-e-regression-readonly-audit/base/heap-before.pprof",
+      "-list",
+      "lazyFiltered|lazyProject|lazyGenericNodes|ProjectionCandidateNode",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-jv55xjqx/profile-query",
+      "/private/tmp/graphite-cde-e-regression-readonly-audit/base/heap-after.pprof"
+    ],
+    "exit": 1
+  },
+  {
+    "cwd": "/tmp/graphite-go-cde-root-9ada2bf1/graphite-server",
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-sample_index=alloc_space",
+      "-base",
+      "/private/tmp/graphite-cde-e-regression-readonly-audit/candidate/heap-before.pprof",
+      "-top",
+      "-nodecount=35",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-e4rgoydk/profile-query",
+      "/private/tmp/graphite-cde-e-regression-readonly-audit/candidate/heap-after.pprof"
+    ],
+    "exit": 0
+  },
+  {
+    "cwd": "/tmp/graphite-go-cde-root-9ada2bf1/graphite-server",
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-sample_index=alloc_space",
+      "-base",
+      "/private/tmp/graphite-cde-e-regression-readonly-audit/candidate/heap-before.pprof",
+      "-top",
+      "-cum",
+      "-nodecount=30",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-e4rgoydk/profile-query",
+      "/private/tmp/graphite-cde-e-regression-readonly-audit/candidate/heap-after.pprof"
+    ],
+    "exit": 0
+  },
+  {
+    "cwd": "/tmp/graphite-go-cde-root-9ada2bf1/graphite-server",
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-sample_index=alloc_space",
+      "-base",
+      "/private/tmp/graphite-cde-e-regression-readonly-audit/candidate/heap-before.pprof",
+      "-list",
+      "lazyFiltered|lazyProject|lazyGenericNodes|ProjectionCandidateNode",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-e4rgoydk/profile-query",
+      "/private/tmp/graphite-cde-e-regression-readonly-audit/candidate/heap-after.pprof"
+    ],
+    "exit": 0
+  },
+  {
+    "cwd": "/tmp/graphite-go-cde-root-9ada2bf1/graphite-server",
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-sample_index=alloc_space",
+      "-base",
+      "/tmp/graphite-cde-e-regression-readonly-audit/candidate/heap-before.pprof",
+      "-list",
+      "nodeValue|matchesLabel",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-e4rgoydk/profile-query",
+      "/tmp/graphite-cde-e-regression-readonly-audit/candidate/heap-after.pprof"
+    ],
+    "exit": 0
+  },
+  {
+    "cwd": "/tmp/graphite-go-cde-root-9ada2bf1/graphite-server",
+    "command": [
+      "go",
+      "tool",
+      "pprof",
+      "-sample_index=alloc_space",
+      "-base",
+      "/tmp/graphite-cde-e-regression-readonly-audit/candidate/heap-before.pprof",
+      "-top",
+      "-unit=bytes",
+      "-nodecount=15",
+      "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-slot-profile-e4rgoydk/profile-query",
+      "/tmp/graphite-cde-e-regression-readonly-audit/candidate/heap-after.pprof"
+    ],
+    "exit": 0
+  }
+]
