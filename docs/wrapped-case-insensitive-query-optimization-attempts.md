@@ -5128,3 +5128,24 @@ one), forces a full collection, which is what aborts a concurrent cycle in fligh
 explicit full collection to be reported before the deadline, waits a settle window in which no
 young collection (the only event that starts a cycle) may be reported, repeats once if one is,
 and otherwise fails closed instead of starting the replay.
+
+**Result on 534449a (notification-based wait, routing families only):** global-wide's 10x pairs
+passed at 33.01x / 13.12x / 32.18x with the family running the setup of its five passing heads,
+but the wrapped non-DISTINCT 2x check missed on pairs 1 and 3 (base 5.38 → candidate 2.79 ms,
+1.93x; base 7.51 → candidate 5.61 ms, 1.34x; pair 2 3.58x): one single-shot row per side, the
+base's drawn at its low end in pair 1 and the candidate's at its high end in pair 3. Routing
+passed warm and startup-prepared and failed cold on a different rule than c21fd18: the graph-set
+rows are the best so far (k2 / k8 / k64 P95 0.371 / 0.529 / 0.636 ms against 0.549 / 1.391 /
+3.728 ms) and the query-level graphId P95 speedup is 18.03x, but the request-selected
+(graph-parameter) P95 regressed 130.76% (0.388 → 0.896 ms over 192 rows; P50 −3.06%). Ten
+candidate rows sit above 0.6 ms against three on the base (tika-01 dense 2.91 ms, hive-10 zero
+1.98 ms, tika-04 1.64 ms, tika-06 1.49 ms, ...), at positions 3-5 of their graph's nine-row group,
+after the graph's function-form rows have already opened the mapped view, so they are not the
+first touch of the graph; the same shapes on bba2e24 had three such rows. The candidate's replay
+recorded one collection (14 ms) at 3.18 cores busy against the base's four (61 ms) at 2.46. Three
+method-compatibility shards were red on the process-CPU row with every wall row passing
+(17/suffix +28.9%, confirmation +41.9%; 36/contains +23.6%, +16.1%; 17/count +50.7%, +70.7%) and
+the resource family repeated its invalid loaded/retained/peak relationship, both on the `main`-side
+repairs. This head is documentation-only and takes the second routing sample with the
+notification-based wait; if the graph-parameter tail recurs, the local replay is extended from
+the 246 graph-set rows to the full 822-row sequence in the harness order.
