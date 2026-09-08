@@ -1,0 +1,13 @@
+{
+  "go.mod": "09bc50ce9853c846052a913ef4db973673d304ce657cea6740fd6cebb5a6715b",
+  "main.go": "b52efc0b2fe05582ccaadbf91d85dfa00dfe25712b631350230ab29b68deaded",
+  "javaregex/advanced.go": "e80ddc525d398f2993923d6847669733c9f8639cfed4d770539bf7cbdd6347e6",
+  "javaregex/java17_advanced.json": "cb01db0c7fd6998a5c3ccc56849f78936913e5473734fc0545c1ee34ce65167a",
+  "javaregex/java17_names.json.gz": "ce3a06669d9af7f75fc95d58956fb125faaefd341c2f0a0f33c0d12785ed95d8",
+  "javaregex/java17_unicode.json": "f4b80b142388de42cf63d0c8c03cb22e510775e38f4ceef969085981b956c36b",
+  "javaregex/match.go": "3a9f7a36b31b3c4b1c417f86802f7dde9b33d7a5c9709a02f9a76f8df5f4f7ac",
+  "javaregex/parse.go": "aaaa16381b837a364f7d33a6a0f5516fbf10351d5e9df34f60a70dd9567ea3f5",
+  "javaregex/quote.go": "ff34a8acf3a9bca978c8e4edb8858e1f51c261ba3f1cbcf47abf0db9cc82b6c1",
+  "javaregex/regex.go": "718d22d908ed8b955b949918b5277d53943e7ad934571c3f1ec039ee9dc7e686",
+  "javaregex/unicode.go": "f026bd8303907723a5acac161c3bc00ab20203400b6313f42408436fcafc77b1"
+}

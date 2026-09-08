@@ -1,0 +1,37 @@
+{
+  "runtime": "native",
+  "state": "startup-prepared",
+  "performanceMeasurement": false,
+  "buildCommand": [
+    "go",
+    "build",
+    "-o",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/native-startup-prepared-64-filtered-count-attempt21-quote-functional-run1/graphite-benchmark-replay",
+    "./cmd/graphite-benchmark-replay"
+  ],
+  "binarySHA256": "a04d124a0d43a7f0017ce9c294c817da1e352a978e3053308a6b93918856e9fc",
+  "goEnvironment": [
+    "go1.22.0",
+    "/opt/homebrew/Cellar/go/1.22.0/libexec",
+    "darwin",
+    "arm64"
+  ],
+  "command": [
+    "/Users/johnsonlee/.codex/benchmarks/graphite/native-startup-prepared-64-filtered-count-attempt21-quote-functional-run1/graphite-benchmark-replay",
+    "--graphs",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/native-startup-prepared-64-filtered-count-attempt21-quote-functional-run1/fixture/graphs-relocated.tsv",
+    "--state",
+    "startup-prepared",
+    "--workload",
+    "/Users/johnsonlee/.codex/benchmarks/graphite/regex-quote-functional-bc708-real64-source-v1/internal/benchmarkcase/testdata/main64.json",
+    "--output",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-regex-quoted-contains/quote-functional/real64/native-startup-prepared/responses.jsonl"
+  ],
+  "status": "exited",
+  "pid": 90229,
+  "startedAt": "2026-09-08T06:49:36.476844+00:00",
+  "exitCode": 1,
+  "finishedAt": "2026-09-08T06:51:09.888939+00:00",
+  "inputsUnchanged": true,
+  "binaryUnchanged": true
+}

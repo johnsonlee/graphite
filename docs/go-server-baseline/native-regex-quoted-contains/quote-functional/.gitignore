@@ -1,0 +1,2 @@
+# Exact raw streams are retained externally/in the workspace; commit verified gzip archives.
+real64/*/responses.jsonl

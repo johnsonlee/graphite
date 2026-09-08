@@ -1,0 +1,4874 @@
+[
+  {
+    "name": "main-zero-empty",
+    "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*",
+    "text": "",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "GraphitePressureAbsent45zeroX"
+  },
+  {
+    "name": "main-zero-miss",
+    "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*",
+    "text": "XYZ",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "GraphitePressureAbsent45zeroX"
+  },
+  {
+    "name": "main-zero-exact",
+    "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*",
+    "text": "GraphitePressureAbsent45zeroX",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "GraphitePressureAbsent45zeroX"
+  },
+  {
+    "name": "main-zero-start",
+    "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*",
+    "text": "GraphitePressureAbsent45zeroXtail",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "GraphitePressureAbsent45zeroX"
+  },
+  {
+    "name": "main-zero-middle",
+    "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*",
+    "text": "headGraphitePressureAbsent45zeroXtail",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "GraphitePressureAbsent45zeroX"
+  },
+  {
+    "name": "main-zero-end",
+    "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*",
+    "text": "headGraphitePressureAbsent45zeroX",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "GraphitePressureAbsent45zeroX"
+  },
+  {
+    "name": "main-zero-repeated",
+    "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*",
+    "text": "GraphitePressureAbsent45zeroXGraphitePressureAbsent45zeroX",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "GraphitePressureAbsent45zeroX"
+  },
+  {
+    "name": "main-zero-upper",
+    "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*",
+    "text": "ORG",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "GraphitePressureAbsent45zeroX"
+  },
+  {
+    "name": "main-zero-cr-before",
+    "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*",
+    "text": "\rGraphitePressureAbsent45zeroX",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "GraphitePressureAbsent45zeroX"
+  },
+  {
+    "name": "main-zero-cr-after",
+    "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*",
+    "text": "GraphitePressureAbsent45zeroX\r",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "GraphitePressureAbsent45zeroX"
+  },
+  {
+    "name": "main-zero-lf-before",
+    "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*",
+    "text": "\nGraphitePressureAbsent45zeroX",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "GraphitePressureAbsent45zeroX"
+  },
+  {
+    "name": "main-zero-lf-after",
+    "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*",
+    "text": "GraphitePressureAbsent45zeroX\n",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "GraphitePressureAbsent45zeroX"
+  },
+  {
+    "name": "main-zero-crlf-before",
+    "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*",
+    "text": "\r\nGraphitePressureAbsent45zeroX",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "GraphitePressureAbsent45zeroX"
+  },
+  {
+    "name": "main-zero-crlf-after",
+    "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*",
+    "text": "GraphitePressureAbsent45zeroX\r\n",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "GraphitePressureAbsent45zeroX"
+  },
+  {
+    "name": "main-zero-nel-before",
+    "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*",
+    "text": "\u0085GraphitePressureAbsent45zeroX",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "GraphitePressureAbsent45zeroX"
+  },
+  {
+    "name": "main-zero-nel-after",
+    "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*",
+    "text": "GraphitePressureAbsent45zeroX\u0085",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "GraphitePressureAbsent45zeroX"
+  },
+  {
+    "name": "main-zero-ls-before",
+    "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*",
+    "text": "\u2028GraphitePressureAbsent45zeroX",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "GraphitePressureAbsent45zeroX"
+  },
+  {
+    "name": "main-zero-ls-after",
+    "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*",
+    "text": "GraphitePressureAbsent45zeroX\u2028",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "GraphitePressureAbsent45zeroX"
+  },
+  {
+    "name": "main-zero-ps-before",
+    "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*",
+    "text": "\u2029GraphitePressureAbsent45zeroX",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "GraphitePressureAbsent45zeroX"
+  },
+  {
+    "name": "main-zero-ps-after",
+    "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*",
+    "text": "GraphitePressureAbsent45zeroX\u2029",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "GraphitePressureAbsent45zeroX"
+  },
+  {
+    "name": "main-zero-nonascii-before",
+    "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*",
+    "text": "\u00e9GraphitePressureAbsent45zeroX",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "GraphitePressureAbsent45zeroX"
+  },
+  {
+    "name": "main-zero-nonascii-after",
+    "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*",
+    "text": "GraphitePressureAbsent45zeroX\u00e9",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "GraphitePressureAbsent45zeroX"
+  },
+  {
+    "name": "main-zero-supplementary-before",
+    "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*",
+    "text": "\ud83d\ude00GraphitePressureAbsent45zeroX",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "GraphitePressureAbsent45zeroX"
+  },
+  {
+    "name": "main-zero-supplementary-after",
+    "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*",
+    "text": "GraphitePressureAbsent45zeroX\ud83d\ude00",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "GraphitePressureAbsent45zeroX"
+  },
+  {
+    "name": "main-zero-high-before",
+    "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*",
+    "text": "\ud800GraphitePressureAbsent45zeroX",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "GraphitePressureAbsent45zeroX"
+  },
+  {
+    "name": "main-zero-high-after",
+    "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*",
+    "text": "GraphitePressureAbsent45zeroX\ud800",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "GraphitePressureAbsent45zeroX"
+  },
+  {
+    "name": "main-zero-low-before",
+    "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*",
+    "text": "\udc00GraphitePressureAbsent45zeroX",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "GraphitePressureAbsent45zeroX"
+  },
+  {
+    "name": "main-zero-low-after",
+    "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*",
+    "text": "GraphitePressureAbsent45zeroX\udc00",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "GraphitePressureAbsent45zeroX"
+  },
+  {
+    "name": "main-zero-tab-before",
+    "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*",
+    "text": "\tGraphitePressureAbsent45zeroX",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "GraphitePressureAbsent45zeroX"
+  },
+  {
+    "name": "main-zero-tab-after",
+    "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*",
+    "text": "GraphitePressureAbsent45zeroX\t",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "GraphitePressureAbsent45zeroX"
+  },
+  {
+    "name": "main-zero-vertical-before",
+    "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*",
+    "text": "\u000bGraphitePressureAbsent45zeroX",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "GraphitePressureAbsent45zeroX"
+  },
+  {
+    "name": "main-zero-vertical-after",
+    "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*",
+    "text": "GraphitePressureAbsent45zeroX\u000b",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "GraphitePressureAbsent45zeroX"
+  },
+  {
+    "name": "main-zero-formfeed-before",
+    "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*",
+    "text": "\fGraphitePressureAbsent45zeroX",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "GraphitePressureAbsent45zeroX"
+  },
+  {
+    "name": "main-zero-formfeed-after",
+    "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*",
+    "text": "GraphitePressureAbsent45zeroX\f",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "GraphitePressureAbsent45zeroX"
+  },
+  {
+    "name": "main-zero-nul-before",
+    "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*",
+    "text": "\u0000GraphitePressureAbsent45zeroX",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "GraphitePressureAbsent45zeroX"
+  },
+  {
+    "name": "main-zero-nul-after",
+    "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*",
+    "text": "GraphitePressureAbsent45zeroX\u0000",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "GraphitePressureAbsent45zeroX"
+  },
+  {
+    "name": "main-zero-del-before",
+    "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*",
+    "text": "\u007fGraphitePressureAbsent45zeroX",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "GraphitePressureAbsent45zeroX"
+  },
+  {
+    "name": "main-zero-del-after",
+    "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*",
+    "text": "GraphitePressureAbsent45zeroX\u007f",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "GraphitePressureAbsent45zeroX"
+  },
+  {
+    "name": "main-zero-inserted-lf",
+    "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*",
+    "text": "G\nraphitePressureAbsent45zeroX",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "GraphitePressureAbsent45zeroX"
+  },
+  {
+    "name": "main-zero-two-surrogates",
+    "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*",
+    "text": "\ud800GraphitePressureAbsent45zeroX\udc00",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "GraphitePressureAbsent45zeroX"
+  },
+  {
+    "name": "main-targeted-empty",
+    "pattern": ".*\\Qorg.apache.tika.\\E.*",
+    "text": "",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "org.apache.tika."
+  },
+  {
+    "name": "main-targeted-miss",
+    "pattern": ".*\\Qorg.apache.tika.\\E.*",
+    "text": "XYZ",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "org.apache.tika."
+  },
+  {
+    "name": "main-targeted-exact",
+    "pattern": ".*\\Qorg.apache.tika.\\E.*",
+    "text": "org.apache.tika.",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "org.apache.tika."
+  },
+  {
+    "name": "main-targeted-start",
+    "pattern": ".*\\Qorg.apache.tika.\\E.*",
+    "text": "org.apache.tika.tail",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "org.apache.tika."
+  },
+  {
+    "name": "main-targeted-middle",
+    "pattern": ".*\\Qorg.apache.tika.\\E.*",
+    "text": "headorg.apache.tika.tail",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "org.apache.tika."
+  },
+  {
+    "name": "main-targeted-end",
+    "pattern": ".*\\Qorg.apache.tika.\\E.*",
+    "text": "headorg.apache.tika.",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "org.apache.tika."
+  },
+  {
+    "name": "main-targeted-repeated",
+    "pattern": ".*\\Qorg.apache.tika.\\E.*",
+    "text": "org.apache.tika.org.apache.tika.",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "org.apache.tika."
+  },
+  {
+    "name": "main-targeted-upper",
+    "pattern": ".*\\Qorg.apache.tika.\\E.*",
+    "text": "ORG",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "org.apache.tika."
+  },
+  {
+    "name": "main-targeted-cr-before",
+    "pattern": ".*\\Qorg.apache.tika.\\E.*",
+    "text": "\rorg.apache.tika.",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "org.apache.tika."
+  },
+  {
+    "name": "main-targeted-cr-after",
+    "pattern": ".*\\Qorg.apache.tika.\\E.*",
+    "text": "org.apache.tika.\r",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "org.apache.tika."
+  },
+  {
+    "name": "main-targeted-lf-before",
+    "pattern": ".*\\Qorg.apache.tika.\\E.*",
+    "text": "\norg.apache.tika.",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "org.apache.tika."
+  },
+  {
+    "name": "main-targeted-lf-after",
+    "pattern": ".*\\Qorg.apache.tika.\\E.*",
+    "text": "org.apache.tika.\n",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "org.apache.tika."
+  },
+  {
+    "name": "main-targeted-crlf-before",
+    "pattern": ".*\\Qorg.apache.tika.\\E.*",
+    "text": "\r\norg.apache.tika.",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "org.apache.tika."
+  },
+  {
+    "name": "main-targeted-crlf-after",
+    "pattern": ".*\\Qorg.apache.tika.\\E.*",
+    "text": "org.apache.tika.\r\n",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "org.apache.tika."
+  },
+  {
+    "name": "main-targeted-nel-before",
+    "pattern": ".*\\Qorg.apache.tika.\\E.*",
+    "text": "\u0085org.apache.tika.",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "org.apache.tika."
+  },
+  {
+    "name": "main-targeted-nel-after",
+    "pattern": ".*\\Qorg.apache.tika.\\E.*",
+    "text": "org.apache.tika.\u0085",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "org.apache.tika."
+  },
+  {
+    "name": "main-targeted-ls-before",
+    "pattern": ".*\\Qorg.apache.tika.\\E.*",
+    "text": "\u2028org.apache.tika.",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "org.apache.tika."
+  },
+  {
+    "name": "main-targeted-ls-after",
+    "pattern": ".*\\Qorg.apache.tika.\\E.*",
+    "text": "org.apache.tika.\u2028",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "org.apache.tika."
+  },
+  {
+    "name": "main-targeted-ps-before",
+    "pattern": ".*\\Qorg.apache.tika.\\E.*",
+    "text": "\u2029org.apache.tika.",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "org.apache.tika."
+  },
+  {
+    "name": "main-targeted-ps-after",
+    "pattern": ".*\\Qorg.apache.tika.\\E.*",
+    "text": "org.apache.tika.\u2029",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "org.apache.tika."
+  },
+  {
+    "name": "main-targeted-nonascii-before",
+    "pattern": ".*\\Qorg.apache.tika.\\E.*",
+    "text": "\u00e9org.apache.tika.",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "org.apache.tika."
+  },
+  {
+    "name": "main-targeted-nonascii-after",
+    "pattern": ".*\\Qorg.apache.tika.\\E.*",
+    "text": "org.apache.tika.\u00e9",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "org.apache.tika."
+  },
+  {
+    "name": "main-targeted-supplementary-before",
+    "pattern": ".*\\Qorg.apache.tika.\\E.*",
+    "text": "\ud83d\ude00org.apache.tika.",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "org.apache.tika."
+  },
+  {
+    "name": "main-targeted-supplementary-after",
+    "pattern": ".*\\Qorg.apache.tika.\\E.*",
+    "text": "org.apache.tika.\ud83d\ude00",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "org.apache.tika."
+  },
+  {
+    "name": "main-targeted-high-before",
+    "pattern": ".*\\Qorg.apache.tika.\\E.*",
+    "text": "\ud800org.apache.tika.",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "org.apache.tika."
+  },
+  {
+    "name": "main-targeted-high-after",
+    "pattern": ".*\\Qorg.apache.tika.\\E.*",
+    "text": "org.apache.tika.\ud800",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "org.apache.tika."
+  },
+  {
+    "name": "main-targeted-low-before",
+    "pattern": ".*\\Qorg.apache.tika.\\E.*",
+    "text": "\udc00org.apache.tika.",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "org.apache.tika."
+  },
+  {
+    "name": "main-targeted-low-after",
+    "pattern": ".*\\Qorg.apache.tika.\\E.*",
+    "text": "org.apache.tika.\udc00",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "org.apache.tika."
+  },
+  {
+    "name": "main-targeted-tab-before",
+    "pattern": ".*\\Qorg.apache.tika.\\E.*",
+    "text": "\torg.apache.tika.",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "org.apache.tika."
+  },
+  {
+    "name": "main-targeted-tab-after",
+    "pattern": ".*\\Qorg.apache.tika.\\E.*",
+    "text": "org.apache.tika.\t",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "org.apache.tika."
+  },
+  {
+    "name": "main-targeted-vertical-before",
+    "pattern": ".*\\Qorg.apache.tika.\\E.*",
+    "text": "\u000borg.apache.tika.",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "org.apache.tika."
+  },
+  {
+    "name": "main-targeted-vertical-after",
+    "pattern": ".*\\Qorg.apache.tika.\\E.*",
+    "text": "org.apache.tika.\u000b",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "org.apache.tika."
+  },
+  {
+    "name": "main-targeted-formfeed-before",
+    "pattern": ".*\\Qorg.apache.tika.\\E.*",
+    "text": "\forg.apache.tika.",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "org.apache.tika."
+  },
+  {
+    "name": "main-targeted-formfeed-after",
+    "pattern": ".*\\Qorg.apache.tika.\\E.*",
+    "text": "org.apache.tika.\f",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "org.apache.tika."
+  },
+  {
+    "name": "main-targeted-nul-before",
+    "pattern": ".*\\Qorg.apache.tika.\\E.*",
+    "text": "\u0000org.apache.tika.",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "org.apache.tika."
+  },
+  {
+    "name": "main-targeted-nul-after",
+    "pattern": ".*\\Qorg.apache.tika.\\E.*",
+    "text": "org.apache.tika.\u0000",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "org.apache.tika."
+  },
+  {
+    "name": "main-targeted-del-before",
+    "pattern": ".*\\Qorg.apache.tika.\\E.*",
+    "text": "\u007forg.apache.tika.",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "org.apache.tika."
+  },
+  {
+    "name": "main-targeted-del-after",
+    "pattern": ".*\\Qorg.apache.tika.\\E.*",
+    "text": "org.apache.tika.\u007f",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "org.apache.tika."
+  },
+  {
+    "name": "main-targeted-inserted-lf",
+    "pattern": ".*\\Qorg.apache.tika.\\E.*",
+    "text": "o\nrg.apache.tika.",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "org.apache.tika."
+  },
+  {
+    "name": "main-targeted-two-surrogates",
+    "pattern": ".*\\Qorg.apache.tika.\\E.*",
+    "text": "\ud800org.apache.tika.\udc00",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "org.apache.tika."
+  },
+  {
+    "name": "main-dense-empty",
+    "pattern": ".*\\Qorg\\E.*",
+    "text": "",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "org"
+  },
+  {
+    "name": "main-dense-miss",
+    "pattern": ".*\\Qorg\\E.*",
+    "text": "XYZ",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "org"
+  },
+  {
+    "name": "main-dense-exact",
+    "pattern": ".*\\Qorg\\E.*",
+    "text": "org",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "org"
+  },
+  {
+    "name": "main-dense-start",
+    "pattern": ".*\\Qorg\\E.*",
+    "text": "orgtail",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "org"
+  },
+  {
+    "name": "main-dense-middle",
+    "pattern": ".*\\Qorg\\E.*",
+    "text": "headorgtail",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "org"
+  },
+  {
+    "name": "main-dense-end",
+    "pattern": ".*\\Qorg\\E.*",
+    "text": "headorg",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "org"
+  },
+  {
+    "name": "main-dense-repeated",
+    "pattern": ".*\\Qorg\\E.*",
+    "text": "orgorg",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "org"
+  },
+  {
+    "name": "main-dense-upper",
+    "pattern": ".*\\Qorg\\E.*",
+    "text": "ORG",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "org"
+  },
+  {
+    "name": "main-dense-cr-before",
+    "pattern": ".*\\Qorg\\E.*",
+    "text": "\rorg",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "org"
+  },
+  {
+    "name": "main-dense-cr-after",
+    "pattern": ".*\\Qorg\\E.*",
+    "text": "org\r",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "org"
+  },
+  {
+    "name": "main-dense-lf-before",
+    "pattern": ".*\\Qorg\\E.*",
+    "text": "\norg",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "org"
+  },
+  {
+    "name": "main-dense-lf-after",
+    "pattern": ".*\\Qorg\\E.*",
+    "text": "org\n",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "org"
+  },
+  {
+    "name": "main-dense-crlf-before",
+    "pattern": ".*\\Qorg\\E.*",
+    "text": "\r\norg",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "org"
+  },
+  {
+    "name": "main-dense-crlf-after",
+    "pattern": ".*\\Qorg\\E.*",
+    "text": "org\r\n",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "org"
+  },
+  {
+    "name": "main-dense-nel-before",
+    "pattern": ".*\\Qorg\\E.*",
+    "text": "\u0085org",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "org"
+  },
+  {
+    "name": "main-dense-nel-after",
+    "pattern": ".*\\Qorg\\E.*",
+    "text": "org\u0085",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "org"
+  },
+  {
+    "name": "main-dense-ls-before",
+    "pattern": ".*\\Qorg\\E.*",
+    "text": "\u2028org",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "org"
+  },
+  {
+    "name": "main-dense-ls-after",
+    "pattern": ".*\\Qorg\\E.*",
+    "text": "org\u2028",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "org"
+  },
+  {
+    "name": "main-dense-ps-before",
+    "pattern": ".*\\Qorg\\E.*",
+    "text": "\u2029org",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "org"
+  },
+  {
+    "name": "main-dense-ps-after",
+    "pattern": ".*\\Qorg\\E.*",
+    "text": "org\u2029",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "org"
+  },
+  {
+    "name": "main-dense-nonascii-before",
+    "pattern": ".*\\Qorg\\E.*",
+    "text": "\u00e9org",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "org"
+  },
+  {
+    "name": "main-dense-nonascii-after",
+    "pattern": ".*\\Qorg\\E.*",
+    "text": "org\u00e9",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "org"
+  },
+  {
+    "name": "main-dense-supplementary-before",
+    "pattern": ".*\\Qorg\\E.*",
+    "text": "\ud83d\ude00org",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "org"
+  },
+  {
+    "name": "main-dense-supplementary-after",
+    "pattern": ".*\\Qorg\\E.*",
+    "text": "org\ud83d\ude00",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "org"
+  },
+  {
+    "name": "main-dense-high-before",
+    "pattern": ".*\\Qorg\\E.*",
+    "text": "\ud800org",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "org"
+  },
+  {
+    "name": "main-dense-high-after",
+    "pattern": ".*\\Qorg\\E.*",
+    "text": "org\ud800",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "org"
+  },
+  {
+    "name": "main-dense-low-before",
+    "pattern": ".*\\Qorg\\E.*",
+    "text": "\udc00org",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "org"
+  },
+  {
+    "name": "main-dense-low-after",
+    "pattern": ".*\\Qorg\\E.*",
+    "text": "org\udc00",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "org"
+  },
+  {
+    "name": "main-dense-tab-before",
+    "pattern": ".*\\Qorg\\E.*",
+    "text": "\torg",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "org"
+  },
+  {
+    "name": "main-dense-tab-after",
+    "pattern": ".*\\Qorg\\E.*",
+    "text": "org\t",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "org"
+  },
+  {
+    "name": "main-dense-vertical-before",
+    "pattern": ".*\\Qorg\\E.*",
+    "text": "\u000borg",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "org"
+  },
+  {
+    "name": "main-dense-vertical-after",
+    "pattern": ".*\\Qorg\\E.*",
+    "text": "org\u000b",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "org"
+  },
+  {
+    "name": "main-dense-formfeed-before",
+    "pattern": ".*\\Qorg\\E.*",
+    "text": "\forg",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "org"
+  },
+  {
+    "name": "main-dense-formfeed-after",
+    "pattern": ".*\\Qorg\\E.*",
+    "text": "org\f",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "org"
+  },
+  {
+    "name": "main-dense-nul-before",
+    "pattern": ".*\\Qorg\\E.*",
+    "text": "\u0000org",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "org"
+  },
+  {
+    "name": "main-dense-nul-after",
+    "pattern": ".*\\Qorg\\E.*",
+    "text": "org\u0000",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "org"
+  },
+  {
+    "name": "main-dense-del-before",
+    "pattern": ".*\\Qorg\\E.*",
+    "text": "\u007forg",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "org"
+  },
+  {
+    "name": "main-dense-del-after",
+    "pattern": ".*\\Qorg\\E.*",
+    "text": "org\u007f",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "org"
+  },
+  {
+    "name": "main-dense-inserted-lf",
+    "pattern": ".*\\Qorg\\E.*",
+    "text": "o\nrg",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "org"
+  },
+  {
+    "name": "main-dense-two-surrogates",
+    "pattern": ".*\\Qorg\\E.*",
+    "text": "\ud800org\udc00",
+    "eligiblePattern": true,
+    "eligibleInput": false,
+    "literal": "org"
+  },
+  {
+    "name": "quoted-ascii-0-empty",
+    "pattern": ".*\\Qa.b*+?^$[](){}|\\E.*",
+    "text": "",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "a.b*+?^$[](){}|"
+  },
+  {
+    "name": "quoted-ascii-0-miss",
+    "pattern": ".*\\Qa.b*+?^$[](){}|\\E.*",
+    "text": "XYZ",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "a.b*+?^$[](){}|"
+  },
+  {
+    "name": "quoted-ascii-0-exact",
+    "pattern": ".*\\Qa.b*+?^$[](){}|\\E.*",
+    "text": "a.b*+?^$[](){}|",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "a.b*+?^$[](){}|"
+  },
+  {
+    "name": "quoted-ascii-0-start",
+    "pattern": ".*\\Qa.b*+?^$[](){}|\\E.*",
+    "text": "a.b*+?^$[](){}|tail",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "a.b*+?^$[](){}|"
+  },
+  {
+    "name": "quoted-ascii-0-middle",
+    "pattern": ".*\\Qa.b*+?^$[](){}|\\E.*",
+    "text": "heada.b*+?^$[](){}|tail",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "a.b*+?^$[](){}|"
+  },
+  {
+    "name": "quoted-ascii-0-end",
+    "pattern": ".*\\Qa.b*+?^$[](){}|\\E.*",
+    "text": "heada.b*+?^$[](){}|",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "a.b*+?^$[](){}|"
+  },
+  {
+    "name": "quoted-ascii-0-repeated",
+    "pattern": ".*\\Qa.b*+?^$[](){}|\\E.*",
+    "text": "a.b*+?^$[](){}|a.b*+?^$[](){}|",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "a.b*+?^$[](){}|"
+  },
+  {
+    "name": "quoted-ascii-0-upper",
+    "pattern": ".*\\Qa.b*+?^$[](){}|\\E.*",
+    "text": "ORG",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "a.b*+?^$[](){}|"
+  },
+  {
+    "name": "quoted-ascii-1-empty",
+    "pattern": ".*\\Qback\\slash\\E.*",
+    "text": "",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "back\\slash"
+  },
+  {
+    "name": "quoted-ascii-1-miss",
+    "pattern": ".*\\Qback\\slash\\E.*",
+    "text": "XYZ",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "back\\slash"
+  },
+  {
+    "name": "quoted-ascii-1-exact",
+    "pattern": ".*\\Qback\\slash\\E.*",
+    "text": "back\\slash",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "back\\slash"
+  },
+  {
+    "name": "quoted-ascii-1-start",
+    "pattern": ".*\\Qback\\slash\\E.*",
+    "text": "back\\slashtail",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "back\\slash"
+  },
+  {
+    "name": "quoted-ascii-1-middle",
+    "pattern": ".*\\Qback\\slash\\E.*",
+    "text": "headback\\slashtail",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "back\\slash"
+  },
+  {
+    "name": "quoted-ascii-1-end",
+    "pattern": ".*\\Qback\\slash\\E.*",
+    "text": "headback\\slash",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "back\\slash"
+  },
+  {
+    "name": "quoted-ascii-1-repeated",
+    "pattern": ".*\\Qback\\slash\\E.*",
+    "text": "back\\slashback\\slash",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "back\\slash"
+  },
+  {
+    "name": "quoted-ascii-1-upper",
+    "pattern": ".*\\Qback\\slash\\E.*",
+    "text": "ORG",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "back\\slash"
+  },
+  {
+    "name": "quoted-ascii-2-empty",
+    "pattern": ".*\\Qtail\\\\E.*",
+    "text": "",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "tail\\"
+  },
+  {
+    "name": "quoted-ascii-2-miss",
+    "pattern": ".*\\Qtail\\\\E.*",
+    "text": "XYZ",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "tail\\"
+  },
+  {
+    "name": "quoted-ascii-2-exact",
+    "pattern": ".*\\Qtail\\\\E.*",
+    "text": "tail\\",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "tail\\"
+  },
+  {
+    "name": "quoted-ascii-2-start",
+    "pattern": ".*\\Qtail\\\\E.*",
+    "text": "tail\\tail",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "tail\\"
+  },
+  {
+    "name": "quoted-ascii-2-middle",
+    "pattern": ".*\\Qtail\\\\E.*",
+    "text": "headtail\\tail",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "tail\\"
+  },
+  {
+    "name": "quoted-ascii-2-end",
+    "pattern": ".*\\Qtail\\\\E.*",
+    "text": "headtail\\",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "tail\\"
+  },
+  {
+    "name": "quoted-ascii-2-repeated",
+    "pattern": ".*\\Qtail\\\\E.*",
+    "text": "tail\\tail\\",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "tail\\"
+  },
+  {
+    "name": "quoted-ascii-2-upper",
+    "pattern": ".*\\Qtail\\\\E.*",
+    "text": "ORG",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "tail\\"
+  },
+  {
+    "name": "quoted-ascii-3-empty",
+    "pattern": ".*\\Qdouble\\\\slash\\E.*",
+    "text": "",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "double\\\\slash"
+  },
+  {
+    "name": "quoted-ascii-3-miss",
+    "pattern": ".*\\Qdouble\\\\slash\\E.*",
+    "text": "XYZ",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "double\\\\slash"
+  },
+  {
+    "name": "quoted-ascii-3-exact",
+    "pattern": ".*\\Qdouble\\\\slash\\E.*",
+    "text": "double\\\\slash",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "double\\\\slash"
+  },
+  {
+    "name": "quoted-ascii-3-start",
+    "pattern": ".*\\Qdouble\\\\slash\\E.*",
+    "text": "double\\\\slashtail",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "double\\\\slash"
+  },
+  {
+    "name": "quoted-ascii-3-middle",
+    "pattern": ".*\\Qdouble\\\\slash\\E.*",
+    "text": "headdouble\\\\slashtail",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "double\\\\slash"
+  },
+  {
+    "name": "quoted-ascii-3-end",
+    "pattern": ".*\\Qdouble\\\\slash\\E.*",
+    "text": "headdouble\\\\slash",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "double\\\\slash"
+  },
+  {
+    "name": "quoted-ascii-3-repeated",
+    "pattern": ".*\\Qdouble\\\\slash\\E.*",
+    "text": "double\\\\slashdouble\\\\slash",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "double\\\\slash"
+  },
+  {
+    "name": "quoted-ascii-3-upper",
+    "pattern": ".*\\Qdouble\\\\slash\\E.*",
+    "text": "ORG",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "double\\\\slash"
+  },
+  {
+    "name": "quoted-ascii-4-empty",
+    "pattern": ".*\\Qtab\tvalue\\E.*",
+    "text": "",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "tab\tvalue"
+  },
+  {
+    "name": "quoted-ascii-4-miss",
+    "pattern": ".*\\Qtab\tvalue\\E.*",
+    "text": "XYZ",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "tab\tvalue"
+  },
+  {
+    "name": "quoted-ascii-4-exact",
+    "pattern": ".*\\Qtab\tvalue\\E.*",
+    "text": "tab\tvalue",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "tab\tvalue"
+  },
+  {
+    "name": "quoted-ascii-4-start",
+    "pattern": ".*\\Qtab\tvalue\\E.*",
+    "text": "tab\tvaluetail",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "tab\tvalue"
+  },
+  {
+    "name": "quoted-ascii-4-middle",
+    "pattern": ".*\\Qtab\tvalue\\E.*",
+    "text": "headtab\tvaluetail",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "tab\tvalue"
+  },
+  {
+    "name": "quoted-ascii-4-end",
+    "pattern": ".*\\Qtab\tvalue\\E.*",
+    "text": "headtab\tvalue",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "tab\tvalue"
+  },
+  {
+    "name": "quoted-ascii-4-repeated",
+    "pattern": ".*\\Qtab\tvalue\\E.*",
+    "text": "tab\tvaluetab\tvalue",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "tab\tvalue"
+  },
+  {
+    "name": "quoted-ascii-4-upper",
+    "pattern": ".*\\Qtab\tvalue\\E.*",
+    "text": "ORG",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "tab\tvalue"
+  },
+  {
+    "name": "quoted-ascii-5-empty",
+    "pattern": ".*\\Qnul\u0000value\\E.*",
+    "text": "",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "nul\u0000value"
+  },
+  {
+    "name": "quoted-ascii-5-miss",
+    "pattern": ".*\\Qnul\u0000value\\E.*",
+    "text": "XYZ",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "nul\u0000value"
+  },
+  {
+    "name": "quoted-ascii-5-exact",
+    "pattern": ".*\\Qnul\u0000value\\E.*",
+    "text": "nul\u0000value",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "nul\u0000value"
+  },
+  {
+    "name": "quoted-ascii-5-start",
+    "pattern": ".*\\Qnul\u0000value\\E.*",
+    "text": "nul\u0000valuetail",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "nul\u0000value"
+  },
+  {
+    "name": "quoted-ascii-5-middle",
+    "pattern": ".*\\Qnul\u0000value\\E.*",
+    "text": "headnul\u0000valuetail",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "nul\u0000value"
+  },
+  {
+    "name": "quoted-ascii-5-end",
+    "pattern": ".*\\Qnul\u0000value\\E.*",
+    "text": "headnul\u0000value",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "nul\u0000value"
+  },
+  {
+    "name": "quoted-ascii-5-repeated",
+    "pattern": ".*\\Qnul\u0000value\\E.*",
+    "text": "nul\u0000valuenul\u0000value",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "nul\u0000value"
+  },
+  {
+    "name": "quoted-ascii-5-upper",
+    "pattern": ".*\\Qnul\u0000value\\E.*",
+    "text": "ORG",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "nul\u0000value"
+  },
+  {
+    "name": "quoted-ascii-6-empty",
+    "pattern": ".*\\Qvertical\u000bform\f\\E.*",
+    "text": "",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "vertical\u000bform\f"
+  },
+  {
+    "name": "quoted-ascii-6-miss",
+    "pattern": ".*\\Qvertical\u000bform\f\\E.*",
+    "text": "XYZ",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "vertical\u000bform\f"
+  },
+  {
+    "name": "quoted-ascii-6-exact",
+    "pattern": ".*\\Qvertical\u000bform\f\\E.*",
+    "text": "vertical\u000bform\f",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "vertical\u000bform\f"
+  },
+  {
+    "name": "quoted-ascii-6-start",
+    "pattern": ".*\\Qvertical\u000bform\f\\E.*",
+    "text": "vertical\u000bform\ftail",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "vertical\u000bform\f"
+  },
+  {
+    "name": "quoted-ascii-6-middle",
+    "pattern": ".*\\Qvertical\u000bform\f\\E.*",
+    "text": "headvertical\u000bform\ftail",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "vertical\u000bform\f"
+  },
+  {
+    "name": "quoted-ascii-6-end",
+    "pattern": ".*\\Qvertical\u000bform\f\\E.*",
+    "text": "headvertical\u000bform\f",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "vertical\u000bform\f"
+  },
+  {
+    "name": "quoted-ascii-6-repeated",
+    "pattern": ".*\\Qvertical\u000bform\f\\E.*",
+    "text": "vertical\u000bform\fvertical\u000bform\f",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "vertical\u000bform\f"
+  },
+  {
+    "name": "quoted-ascii-6-upper",
+    "pattern": ".*\\Qvertical\u000bform\f\\E.*",
+    "text": "ORG",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "vertical\u000bform\f"
+  },
+  {
+    "name": "quoted-ascii-7-empty",
+    "pattern": ".*\\QDEL\u007fvalue\\E.*",
+    "text": "",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "DEL\u007fvalue"
+  },
+  {
+    "name": "quoted-ascii-7-miss",
+    "pattern": ".*\\QDEL\u007fvalue\\E.*",
+    "text": "XYZ",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "DEL\u007fvalue"
+  },
+  {
+    "name": "quoted-ascii-7-exact",
+    "pattern": ".*\\QDEL\u007fvalue\\E.*",
+    "text": "DEL\u007fvalue",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "DEL\u007fvalue"
+  },
+  {
+    "name": "quoted-ascii-7-start",
+    "pattern": ".*\\QDEL\u007fvalue\\E.*",
+    "text": "DEL\u007fvaluetail",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "DEL\u007fvalue"
+  },
+  {
+    "name": "quoted-ascii-7-middle",
+    "pattern": ".*\\QDEL\u007fvalue\\E.*",
+    "text": "headDEL\u007fvaluetail",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "DEL\u007fvalue"
+  },
+  {
+    "name": "quoted-ascii-7-end",
+    "pattern": ".*\\QDEL\u007fvalue\\E.*",
+    "text": "headDEL\u007fvalue",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "DEL\u007fvalue"
+  },
+  {
+    "name": "quoted-ascii-7-repeated",
+    "pattern": ".*\\QDEL\u007fvalue\\E.*",
+    "text": "DEL\u007fvalueDEL\u007fvalue",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "DEL\u007fvalue"
+  },
+  {
+    "name": "quoted-ascii-7-upper",
+    "pattern": ".*\\QDEL\u007fvalue\\E.*",
+    "text": "ORG",
+    "eligiblePattern": true,
+    "eligibleInput": true,
+    "literal": "DEL\u007fvalue"
+  },
+  {
+    "name": "empty-quote-empty",
+    "pattern": ".*\\Q\\E.*",
+    "text": "",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "empty-quote-miss",
+    "pattern": ".*\\Q\\E.*",
+    "text": "XYZ",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "empty-quote-exact",
+    "pattern": ".*\\Q\\E.*",
+    "text": "org",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "empty-quote-start",
+    "pattern": ".*\\Q\\E.*",
+    "text": "orgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "empty-quote-middle",
+    "pattern": ".*\\Q\\E.*",
+    "text": "headorgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "empty-quote-end",
+    "pattern": ".*\\Q\\E.*",
+    "text": "headorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "empty-quote-repeated",
+    "pattern": ".*\\Q\\E.*",
+    "text": "orgorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "empty-quote-upper",
+    "pattern": ".*\\Q\\E.*",
+    "text": "ORG",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "empty-quote-cr",
+    "pattern": ".*\\Q\\E.*",
+    "text": "\rorg",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "empty-quote-lf",
+    "pattern": ".*\\Q\\E.*",
+    "text": "org\n",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "empty-quote-nel",
+    "pattern": ".*\\Q\\E.*",
+    "text": "\u0085org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "empty-quote-ls",
+    "pattern": ".*\\Q\\E.*",
+    "text": "org\u2028",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "empty-quote-ps",
+    "pattern": ".*\\Q\\E.*",
+    "text": "org\u2029",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "empty-quote-unicode",
+    "pattern": ".*\\Q\\E.*",
+    "text": "\u00e9\ud83d\ude00org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "empty-quote-surrogate",
+    "pattern": ".*\\Q\\E.*",
+    "text": "\ud800org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "empty-quote-embedded-E",
+    "pattern": ".*\\Q\\E.*",
+    "text": "foo\\Ebar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "empty-quote-foobar",
+    "pattern": ".*\\Q\\E.*",
+    "text": "foobar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "embedded-end-quote-empty",
+    "pattern": ".*\\Qfoo\\Ebar\\E.*",
+    "text": "",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "embedded-end-quote-miss",
+    "pattern": ".*\\Qfoo\\Ebar\\E.*",
+    "text": "XYZ",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "embedded-end-quote-exact",
+    "pattern": ".*\\Qfoo\\Ebar\\E.*",
+    "text": "org",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "embedded-end-quote-start",
+    "pattern": ".*\\Qfoo\\Ebar\\E.*",
+    "text": "orgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "embedded-end-quote-middle",
+    "pattern": ".*\\Qfoo\\Ebar\\E.*",
+    "text": "headorgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "embedded-end-quote-end",
+    "pattern": ".*\\Qfoo\\Ebar\\E.*",
+    "text": "headorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "embedded-end-quote-repeated",
+    "pattern": ".*\\Qfoo\\Ebar\\E.*",
+    "text": "orgorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "embedded-end-quote-upper",
+    "pattern": ".*\\Qfoo\\Ebar\\E.*",
+    "text": "ORG",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "embedded-end-quote-cr",
+    "pattern": ".*\\Qfoo\\Ebar\\E.*",
+    "text": "\rorg",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "embedded-end-quote-lf",
+    "pattern": ".*\\Qfoo\\Ebar\\E.*",
+    "text": "org\n",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "embedded-end-quote-nel",
+    "pattern": ".*\\Qfoo\\Ebar\\E.*",
+    "text": "\u0085org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "embedded-end-quote-ls",
+    "pattern": ".*\\Qfoo\\Ebar\\E.*",
+    "text": "org\u2028",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "embedded-end-quote-ps",
+    "pattern": ".*\\Qfoo\\Ebar\\E.*",
+    "text": "org\u2029",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "embedded-end-quote-unicode",
+    "pattern": ".*\\Qfoo\\Ebar\\E.*",
+    "text": "\u00e9\ud83d\ude00org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "embedded-end-quote-surrogate",
+    "pattern": ".*\\Qfoo\\Ebar\\E.*",
+    "text": "\ud800org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "embedded-end-quote-embedded-E",
+    "pattern": ".*\\Qfoo\\Ebar\\E.*",
+    "text": "foo\\Ebar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "embedded-end-quote-foobar",
+    "pattern": ".*\\Qfoo\\Ebar\\E.*",
+    "text": "foobar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "embedded-end-valid-empty",
+    "pattern": ".*\\Qfoo\\E.*\\Qbar\\E.*",
+    "text": "",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "embedded-end-valid-miss",
+    "pattern": ".*\\Qfoo\\E.*\\Qbar\\E.*",
+    "text": "XYZ",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "embedded-end-valid-exact",
+    "pattern": ".*\\Qfoo\\E.*\\Qbar\\E.*",
+    "text": "org",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "embedded-end-valid-start",
+    "pattern": ".*\\Qfoo\\E.*\\Qbar\\E.*",
+    "text": "orgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "embedded-end-valid-middle",
+    "pattern": ".*\\Qfoo\\E.*\\Qbar\\E.*",
+    "text": "headorgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "embedded-end-valid-end",
+    "pattern": ".*\\Qfoo\\E.*\\Qbar\\E.*",
+    "text": "headorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "embedded-end-valid-repeated",
+    "pattern": ".*\\Qfoo\\E.*\\Qbar\\E.*",
+    "text": "orgorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "embedded-end-valid-upper",
+    "pattern": ".*\\Qfoo\\E.*\\Qbar\\E.*",
+    "text": "ORG",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "embedded-end-valid-cr",
+    "pattern": ".*\\Qfoo\\E.*\\Qbar\\E.*",
+    "text": "\rorg",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "embedded-end-valid-lf",
+    "pattern": ".*\\Qfoo\\E.*\\Qbar\\E.*",
+    "text": "org\n",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "embedded-end-valid-nel",
+    "pattern": ".*\\Qfoo\\E.*\\Qbar\\E.*",
+    "text": "\u0085org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "embedded-end-valid-ls",
+    "pattern": ".*\\Qfoo\\E.*\\Qbar\\E.*",
+    "text": "org\u2028",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "embedded-end-valid-ps",
+    "pattern": ".*\\Qfoo\\E.*\\Qbar\\E.*",
+    "text": "org\u2029",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "embedded-end-valid-unicode",
+    "pattern": ".*\\Qfoo\\E.*\\Qbar\\E.*",
+    "text": "\u00e9\ud83d\ude00org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "embedded-end-valid-surrogate",
+    "pattern": ".*\\Qfoo\\E.*\\Qbar\\E.*",
+    "text": "\ud800org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "embedded-end-valid-embedded-E",
+    "pattern": ".*\\Qfoo\\E.*\\Qbar\\E.*",
+    "text": "foo\\Ebar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "embedded-end-valid-foobar",
+    "pattern": ".*\\Qfoo\\E.*\\Qbar\\E.*",
+    "text": "foobar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "quoted-embedded-end-empty",
+    "pattern": ".*\\Qfoo\\E\\\\E\\Qbar\\E.*",
+    "text": "",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "quoted-embedded-end-miss",
+    "pattern": ".*\\Qfoo\\E\\\\E\\Qbar\\E.*",
+    "text": "XYZ",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "quoted-embedded-end-exact",
+    "pattern": ".*\\Qfoo\\E\\\\E\\Qbar\\E.*",
+    "text": "org",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "quoted-embedded-end-start",
+    "pattern": ".*\\Qfoo\\E\\\\E\\Qbar\\E.*",
+    "text": "orgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "quoted-embedded-end-middle",
+    "pattern": ".*\\Qfoo\\E\\\\E\\Qbar\\E.*",
+    "text": "headorgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "quoted-embedded-end-end",
+    "pattern": ".*\\Qfoo\\E\\\\E\\Qbar\\E.*",
+    "text": "headorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "quoted-embedded-end-repeated",
+    "pattern": ".*\\Qfoo\\E\\\\E\\Qbar\\E.*",
+    "text": "orgorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "quoted-embedded-end-upper",
+    "pattern": ".*\\Qfoo\\E\\\\E\\Qbar\\E.*",
+    "text": "ORG",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "quoted-embedded-end-cr",
+    "pattern": ".*\\Qfoo\\E\\\\E\\Qbar\\E.*",
+    "text": "\rorg",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "quoted-embedded-end-lf",
+    "pattern": ".*\\Qfoo\\E\\\\E\\Qbar\\E.*",
+    "text": "org\n",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "quoted-embedded-end-nel",
+    "pattern": ".*\\Qfoo\\E\\\\E\\Qbar\\E.*",
+    "text": "\u0085org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "quoted-embedded-end-ls",
+    "pattern": ".*\\Qfoo\\E\\\\E\\Qbar\\E.*",
+    "text": "org\u2028",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "quoted-embedded-end-ps",
+    "pattern": ".*\\Qfoo\\E\\\\E\\Qbar\\E.*",
+    "text": "org\u2029",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "quoted-embedded-end-unicode",
+    "pattern": ".*\\Qfoo\\E\\\\E\\Qbar\\E.*",
+    "text": "\u00e9\ud83d\ude00org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "quoted-embedded-end-surrogate",
+    "pattern": ".*\\Qfoo\\E\\\\E\\Qbar\\E.*",
+    "text": "\ud800org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "quoted-embedded-end-embedded-E",
+    "pattern": ".*\\Qfoo\\E\\\\E\\Qbar\\E.*",
+    "text": "foo\\Ebar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "quoted-embedded-end-foobar",
+    "pattern": ".*\\Qfoo\\E\\\\E\\Qbar\\E.*",
+    "text": "foobar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "case-insensitive-empty",
+    "pattern": "(?i).*\\Qorg\\E.*",
+    "text": "",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "case-insensitive-miss",
+    "pattern": "(?i).*\\Qorg\\E.*",
+    "text": "XYZ",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "case-insensitive-exact",
+    "pattern": "(?i).*\\Qorg\\E.*",
+    "text": "org",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "case-insensitive-start",
+    "pattern": "(?i).*\\Qorg\\E.*",
+    "text": "orgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "case-insensitive-middle",
+    "pattern": "(?i).*\\Qorg\\E.*",
+    "text": "headorgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "case-insensitive-end",
+    "pattern": "(?i).*\\Qorg\\E.*",
+    "text": "headorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "case-insensitive-repeated",
+    "pattern": "(?i).*\\Qorg\\E.*",
+    "text": "orgorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "case-insensitive-upper",
+    "pattern": "(?i).*\\Qorg\\E.*",
+    "text": "ORG",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "case-insensitive-cr",
+    "pattern": "(?i).*\\Qorg\\E.*",
+    "text": "\rorg",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "case-insensitive-lf",
+    "pattern": "(?i).*\\Qorg\\E.*",
+    "text": "org\n",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "case-insensitive-nel",
+    "pattern": "(?i).*\\Qorg\\E.*",
+    "text": "\u0085org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "case-insensitive-ls",
+    "pattern": "(?i).*\\Qorg\\E.*",
+    "text": "org\u2028",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "case-insensitive-ps",
+    "pattern": "(?i).*\\Qorg\\E.*",
+    "text": "org\u2029",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "case-insensitive-unicode",
+    "pattern": "(?i).*\\Qorg\\E.*",
+    "text": "\u00e9\ud83d\ude00org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "case-insensitive-surrogate",
+    "pattern": "(?i).*\\Qorg\\E.*",
+    "text": "\ud800org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "case-insensitive-embedded-E",
+    "pattern": "(?i).*\\Qorg\\E.*",
+    "text": "foo\\Ebar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "case-insensitive-foobar",
+    "pattern": "(?i).*\\Qorg\\E.*",
+    "text": "foobar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "dotall-empty",
+    "pattern": "(?s).*\\Qorg\\E.*",
+    "text": "",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "dotall-miss",
+    "pattern": "(?s).*\\Qorg\\E.*",
+    "text": "XYZ",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "dotall-exact",
+    "pattern": "(?s).*\\Qorg\\E.*",
+    "text": "org",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "dotall-start",
+    "pattern": "(?s).*\\Qorg\\E.*",
+    "text": "orgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "dotall-middle",
+    "pattern": "(?s).*\\Qorg\\E.*",
+    "text": "headorgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "dotall-end",
+    "pattern": "(?s).*\\Qorg\\E.*",
+    "text": "headorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "dotall-repeated",
+    "pattern": "(?s).*\\Qorg\\E.*",
+    "text": "orgorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "dotall-upper",
+    "pattern": "(?s).*\\Qorg\\E.*",
+    "text": "ORG",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "dotall-cr",
+    "pattern": "(?s).*\\Qorg\\E.*",
+    "text": "\rorg",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "dotall-lf",
+    "pattern": "(?s).*\\Qorg\\E.*",
+    "text": "org\n",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "dotall-nel",
+    "pattern": "(?s).*\\Qorg\\E.*",
+    "text": "\u0085org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "dotall-ls",
+    "pattern": "(?s).*\\Qorg\\E.*",
+    "text": "org\u2028",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "dotall-ps",
+    "pattern": "(?s).*\\Qorg\\E.*",
+    "text": "org\u2029",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "dotall-unicode",
+    "pattern": "(?s).*\\Qorg\\E.*",
+    "text": "\u00e9\ud83d\ude00org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "dotall-surrogate",
+    "pattern": "(?s).*\\Qorg\\E.*",
+    "text": "\ud800org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "dotall-embedded-E",
+    "pattern": "(?s).*\\Qorg\\E.*",
+    "text": "foo\\Ebar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "dotall-foobar",
+    "pattern": "(?s).*\\Qorg\\E.*",
+    "text": "foobar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "multiline-empty",
+    "pattern": "(?m).*\\Qorg\\E.*",
+    "text": "",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "multiline-miss",
+    "pattern": "(?m).*\\Qorg\\E.*",
+    "text": "XYZ",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "multiline-exact",
+    "pattern": "(?m).*\\Qorg\\E.*",
+    "text": "org",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "multiline-start",
+    "pattern": "(?m).*\\Qorg\\E.*",
+    "text": "orgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "multiline-middle",
+    "pattern": "(?m).*\\Qorg\\E.*",
+    "text": "headorgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "multiline-end",
+    "pattern": "(?m).*\\Qorg\\E.*",
+    "text": "headorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "multiline-repeated",
+    "pattern": "(?m).*\\Qorg\\E.*",
+    "text": "orgorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "multiline-upper",
+    "pattern": "(?m).*\\Qorg\\E.*",
+    "text": "ORG",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "multiline-cr",
+    "pattern": "(?m).*\\Qorg\\E.*",
+    "text": "\rorg",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "multiline-lf",
+    "pattern": "(?m).*\\Qorg\\E.*",
+    "text": "org\n",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "multiline-nel",
+    "pattern": "(?m).*\\Qorg\\E.*",
+    "text": "\u0085org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "multiline-ls",
+    "pattern": "(?m).*\\Qorg\\E.*",
+    "text": "org\u2028",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "multiline-ps",
+    "pattern": "(?m).*\\Qorg\\E.*",
+    "text": "org\u2029",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "multiline-unicode",
+    "pattern": "(?m).*\\Qorg\\E.*",
+    "text": "\u00e9\ud83d\ude00org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "multiline-surrogate",
+    "pattern": "(?m).*\\Qorg\\E.*",
+    "text": "\ud800org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "multiline-embedded-E",
+    "pattern": "(?m).*\\Qorg\\E.*",
+    "text": "foo\\Ebar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "multiline-foobar",
+    "pattern": "(?m).*\\Qorg\\E.*",
+    "text": "foobar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "unix-lines-empty",
+    "pattern": "(?d).*\\Qorg\\E.*",
+    "text": "",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "unix-lines-miss",
+    "pattern": "(?d).*\\Qorg\\E.*",
+    "text": "XYZ",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "unix-lines-exact",
+    "pattern": "(?d).*\\Qorg\\E.*",
+    "text": "org",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "unix-lines-start",
+    "pattern": "(?d).*\\Qorg\\E.*",
+    "text": "orgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "unix-lines-middle",
+    "pattern": "(?d).*\\Qorg\\E.*",
+    "text": "headorgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "unix-lines-end",
+    "pattern": "(?d).*\\Qorg\\E.*",
+    "text": "headorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "unix-lines-repeated",
+    "pattern": "(?d).*\\Qorg\\E.*",
+    "text": "orgorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "unix-lines-upper",
+    "pattern": "(?d).*\\Qorg\\E.*",
+    "text": "ORG",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "unix-lines-cr",
+    "pattern": "(?d).*\\Qorg\\E.*",
+    "text": "\rorg",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "unix-lines-lf",
+    "pattern": "(?d).*\\Qorg\\E.*",
+    "text": "org\n",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "unix-lines-nel",
+    "pattern": "(?d).*\\Qorg\\E.*",
+    "text": "\u0085org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "unix-lines-ls",
+    "pattern": "(?d).*\\Qorg\\E.*",
+    "text": "org\u2028",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "unix-lines-ps",
+    "pattern": "(?d).*\\Qorg\\E.*",
+    "text": "org\u2029",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "unix-lines-unicode",
+    "pattern": "(?d).*\\Qorg\\E.*",
+    "text": "\u00e9\ud83d\ude00org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "unix-lines-surrogate",
+    "pattern": "(?d).*\\Qorg\\E.*",
+    "text": "\ud800org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "unix-lines-embedded-E",
+    "pattern": "(?d).*\\Qorg\\E.*",
+    "text": "foo\\Ebar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "unix-lines-foobar",
+    "pattern": "(?d).*\\Qorg\\E.*",
+    "text": "foobar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "unicode-case-empty",
+    "pattern": "(?iu).*\\Qorg\\E.*",
+    "text": "",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "unicode-case-miss",
+    "pattern": "(?iu).*\\Qorg\\E.*",
+    "text": "XYZ",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "unicode-case-exact",
+    "pattern": "(?iu).*\\Qorg\\E.*",
+    "text": "org",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "unicode-case-start",
+    "pattern": "(?iu).*\\Qorg\\E.*",
+    "text": "orgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "unicode-case-middle",
+    "pattern": "(?iu).*\\Qorg\\E.*",
+    "text": "headorgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "unicode-case-end",
+    "pattern": "(?iu).*\\Qorg\\E.*",
+    "text": "headorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "unicode-case-repeated",
+    "pattern": "(?iu).*\\Qorg\\E.*",
+    "text": "orgorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "unicode-case-upper",
+    "pattern": "(?iu).*\\Qorg\\E.*",
+    "text": "ORG",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "unicode-case-cr",
+    "pattern": "(?iu).*\\Qorg\\E.*",
+    "text": "\rorg",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "unicode-case-lf",
+    "pattern": "(?iu).*\\Qorg\\E.*",
+    "text": "org\n",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "unicode-case-nel",
+    "pattern": "(?iu).*\\Qorg\\E.*",
+    "text": "\u0085org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "unicode-case-ls",
+    "pattern": "(?iu).*\\Qorg\\E.*",
+    "text": "org\u2028",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "unicode-case-ps",
+    "pattern": "(?iu).*\\Qorg\\E.*",
+    "text": "org\u2029",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "unicode-case-unicode",
+    "pattern": "(?iu).*\\Qorg\\E.*",
+    "text": "\u00e9\ud83d\ude00org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "unicode-case-surrogate",
+    "pattern": "(?iu).*\\Qorg\\E.*",
+    "text": "\ud800org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "unicode-case-embedded-E",
+    "pattern": "(?iu).*\\Qorg\\E.*",
+    "text": "foo\\Ebar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "unicode-case-foobar",
+    "pattern": "(?iu).*\\Qorg\\E.*",
+    "text": "foobar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "unicode-classes-empty",
+    "pattern": "(?U).*\\Qorg\\E.*",
+    "text": "",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "unicode-classes-miss",
+    "pattern": "(?U).*\\Qorg\\E.*",
+    "text": "XYZ",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "unicode-classes-exact",
+    "pattern": "(?U).*\\Qorg\\E.*",
+    "text": "org",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "unicode-classes-start",
+    "pattern": "(?U).*\\Qorg\\E.*",
+    "text": "orgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "unicode-classes-middle",
+    "pattern": "(?U).*\\Qorg\\E.*",
+    "text": "headorgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "unicode-classes-end",
+    "pattern": "(?U).*\\Qorg\\E.*",
+    "text": "headorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "unicode-classes-repeated",
+    "pattern": "(?U).*\\Qorg\\E.*",
+    "text": "orgorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "unicode-classes-upper",
+    "pattern": "(?U).*\\Qorg\\E.*",
+    "text": "ORG",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "unicode-classes-cr",
+    "pattern": "(?U).*\\Qorg\\E.*",
+    "text": "\rorg",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "unicode-classes-lf",
+    "pattern": "(?U).*\\Qorg\\E.*",
+    "text": "org\n",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "unicode-classes-nel",
+    "pattern": "(?U).*\\Qorg\\E.*",
+    "text": "\u0085org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "unicode-classes-ls",
+    "pattern": "(?U).*\\Qorg\\E.*",
+    "text": "org\u2028",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "unicode-classes-ps",
+    "pattern": "(?U).*\\Qorg\\E.*",
+    "text": "org\u2029",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "unicode-classes-unicode",
+    "pattern": "(?U).*\\Qorg\\E.*",
+    "text": "\u00e9\ud83d\ude00org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "unicode-classes-surrogate",
+    "pattern": "(?U).*\\Qorg\\E.*",
+    "text": "\ud800org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "unicode-classes-embedded-E",
+    "pattern": "(?U).*\\Qorg\\E.*",
+    "text": "foo\\Ebar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "unicode-classes-foobar",
+    "pattern": "(?U).*\\Qorg\\E.*",
+    "text": "foobar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "anchors-empty",
+    "pattern": "^.*\\Qorg\\E.*$",
+    "text": "",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "anchors-miss",
+    "pattern": "^.*\\Qorg\\E.*$",
+    "text": "XYZ",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "anchors-exact",
+    "pattern": "^.*\\Qorg\\E.*$",
+    "text": "org",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "anchors-start",
+    "pattern": "^.*\\Qorg\\E.*$",
+    "text": "orgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "anchors-middle",
+    "pattern": "^.*\\Qorg\\E.*$",
+    "text": "headorgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "anchors-end",
+    "pattern": "^.*\\Qorg\\E.*$",
+    "text": "headorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "anchors-repeated",
+    "pattern": "^.*\\Qorg\\E.*$",
+    "text": "orgorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "anchors-upper",
+    "pattern": "^.*\\Qorg\\E.*$",
+    "text": "ORG",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "anchors-cr",
+    "pattern": "^.*\\Qorg\\E.*$",
+    "text": "\rorg",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "anchors-lf",
+    "pattern": "^.*\\Qorg\\E.*$",
+    "text": "org\n",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "anchors-nel",
+    "pattern": "^.*\\Qorg\\E.*$",
+    "text": "\u0085org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "anchors-ls",
+    "pattern": "^.*\\Qorg\\E.*$",
+    "text": "org\u2028",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "anchors-ps",
+    "pattern": "^.*\\Qorg\\E.*$",
+    "text": "org\u2029",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "anchors-unicode",
+    "pattern": "^.*\\Qorg\\E.*$",
+    "text": "\u00e9\ud83d\ude00org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "anchors-surrogate",
+    "pattern": "^.*\\Qorg\\E.*$",
+    "text": "\ud800org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "anchors-embedded-E",
+    "pattern": "^.*\\Qorg\\E.*$",
+    "text": "foo\\Ebar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "anchors-foobar",
+    "pattern": "^.*\\Qorg\\E.*$",
+    "text": "foobar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "alternative-empty",
+    "pattern": ".*\\Qorg\\E.*|x",
+    "text": "",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "alternative-miss",
+    "pattern": ".*\\Qorg\\E.*|x",
+    "text": "XYZ",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "alternative-exact",
+    "pattern": ".*\\Qorg\\E.*|x",
+    "text": "org",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "alternative-start",
+    "pattern": ".*\\Qorg\\E.*|x",
+    "text": "orgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "alternative-middle",
+    "pattern": ".*\\Qorg\\E.*|x",
+    "text": "headorgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "alternative-end",
+    "pattern": ".*\\Qorg\\E.*|x",
+    "text": "headorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "alternative-repeated",
+    "pattern": ".*\\Qorg\\E.*|x",
+    "text": "orgorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "alternative-upper",
+    "pattern": ".*\\Qorg\\E.*|x",
+    "text": "ORG",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "alternative-cr",
+    "pattern": ".*\\Qorg\\E.*|x",
+    "text": "\rorg",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "alternative-lf",
+    "pattern": ".*\\Qorg\\E.*|x",
+    "text": "org\n",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "alternative-nel",
+    "pattern": ".*\\Qorg\\E.*|x",
+    "text": "\u0085org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "alternative-ls",
+    "pattern": ".*\\Qorg\\E.*|x",
+    "text": "org\u2028",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "alternative-ps",
+    "pattern": ".*\\Qorg\\E.*|x",
+    "text": "org\u2029",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "alternative-unicode",
+    "pattern": ".*\\Qorg\\E.*|x",
+    "text": "\u00e9\ud83d\ude00org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "alternative-surrogate",
+    "pattern": ".*\\Qorg\\E.*|x",
+    "text": "\ud800org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "alternative-embedded-E",
+    "pattern": ".*\\Qorg\\E.*|x",
+    "text": "foo\\Ebar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "alternative-foobar",
+    "pattern": ".*\\Qorg\\E.*|x",
+    "text": "foobar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "reluctant-suffix-empty",
+    "pattern": ".*\\Qorg\\E.*?",
+    "text": "",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "reluctant-suffix-miss",
+    "pattern": ".*\\Qorg\\E.*?",
+    "text": "XYZ",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "reluctant-suffix-exact",
+    "pattern": ".*\\Qorg\\E.*?",
+    "text": "org",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "reluctant-suffix-start",
+    "pattern": ".*\\Qorg\\E.*?",
+    "text": "orgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "reluctant-suffix-middle",
+    "pattern": ".*\\Qorg\\E.*?",
+    "text": "headorgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "reluctant-suffix-end",
+    "pattern": ".*\\Qorg\\E.*?",
+    "text": "headorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "reluctant-suffix-repeated",
+    "pattern": ".*\\Qorg\\E.*?",
+    "text": "orgorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "reluctant-suffix-upper",
+    "pattern": ".*\\Qorg\\E.*?",
+    "text": "ORG",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "reluctant-suffix-cr",
+    "pattern": ".*\\Qorg\\E.*?",
+    "text": "\rorg",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "reluctant-suffix-lf",
+    "pattern": ".*\\Qorg\\E.*?",
+    "text": "org\n",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "reluctant-suffix-nel",
+    "pattern": ".*\\Qorg\\E.*?",
+    "text": "\u0085org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "reluctant-suffix-ls",
+    "pattern": ".*\\Qorg\\E.*?",
+    "text": "org\u2028",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "reluctant-suffix-ps",
+    "pattern": ".*\\Qorg\\E.*?",
+    "text": "org\u2029",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "reluctant-suffix-unicode",
+    "pattern": ".*\\Qorg\\E.*?",
+    "text": "\u00e9\ud83d\ude00org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "reluctant-suffix-surrogate",
+    "pattern": ".*\\Qorg\\E.*?",
+    "text": "\ud800org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "reluctant-suffix-embedded-E",
+    "pattern": ".*\\Qorg\\E.*?",
+    "text": "foo\\Ebar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "reluctant-suffix-foobar",
+    "pattern": ".*\\Qorg\\E.*?",
+    "text": "foobar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "prefix-variant-empty",
+    "pattern": ".*?\\Qorg\\E.*",
+    "text": "",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "prefix-variant-miss",
+    "pattern": ".*?\\Qorg\\E.*",
+    "text": "XYZ",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "prefix-variant-exact",
+    "pattern": ".*?\\Qorg\\E.*",
+    "text": "org",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "prefix-variant-start",
+    "pattern": ".*?\\Qorg\\E.*",
+    "text": "orgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "prefix-variant-middle",
+    "pattern": ".*?\\Qorg\\E.*",
+    "text": "headorgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "prefix-variant-end",
+    "pattern": ".*?\\Qorg\\E.*",
+    "text": "headorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "prefix-variant-repeated",
+    "pattern": ".*?\\Qorg\\E.*",
+    "text": "orgorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "prefix-variant-upper",
+    "pattern": ".*?\\Qorg\\E.*",
+    "text": "ORG",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "prefix-variant-cr",
+    "pattern": ".*?\\Qorg\\E.*",
+    "text": "\rorg",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "prefix-variant-lf",
+    "pattern": ".*?\\Qorg\\E.*",
+    "text": "org\n",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "prefix-variant-nel",
+    "pattern": ".*?\\Qorg\\E.*",
+    "text": "\u0085org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "prefix-variant-ls",
+    "pattern": ".*?\\Qorg\\E.*",
+    "text": "org\u2028",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "prefix-variant-ps",
+    "pattern": ".*?\\Qorg\\E.*",
+    "text": "org\u2029",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "prefix-variant-unicode",
+    "pattern": ".*?\\Qorg\\E.*",
+    "text": "\u00e9\ud83d\ude00org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "prefix-variant-surrogate",
+    "pattern": ".*?\\Qorg\\E.*",
+    "text": "\ud800org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "prefix-variant-embedded-E",
+    "pattern": ".*?\\Qorg\\E.*",
+    "text": "foo\\Ebar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "prefix-variant-foobar",
+    "pattern": ".*?\\Qorg\\E.*",
+    "text": "foobar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "missing-end-quote-empty",
+    "pattern": ".*\\Qorg.*",
+    "text": "",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "missing-end-quote-miss",
+    "pattern": ".*\\Qorg.*",
+    "text": "XYZ",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "missing-end-quote-exact",
+    "pattern": ".*\\Qorg.*",
+    "text": "org",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "missing-end-quote-start",
+    "pattern": ".*\\Qorg.*",
+    "text": "orgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "missing-end-quote-middle",
+    "pattern": ".*\\Qorg.*",
+    "text": "headorgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "missing-end-quote-end",
+    "pattern": ".*\\Qorg.*",
+    "text": "headorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "missing-end-quote-repeated",
+    "pattern": ".*\\Qorg.*",
+    "text": "orgorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "missing-end-quote-upper",
+    "pattern": ".*\\Qorg.*",
+    "text": "ORG",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "missing-end-quote-cr",
+    "pattern": ".*\\Qorg.*",
+    "text": "\rorg",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "missing-end-quote-lf",
+    "pattern": ".*\\Qorg.*",
+    "text": "org\n",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "missing-end-quote-nel",
+    "pattern": ".*\\Qorg.*",
+    "text": "\u0085org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "missing-end-quote-ls",
+    "pattern": ".*\\Qorg.*",
+    "text": "org\u2028",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "missing-end-quote-ps",
+    "pattern": ".*\\Qorg.*",
+    "text": "org\u2029",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "missing-end-quote-unicode",
+    "pattern": ".*\\Qorg.*",
+    "text": "\u00e9\ud83d\ude00org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "missing-end-quote-surrogate",
+    "pattern": ".*\\Qorg.*",
+    "text": "\ud800org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "missing-end-quote-embedded-E",
+    "pattern": ".*\\Qorg.*",
+    "text": "foo\\Ebar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "missing-end-quote-foobar",
+    "pattern": ".*\\Qorg.*",
+    "text": "foobar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "malformed-class-empty",
+    "pattern": "[",
+    "text": "",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "malformed-class-miss",
+    "pattern": "[",
+    "text": "XYZ",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "malformed-class-exact",
+    "pattern": "[",
+    "text": "org",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "malformed-class-start",
+    "pattern": "[",
+    "text": "orgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "malformed-class-middle",
+    "pattern": "[",
+    "text": "headorgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "malformed-class-end",
+    "pattern": "[",
+    "text": "headorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "malformed-class-repeated",
+    "pattern": "[",
+    "text": "orgorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "malformed-class-upper",
+    "pattern": "[",
+    "text": "ORG",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "malformed-class-cr",
+    "pattern": "[",
+    "text": "\rorg",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "malformed-class-lf",
+    "pattern": "[",
+    "text": "org\n",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "malformed-class-nel",
+    "pattern": "[",
+    "text": "\u0085org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "malformed-class-ls",
+    "pattern": "[",
+    "text": "org\u2028",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "malformed-class-ps",
+    "pattern": "[",
+    "text": "org\u2029",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "malformed-class-unicode",
+    "pattern": "[",
+    "text": "\u00e9\ud83d\ude00org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "malformed-class-surrogate",
+    "pattern": "[",
+    "text": "\ud800org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "malformed-class-embedded-E",
+    "pattern": "[",
+    "text": "foo\\Ebar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "malformed-class-foobar",
+    "pattern": "[",
+    "text": "foobar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "malformed-group-empty",
+    "pattern": "(",
+    "text": "",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "malformed-group-miss",
+    "pattern": "(",
+    "text": "XYZ",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "malformed-group-exact",
+    "pattern": "(",
+    "text": "org",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "malformed-group-start",
+    "pattern": "(",
+    "text": "orgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "malformed-group-middle",
+    "pattern": "(",
+    "text": "headorgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "malformed-group-end",
+    "pattern": "(",
+    "text": "headorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "malformed-group-repeated",
+    "pattern": "(",
+    "text": "orgorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "malformed-group-upper",
+    "pattern": "(",
+    "text": "ORG",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "malformed-group-cr",
+    "pattern": "(",
+    "text": "\rorg",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "malformed-group-lf",
+    "pattern": "(",
+    "text": "org\n",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "malformed-group-nel",
+    "pattern": "(",
+    "text": "\u0085org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "malformed-group-ls",
+    "pattern": "(",
+    "text": "org\u2028",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "malformed-group-ps",
+    "pattern": "(",
+    "text": "org\u2029",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "malformed-group-unicode",
+    "pattern": "(",
+    "text": "\u00e9\ud83d\ude00org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "malformed-group-surrogate",
+    "pattern": "(",
+    "text": "\ud800org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "malformed-group-embedded-E",
+    "pattern": "(",
+    "text": "foo\\Ebar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "malformed-group-foobar",
+    "pattern": "(",
+    "text": "foobar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "trailing-backslash-empty",
+    "pattern": "\\",
+    "text": "",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "trailing-backslash-miss",
+    "pattern": "\\",
+    "text": "XYZ",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "trailing-backslash-exact",
+    "pattern": "\\",
+    "text": "org",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "trailing-backslash-start",
+    "pattern": "\\",
+    "text": "orgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "trailing-backslash-middle",
+    "pattern": "\\",
+    "text": "headorgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "trailing-backslash-end",
+    "pattern": "\\",
+    "text": "headorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "trailing-backslash-repeated",
+    "pattern": "\\",
+    "text": "orgorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "trailing-backslash-upper",
+    "pattern": "\\",
+    "text": "ORG",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "trailing-backslash-cr",
+    "pattern": "\\",
+    "text": "\rorg",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "trailing-backslash-lf",
+    "pattern": "\\",
+    "text": "org\n",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "trailing-backslash-nel",
+    "pattern": "\\",
+    "text": "\u0085org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "trailing-backslash-ls",
+    "pattern": "\\",
+    "text": "org\u2028",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "trailing-backslash-ps",
+    "pattern": "\\",
+    "text": "org\u2029",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "trailing-backslash-unicode",
+    "pattern": "\\",
+    "text": "\u00e9\ud83d\ude00org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "trailing-backslash-surrogate",
+    "pattern": "\\",
+    "text": "\ud800org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "trailing-backslash-embedded-E",
+    "pattern": "\\",
+    "text": "foo\\Ebar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "trailing-backslash-foobar",
+    "pattern": "\\",
+    "text": "foobar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "extra-suffix-empty",
+    "pattern": ".*\\Qorg\\E.*z",
+    "text": "",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "extra-suffix-miss",
+    "pattern": ".*\\Qorg\\E.*z",
+    "text": "XYZ",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "extra-suffix-exact",
+    "pattern": ".*\\Qorg\\E.*z",
+    "text": "org",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "extra-suffix-start",
+    "pattern": ".*\\Qorg\\E.*z",
+    "text": "orgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "extra-suffix-middle",
+    "pattern": ".*\\Qorg\\E.*z",
+    "text": "headorgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "extra-suffix-end",
+    "pattern": ".*\\Qorg\\E.*z",
+    "text": "headorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "extra-suffix-repeated",
+    "pattern": ".*\\Qorg\\E.*z",
+    "text": "orgorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "extra-suffix-upper",
+    "pattern": ".*\\Qorg\\E.*z",
+    "text": "ORG",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "extra-suffix-cr",
+    "pattern": ".*\\Qorg\\E.*z",
+    "text": "\rorg",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "extra-suffix-lf",
+    "pattern": ".*\\Qorg\\E.*z",
+    "text": "org\n",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "extra-suffix-nel",
+    "pattern": ".*\\Qorg\\E.*z",
+    "text": "\u0085org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "extra-suffix-ls",
+    "pattern": ".*\\Qorg\\E.*z",
+    "text": "org\u2028",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "extra-suffix-ps",
+    "pattern": ".*\\Qorg\\E.*z",
+    "text": "org\u2029",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "extra-suffix-unicode",
+    "pattern": ".*\\Qorg\\E.*z",
+    "text": "\u00e9\ud83d\ude00org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "extra-suffix-surrogate",
+    "pattern": ".*\\Qorg\\E.*z",
+    "text": "\ud800org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "extra-suffix-embedded-E",
+    "pattern": ".*\\Qorg\\E.*z",
+    "text": "foo\\Ebar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "extra-suffix-foobar",
+    "pattern": ".*\\Qorg\\E.*z",
+    "text": "foobar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-cr-empty",
+    "pattern": ".*\\Q\r\\E.*",
+    "text": "",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-cr-miss",
+    "pattern": ".*\\Q\r\\E.*",
+    "text": "XYZ",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-cr-exact",
+    "pattern": ".*\\Q\r\\E.*",
+    "text": "org",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-cr-start",
+    "pattern": ".*\\Q\r\\E.*",
+    "text": "orgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-cr-middle",
+    "pattern": ".*\\Q\r\\E.*",
+    "text": "headorgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-cr-end",
+    "pattern": ".*\\Q\r\\E.*",
+    "text": "headorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-cr-repeated",
+    "pattern": ".*\\Q\r\\E.*",
+    "text": "orgorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-cr-upper",
+    "pattern": ".*\\Q\r\\E.*",
+    "text": "ORG",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-cr-cr",
+    "pattern": ".*\\Q\r\\E.*",
+    "text": "\rorg",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "literal-cr-lf",
+    "pattern": ".*\\Q\r\\E.*",
+    "text": "org\n",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "literal-cr-nel",
+    "pattern": ".*\\Q\r\\E.*",
+    "text": "\u0085org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "literal-cr-ls",
+    "pattern": ".*\\Q\r\\E.*",
+    "text": "org\u2028",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "literal-cr-ps",
+    "pattern": ".*\\Q\r\\E.*",
+    "text": "org\u2029",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "literal-cr-unicode",
+    "pattern": ".*\\Q\r\\E.*",
+    "text": "\u00e9\ud83d\ude00org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "literal-cr-surrogate",
+    "pattern": ".*\\Q\r\\E.*",
+    "text": "\ud800org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "literal-cr-embedded-E",
+    "pattern": ".*\\Q\r\\E.*",
+    "text": "foo\\Ebar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-cr-foobar",
+    "pattern": ".*\\Q\r\\E.*",
+    "text": "foobar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-lf-empty",
+    "pattern": ".*\\Q\n\\E.*",
+    "text": "",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-lf-miss",
+    "pattern": ".*\\Q\n\\E.*",
+    "text": "XYZ",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-lf-exact",
+    "pattern": ".*\\Q\n\\E.*",
+    "text": "org",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-lf-start",
+    "pattern": ".*\\Q\n\\E.*",
+    "text": "orgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-lf-middle",
+    "pattern": ".*\\Q\n\\E.*",
+    "text": "headorgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-lf-end",
+    "pattern": ".*\\Q\n\\E.*",
+    "text": "headorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-lf-repeated",
+    "pattern": ".*\\Q\n\\E.*",
+    "text": "orgorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-lf-upper",
+    "pattern": ".*\\Q\n\\E.*",
+    "text": "ORG",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-lf-cr",
+    "pattern": ".*\\Q\n\\E.*",
+    "text": "\rorg",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "literal-lf-lf",
+    "pattern": ".*\\Q\n\\E.*",
+    "text": "org\n",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "literal-lf-nel",
+    "pattern": ".*\\Q\n\\E.*",
+    "text": "\u0085org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "literal-lf-ls",
+    "pattern": ".*\\Q\n\\E.*",
+    "text": "org\u2028",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "literal-lf-ps",
+    "pattern": ".*\\Q\n\\E.*",
+    "text": "org\u2029",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "literal-lf-unicode",
+    "pattern": ".*\\Q\n\\E.*",
+    "text": "\u00e9\ud83d\ude00org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "literal-lf-surrogate",
+    "pattern": ".*\\Q\n\\E.*",
+    "text": "\ud800org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "literal-lf-embedded-E",
+    "pattern": ".*\\Q\n\\E.*",
+    "text": "foo\\Ebar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-lf-foobar",
+    "pattern": ".*\\Q\n\\E.*",
+    "text": "foobar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-nonascii-empty",
+    "pattern": ".*\\Q\u00e9\\E.*",
+    "text": "",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-nonascii-miss",
+    "pattern": ".*\\Q\u00e9\\E.*",
+    "text": "XYZ",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-nonascii-exact",
+    "pattern": ".*\\Q\u00e9\\E.*",
+    "text": "org",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-nonascii-start",
+    "pattern": ".*\\Q\u00e9\\E.*",
+    "text": "orgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-nonascii-middle",
+    "pattern": ".*\\Q\u00e9\\E.*",
+    "text": "headorgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-nonascii-end",
+    "pattern": ".*\\Q\u00e9\\E.*",
+    "text": "headorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-nonascii-repeated",
+    "pattern": ".*\\Q\u00e9\\E.*",
+    "text": "orgorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-nonascii-upper",
+    "pattern": ".*\\Q\u00e9\\E.*",
+    "text": "ORG",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-nonascii-cr",
+    "pattern": ".*\\Q\u00e9\\E.*",
+    "text": "\rorg",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "literal-nonascii-lf",
+    "pattern": ".*\\Q\u00e9\\E.*",
+    "text": "org\n",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "literal-nonascii-nel",
+    "pattern": ".*\\Q\u00e9\\E.*",
+    "text": "\u0085org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "literal-nonascii-ls",
+    "pattern": ".*\\Q\u00e9\\E.*",
+    "text": "org\u2028",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "literal-nonascii-ps",
+    "pattern": ".*\\Q\u00e9\\E.*",
+    "text": "org\u2029",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "literal-nonascii-unicode",
+    "pattern": ".*\\Q\u00e9\\E.*",
+    "text": "\u00e9\ud83d\ude00org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "literal-nonascii-surrogate",
+    "pattern": ".*\\Q\u00e9\\E.*",
+    "text": "\ud800org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "literal-nonascii-embedded-E",
+    "pattern": ".*\\Q\u00e9\\E.*",
+    "text": "foo\\Ebar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-nonascii-foobar",
+    "pattern": ".*\\Q\u00e9\\E.*",
+    "text": "foobar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-supplementary-empty",
+    "pattern": ".*\\Q\ud83d\ude00\\E.*",
+    "text": "",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-supplementary-miss",
+    "pattern": ".*\\Q\ud83d\ude00\\E.*",
+    "text": "XYZ",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-supplementary-exact",
+    "pattern": ".*\\Q\ud83d\ude00\\E.*",
+    "text": "org",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-supplementary-start",
+    "pattern": ".*\\Q\ud83d\ude00\\E.*",
+    "text": "orgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-supplementary-middle",
+    "pattern": ".*\\Q\ud83d\ude00\\E.*",
+    "text": "headorgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-supplementary-end",
+    "pattern": ".*\\Q\ud83d\ude00\\E.*",
+    "text": "headorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-supplementary-repeated",
+    "pattern": ".*\\Q\ud83d\ude00\\E.*",
+    "text": "orgorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-supplementary-upper",
+    "pattern": ".*\\Q\ud83d\ude00\\E.*",
+    "text": "ORG",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-supplementary-cr",
+    "pattern": ".*\\Q\ud83d\ude00\\E.*",
+    "text": "\rorg",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "literal-supplementary-lf",
+    "pattern": ".*\\Q\ud83d\ude00\\E.*",
+    "text": "org\n",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "literal-supplementary-nel",
+    "pattern": ".*\\Q\ud83d\ude00\\E.*",
+    "text": "\u0085org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "literal-supplementary-ls",
+    "pattern": ".*\\Q\ud83d\ude00\\E.*",
+    "text": "org\u2028",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "literal-supplementary-ps",
+    "pattern": ".*\\Q\ud83d\ude00\\E.*",
+    "text": "org\u2029",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "literal-supplementary-unicode",
+    "pattern": ".*\\Q\ud83d\ude00\\E.*",
+    "text": "\u00e9\ud83d\ude00org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "literal-supplementary-surrogate",
+    "pattern": ".*\\Q\ud83d\ude00\\E.*",
+    "text": "\ud800org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "literal-supplementary-embedded-E",
+    "pattern": ".*\\Q\ud83d\ude00\\E.*",
+    "text": "foo\\Ebar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-supplementary-foobar",
+    "pattern": ".*\\Q\ud83d\ude00\\E.*",
+    "text": "foobar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-high-surrogate-empty",
+    "pattern": ".*\\Q\ud800\\E.*",
+    "text": "",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-high-surrogate-miss",
+    "pattern": ".*\\Q\ud800\\E.*",
+    "text": "XYZ",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-high-surrogate-exact",
+    "pattern": ".*\\Q\ud800\\E.*",
+    "text": "org",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-high-surrogate-start",
+    "pattern": ".*\\Q\ud800\\E.*",
+    "text": "orgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-high-surrogate-middle",
+    "pattern": ".*\\Q\ud800\\E.*",
+    "text": "headorgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-high-surrogate-end",
+    "pattern": ".*\\Q\ud800\\E.*",
+    "text": "headorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-high-surrogate-repeated",
+    "pattern": ".*\\Q\ud800\\E.*",
+    "text": "orgorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-high-surrogate-upper",
+    "pattern": ".*\\Q\ud800\\E.*",
+    "text": "ORG",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-high-surrogate-cr",
+    "pattern": ".*\\Q\ud800\\E.*",
+    "text": "\rorg",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "literal-high-surrogate-lf",
+    "pattern": ".*\\Q\ud800\\E.*",
+    "text": "org\n",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "literal-high-surrogate-nel",
+    "pattern": ".*\\Q\ud800\\E.*",
+    "text": "\u0085org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "literal-high-surrogate-ls",
+    "pattern": ".*\\Q\ud800\\E.*",
+    "text": "org\u2028",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "literal-high-surrogate-ps",
+    "pattern": ".*\\Q\ud800\\E.*",
+    "text": "org\u2029",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "literal-high-surrogate-unicode",
+    "pattern": ".*\\Q\ud800\\E.*",
+    "text": "\u00e9\ud83d\ude00org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "literal-high-surrogate-surrogate",
+    "pattern": ".*\\Q\ud800\\E.*",
+    "text": "\ud800org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "literal-high-surrogate-embedded-E",
+    "pattern": ".*\\Q\ud800\\E.*",
+    "text": "foo\\Ebar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-high-surrogate-foobar",
+    "pattern": ".*\\Q\ud800\\E.*",
+    "text": "foobar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-low-surrogate-empty",
+    "pattern": ".*\\Q\udc00\\E.*",
+    "text": "",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-low-surrogate-miss",
+    "pattern": ".*\\Q\udc00\\E.*",
+    "text": "XYZ",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-low-surrogate-exact",
+    "pattern": ".*\\Q\udc00\\E.*",
+    "text": "org",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-low-surrogate-start",
+    "pattern": ".*\\Q\udc00\\E.*",
+    "text": "orgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-low-surrogate-middle",
+    "pattern": ".*\\Q\udc00\\E.*",
+    "text": "headorgtail",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-low-surrogate-end",
+    "pattern": ".*\\Q\udc00\\E.*",
+    "text": "headorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-low-surrogate-repeated",
+    "pattern": ".*\\Q\udc00\\E.*",
+    "text": "orgorg",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-low-surrogate-upper",
+    "pattern": ".*\\Q\udc00\\E.*",
+    "text": "ORG",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-low-surrogate-cr",
+    "pattern": ".*\\Q\udc00\\E.*",
+    "text": "\rorg",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "literal-low-surrogate-lf",
+    "pattern": ".*\\Q\udc00\\E.*",
+    "text": "org\n",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "literal-low-surrogate-nel",
+    "pattern": ".*\\Q\udc00\\E.*",
+    "text": "\u0085org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "literal-low-surrogate-ls",
+    "pattern": ".*\\Q\udc00\\E.*",
+    "text": "org\u2028",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "literal-low-surrogate-ps",
+    "pattern": ".*\\Q\udc00\\E.*",
+    "text": "org\u2029",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "literal-low-surrogate-unicode",
+    "pattern": ".*\\Q\udc00\\E.*",
+    "text": "\u00e9\ud83d\ude00org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "literal-low-surrogate-surrogate",
+    "pattern": ".*\\Q\udc00\\E.*",
+    "text": "\ud800org",
+    "eligiblePattern": false,
+    "eligibleInput": false,
+    "literal": null
+  },
+  {
+    "name": "literal-low-surrogate-embedded-E",
+    "pattern": ".*\\Q\udc00\\E.*",
+    "text": "foo\\Ebar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  },
+  {
+    "name": "literal-low-surrogate-foobar",
+    "pattern": ".*\\Q\udc00\\E.*",
+    "text": "foobar",
+    "eligiblePattern": false,
+    "eligibleInput": true,
+    "literal": null
+  }
+]

@@ -1,0 +1,7 @@
+{
+  "revision": "bc708a810fce0d111988c72a3105820bfd1cf06e",
+  "internalGoFilesExactlyEqualToHEAD": 279,
+  "addedTest": "internal/javaregex/quote_oracle_baseline_test.go",
+  "newProductionFiles": [],
+  "source": "/Users/johnsonlee/.codex/benchmarks/graphite/regex-quote-baseline-diagnostic-bc708-v1/module"
+}

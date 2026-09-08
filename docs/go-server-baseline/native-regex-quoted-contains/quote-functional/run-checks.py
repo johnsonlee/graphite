@@ -1,0 +1,108 @@
+"""Freeze and check only the staged functional quote correction, without contains plan.
+
+First execution reads three staged sources and archives their bytes. To reproduce after
+commit, use --from-archive and --directory pointing to a new external directory.
+No performance benchmark is run; Go test durations are correctness-run observations.
+"""
+import argparse, datetime, gzip, hashlib, json, os, shutil, subprocess
+from pathlib import Path
+BASE = Path(__file__).resolve().parent
+ROOT = BASE.parents[3]
+GO = Path('/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go')
+BASELINE = Path('/Users/johnsonlee/.codex/benchmarks/graphite/ast-cache-61828229-build-v1/source')
+p = argparse.ArgumentParser()
+p.add_argument('--directory', type=Path, default=Path('/Users/johnsonlee/.codex/benchmarks/graphite/regex-quote-functional-bc708-v2'))
+p.add_argument('--from-archive', action='store_true')
+a = p.parse_args()
+DEST = a.directory
+MODULE = DEST / 'module'
+OUT = DEST / 'checks' if a.from_archive else BASE
+DEST.mkdir(parents=True, exist_ok=False)
+OUT.mkdir(parents=True, exist_ok=True)
+def sha(path): return hashlib.sha256(path.read_bytes()).hexdigest()
+def dump(path, value): path.write_text(json.dumps(value, indent=2) + '\n')
+def snapshot(paths): return {str(q): {'bytes': q.stat().st_size, 'sha256': sha(q)} for q in sorted(set(paths))}
+def files(root): return [q for q in root.rglob('*') if q.is_file()]
+def gzjson(path, value):
+    with gzip.GzipFile(filename=str(path), mode='wb', mtime=0) as f:
+        f.write((json.dumps(value, indent=2) + '\n').encode())
+shutil.copytree(BASELINE, MODULE)
+(DEST / 'docs').symlink_to(ROOT / 'docs', target_is_directory=True)
+# OpenAPI snapshot tests hash original Kotlin builders in the sibling project.
+spec = json.loads((MODULE / 'internal/server/spec/manifest.json').read_text())
+kotlin = Path('graphite-explore/src/main/kotlin/io/johnsonlee/graphite/cli')
+for name, want in spec['sourceSha256'].items():
+    target = DEST / kotlin / name
+    target.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(ROOT / kotlin / name, target)
+    assert sha(target) == want, name
+overlay = {}
+for name in ['regex.go', 'quote.go', 'quote_test.go']:
+    archive = BASE / (name + '.txt')
+    data = archive.read_bytes() if a.from_archive else subprocess.check_output(['git', 'show', ':graphite-server/internal/javaregex/' + name], cwd=ROOT)
+    if archive.exists(): assert archive.read_bytes() == data, str(archive)
+    elif not a.from_archive: archive.write_bytes(data)
+    (MODULE / 'internal/javaregex' / name).write_bytes(data)
+    overlay[name] = hashlib.sha256(data).hexdigest()
+assert b'quotedContains' not in (MODULE / 'internal/javaregex/regex.go').read_bytes()
+assert not list(MODULE.rglob('quoted_contains*.go'))
+baseline = {str(q.relative_to(BASELINE)): sha(q) for q in files(BASELINE)}
+module = {str(q.relative_to(MODULE)): sha(q) for q in files(MODULE)}
+changed = sorted(k for k in baseline.keys() | module.keys() if baseline.get(k) != module.get(k))
+assert changed == ['internal/javaregex/quote.go', 'internal/javaregex/quote_test.go', 'internal/javaregex/regex.go'], changed
+inputs = files(MODULE) + files(DEST / 'graphite-explore')
+for name in ['native-unknown-label-routing', 'native-source-constructor', 'native-filtered-string-aggregation', 'tika-query-baseline']:
+    inputs += files(ROOT / 'docs/go-server-baseline' / name)
+inputs += [ROOT / 'docs/go-server-baseline/native-ast-cache/main.json', BASE.parent / 'pattern-main.json', BASE.parent / 'quote-index-controls/pattern-main.json', GO, Path(__file__)]
+inputs += [BASE / (name + '.txt') for name in overlay]
+env = dict(os.environ)
+env['PATH'] = str(GO.parent) + os.pathsep + env.get('PATH', '')
+env['GOTOOLCHAIN'] = 'local'
+removed = []
+for key in list(env):
+    if key.endswith('_OUTPUT') or key.endswith('_INPUT_DIR') or key in ['FILTERED_COUNT_ORACLE']:
+        removed.append(key)
+        del env[key]
+version = subprocess.check_output([str(GO), 'version'], env=env, text=True).strip()
+assert version == 'go version go1.22.0 darwin/arm64', version
+goenv = json.loads(subprocess.check_output([str(GO), 'env', '-json'], cwd=MODULE, env=env))
+dump(OUT / 'go-env.json', goenv)
+# Transitive toolchain and downloaded module inputs are frozen by content hashes.
+inputs += files(Path(goenv['GOROOT']))
+deps = subprocess.check_output([str(GO), 'list', '-m', '-json', 'all'], cwd=MODULE, env=env, text=True)
+(OUT / 'dependencies.jsonstream').write_text(deps)
+dec = json.JSONDecoder()
+while deps.strip():
+    obj, n = dec.raw_decode(deps.lstrip())
+    deps = deps.lstrip()[n:]
+    if not obj.get('Main') and obj.get('Dir'): inputs += files(Path(obj['Dir']))
+before = snapshot(inputs)
+gzjson(OUT / 'inputs-before.json.gz', before)
+dump(OUT / 'module-source.json', {'baseline': str(BASELINE), 'baselineFileCount': len(baseline), 'module': str(MODULE), 'files': module, 'changed': changed, 'overlay': overlay})
+receipt = {'head': subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip(), 'module': str(MODULE), 'goVersion': version, 'performanceMeasurement': False, 'sourceScope': 'functional quote preprocessing and diagnostics only; no quoted contains plan', 'inputCount': len(before), 'removedEnvironmentKeys': removed, 'steps': []}
+for args, logname in [(['test', '-race', '-count=1', '-json', './...'], 'race.jsonl'), (['vet', './...'], 'vet.log')]:
+    command = [str(GO)] + args
+    start = datetime.datetime.now(datetime.timezone.utc).isoformat()
+    with (OUT / logname).open('x') as log:
+        result = subprocess.run(command, cwd=MODULE, env=env, stdout=log, stderr=subprocess.STDOUT)
+    after = snapshot(inputs)
+    step = {'command': command, 'cwd': str(MODULE), 'startedAt': start, 'finishedAt': datetime.datetime.now(datetime.timezone.utc).isoformat(), 'exitCode': result.returncode, 'log': logname, 'inputsUnchanged': before == after}
+    receipt['steps'].append(step)
+    dump(OUT / 'receipt.json', receipt)
+    print(json.dumps(step), flush=True)
+    assert result.returncode == 0 and before == after
+rows = [json.loads(line) for line in (OUT / 'race.jsonl').read_text().splitlines()]
+base = 'TestQuotePreprocessingAndDiagnosticsMatchActualJava'
+passed = [r['Test'] for r in rows if r.get('Action') == 'pass' and r.get('Test', '').startswith(base + '/')]
+assert len(passed) == 686 and len(set(passed)) == 686, len(passed)
+assert any(r.get('Action') == 'pass' and r.get('Test') == base for r in rows)
+assert not any(r.get('Action') == 'fail' for r in rows)
+receipt['actualJavaQuoteSubcasesPassed'] = len(passed)
+receipt['actualJavaCorpusCounts'] = [len(json.loads((BASE.parent / x).read_text())['cases']) for x in ['pattern-main.json', 'quote-index-controls/pattern-main.json']]
+receipt['packagesPassed'] = [r['Package'] for r in rows if r.get('Action') == 'pass' and 'Test' not in r]
+receipt['inputsUnchanged'] = before == after
+receipt['moduleInventoryUnchanged'] = module == {str(q.relative_to(MODULE)): sha(q) for q in files(MODULE)}
+assert receipt['moduleInventoryUnchanged']
+gzjson(OUT / 'inputs-after.json.gz', after)
+dump(OUT / 'receipt.json', receipt)
+print(json.dumps({'complete': True, 'oracleCasesPassed': len(passed), 'inputCount': len(before), 'inputsUnchanged': True}), flush=True)

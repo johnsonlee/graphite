@@ -1,0 +1,12 @@
+{
+  "stagedInternalGoFilesExactlyMatchCapturedModule": 281,
+  "capturedModuleFileCount": 2531,
+  "graphStateObservations": 486848,
+  "allThreeComparatorsPassed": true,
+  "casesPerState": 1267,
+  "successfulCasesPerState": 1266,
+  "originalFailurePreserved": true,
+  "formalWarmPrepared": false,
+  "performanceMeasurement": false,
+  "runnerArchiveNote": "The captured runner wrote module-source.json; its identical bytes were preserved as real64-module-source.json before the independent full-test manifest was restored. The reproduction runner now uses the distinct filename."
+}

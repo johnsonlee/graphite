@@ -1,0 +1,387 @@
+[
+  {
+    "name": "body-0-tail-0",
+    "pattern": ".*\\Qfoo\\Ebar\\E.*",
+    "text": ""
+  },
+  {
+    "name": "body-0-tail-1",
+    "pattern": ".*\\Qfoo\\E[",
+    "text": ""
+  },
+  {
+    "name": "body-0-tail-2",
+    "pattern": ".*\\Qfoo\\E(",
+    "text": ""
+  },
+  {
+    "name": "body-0-tail-3",
+    "pattern": ".*\\Qfoo\\E\\y",
+    "text": ""
+  },
+  {
+    "name": "body-1-tail-0",
+    "pattern": ".*\\Qa.b\\Ebar\\E.*",
+    "text": ""
+  },
+  {
+    "name": "body-1-tail-1",
+    "pattern": ".*\\Qa.b\\E[",
+    "text": ""
+  },
+  {
+    "name": "body-1-tail-2",
+    "pattern": ".*\\Qa.b\\E(",
+    "text": ""
+  },
+  {
+    "name": "body-1-tail-3",
+    "pattern": ".*\\Qa.b\\E\\y",
+    "text": ""
+  },
+  {
+    "name": "body-2-tail-0",
+    "pattern": ".*\\Q1foo\\Ebar\\E.*",
+    "text": ""
+  },
+  {
+    "name": "body-2-tail-1",
+    "pattern": ".*\\Q1foo\\E[",
+    "text": ""
+  },
+  {
+    "name": "body-2-tail-2",
+    "pattern": ".*\\Q1foo\\E(",
+    "text": ""
+  },
+  {
+    "name": "body-2-tail-3",
+    "pattern": ".*\\Q1foo\\E\\y",
+    "text": ""
+  },
+  {
+    "name": "body-3-tail-0",
+    "pattern": ".*\\Q\\foo\\Ebar\\E.*",
+    "text": ""
+  },
+  {
+    "name": "body-3-tail-1",
+    "pattern": ".*\\Q\\foo\\E[",
+    "text": ""
+  },
+  {
+    "name": "body-3-tail-2",
+    "pattern": ".*\\Q\\foo\\E(",
+    "text": ""
+  },
+  {
+    "name": "body-3-tail-3",
+    "pattern": ".*\\Q\\foo\\E\\y",
+    "text": ""
+  },
+  {
+    "name": "body-4-tail-0",
+    "pattern": ".*\\Q\u00e9\\Ebar\\E.*",
+    "text": ""
+  },
+  {
+    "name": "body-4-tail-1",
+    "pattern": ".*\\Q\u00e9\\E[",
+    "text": ""
+  },
+  {
+    "name": "body-4-tail-2",
+    "pattern": ".*\\Q\u00e9\\E(",
+    "text": ""
+  },
+  {
+    "name": "body-4-tail-3",
+    "pattern": ".*\\Q\u00e9\\E\\y",
+    "text": ""
+  },
+  {
+    "name": "body-5-tail-0",
+    "pattern": ".*\\Q\ud83d\ude00\\Ebar\\E.*",
+    "text": ""
+  },
+  {
+    "name": "body-5-tail-1",
+    "pattern": ".*\\Q\ud83d\ude00\\E[",
+    "text": ""
+  },
+  {
+    "name": "body-5-tail-2",
+    "pattern": ".*\\Q\ud83d\ude00\\E(",
+    "text": ""
+  },
+  {
+    "name": "body-5-tail-3",
+    "pattern": ".*\\Q\ud83d\ude00\\E\\y",
+    "text": ""
+  },
+  {
+    "name": "body-6-tail-0",
+    "pattern": ".*\\Q\ud800\\Ebar\\E.*",
+    "text": ""
+  },
+  {
+    "name": "body-6-tail-1",
+    "pattern": ".*\\Q\ud800\\E[",
+    "text": ""
+  },
+  {
+    "name": "body-6-tail-2",
+    "pattern": ".*\\Q\ud800\\E(",
+    "text": ""
+  },
+  {
+    "name": "body-6-tail-3",
+    "pattern": ".*\\Q\ud800\\E\\y",
+    "text": ""
+  },
+  {
+    "name": "body-7-tail-0",
+    "pattern": ".*\\Q\udc00\\Ebar\\E.*",
+    "text": ""
+  },
+  {
+    "name": "body-7-tail-1",
+    "pattern": ".*\\Q\udc00\\E[",
+    "text": ""
+  },
+  {
+    "name": "body-7-tail-2",
+    "pattern": ".*\\Q\udc00\\E(",
+    "text": ""
+  },
+  {
+    "name": "body-7-tail-3",
+    "pattern": ".*\\Q\udc00\\E\\y",
+    "text": ""
+  },
+  {
+    "name": "body-8-tail-0",
+    "pattern": ".*\\Q!!!\\Ebar\\E.*",
+    "text": ""
+  },
+  {
+    "name": "body-8-tail-1",
+    "pattern": ".*\\Q!!!\\E[",
+    "text": ""
+  },
+  {
+    "name": "body-8-tail-2",
+    "pattern": ".*\\Q!!!\\E(",
+    "text": ""
+  },
+  {
+    "name": "body-8-tail-3",
+    "pattern": ".*\\Q!!!\\E\\y",
+    "text": ""
+  },
+  {
+    "name": "body-9-tail-0",
+    "pattern": ".*\\Q!!!!!!!!\\Ebar\\E.*",
+    "text": ""
+  },
+  {
+    "name": "body-9-tail-1",
+    "pattern": ".*\\Q!!!!!!!!\\E[",
+    "text": ""
+  },
+  {
+    "name": "body-9-tail-2",
+    "pattern": ".*\\Q!!!!!!!!\\E(",
+    "text": ""
+  },
+  {
+    "name": "body-9-tail-3",
+    "pattern": ".*\\Q!!!!!!!!\\E\\y",
+    "text": ""
+  },
+  {
+    "name": "prefix-0-body-0",
+    "pattern": "\\Q1foo\\E[",
+    "text": ""
+  },
+  {
+    "name": "prefix-0-body-1",
+    "pattern": "\\Qa.b\\E[",
+    "text": ""
+  },
+  {
+    "name": "prefix-0-body-2",
+    "pattern": "\\Q\\foo\\E[",
+    "text": ""
+  },
+  {
+    "name": "prefix-0-body-3",
+    "pattern": "\\Q\ud83d\ude00\\E[",
+    "text": ""
+  },
+  {
+    "name": "prefix-1-body-0",
+    "pattern": "\\\\\\Q1foo\\E[",
+    "text": ""
+  },
+  {
+    "name": "prefix-1-body-1",
+    "pattern": "\\\\\\Qa.b\\E[",
+    "text": ""
+  },
+  {
+    "name": "prefix-1-body-2",
+    "pattern": "\\\\\\Q\\foo\\E[",
+    "text": ""
+  },
+  {
+    "name": "prefix-1-body-3",
+    "pattern": "\\\\\\Q\ud83d\ude00\\E[",
+    "text": ""
+  },
+  {
+    "name": "prefix-2-body-0",
+    "pattern": "\\.\\Q1foo\\E[",
+    "text": ""
+  },
+  {
+    "name": "prefix-2-body-1",
+    "pattern": "\\.\\Qa.b\\E[",
+    "text": ""
+  },
+  {
+    "name": "prefix-2-body-2",
+    "pattern": "\\.\\Q\\foo\\E[",
+    "text": ""
+  },
+  {
+    "name": "prefix-2-body-3",
+    "pattern": "\\.\\Q\ud83d\ude00\\E[",
+    "text": ""
+  },
+  {
+    "name": "prefix-3-body-0",
+    "pattern": "[a]\\Q1foo\\E[",
+    "text": ""
+  },
+  {
+    "name": "prefix-3-body-1",
+    "pattern": "[a]\\Qa.b\\E[",
+    "text": ""
+  },
+  {
+    "name": "prefix-3-body-2",
+    "pattern": "[a]\\Q\\foo\\E[",
+    "text": ""
+  },
+  {
+    "name": "prefix-3-body-3",
+    "pattern": "[a]\\Q\ud83d\ude00\\E[",
+    "text": ""
+  },
+  {
+    "name": "focused-0",
+    "pattern": "\\\\Qfoo\\E",
+    "text": ""
+  },
+  {
+    "name": "focused-1",
+    "pattern": "\\Q\\E[",
+    "text": ""
+  },
+  {
+    "name": "focused-2",
+    "pattern": "\\Q\\E\\Q1\\E[",
+    "text": ""
+  },
+  {
+    "name": "focused-3",
+    "pattern": "\\x\\Q1\\E[",
+    "text": ""
+  },
+  {
+    "name": "focused-4",
+    "pattern": "\\0\\Q1\\E[",
+    "text": ""
+  },
+  {
+    "name": "focused-5",
+    "pattern": "(?x)\\Q #\\E[",
+    "text": ""
+  },
+  {
+    "name": "focused-6",
+    "pattern": "\\Q\t.\\E[",
+    "text": ""
+  },
+  {
+    "name": "focused-7",
+    "pattern": "\\Q\\t.\\E[",
+    "text": ""
+  },
+  {
+    "name": "focused-8",
+    "pattern": "\\Qa.b\\E\\Q1c\\E\\y",
+    "text": ""
+  },
+  {
+    "name": "focused-9",
+    "pattern": ".*\\Qfoo\\Ebar\\E.*",
+    "text": ""
+  },
+  {
+    "name": "focused-10",
+    "pattern": "\\Qfoo",
+    "text": ""
+  },
+  {
+    "name": "focused-11",
+    "pattern": ".*\\Qfoo.*",
+    "text": ""
+  },
+  {
+    "name": "focused-12",
+    "pattern": "\\Q1\\E(",
+    "text": ""
+  },
+  {
+    "name": "focused-13",
+    "pattern": "\\Q!!!\\E[",
+    "text": ""
+  },
+  {
+    "name": "focused-14",
+    "pattern": "\\Q!!!!!!!!\\E[",
+    "text": ""
+  },
+  {
+    "name": "focused-15",
+    "pattern": "\\Q\\E",
+    "text": ""
+  },
+  {
+    "name": "focused-16",
+    "pattern": "\\Q\ud83d\ude00\\E(",
+    "text": ""
+  },
+  {
+    "name": "focused-17",
+    "pattern": "\\Q\ud83d\ude00\\E\\Q1.\\E[",
+    "text": ""
+  },
+  {
+    "name": "focused-18",
+    "pattern": "\\Q\u00e9\\E\\Q!\\E[",
+    "text": ""
+  },
+  {
+    "name": "focused-19",
+    "pattern": "\\Q\\E\\Q\\E[",
+    "text": ""
+  },
+  {
+    "name": "focused-20",
+    "pattern": "\\Q\\\\\\E[",
+    "text": ""
+  }
+]

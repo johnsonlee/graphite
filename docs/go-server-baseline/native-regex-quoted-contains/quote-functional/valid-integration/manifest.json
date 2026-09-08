@@ -1,0 +1,21 @@
+{
+  "QuoteReview.java": "7b4c27ce0da798e4b4a98769a935a1e7bfb2fea6e43db88fa2a5db673b8e4c91",
+  "README.md": "e30cfefeda6d87a82fae8d08263502ae8dd97b735567e65da03ea9be8f429b1e",
+  "cases.json": "66d45c4a6e6a07d8693962c1345542ff08510909fff280a328011996be8d9dfe",
+  "comparison.json": "4408b473ec7a50915579d6a0c9d80ad854da4cf499596c4d6c00c8b6c3e2c79d",
+  "head-go.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "head-go.txt": "4b37bd1e964cdd2e4a63ab25377ddaae13c374cc674d9be25103fbb1410539aa",
+  "head-source.json": "8fab4649e38b15a82b391ea56e2d4cc91d370f4305ea9314cddd85c3fc2e4ffe",
+  "head-source.tar.gz": "96a687db00c9b264e1c3553effd167672645705822b795b7f8fe2f5f56be693b",
+  "java.txt": "19d9ed2f7c0739943368083efa71cd4892b8765eb08e5c526b2bdc34a6201c34",
+  "main.go": "b52efc0b2fe05582ccaadbf91d85dfa00dfe25712b631350230ab29b68deaded",
+  "receipts.json": "cc3631ec25c4ec1c9f359171c7d61871f022e52ccf0a8282cc47d7ae63a40877",
+  "repeat-java.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "repeat-java.txt": "19d9ed2f7c0739943368083efa71cd4892b8765eb08e5c526b2bdc34a6201c34",
+  "repeat-staged-go.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "repeat-staged-go.txt": "19d9ed2f7c0739943368083efa71cd4892b8765eb08e5c526b2bdc34a6201c34",
+  "staged-go.txt": "19d9ed2f7c0739943368083efa71cd4892b8765eb08e5c526b2bdc34a6201c34",
+  "staged-source.json": "2225d6f5af2e05e6af4588ea5fdf341e37234297785bb647259d9b793e2bc769",
+  "staged-source.tar.gz": "3937b96cc5b0fb3be21014f0a14d258aca49f762a8bf2b66ef25dfa0bfc4b808",
+  "verify.py": "795968ca8bc30ff0ae5ff2898e1f464991d4f96807172dccc01be355c3314569"
+}

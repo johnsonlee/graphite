@@ -1,0 +1,63 @@
+{
+  "head": "bc708a810fce0d111988c72a3105820bfd1cf06e",
+  "module": "/Users/johnsonlee/.codex/benchmarks/graphite/regex-quote-functional-bc708-v2/module",
+  "goVersion": "go version go1.22.0 darwin/arm64",
+  "performanceMeasurement": false,
+  "sourceScope": "functional quote preprocessing and diagnostics only; no quoted contains plan",
+  "inputCount": 16498,
+  "removedEnvironmentKeys": [],
+  "steps": [
+    {
+      "command": [
+        "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+        "test",
+        "-race",
+        "-count=1",
+        "-json",
+        "./..."
+      ],
+      "cwd": "/Users/johnsonlee/.codex/benchmarks/graphite/regex-quote-functional-bc708-v2/module",
+      "startedAt": "2026-09-08T06:45:31.209973+00:00",
+      "finishedAt": "2026-09-08T06:46:17.521785+00:00",
+      "exitCode": 0,
+      "log": "race.jsonl",
+      "inputsUnchanged": true
+    },
+    {
+      "command": [
+        "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+        "vet",
+        "./..."
+      ],
+      "cwd": "/Users/johnsonlee/.codex/benchmarks/graphite/regex-quote-functional-bc708-v2/module",
+      "startedAt": "2026-09-08T06:46:17.524409+00:00",
+      "finishedAt": "2026-09-08T06:46:20.411452+00:00",
+      "exitCode": 0,
+      "log": "vet.log",
+      "inputsUnchanged": true
+    }
+  ],
+  "actualJavaQuoteSubcasesPassed": 686,
+  "actualJavaCorpusCounts": [
+    609,
+    77
+  ],
+  "packagesPassed": [
+    "github.com/johnsonlee/graphite/graphite-server/cmd/graphite-benchmark-latency",
+    "github.com/johnsonlee/graphite/graphite-server/cmd/graphite-benchmark-replay",
+    "github.com/johnsonlee/graphite/graphite-server/cmd/graphite-server",
+    "github.com/johnsonlee/graphite/graphite-server/internal/analysis",
+    "github.com/johnsonlee/graphite/graphite-server/internal/profiling",
+    "github.com/johnsonlee/graphite/graphite-server/internal/javaregex",
+    "github.com/johnsonlee/graphite/graphite-server/internal/javamath",
+    "github.com/johnsonlee/graphite/graphite-server/internal/javastring",
+    "github.com/johnsonlee/graphite/graphite-server/internal/analysis/c4",
+    "github.com/johnsonlee/graphite/graphite-server/internal/server",
+    "github.com/johnsonlee/graphite/graphite-server/internal/benchmarkcase",
+    "github.com/johnsonlee/graphite/graphite-server/internal/store",
+    "github.com/johnsonlee/graphite/graphite-server/internal/cypher",
+    "github.com/johnsonlee/graphite/graphite-server/internal/query"
+  ],
+  "inputsUnchanged": true,
+  "moduleInventoryUnchanged": true
+}

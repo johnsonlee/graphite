@@ -1,0 +1,13 @@
+{
+  "cases": 77,
+  "runs": 2,
+  "completeRepeatDifferences": 0,
+  "outcomes": {
+    "FAILED": 74,
+    "SUCCESS": 3
+  },
+  "scope": "Existing Java regex quote-rewrite error-index compatibility; not a new fastpath regression",
+  "graphLoads": 0,
+  "publicQueries": 0,
+  "performanceMeasurements": 0
+}

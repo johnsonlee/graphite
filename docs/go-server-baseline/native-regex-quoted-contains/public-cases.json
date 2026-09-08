@@ -1,0 +1,585 @@
+[
+  {
+    "name": "public-main-zero-empty",
+    "query": "RETURN $text =~ $pattern AS matched",
+    "parameters": {
+      "text": "",
+      "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*"
+    },
+    "directPatternCase": "main-zero-empty"
+  },
+  {
+    "name": "public-main-zero-exact",
+    "query": "RETURN $text =~ $pattern AS matched",
+    "parameters": {
+      "text": "GraphitePressureAbsent45zeroX",
+      "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*"
+    },
+    "directPatternCase": "main-zero-exact"
+  },
+  {
+    "name": "public-main-zero-middle",
+    "query": "RETURN $text =~ $pattern AS matched",
+    "parameters": {
+      "text": "headGraphitePressureAbsent45zeroXtail",
+      "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*"
+    },
+    "directPatternCase": "main-zero-middle"
+  },
+  {
+    "name": "public-main-zero-repeated",
+    "query": "RETURN $text =~ $pattern AS matched",
+    "parameters": {
+      "text": "GraphitePressureAbsent45zeroXGraphitePressureAbsent45zeroX",
+      "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*"
+    },
+    "directPatternCase": "main-zero-repeated"
+  },
+  {
+    "name": "public-main-zero-cr-before",
+    "query": "RETURN $text =~ $pattern AS matched",
+    "parameters": {
+      "text": "\rGraphitePressureAbsent45zeroX",
+      "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*"
+    },
+    "directPatternCase": "main-zero-cr-before"
+  },
+  {
+    "name": "public-main-zero-lf-after",
+    "query": "RETURN $text =~ $pattern AS matched",
+    "parameters": {
+      "text": "GraphitePressureAbsent45zeroX\n",
+      "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*"
+    },
+    "directPatternCase": "main-zero-lf-after"
+  },
+  {
+    "name": "public-main-zero-nel-before",
+    "query": "RETURN $text =~ $pattern AS matched",
+    "parameters": {
+      "text": "\u0085GraphitePressureAbsent45zeroX",
+      "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*"
+    },
+    "directPatternCase": "main-zero-nel-before"
+  },
+  {
+    "name": "public-main-zero-ls-after",
+    "query": "RETURN $text =~ $pattern AS matched",
+    "parameters": {
+      "text": "GraphitePressureAbsent45zeroX\u2028",
+      "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*"
+    },
+    "directPatternCase": "main-zero-ls-after"
+  },
+  {
+    "name": "public-main-zero-ps-after",
+    "query": "RETURN $text =~ $pattern AS matched",
+    "parameters": {
+      "text": "GraphitePressureAbsent45zeroX\u2029",
+      "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*"
+    },
+    "directPatternCase": "main-zero-ps-after"
+  },
+  {
+    "name": "public-main-zero-nonascii-before",
+    "query": "RETURN $text =~ $pattern AS matched",
+    "parameters": {
+      "text": "\u00e9GraphitePressureAbsent45zeroX",
+      "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*"
+    },
+    "directPatternCase": "main-zero-nonascii-before"
+  },
+  {
+    "name": "public-main-zero-supplementary-after",
+    "query": "RETURN $text =~ $pattern AS matched",
+    "parameters": {
+      "text": "GraphitePressureAbsent45zeroX\ud83d\ude00",
+      "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*"
+    },
+    "directPatternCase": "main-zero-supplementary-after"
+  },
+  {
+    "name": "public-main-zero-high-before",
+    "query": "RETURN $text =~ $pattern AS matched",
+    "parameters": {
+      "text": "\ud800GraphitePressureAbsent45zeroX",
+      "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*"
+    },
+    "directPatternCase": "main-zero-high-before"
+  },
+  {
+    "name": "public-main-zero-low-after",
+    "query": "RETURN $text =~ $pattern AS matched",
+    "parameters": {
+      "text": "GraphitePressureAbsent45zeroX\udc00",
+      "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*"
+    },
+    "directPatternCase": "main-zero-low-after"
+  },
+  {
+    "name": "public-main-zero-vertical-before",
+    "query": "RETURN $text =~ $pattern AS matched",
+    "parameters": {
+      "text": "\u000bGraphitePressureAbsent45zeroX",
+      "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*"
+    },
+    "directPatternCase": "main-zero-vertical-before"
+  },
+  {
+    "name": "public-main-zero-nul-after",
+    "query": "RETURN $text =~ $pattern AS matched",
+    "parameters": {
+      "text": "GraphitePressureAbsent45zeroX\u0000",
+      "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*"
+    },
+    "directPatternCase": "main-zero-nul-after"
+  },
+  {
+    "name": "public-main-targeted-empty",
+    "query": "RETURN $text =~ $pattern AS matched",
+    "parameters": {
+      "text": "",
+      "pattern": ".*\\Qorg.apache.tika.\\E.*"
+    },
+    "directPatternCase": "main-targeted-empty"
+  },
+  {
+    "name": "public-main-targeted-exact",
+    "query": "RETURN $text =~ $pattern AS matched",
+    "parameters": {
+      "text": "org.apache.tika.",
+      "pattern": ".*\\Qorg.apache.tika.\\E.*"
+    },
+    "directPatternCase": "main-targeted-exact"
+  },
+  {
+    "name": "public-main-targeted-middle",
+    "query": "RETURN $text =~ $pattern AS matched",
+    "parameters": {
+      "text": "headorg.apache.tika.tail",
+      "pattern": ".*\\Qorg.apache.tika.\\E.*"
+    },
+    "directPatternCase": "main-targeted-middle"
+  },
+  {
+    "name": "public-main-targeted-repeated",
+    "query": "RETURN $text =~ $pattern AS matched",
+    "parameters": {
+      "text": "org.apache.tika.org.apache.tika.",
+      "pattern": ".*\\Qorg.apache.tika.\\E.*"
+    },
+    "directPatternCase": "main-targeted-repeated"
+  },
+  {
+    "name": "public-main-targeted-cr-before",
+    "query": "RETURN $text =~ $pattern AS matched",
+    "parameters": {
+      "text": "\rorg.apache.tika.",
+      "pattern": ".*\\Qorg.apache.tika.\\E.*"
+    },
+    "directPatternCase": "main-targeted-cr-before"
+  },
+  {
+    "name": "public-main-targeted-lf-after",
+    "query": "RETURN $text =~ $pattern AS matched",
+    "parameters": {
+      "text": "org.apache.tika.\n",
+      "pattern": ".*\\Qorg.apache.tika.\\E.*"
+    },
+    "directPatternCase": "main-targeted-lf-after"
+  },
+  {
+    "name": "public-main-targeted-nel-before",
+    "query": "RETURN $text =~ $pattern AS matched",
+    "parameters": {
+      "text": "\u0085org.apache.tika.",
+      "pattern": ".*\\Qorg.apache.tika.\\E.*"
+    },
+    "directPatternCase": "main-targeted-nel-before"
+  },
+  {
+    "name": "public-main-targeted-ls-after",
+    "query": "RETURN $text =~ $pattern AS matched",
+    "parameters": {
+      "text": "org.apache.tika.\u2028",
+      "pattern": ".*\\Qorg.apache.tika.\\E.*"
+    },
+    "directPatternCase": "main-targeted-ls-after"
+  },
+  {
+    "name": "public-main-targeted-ps-after",
+    "query": "RETURN $text =~ $pattern AS matched",
+    "parameters": {
+      "text": "org.apache.tika.\u2029",
+      "pattern": ".*\\Qorg.apache.tika.\\E.*"
+    },
+    "directPatternCase": "main-targeted-ps-after"
+  },
+  {
+    "name": "public-main-targeted-nonascii-before",
+    "query": "RETURN $text =~ $pattern AS matched",
+    "parameters": {
+      "text": "\u00e9org.apache.tika.",
+      "pattern": ".*\\Qorg.apache.tika.\\E.*"
+    },
+    "directPatternCase": "main-targeted-nonascii-before"
+  },
+  {
+    "name": "public-main-targeted-supplementary-after",
+    "query": "RETURN $text =~ $pattern AS matched",
+    "parameters": {
+      "text": "org.apache.tika.\ud83d\ude00",
+      "pattern": ".*\\Qorg.apache.tika.\\E.*"
+    },
+    "directPatternCase": "main-targeted-supplementary-after"
+  },
+  {
+    "name": "public-main-targeted-high-before",
+    "query": "RETURN $text =~ $pattern AS matched",
+    "parameters": {
+      "text": "\ud800org.apache.tika.",
+      "pattern": ".*\\Qorg.apache.tika.\\E.*"
+    },
+    "directPatternCase": "main-targeted-high-before"
+  },
+  {
+    "name": "public-main-targeted-low-after",
+    "query": "RETURN $text =~ $pattern AS matched",
+    "parameters": {
+      "text": "org.apache.tika.\udc00",
+      "pattern": ".*\\Qorg.apache.tika.\\E.*"
+    },
+    "directPatternCase": "main-targeted-low-after"
+  },
+  {
+    "name": "public-main-targeted-vertical-before",
+    "query": "RETURN $text =~ $pattern AS matched",
+    "parameters": {
+      "text": "\u000borg.apache.tika.",
+      "pattern": ".*\\Qorg.apache.tika.\\E.*"
+    },
+    "directPatternCase": "main-targeted-vertical-before"
+  },
+  {
+    "name": "public-main-targeted-nul-after",
+    "query": "RETURN $text =~ $pattern AS matched",
+    "parameters": {
+      "text": "org.apache.tika.\u0000",
+      "pattern": ".*\\Qorg.apache.tika.\\E.*"
+    },
+    "directPatternCase": "main-targeted-nul-after"
+  },
+  {
+    "name": "public-main-dense-empty",
+    "query": "RETURN $text =~ $pattern AS matched",
+    "parameters": {
+      "text": "",
+      "pattern": ".*\\Qorg\\E.*"
+    },
+    "directPatternCase": "main-dense-empty"
+  },
+  {
+    "name": "public-main-dense-exact",
+    "query": "RETURN $text =~ $pattern AS matched",
+    "parameters": {
+      "text": "org",
+      "pattern": ".*\\Qorg\\E.*"
+    },
+    "directPatternCase": "main-dense-exact"
+  },
+  {
+    "name": "public-main-dense-middle",
+    "query": "RETURN $text =~ $pattern AS matched",
+    "parameters": {
+      "text": "headorgtail",
+      "pattern": ".*\\Qorg\\E.*"
+    },
+    "directPatternCase": "main-dense-middle"
+  },
+  {
+    "name": "public-main-dense-repeated",
+    "query": "RETURN $text =~ $pattern AS matched",
+    "parameters": {
+      "text": "orgorg",
+      "pattern": ".*\\Qorg\\E.*"
+    },
+    "directPatternCase": "main-dense-repeated"
+  },
+  {
+    "name": "public-main-dense-cr-before",
+    "query": "RETURN $text =~ $pattern AS matched",
+    "parameters": {
+      "text": "\rorg",
+      "pattern": ".*\\Qorg\\E.*"
+    },
+    "directPatternCase": "main-dense-cr-before"
+  },
+  {
+    "name": "public-main-dense-lf-after",
+    "query": "RETURN $text =~ $pattern AS matched",
+    "parameters": {
+      "text": "org\n",
+      "pattern": ".*\\Qorg\\E.*"
+    },
+    "directPatternCase": "main-dense-lf-after"
+  },
+  {
+    "name": "public-main-dense-nel-before",
+    "query": "RETURN $text =~ $pattern AS matched",
+    "parameters": {
+      "text": "\u0085org",
+      "pattern": ".*\\Qorg\\E.*"
+    },
+    "directPatternCase": "main-dense-nel-before"
+  },
+  {
+    "name": "public-main-dense-ls-after",
+    "query": "RETURN $text =~ $pattern AS matched",
+    "parameters": {
+      "text": "org\u2028",
+      "pattern": ".*\\Qorg\\E.*"
+    },
+    "directPatternCase": "main-dense-ls-after"
+  },
+  {
+    "name": "public-main-dense-ps-after",
+    "query": "RETURN $text =~ $pattern AS matched",
+    "parameters": {
+      "text": "org\u2029",
+      "pattern": ".*\\Qorg\\E.*"
+    },
+    "directPatternCase": "main-dense-ps-after"
+  },
+  {
+    "name": "public-main-dense-nonascii-before",
+    "query": "RETURN $text =~ $pattern AS matched",
+    "parameters": {
+      "text": "\u00e9org",
+      "pattern": ".*\\Qorg\\E.*"
+    },
+    "directPatternCase": "main-dense-nonascii-before"
+  },
+  {
+    "name": "public-main-dense-supplementary-after",
+    "query": "RETURN $text =~ $pattern AS matched",
+    "parameters": {
+      "text": "org\ud83d\ude00",
+      "pattern": ".*\\Qorg\\E.*"
+    },
+    "directPatternCase": "main-dense-supplementary-after"
+  },
+  {
+    "name": "public-main-dense-high-before",
+    "query": "RETURN $text =~ $pattern AS matched",
+    "parameters": {
+      "text": "\ud800org",
+      "pattern": ".*\\Qorg\\E.*"
+    },
+    "directPatternCase": "main-dense-high-before"
+  },
+  {
+    "name": "public-main-dense-low-after",
+    "query": "RETURN $text =~ $pattern AS matched",
+    "parameters": {
+      "text": "org\udc00",
+      "pattern": ".*\\Qorg\\E.*"
+    },
+    "directPatternCase": "main-dense-low-after"
+  },
+  {
+    "name": "public-main-dense-vertical-before",
+    "query": "RETURN $text =~ $pattern AS matched",
+    "parameters": {
+      "text": "\u000borg",
+      "pattern": ".*\\Qorg\\E.*"
+    },
+    "directPatternCase": "main-dense-vertical-before"
+  },
+  {
+    "name": "public-main-dense-nul-after",
+    "query": "RETURN $text =~ $pattern AS matched",
+    "parameters": {
+      "text": "org\u0000",
+      "pattern": ".*\\Qorg\\E.*"
+    },
+    "directPatternCase": "main-dense-nul-after"
+  },
+  {
+    "name": "public-order-0",
+    "query": "RETURN null =~ (1/0) AS matched",
+    "parameters": {
+      "pattern": ".*\\Qorg\\E.*"
+    },
+    "directPatternCase": null
+  },
+  {
+    "name": "public-order-1",
+    "query": "RETURN 17 =~ (1/0) AS matched",
+    "parameters": {
+      "pattern": ".*\\Qorg\\E.*"
+    },
+    "directPatternCase": null
+  },
+  {
+    "name": "public-order-2",
+    "query": "RETURN 'org' =~ (1/0) AS matched",
+    "parameters": {
+      "pattern": ".*\\Qorg\\E.*"
+    },
+    "directPatternCase": null
+  },
+  {
+    "name": "public-order-3",
+    "query": "RETURN null =~ unknownRegexFunction() AS matched",
+    "parameters": {
+      "pattern": ".*\\Qorg\\E.*"
+    },
+    "directPatternCase": null
+  },
+  {
+    "name": "public-order-4",
+    "query": "RETURN 'org' =~ null AS matched",
+    "parameters": {
+      "pattern": ".*\\Qorg\\E.*"
+    },
+    "directPatternCase": null
+  },
+  {
+    "name": "public-order-5",
+    "query": "RETURN 'org' =~ 17 AS matched",
+    "parameters": {
+      "pattern": ".*\\Qorg\\E.*"
+    },
+    "directPatternCase": null
+  },
+  {
+    "name": "public-order-6",
+    "query": "RETURN null =~ '[' AS matched",
+    "parameters": {
+      "pattern": ".*\\Qorg\\E.*"
+    },
+    "directPatternCase": null
+  },
+  {
+    "name": "public-order-7",
+    "query": "RETURN 'org' =~ '[' AS matched",
+    "parameters": {
+      "pattern": ".*\\Qorg\\E.*"
+    },
+    "directPatternCase": null
+  },
+  {
+    "name": "public-order-8",
+    "query": "RETURN true OR ('org' =~ '[') AS matched",
+    "parameters": {
+      "pattern": ".*\\Qorg\\E.*"
+    },
+    "directPatternCase": null
+  },
+  {
+    "name": "public-order-9",
+    "query": "RETURN false OR ('org' =~ '[') AS matched",
+    "parameters": {
+      "pattern": ".*\\Qorg\\E.*"
+    },
+    "directPatternCase": null
+  },
+  {
+    "name": "public-order-10",
+    "query": "RETURN ('org' =~ '[') OR (1/0=0) AS matched",
+    "parameters": {
+      "pattern": ".*\\Qorg\\E.*"
+    },
+    "directPatternCase": null
+  },
+  {
+    "name": "public-order-11",
+    "query": "RETURN (1/0=0) OR ('org' =~ '[') AS matched",
+    "parameters": {
+      "pattern": ".*\\Qorg\\E.*"
+    },
+    "directPatternCase": null
+  },
+  {
+    "name": "public-order-12",
+    "query": "RETURN true OR (null =~ (1/0)) AS matched",
+    "parameters": {
+      "pattern": ".*\\Qorg\\E.*"
+    },
+    "directPatternCase": null
+  },
+  {
+    "name": "public-order-13",
+    "query": "RETURN null OR ('org' =~ '[') AS matched",
+    "parameters": {
+      "pattern": ".*\\Qorg\\E.*"
+    },
+    "directPatternCase": null
+  },
+  {
+    "name": "public-order-14",
+    "query": "RETURN ('org' =~ $pattern) OR (1/0=0) AS matched",
+    "parameters": {
+      "pattern": ".*\\Qorg\\E.*"
+    },
+    "directPatternCase": null
+  },
+  {
+    "name": "public-order-15",
+    "query": "RETURN (1/0=0) OR ('org' =~ $pattern) AS matched",
+    "parameters": {
+      "pattern": ".*\\Qorg\\E.*"
+    },
+    "directPatternCase": null
+  },
+  {
+    "name": "public-order-16",
+    "query": "MATCH (n:IntConstant) WHERE ('org' =~ $pattern) OR (1/0=0) RETURN n LIMIT 1",
+    "parameters": {
+      "pattern": ".*\\Qorg\\E.*"
+    },
+    "directPatternCase": null
+  },
+  {
+    "name": "public-order-17",
+    "query": "MATCH (n:IntConstant) WHERE (1/0=0) OR ('org' =~ $pattern) RETURN n LIMIT 1",
+    "parameters": {
+      "pattern": ".*\\Qorg\\E.*"
+    },
+    "directPatternCase": null
+  },
+  {
+    "name": "public-order-18",
+    "query": "MATCH (n:IntConstant) WHERE true OR ('org' =~ '[') RETURN n LIMIT 1",
+    "parameters": {
+      "pattern": ".*\\Qorg\\E.*"
+    },
+    "directPatternCase": null
+  },
+  {
+    "name": "public-order-19",
+    "query": "MATCH (n:IntConstant) WHERE null =~ (1/0) RETURN n LIMIT 1",
+    "parameters": {
+      "pattern": ".*\\Qorg\\E.*"
+    },
+    "directPatternCase": null
+  },
+  {
+    "name": "actual-main64-892",
+    "query": "MATCH (n)\nWHERE n.caller_class =~ '.*\\QGraphitePressureAbsent45zeroX\\E.*' OR n.callee_class =~ '.*\\QGraphitePressureAbsent45zeroX\\E.*'\nRETURN n.caller_class, n.callee_class\nLIMIT 100",
+    "parameters": {},
+    "directPatternCase": null
+  },
+  {
+    "name": "actual-main64-893",
+    "query": "MATCH (n)\nWHERE n.caller_class =~ '.*\\Qorg.apache.tika.\\E.*' OR n.callee_class =~ '.*\\Qorg.apache.tika.\\E.*'\nRETURN n.caller_class, n.callee_class\nLIMIT 100",
+    "parameters": {},
+    "directPatternCase": null
+  },
+  {
+    "name": "actual-main64-894",
+    "query": "MATCH (n)\nWHERE n.caller_class =~ '.*\\Qorg\\E.*' OR n.callee_class =~ '.*\\Qorg\\E.*'\nRETURN n.caller_class, n.callee_class\nLIMIT 100",
+    "parameters": {},
+    "directPatternCase": null
+  }
+]

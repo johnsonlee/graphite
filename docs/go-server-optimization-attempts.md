@@ -1020,3 +1020,48 @@ failed query, formal warm gate, full work/resource/configuration equivalence,
 remaining server features and 10x per-case P95 remain open. Full commands,
 environment, raw captures and limitations are in
 `docs/go-server-baseline/native-ast-cache/`.
+
+### 2026-09-08 — Functional follow-up: preserve Java regex quote preprocessing
+
+Independent actual-Java tests exposed a preexisting compatibility gap in Go
+`bc708a810fce0d111988c72a3105820bfd1cf06e`: quote delimiters were handled inside
+parsing, whereas Java17 transforms quoted text before parsing. This changes both
+valid pattern semantics and syntax-error positions. For example, `a\Q\E?`
+should match empty text; the old Go engine returns false. The malformed pattern
+`.*\Qfoo\Ebar\E.*` has Java error index 9 but the old Go engine reports 13.
+
+Apply the original quote preprocessing to decoded code points, retaining original
+source text in diagnostics. Match Java's first quoted digit escaping, punctuation,
+backslashes, empty/multiple/unclosed quotes and cancellation during scan/expansion.
+Error caret rendering preserves original UTF-16 units and TAB characters. This
+is a functional correction, separately committed before the quoted-contains
+performance hypothesis; no matcher fast path is included.
+
+Actual Java17 corpora contain 609 plus 77 cases, each captured twice with complete
+identical outputs. All 686 native assertions pass after this correction; an
+isolated previous-Go run retains 88 failing cases and 598 passing cases. An
+independent syntax-integration corpus adds 2,030 case/text combinations, including
+classes, quantifiers, comments mode and preceding escape fragments. Two actual
+Java and two functional-only Go runs agree exactly; the old engine differs on
+174 cases. These are separate corpora, not additive counts of distinct bugs.
+
+Full-module race tests and vet pass; all 16,498 recorded inputs remain unchanged.
+The initial isolated-copy run omitted three sibling Kotlin source files required
+by the existing OpenAPI drift test. That failed run is retained; the complete
+module checks pass after adding those inputs without changing production code.
+
+A separately frozen functional-only module completes the full original real64
+workload in cold replay, warm prewarm and startup-prepared replay. Every capture
+has all 1,267 cases, with 1,266 successful results and the original error preserved.
+Public output differences and graph-state differences are zero across 486,848
+observations. All 1,152 original files in the same 64 real persisted graphs remain
+unchanged per runtime. Three comparator exits are zero; runtime exits remain one
+because the original all-success gate fails. Formal warm remains unprepared.
+
+Keep the semantic correction. No latency, CPU, allocation or memory improvement
+is claimed, and these captures are not P95 measurements. Original main remains
+`4e328b0109e13c896b74004823fb049fcb19251a`. Full commands, frozen inputs, original
+failures and verified response archives are retained in
+`docs/go-server-baseline/native-regex-quoted-contains/quote-functional/`, with the
+actual-Java parent oracles alongside. Full server fidelity, required benchmark
+checks and the 10x per-case P95 target remain open.

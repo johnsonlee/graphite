@@ -1,0 +1,74 @@
+{
+	"Path": "github.com/johnsonlee/graphite/graphite-server",
+	"Main": true,
+	"Dir": "/Users/johnsonlee/.codex/benchmarks/graphite/regex-quote-functional-bc708-v2/module",
+	"GoMod": "/Users/johnsonlee/.codex/benchmarks/graphite/regex-quote-functional-bc708-v2/module/go.mod",
+	"GoVersion": "1.22"
+}
+{
+	"Path": "github.com/antlr4-go/antlr/v4",
+	"Version": "v4.13.1",
+	"Time": "2024-05-15T15:52:48Z",
+	"Dir": "/Users/johnsonlee/go/pkg/mod/github.com/antlr4-go/antlr/v4@v4.13.1",
+	"GoMod": "/Users/johnsonlee/go/pkg/mod/cache/download/github.com/antlr4-go/antlr/v4/@v/v4.13.1.mod",
+	"GoVersion": "1.22"
+}
+{
+	"Path": "github.com/chzyer/readline",
+	"Version": "v1.5.1",
+	"Time": "2022-07-15T12:48:48Z",
+	"Indirect": true
+}
+{
+	"Path": "github.com/google/go-cmp",
+	"Version": "v0.6.0",
+	"Time": "2023-08-31T17:32:40Z",
+	"Indirect": true
+}
+{
+	"Path": "github.com/google/pprof",
+	"Version": "v0.0.0-20230811205829-9131a7e9cc17",
+	"Time": "2023-08-11T20:58:29Z",
+	"Dir": "/Users/johnsonlee/go/pkg/mod/github.com/google/pprof@v0.0.0-20230811205829-9131a7e9cc17",
+	"GoMod": "/Users/johnsonlee/go/pkg/mod/cache/download/github.com/google/pprof/@v/v0.0.0-20230811205829-9131a7e9cc17.mod",
+	"GoVersion": "1.19"
+}
+{
+	"Path": "github.com/ianlancetaylor/demangle",
+	"Version": "v0.0.0-20230524184225-eabc099b10ab",
+	"Time": "2023-05-24T18:42:25Z",
+	"Indirect": true
+}
+{
+	"Path": "golang.org/x/exp",
+	"Version": "v0.0.0-20240506185415-9bf2ced13842",
+	"Time": "2024-05-06T18:54:15Z",
+	"Indirect": true,
+	"Dir": "/Users/johnsonlee/go/pkg/mod/golang.org/x/exp@v0.0.0-20240506185415-9bf2ced13842",
+	"GoMod": "/Users/johnsonlee/go/pkg/mod/cache/download/golang.org/x/exp/@v/v0.0.0-20240506185415-9bf2ced13842.mod",
+	"GoVersion": "1.20"
+}
+{
+	"Path": "golang.org/x/mod",
+	"Version": "v0.17.0",
+	"Time": "2024-03-15T15:59:16Z",
+	"Indirect": true
+}
+{
+	"Path": "golang.org/x/sync",
+	"Version": "v0.7.0",
+	"Time": "2024-03-04T17:26:02Z",
+	"Indirect": true
+}
+{
+	"Path": "golang.org/x/sys",
+	"Version": "v0.1.0",
+	"Time": "2022-10-13T17:17:32Z",
+	"Indirect": true
+}
+{
+	"Path": "golang.org/x/tools",
+	"Version": "v0.21.0",
+	"Time": "2024-05-06T16:54:44Z",
+	"Indirect": true
+}

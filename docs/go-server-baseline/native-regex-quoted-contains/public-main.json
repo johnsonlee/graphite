@@ -1,0 +1,2810 @@
+{
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "cases": [
+    {
+      "name": "public-main-zero-empty",
+      "spec": {
+        "name": "public-main-zero-empty",
+        "query": "RETURN $text =~ $pattern AS matched",
+        "parameters": {
+          "text": "",
+          "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*"
+        },
+        "directPatternCase": "main-zero-empty"
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": false
+        }
+      ],
+      "types": [
+        {
+          "matched": "java.lang.Boolean"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-main-zero-exact",
+      "spec": {
+        "name": "public-main-zero-exact",
+        "query": "RETURN $text =~ $pattern AS matched",
+        "parameters": {
+          "text": "GraphitePressureAbsent45zeroX",
+          "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*"
+        },
+        "directPatternCase": "main-zero-exact"
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": true
+        }
+      ],
+      "types": [
+        {
+          "matched": "java.lang.Boolean"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-main-zero-middle",
+      "spec": {
+        "name": "public-main-zero-middle",
+        "query": "RETURN $text =~ $pattern AS matched",
+        "parameters": {
+          "text": "headGraphitePressureAbsent45zeroXtail",
+          "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*"
+        },
+        "directPatternCase": "main-zero-middle"
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": true
+        }
+      ],
+      "types": [
+        {
+          "matched": "java.lang.Boolean"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-main-zero-repeated",
+      "spec": {
+        "name": "public-main-zero-repeated",
+        "query": "RETURN $text =~ $pattern AS matched",
+        "parameters": {
+          "text": "GraphitePressureAbsent45zeroXGraphitePressureAbsent45zeroX",
+          "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*"
+        },
+        "directPatternCase": "main-zero-repeated"
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": true
+        }
+      ],
+      "types": [
+        {
+          "matched": "java.lang.Boolean"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-main-zero-cr-before",
+      "spec": {
+        "name": "public-main-zero-cr-before",
+        "query": "RETURN $text =~ $pattern AS matched",
+        "parameters": {
+          "text": "\rGraphitePressureAbsent45zeroX",
+          "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*"
+        },
+        "directPatternCase": "main-zero-cr-before"
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": false
+        }
+      ],
+      "types": [
+        {
+          "matched": "java.lang.Boolean"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-main-zero-lf-after",
+      "spec": {
+        "name": "public-main-zero-lf-after",
+        "query": "RETURN $text =~ $pattern AS matched",
+        "parameters": {
+          "text": "GraphitePressureAbsent45zeroX\n",
+          "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*"
+        },
+        "directPatternCase": "main-zero-lf-after"
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": false
+        }
+      ],
+      "types": [
+        {
+          "matched": "java.lang.Boolean"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-main-zero-nel-before",
+      "spec": {
+        "name": "public-main-zero-nel-before",
+        "query": "RETURN $text =~ $pattern AS matched",
+        "parameters": {
+          "text": "GraphitePressureAbsent45zeroX",
+          "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*"
+        },
+        "directPatternCase": "main-zero-nel-before"
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": false
+        }
+      ],
+      "types": [
+        {
+          "matched": "java.lang.Boolean"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-main-zero-ls-after",
+      "spec": {
+        "name": "public-main-zero-ls-after",
+        "query": "RETURN $text =~ $pattern AS matched",
+        "parameters": {
+          "text": "GraphitePressureAbsent45zeroX\u2028",
+          "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*"
+        },
+        "directPatternCase": "main-zero-ls-after"
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": false
+        }
+      ],
+      "types": [
+        {
+          "matched": "java.lang.Boolean"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-main-zero-ps-after",
+      "spec": {
+        "name": "public-main-zero-ps-after",
+        "query": "RETURN $text =~ $pattern AS matched",
+        "parameters": {
+          "text": "GraphitePressureAbsent45zeroX\u2029",
+          "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*"
+        },
+        "directPatternCase": "main-zero-ps-after"
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": false
+        }
+      ],
+      "types": [
+        {
+          "matched": "java.lang.Boolean"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-main-zero-nonascii-before",
+      "spec": {
+        "name": "public-main-zero-nonascii-before",
+        "query": "RETURN $text =~ $pattern AS matched",
+        "parameters": {
+          "text": "éGraphitePressureAbsent45zeroX",
+          "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*"
+        },
+        "directPatternCase": "main-zero-nonascii-before"
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": true
+        }
+      ],
+      "types": [
+        {
+          "matched": "java.lang.Boolean"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-main-zero-supplementary-after",
+      "spec": {
+        "name": "public-main-zero-supplementary-after",
+        "query": "RETURN $text =~ $pattern AS matched",
+        "parameters": {
+          "text": "GraphitePressureAbsent45zeroX\ud83d\ude00",
+          "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*"
+        },
+        "directPatternCase": "main-zero-supplementary-after"
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": true
+        }
+      ],
+      "types": [
+        {
+          "matched": "java.lang.Boolean"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-main-zero-high-before",
+      "spec": {
+        "name": "public-main-zero-high-before",
+        "query": "RETURN $text =~ $pattern AS matched",
+        "parameters": {
+          "text": "\ud800GraphitePressureAbsent45zeroX",
+          "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*"
+        },
+        "directPatternCase": "main-zero-high-before"
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": true
+        }
+      ],
+      "types": [
+        {
+          "matched": "java.lang.Boolean"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-main-zero-low-after",
+      "spec": {
+        "name": "public-main-zero-low-after",
+        "query": "RETURN $text =~ $pattern AS matched",
+        "parameters": {
+          "text": "GraphitePressureAbsent45zeroX\udc00",
+          "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*"
+        },
+        "directPatternCase": "main-zero-low-after"
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": true
+        }
+      ],
+      "types": [
+        {
+          "matched": "java.lang.Boolean"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-main-zero-vertical-before",
+      "spec": {
+        "name": "public-main-zero-vertical-before",
+        "query": "RETURN $text =~ $pattern AS matched",
+        "parameters": {
+          "text": "\u000bGraphitePressureAbsent45zeroX",
+          "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*"
+        },
+        "directPatternCase": "main-zero-vertical-before"
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": true
+        }
+      ],
+      "types": [
+        {
+          "matched": "java.lang.Boolean"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-main-zero-nul-after",
+      "spec": {
+        "name": "public-main-zero-nul-after",
+        "query": "RETURN $text =~ $pattern AS matched",
+        "parameters": {
+          "text": "GraphitePressureAbsent45zeroX\u0000",
+          "pattern": ".*\\QGraphitePressureAbsent45zeroX\\E.*"
+        },
+        "directPatternCase": "main-zero-nul-after"
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": true
+        }
+      ],
+      "types": [
+        {
+          "matched": "java.lang.Boolean"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-main-targeted-empty",
+      "spec": {
+        "name": "public-main-targeted-empty",
+        "query": "RETURN $text =~ $pattern AS matched",
+        "parameters": {
+          "text": "",
+          "pattern": ".*\\Qorg.apache.tika.\\E.*"
+        },
+        "directPatternCase": "main-targeted-empty"
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": false
+        }
+      ],
+      "types": [
+        {
+          "matched": "java.lang.Boolean"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-main-targeted-exact",
+      "spec": {
+        "name": "public-main-targeted-exact",
+        "query": "RETURN $text =~ $pattern AS matched",
+        "parameters": {
+          "text": "org.apache.tika.",
+          "pattern": ".*\\Qorg.apache.tika.\\E.*"
+        },
+        "directPatternCase": "main-targeted-exact"
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": true
+        }
+      ],
+      "types": [
+        {
+          "matched": "java.lang.Boolean"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-main-targeted-middle",
+      "spec": {
+        "name": "public-main-targeted-middle",
+        "query": "RETURN $text =~ $pattern AS matched",
+        "parameters": {
+          "text": "headorg.apache.tika.tail",
+          "pattern": ".*\\Qorg.apache.tika.\\E.*"
+        },
+        "directPatternCase": "main-targeted-middle"
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": true
+        }
+      ],
+      "types": [
+        {
+          "matched": "java.lang.Boolean"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-main-targeted-repeated",
+      "spec": {
+        "name": "public-main-targeted-repeated",
+        "query": "RETURN $text =~ $pattern AS matched",
+        "parameters": {
+          "text": "org.apache.tika.org.apache.tika.",
+          "pattern": ".*\\Qorg.apache.tika.\\E.*"
+        },
+        "directPatternCase": "main-targeted-repeated"
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": true
+        }
+      ],
+      "types": [
+        {
+          "matched": "java.lang.Boolean"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-main-targeted-cr-before",
+      "spec": {
+        "name": "public-main-targeted-cr-before",
+        "query": "RETURN $text =~ $pattern AS matched",
+        "parameters": {
+          "text": "\rorg.apache.tika.",
+          "pattern": ".*\\Qorg.apache.tika.\\E.*"
+        },
+        "directPatternCase": "main-targeted-cr-before"
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": false
+        }
+      ],
+      "types": [
+        {
+          "matched": "java.lang.Boolean"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-main-targeted-lf-after",
+      "spec": {
+        "name": "public-main-targeted-lf-after",
+        "query": "RETURN $text =~ $pattern AS matched",
+        "parameters": {
+          "text": "org.apache.tika.\n",
+          "pattern": ".*\\Qorg.apache.tika.\\E.*"
+        },
+        "directPatternCase": "main-targeted-lf-after"
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": false
+        }
+      ],
+      "types": [
+        {
+          "matched": "java.lang.Boolean"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-main-targeted-nel-before",
+      "spec": {
+        "name": "public-main-targeted-nel-before",
+        "query": "RETURN $text =~ $pattern AS matched",
+        "parameters": {
+          "text": "org.apache.tika.",
+          "pattern": ".*\\Qorg.apache.tika.\\E.*"
+        },
+        "directPatternCase": "main-targeted-nel-before"
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": false
+        }
+      ],
+      "types": [
+        {
+          "matched": "java.lang.Boolean"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-main-targeted-ls-after",
+      "spec": {
+        "name": "public-main-targeted-ls-after",
+        "query": "RETURN $text =~ $pattern AS matched",
+        "parameters": {
+          "text": "org.apache.tika.\u2028",
+          "pattern": ".*\\Qorg.apache.tika.\\E.*"
+        },
+        "directPatternCase": "main-targeted-ls-after"
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": false
+        }
+      ],
+      "types": [
+        {
+          "matched": "java.lang.Boolean"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-main-targeted-ps-after",
+      "spec": {
+        "name": "public-main-targeted-ps-after",
+        "query": "RETURN $text =~ $pattern AS matched",
+        "parameters": {
+          "text": "org.apache.tika.\u2029",
+          "pattern": ".*\\Qorg.apache.tika.\\E.*"
+        },
+        "directPatternCase": "main-targeted-ps-after"
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": false
+        }
+      ],
+      "types": [
+        {
+          "matched": "java.lang.Boolean"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-main-targeted-nonascii-before",
+      "spec": {
+        "name": "public-main-targeted-nonascii-before",
+        "query": "RETURN $text =~ $pattern AS matched",
+        "parameters": {
+          "text": "éorg.apache.tika.",
+          "pattern": ".*\\Qorg.apache.tika.\\E.*"
+        },
+        "directPatternCase": "main-targeted-nonascii-before"
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": true
+        }
+      ],
+      "types": [
+        {
+          "matched": "java.lang.Boolean"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-main-targeted-supplementary-after",
+      "spec": {
+        "name": "public-main-targeted-supplementary-after",
+        "query": "RETURN $text =~ $pattern AS matched",
+        "parameters": {
+          "text": "org.apache.tika.\ud83d\ude00",
+          "pattern": ".*\\Qorg.apache.tika.\\E.*"
+        },
+        "directPatternCase": "main-targeted-supplementary-after"
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": true
+        }
+      ],
+      "types": [
+        {
+          "matched": "java.lang.Boolean"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-main-targeted-high-before",
+      "spec": {
+        "name": "public-main-targeted-high-before",
+        "query": "RETURN $text =~ $pattern AS matched",
+        "parameters": {
+          "text": "\ud800org.apache.tika.",
+          "pattern": ".*\\Qorg.apache.tika.\\E.*"
+        },
+        "directPatternCase": "main-targeted-high-before"
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": true
+        }
+      ],
+      "types": [
+        {
+          "matched": "java.lang.Boolean"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-main-targeted-low-after",
+      "spec": {
+        "name": "public-main-targeted-low-after",
+        "query": "RETURN $text =~ $pattern AS matched",
+        "parameters": {
+          "text": "org.apache.tika.\udc00",
+          "pattern": ".*\\Qorg.apache.tika.\\E.*"
+        },
+        "directPatternCase": "main-targeted-low-after"
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": true
+        }
+      ],
+      "types": [
+        {
+          "matched": "java.lang.Boolean"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-main-targeted-vertical-before",
+      "spec": {
+        "name": "public-main-targeted-vertical-before",
+        "query": "RETURN $text =~ $pattern AS matched",
+        "parameters": {
+          "text": "\u000borg.apache.tika.",
+          "pattern": ".*\\Qorg.apache.tika.\\E.*"
+        },
+        "directPatternCase": "main-targeted-vertical-before"
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": true
+        }
+      ],
+      "types": [
+        {
+          "matched": "java.lang.Boolean"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-main-targeted-nul-after",
+      "spec": {
+        "name": "public-main-targeted-nul-after",
+        "query": "RETURN $text =~ $pattern AS matched",
+        "parameters": {
+          "text": "org.apache.tika.\u0000",
+          "pattern": ".*\\Qorg.apache.tika.\\E.*"
+        },
+        "directPatternCase": "main-targeted-nul-after"
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": true
+        }
+      ],
+      "types": [
+        {
+          "matched": "java.lang.Boolean"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-main-dense-empty",
+      "spec": {
+        "name": "public-main-dense-empty",
+        "query": "RETURN $text =~ $pattern AS matched",
+        "parameters": {
+          "text": "",
+          "pattern": ".*\\Qorg\\E.*"
+        },
+        "directPatternCase": "main-dense-empty"
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": false
+        }
+      ],
+      "types": [
+        {
+          "matched": "java.lang.Boolean"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-main-dense-exact",
+      "spec": {
+        "name": "public-main-dense-exact",
+        "query": "RETURN $text =~ $pattern AS matched",
+        "parameters": {
+          "text": "org",
+          "pattern": ".*\\Qorg\\E.*"
+        },
+        "directPatternCase": "main-dense-exact"
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": true
+        }
+      ],
+      "types": [
+        {
+          "matched": "java.lang.Boolean"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-main-dense-middle",
+      "spec": {
+        "name": "public-main-dense-middle",
+        "query": "RETURN $text =~ $pattern AS matched",
+        "parameters": {
+          "text": "headorgtail",
+          "pattern": ".*\\Qorg\\E.*"
+        },
+        "directPatternCase": "main-dense-middle"
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": true
+        }
+      ],
+      "types": [
+        {
+          "matched": "java.lang.Boolean"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-main-dense-repeated",
+      "spec": {
+        "name": "public-main-dense-repeated",
+        "query": "RETURN $text =~ $pattern AS matched",
+        "parameters": {
+          "text": "orgorg",
+          "pattern": ".*\\Qorg\\E.*"
+        },
+        "directPatternCase": "main-dense-repeated"
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": true
+        }
+      ],
+      "types": [
+        {
+          "matched": "java.lang.Boolean"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-main-dense-cr-before",
+      "spec": {
+        "name": "public-main-dense-cr-before",
+        "query": "RETURN $text =~ $pattern AS matched",
+        "parameters": {
+          "text": "\rorg",
+          "pattern": ".*\\Qorg\\E.*"
+        },
+        "directPatternCase": "main-dense-cr-before"
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": false
+        }
+      ],
+      "types": [
+        {
+          "matched": "java.lang.Boolean"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-main-dense-lf-after",
+      "spec": {
+        "name": "public-main-dense-lf-after",
+        "query": "RETURN $text =~ $pattern AS matched",
+        "parameters": {
+          "text": "org\n",
+          "pattern": ".*\\Qorg\\E.*"
+        },
+        "directPatternCase": "main-dense-lf-after"
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": false
+        }
+      ],
+      "types": [
+        {
+          "matched": "java.lang.Boolean"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-main-dense-nel-before",
+      "spec": {
+        "name": "public-main-dense-nel-before",
+        "query": "RETURN $text =~ $pattern AS matched",
+        "parameters": {
+          "text": "org",
+          "pattern": ".*\\Qorg\\E.*"
+        },
+        "directPatternCase": "main-dense-nel-before"
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": false
+        }
+      ],
+      "types": [
+        {
+          "matched": "java.lang.Boolean"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-main-dense-ls-after",
+      "spec": {
+        "name": "public-main-dense-ls-after",
+        "query": "RETURN $text =~ $pattern AS matched",
+        "parameters": {
+          "text": "org\u2028",
+          "pattern": ".*\\Qorg\\E.*"
+        },
+        "directPatternCase": "main-dense-ls-after"
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": false
+        }
+      ],
+      "types": [
+        {
+          "matched": "java.lang.Boolean"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-main-dense-ps-after",
+      "spec": {
+        "name": "public-main-dense-ps-after",
+        "query": "RETURN $text =~ $pattern AS matched",
+        "parameters": {
+          "text": "org\u2029",
+          "pattern": ".*\\Qorg\\E.*"
+        },
+        "directPatternCase": "main-dense-ps-after"
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": false
+        }
+      ],
+      "types": [
+        {
+          "matched": "java.lang.Boolean"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-main-dense-nonascii-before",
+      "spec": {
+        "name": "public-main-dense-nonascii-before",
+        "query": "RETURN $text =~ $pattern AS matched",
+        "parameters": {
+          "text": "éorg",
+          "pattern": ".*\\Qorg\\E.*"
+        },
+        "directPatternCase": "main-dense-nonascii-before"
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": true
+        }
+      ],
+      "types": [
+        {
+          "matched": "java.lang.Boolean"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-main-dense-supplementary-after",
+      "spec": {
+        "name": "public-main-dense-supplementary-after",
+        "query": "RETURN $text =~ $pattern AS matched",
+        "parameters": {
+          "text": "org\ud83d\ude00",
+          "pattern": ".*\\Qorg\\E.*"
+        },
+        "directPatternCase": "main-dense-supplementary-after"
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": true
+        }
+      ],
+      "types": [
+        {
+          "matched": "java.lang.Boolean"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-main-dense-high-before",
+      "spec": {
+        "name": "public-main-dense-high-before",
+        "query": "RETURN $text =~ $pattern AS matched",
+        "parameters": {
+          "text": "\ud800org",
+          "pattern": ".*\\Qorg\\E.*"
+        },
+        "directPatternCase": "main-dense-high-before"
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": true
+        }
+      ],
+      "types": [
+        {
+          "matched": "java.lang.Boolean"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-main-dense-low-after",
+      "spec": {
+        "name": "public-main-dense-low-after",
+        "query": "RETURN $text =~ $pattern AS matched",
+        "parameters": {
+          "text": "org\udc00",
+          "pattern": ".*\\Qorg\\E.*"
+        },
+        "directPatternCase": "main-dense-low-after"
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": true
+        }
+      ],
+      "types": [
+        {
+          "matched": "java.lang.Boolean"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-main-dense-vertical-before",
+      "spec": {
+        "name": "public-main-dense-vertical-before",
+        "query": "RETURN $text =~ $pattern AS matched",
+        "parameters": {
+          "text": "\u000borg",
+          "pattern": ".*\\Qorg\\E.*"
+        },
+        "directPatternCase": "main-dense-vertical-before"
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": true
+        }
+      ],
+      "types": [
+        {
+          "matched": "java.lang.Boolean"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-main-dense-nul-after",
+      "spec": {
+        "name": "public-main-dense-nul-after",
+        "query": "RETURN $text =~ $pattern AS matched",
+        "parameters": {
+          "text": "org\u0000",
+          "pattern": ".*\\Qorg\\E.*"
+        },
+        "directPatternCase": "main-dense-nul-after"
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": true
+        }
+      ],
+      "types": [
+        {
+          "matched": "java.lang.Boolean"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-order-0",
+      "spec": {
+        "name": "public-order-0",
+        "query": "RETURN null =~ (1/0) AS matched",
+        "parameters": {
+          "pattern": ".*\\Qorg\\E.*"
+        },
+        "directPatternCase": null
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": null
+        }
+      ],
+      "types": [
+        {
+          "matched": null
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-order-1",
+      "spec": {
+        "name": "public-order-1",
+        "query": "RETURN 17 =~ (1/0) AS matched",
+        "parameters": {
+          "pattern": ".*\\Qorg\\E.*"
+        },
+        "directPatternCase": null
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": null
+        }
+      ],
+      "types": [
+        {
+          "matched": null
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-order-2",
+      "spec": {
+        "name": "public-order-2",
+        "query": "RETURN 'org' =~ (1/0) AS matched",
+        "parameters": {
+          "pattern": ".*\\Qorg\\E.*"
+        },
+        "directPatternCase": null
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "outcome": "FAILED",
+      "error": "CypherException",
+      "errorClass": "io.johnsonlee.graphite.cypher.CypherException",
+      "message": "Division by zero",
+      "errorUTF16": [
+        68,
+        105,
+        118,
+        105,
+        115,
+        105,
+        111,
+        110,
+        32,
+        98,
+        121,
+        32,
+        122,
+        101,
+        114,
+        111
+      ],
+      "stack": [
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluateBinaryOp$lambda$8(ExpressionEvaluator.kt:130)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.arithmetic(ExpressionEvaluator.kt:164)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluateBinaryOp(ExpressionEvaluator.kt:129)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate(ExpressionEvaluator.kt:73)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluateRegex(ExpressionEvaluator.kt:249)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate(ExpressionEvaluator.kt:78)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.projectAndAggregate(QueryPipeline.kt:4918)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.executeGeneralClauses(QueryPipeline.kt:573)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:444)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+        "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+        "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+        "RegexQuotedOracle.main(RegexQuotedOracle.java:55)"
+      ],
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-order-3",
+      "spec": {
+        "name": "public-order-3",
+        "query": "RETURN null =~ unknownRegexFunction() AS matched",
+        "parameters": {
+          "pattern": ".*\\Qorg\\E.*"
+        },
+        "directPatternCase": null
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": null
+        }
+      ],
+      "types": [
+        {
+          "matched": null
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-order-4",
+      "spec": {
+        "name": "public-order-4",
+        "query": "RETURN 'org' =~ null AS matched",
+        "parameters": {
+          "pattern": ".*\\Qorg\\E.*"
+        },
+        "directPatternCase": null
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": null
+        }
+      ],
+      "types": [
+        {
+          "matched": null
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-order-5",
+      "spec": {
+        "name": "public-order-5",
+        "query": "RETURN 'org' =~ 17 AS matched",
+        "parameters": {
+          "pattern": ".*\\Qorg\\E.*"
+        },
+        "directPatternCase": null
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": null
+        }
+      ],
+      "types": [
+        {
+          "matched": null
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-order-6",
+      "spec": {
+        "name": "public-order-6",
+        "query": "RETURN null =~ '[' AS matched",
+        "parameters": {
+          "pattern": ".*\\Qorg\\E.*"
+        },
+        "directPatternCase": null
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": null
+        }
+      ],
+      "types": [
+        {
+          "matched": null
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-order-7",
+      "spec": {
+        "name": "public-order-7",
+        "query": "RETURN 'org' =~ '[' AS matched",
+        "parameters": {
+          "pattern": ".*\\Qorg\\E.*"
+        },
+        "directPatternCase": null
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "outcome": "FAILED",
+      "error": "PatternSyntaxException",
+      "errorClass": "java.util.regex.PatternSyntaxException",
+      "message": "Unclosed character class near index 0\n[\n^",
+      "errorUTF16": [
+        85,
+        110,
+        99,
+        108,
+        111,
+        115,
+        101,
+        100,
+        32,
+        99,
+        104,
+        97,
+        114,
+        97,
+        99,
+        116,
+        101,
+        114,
+        32,
+        99,
+        108,
+        97,
+        115,
+        115,
+        32,
+        110,
+        101,
+        97,
+        114,
+        32,
+        105,
+        110,
+        100,
+        101,
+        120,
+        32,
+        48,
+        10,
+        91,
+        10,
+        94
+      ],
+      "stack": [
+        "java.base/java.util.regex.Pattern.error(Pattern.java:2055)",
+        "java.base/java.util.regex.Pattern.clazz(Pattern.java:2717)",
+        "java.base/java.util.regex.Pattern.sequence(Pattern.java:2166)",
+        "java.base/java.util.regex.Pattern.expr(Pattern.java:2096)",
+        "java.base/java.util.regex.Pattern.compile(Pattern.java:1810)",
+        "java.base/java.util.regex.Pattern.<init>(Pattern.java:1441)",
+        "java.base/java.util.regex.Pattern.compile(Pattern.java:1069)",
+        "io.johnsonlee.graphite.cypher.JavaCypherRegex.<init>(ExpressionEvaluator.kt:574)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluatorKt.compileCypherRegex(ExpressionEvaluator.kt:665)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluatorKt.access$compileCypherRegex(ExpressionEvaluator.kt:1)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluateRegex(ExpressionEvaluator.kt:251)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate(ExpressionEvaluator.kt:78)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.projectAndAggregate(QueryPipeline.kt:4918)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.executeGeneralClauses(QueryPipeline.kt:573)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:444)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+        "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+        "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+        "RegexQuotedOracle.main(RegexQuotedOracle.java:55)"
+      ],
+      "description": "Unclosed character class",
+      "index": 0,
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-order-8",
+      "spec": {
+        "name": "public-order-8",
+        "query": "RETURN true OR ('org' =~ '[') AS matched",
+        "parameters": {
+          "pattern": ".*\\Qorg\\E.*"
+        },
+        "directPatternCase": null
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "outcome": "FAILED",
+      "error": "PatternSyntaxException",
+      "errorClass": "java.util.regex.PatternSyntaxException",
+      "message": "Unclosed character class near index 0\n[\n^",
+      "errorUTF16": [
+        85,
+        110,
+        99,
+        108,
+        111,
+        115,
+        101,
+        100,
+        32,
+        99,
+        104,
+        97,
+        114,
+        97,
+        99,
+        116,
+        101,
+        114,
+        32,
+        99,
+        108,
+        97,
+        115,
+        115,
+        32,
+        110,
+        101,
+        97,
+        114,
+        32,
+        105,
+        110,
+        100,
+        101,
+        120,
+        32,
+        48,
+        10,
+        91,
+        10,
+        94
+      ],
+      "stack": [
+        "java.base/java.util.regex.Pattern.error(Pattern.java:2055)",
+        "java.base/java.util.regex.Pattern.clazz(Pattern.java:2717)",
+        "java.base/java.util.regex.Pattern.sequence(Pattern.java:2166)",
+        "java.base/java.util.regex.Pattern.expr(Pattern.java:2096)",
+        "java.base/java.util.regex.Pattern.compile(Pattern.java:1810)",
+        "java.base/java.util.regex.Pattern.<init>(Pattern.java:1441)",
+        "java.base/java.util.regex.Pattern.compile(Pattern.java:1069)",
+        "io.johnsonlee.graphite.cypher.JavaCypherRegex.<init>(ExpressionEvaluator.kt:574)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluatorKt.compileCypherRegex(ExpressionEvaluator.kt:665)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluatorKt.access$compileCypherRegex(ExpressionEvaluator.kt:1)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluateRegex(ExpressionEvaluator.kt:251)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate(ExpressionEvaluator.kt:78)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate(ExpressionEvaluator.kt:104)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.projectAndAggregate(QueryPipeline.kt:4918)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.executeGeneralClauses(QueryPipeline.kt:573)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:444)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+        "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+        "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+        "RegexQuotedOracle.main(RegexQuotedOracle.java:55)"
+      ],
+      "description": "Unclosed character class",
+      "index": 0,
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-order-9",
+      "spec": {
+        "name": "public-order-9",
+        "query": "RETURN false OR ('org' =~ '[') AS matched",
+        "parameters": {
+          "pattern": ".*\\Qorg\\E.*"
+        },
+        "directPatternCase": null
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "outcome": "FAILED",
+      "error": "PatternSyntaxException",
+      "errorClass": "java.util.regex.PatternSyntaxException",
+      "message": "Unclosed character class near index 0\n[\n^",
+      "errorUTF16": [
+        85,
+        110,
+        99,
+        108,
+        111,
+        115,
+        101,
+        100,
+        32,
+        99,
+        104,
+        97,
+        114,
+        97,
+        99,
+        116,
+        101,
+        114,
+        32,
+        99,
+        108,
+        97,
+        115,
+        115,
+        32,
+        110,
+        101,
+        97,
+        114,
+        32,
+        105,
+        110,
+        100,
+        101,
+        120,
+        32,
+        48,
+        10,
+        91,
+        10,
+        94
+      ],
+      "stack": [
+        "java.base/java.util.regex.Pattern.error(Pattern.java:2055)",
+        "java.base/java.util.regex.Pattern.clazz(Pattern.java:2717)",
+        "java.base/java.util.regex.Pattern.sequence(Pattern.java:2166)",
+        "java.base/java.util.regex.Pattern.expr(Pattern.java:2096)",
+        "java.base/java.util.regex.Pattern.compile(Pattern.java:1810)",
+        "java.base/java.util.regex.Pattern.<init>(Pattern.java:1441)",
+        "java.base/java.util.regex.Pattern.compile(Pattern.java:1069)",
+        "io.johnsonlee.graphite.cypher.JavaCypherRegex.<init>(ExpressionEvaluator.kt:574)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluatorKt.compileCypherRegex(ExpressionEvaluator.kt:665)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluatorKt.access$compileCypherRegex(ExpressionEvaluator.kt:1)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluateRegex(ExpressionEvaluator.kt:251)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate(ExpressionEvaluator.kt:78)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate(ExpressionEvaluator.kt:104)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.projectAndAggregate(QueryPipeline.kt:4918)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.executeGeneralClauses(QueryPipeline.kt:573)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:444)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+        "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+        "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+        "RegexQuotedOracle.main(RegexQuotedOracle.java:55)"
+      ],
+      "description": "Unclosed character class",
+      "index": 0,
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-order-10",
+      "spec": {
+        "name": "public-order-10",
+        "query": "RETURN ('org' =~ '[') OR (1/0=0) AS matched",
+        "parameters": {
+          "pattern": ".*\\Qorg\\E.*"
+        },
+        "directPatternCase": null
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "outcome": "FAILED",
+      "error": "PatternSyntaxException",
+      "errorClass": "java.util.regex.PatternSyntaxException",
+      "message": "Unclosed character class near index 0\n[\n^",
+      "errorUTF16": [
+        85,
+        110,
+        99,
+        108,
+        111,
+        115,
+        101,
+        100,
+        32,
+        99,
+        104,
+        97,
+        114,
+        97,
+        99,
+        116,
+        101,
+        114,
+        32,
+        99,
+        108,
+        97,
+        115,
+        115,
+        32,
+        110,
+        101,
+        97,
+        114,
+        32,
+        105,
+        110,
+        100,
+        101,
+        120,
+        32,
+        48,
+        10,
+        91,
+        10,
+        94
+      ],
+      "stack": [
+        "java.base/java.util.regex.Pattern.error(Pattern.java:2055)",
+        "java.base/java.util.regex.Pattern.clazz(Pattern.java:2717)",
+        "java.base/java.util.regex.Pattern.sequence(Pattern.java:2166)",
+        "java.base/java.util.regex.Pattern.expr(Pattern.java:2096)",
+        "java.base/java.util.regex.Pattern.compile(Pattern.java:1810)",
+        "java.base/java.util.regex.Pattern.<init>(Pattern.java:1441)",
+        "java.base/java.util.regex.Pattern.compile(Pattern.java:1069)",
+        "io.johnsonlee.graphite.cypher.JavaCypherRegex.<init>(ExpressionEvaluator.kt:574)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluatorKt.compileCypherRegex(ExpressionEvaluator.kt:665)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluatorKt.access$compileCypherRegex(ExpressionEvaluator.kt:1)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluateRegex(ExpressionEvaluator.kt:251)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate(ExpressionEvaluator.kt:78)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate(ExpressionEvaluator.kt:103)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.projectAndAggregate(QueryPipeline.kt:4918)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.executeGeneralClauses(QueryPipeline.kt:573)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:444)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+        "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+        "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+        "RegexQuotedOracle.main(RegexQuotedOracle.java:55)"
+      ],
+      "description": "Unclosed character class",
+      "index": 0,
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-order-11",
+      "spec": {
+        "name": "public-order-11",
+        "query": "RETURN (1/0=0) OR ('org' =~ '[') AS matched",
+        "parameters": {
+          "pattern": ".*\\Qorg\\E.*"
+        },
+        "directPatternCase": null
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "outcome": "FAILED",
+      "error": "CypherException",
+      "errorClass": "io.johnsonlee.graphite.cypher.CypherException",
+      "message": "Division by zero",
+      "errorUTF16": [
+        68,
+        105,
+        118,
+        105,
+        115,
+        105,
+        111,
+        110,
+        32,
+        98,
+        121,
+        32,
+        122,
+        101,
+        114,
+        111
+      ],
+      "stack": [
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluateBinaryOp$lambda$8(ExpressionEvaluator.kt:130)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.arithmetic(ExpressionEvaluator.kt:164)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluateBinaryOp(ExpressionEvaluator.kt:129)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate(ExpressionEvaluator.kt:73)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluateComparison(ExpressionEvaluator.kt:178)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate(ExpressionEvaluator.kt:75)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate(ExpressionEvaluator.kt:103)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.projectAndAggregate(QueryPipeline.kt:4918)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.executeGeneralClauses(QueryPipeline.kt:573)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:444)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+        "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+        "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+        "RegexQuotedOracle.main(RegexQuotedOracle.java:55)"
+      ],
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-order-12",
+      "spec": {
+        "name": "public-order-12",
+        "query": "RETURN true OR (null =~ (1/0)) AS matched",
+        "parameters": {
+          "pattern": ".*\\Qorg\\E.*"
+        },
+        "directPatternCase": null
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "matched"
+      ],
+      "rows": [
+        {
+          "matched": true
+        }
+      ],
+      "types": [
+        {
+          "matched": "java.lang.Boolean"
+        }
+      ],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-order-13",
+      "spec": {
+        "name": "public-order-13",
+        "query": "RETURN null OR ('org' =~ '[') AS matched",
+        "parameters": {
+          "pattern": ".*\\Qorg\\E.*"
+        },
+        "directPatternCase": null
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "outcome": "FAILED",
+      "error": "PatternSyntaxException",
+      "errorClass": "java.util.regex.PatternSyntaxException",
+      "message": "Unclosed character class near index 0\n[\n^",
+      "errorUTF16": [
+        85,
+        110,
+        99,
+        108,
+        111,
+        115,
+        101,
+        100,
+        32,
+        99,
+        104,
+        97,
+        114,
+        97,
+        99,
+        116,
+        101,
+        114,
+        32,
+        99,
+        108,
+        97,
+        115,
+        115,
+        32,
+        110,
+        101,
+        97,
+        114,
+        32,
+        105,
+        110,
+        100,
+        101,
+        120,
+        32,
+        48,
+        10,
+        91,
+        10,
+        94
+      ],
+      "stack": [
+        "java.base/java.util.regex.Pattern.error(Pattern.java:2055)",
+        "java.base/java.util.regex.Pattern.clazz(Pattern.java:2717)",
+        "java.base/java.util.regex.Pattern.sequence(Pattern.java:2166)",
+        "java.base/java.util.regex.Pattern.expr(Pattern.java:2096)",
+        "java.base/java.util.regex.Pattern.compile(Pattern.java:1810)",
+        "java.base/java.util.regex.Pattern.<init>(Pattern.java:1441)",
+        "java.base/java.util.regex.Pattern.compile(Pattern.java:1069)",
+        "io.johnsonlee.graphite.cypher.JavaCypherRegex.<init>(ExpressionEvaluator.kt:574)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluatorKt.compileCypherRegex(ExpressionEvaluator.kt:665)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluatorKt.access$compileCypherRegex(ExpressionEvaluator.kt:1)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluateRegex(ExpressionEvaluator.kt:251)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate(ExpressionEvaluator.kt:78)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate(ExpressionEvaluator.kt:104)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.projectAndAggregate(QueryPipeline.kt:4918)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.executeGeneralClauses(QueryPipeline.kt:573)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:444)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+        "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+        "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+        "RegexQuotedOracle.main(RegexQuotedOracle.java:55)"
+      ],
+      "description": "Unclosed character class",
+      "index": 0,
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-order-14",
+      "spec": {
+        "name": "public-order-14",
+        "query": "RETURN ('org' =~ $pattern) OR (1/0=0) AS matched",
+        "parameters": {
+          "pattern": ".*\\Qorg\\E.*"
+        },
+        "directPatternCase": null
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "outcome": "FAILED",
+      "error": "CypherException",
+      "errorClass": "io.johnsonlee.graphite.cypher.CypherException",
+      "message": "Division by zero",
+      "errorUTF16": [
+        68,
+        105,
+        118,
+        105,
+        115,
+        105,
+        111,
+        110,
+        32,
+        98,
+        121,
+        32,
+        122,
+        101,
+        114,
+        111
+      ],
+      "stack": [
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluateBinaryOp$lambda$8(ExpressionEvaluator.kt:130)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.arithmetic(ExpressionEvaluator.kt:164)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluateBinaryOp(ExpressionEvaluator.kt:129)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate(ExpressionEvaluator.kt:73)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluateComparison(ExpressionEvaluator.kt:178)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate(ExpressionEvaluator.kt:75)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate(ExpressionEvaluator.kt:104)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.projectAndAggregate(QueryPipeline.kt:4918)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.executeGeneralClauses(QueryPipeline.kt:573)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:444)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+        "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+        "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+        "RegexQuotedOracle.main(RegexQuotedOracle.java:55)"
+      ],
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-order-15",
+      "spec": {
+        "name": "public-order-15",
+        "query": "RETURN (1/0=0) OR ('org' =~ $pattern) AS matched",
+        "parameters": {
+          "pattern": ".*\\Qorg\\E.*"
+        },
+        "directPatternCase": null
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "outcome": "FAILED",
+      "error": "CypherException",
+      "errorClass": "io.johnsonlee.graphite.cypher.CypherException",
+      "message": "Division by zero",
+      "errorUTF16": [
+        68,
+        105,
+        118,
+        105,
+        115,
+        105,
+        111,
+        110,
+        32,
+        98,
+        121,
+        32,
+        122,
+        101,
+        114,
+        111
+      ],
+      "stack": [
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluateBinaryOp$lambda$8(ExpressionEvaluator.kt:130)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.arithmetic(ExpressionEvaluator.kt:164)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluateBinaryOp(ExpressionEvaluator.kt:129)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate(ExpressionEvaluator.kt:73)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluateComparison(ExpressionEvaluator.kt:178)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate(ExpressionEvaluator.kt:75)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate(ExpressionEvaluator.kt:103)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.projectAndAggregate(QueryPipeline.kt:4918)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.executeGeneralClauses(QueryPipeline.kt:573)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:444)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+        "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+        "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+        "RegexQuotedOracle.main(RegexQuotedOracle.java:55)"
+      ],
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-order-16",
+      "spec": {
+        "name": "public-order-16",
+        "query": "MATCH (n:IntConstant) WHERE ('org' =~ $pattern) OR (1/0=0) RETURN n LIMIT 1",
+        "parameters": {
+          "pattern": ".*\\Qorg\\E.*"
+        },
+        "directPatternCase": null
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "outcome": "FAILED",
+      "error": "CypherException",
+      "errorClass": "io.johnsonlee.graphite.cypher.CypherException",
+      "message": "Division by zero",
+      "errorUTF16": [
+        68,
+        105,
+        118,
+        105,
+        115,
+        105,
+        111,
+        110,
+        32,
+        98,
+        121,
+        32,
+        122,
+        101,
+        114,
+        111
+      ],
+      "stack": [
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluateBinaryOp$lambda$8(ExpressionEvaluator.kt:130)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.arithmetic(ExpressionEvaluator.kt:164)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluateBinaryOp(ExpressionEvaluator.kt:129)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate(ExpressionEvaluator.kt:73)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluateComparison(ExpressionEvaluator.kt:178)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate(ExpressionEvaluator.kt:75)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate(ExpressionEvaluator.kt:104)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.tryFastFilteredNodeLimit(QueryPipeline.kt:1484)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:412)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+        "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+        "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+        "RegexQuotedOracle.main(RegexQuotedOracle.java:55)"
+      ],
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-order-17",
+      "spec": {
+        "name": "public-order-17",
+        "query": "MATCH (n:IntConstant) WHERE (1/0=0) OR ('org' =~ $pattern) RETURN n LIMIT 1",
+        "parameters": {
+          "pattern": ".*\\Qorg\\E.*"
+        },
+        "directPatternCase": null
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "outcome": "FAILED",
+      "error": "CypherException",
+      "errorClass": "io.johnsonlee.graphite.cypher.CypherException",
+      "message": "Division by zero",
+      "errorUTF16": [
+        68,
+        105,
+        118,
+        105,
+        115,
+        105,
+        111,
+        110,
+        32,
+        98,
+        121,
+        32,
+        122,
+        101,
+        114,
+        111
+      ],
+      "stack": [
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluateBinaryOp$lambda$8(ExpressionEvaluator.kt:130)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.arithmetic(ExpressionEvaluator.kt:164)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluateBinaryOp(ExpressionEvaluator.kt:129)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate(ExpressionEvaluator.kt:73)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluateComparison(ExpressionEvaluator.kt:178)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate(ExpressionEvaluator.kt:75)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate(ExpressionEvaluator.kt:103)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.tryFastFilteredNodeLimit(QueryPipeline.kt:1484)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:412)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+        "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+        "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+        "RegexQuotedOracle.main(RegexQuotedOracle.java:55)"
+      ],
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-order-18",
+      "spec": {
+        "name": "public-order-18",
+        "query": "MATCH (n:IntConstant) WHERE true OR ('org' =~ '[') RETURN n LIMIT 1",
+        "parameters": {
+          "pattern": ".*\\Qorg\\E.*"
+        },
+        "directPatternCase": null
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "outcome": "FAILED",
+      "error": "PatternSyntaxException",
+      "errorClass": "java.util.regex.PatternSyntaxException",
+      "message": "Unclosed character class near index 0\n[\n^",
+      "errorUTF16": [
+        85,
+        110,
+        99,
+        108,
+        111,
+        115,
+        101,
+        100,
+        32,
+        99,
+        104,
+        97,
+        114,
+        97,
+        99,
+        116,
+        101,
+        114,
+        32,
+        99,
+        108,
+        97,
+        115,
+        115,
+        32,
+        110,
+        101,
+        97,
+        114,
+        32,
+        105,
+        110,
+        100,
+        101,
+        120,
+        32,
+        48,
+        10,
+        91,
+        10,
+        94
+      ],
+      "stack": [
+        "java.base/java.util.regex.Pattern.error(Pattern.java:2055)",
+        "java.base/java.util.regex.Pattern.clazz(Pattern.java:2717)",
+        "java.base/java.util.regex.Pattern.sequence(Pattern.java:2166)",
+        "java.base/java.util.regex.Pattern.expr(Pattern.java:2096)",
+        "java.base/java.util.regex.Pattern.compile(Pattern.java:1810)",
+        "java.base/java.util.regex.Pattern.<init>(Pattern.java:1441)",
+        "java.base/java.util.regex.Pattern.compile(Pattern.java:1069)",
+        "io.johnsonlee.graphite.cypher.JavaCypherRegex.<init>(ExpressionEvaluator.kt:574)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluatorKt.compileCypherRegex(ExpressionEvaluator.kt:665)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluatorKt.access$compileCypherRegex(ExpressionEvaluator.kt:1)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluateRegex(ExpressionEvaluator.kt:251)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate(ExpressionEvaluator.kt:78)",
+        "io.johnsonlee.graphite.cypher.ExpressionEvaluator.evaluate(ExpressionEvaluator.kt:104)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.tryFastFilteredNodeLimit(QueryPipeline.kt:1484)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.executeWithActiveBudget(QueryPipeline.kt:412)",
+        "io.johnsonlee.graphite.cypher.QueryPipeline.execute$cypher(QueryPipeline.kt:354)",
+        "io.johnsonlee.graphite.cypher.CypherExecutor.executeClauses(CypherExecutor.kt:102)",
+        "io.johnsonlee.graphite.cypher.CypherExecutor.execute(CypherExecutor.kt:69)",
+        "RegexQuotedOracle.main(RegexQuotedOracle.java:55)"
+      ],
+      "description": "Unclosed character class",
+      "index": 0,
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "public-order-19",
+      "spec": {
+        "name": "public-order-19",
+        "query": "MATCH (n:IntConstant) WHERE null =~ (1/0) RETURN n LIMIT 1",
+        "parameters": {
+          "pattern": ".*\\Qorg\\E.*"
+        },
+        "directPatternCase": null
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "n"
+      ],
+      "rows": [],
+      "types": [],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "actual-main64-892",
+      "spec": {
+        "name": "actual-main64-892",
+        "query": "MATCH (n)\nWHERE n.caller_class =~ '.*\\QGraphitePressureAbsent45zeroX\\E.*' OR n.callee_class =~ '.*\\QGraphitePressureAbsent45zeroX\\E.*'\nRETURN n.caller_class, n.callee_class\nLIMIT 100",
+        "parameters": {},
+        "directPatternCase": null
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "n.caller_class",
+        "n.callee_class"
+      ],
+      "rows": [],
+      "types": [],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "actual-main64-893",
+      "spec": {
+        "name": "actual-main64-893",
+        "query": "MATCH (n)\nWHERE n.caller_class =~ '.*\\Qorg.apache.tika.\\E.*' OR n.callee_class =~ '.*\\Qorg.apache.tika.\\E.*'\nRETURN n.caller_class, n.callee_class\nLIMIT 100",
+        "parameters": {},
+        "directPatternCase": null
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "n.caller_class",
+        "n.callee_class"
+      ],
+      "rows": [],
+      "types": [],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    },
+    {
+      "name": "actual-main64-894",
+      "spec": {
+        "name": "actual-main64-894",
+        "query": "MATCH (n)\nWHERE n.caller_class =~ '.*\\Qorg\\E.*' OR n.callee_class =~ '.*\\Qorg\\E.*'\nRETURN n.caller_class, n.callee_class\nLIMIT 100",
+        "parameters": {},
+        "directPatternCase": null
+      },
+      "before": {
+        "retained": false,
+        "mappedView": false
+      },
+      "columns": [
+        "n.caller_class",
+        "n.callee_class"
+      ],
+      "rows": [],
+      "types": [],
+      "outcome": "SUCCESS",
+      "after": {
+        "retained": false,
+        "mappedView": false
+      },
+      "phase": "execute"
+    }
+  ],
+  "performanceMeasurements": 0,
+  "javaVersion": "17.0.18"
+}

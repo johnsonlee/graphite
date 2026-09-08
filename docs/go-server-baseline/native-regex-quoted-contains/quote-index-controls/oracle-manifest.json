@@ -1,0 +1,101 @@
+{
+  "scope": "Existing quote-rewrite error-index compatibility",
+  "performanceMeasurements": 0,
+  "files": [
+    {
+      "file": "prepare.py",
+      "bytes": 1223,
+      "sha256": "21ce6dddb29111196aabdbd8908640340cc0080976d90488d661972957633092"
+    },
+    {
+      "file": "run.py",
+      "bytes": 2302,
+      "sha256": "afc28082eeb0812a6d9fad6912d927195f84c33405db5a53e6b29c0efc8e38a7"
+    },
+    {
+      "file": "verify.py",
+      "bytes": 2009,
+      "sha256": "ddfb57262988bebcd206632e174bb3fa64853ae8a47afaa8a9a56588a442ee8a"
+    },
+    {
+      "file": "README.md",
+      "bytes": 2561,
+      "sha256": "d17a589fc2c6edc838d46d21aa7bc70f62c44ccc0a10512d85bb746cd26fdae5"
+    },
+    {
+      "file": "cases.json",
+      "bytes": 6700,
+      "sha256": "9b7c8b86f27340603903f164ac74aaea138f8e3d9c6a3dfeac696642ed0becb0"
+    },
+    {
+      "file": "empty-public.json",
+      "bytes": 3,
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    },
+    {
+      "file": "pattern-main.json",
+      "bytes": 151918,
+      "sha256": "9a32494b36aa79d0f199eab55c9efef74c5b303307a8ff72ed841e294f634e3e"
+    },
+    {
+      "file": "repeat-pattern-main.json.gz",
+      "bytes": 4370,
+      "sha256": "801a0f529bd2c10fb147444272d9ce1792784f5e590f2d9c703893cd95c416dd"
+    },
+    {
+      "file": "verification.json",
+      "bytes": 299,
+      "sha256": "2bb9b31145609dd6cca70b1f6e4149cda6f8da2d74c8c565e0e68be9abf563ad"
+    },
+    {
+      "file": "run0-receipt.json.gz",
+      "bytes": 1799,
+      "sha256": "4931c648d8dbcd9157be8a0915ea0287743ceaec28964fd766af71a0e9d3173b"
+    },
+    {
+      "file": "run0-compile.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "run0-compile.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "run0-run.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "run0-run.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "run1-receipt.json.gz",
+      "bytes": 1799,
+      "sha256": "84fb03a220148ccc22948263fff31e6b2949f5df565f2f47d533711185e484be"
+    },
+    {
+      "file": "run1-compile.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "run1-compile.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "run1-run.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "run1-run.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

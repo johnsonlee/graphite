@@ -1,0 +1,35 @@
+{
+  "head": "bc708a810fce0d111988c72a3105820bfd1cf06e",
+  "module": "/Users/johnsonlee/.codex/benchmarks/graphite/regex-quote-functional-bc708-v1/module",
+  "goVersion": "go version go1.22.0 darwin/arm64",
+  "performanceMeasurement": false,
+  "sourceScope": "functional quote preprocessing and diagnostics only; no quoted contains plan",
+  "inputCount": 16495,
+  "removedEnvironmentKeys": [],
+  "steps": [
+    {
+      "command": [
+        "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+        "test",
+        "-race",
+        "-count=1",
+        "-json",
+        "./..."
+      ],
+      "cwd": "/Users/johnsonlee/.codex/benchmarks/graphite/regex-quote-functional-bc708-v1/module",
+      "startedAt": "2026-09-08T06:43:56.349257+00:00",
+      "finishedAt": "2026-09-08T06:44:43.854541+00:00",
+      "exitCode": 1,
+      "log": "race.jsonl",
+      "inputsUnchanged": true
+    }
+  ],
+  "actualJavaQuoteSubcasesPassed": 686,
+  "failedTests": [
+    {
+      "package": "github.com/johnsonlee/graphite/graphite-server/internal/server",
+      "test": "TestOpenAPISnapshotSourcesHaveNotDrifted"
+    }
+  ],
+  "setupFailure": "External isolated directory lacked graphite-explore Kotlin source siblings required by TestOpenAPISnapshotSourcesHaveNotDrifted; all source inputs unchanged. Retained run; corrected setup runs in v2."
+}

@@ -1,0 +1,58 @@
+{
+  "correctnessOnly": true,
+  "performanceMeasurements": 0,
+  "head": "bc708a810fce0d111988c72a3105820bfd1cf06e",
+  "sourceInputsUnchanged": true,
+  "runtimes": {
+    "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java": "9400f622fd1e220aa1a0cbd578aff060d837468b64227db40d099791b717729f",
+    "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go": "8cdbc785275f449b9d2082a1a4929797693c1ec5141d663398c6ac9753d0ccb4",
+    "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/lib/modules": "0473441a67b3287836922b4ad05a140029f9fcc5e688fd3cf1ac3a21d15afcf9",
+    "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/lib/server/libjvm.dylib": "51d9529a35eed323d31f38813cc295e072248701bf51360bbcd1431198e52f99",
+    "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/release": "d940b2ac1d3f585fd23451d205bed9c91ad6f3f07d14b6765eb33029911aadc9"
+  },
+  "runs": [
+    {
+      "name": "repeat-java",
+      "command": [
+        "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+        "QuoteReview.java"
+      ],
+      "cwd": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-quote-review-4kikao61",
+      "startedAt": "2026-09-08T06:45:13.947037+00:00",
+      "endedAt": "2026-09-08T06:45:14.215116+00:00",
+      "exitCode": 0,
+      "stdoutSHA256": "19d9ed2f7c0739943368083efa71cd4892b8765eb08e5c526b2bdc34a6201c34",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "repeat-staged-go",
+      "command": [
+        "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+        "run",
+        ".",
+        "cases.json"
+      ],
+      "cwd": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-quote-review-4kikao61",
+      "startedAt": "2026-09-08T06:45:14.215536+00:00",
+      "endedAt": "2026-09-08T06:45:14.599158+00:00",
+      "exitCode": 0,
+      "stdoutSHA256": "19d9ed2f7c0739943368083efa71cd4892b8765eb08e5c526b2bdc34a6201c34",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "head-go",
+      "command": [
+        "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+        "run",
+        ".",
+        "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-quote-review-4kikao61/cases.json"
+      ],
+      "cwd": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-quote-review-4kikao61/head-source",
+      "startedAt": "2026-09-08T06:45:14.778690+00:00",
+      "endedAt": "2026-09-08T06:45:15.221804+00:00",
+      "exitCode": 0,
+      "stdoutSHA256": "4b37bd1e964cdd2e4a63ab25377ddaae13c374cc674d9be25103fbb1410539aa",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

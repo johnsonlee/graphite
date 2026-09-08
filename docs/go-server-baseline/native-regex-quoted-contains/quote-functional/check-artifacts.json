@@ -1,0 +1,97 @@
+{
+  "fileCount": 23,
+  "files": {
+    "CHECKS.md": {
+      "bytes": 2234,
+      "sha256": "5179e882479910f2b571f86b47674caceeb0adec8d1ad67a000e13cd1ff5ba30"
+    },
+    "archive-check-logs.py": {
+      "bytes": 1302,
+      "sha256": "558c77824d3cf4ef579d6b8d8b1e9cc15469113a7a05608ccf7bffe4ee04c3fb"
+    },
+    "check-log-archives.json": {
+      "bytes": 887,
+      "sha256": "2e5c713f8d4633c6d27110f4ebaba30e79af85d831ba4e4f88dbb41798c0a1b6"
+    },
+    "dependencies.jsonstream": {
+      "bytes": 2142,
+      "sha256": "4f84a17b88502bf5625301b7dafcca1b70752327b4546e2b60a8e8996d4e01ce"
+    },
+    "failed-setup/dependencies.jsonstream": {
+      "bytes": 2142,
+      "sha256": "ef133a557b43878592f3127323d99e9f80fe59ab55e769e31fe65e2cb7049f53"
+    },
+    "failed-setup/failure-summary.json": {
+      "bytes": 1321,
+      "sha256": "67c2642e3b301a1a68dd9f04b5acc6c9323a1d864a3fab6f97f765283c577a9d"
+    },
+    "failed-setup/go-env.json": {
+      "bytes": 1377,
+      "sha256": "2a3d44d5118e6a65ce89be21feaacd4a255b9a2d9f034ba482ffaac35f7e0fdc"
+    },
+    "failed-setup/inputs-before.json.gz": {
+      "bytes": 770681,
+      "sha256": "64ba76e17a8289172ab4587f7419898a018d7f3c77c6083c752b3e5bffaae859"
+    },
+    "failed-setup/module-source.json": {
+      "bytes": 365785,
+      "sha256": "c2dd5dc5cebe7cdaf1ef080aeb5561c3a38e02211f99bb4ddaf106e74362e32e"
+    },
+    "failed-setup/race.jsonl.gz": {
+      "bytes": 608802,
+      "sha256": "3afe68b5ee99bb4b1f40ecccb2b7c3eb5e7c02a685d29e33378a11af8bf11be1"
+    },
+    "failed-setup/receipt.json": {
+      "bytes": 884,
+      "sha256": "afa530a6895e48df3c884475dc8e1a429e908ff4c7ffd2647e20e8d675ce3ac9"
+    },
+    "failed-setup/run-checks.py.txt": {
+      "bytes": 6748,
+      "sha256": "2b7e24d7fea589a9a8b3fa59b716508288272999778d355fdcc068dadf8cfe23"
+    },
+    "go-env.json": {
+      "bytes": 1377,
+      "sha256": "f425fed48d4472da2e7e84b431f8239aa9729af3b174b5f0593c6951415b2fd0"
+    },
+    "inputs-after.json.gz": {
+      "bytes": 770910,
+      "sha256": "5e04a50b25e748ffb6fc9c2075626a1efb0da73c0214e8d146f9802aaa6dc962"
+    },
+    "inputs-before.json.gz": {
+      "bytes": 770911,
+      "sha256": "54b683d87519961f1fa5bf085fb0f6d298d8e687d40d0d757ca5a1a9cf805511"
+    },
+    "module-source.json": {
+      "bytes": 365785,
+      "sha256": "efc91f8ac70028f36327496ebae30c8f837735059cbaa5ff1d1e506b4ab52c6c"
+    },
+    "quote.go.txt": {
+      "bytes": 1620,
+      "sha256": "ff34a8acf3a9bca978c8e4edb8858e1f51c261ba3f1cbcf47abf0db9cc82b6c1"
+    },
+    "quote_test.go.txt": {
+      "bytes": 2783,
+      "sha256": "c06cdfc64e3eb9d4d06efeed297a36ce006c53a81154c65fd532369825b4fbc5"
+    },
+    "race.jsonl.gz": {
+      "bytes": 603540,
+      "sha256": "7fa1a7ef0ba80281441e4431562ccb08f90d6a43dc2b760ee04a572776522e24"
+    },
+    "receipt.json": {
+      "bytes": 2516,
+      "sha256": "5e7c95803e0fa7cd340ba97ea6ceabe3a0b8e568960702dd8af0719629fc2c2a"
+    },
+    "regex.go.txt": {
+      "bytes": 4763,
+      "sha256": "718d22d908ed8b955b949918b5277d53943e7ad934571c3f1ec039ee9dc7e686"
+    },
+    "run-checks.py": {
+      "bytes": 7240,
+      "sha256": "b8a6d56b1872aec0109db9b2abd4775a9b0f9244616804d2fe6f196315453883"
+    },
+    "vet.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  }
+}

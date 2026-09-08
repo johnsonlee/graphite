@@ -1,0 +1,20 @@
+[
+  {
+    "source": "race.jsonl",
+    "archive": "race.jsonl.gz",
+    "retainedRaw": "/Users/johnsonlee/.codex/benchmarks/graphite/regex-quote-functional-bc708-v2/raw-checks/race.jsonl",
+    "decompressedBytes": 14825176,
+    "decompressedSha256": "6df040a1821f30badc18dcd7b9005de74a748e9f3fed2ac4bd0ae0293fd67f31",
+    "archiveSha256": "7fa1a7ef0ba80281441e4431562ccb08f90d6a43dc2b760ee04a572776522e24",
+    "verified": true
+  },
+  {
+    "source": "failed-setup/race.jsonl",
+    "archive": "failed-setup/race.jsonl.gz",
+    "retainedRaw": "/Users/johnsonlee/.codex/benchmarks/graphite/regex-quote-functional-bc708-v1/raw-checks/race.jsonl",
+    "decompressedBytes": 14825221,
+    "decompressedSha256": "08cb303a8b590f8b49d8b117589fd5b75b7d5f50d1ffa70f66cb3096ad33935a",
+    "archiveSha256": "3afe68b5ee99bb4b1f40ecccb2b7c3eb5e7c02a685d29e33378a11af8bf11be1",
+    "verified": true
+  }
+]

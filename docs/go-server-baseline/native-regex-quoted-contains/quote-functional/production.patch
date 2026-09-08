@@ -1,0 +1,41 @@
+--- a/graphite-server/internal/javaregex/regex.go
++++ b/graphite-server/internal/javaregex/regex.go
+@@ -23,7 +23,26 @@
+ 	message := fmt.Sprintf("%s near index %d\n%s", e.Description, e.Index, e.Pattern)
+ 	runes, _ := decodeJavaString(context.Background(), e.Pattern)
+ 	if e.Index < javaIndex(runes, len(runes)) {
+-		message += "\n" + strings.Repeat(" ", e.Index) + "^"
++		var caret strings.Builder
++		columns := 0
++		for _, r := range runes {
++			units := 1
++			if r > 0xffff {
++				units = 2
++			}
++			for i := 0; i < units && columns < e.Index; i++ {
++				if r == '\t' {
++					caret.WriteByte('\t')
++				} else {
++					caret.WriteByte(' ')
++				}
++				columns++
++			}
++			if columns == e.Index {
++				break
++			}
++		}
++		message += "\n" + caret.String() + "^"
+ 	}
+ 	return message
+ }
+@@ -75,6 +94,10 @@
+ 		return nil, err
+ 	}
+ 	runes, err := decodeJavaString(ctx, pattern)
++	if err != nil {
++		return nil, err
++	}
++	runes, err = removeQEQuoting(ctx, runes)
+ 	if err != nil {
+ 		return nil, err
+ 	}

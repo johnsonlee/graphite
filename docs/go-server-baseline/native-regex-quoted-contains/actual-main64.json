@@ -1,0 +1,75 @@
+{
+  "workload": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/benchmarkcase/testdata/main64.json",
+  "workloadSha256": "378c200c5ab3053c53962f9d87c59924f732d0c012fcaff6009842a58e547023",
+  "cases": [
+    {
+      "index": 892,
+      "case": {
+        "id": "regex-or-zero",
+        "family": "regex",
+        "shape": "regex-or",
+        "selectivity": "zero",
+        "operator": "regex",
+        "boundary": "single-query",
+        "projection": "properties",
+        "limit": 100,
+        "query": "MATCH (n)\nWHERE n.caller_class =~ '.*\\QGraphitePressureAbsent45zeroX\\E.*' OR n.callee_class =~ '.*\\QGraphitePressureAbsent45zeroX\\E.*'\nRETURN n.caller_class, n.callee_class\nLIMIT 100",
+        "parameters": {},
+        "expectZeroRows": true,
+        "targetGraphId": null,
+        "targetGraphIds": [],
+        "workloadIdentity": null,
+        "requestGraphIds": null,
+        "expectedRowCountRange": null,
+        "configuredTimeoutMillis": null,
+        "fixtureDistributionId": null
+      }
+    },
+    {
+      "index": 893,
+      "case": {
+        "id": "regex-or-targeted",
+        "family": "regex",
+        "shape": "regex-or",
+        "selectivity": "targeted",
+        "operator": "regex",
+        "boundary": "single-query",
+        "projection": "properties",
+        "limit": 100,
+        "query": "MATCH (n)\nWHERE n.caller_class =~ '.*\\Qorg.apache.tika.\\E.*' OR n.callee_class =~ '.*\\Qorg.apache.tika.\\E.*'\nRETURN n.caller_class, n.callee_class\nLIMIT 100",
+        "parameters": {},
+        "expectZeroRows": false,
+        "targetGraphId": null,
+        "targetGraphIds": [],
+        "workloadIdentity": null,
+        "requestGraphIds": null,
+        "expectedRowCountRange": null,
+        "configuredTimeoutMillis": null,
+        "fixtureDistributionId": null
+      }
+    },
+    {
+      "index": 894,
+      "case": {
+        "id": "regex-or-dense",
+        "family": "regex",
+        "shape": "regex-or",
+        "selectivity": "dense",
+        "operator": "regex",
+        "boundary": "single-query",
+        "projection": "properties",
+        "limit": 100,
+        "query": "MATCH (n)\nWHERE n.caller_class =~ '.*\\Qorg\\E.*' OR n.callee_class =~ '.*\\Qorg\\E.*'\nRETURN n.caller_class, n.callee_class\nLIMIT 100",
+        "parameters": {},
+        "expectZeroRows": false,
+        "targetGraphId": null,
+        "targetGraphIds": [],
+        "workloadIdentity": null,
+        "requestGraphIds": null,
+        "expectedRowCountRange": null,
+        "configuredTimeoutMillis": null,
+        "fixtureDistributionId": null
+      }
+    }
+  ]
+}
