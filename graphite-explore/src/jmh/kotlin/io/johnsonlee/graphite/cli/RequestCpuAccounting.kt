@@ -47,28 +47,37 @@ internal object RequestCpuAccounting {
         check(threads.currentThreadCpuTime >= 0L) { "Per-thread CPU time is disabled on this JVM" }
     }
 
-    fun <T> measure(action: () -> T): Pair<T, RequestCpuSample> {
+    fun <T> measure(action: () -> T): Pair<T, RequestCpuSample> =
+        measure(action, contractUnreadableThreadId = null)
+
+    /**
+     * [contractUnreadableThreadId] forces one id's end-of-window CPU read to be treated as failed,
+     * so the contract can deterministically exercise the race it otherwise cannot hit: a thread
+     * present in the end id list that terminates before its `getThreadCpuTime` read. It is null on
+     * every real measurement.
+     */
+    internal fun <T> measure(action: () -> T, contractUnreadableThreadId: Long?): Pair<T, RequestCpuSample> {
         val threads = ManagementFactory.getThreadMXBean()
         val beforeStarted = threads.totalStartedThreadCount
-        val beforeIds = threads.allThreadIds
-        val beforeCpu = threadCpuSnapshot(threads, beforeIds)
+        val beforeCpu = threadCpuSnapshot(threads, threads.allThreadIds, unreadable = null)
         // The process figure is read innermost so its interval is contained in the thread
         // snapshots; the request-serving Java sum can then exceed it only by snapshot overhead.
         val beforeProcess = processCpuTimeNanos()
         val result = action()
         val afterProcess = processCpuTimeNanos()
-        val afterIds = threads.allThreadIds
-        val afterCpu = threadCpuSnapshot(threads, afterIds)
+        val afterCpu = threadCpuSnapshot(threads, threads.allThreadIds, unreadable = contractUnreadableThreadId)
         val afterStarted = threads.totalStartedThreadCount
 
-        val beforeIdSet = beforeIds.toHashSet()
-        val afterIdSet = afterIds.toHashSet()
-        val vanished = beforeIdSet.count { it !in afterIdSet }
+        // Liveness is derived from the ids whose CPU read succeeded, not the raw id list: a thread
+        // enumerated at the end but gone before its read returns -1 and is absent from afterCpu, so
+        // it counts as vanished rather than present-with-no-CPU -- otherwise a worker exiting during
+        // the end snapshot would balance the started count and hide its CPU.
+        val vanished = beforeCpu.keys.count { it !in afterCpu }
         check(vanished == 0) {
             "$vanished Java thread(s) present at the start of the window were gone at the end; " +
                 "their in-window CPU cannot be accounted"
         }
-        val appeared = afterIdSet.count { it !in beforeIdSet }
+        val appeared = afterCpu.keys.count { it !in beforeCpu }
         val transientWorkers = (afterStarted - beforeStarted) - appeared
         check(transientWorkers <= 0L) {
             "$transientWorkers Java worker(s) were created and finished inside the measured window; " +
@@ -94,10 +103,16 @@ internal object RequestCpuAccounting {
         (ManagementFactory.getOperatingSystemMXBean() as? com.sun.management.OperatingSystemMXBean)
             ?.processCpuTime ?: error("Process CPU time is unavailable on this JVM")
 
-    /** Per-thread on-CPU time keyed by Java thread id; a thread that just died reads -1 and is skipped. */
-    private fun threadCpuSnapshot(threads: ThreadMXBean, ids: LongArray): Map<Long, Long> {
+    /**
+     * Per-thread on-CPU time keyed by Java thread id, for the ids whose read succeeded; a thread
+     * that died between enumeration and its read returns -1 and is omitted, so a caller keying its
+     * liveness on this map's keys treats it as gone. [unreadable] forces one id to be omitted, for
+     * the contract that exercises that race.
+     */
+    private fun threadCpuSnapshot(threads: ThreadMXBean, ids: LongArray, unreadable: Long?): Map<Long, Long> {
         val snapshot = HashMap<Long, Long>(ids.size * 2)
         for (id in ids) {
+            if (id == unreadable) continue
             val cpu = threads.getThreadCpuTime(id)
             if (cpu >= 0L) snapshot[id] = cpu
         }
@@ -119,6 +134,7 @@ object MethodCompatibilityCpuAccountingContract {
             RequestCpuAccounting.requireAvailable()
             checkCollidingNameWorkerIsCharged(failures)
             checkTransientWorkerFailsClosed(failures)
+            checkEndSnapshotReadRaceFailsClosed(failures)
             checkProcessBound("idle action", failures) { 0L }
             checkProcessBound("collector-loaded action", failures) { collectorLoad() }
         } catch (@Suppress("TooGenericExceptionCaught") failure: RuntimeException) {
@@ -187,6 +203,35 @@ object MethodCompatibilityCpuAccountingContract {
         println("cpu-accounting-contract: transient worker failed closed = $failedClosed")
         if (!failedClosed) {
             failures.add("a worker created and joined inside the window was not caught; the row " +
+                "would under-report its CPU")
+        }
+    }
+
+    /**
+     * A persistent worker present in the end id list whose CPU read fails (it terminated between
+     * enumeration and the read) must make measure() fail closed, not count as present with no CPU.
+     * The read failure is forced through the contract seam because the real race window cannot be
+     * hit reliably.
+     */
+    private fun checkEndSnapshotReadRaceFailsClosed(failures: MutableList<String>) {
+        val go = java.util.concurrent.SynchronousQueue<Unit>()
+        val done = java.util.concurrent.SynchronousQueue<Long>()
+        val worker = Thread {
+            while (true) {
+                go.take()
+                val until = System.nanoTime() + CPU_ACCOUNTING_WORKER_NANOS
+                var sink = 0L
+                while (System.nanoTime() < until) sink += sink xor System.nanoTime()
+                if (sink == Long.MIN_VALUE) println(sink)
+                done.put(0L)
+            }
+        }.apply { isDaemon = true; start() }
+        val failedClosed = runCatching {
+            RequestCpuAccounting.measure({ go.put(Unit); done.take() }, contractUnreadableThreadId = worker.id)
+        }.isFailure
+        println("cpu-accounting-contract: end-snapshot read race failed closed = $failedClosed")
+        if (!failedClosed) {
+            failures.add("a worker whose end-of-window CPU read failed was not caught; the row " +
                 "would under-report its CPU")
         }
     }
