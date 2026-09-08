@@ -757,6 +757,107 @@ jobs:
         if-no-files-found: error
         retention-days: 14
 
+  validate-cpu-accounting:
+    name: validate-cpu-accounting
+    needs: [prepare-latency-fixtures]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+    - name: Checkout PR
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        path: candidate
+        persist-credentials: false
+
+    - name: Setup Java
+      uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: '17'
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v6
+      with:
+        cache-read-only: true
+
+    # The candidate's own Explorer harness is built WITHOUT the base-owned gate install, so this jar
+    # runs the new RequestCpuAccounting integration -- the real forks in the paired gate do not, since
+    # they install the base harness over both trees. This proves the accounting in a real fork; it is
+    # candidate-only and never feeds the trusted paired gate.
+    - name: Build candidate-owned Explorer JMH JAR
+      run: |
+        candidate/gradlew -p candidate :explore:testClasses :explore:jmhJar --no-daemon
+        mapfile -t JARS < <(find candidate/graphite-explore/build/libs -name '*-jmh.jar' -type f)
+        test "${#JARS[@]}" -eq 1
+        jar tf "${JARS[0]}" >/dev/null
+        mkdir -p jmh-candidate-native
+        install -m 0644 "${JARS[0]}" jmh-candidate-native/candidate-native-explore-jmh.jar
+
+    - name: Restore persisted fixture graphs
+      uses: actions/cache/restore@v5
+      with:
+        path: fixture-graphs
+        key: ${{ runner.os }}-${{ runner.arch }}-wrapped-query-fixtures-v2-${{ hashFiles('candidate/gradle/libs.versions.toml', 'candidate/gradle/wrapper/gradle-wrapper.properties', 'candidate/settings.gradle.kts', 'candidate/**/build.gradle.kts', 'candidate/graphite-core/src/main/**', 'candidate/graphite-sootup/src/main/**', 'candidate/graphite-webgraph/src/main/**', 'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/BenchmarkCorpus.kt', 'candidate/graphite-webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/AllFixtureBenchmarkGraphPreparation.kt') }}
+
+    - name: Verify restored real graphs
+      run: |
+        test -f fixture-graphs/.complete
+        for CORPUS in android tika hive kotlin-compiler; do
+          test -f "fixture-graphs/${CORPUS}/graph.metadata"
+          test -f "fixture-graphs/${CORPUS}/graph.nodedata"
+        done
+
+    - name: Exercise the candidate CPU accounting in a real fork
+      run: |
+        mkdir -p benchmark-results
+        JAR=jmh-candidate-native/candidate-native-explore-jmh.jar
+        GRAPH_ARGS="-Dandroid.graph.path=${PWD}/fixture-graphs/android \
+          -Dtika.graph.path=${PWD}/fixture-graphs/tika \
+          -Dhive.graph.path=${PWD}/fixture-graphs/hive \
+          -Dkotlin.compiler.graph.path=${PWD}/fixture-graphs/kotlin-compiler"
+        # The accounting contract must still hold on this runner/JVM before the fork.
+        java -cp "${JAR}" io.johnsonlee.graphite.cli.MethodCompatibilityCpuAccountingContract
+        java -jar "${JAR}" \
+          'io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate' \
+          -wi 0 -i 1 -f 1 -t 1 -foe true -rf json \
+          -p graphCount=4 -p scenario=count \
+          -jvmArgsAppend "${GRAPH_ARGS} -Dgraphite.method.compatibility.output=${PWD}/benchmark-results/candidate-cpu-accounting-smoke.txt" \
+          -rff "${PWD}/benchmark-results/candidate-cpu-accounting-smoke.json"
+
+    - name: Assert the real fork published a valid javaThreadCpuNanos row
+      run: |
+        FILE=benchmark-results/candidate-cpu-accounting-smoke.json
+        EXPECTED='io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate'
+        jq -e --arg expected "${EXPECTED}" '
+          length == 1 and
+          all(.[];
+            .benchmark == $expected and
+            .params.graphCount == "4" and
+            .params.scenario == "count" and
+            .mode == "ss" and
+            .primaryMetric.score > 0 and
+            .secondaryMetrics.requestsSucceeded.score == 1 and
+            .secondaryMetrics.javaThreadCpuNanos.score > 0 and
+            .secondaryMetrics.processCpuNanos.score > 0 and
+            .secondaryMetrics.jvmInternalCpuNanos.score >= 0 and
+            .secondaryMetrics.cpuAccountingUnderflowNanos.score >= 0 and
+            .secondaryMetrics.jvmInternalThreadsEnded.score >= 0 and
+            .secondaryMetrics.gcTimeMillis.score >= 0 and
+            .secondaryMetrics.jitTimeMillis.score >= 0
+          )' "${FILE}" >/dev/null
+        echo "cpu-accounting smoke: candidate fork published a valid javaThreadCpuNanos row"
+
+    - name: Upload CPU accounting smoke result
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: benchmark-cpu-accounting-smoke-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        path: benchmark-results/
+        if-no-files-found: error
+        retention-days: 14
+
   method-compatibility:
     name: method-compatibility-gate
     if: always()

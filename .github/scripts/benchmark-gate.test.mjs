@@ -3309,3 +3309,24 @@ test("method-compatibility shards run the CPU accounting contract in its own JVM
     assert.ok(contract > 0, "the contract must run in its own JVM");
     assert.ok(contract < firstFork, "the contract must run before the first measured fork");
 });
+
+test("a candidate-owned smoke exercises the new CPU accounting harness in a real fork", () => {
+    const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
+    assert.match(workflow, /^  validate-cpu-accounting:$/m, "a candidate-owned CPU-accounting smoke job must exist");
+    const start = workflow.indexOf("\n  validate-cpu-accounting:");
+    const rest = workflow.slice(start + 1);
+    const job = rest.slice(0, rest.indexOf("\n  method-compatibility:"));
+    // Builds the candidate's own harness (no base-owned gate install), so the new RequestCpuAccounting
+    // integration actually runs -- unlike the paired gate, which installs the base harness over both trees.
+    assert.match(job, /Build candidate-owned Explorer JMH JAR/);
+    assert.doesNotMatch(job, /Install base-owned Explorer harnesses/, "the smoke must not install the base harness");
+    // A real graphCount=4 fork over all four corpora.
+    assert.match(job, /-p graphCount=4 -p scenario=count/);
+    // Asserts the fork published a valid javaThreadCpuNanos row with nonnegative accounting diagnostics.
+    assert.match(job, /secondaryMetrics\.requestsSucceeded\.score == 1/);
+    assert.match(job, /secondaryMetrics\.javaThreadCpuNanos\.score > 0/);
+    assert.match(job, /secondaryMetrics\.jvmInternalCpuNanos\.score >= 0/);
+    // The smoke artifact is distinct from the base-owned paired artifacts so the trusted gate cannot consume it.
+    assert.match(job, /name: benchmark-cpu-accounting-smoke-/);
+    assert.doesNotMatch(job, /name: jmh-explore-/, "the smoke must not reuse the paired gate artifacts");
+});
