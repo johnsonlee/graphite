@@ -153,6 +153,25 @@ private val configuredDirectStringParallelism by lazy { System.getProperty(DIREC
 private val directStringExecutorParallelism: Int by lazy {
     resolveDirectStringExecutorParallelism(configuredGraphWorkers = configuredDirectStringParallelism)
 }
+/**
+ * Cancels a direct-string worker that has not started yet and releases its completion latch, so a
+ * query that stops early or fails does not wait on a worker the executor never ran. A worker that
+ * has already started (its [started] flag is set) keeps running to its own `finally`, and a future
+ * that can no longer be cancelled is left alone. Extracted so the not-started branch is covered
+ * deterministically rather than only when cancellation happens to win the race against worker start.
+ */
+internal fun cancelDirectStringWorkerBeforeStart(
+    future: Future<*>,
+    started: AtomicBoolean,
+    completion: CountDownLatch
+): Boolean {
+    if (future.cancel(true) && started.compareAndSet(false, true)) {
+        completion.countDown()
+        return true
+    }
+    return false
+}
+
 private val directStringExecutor by lazy {
     Executors.newFixedThreadPool(directStringExecutorParallelism) { runnable ->
         Thread(runnable, "graphite-cypher-scan-${directStringWorkerNumber.incrementAndGet()}").apply {
@@ -2457,7 +2476,7 @@ class QueryPipeline private constructor(
                 val taskStarted = started[index]
                 val completion = completions[index]
                 if (future != null && taskStarted != null && completion != null) {
-                    if (future.cancel(true) && taskStarted.compareAndSet(false, true)) completion.countDown()
+                    cancelDirectStringWorkerBeforeStart(future, taskStarted, completion)
                 }
             }
             awaitDirectStringTasks(completions.filterNotNull())
@@ -2523,7 +2542,7 @@ class QueryPipeline private constructor(
                 val taskStarted = started[index]
                 val completion = completions[index]
                 if (future != null && taskStarted != null && completion != null) {
-                    if (future.cancel(true) && taskStarted.compareAndSet(false, true)) completion.countDown()
+                    cancelDirectStringWorkerBeforeStart(future, taskStarted, completion)
                 }
             }
             awaitDirectStringTasks(completions.filterNotNull())
@@ -2619,9 +2638,7 @@ class QueryPipeline private constructor(
         fun stopWorkers(cancel: Boolean) {
             if (cancel) {
                 futures.forEachIndexed { index, future ->
-                    if (future.cancel(true) && started[index].compareAndSet(false, true)) {
-                        completions[index].countDown()
-                    }
+                    cancelDirectStringWorkerBeforeStart(future, started[index], completions[index])
                 }
             } else {
                 repeat(workerCount) { taskIndexes.add(-1) }
