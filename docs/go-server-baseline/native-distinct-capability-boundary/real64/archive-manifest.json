@@ -1,0 +1,241 @@
+{
+  "performanceMeasurements": 0,
+  "terminalRuntimeCount": 3,
+  "comparisonsMustBeReadSeparately": true,
+  "files": [
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-2e75f69e-real64-v1/cold-comparison.json",
+      "sourceBytes": 1518,
+      "sourceSHA256": "f28f1d4a301cf5022be4dfbc41ddc1a7eeda5c3573a482ca9370be4d3cc725c3",
+      "archive": "cold-comparison.json",
+      "archiveBytes": 1518,
+      "archiveSHA256": "f28f1d4a301cf5022be4dfbc41ddc1a7eeda5c3573a482ca9370be4d3cc725c3",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-2e75f69e-real64-v1/controller.json",
+      "sourceBytes": 1623,
+      "sourceSHA256": "3f988e0a025ba77d2fa90d082ee57e759701f24f589dc5464cb11d5842b4a29e",
+      "archive": "controller.json",
+      "archiveBytes": 1623,
+      "archiveSHA256": "3f988e0a025ba77d2fa90d082ee57e759701f24f589dc5464cb11d5842b4a29e",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-2e75f69e-real64-v1/module-source.json",
+      "sourceBytes": 366064,
+      "sourceSHA256": "d9b6e4d6f1a22ba9cb8683d4e498b5f3bdb3931fe94f9346ec17113240cb6c6d",
+      "archive": "module-source.json",
+      "archiveBytes": 366064,
+      "archiveSHA256": "d9b6e4d6f1a22ba9cb8683d4e498b5f3bdb3931fe94f9346ec17113240cb6c6d",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-2e75f69e-real64-v1/native-cold/responses.jsonl",
+      "sourceBytes": 97903444,
+      "sourceSHA256": "664f8c59753b3d676aeb31479b41d2e367cf9ee6a4b56f331fd9afe66e7ca46f",
+      "archive": "native-cold/responses.jsonl.gz",
+      "archiveBytes": 3278413,
+      "archiveSHA256": "88020324a2e328ea91d1343a6f1d967265a2c8775d9a5bb49412ae18a49bee97",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-2e75f69e-real64-v1/native-cold-inputs.json",
+      "sourceBytes": 61149,
+      "sourceSHA256": "da07ab75413ccb2d7a8ddb35066abfc03a9ad144c34e91b0c414ddcd36272aa1",
+      "archive": "native-cold-inputs.json",
+      "archiveBytes": 61149,
+      "archiveSHA256": "da07ab75413ccb2d7a8ddb35066abfc03a9ad144c34e91b0c414ddcd36272aa1",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-2e75f69e-real64-v1/native-cold-postrun-fixtures.json",
+      "sourceBytes": 234,
+      "sourceSHA256": "006fa3f713738796ac9d1eaba2d5ab20f951978f7973f79f4bba1243d5b181a0",
+      "archive": "native-cold-postrun-fixtures.json",
+      "archiveBytes": 234,
+      "archiveSHA256": "006fa3f713738796ac9d1eaba2d5ab20f951978f7973f79f4bba1243d5b181a0",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-2e75f69e-real64-v1/native-cold-preflight.json",
+      "sourceBytes": 234,
+      "sourceSHA256": "006fa3f713738796ac9d1eaba2d5ab20f951978f7973f79f4bba1243d5b181a0",
+      "archive": "native-cold-preflight.json",
+      "archiveBytes": 234,
+      "archiveSHA256": "006fa3f713738796ac9d1eaba2d5ab20f951978f7973f79f4bba1243d5b181a0",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-2e75f69e-real64-v1/native-cold-process.json",
+      "sourceBytes": 1397,
+      "sourceSHA256": "a1a27c26ef9b1f5c41730e318a85c29100471fe4ae87ee620c31aa79bf60b6f1",
+      "archive": "native-cold-process.json",
+      "archiveBytes": 1397,
+      "archiveSHA256": "a1a27c26ef9b1f5c41730e318a85c29100471fe4ae87ee620c31aa79bf60b6f1",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-2e75f69e-real64-v1/native-cold-process.log",
+      "sourceBytes": 113440,
+      "sourceSHA256": "6c94e76a7a5425eb0372f483844bc62dff00f77d4c620959ea7ed13198a41e35",
+      "archive": "native-cold-process.log",
+      "archiveBytes": 113440,
+      "archiveSHA256": "6c94e76a7a5425eb0372f483844bc62dff00f77d4c620959ea7ed13198a41e35",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-2e75f69e-real64-v1/native-startup-prepared/responses.jsonl",
+      "sourceBytes": 97901990,
+      "sourceSHA256": "c4041f6e8336cd67646f4aa9e1a93008de06f99f0bd8dc60dd54d4851b0b371e",
+      "archive": "native-startup-prepared/responses.jsonl.gz",
+      "archiveBytes": 3271162,
+      "archiveSHA256": "130f56560f8f423218fa32da6c369daf0d5ea61167719cf9383f4a261ff7e9b2",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-2e75f69e-real64-v1/native-startup-prepared-inputs.json",
+      "sourceBytes": 61149,
+      "sourceSHA256": "da07ab75413ccb2d7a8ddb35066abfc03a9ad144c34e91b0c414ddcd36272aa1",
+      "archive": "native-startup-prepared-inputs.json",
+      "archiveBytes": 61149,
+      "archiveSHA256": "da07ab75413ccb2d7a8ddb35066abfc03a9ad144c34e91b0c414ddcd36272aa1",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-2e75f69e-real64-v1/native-startup-prepared-postrun-fixtures.json",
+      "sourceBytes": 246,
+      "sourceSHA256": "96b2adbd4880da23542b8ad5b1b85e0a6bdc622859ad1c75132117a770cbedde",
+      "archive": "native-startup-prepared-postrun-fixtures.json",
+      "archiveBytes": 246,
+      "archiveSHA256": "96b2adbd4880da23542b8ad5b1b85e0a6bdc622859ad1c75132117a770cbedde",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-2e75f69e-real64-v1/native-startup-prepared-preflight.json",
+      "sourceBytes": 246,
+      "sourceSHA256": "96b2adbd4880da23542b8ad5b1b85e0a6bdc622859ad1c75132117a770cbedde",
+      "archive": "native-startup-prepared-preflight.json",
+      "archiveBytes": 246,
+      "archiveSHA256": "96b2adbd4880da23542b8ad5b1b85e0a6bdc622859ad1c75132117a770cbedde",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-2e75f69e-real64-v1/native-startup-prepared-process.json",
+      "sourceBytes": 1470,
+      "sourceSHA256": "a02e997ebbefa90a0f96dcc1aa5d26c1bdb22bfdfb294e6f4cbe581b8c469644",
+      "archive": "native-startup-prepared-process.json",
+      "archiveBytes": 1470,
+      "archiveSHA256": "a02e997ebbefa90a0f96dcc1aa5d26c1bdb22bfdfb294e6f4cbe581b8c469644",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-2e75f69e-real64-v1/native-startup-prepared-process.log",
+      "sourceBytes": 113440,
+      "sourceSHA256": "6c94e76a7a5425eb0372f483844bc62dff00f77d4c620959ea7ed13198a41e35",
+      "archive": "native-startup-prepared-process.log",
+      "archiveBytes": 113440,
+      "archiveSHA256": "6c94e76a7a5425eb0372f483844bc62dff00f77d4c620959ea7ed13198a41e35",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-2e75f69e-real64-v1/native-warm/responses.jsonl",
+      "sourceBytes": 97892293,
+      "sourceSHA256": "e30afa52e21042d949b2e09e661e3f6f2eac7a88f2e13ba711780fe7e45e1440",
+      "archive": "native-warm/responses.jsonl.gz",
+      "archiveBytes": 3278959,
+      "archiveSHA256": "d99a60040f34d31c0c8f8eb91078e6d0e91dd7d422900827c3b5d3f6921d9be7",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-2e75f69e-real64-v1/native-warm-inputs.json",
+      "sourceBytes": 61149,
+      "sourceSHA256": "da07ab75413ccb2d7a8ddb35066abfc03a9ad144c34e91b0c414ddcd36272aa1",
+      "archive": "native-warm-inputs.json",
+      "archiveBytes": 61149,
+      "archiveSHA256": "da07ab75413ccb2d7a8ddb35066abfc03a9ad144c34e91b0c414ddcd36272aa1",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-2e75f69e-real64-v1/native-warm-postrun-fixtures.json",
+      "sourceBytes": 234,
+      "sourceSHA256": "391d497d402c5681c140f7fbd04870d0c2f62632de34b8ea0acaf7e8300ebf2c",
+      "archive": "native-warm-postrun-fixtures.json",
+      "archiveBytes": 234,
+      "archiveSHA256": "391d497d402c5681c140f7fbd04870d0c2f62632de34b8ea0acaf7e8300ebf2c",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-2e75f69e-real64-v1/native-warm-preflight.json",
+      "sourceBytes": 234,
+      "sourceSHA256": "391d497d402c5681c140f7fbd04870d0c2f62632de34b8ea0acaf7e8300ebf2c",
+      "archive": "native-warm-preflight.json",
+      "archiveBytes": 234,
+      "archiveSHA256": "391d497d402c5681c140f7fbd04870d0c2f62632de34b8ea0acaf7e8300ebf2c",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-2e75f69e-real64-v1/native-warm-process.json",
+      "sourceBytes": 1397,
+      "sourceSHA256": "a3f4a00e6426adc5f9a27207fb380fde3c5b70164b487c6be19b2c0cc79ed09e",
+      "archive": "native-warm-process.json",
+      "archiveBytes": 1397,
+      "archiveSHA256": "a3f4a00e6426adc5f9a27207fb380fde3c5b70164b487c6be19b2c0cc79ed09e",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-2e75f69e-real64-v1/native-warm-process.log",
+      "sourceBytes": 113440,
+      "sourceSHA256": "d5f7c883aed183cdd870e8c2ee532893529b3b68ef728e82c2fa5fd4da8caf68",
+      "archive": "native-warm-process.log",
+      "archiveBytes": 113440,
+      "archiveSHA256": "d5f7c883aed183cdd870e8c2ee532893529b3b68ef728e82c2fa5fd4da8caf68",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-2e75f69e-real64-v1/startup-prepared-comparison.json",
+      "sourceBytes": 1536,
+      "sourceSHA256": "5abb21badd071bf2e6ef555470ca0ce16b79e37300e24f632d400de00c512aa1",
+      "archive": "startup-prepared-comparison.json",
+      "archiveBytes": 1536,
+      "archiveSHA256": "5abb21badd071bf2e6ef555470ca0ce16b79e37300e24f632d400de00c512aa1",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-2e75f69e-real64-v1/verify-cold.log",
+      "sourceBytes": 1518,
+      "sourceSHA256": "f28f1d4a301cf5022be4dfbc41ddc1a7eeda5c3573a482ca9370be4d3cc725c3",
+      "archive": "verify-cold.log",
+      "archiveBytes": 1518,
+      "archiveSHA256": "f28f1d4a301cf5022be4dfbc41ddc1a7eeda5c3573a482ca9370be4d3cc725c3",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-2e75f69e-real64-v1/verify-startup-prepared.log",
+      "sourceBytes": 1536,
+      "sourceSHA256": "5abb21badd071bf2e6ef555470ca0ce16b79e37300e24f632d400de00c512aa1",
+      "archive": "verify-startup-prepared.log",
+      "archiveBytes": 1536,
+      "archiveSHA256": "5abb21badd071bf2e6ef555470ca0ce16b79e37300e24f632d400de00c512aa1",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-2e75f69e-real64-v1/verify-warm.log",
+      "sourceBytes": 1517,
+      "sourceSHA256": "03e75dda7eb0cb40a4bc0939c1c3ecbda4b2ed6ac55faa7f0f31e60598358fa8",
+      "archive": "verify-warm.log",
+      "archiveBytes": 1517,
+      "archiveSHA256": "03e75dda7eb0cb40a4bc0939c1c3ecbda4b2ed6ac55faa7f0f31e60598358fa8",
+      "decompressedBytesEqual": true
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-2e75f69e-real64-v1/warm-comparison.json",
+      "sourceBytes": 1517,
+      "sourceSHA256": "03e75dda7eb0cb40a4bc0939c1c3ecbda4b2ed6ac55faa7f0f31e60598358fa8",
+      "archive": "warm-comparison.json",
+      "archiveBytes": 1517,
+      "archiveSHA256": "03e75dda7eb0cb40a4bc0939c1c3ecbda4b2ed6ac55faa7f0f31e60598358fa8",
+      "decompressedBytesEqual": true
+    }
+  ]
+}

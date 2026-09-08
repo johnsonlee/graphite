@@ -1,0 +1,27 @@
+{
+  "command": "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go test ./internal/query -run '^TestDistinctCapabilityMain$' -count=1",
+  "terminalSession": 70780,
+  "exitCode": 1,
+  "cases": 46,
+  "matches": 43,
+  "differences": [
+    {
+      "name": "first-neutral-call-generic-1",
+      "main": {"n.name": "hit-A", "$metadata": {"graphIds": ["single"]}},
+      "go": {"n.name": "hit-A", "$metadata": {"graphIds": ["g00"]}}
+    },
+    {
+      "name": "generic-local-label-1",
+      "main": {"n.name": "hit-A"},
+      "go": {"n.name": "hit-A", "$metadata": {"graphIds": ["g00"]}}
+    },
+    {
+      "name": "generic-unsupported-projection-1",
+      "main": {"n.id": 10},
+      "go": {"n.id": 10, "$metadata": {"graphIds": ["g00"]}}
+    }
+  ],
+  "cause": "The first Go test harness used the cross executor for all inputs, while CapabilityOracle.java selects the single executor when count is one.",
+  "correction": "Select the same single/cross executor as actual main. Keep original expected output; no production change was made for this harness error.",
+  "performanceMeasurements": 0
+}

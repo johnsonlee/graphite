@@ -1,0 +1,185 @@
+{
+  "copied": [
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-supplement-v1/classes/CapabilityFixture.class",
+      "file": "main-capture/classes/CapabilityFixture.class",
+      "sha256": "a3e39db3cd63f79e58a88571827810e440d56e4b2196b77bf07bcf5c4cd4fd4b"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-supplement-v1/classes/CapabilityOracle.class",
+      "file": "main-capture/classes/CapabilityOracle.class",
+      "sha256": "5307fe2c75230738d4c0e394b94259e9ffa8150d1f2beec2c89482a14098ac26"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-supplement-v1/commands.json",
+      "file": "main-capture/commands.json",
+      "sha256": "11f82fdf33d4362db8c2fd56ab2b2c3d1235e039093ea7e73ad44cf609869a7c"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-supplement-v1/compile.stderr",
+      "file": "main-capture/compile.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-supplement-v1/compile.stdout",
+      "file": "main-capture/compile.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-supplement-v1/fixture-after.json.gz",
+      "file": "main-capture/fixture-after.json.gz",
+      "sha256": "69e87eafab2c3db0a5f9afde0a6842f9accdef3eb3b581ea6011f8dd06895031"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-supplement-v1/fixture-audit.json",
+      "file": "main-capture/fixture-audit.json",
+      "sha256": "848d3fda18958d47d4e18549c5abc5db13bd3967c5c411b6a9e0f8a35e1a8890"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-supplement-v1/fixture-before.json.gz",
+      "file": "main-capture/fixture-before.json.gz",
+      "sha256": "07d1d78928dededd7cfb19d3a1098c9bcd2d87e34685b9931f3e9d0c7d3404f5"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-supplement-v1/fixture-variants.json",
+      "file": "main-capture/fixture-variants.json",
+      "sha256": "0619f8de00721c451c28382b2bbb1b7ab8cb42173849a1ea06f39acca7e870e0"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-supplement-v1/fixtures.tar.gz",
+      "file": "main-capture/fixtures.tar.gz",
+      "sha256": "bd187ec8e2fbd17d34c31c7b9f617df394182886f44959ee426fc4bbc377bf5a"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-supplement-v1/generate.stderr",
+      "file": "main-capture/generate.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-supplement-v1/generate.stdout",
+      "file": "main-capture/generate.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-supplement-v1/inputs.json",
+      "file": "main-capture/inputs.json",
+      "sha256": "9d221a6f82d510b124f5c28fd9158b7b6d2ae3da74c4156cb7ae811d619379ac"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-supplement-v1/main.json",
+      "file": "main-capture/main.json",
+      "sha256": "46b0260f1d30d4be0b3adfd865bbc6a61a442cd8fb93954202bcb645d648dffa"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-supplement-v1/mutations.json",
+      "file": "main-capture/mutations.json",
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-supplement-v1/receipt.json",
+      "file": "main-capture/receipt.json",
+      "sha256": "2bae6bd166cbb58b84f3e2f66f01ebc0448a9db2b29051859dd7956f7c15a0db"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-supplement-v1/run.stderr",
+      "file": "main-capture/run.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-supplement-v1/run.stdout",
+      "file": "main-capture/run.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-supplement-v2/classes/CapabilityFixture.class",
+      "file": "repeat-capture/classes/CapabilityFixture.class",
+      "sha256": "a3e39db3cd63f79e58a88571827810e440d56e4b2196b77bf07bcf5c4cd4fd4b"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-supplement-v2/classes/CapabilityOracle.class",
+      "file": "repeat-capture/classes/CapabilityOracle.class",
+      "sha256": "5307fe2c75230738d4c0e394b94259e9ffa8150d1f2beec2c89482a14098ac26"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-supplement-v2/commands.json",
+      "file": "repeat-capture/commands.json",
+      "sha256": "9bafe5f4da876068fbd017c3241c15b25d127a85859ae90fb78c7a06f3993778"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-supplement-v2/compile.stderr",
+      "file": "repeat-capture/compile.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-supplement-v2/compile.stdout",
+      "file": "repeat-capture/compile.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-supplement-v2/fixture-after.json.gz",
+      "file": "repeat-capture/fixture-after.json.gz",
+      "sha256": "20775fc8876e77c3b779f0f2c30c0c80ff731f8938bdd925ed087fa01acfa78d"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-supplement-v2/fixture-audit.json",
+      "file": "repeat-capture/fixture-audit.json",
+      "sha256": "848d3fda18958d47d4e18549c5abc5db13bd3967c5c411b6a9e0f8a35e1a8890"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-supplement-v2/fixture-before.json.gz",
+      "file": "repeat-capture/fixture-before.json.gz",
+      "sha256": "08c541e4e4f099871aeeabb95b5c510fffaf4bb400b57c6dfc716e200bb1b043"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-supplement-v2/fixture-variants.json",
+      "file": "repeat-capture/fixture-variants.json",
+      "sha256": "ff65f8249a9a4761a616d54078c80848b540b871d2728adc3cfc3d19f168c036"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-supplement-v2/fixtures.tar.gz",
+      "file": "repeat-capture/fixtures.tar.gz",
+      "sha256": "e906e4a9a1fae9883ec58e1f099aa20b0093eea21b49e32bc4a25a1d54e024bd"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-supplement-v2/generate.stderr",
+      "file": "repeat-capture/generate.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-supplement-v2/generate.stdout",
+      "file": "repeat-capture/generate.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-supplement-v2/inputs.json",
+      "file": "repeat-capture/inputs.json",
+      "sha256": "9d221a6f82d510b124f5c28fd9158b7b6d2ae3da74c4156cb7ae811d619379ac"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-supplement-v2/main.json",
+      "file": "repeat-capture/main.json",
+      "sha256": "95b2366da4ba83a6714cb42bd65f3fc63edca3ef547f79d1ab0b5c3e00677f73"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-supplement-v2/mutations.json",
+      "file": "repeat-capture/mutations.json",
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-supplement-v2/receipt.json",
+      "file": "repeat-capture/receipt.json",
+      "sha256": "cc15226f5f84e629caf6038b214fbfa0e758b6b67f768bca8e14a9af3b9c6714"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-supplement-v2/run.stderr",
+      "file": "repeat-capture/run.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-supplement-v2/run.stdout",
+      "file": "repeat-capture/run.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "allCopiedBytesVerified": true
+}

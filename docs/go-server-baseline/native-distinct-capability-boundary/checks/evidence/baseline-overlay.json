@@ -1,0 +1,7 @@
+{
+  "Replace": {
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/indexed_distinct.go": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-2e75f69e-checks-v1/baseline-indexed_distinct.go",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/query/main_string_source.go": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-2e75f69e-checks-v1/baseline-main_string_source.go",
+    "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server/internal/store/distinct_projection.go": "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-2e75f69e-checks-v1/baseline-distinct_projection.go"
+  }
+}

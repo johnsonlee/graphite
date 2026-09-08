@@ -1,0 +1,64 @@
+{
+  "caseCount": 46,
+  "publicOutputsExact": true,
+  "completeOutputExact": false,
+  "fullFieldDifferences": [
+    {
+      "name": "first-neutral-call-only-40",
+      "fields": {
+        "diagnostics": {
+          "main": {
+            "graphIdSourceSelections": 0,
+            "graphIdSourcePruningExecutions": 0,
+            "graphIdSourcesPruned": 0,
+            "graphIdSourceConflicts": 0,
+            "fastPathExecutions": 1,
+            "filteredNodeLimitFastPathExecutions": 1,
+            "generalFallbackExecutions": 0,
+            "workUnitsConsumed": 3089
+          },
+          "repeat": {
+            "graphIdSourceSelections": 0,
+            "graphIdSourcePruningExecutions": 0,
+            "graphIdSourcesPruned": 0,
+            "graphIdSourceConflicts": 0,
+            "fastPathExecutions": 1,
+            "filteredNodeLimitFastPathExecutions": 1,
+            "generalFallbackExecutions": 0,
+            "workUnitsConsumed": 3361
+          }
+        }
+      }
+    }
+  ],
+  "fixtureFilesPerCapture": 83,
+  "byteIdenticalFixtureFiles": 78,
+  "writerTimestampOnlyDifferences": [
+    {
+      "file": "empty/forward.properties",
+      "mainWriterComment": "#Tue Sep 08 17:44:08 KST 2026",
+      "repeatWriterComment": "#Tue Sep 08 17:44:24 KST 2026"
+    },
+    {
+      "file": "generic-only/forward.properties",
+      "mainWriterComment": "#Tue Sep 08 17:44:08 KST 2026",
+      "repeatWriterComment": "#Tue Sep 08 17:44:24 KST 2026"
+    },
+    {
+      "file": "hit-call-generic/forward.properties",
+      "mainWriterComment": "#Tue Sep 08 17:44:08 KST 2026",
+      "repeatWriterComment": "#Tue Sep 08 17:44:24 KST 2026"
+    },
+    {
+      "file": "neutral-call-generic/forward.properties",
+      "mainWriterComment": "#Tue Sep 08 17:44:08 KST 2026",
+      "repeatWriterComment": "#Tue Sep 08 17:44:24 KST 2026"
+    },
+    {
+      "file": "neutral-call-only/forward.properties",
+      "mainWriterComment": "#Tue Sep 08 17:44:08 KST 2026",
+      "repeatWriterComment": "#Tue Sep 08 17:44:24 KST 2026"
+    }
+  ],
+  "performanceMeasurements": 0
+}

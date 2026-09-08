@@ -1,0 +1,124 @@
+{
+  "performanceMeasurements": 0,
+  "cases": 201,
+  "publicCases": 181,
+  "providerWrapperControls": 20,
+  "diagnosticsComparison": "unavailable: Go lacks original diagnostics API; no diagnostics values suppressed or fabricated in source main captures",
+  "providerScope": "Go mainStringCandidates includes merge/order checks absent from the private original provider API; matching controls are bounded payload evidence, not exact API fidelity",
+  "fixtureOriginalChanged": [],
+  "fixtureAdded": [
+    {
+      "path": "annotation-bad-sid-0-global-miss/store0/graph.callsite-string-index",
+      "size": 380,
+      "sha256": "7c2eccf7f60502ef2eff0d23cf927cde05a2ddf7c8217acf0489d4a5a58468e5"
+    },
+    {
+      "path": "annotation-bad-sid-1-global-miss/store0/graph.callsite-string-index",
+      "size": 380,
+      "sha256": "7c2eccf7f60502ef2eff0d23cf927cde05a2ddf7c8217acf0489d4a5a58468e5"
+    },
+    {
+      "path": "annotation-bad-sid-2-global-miss/store0/graph.callsite-string-index",
+      "size": 380,
+      "sha256": "7c2eccf7f60502ef2eff0d23cf927cde05a2ddf7c8217acf0489d4a5a58468e5"
+    },
+    {
+      "path": "annotation-bad-tail-global-miss/store0/graph.callsite-string-index",
+      "size": 380,
+      "sha256": "7c2eccf7f60502ef2eff0d23cf927cde05a2ddf7c8217acf0489d4a5a58468e5"
+    },
+    {
+      "path": "enum-bad-sid-0-global-miss/store0/graph.callsite-string-index",
+      "size": 380,
+      "sha256": "7c2eccf7f60502ef2eff0d23cf927cde05a2ddf7c8217acf0489d4a5a58468e5"
+    },
+    {
+      "path": "enum-bad-sid-1-global-miss/store0/graph.callsite-string-index",
+      "size": 380,
+      "sha256": "7c2eccf7f60502ef2eff0d23cf927cde05a2ddf7c8217acf0489d4a5a58468e5"
+    },
+    {
+      "path": "enum-bad-tail-global-miss/store0/graph.callsite-string-index",
+      "size": 380,
+      "sha256": "7c2eccf7f60502ef2eff0d23cf927cde05a2ddf7c8217acf0489d4a5a58468e5"
+    },
+    {
+      "path": "field-bad-sid-0-global-miss/store0/graph.callsite-string-index",
+      "size": 380,
+      "sha256": "7c2eccf7f60502ef2eff0d23cf927cde05a2ddf7c8217acf0489d4a5a58468e5"
+    },
+    {
+      "path": "field-bad-sid-1-global-miss/store0/graph.callsite-string-index",
+      "size": 380,
+      "sha256": "7c2eccf7f60502ef2eff0d23cf927cde05a2ddf7c8217acf0489d4a5a58468e5"
+    },
+    {
+      "path": "field-bad-sid-2-global-miss/store0/graph.callsite-string-index",
+      "size": 380,
+      "sha256": "7c2eccf7f60502ef2eff0d23cf927cde05a2ddf7c8217acf0489d4a5a58468e5"
+    },
+    {
+      "path": "local-bad-sid-0-global-miss/store0/graph.callsite-string-index",
+      "size": 380,
+      "sha256": "7c2eccf7f60502ef2eff0d23cf927cde05a2ddf7c8217acf0489d4a5a58468e5"
+    },
+    {
+      "path": "local-bad-sid-1-global-miss/store0/graph.callsite-string-index",
+      "size": 380,
+      "sha256": "7c2eccf7f60502ef2eff0d23cf927cde05a2ddf7c8217acf0489d4a5a58468e5"
+    },
+    {
+      "path": "local-bad-tail-global-miss/store0/graph.callsite-string-index",
+      "size": 380,
+      "sha256": "7c2eccf7f60502ef2eff0d23cf927cde05a2ddf7c8217acf0489d4a5a58468e5"
+    },
+    {
+      "path": "original-886/store0/graph.callsite-string-index",
+      "size": 380,
+      "sha256": "7c2eccf7f60502ef2eff0d23cf927cde05a2ddf7c8217acf0489d4a5a58468e5"
+    },
+    {
+      "path": "original-887/store0/graph.callsite-string-index",
+      "size": 380,
+      "sha256": "7c2eccf7f60502ef2eff0d23cf927cde05a2ddf7c8217acf0489d4a5a58468e5"
+    },
+    {
+      "path": "original-888/store0/graph.callsite-string-index",
+      "size": 380,
+      "sha256": "7c2eccf7f60502ef2eff0d23cf927cde05a2ddf7c8217acf0489d4a5a58468e5"
+    },
+    {
+      "path": "six-deprecated-1/store0/graph.callsite-string-index",
+      "size": 380,
+      "sha256": "7c2eccf7f60502ef2eff0d23cf927cde05a2ddf7c8217acf0489d4a5a58468e5"
+    },
+    {
+      "path": "six-example-1/store0/graph.callsite-string-index",
+      "size": 380,
+      "sha256": "7c2eccf7f60502ef2eff0d23cf927cde05a2ddf7c8217acf0489d4a5a58468e5"
+    },
+    {
+      "path": "six-field-1/store0/graph.callsite-string-index",
+      "size": 380,
+      "sha256": "7c2eccf7f60502ef2eff0d23cf927cde05a2ddf7c8217acf0489d4a5a58468e5"
+    },
+    {
+      "path": "six-missing-1/store0/graph.callsite-string-index",
+      "size": 380,
+      "sha256": "7c2eccf7f60502ef2eff0d23cf927cde05a2ddf7c8217acf0489d4a5a58468e5"
+    },
+    {
+      "path": "six-red-1/store0/graph.callsite-string-index",
+      "size": 380,
+      "sha256": "7c2eccf7f60502ef2eff0d23cf927cde05a2ddf7c8217acf0489d4a5a58468e5"
+    },
+    {
+      "path": "six-run-1/store0/graph.callsite-string-index",
+      "size": 380,
+      "sha256": "7c2eccf7f60502ef2eff0d23cf927cde05a2ddf7c8217acf0489d4a5a58468e5"
+    }
+  ],
+  "sourceUnchanged": true,
+  "allComparedFieldsEqual": false
+}
+[('main', {'public': 166, 'providerWrapper': 19}, 16), ('repeat', {'public': 166, 'providerWrapper': 19}, 16)]

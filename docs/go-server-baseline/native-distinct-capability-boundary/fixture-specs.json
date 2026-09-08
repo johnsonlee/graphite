@@ -1,0 +1,34 @@
+{
+  "empty": {
+    "call": false,
+    "locals": []
+  },
+  "generic-only": {
+    "call": false,
+    "locals": [
+      "hit-A",
+      "hit-B"
+    ]
+  },
+  "neutral-call-generic": {
+    "call": true,
+    "matchingCall": false,
+    "locals": [
+      "hit-A",
+      "hit-B"
+    ]
+  },
+  "hit-call-generic": {
+    "call": true,
+    "matchingCall": true,
+    "locals": [
+      "hit-A",
+      "hit-B"
+    ]
+  },
+  "neutral-call-only": {
+    "call": true,
+    "matchingCall": false,
+    "locals": []
+  }
+}

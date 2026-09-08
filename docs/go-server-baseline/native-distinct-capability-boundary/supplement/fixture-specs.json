@@ -1,0 +1,26 @@
+{
+  "empty": {
+    "call": false,
+    "locals": []
+  },
+  "generic-only": {
+    "call": false,
+    "locals": [
+      "hit-A",
+      "hit-B"
+    ]
+  },
+  "invalid-index-empty": {
+    "call": false,
+    "locals": [],
+    "invalidIndex": true
+  },
+  "invalid-index-generic": {
+    "call": false,
+    "locals": [
+      "hit-A",
+      "hit-B"
+    ],
+    "invalidIndex": true
+  }
+}

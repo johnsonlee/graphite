@@ -42,7 +42,7 @@ func (e evaluator) mainCandidateIterator(source Graph, plan *mainStringSourceSpe
 			if prepared {
 				index, _, err = source.Store.PrepareDistinctStringIndex(e.ctx, store.DistinctProjectionOptions{MainSource: plan.lazyMain, SourceCount: 1, Limit: limit, RetainPersisted: true})
 				failMainStringRead(err)
-				raw = index != nil && index.Raw
+				raw = index.Raw
 			} else {
 				raw = true
 			}
@@ -52,7 +52,7 @@ func (e evaluator) mainCandidateIterator(source Graph, plan *mainStringSourceSpe
 			// loading/building and cannot-match preflight without initializing a view.
 			index, _, err = source.Store.PrepareDistinctStringIndex(e.ctx, store.DistinctProjectionOptions{MainSource: plan.lazyMain, SourceCount: plan.sourceCount, Limit: limit, SkipPreparedPreference: true, CannotMatch: func() bool { return e.distinctCannotMatch(source, &indexedDistinctPlan{atoms: plan.atoms}) }})
 			failMainStringRead(err)
-			raw = index != nil && index.Raw
+			raw = index.Raw
 		} else if plan.sourceCount >= 40 {
 			view, ok, err := source.Store.PrepareDistinctStringIndex(e.ctx, store.DistinctProjectionOptions{MainSource: plan.lazyMain, SourceCount: 40, Limit: limit, InitializeMappedView: true})
 			failMainStringRead(err)
@@ -73,7 +73,7 @@ func (e evaluator) mainCandidateIterator(source Graph, plan *mainStringSourceSpe
 				if !candidatesPrepared {
 					index, _, err = source.Store.PrepareDistinctStringIndex(e.ctx, store.DistinctProjectionOptions{MainSource: plan.lazyMain, SourceCount: 40, Limit: limit, SkipPreparedPreference: true})
 					failMainStringRead(err)
-					raw = index != nil && index.Raw
+					raw = index.Raw
 				}
 			}
 		} else if plan.sourceCount > 1 {
@@ -83,7 +83,7 @@ func (e evaluator) mainCandidateIterator(source Graph, plan *mainStringSourceSpe
 			if !candidatesPrepared {
 				index, _, err = source.Store.PrepareDistinctStringIndex(e.ctx, store.DistinctProjectionOptions{MainSource: plan.lazyMain, SourceCount: 1, Limit: limit, SkipPreparedPreference: true, CannotMatch: func() bool { return e.distinctCannotMatch(source, &indexedDistinctPlan{atoms: plan.atoms}) }})
 				failMainStringRead(err)
-				raw = index != nil && index.Raw
+				raw = index.Raw
 			}
 		}
 	}

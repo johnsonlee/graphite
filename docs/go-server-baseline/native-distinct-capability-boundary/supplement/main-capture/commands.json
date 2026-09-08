@@ -1,0 +1,50 @@
+[
+  {
+    "phase": "compile",
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/javac",
+      "-cp",
+      "/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "-d",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-supplement-v1/classes",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-distinct-capability-boundary/supplement/CapabilityFixture.java",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-distinct-capability-boundary/supplement/CapabilityOracle.java"
+    ],
+    "exitCode": 0,
+    "startUTC": "2026-09-08T08:49:11.419758+00:00",
+    "endUTC": "2026-09-08T08:49:11.820694+00:00"
+  },
+  {
+    "phase": "generate",
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx512m",
+      "-cp",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-supplement-v1/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "CapabilityFixture",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-distinct-capability-boundary/supplement/fixture-specs.json",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-supplement-v1/variants",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-supplement-v1/mutations.json"
+    ],
+    "exitCode": 0,
+    "startUTC": "2026-09-08T08:49:11.821051+00:00",
+    "endUTC": "2026-09-08T08:49:12.001887+00:00"
+  },
+  {
+    "phase": "run",
+    "command": [
+      "/opt/homebrew/Cellar/openjdk@17/17.0.18/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "-Xmx512m",
+      "-cp",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-supplement-v1/classes:/tmp/graphite-go-main-baseline-clone-4e328b0/graphite-explore/build/libs/graphite-explore.jar",
+      "CapabilityOracle",
+      "run",
+      "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/docs/go-server-baseline/native-distinct-capability-boundary/supplement/cases.json",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-supplement-v1/fixtures",
+      "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-supplement-v1/main.json"
+    ],
+    "exitCode": 0,
+    "startUTC": "2026-09-08T08:49:12.366254+00:00",
+    "endUTC": "2026-09-08T08:49:12.656135+00:00"
+  }
+]

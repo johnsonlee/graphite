@@ -1,0 +1,5878 @@
+[
+  {
+    "name": "first-empty-1",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "empty"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "empty",
+        "id": "g00"
+      }
+    ],
+    "boundary": {
+      "sourceCount": 1,
+      "first": "empty",
+      "probe": null,
+      "limit": 1,
+      "skip": null,
+      "label": "",
+      "projection": "n.name"
+    }
+  },
+  {
+    "name": "first-generic-only-1",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "generic-only"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "generic-only",
+        "id": "g00"
+      }
+    ],
+    "boundary": {
+      "sourceCount": 1,
+      "first": "generic-only",
+      "probe": null,
+      "limit": 1,
+      "skip": null,
+      "label": "",
+      "projection": "n.name"
+    }
+  },
+  {
+    "name": "first-neutral-call-generic-1",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "neutral-call-generic"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g00"
+      }
+    ],
+    "boundary": {
+      "sourceCount": 1,
+      "first": "neutral-call-generic",
+      "probe": null,
+      "limit": 1,
+      "skip": null,
+      "label": "",
+      "projection": "n.name"
+    }
+  },
+  {
+    "name": "first-neutral-call-only-1",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "neutral-call-only"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "neutral-call-only",
+        "id": "g00"
+      }
+    ],
+    "boundary": {
+      "sourceCount": 1,
+      "first": "neutral-call-only",
+      "probe": null,
+      "limit": 1,
+      "skip": null,
+      "label": "",
+      "projection": "n.name"
+    }
+  },
+  {
+    "name": "first-empty-2",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "empty",
+      "neutral-call-generic"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "empty",
+        "id": "g00"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g01"
+      }
+    ],
+    "boundary": {
+      "sourceCount": 2,
+      "first": "empty",
+      "probe": null,
+      "limit": 1,
+      "skip": null,
+      "label": "",
+      "projection": "n.name"
+    }
+  },
+  {
+    "name": "first-generic-only-2",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "generic-only",
+      "neutral-call-generic"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "generic-only",
+        "id": "g00"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g01"
+      }
+    ],
+    "boundary": {
+      "sourceCount": 2,
+      "first": "generic-only",
+      "probe": null,
+      "limit": 1,
+      "skip": null,
+      "label": "",
+      "projection": "n.name"
+    }
+  },
+  {
+    "name": "first-neutral-call-generic-2",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "neutral-call-generic",
+      "neutral-call-generic"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g00"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g01"
+      }
+    ],
+    "boundary": {
+      "sourceCount": 2,
+      "first": "neutral-call-generic",
+      "probe": null,
+      "limit": 1,
+      "skip": null,
+      "label": "",
+      "projection": "n.name"
+    }
+  },
+  {
+    "name": "first-neutral-call-only-2",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "neutral-call-only",
+      "neutral-call-generic"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "neutral-call-only",
+        "id": "g00"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g01"
+      }
+    ],
+    "boundary": {
+      "sourceCount": 2,
+      "first": "neutral-call-only",
+      "probe": null,
+      "limit": 1,
+      "skip": null,
+      "label": "",
+      "projection": "n.name"
+    }
+  },
+  {
+    "name": "first-empty-39",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "empty",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "empty",
+        "id": "g00"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g01"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g02"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g03"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g04"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g05"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g06"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g07"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g08"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g09"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g10"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g11"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g12"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g13"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g14"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g15"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g16"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g17"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g18"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g19"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g20"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g21"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g22"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g23"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g24"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g25"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g26"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g27"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g28"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g29"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g30"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g31"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g32"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g33"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g34"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g35"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g36"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g37"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g38"
+      }
+    ],
+    "boundary": {
+      "sourceCount": 39,
+      "first": "empty",
+      "probe": null,
+      "limit": 1,
+      "skip": null,
+      "label": "",
+      "projection": "n.name"
+    }
+  },
+  {
+    "name": "first-generic-only-39",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "generic-only",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "generic-only",
+        "id": "g00"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g01"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g02"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g03"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g04"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g05"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g06"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g07"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g08"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g09"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g10"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g11"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g12"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g13"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g14"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g15"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g16"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g17"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g18"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g19"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g20"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g21"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g22"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g23"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g24"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g25"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g26"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g27"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g28"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g29"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g30"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g31"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g32"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g33"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g34"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g35"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g36"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g37"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g38"
+      }
+    ],
+    "boundary": {
+      "sourceCount": 39,
+      "first": "generic-only",
+      "probe": null,
+      "limit": 1,
+      "skip": null,
+      "label": "",
+      "projection": "n.name"
+    }
+  },
+  {
+    "name": "first-neutral-call-generic-39",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g00"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g01"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g02"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g03"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g04"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g05"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g06"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g07"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g08"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g09"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g10"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g11"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g12"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g13"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g14"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g15"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g16"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g17"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g18"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g19"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g20"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g21"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g22"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g23"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g24"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g25"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g26"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g27"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g28"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g29"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g30"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g31"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g32"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g33"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g34"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g35"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g36"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g37"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g38"
+      }
+    ],
+    "boundary": {
+      "sourceCount": 39,
+      "first": "neutral-call-generic",
+      "probe": null,
+      "limit": 1,
+      "skip": null,
+      "label": "",
+      "projection": "n.name"
+    }
+  },
+  {
+    "name": "first-neutral-call-only-39",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "neutral-call-only",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "neutral-call-only",
+        "id": "g00"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g01"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g02"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g03"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g04"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g05"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g06"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g07"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g08"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g09"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g10"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g11"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g12"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g13"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g14"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g15"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g16"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g17"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g18"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g19"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g20"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g21"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g22"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g23"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g24"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g25"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g26"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g27"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g28"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g29"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g30"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g31"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g32"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g33"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g34"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g35"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g36"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g37"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g38"
+      }
+    ],
+    "boundary": {
+      "sourceCount": 39,
+      "first": "neutral-call-only",
+      "probe": null,
+      "limit": 1,
+      "skip": null,
+      "label": "",
+      "projection": "n.name"
+    }
+  },
+  {
+    "name": "first-empty-40",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "empty",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "empty",
+        "id": "g00"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g01"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g02"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g03"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g04"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g05"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g06"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g07"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g08"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g09"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g10"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g11"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g12"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g13"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g14"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g15"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g16"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g17"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g18"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g19"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g20"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g21"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g22"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g23"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g24"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g25"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g26"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g27"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g28"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g29"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g30"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g31"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g32"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g33"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g34"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g35"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g36"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g37"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g38"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g39"
+      }
+    ],
+    "boundary": {
+      "sourceCount": 40,
+      "first": "empty",
+      "probe": null,
+      "limit": 1,
+      "skip": null,
+      "label": "",
+      "projection": "n.name"
+    }
+  },
+  {
+    "name": "first-generic-only-40",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "generic-only",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "generic-only",
+        "id": "g00"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g01"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g02"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g03"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g04"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g05"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g06"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g07"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g08"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g09"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g10"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g11"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g12"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g13"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g14"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g15"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g16"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g17"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g18"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g19"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g20"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g21"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g22"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g23"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g24"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g25"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g26"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g27"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g28"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g29"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g30"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g31"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g32"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g33"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g34"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g35"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g36"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g37"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g38"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g39"
+      }
+    ],
+    "boundary": {
+      "sourceCount": 40,
+      "first": "generic-only",
+      "probe": null,
+      "limit": 1,
+      "skip": null,
+      "label": "",
+      "projection": "n.name"
+    }
+  },
+  {
+    "name": "first-neutral-call-generic-40",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g00"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g01"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g02"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g03"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g04"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g05"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g06"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g07"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g08"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g09"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g10"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g11"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g12"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g13"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g14"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g15"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g16"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g17"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g18"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g19"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g20"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g21"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g22"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g23"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g24"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g25"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g26"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g27"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g28"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g29"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g30"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g31"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g32"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g33"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g34"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g35"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g36"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g37"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g38"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g39"
+      }
+    ],
+    "boundary": {
+      "sourceCount": 40,
+      "first": "neutral-call-generic",
+      "probe": null,
+      "limit": 1,
+      "skip": null,
+      "label": "",
+      "projection": "n.name"
+    }
+  },
+  {
+    "name": "first-neutral-call-only-40",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "neutral-call-only",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "neutral-call-only",
+        "id": "g00"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g01"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g02"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g03"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g04"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g05"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g06"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g07"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g08"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g09"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g10"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g11"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g12"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g13"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g14"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g15"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g16"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g17"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g18"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g19"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g20"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g21"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g22"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g23"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g24"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g25"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g26"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g27"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g28"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g29"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g30"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g31"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g32"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g33"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g34"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g35"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g36"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g37"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g38"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g39"
+      }
+    ],
+    "boundary": {
+      "sourceCount": 40,
+      "first": "neutral-call-only",
+      "probe": null,
+      "limit": 1,
+      "skip": null,
+      "label": "",
+      "projection": "n.name"
+    }
+  },
+  {
+    "name": "later-empty-2",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "hit-call-generic",
+      "empty"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "hit-call-generic",
+        "id": "g00"
+      },
+      {
+        "fixture": "empty",
+        "id": "g01"
+      }
+    ],
+    "boundary": {
+      "sourceCount": 2,
+      "first": "hit-call-generic",
+      "probe": "empty",
+      "limit": 1,
+      "skip": null,
+      "label": "",
+      "projection": "n.name"
+    }
+  },
+  {
+    "name": "later-generic-only-2",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "hit-call-generic",
+      "generic-only"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "hit-call-generic",
+        "id": "g00"
+      },
+      {
+        "fixture": "generic-only",
+        "id": "g01"
+      }
+    ],
+    "boundary": {
+      "sourceCount": 2,
+      "first": "hit-call-generic",
+      "probe": "generic-only",
+      "limit": 1,
+      "skip": null,
+      "label": "",
+      "projection": "n.name"
+    }
+  },
+  {
+    "name": "later-empty-39",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "hit-call-generic",
+      "empty",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "hit-call-generic",
+        "id": "g00"
+      },
+      {
+        "fixture": "empty",
+        "id": "g01"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g02"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g03"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g04"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g05"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g06"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g07"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g08"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g09"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g10"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g11"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g12"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g13"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g14"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g15"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g16"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g17"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g18"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g19"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g20"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g21"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g22"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g23"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g24"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g25"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g26"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g27"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g28"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g29"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g30"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g31"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g32"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g33"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g34"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g35"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g36"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g37"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g38"
+      }
+    ],
+    "boundary": {
+      "sourceCount": 39,
+      "first": "hit-call-generic",
+      "probe": "empty",
+      "limit": 1,
+      "skip": null,
+      "label": "",
+      "projection": "n.name"
+    }
+  },
+  {
+    "name": "later-generic-only-39",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "hit-call-generic",
+      "generic-only",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "hit-call-generic",
+        "id": "g00"
+      },
+      {
+        "fixture": "generic-only",
+        "id": "g01"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g02"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g03"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g04"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g05"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g06"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g07"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g08"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g09"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g10"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g11"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g12"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g13"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g14"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g15"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g16"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g17"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g18"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g19"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g20"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g21"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g22"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g23"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g24"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g25"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g26"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g27"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g28"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g29"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g30"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g31"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g32"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g33"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g34"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g35"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g36"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g37"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g38"
+      }
+    ],
+    "boundary": {
+      "sourceCount": 39,
+      "first": "hit-call-generic",
+      "probe": "generic-only",
+      "limit": 1,
+      "skip": null,
+      "label": "",
+      "projection": "n.name"
+    }
+  },
+  {
+    "name": "later-empty-40",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "hit-call-generic",
+      "empty",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "hit-call-generic",
+        "id": "g00"
+      },
+      {
+        "fixture": "empty",
+        "id": "g01"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g02"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g03"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g04"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g05"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g06"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g07"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g08"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g09"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g10"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g11"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g12"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g13"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g14"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g15"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g16"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g17"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g18"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g19"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g20"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g21"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g22"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g23"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g24"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g25"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g26"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g27"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g28"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g29"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g30"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g31"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g32"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g33"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g34"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g35"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g36"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g37"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g38"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g39"
+      }
+    ],
+    "boundary": {
+      "sourceCount": 40,
+      "first": "hit-call-generic",
+      "probe": "empty",
+      "limit": 1,
+      "skip": null,
+      "label": "",
+      "projection": "n.name"
+    }
+  },
+  {
+    "name": "later-generic-only-40",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "hit-call-generic",
+      "generic-only",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "hit-call-generic",
+        "id": "g00"
+      },
+      {
+        "fixture": "generic-only",
+        "id": "g01"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g02"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g03"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g04"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g05"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g06"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g07"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g08"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g09"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g10"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g11"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g12"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g13"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g14"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g15"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g16"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g17"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g18"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g19"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g20"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g21"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g22"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g23"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g24"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g25"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g26"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g27"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g28"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g29"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g30"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g31"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g32"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g33"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g34"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g35"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g36"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g37"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g38"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g39"
+      }
+    ],
+    "boundary": {
+      "sourceCount": 40,
+      "first": "hit-call-generic",
+      "probe": "generic-only",
+      "limit": 1,
+      "skip": null,
+      "label": "",
+      "projection": "n.name"
+    }
+  },
+  {
+    "name": "generic-limit-0-1",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 0",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "generic-only"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "generic-only",
+        "id": "g00"
+      }
+    ],
+    "boundary": {
+      "sourceCount": 1,
+      "first": "generic-only",
+      "probe": null,
+      "limit": 0,
+      "skip": null,
+      "label": "",
+      "projection": "n.name"
+    }
+  },
+  {
+    "name": "generic-limit-2-1",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 2",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "generic-only"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "generic-only",
+        "id": "g00"
+      }
+    ],
+    "boundary": {
+      "sourceCount": 1,
+      "first": "generic-only",
+      "probe": null,
+      "limit": 2,
+      "skip": null,
+      "label": "",
+      "projection": "n.name"
+    }
+  },
+  {
+    "name": "generic-limit-0-40",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 0",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "generic-only",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "generic-only",
+        "id": "g00"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g01"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g02"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g03"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g04"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g05"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g06"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g07"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g08"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g09"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g10"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g11"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g12"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g13"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g14"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g15"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g16"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g17"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g18"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g19"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g20"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g21"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g22"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g23"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g24"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g25"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g26"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g27"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g28"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g29"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g30"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g31"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g32"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g33"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g34"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g35"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g36"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g37"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g38"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g39"
+      }
+    ],
+    "boundary": {
+      "sourceCount": 40,
+      "first": "generic-only",
+      "probe": null,
+      "limit": 0,
+      "skip": null,
+      "label": "",
+      "projection": "n.name"
+    }
+  },
+  {
+    "name": "generic-limit-2-40",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 2",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "generic-only",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "generic-only",
+        "id": "g00"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g01"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g02"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g03"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g04"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g05"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g06"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g07"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g08"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g09"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g10"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g11"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g12"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g13"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g14"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g15"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g16"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g17"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g18"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g19"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g20"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g21"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g22"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g23"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g24"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g25"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g26"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g27"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g28"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g29"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g30"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g31"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g32"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g33"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g34"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g35"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g36"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g37"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g38"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g39"
+      }
+    ],
+    "boundary": {
+      "sourceCount": 40,
+      "first": "generic-only",
+      "probe": null,
+      "limit": 2,
+      "skip": null,
+      "label": "",
+      "projection": "n.name"
+    }
+  },
+  {
+    "name": "callsite-label-empty-1",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "empty"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "empty",
+        "id": "g00"
+      }
+    ],
+    "boundary": {
+      "sourceCount": 1,
+      "first": "empty",
+      "probe": null,
+      "limit": 1,
+      "skip": null,
+      "label": "CallSiteNode",
+      "projection": "n.name"
+    }
+  },
+  {
+    "name": "callsite-label-generic-only-1",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "generic-only"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "generic-only",
+        "id": "g00"
+      }
+    ],
+    "boundary": {
+      "sourceCount": 1,
+      "first": "generic-only",
+      "probe": null,
+      "limit": 1,
+      "skip": null,
+      "label": "CallSiteNode",
+      "projection": "n.name"
+    }
+  },
+  {
+    "name": "callsite-label-empty-2",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "empty",
+      "neutral-call-generic"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "empty",
+        "id": "g00"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g01"
+      }
+    ],
+    "boundary": {
+      "sourceCount": 2,
+      "first": "empty",
+      "probe": null,
+      "limit": 1,
+      "skip": null,
+      "label": "CallSiteNode",
+      "projection": "n.name"
+    }
+  },
+  {
+    "name": "callsite-label-generic-only-2",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "generic-only",
+      "neutral-call-generic"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "generic-only",
+        "id": "g00"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g01"
+      }
+    ],
+    "boundary": {
+      "sourceCount": 2,
+      "first": "generic-only",
+      "probe": null,
+      "limit": 1,
+      "skip": null,
+      "label": "CallSiteNode",
+      "projection": "n.name"
+    }
+  },
+  {
+    "name": "callsite-label-empty-39",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "empty",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "empty",
+        "id": "g00"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g01"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g02"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g03"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g04"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g05"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g06"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g07"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g08"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g09"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g10"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g11"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g12"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g13"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g14"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g15"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g16"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g17"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g18"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g19"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g20"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g21"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g22"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g23"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g24"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g25"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g26"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g27"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g28"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g29"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g30"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g31"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g32"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g33"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g34"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g35"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g36"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g37"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g38"
+      }
+    ],
+    "boundary": {
+      "sourceCount": 39,
+      "first": "empty",
+      "probe": null,
+      "limit": 1,
+      "skip": null,
+      "label": "CallSiteNode",
+      "projection": "n.name"
+    }
+  },
+  {
+    "name": "callsite-label-generic-only-39",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "generic-only",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "generic-only",
+        "id": "g00"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g01"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g02"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g03"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g04"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g05"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g06"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g07"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g08"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g09"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g10"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g11"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g12"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g13"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g14"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g15"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g16"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g17"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g18"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g19"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g20"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g21"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g22"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g23"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g24"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g25"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g26"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g27"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g28"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g29"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g30"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g31"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g32"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g33"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g34"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g35"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g36"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g37"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g38"
+      }
+    ],
+    "boundary": {
+      "sourceCount": 39,
+      "first": "generic-only",
+      "probe": null,
+      "limit": 1,
+      "skip": null,
+      "label": "CallSiteNode",
+      "projection": "n.name"
+    }
+  },
+  {
+    "name": "callsite-label-empty-40",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "empty",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "empty",
+        "id": "g00"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g01"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g02"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g03"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g04"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g05"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g06"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g07"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g08"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g09"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g10"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g11"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g12"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g13"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g14"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g15"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g16"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g17"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g18"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g19"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g20"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g21"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g22"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g23"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g24"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g25"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g26"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g27"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g28"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g29"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g30"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g31"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g32"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g33"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g34"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g35"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g36"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g37"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g38"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g39"
+      }
+    ],
+    "boundary": {
+      "sourceCount": 40,
+      "first": "empty",
+      "probe": null,
+      "limit": 1,
+      "skip": null,
+      "label": "CallSiteNode",
+      "projection": "n.name"
+    }
+  },
+  {
+    "name": "callsite-label-generic-only-40",
+    "query": "MATCH (n:CallSiteNode) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "generic-only",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "generic-only",
+        "id": "g00"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g01"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g02"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g03"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g04"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g05"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g06"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g07"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g08"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g09"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g10"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g11"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g12"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g13"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g14"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g15"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g16"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g17"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g18"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g19"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g20"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g21"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g22"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g23"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g24"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g25"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g26"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g27"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g28"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g29"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g30"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g31"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g32"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g33"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g34"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g35"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g36"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g37"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g38"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g39"
+      }
+    ],
+    "boundary": {
+      "sourceCount": 40,
+      "first": "generic-only",
+      "probe": null,
+      "limit": 1,
+      "skip": null,
+      "label": "CallSiteNode",
+      "projection": "n.name"
+    }
+  },
+  {
+    "name": "generic-skip-0-1",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name SKIP 0 LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "generic-only"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "generic-only",
+        "id": "g00"
+      }
+    ],
+    "boundary": {
+      "sourceCount": 1,
+      "first": "generic-only",
+      "probe": null,
+      "limit": 1,
+      "skip": 0,
+      "label": "",
+      "projection": "n.name"
+    }
+  },
+  {
+    "name": "generic-skip-1-1",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name SKIP 1 LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "generic-only"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "generic-only",
+        "id": "g00"
+      }
+    ],
+    "boundary": {
+      "sourceCount": 1,
+      "first": "generic-only",
+      "probe": null,
+      "limit": 1,
+      "skip": 1,
+      "label": "",
+      "projection": "n.name"
+    }
+  },
+  {
+    "name": "generic-skip-0-2",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name SKIP 0 LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "generic-only",
+      "neutral-call-generic"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "generic-only",
+        "id": "g00"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g01"
+      }
+    ],
+    "boundary": {
+      "sourceCount": 2,
+      "first": "generic-only",
+      "probe": null,
+      "limit": 1,
+      "skip": 0,
+      "label": "",
+      "projection": "n.name"
+    }
+  },
+  {
+    "name": "generic-skip-1-2",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name SKIP 1 LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "generic-only",
+      "neutral-call-generic"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "generic-only",
+        "id": "g00"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g01"
+      }
+    ],
+    "boundary": {
+      "sourceCount": 2,
+      "first": "generic-only",
+      "probe": null,
+      "limit": 1,
+      "skip": 1,
+      "label": "",
+      "projection": "n.name"
+    }
+  },
+  {
+    "name": "generic-skip-0-39",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name SKIP 0 LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "generic-only",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "generic-only",
+        "id": "g00"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g01"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g02"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g03"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g04"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g05"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g06"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g07"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g08"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g09"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g10"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g11"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g12"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g13"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g14"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g15"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g16"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g17"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g18"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g19"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g20"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g21"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g22"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g23"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g24"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g25"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g26"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g27"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g28"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g29"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g30"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g31"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g32"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g33"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g34"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g35"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g36"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g37"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g38"
+      }
+    ],
+    "boundary": {
+      "sourceCount": 39,
+      "first": "generic-only",
+      "probe": null,
+      "limit": 1,
+      "skip": 0,
+      "label": "",
+      "projection": "n.name"
+    }
+  },
+  {
+    "name": "generic-skip-1-39",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name SKIP 1 LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "generic-only",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "generic-only",
+        "id": "g00"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g01"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g02"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g03"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g04"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g05"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g06"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g07"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g08"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g09"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g10"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g11"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g12"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g13"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g14"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g15"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g16"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g17"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g18"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g19"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g20"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g21"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g22"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g23"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g24"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g25"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g26"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g27"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g28"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g29"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g30"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g31"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g32"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g33"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g34"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g35"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g36"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g37"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g38"
+      }
+    ],
+    "boundary": {
+      "sourceCount": 39,
+      "first": "generic-only",
+      "probe": null,
+      "limit": 1,
+      "skip": 1,
+      "label": "",
+      "projection": "n.name"
+    }
+  },
+  {
+    "name": "generic-skip-0-40",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name SKIP 0 LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "generic-only",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "generic-only",
+        "id": "g00"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g01"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g02"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g03"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g04"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g05"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g06"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g07"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g08"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g09"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g10"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g11"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g12"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g13"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g14"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g15"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g16"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g17"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g18"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g19"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g20"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g21"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g22"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g23"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g24"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g25"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g26"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g27"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g28"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g29"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g30"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g31"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g32"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g33"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g34"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g35"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g36"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g37"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g38"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g39"
+      }
+    ],
+    "boundary": {
+      "sourceCount": 40,
+      "first": "generic-only",
+      "probe": null,
+      "limit": 1,
+      "skip": 0,
+      "label": "",
+      "projection": "n.name"
+    }
+  },
+  {
+    "name": "generic-skip-1-40",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name SKIP 1 LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "generic-only",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "generic-only",
+        "id": "g00"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g01"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g02"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g03"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g04"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g05"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g06"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g07"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g08"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g09"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g10"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g11"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g12"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g13"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g14"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g15"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g16"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g17"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g18"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g19"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g20"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g21"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g22"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g23"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g24"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g25"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g26"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g27"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g28"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g29"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g30"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g31"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g32"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g33"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g34"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g35"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g36"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g37"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g38"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g39"
+      }
+    ],
+    "boundary": {
+      "sourceCount": 40,
+      "first": "generic-only",
+      "probe": null,
+      "limit": 1,
+      "skip": 1,
+      "label": "",
+      "projection": "n.name"
+    }
+  },
+  {
+    "name": "empty-skip-0-40",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name SKIP 0 LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "empty",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "empty",
+        "id": "g00"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g01"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g02"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g03"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g04"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g05"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g06"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g07"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g08"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g09"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g10"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g11"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g12"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g13"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g14"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g15"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g16"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g17"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g18"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g19"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g20"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g21"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g22"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g23"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g24"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g25"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g26"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g27"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g28"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g29"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g30"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g31"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g32"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g33"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g34"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g35"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g36"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g37"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g38"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g39"
+      }
+    ],
+    "boundary": {
+      "sourceCount": 40,
+      "first": "empty",
+      "probe": null,
+      "limit": 1,
+      "skip": 0,
+      "label": "",
+      "projection": "n.name"
+    }
+  },
+  {
+    "name": "generic-local-label-1",
+    "query": "MATCH (n:LocalVariable) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "generic-only"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "generic-only",
+        "id": "g00"
+      }
+    ],
+    "boundary": {
+      "sourceCount": 1,
+      "first": "generic-only",
+      "probe": null,
+      "limit": 1,
+      "skip": null,
+      "label": "LocalVariable",
+      "projection": "n.name"
+    }
+  },
+  {
+    "name": "generic-unsupported-projection-1",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.id LIMIT 1",
+    "parameters": {
+      "term": "hit"
+    },
+    "fixtures": [
+      "generic-only"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "generic-only",
+        "id": "g00"
+      }
+    ],
+    "boundary": {
+      "sourceCount": 1,
+      "first": "generic-only",
+      "probe": null,
+      "limit": 1,
+      "skip": null,
+      "label": "",
+      "projection": "n.id"
+    }
+  },
+  {
+    "name": "generic-global-miss-40",
+    "query": "MATCH (n) WHERE toLower(coalesce(n.class, '')) CONTAINS $term OR toLower(coalesce(n.name, '')) CONTAINS $term OR toLower(coalesce(n.caller_class, '')) CONTAINS $term OR toLower(coalesce(n.caller_name, '')) CONTAINS $term OR toLower(coalesce(n.callee_class, '')) CONTAINS $term OR toLower(coalesce(n.callee_name, '')) CONTAINS $term RETURN DISTINCT n.name LIMIT 1",
+    "parameters": {
+      "term": "missing-entire-string-table"
+    },
+    "fixtures": [
+      "generic-only",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic",
+      "neutral-call-generic"
+    ],
+    "scoped": false,
+    "sources": [
+      {
+        "fixture": "generic-only",
+        "id": "g00"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g01"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g02"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g03"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g04"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g05"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g06"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g07"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g08"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g09"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g10"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g11"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g12"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g13"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g14"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g15"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g16"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g17"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g18"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g19"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g20"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g21"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g22"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g23"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g24"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g25"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g26"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g27"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g28"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g29"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g30"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g31"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g32"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g33"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g34"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g35"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g36"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g37"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g38"
+      },
+      {
+        "fixture": "neutral-call-generic",
+        "id": "g39"
+      }
+    ],
+    "boundary": {
+      "sourceCount": 40,
+      "first": "generic-only",
+      "probe": null,
+      "limit": 1,
+      "skip": null,
+      "label": "",
+      "projection": "n.name"
+    }
+  }
+]

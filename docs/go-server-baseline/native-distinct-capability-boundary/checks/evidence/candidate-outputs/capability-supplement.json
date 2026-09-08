@@ -1,0 +1,76 @@
+[
+  {
+    "columns": [
+      "n.name"
+    ],
+    "name": "distinct-invalid-index-empty-1",
+    "rows": []
+  },
+  {
+    "error": "IllegalStateException",
+    "message": "Distinct projection capability became unavailable",
+    "name": "distinct-invalid-index-empty-40"
+  },
+  {
+    "columns": [
+      "n.name"
+    ],
+    "name": "distinct-invalid-index-generic-1",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "single"
+          ]
+        },
+        "n.name": "hit-A"
+      }
+    ]
+  },
+  {
+    "error": "IllegalStateException",
+    "message": "Distinct projection capability became unavailable",
+    "name": "distinct-invalid-index-generic-40"
+  },
+  {
+    "columns": [
+      "n.name"
+    ],
+    "name": "ordinary-empty-1",
+    "rows": []
+  },
+  {
+    "columns": [
+      "n.name"
+    ],
+    "name": "ordinary-empty-40",
+    "rows": []
+  },
+  {
+    "columns": [
+      "n.name"
+    ],
+    "name": "ordinary-generic-only-1",
+    "rows": [
+      {
+        "n.name": "hit-A"
+      }
+    ]
+  },
+  {
+    "columns": [
+      "n.name"
+    ],
+    "name": "ordinary-generic-only-40",
+    "rows": [
+      {
+        "$metadata": {
+          "graphIds": [
+            "g00"
+          ]
+        },
+        "n.name": "hit-A"
+      }
+    ]
+  }
+]

@@ -1305,3 +1305,64 @@ required benchmark gates and the 10x per-case P95 goal remain open.
 Exact commands, runtime/source identities, raw outputs, retained failures and
 verification receipts are under
 `docs/go-server-baseline/native-generic-provenance-prefix/`.
+
+### 2026-09-08 — Functional follow-up: preserve missing DISTINCT projection capability
+
+Baseline Go is `2e75f69e19ee4660a9187ac9af719bf7cd567c6a`; original main remains
+`4e328b0109e13c896b74004823fb049fcb19251a`. The previous investigation retained
+six cases where a generic-only first graph should fail because its CallSite
+projection capability is unavailable. Go incorrectly supplied an available empty
+index before choosing the storage policy.
+
+The store now distinguishes an empty serial raw scan from an unavailable
+structural index, after evaluating prepared-file presence. A regular but invalid
+index file still selects serial storage for one-source DISTINCT, matching main.
+Initial projection maps unavailable to the exact IllegalStateException and
+message; provenance accepts no raw hits and continues generic candidates. Four
+ordinary candidate branches tolerate missing indexes. Existing filtered-count
+zero guards and index-lifecycle unavailable handling remain valid.
+
+Two independently repeated actual-JVM matrices add 46 primary and eight
+supplemental cases. Baseline matches 30/46 and 6/8; candidate matches 46/46 and
+8/8. The prior 13 initial controls improve from 7/13 to 13/13, closing all six
+recorded capability mismatches. Complete ordered results/provenance and atomic
+errors are asserted. Baseline testing overlays all three production files with
+exact committed bytes; no partial baseline is used. An initial test-harness
+Single/Cross selection mistake and its three metadata differences are preserved,
+then corrected to invoke the same executor as the original JVM.
+
+Full module race tests and vet pass with 2,552 recorded inputs unchanged.
+Independent source/test review identifies no missed production dependency in
+this boundary. The existing complete 201-case oracle is unchanged in compared
+public results/errors/state: 166/181 public and 19/20 scoped provider controls
+match each original reference, leaving the same 16 retained mismatches. Its
+comparison remains failed, rather than turning known errors into passing cases.
+
+| Evidence | Result |
+| --- | --- |
+| Primary capability matrix | 30/46 baseline; 46/46 candidate |
+| Invalid file / ordinary supplement | 6/8 baseline; 8/8 candidate |
+| Previously retained initial controls | 7/13 baseline; 13/13 candidate |
+| Full module race / vet | Passed |
+| Existing 201-case matrix | No new compared differences; 16 remain |
+| Real64 cold | 1,267 cases and 162,304 state observations align |
+| Real64 warm prewarm | 1,267 cases and 162,240 state observations align |
+| Real64 startup-prepared | 1,267 cases and 162,304 state observations align |
+| New latency / CPU / memory measurements | None; correctness correction only |
+| Per-case P95 / 10x acceptance | Unproven |
+| Keep/revert | Keep the observed capability-boundary correction |
+
+Every real64 runtime executes serially after module checks and JVM captures
+terminate, on its own fresh clone of the same 64 real graphs with all 1,152
+original files unchanged. Every original testcase and the original case821
+failure remain; formal warm still only completes its failed prewarm. Prior
+contended cache-state differences remain in their original archive. The new
+JVM primary matrix also retains a workUnitsConsumed difference of 3,089 versus
+3,361 for one 40-source query despite identical public output and index state;
+this does not establish deterministic worker diagnostics or Go accounting parity.
+
+No new performance claim follows from these correctness captures. Exact commands,
+source identities, complete outputs and retained differences are under
+`docs/go-server-baseline/native-distinct-capability-boundary/`. Full server
+fidelity, resource/work accounting, required benchmark gates and 10x per-case
+P95 remain unproven.

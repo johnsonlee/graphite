@@ -401,16 +401,13 @@ func (e evaluator) prepareDistinctSourceIndex(source Graph, plan *indexedDistinc
 	index, available, err := source.Store.PrepareDistinctStringIndex(e.ctx, store.DistinctProjectionOptions{SourceCount: plan.sourceCount, Limit: plan.limit, PreferMappedView: plan.preferMappedView, CannotMatch: func() bool { return e.distinctCannotMatch(source, plan) }})
 	failProjectionRead(err)
 	if !available {
-		return nil, false
+		fail("Distinct projection capability became unavailable")
 	}
 	return index, false
 }
 func (e evaluator) distinctSourcePrefix(source Graph, plan *indexedDistinctPlan) distinctSourceResult {
 	e.check()
 	index, empty := e.prepareDistinctSourceIndex(source, plan)
-	if index == nil {
-		functionError("IllegalStateException", "Distinct projection capability became unavailable")
-	}
 	rows := []distinctProjectedRow{}
 	seenIDs := map[string]bool{}
 	if !empty && (index.Raw || index.ParallelRaw) {
@@ -556,9 +553,7 @@ func (e evaluator) distinctSourceHits(source Graph, plan *indexedDistinctPlan, s
 	}
 	selectedRows = rawTargets
 	index, empty := e.prepareDistinctSourceIndex(source, plan)
-	// Main accepts an unavailable storage capability during provenance probing,
-	// then still consumes generic candidates for the selected rows.
-	if empty || index == nil {
+	if empty {
 		e.distinctGenericHits(source, plan, selectedKeys, hits)
 		return hits
 	}

@@ -296,18 +296,13 @@ func (s *Store) PrepareDistinctStringIndex(ctx context.Context, options Distinct
 	if options.InitializeMappedView && mappedExisting != nil {
 		return adapt(mappedExisting), true, nil
 	}
+	if len(s.byKind["CallSiteNode"]) == 0 {
+		return &DistinctStringIndex{owner: s}, true, nil
+	}
 	// Prepared is a file-presence capability in main, not a successful load.
 	// A one-source query chooses serial storage even if this file is rejected.
 	if info, err := os.Stat(filepath.Join(s.dir, callSiteIndexFile)); !options.SkipPreparedPreference && options.SourceCount == 1 && err == nil && info.Mode().IsRegular() {
 		rawFallback = true
-	}
-	if len(s.byKind["CallSiteNode"]) == 0 {
-		// Main cannot build or map a structural index without CallSites.
-		// Its serial raw projection remains an available, empty scan.
-		if rawFallback && !options.InitializeMappedView {
-			return &DistinctStringIndex{owner: s, Raw: true}, true, nil
-		}
-		return nil, false, nil
 	}
 	var view *CallSiteStringIndex
 	var available bool

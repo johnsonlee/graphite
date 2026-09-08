@@ -1,0 +1,11 @@
+{
+  "command": [
+    "python3",
+    "docs/go-server-baseline/native-distinct-capability-boundary/verify.py"
+  ],
+  "exitCode": 0,
+  "stdout": "{\"verifiedArtifacts\": 53, \"variantFilesPerCapture\": 83, \"cases\": 46, \"exactRepeatedPublicOutputs\": 46, \"completeOutputExactCases\": 45, \"preservedDiagnosticDifferences\": [[\"first-neutral-call-only-40\", \"diagnostics\"]], \"performanceMeasurements\": 0}\n",
+  "stderr": "",
+  "manifestSha256": "f4710bc4d4f93fd7a7c5f44d6e62638bb118ccb0103d40784f55e7bed60a27a9",
+  "verifiedUTC": "2026-09-08T08:47:57.335991+00:00"
+}

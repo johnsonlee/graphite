@@ -1,0 +1,67 @@
+{
+  "baselineRevision": "2e75f69e19ee4660a9187ac9af719bf7cd567c6a",
+  "steps": [
+    {
+      "name": "baseline",
+      "command": [
+        "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+        "test",
+        "-overlay",
+        "/Users/johnsonlee/.codex/benchmarks/graphite/distinct-capability-2e75f69e-checks-v1/baseline-overlay.json",
+        "-count=1",
+        "-v",
+        "-run",
+        "^TestDistinctCapability(Main|InitialMain)$",
+        "./internal/query"
+      ],
+      "cwd": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server",
+      "exitCode": 1,
+      "expectedExitCode": 1,
+      "inputsUnchanged": true
+    },
+    {
+      "name": "candidate",
+      "command": [
+        "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+        "test",
+        "-count=1",
+        "-v",
+        "-run",
+        "^TestDistinctCapability(Main|InitialMain)$",
+        "./internal/query"
+      ],
+      "cwd": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server",
+      "exitCode": 0,
+      "expectedExitCode": 0,
+      "inputsUnchanged": true
+    },
+    {
+      "name": "race",
+      "command": [
+        "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+        "test",
+        "-race",
+        "-count=1",
+        "./..."
+      ],
+      "cwd": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server",
+      "exitCode": 0,
+      "expectedExitCode": 0,
+      "inputsUnchanged": true
+    },
+    {
+      "name": "vet",
+      "command": [
+        "/opt/homebrew/Cellar/go/1.22.0/libexec/bin/go",
+        "vet",
+        "./..."
+      ],
+      "cwd": "/Users/johnsonlee/.codex/worktrees/112399f5-4ea0-42da-af34-5ab6ef682c3d/graphite/graphite-server",
+      "exitCode": 0,
+      "expectedExitCode": 0,
+      "inputsUnchanged": true
+    }
+  ],
+  "inputCount": 2552,
+  "performanceMeasurements": 0
+}

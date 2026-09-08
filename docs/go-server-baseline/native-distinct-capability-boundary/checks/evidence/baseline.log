@@ -1,0 +1,169 @@
+=== RUN   TestDistinctCapabilityMain
+=== RUN   TestDistinctCapabilityMain/primary
+=== RUN   TestDistinctCapabilityMain/primary/first-empty-1
+    distinct_capability_test.go:87: main error IllegalStateException; Go result query.Result{Columns:[]string{"n.name"}, Rows:[]map[string]interface {}{}, rawColumns:[]string(nil), rawRowKeys:[][]string(nil)}, error <nil>
+=== RUN   TestDistinctCapabilityMain/primary/first-generic-only-1
+    distinct_capability_test.go:87: main error IllegalStateException; Go result query.Result{Columns:[]string{"n.name"}, Rows:[]map[string]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]string{"single"}}, "n.name":"hit-A"}}, rawColumns:[]string(nil), rawRowKeys:[][]string(nil)}, error <nil>
+=== RUN   TestDistinctCapabilityMain/primary/first-neutral-call-generic-1
+=== RUN   TestDistinctCapabilityMain/primary/first-neutral-call-only-1
+=== RUN   TestDistinctCapabilityMain/primary/first-empty-2
+=== RUN   TestDistinctCapabilityMain/primary/first-generic-only-2
+=== RUN   TestDistinctCapabilityMain/primary/first-neutral-call-generic-2
+=== RUN   TestDistinctCapabilityMain/primary/first-neutral-call-only-2
+=== RUN   TestDistinctCapabilityMain/primary/first-empty-39
+=== RUN   TestDistinctCapabilityMain/primary/first-generic-only-39
+=== RUN   TestDistinctCapabilityMain/primary/first-neutral-call-generic-39
+=== RUN   TestDistinctCapabilityMain/primary/first-neutral-call-only-39
+=== RUN   TestDistinctCapabilityMain/primary/first-empty-40
+    distinct_capability_test.go:87: main error IllegalStateException; Go result query.Result{Columns:[]string{"n.name"}, Rows:[]map[string]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]string{"g01", "g02", "g03", "g04", "g05", "g06", "g07", "g08", "g09", "g10", "g11", "g12", "g13", "g14", "g15", "g16", "g17", "g18", "g19", "g20", "g21", "g22", "g23", "g24", "g25", "g26", "g27", "g28", "g29", "g30", "g31", "g32", "g33", "g34", "g35", "g36", "g37", "g38", "g39"}}, "n.name":"hit-A"}}, rawColumns:[]string(nil), rawRowKeys:[][]string(nil)}, error <nil>
+=== RUN   TestDistinctCapabilityMain/primary/first-generic-only-40
+    distinct_capability_test.go:87: main error IllegalStateException; Go result query.Result{Columns:[]string{"n.name"}, Rows:[]map[string]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]string{"g00", "g01", "g02", "g03", "g04", "g05", "g06", "g07", "g08", "g09", "g10", "g11", "g12", "g13", "g14", "g15", "g16", "g17", "g18", "g19", "g20", "g21", "g22", "g23", "g24", "g25", "g26", "g27", "g28", "g29", "g30", "g31", "g32", "g33", "g34", "g35", "g36", "g37", "g38", "g39"}}, "n.name":"hit-A"}}, rawColumns:[]string(nil), rawRowKeys:[][]string(nil)}, error <nil>
+=== RUN   TestDistinctCapabilityMain/primary/first-neutral-call-generic-40
+=== RUN   TestDistinctCapabilityMain/primary/first-neutral-call-only-40
+=== RUN   TestDistinctCapabilityMain/primary/later-empty-2
+=== RUN   TestDistinctCapabilityMain/primary/later-generic-only-2
+=== RUN   TestDistinctCapabilityMain/primary/later-empty-39
+=== RUN   TestDistinctCapabilityMain/primary/later-generic-only-39
+=== RUN   TestDistinctCapabilityMain/primary/later-empty-40
+=== RUN   TestDistinctCapabilityMain/primary/later-generic-only-40
+=== RUN   TestDistinctCapabilityMain/primary/generic-limit-0-1
+=== RUN   TestDistinctCapabilityMain/primary/generic-limit-2-1
+    distinct_capability_test.go:87: main error IllegalStateException; Go result query.Result{Columns:[]string{"n.name"}, Rows:[]map[string]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]string{"single"}}, "n.name":"hit-A"}, map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]string{"single"}}, "n.name":"hit-B"}}, rawColumns:[]string(nil), rawRowKeys:[][]string(nil)}, error <nil>
+=== RUN   TestDistinctCapabilityMain/primary/generic-limit-0-40
+=== RUN   TestDistinctCapabilityMain/primary/generic-limit-2-40
+    distinct_capability_test.go:87: main error IllegalStateException; Go result query.Result{Columns:[]string{"n.name"}, Rows:[]map[string]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]string{"g00", "g01", "g02", "g03", "g04", "g05", "g06", "g07", "g08", "g09", "g10", "g11", "g12", "g13", "g14", "g15", "g16", "g17", "g18", "g19", "g20", "g21", "g22", "g23", "g24", "g25", "g26", "g27", "g28", "g29", "g30", "g31", "g32", "g33", "g34", "g35", "g36", "g37", "g38", "g39"}}, "n.name":"hit-A"}, map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]string{"g00", "g01", "g02", "g03", "g04", "g05", "g06", "g07", "g08", "g09", "g10", "g11", "g12", "g13", "g14", "g15", "g16", "g17", "g18", "g19", "g20", "g21", "g22", "g23", "g24", "g25", "g26", "g27", "g28", "g29", "g30", "g31", "g32", "g33", "g34", "g35", "g36", "g37", "g38", "g39"}}, "n.name":"hit-B"}}, rawColumns:[]string(nil), rawRowKeys:[][]string(nil)}, error <nil>
+=== RUN   TestDistinctCapabilityMain/primary/callsite-label-empty-1
+    distinct_capability_test.go:87: main error IllegalStateException; Go result query.Result{Columns:[]string{"n.name"}, Rows:[]map[string]interface {}{}, rawColumns:[]string(nil), rawRowKeys:[][]string(nil)}, error <nil>
+=== RUN   TestDistinctCapabilityMain/primary/callsite-label-generic-only-1
+    distinct_capability_test.go:87: main error IllegalStateException; Go result query.Result{Columns:[]string{"n.name"}, Rows:[]map[string]interface {}{}, rawColumns:[]string(nil), rawRowKeys:[][]string(nil)}, error <nil>
+=== RUN   TestDistinctCapabilityMain/primary/callsite-label-empty-2
+=== RUN   TestDistinctCapabilityMain/primary/callsite-label-generic-only-2
+=== RUN   TestDistinctCapabilityMain/primary/callsite-label-empty-39
+=== RUN   TestDistinctCapabilityMain/primary/callsite-label-generic-only-39
+=== RUN   TestDistinctCapabilityMain/primary/callsite-label-empty-40
+    distinct_capability_test.go:87: main error IllegalStateException; Go result query.Result{Columns:[]string{"n.name"}, Rows:[]map[string]interface {}{}, rawColumns:[]string(nil), rawRowKeys:[][]string(nil)}, error <nil>
+=== RUN   TestDistinctCapabilityMain/primary/callsite-label-generic-only-40
+    distinct_capability_test.go:87: main error IllegalStateException; Go result query.Result{Columns:[]string{"n.name"}, Rows:[]map[string]interface {}{}, rawColumns:[]string(nil), rawRowKeys:[][]string(nil)}, error <nil>
+=== RUN   TestDistinctCapabilityMain/primary/generic-skip-0-1
+    distinct_capability_test.go:87: main error IllegalStateException; Go result query.Result{Columns:[]string{"n.name"}, Rows:[]map[string]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]string{"single"}}, "n.name":"hit-A"}}, rawColumns:[]string(nil), rawRowKeys:[][]string(nil)}, error <nil>
+=== RUN   TestDistinctCapabilityMain/primary/generic-skip-1-1
+    distinct_capability_test.go:87: main error IllegalStateException; Go result query.Result{Columns:[]string{"n.name"}, Rows:[]map[string]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]string{"single"}}, "n.name":"hit-B"}}, rawColumns:[]string(nil), rawRowKeys:[][]string(nil)}, error <nil>
+=== RUN   TestDistinctCapabilityMain/primary/generic-skip-0-2
+=== RUN   TestDistinctCapabilityMain/primary/generic-skip-1-2
+=== RUN   TestDistinctCapabilityMain/primary/generic-skip-0-39
+=== RUN   TestDistinctCapabilityMain/primary/generic-skip-1-39
+=== RUN   TestDistinctCapabilityMain/primary/generic-skip-0-40
+    distinct_capability_test.go:87: main error IllegalStateException; Go result query.Result{Columns:[]string{"n.name"}, Rows:[]map[string]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]string{"g00", "g01", "g02", "g03", "g04", "g05", "g06", "g07", "g08", "g09", "g10", "g11", "g12", "g13", "g14", "g15", "g16", "g17", "g18", "g19", "g20", "g21", "g22", "g23", "g24", "g25", "g26", "g27", "g28", "g29", "g30", "g31", "g32", "g33", "g34", "g35", "g36", "g37", "g38", "g39"}}, "n.name":"hit-A"}}, rawColumns:[]string(nil), rawRowKeys:[][]string(nil)}, error <nil>
+=== RUN   TestDistinctCapabilityMain/primary/generic-skip-1-40
+    distinct_capability_test.go:87: main error IllegalStateException; Go result query.Result{Columns:[]string{"n.name"}, Rows:[]map[string]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]string{"g00", "g01", "g02", "g03", "g04", "g05", "g06", "g07", "g08", "g09", "g10", "g11", "g12", "g13", "g14", "g15", "g16", "g17", "g18", "g19", "g20", "g21", "g22", "g23", "g24", "g25", "g26", "g27", "g28", "g29", "g30", "g31", "g32", "g33", "g34", "g35", "g36", "g37", "g38", "g39"}}, "n.name":"hit-B"}}, rawColumns:[]string(nil), rawRowKeys:[][]string(nil)}, error <nil>
+=== RUN   TestDistinctCapabilityMain/primary/empty-skip-0-40
+    distinct_capability_test.go:87: main error IllegalStateException; Go result query.Result{Columns:[]string{"n.name"}, Rows:[]map[string]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]string{"g01", "g02", "g03", "g04", "g05", "g06", "g07", "g08", "g09", "g10", "g11", "g12", "g13", "g14", "g15", "g16", "g17", "g18", "g19", "g20", "g21", "g22", "g23", "g24", "g25", "g26", "g27", "g28", "g29", "g30", "g31", "g32", "g33", "g34", "g35", "g36", "g37", "g38", "g39"}}, "n.name":"hit-A"}}, rawColumns:[]string(nil), rawRowKeys:[][]string(nil)}, error <nil>
+=== RUN   TestDistinctCapabilityMain/primary/generic-local-label-1
+=== RUN   TestDistinctCapabilityMain/primary/generic-unsupported-projection-1
+=== RUN   TestDistinctCapabilityMain/primary/generic-global-miss-40
+    distinct_capability_test.go:87: main error IllegalStateException; Go result query.Result{Columns:[]string{"n.name"}, Rows:[]map[string]interface {}{}, rawColumns:[]string(nil), rawRowKeys:[][]string(nil)}, error <nil>
+=== RUN   TestDistinctCapabilityMain/supplement
+=== RUN   TestDistinctCapabilityMain/supplement/distinct-invalid-index-empty-1
+=== RUN   TestDistinctCapabilityMain/supplement/distinct-invalid-index-empty-40
+    distinct_capability_test.go:87: main error IllegalStateException; Go result query.Result{Columns:[]string{"n.name"}, Rows:[]map[string]interface {}{}, rawColumns:[]string(nil), rawRowKeys:[][]string(nil)}, error <nil>
+=== RUN   TestDistinctCapabilityMain/supplement/distinct-invalid-index-generic-1
+=== RUN   TestDistinctCapabilityMain/supplement/distinct-invalid-index-generic-40
+    distinct_capability_test.go:87: main error IllegalStateException; Go result query.Result{Columns:[]string{"n.name"}, Rows:[]map[string]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]string{"g00"}}, "n.name":"hit-A"}}, rawColumns:[]string(nil), rawRowKeys:[][]string(nil)}, error <nil>
+=== RUN   TestDistinctCapabilityMain/supplement/ordinary-empty-1
+=== RUN   TestDistinctCapabilityMain/supplement/ordinary-empty-40
+=== RUN   TestDistinctCapabilityMain/supplement/ordinary-generic-only-1
+=== RUN   TestDistinctCapabilityMain/supplement/ordinary-generic-only-40
+--- FAIL: TestDistinctCapabilityMain (2.08s)
+    --- FAIL: TestDistinctCapabilityMain/primary (1.78s)
+        --- FAIL: TestDistinctCapabilityMain/primary/first-empty-1 (0.01s)
+        --- FAIL: TestDistinctCapabilityMain/primary/first-generic-only-1 (0.00s)
+        --- PASS: TestDistinctCapabilityMain/primary/first-neutral-call-generic-1 (0.00s)
+        --- PASS: TestDistinctCapabilityMain/primary/first-neutral-call-only-1 (0.00s)
+        --- PASS: TestDistinctCapabilityMain/primary/first-empty-2 (0.00s)
+        --- PASS: TestDistinctCapabilityMain/primary/first-generic-only-2 (0.00s)
+        --- PASS: TestDistinctCapabilityMain/primary/first-neutral-call-generic-2 (0.00s)
+        --- PASS: TestDistinctCapabilityMain/primary/first-neutral-call-only-2 (0.00s)
+        --- PASS: TestDistinctCapabilityMain/primary/first-empty-39 (0.07s)
+        --- PASS: TestDistinctCapabilityMain/primary/first-generic-only-39 (0.07s)
+        --- PASS: TestDistinctCapabilityMain/primary/first-neutral-call-generic-39 (0.07s)
+        --- PASS: TestDistinctCapabilityMain/primary/first-neutral-call-only-39 (0.07s)
+        --- FAIL: TestDistinctCapabilityMain/primary/first-empty-40 (0.07s)
+        --- FAIL: TestDistinctCapabilityMain/primary/first-generic-only-40 (0.07s)
+        --- PASS: TestDistinctCapabilityMain/primary/first-neutral-call-generic-40 (0.07s)
+        --- PASS: TestDistinctCapabilityMain/primary/first-neutral-call-only-40 (0.07s)
+        --- PASS: TestDistinctCapabilityMain/primary/later-empty-2 (0.00s)
+        --- PASS: TestDistinctCapabilityMain/primary/later-generic-only-2 (0.00s)
+        --- PASS: TestDistinctCapabilityMain/primary/later-empty-39 (0.07s)
+        --- PASS: TestDistinctCapabilityMain/primary/later-generic-only-39 (0.07s)
+        --- PASS: TestDistinctCapabilityMain/primary/later-empty-40 (0.07s)
+        --- PASS: TestDistinctCapabilityMain/primary/later-generic-only-40 (0.07s)
+        --- PASS: TestDistinctCapabilityMain/primary/generic-limit-0-1 (0.00s)
+        --- FAIL: TestDistinctCapabilityMain/primary/generic-limit-2-1 (0.00s)
+        --- PASS: TestDistinctCapabilityMain/primary/generic-limit-0-40 (0.07s)
+        --- FAIL: TestDistinctCapabilityMain/primary/generic-limit-2-40 (0.07s)
+        --- FAIL: TestDistinctCapabilityMain/primary/callsite-label-empty-1 (0.00s)
+        --- FAIL: TestDistinctCapabilityMain/primary/callsite-label-generic-only-1 (0.00s)
+        --- PASS: TestDistinctCapabilityMain/primary/callsite-label-empty-2 (0.00s)
+        --- PASS: TestDistinctCapabilityMain/primary/callsite-label-generic-only-2 (0.00s)
+        --- PASS: TestDistinctCapabilityMain/primary/callsite-label-empty-39 (0.07s)
+        --- PASS: TestDistinctCapabilityMain/primary/callsite-label-generic-only-39 (0.07s)
+        --- FAIL: TestDistinctCapabilityMain/primary/callsite-label-empty-40 (0.08s)
+        --- FAIL: TestDistinctCapabilityMain/primary/callsite-label-generic-only-40 (0.07s)
+        --- FAIL: TestDistinctCapabilityMain/primary/generic-skip-0-1 (0.00s)
+        --- FAIL: TestDistinctCapabilityMain/primary/generic-skip-1-1 (0.00s)
+        --- PASS: TestDistinctCapabilityMain/primary/generic-skip-0-2 (0.00s)
+        --- PASS: TestDistinctCapabilityMain/primary/generic-skip-1-2 (0.00s)
+        --- PASS: TestDistinctCapabilityMain/primary/generic-skip-0-39 (0.07s)
+        --- PASS: TestDistinctCapabilityMain/primary/generic-skip-1-39 (0.07s)
+        --- FAIL: TestDistinctCapabilityMain/primary/generic-skip-0-40 (0.07s)
+        --- FAIL: TestDistinctCapabilityMain/primary/generic-skip-1-40 (0.07s)
+        --- FAIL: TestDistinctCapabilityMain/primary/empty-skip-0-40 (0.07s)
+        --- PASS: TestDistinctCapabilityMain/primary/generic-local-label-1 (0.00s)
+        --- PASS: TestDistinctCapabilityMain/primary/generic-unsupported-projection-1 (0.00s)
+        --- FAIL: TestDistinctCapabilityMain/primary/generic-global-miss-40 (0.07s)
+    --- FAIL: TestDistinctCapabilityMain/supplement (0.30s)
+        --- PASS: TestDistinctCapabilityMain/supplement/distinct-invalid-index-empty-1 (0.00s)
+        --- FAIL: TestDistinctCapabilityMain/supplement/distinct-invalid-index-empty-40 (0.07s)
+        --- PASS: TestDistinctCapabilityMain/supplement/distinct-invalid-index-generic-1 (0.00s)
+        --- FAIL: TestDistinctCapabilityMain/supplement/distinct-invalid-index-generic-40 (0.07s)
+        --- PASS: TestDistinctCapabilityMain/supplement/ordinary-empty-1 (0.00s)
+        --- PASS: TestDistinctCapabilityMain/supplement/ordinary-empty-40 (0.07s)
+        --- PASS: TestDistinctCapabilityMain/supplement/ordinary-generic-only-1 (0.00s)
+        --- PASS: TestDistinctCapabilityMain/supplement/ordinary-generic-only-40 (0.07s)
+=== RUN   TestDistinctCapabilityInitialMain
+=== RUN   TestDistinctCapabilityInitialMain/raw-complete-first-nonselected
+=== RUN   TestDistinctCapabilityInitialMain/raw-complete-first-duplicate
+=== RUN   TestDistinctCapabilityInitialMain/raw-complete-first-bad
+=== RUN   TestDistinctCapabilityInitialMain/raw-complete-no-generic
+=== RUN   TestDistinctCapabilityInitialMain/raw-plus-generic-completes
+=== RUN   TestDistinctCapabilityInitialMain/raw-plus-nonselected-then-selected
+=== RUN   TestDistinctCapabilityInitialMain/raw-plus-nonselected-then-bad
+=== RUN   TestDistinctCapabilityInitialMain/no-raw-hit-generic-completes
+    distinct_capability_test.go:87: main error IllegalStateException; Go result query.Result{Columns:[]string{"n.name"}, Rows:[]map[string]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]string{"g00", "g01"}}, "n.name":"hit-A"}}, rawColumns:[]string(nil), rawRowKeys:[][]string(nil)}, error <nil>
+=== RUN   TestDistinctCapabilityInitialMain/no-callsite-generic-completes
+    distinct_capability_test.go:87: main error IllegalStateException; Go result query.Result{Columns:[]string{"n.name"}, Rows:[]map[string]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]string{"g00", "g01"}}, "n.name":"hit-A"}}, rawColumns:[]string(nil), rawRowKeys:[][]string(nil)}, error <nil>
+=== RUN   TestDistinctCapabilityInitialMain/no-raw-hit-duplicate-then-completes
+    distinct_capability_test.go:87: main error IllegalStateException; Go result query.Result{Columns:[]string{"n.name"}, Rows:[]map[string]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]string{"g00", "g01"}}, "n.name":"hit-A"}, map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]string{"g00", "g01"}}, "n.name":"hit-B"}}, rawColumns:[]string(nil), rawRowKeys:[][]string(nil)}, error <nil>
+=== RUN   TestDistinctCapabilityInitialMain/no-raw-hit-duplicate-then-bad
+    distinct_capability_test.go:94: main error IllegalStateException / "Distinct projection capability became unavailable"; Go ArrayIndexOutOfBoundsException / "Index 2147483647 out of bounds for length 4"
+=== RUN   TestDistinctCapabilityInitialMain/no-raw-hit-nonselected-then-completes
+    distinct_capability_test.go:87: main error IllegalStateException; Go result query.Result{Columns:[]string{"n.name"}, Rows:[]map[string]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]string{"g00", "g01"}}, "n.name":"hit-A"}, map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]string{"g00", "g01"}}, "n.name":"hit-B"}}, rawColumns:[]string(nil), rawRowKeys:[][]string(nil)}, error <nil>
+=== RUN   TestDistinctCapabilityInitialMain/incomplete-exhaustion
+    distinct_capability_test.go:87: main error IllegalStateException; Go result query.Result{Columns:[]string{"n.name"}, Rows:[]map[string]interface {}{map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]string{"g00", "g01"}}, "n.name":"hit-A"}, map[string]interface {}{"$metadata":map[string]interface {}{"graphIds":[]string{"g00"}}, "n.name":"hit-B"}}, rawColumns:[]string(nil), rawRowKeys:[][]string(nil)}, error <nil>
+--- FAIL: TestDistinctCapabilityInitialMain (0.89s)
+    --- PASS: TestDistinctCapabilityInitialMain/raw-complete-first-nonselected (0.06s)
+    --- PASS: TestDistinctCapabilityInitialMain/raw-complete-first-duplicate (0.07s)
+    --- PASS: TestDistinctCapabilityInitialMain/raw-complete-first-bad (0.07s)
+    --- PASS: TestDistinctCapabilityInitialMain/raw-complete-no-generic (0.07s)
+    --- PASS: TestDistinctCapabilityInitialMain/raw-plus-generic-completes (0.07s)
+    --- PASS: TestDistinctCapabilityInitialMain/raw-plus-nonselected-then-selected (0.07s)
+    --- PASS: TestDistinctCapabilityInitialMain/raw-plus-nonselected-then-bad (0.07s)
+    --- FAIL: TestDistinctCapabilityInitialMain/no-raw-hit-generic-completes (0.07s)
+    --- FAIL: TestDistinctCapabilityInitialMain/no-callsite-generic-completes (0.07s)
+    --- FAIL: TestDistinctCapabilityInitialMain/no-raw-hit-duplicate-then-completes (0.06s)
+    --- FAIL: TestDistinctCapabilityInitialMain/no-raw-hit-duplicate-then-bad (0.06s)
+    --- FAIL: TestDistinctCapabilityInitialMain/no-raw-hit-nonselected-then-completes (0.06s)
+    --- FAIL: TestDistinctCapabilityInitialMain/incomplete-exhaustion (0.06s)
+FAIL
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/query	3.315s
+FAIL

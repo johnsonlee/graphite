@@ -1,0 +1,859 @@
+{
+  "baseline": {
+    "primary": {
+      "cases": 46,
+      "matches": 30,
+      "differences": [
+        {
+          "name": "first-empty-1",
+          "main": {
+            "name": "first-empty-1",
+            "error": "IllegalStateException",
+            "message": "Distinct projection capability became unavailable"
+          },
+          "go": {
+            "columns": [
+              "n.name"
+            ],
+            "name": "first-empty-1",
+            "rows": []
+          }
+        },
+        {
+          "name": "first-generic-only-1",
+          "main": {
+            "name": "first-generic-only-1",
+            "error": "IllegalStateException",
+            "message": "Distinct projection capability became unavailable"
+          },
+          "go": {
+            "columns": [
+              "n.name"
+            ],
+            "name": "first-generic-only-1",
+            "rows": [
+              {
+                "$metadata": {
+                  "graphIds": [
+                    "single"
+                  ]
+                },
+                "n.name": "hit-A"
+              }
+            ]
+          }
+        },
+        {
+          "name": "first-empty-40",
+          "main": {
+            "name": "first-empty-40",
+            "error": "IllegalStateException",
+            "message": "Distinct projection capability became unavailable"
+          },
+          "go": {
+            "columns": [
+              "n.name"
+            ],
+            "name": "first-empty-40",
+            "rows": [
+              {
+                "$metadata": {
+                  "graphIds": [
+                    "g01",
+                    "g02",
+                    "g03",
+                    "g04",
+                    "g05",
+                    "g06",
+                    "g07",
+                    "g08",
+                    "g09",
+                    "g10",
+                    "g11",
+                    "g12",
+                    "g13",
+                    "g14",
+                    "g15",
+                    "g16",
+                    "g17",
+                    "g18",
+                    "g19",
+                    "g20",
+                    "g21",
+                    "g22",
+                    "g23",
+                    "g24",
+                    "g25",
+                    "g26",
+                    "g27",
+                    "g28",
+                    "g29",
+                    "g30",
+                    "g31",
+                    "g32",
+                    "g33",
+                    "g34",
+                    "g35",
+                    "g36",
+                    "g37",
+                    "g38",
+                    "g39"
+                  ]
+                },
+                "n.name": "hit-A"
+              }
+            ]
+          }
+        },
+        {
+          "name": "first-generic-only-40",
+          "main": {
+            "name": "first-generic-only-40",
+            "error": "IllegalStateException",
+            "message": "Distinct projection capability became unavailable"
+          },
+          "go": {
+            "columns": [
+              "n.name"
+            ],
+            "name": "first-generic-only-40",
+            "rows": [
+              {
+                "$metadata": {
+                  "graphIds": [
+                    "g00",
+                    "g01",
+                    "g02",
+                    "g03",
+                    "g04",
+                    "g05",
+                    "g06",
+                    "g07",
+                    "g08",
+                    "g09",
+                    "g10",
+                    "g11",
+                    "g12",
+                    "g13",
+                    "g14",
+                    "g15",
+                    "g16",
+                    "g17",
+                    "g18",
+                    "g19",
+                    "g20",
+                    "g21",
+                    "g22",
+                    "g23",
+                    "g24",
+                    "g25",
+                    "g26",
+                    "g27",
+                    "g28",
+                    "g29",
+                    "g30",
+                    "g31",
+                    "g32",
+                    "g33",
+                    "g34",
+                    "g35",
+                    "g36",
+                    "g37",
+                    "g38",
+                    "g39"
+                  ]
+                },
+                "n.name": "hit-A"
+              }
+            ]
+          }
+        },
+        {
+          "name": "generic-limit-2-1",
+          "main": {
+            "name": "generic-limit-2-1",
+            "error": "IllegalStateException",
+            "message": "Distinct projection capability became unavailable"
+          },
+          "go": {
+            "columns": [
+              "n.name"
+            ],
+            "name": "generic-limit-2-1",
+            "rows": [
+              {
+                "$metadata": {
+                  "graphIds": [
+                    "single"
+                  ]
+                },
+                "n.name": "hit-A"
+              },
+              {
+                "$metadata": {
+                  "graphIds": [
+                    "single"
+                  ]
+                },
+                "n.name": "hit-B"
+              }
+            ]
+          }
+        },
+        {
+          "name": "generic-limit-2-40",
+          "main": {
+            "name": "generic-limit-2-40",
+            "error": "IllegalStateException",
+            "message": "Distinct projection capability became unavailable"
+          },
+          "go": {
+            "columns": [
+              "n.name"
+            ],
+            "name": "generic-limit-2-40",
+            "rows": [
+              {
+                "$metadata": {
+                  "graphIds": [
+                    "g00",
+                    "g01",
+                    "g02",
+                    "g03",
+                    "g04",
+                    "g05",
+                    "g06",
+                    "g07",
+                    "g08",
+                    "g09",
+                    "g10",
+                    "g11",
+                    "g12",
+                    "g13",
+                    "g14",
+                    "g15",
+                    "g16",
+                    "g17",
+                    "g18",
+                    "g19",
+                    "g20",
+                    "g21",
+                    "g22",
+                    "g23",
+                    "g24",
+                    "g25",
+                    "g26",
+                    "g27",
+                    "g28",
+                    "g29",
+                    "g30",
+                    "g31",
+                    "g32",
+                    "g33",
+                    "g34",
+                    "g35",
+                    "g36",
+                    "g37",
+                    "g38",
+                    "g39"
+                  ]
+                },
+                "n.name": "hit-A"
+              },
+              {
+                "$metadata": {
+                  "graphIds": [
+                    "g00",
+                    "g01",
+                    "g02",
+                    "g03",
+                    "g04",
+                    "g05",
+                    "g06",
+                    "g07",
+                    "g08",
+                    "g09",
+                    "g10",
+                    "g11",
+                    "g12",
+                    "g13",
+                    "g14",
+                    "g15",
+                    "g16",
+                    "g17",
+                    "g18",
+                    "g19",
+                    "g20",
+                    "g21",
+                    "g22",
+                    "g23",
+                    "g24",
+                    "g25",
+                    "g26",
+                    "g27",
+                    "g28",
+                    "g29",
+                    "g30",
+                    "g31",
+                    "g32",
+                    "g33",
+                    "g34",
+                    "g35",
+                    "g36",
+                    "g37",
+                    "g38",
+                    "g39"
+                  ]
+                },
+                "n.name": "hit-B"
+              }
+            ]
+          }
+        },
+        {
+          "name": "callsite-label-empty-1",
+          "main": {
+            "name": "callsite-label-empty-1",
+            "error": "IllegalStateException",
+            "message": "Distinct projection capability became unavailable"
+          },
+          "go": {
+            "columns": [
+              "n.name"
+            ],
+            "name": "callsite-label-empty-1",
+            "rows": []
+          }
+        },
+        {
+          "name": "callsite-label-generic-only-1",
+          "main": {
+            "name": "callsite-label-generic-only-1",
+            "error": "IllegalStateException",
+            "message": "Distinct projection capability became unavailable"
+          },
+          "go": {
+            "columns": [
+              "n.name"
+            ],
+            "name": "callsite-label-generic-only-1",
+            "rows": []
+          }
+        },
+        {
+          "name": "callsite-label-empty-40",
+          "main": {
+            "name": "callsite-label-empty-40",
+            "error": "IllegalStateException",
+            "message": "Distinct projection capability became unavailable"
+          },
+          "go": {
+            "columns": [
+              "n.name"
+            ],
+            "name": "callsite-label-empty-40",
+            "rows": []
+          }
+        },
+        {
+          "name": "callsite-label-generic-only-40",
+          "main": {
+            "name": "callsite-label-generic-only-40",
+            "error": "IllegalStateException",
+            "message": "Distinct projection capability became unavailable"
+          },
+          "go": {
+            "columns": [
+              "n.name"
+            ],
+            "name": "callsite-label-generic-only-40",
+            "rows": []
+          }
+        },
+        {
+          "name": "generic-skip-0-1",
+          "main": {
+            "name": "generic-skip-0-1",
+            "error": "IllegalStateException",
+            "message": "Distinct projection capability became unavailable"
+          },
+          "go": {
+            "columns": [
+              "n.name"
+            ],
+            "name": "generic-skip-0-1",
+            "rows": [
+              {
+                "$metadata": {
+                  "graphIds": [
+                    "single"
+                  ]
+                },
+                "n.name": "hit-A"
+              }
+            ]
+          }
+        },
+        {
+          "name": "generic-skip-1-1",
+          "main": {
+            "name": "generic-skip-1-1",
+            "error": "IllegalStateException",
+            "message": "Distinct projection capability became unavailable"
+          },
+          "go": {
+            "columns": [
+              "n.name"
+            ],
+            "name": "generic-skip-1-1",
+            "rows": [
+              {
+                "$metadata": {
+                  "graphIds": [
+                    "single"
+                  ]
+                },
+                "n.name": "hit-B"
+              }
+            ]
+          }
+        },
+        {
+          "name": "generic-skip-0-40",
+          "main": {
+            "name": "generic-skip-0-40",
+            "error": "IllegalStateException",
+            "message": "Distinct projection capability became unavailable"
+          },
+          "go": {
+            "columns": [
+              "n.name"
+            ],
+            "name": "generic-skip-0-40",
+            "rows": [
+              {
+                "$metadata": {
+                  "graphIds": [
+                    "g00",
+                    "g01",
+                    "g02",
+                    "g03",
+                    "g04",
+                    "g05",
+                    "g06",
+                    "g07",
+                    "g08",
+                    "g09",
+                    "g10",
+                    "g11",
+                    "g12",
+                    "g13",
+                    "g14",
+                    "g15",
+                    "g16",
+                    "g17",
+                    "g18",
+                    "g19",
+                    "g20",
+                    "g21",
+                    "g22",
+                    "g23",
+                    "g24",
+                    "g25",
+                    "g26",
+                    "g27",
+                    "g28",
+                    "g29",
+                    "g30",
+                    "g31",
+                    "g32",
+                    "g33",
+                    "g34",
+                    "g35",
+                    "g36",
+                    "g37",
+                    "g38",
+                    "g39"
+                  ]
+                },
+                "n.name": "hit-A"
+              }
+            ]
+          }
+        },
+        {
+          "name": "generic-skip-1-40",
+          "main": {
+            "name": "generic-skip-1-40",
+            "error": "IllegalStateException",
+            "message": "Distinct projection capability became unavailable"
+          },
+          "go": {
+            "columns": [
+              "n.name"
+            ],
+            "name": "generic-skip-1-40",
+            "rows": [
+              {
+                "$metadata": {
+                  "graphIds": [
+                    "g00",
+                    "g01",
+                    "g02",
+                    "g03",
+                    "g04",
+                    "g05",
+                    "g06",
+                    "g07",
+                    "g08",
+                    "g09",
+                    "g10",
+                    "g11",
+                    "g12",
+                    "g13",
+                    "g14",
+                    "g15",
+                    "g16",
+                    "g17",
+                    "g18",
+                    "g19",
+                    "g20",
+                    "g21",
+                    "g22",
+                    "g23",
+                    "g24",
+                    "g25",
+                    "g26",
+                    "g27",
+                    "g28",
+                    "g29",
+                    "g30",
+                    "g31",
+                    "g32",
+                    "g33",
+                    "g34",
+                    "g35",
+                    "g36",
+                    "g37",
+                    "g38",
+                    "g39"
+                  ]
+                },
+                "n.name": "hit-B"
+              }
+            ]
+          }
+        },
+        {
+          "name": "empty-skip-0-40",
+          "main": {
+            "name": "empty-skip-0-40",
+            "error": "IllegalStateException",
+            "message": "Distinct projection capability became unavailable"
+          },
+          "go": {
+            "columns": [
+              "n.name"
+            ],
+            "name": "empty-skip-0-40",
+            "rows": [
+              {
+                "$metadata": {
+                  "graphIds": [
+                    "g01",
+                    "g02",
+                    "g03",
+                    "g04",
+                    "g05",
+                    "g06",
+                    "g07",
+                    "g08",
+                    "g09",
+                    "g10",
+                    "g11",
+                    "g12",
+                    "g13",
+                    "g14",
+                    "g15",
+                    "g16",
+                    "g17",
+                    "g18",
+                    "g19",
+                    "g20",
+                    "g21",
+                    "g22",
+                    "g23",
+                    "g24",
+                    "g25",
+                    "g26",
+                    "g27",
+                    "g28",
+                    "g29",
+                    "g30",
+                    "g31",
+                    "g32",
+                    "g33",
+                    "g34",
+                    "g35",
+                    "g36",
+                    "g37",
+                    "g38",
+                    "g39"
+                  ]
+                },
+                "n.name": "hit-A"
+              }
+            ]
+          }
+        },
+        {
+          "name": "generic-global-miss-40",
+          "main": {
+            "name": "generic-global-miss-40",
+            "error": "IllegalStateException",
+            "message": "Distinct projection capability became unavailable"
+          },
+          "go": {
+            "columns": [
+              "n.name"
+            ],
+            "name": "generic-global-miss-40",
+            "rows": []
+          }
+        }
+      ]
+    },
+    "supplement": {
+      "cases": 8,
+      "matches": 6,
+      "differences": [
+        {
+          "name": "distinct-invalid-index-empty-40",
+          "main": {
+            "name": "distinct-invalid-index-empty-40",
+            "error": "IllegalStateException",
+            "message": "Distinct projection capability became unavailable"
+          },
+          "go": {
+            "columns": [
+              "n.name"
+            ],
+            "name": "distinct-invalid-index-empty-40",
+            "rows": []
+          }
+        },
+        {
+          "name": "distinct-invalid-index-generic-40",
+          "main": {
+            "name": "distinct-invalid-index-generic-40",
+            "error": "IllegalStateException",
+            "message": "Distinct projection capability became unavailable"
+          },
+          "go": {
+            "columns": [
+              "n.name"
+            ],
+            "name": "distinct-invalid-index-generic-40",
+            "rows": [
+              {
+                "$metadata": {
+                  "graphIds": [
+                    "g00"
+                  ]
+                },
+                "n.name": "hit-A"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "initial": {
+      "cases": 13,
+      "matches": 7,
+      "differences": [
+        {
+          "name": "no-raw-hit-generic-completes",
+          "main": {
+            "name": "no-raw-hit-generic-completes",
+            "error": "IllegalStateException",
+            "message": "Distinct projection capability became unavailable"
+          },
+          "go": {
+            "columns": [
+              "n.name"
+            ],
+            "name": "no-raw-hit-generic-completes",
+            "rows": [
+              {
+                "$metadata": {
+                  "graphIds": [
+                    "g00",
+                    "g01"
+                  ]
+                },
+                "n.name": "hit-A"
+              }
+            ]
+          }
+        },
+        {
+          "name": "no-callsite-generic-completes",
+          "main": {
+            "name": "no-callsite-generic-completes",
+            "error": "IllegalStateException",
+            "message": "Distinct projection capability became unavailable"
+          },
+          "go": {
+            "columns": [
+              "n.name"
+            ],
+            "name": "no-callsite-generic-completes",
+            "rows": [
+              {
+                "$metadata": {
+                  "graphIds": [
+                    "g00",
+                    "g01"
+                  ]
+                },
+                "n.name": "hit-A"
+              }
+            ]
+          }
+        },
+        {
+          "name": "no-raw-hit-duplicate-then-completes",
+          "main": {
+            "name": "no-raw-hit-duplicate-then-completes",
+            "error": "IllegalStateException",
+            "message": "Distinct projection capability became unavailable"
+          },
+          "go": {
+            "columns": [
+              "n.name"
+            ],
+            "name": "no-raw-hit-duplicate-then-completes",
+            "rows": [
+              {
+                "$metadata": {
+                  "graphIds": [
+                    "g00",
+                    "g01"
+                  ]
+                },
+                "n.name": "hit-A"
+              },
+              {
+                "$metadata": {
+                  "graphIds": [
+                    "g00",
+                    "g01"
+                  ]
+                },
+                "n.name": "hit-B"
+              }
+            ]
+          }
+        },
+        {
+          "name": "no-raw-hit-duplicate-then-bad",
+          "main": {
+            "name": "no-raw-hit-duplicate-then-bad",
+            "error": "IllegalStateException",
+            "message": "Distinct projection capability became unavailable"
+          },
+          "go": {
+            "error": "ArrayIndexOutOfBoundsException",
+            "message": "Index 2147483647 out of bounds for length 4",
+            "name": "no-raw-hit-duplicate-then-bad"
+          }
+        },
+        {
+          "name": "no-raw-hit-nonselected-then-completes",
+          "main": {
+            "name": "no-raw-hit-nonselected-then-completes",
+            "error": "IllegalStateException",
+            "message": "Distinct projection capability became unavailable"
+          },
+          "go": {
+            "columns": [
+              "n.name"
+            ],
+            "name": "no-raw-hit-nonselected-then-completes",
+            "rows": [
+              {
+                "$metadata": {
+                  "graphIds": [
+                    "g00",
+                    "g01"
+                  ]
+                },
+                "n.name": "hit-A"
+              },
+              {
+                "$metadata": {
+                  "graphIds": [
+                    "g00",
+                    "g01"
+                  ]
+                },
+                "n.name": "hit-B"
+              }
+            ]
+          }
+        },
+        {
+          "name": "incomplete-exhaustion",
+          "main": {
+            "name": "incomplete-exhaustion",
+            "error": "IllegalStateException",
+            "message": "Distinct projection capability became unavailable"
+          },
+          "go": {
+            "columns": [
+              "n.name"
+            ],
+            "name": "incomplete-exhaustion",
+            "rows": [
+              {
+                "$metadata": {
+                  "graphIds": [
+                    "g00",
+                    "g01"
+                  ]
+                },
+                "n.name": "hit-A"
+              },
+              {
+                "$metadata": {
+                  "graphIds": [
+                    "g00"
+                  ]
+                },
+                "n.name": "hit-B"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "candidate": {
+    "primary": {
+      "cases": 46,
+      "matches": 46,
+      "differences": []
+    },
+    "supplement": {
+      "cases": 8,
+      "matches": 8,
+      "differences": []
+    },
+    "initial": {
+      "cases": 13,
+      "matches": 13,
+      "differences": []
+    }
+  }
+}

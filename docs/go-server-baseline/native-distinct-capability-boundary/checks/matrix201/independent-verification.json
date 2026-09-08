@@ -1,0 +1,15 @@
+{
+  "cases": 201,
+  "comparedPublicOutputErrorStateChangesFromPrior": [],
+  "publicMatchesPerReference": 166,
+  "publicCases": 181,
+  "providerMatchesPerReference": 19,
+  "providerControls": 20,
+  "retainedDifferencesPerReference": 16,
+  "sourceArchiveFilesVerified": 2538,
+  "originalFixtureFilesUnchanged": 3036,
+  "namedCallSiteSidecarsAdded": 22,
+  "performanceMeasurements": 0,
+  "controllerExitCode": 1,
+  "compileAndCaptureExitCode": 0
+}

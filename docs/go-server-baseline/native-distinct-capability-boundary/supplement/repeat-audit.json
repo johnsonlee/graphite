@@ -1,0 +1,31 @@
+{
+  "caseCount": 8,
+  "publicOutputsExact": true,
+  "completeOutputExact": true,
+  "fullFieldDifferences": [],
+  "fixtureFilesPerCapture": 66,
+  "byteIdenticalFixtureFiles": 62,
+  "writerTimestampOnlyDifferences": [
+    {
+      "file": "empty/forward.properties",
+      "mainWriterComment": "#Tue Sep 08 17:49:11 KST 2026",
+      "repeatWriterComment": "#Tue Sep 08 17:49:24 KST 2026"
+    },
+    {
+      "file": "generic-only/forward.properties",
+      "mainWriterComment": "#Tue Sep 08 17:49:11 KST 2026",
+      "repeatWriterComment": "#Tue Sep 08 17:49:24 KST 2026"
+    },
+    {
+      "file": "invalid-index-empty/forward.properties",
+      "mainWriterComment": "#Tue Sep 08 17:49:11 KST 2026",
+      "repeatWriterComment": "#Tue Sep 08 17:49:24 KST 2026"
+    },
+    {
+      "file": "invalid-index-generic/forward.properties",
+      "mainWriterComment": "#Tue Sep 08 17:49:11 KST 2026",
+      "repeatWriterComment": "#Tue Sep 08 17:49:24 KST 2026"
+    }
+  ],
+  "performanceMeasurements": 0
+}

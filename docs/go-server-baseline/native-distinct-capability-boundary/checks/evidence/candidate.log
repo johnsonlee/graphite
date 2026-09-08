@@ -1,0 +1,144 @@
+=== RUN   TestDistinctCapabilityMain
+=== RUN   TestDistinctCapabilityMain/primary
+=== RUN   TestDistinctCapabilityMain/primary/first-empty-1
+=== RUN   TestDistinctCapabilityMain/primary/first-generic-only-1
+=== RUN   TestDistinctCapabilityMain/primary/first-neutral-call-generic-1
+=== RUN   TestDistinctCapabilityMain/primary/first-neutral-call-only-1
+=== RUN   TestDistinctCapabilityMain/primary/first-empty-2
+=== RUN   TestDistinctCapabilityMain/primary/first-generic-only-2
+=== RUN   TestDistinctCapabilityMain/primary/first-neutral-call-generic-2
+=== RUN   TestDistinctCapabilityMain/primary/first-neutral-call-only-2
+=== RUN   TestDistinctCapabilityMain/primary/first-empty-39
+=== RUN   TestDistinctCapabilityMain/primary/first-generic-only-39
+=== RUN   TestDistinctCapabilityMain/primary/first-neutral-call-generic-39
+=== RUN   TestDistinctCapabilityMain/primary/first-neutral-call-only-39
+=== RUN   TestDistinctCapabilityMain/primary/first-empty-40
+=== RUN   TestDistinctCapabilityMain/primary/first-generic-only-40
+=== RUN   TestDistinctCapabilityMain/primary/first-neutral-call-generic-40
+=== RUN   TestDistinctCapabilityMain/primary/first-neutral-call-only-40
+=== RUN   TestDistinctCapabilityMain/primary/later-empty-2
+=== RUN   TestDistinctCapabilityMain/primary/later-generic-only-2
+=== RUN   TestDistinctCapabilityMain/primary/later-empty-39
+=== RUN   TestDistinctCapabilityMain/primary/later-generic-only-39
+=== RUN   TestDistinctCapabilityMain/primary/later-empty-40
+=== RUN   TestDistinctCapabilityMain/primary/later-generic-only-40
+=== RUN   TestDistinctCapabilityMain/primary/generic-limit-0-1
+=== RUN   TestDistinctCapabilityMain/primary/generic-limit-2-1
+=== RUN   TestDistinctCapabilityMain/primary/generic-limit-0-40
+=== RUN   TestDistinctCapabilityMain/primary/generic-limit-2-40
+=== RUN   TestDistinctCapabilityMain/primary/callsite-label-empty-1
+=== RUN   TestDistinctCapabilityMain/primary/callsite-label-generic-only-1
+=== RUN   TestDistinctCapabilityMain/primary/callsite-label-empty-2
+=== RUN   TestDistinctCapabilityMain/primary/callsite-label-generic-only-2
+=== RUN   TestDistinctCapabilityMain/primary/callsite-label-empty-39
+=== RUN   TestDistinctCapabilityMain/primary/callsite-label-generic-only-39
+=== RUN   TestDistinctCapabilityMain/primary/callsite-label-empty-40
+=== RUN   TestDistinctCapabilityMain/primary/callsite-label-generic-only-40
+=== RUN   TestDistinctCapabilityMain/primary/generic-skip-0-1
+=== RUN   TestDistinctCapabilityMain/primary/generic-skip-1-1
+=== RUN   TestDistinctCapabilityMain/primary/generic-skip-0-2
+=== RUN   TestDistinctCapabilityMain/primary/generic-skip-1-2
+=== RUN   TestDistinctCapabilityMain/primary/generic-skip-0-39
+=== RUN   TestDistinctCapabilityMain/primary/generic-skip-1-39
+=== RUN   TestDistinctCapabilityMain/primary/generic-skip-0-40
+=== RUN   TestDistinctCapabilityMain/primary/generic-skip-1-40
+=== RUN   TestDistinctCapabilityMain/primary/empty-skip-0-40
+=== RUN   TestDistinctCapabilityMain/primary/generic-local-label-1
+=== RUN   TestDistinctCapabilityMain/primary/generic-unsupported-projection-1
+=== RUN   TestDistinctCapabilityMain/primary/generic-global-miss-40
+=== RUN   TestDistinctCapabilityMain/supplement
+=== RUN   TestDistinctCapabilityMain/supplement/distinct-invalid-index-empty-1
+=== RUN   TestDistinctCapabilityMain/supplement/distinct-invalid-index-empty-40
+=== RUN   TestDistinctCapabilityMain/supplement/distinct-invalid-index-generic-1
+=== RUN   TestDistinctCapabilityMain/supplement/distinct-invalid-index-generic-40
+=== RUN   TestDistinctCapabilityMain/supplement/ordinary-empty-1
+=== RUN   TestDistinctCapabilityMain/supplement/ordinary-empty-40
+=== RUN   TestDistinctCapabilityMain/supplement/ordinary-generic-only-1
+=== RUN   TestDistinctCapabilityMain/supplement/ordinary-generic-only-40
+--- PASS: TestDistinctCapabilityMain (1.97s)
+    --- PASS: TestDistinctCapabilityMain/primary (1.71s)
+        --- PASS: TestDistinctCapabilityMain/primary/first-empty-1 (0.01s)
+        --- PASS: TestDistinctCapabilityMain/primary/first-generic-only-1 (0.00s)
+        --- PASS: TestDistinctCapabilityMain/primary/first-neutral-call-generic-1 (0.00s)
+        --- PASS: TestDistinctCapabilityMain/primary/first-neutral-call-only-1 (0.00s)
+        --- PASS: TestDistinctCapabilityMain/primary/first-empty-2 (0.00s)
+        --- PASS: TestDistinctCapabilityMain/primary/first-generic-only-2 (0.00s)
+        --- PASS: TestDistinctCapabilityMain/primary/first-neutral-call-generic-2 (0.01s)
+        --- PASS: TestDistinctCapabilityMain/primary/first-neutral-call-only-2 (0.00s)
+        --- PASS: TestDistinctCapabilityMain/primary/first-empty-39 (0.07s)
+        --- PASS: TestDistinctCapabilityMain/primary/first-generic-only-39 (0.07s)
+        --- PASS: TestDistinctCapabilityMain/primary/first-neutral-call-generic-39 (0.07s)
+        --- PASS: TestDistinctCapabilityMain/primary/first-neutral-call-only-39 (0.07s)
+        --- PASS: TestDistinctCapabilityMain/primary/first-empty-40 (0.06s)
+        --- PASS: TestDistinctCapabilityMain/primary/first-generic-only-40 (0.06s)
+        --- PASS: TestDistinctCapabilityMain/primary/first-neutral-call-generic-40 (0.07s)
+        --- PASS: TestDistinctCapabilityMain/primary/first-neutral-call-only-40 (0.07s)
+        --- PASS: TestDistinctCapabilityMain/primary/later-empty-2 (0.00s)
+        --- PASS: TestDistinctCapabilityMain/primary/later-generic-only-2 (0.00s)
+        --- PASS: TestDistinctCapabilityMain/primary/later-empty-39 (0.06s)
+        --- PASS: TestDistinctCapabilityMain/primary/later-generic-only-39 (0.06s)
+        --- PASS: TestDistinctCapabilityMain/primary/later-empty-40 (0.07s)
+        --- PASS: TestDistinctCapabilityMain/primary/later-generic-only-40 (0.07s)
+        --- PASS: TestDistinctCapabilityMain/primary/generic-limit-0-1 (0.00s)
+        --- PASS: TestDistinctCapabilityMain/primary/generic-limit-2-1 (0.00s)
+        --- PASS: TestDistinctCapabilityMain/primary/generic-limit-0-40 (0.07s)
+        --- PASS: TestDistinctCapabilityMain/primary/generic-limit-2-40 (0.07s)
+        --- PASS: TestDistinctCapabilityMain/primary/callsite-label-empty-1 (0.00s)
+        --- PASS: TestDistinctCapabilityMain/primary/callsite-label-generic-only-1 (0.00s)
+        --- PASS: TestDistinctCapabilityMain/primary/callsite-label-empty-2 (0.00s)
+        --- PASS: TestDistinctCapabilityMain/primary/callsite-label-generic-only-2 (0.00s)
+        --- PASS: TestDistinctCapabilityMain/primary/callsite-label-empty-39 (0.07s)
+        --- PASS: TestDistinctCapabilityMain/primary/callsite-label-generic-only-39 (0.07s)
+        --- PASS: TestDistinctCapabilityMain/primary/callsite-label-empty-40 (0.07s)
+        --- PASS: TestDistinctCapabilityMain/primary/callsite-label-generic-only-40 (0.07s)
+        --- PASS: TestDistinctCapabilityMain/primary/generic-skip-0-1 (0.00s)
+        --- PASS: TestDistinctCapabilityMain/primary/generic-skip-1-1 (0.00s)
+        --- PASS: TestDistinctCapabilityMain/primary/generic-skip-0-2 (0.00s)
+        --- PASS: TestDistinctCapabilityMain/primary/generic-skip-1-2 (0.00s)
+        --- PASS: TestDistinctCapabilityMain/primary/generic-skip-0-39 (0.06s)
+        --- PASS: TestDistinctCapabilityMain/primary/generic-skip-1-39 (0.07s)
+        --- PASS: TestDistinctCapabilityMain/primary/generic-skip-0-40 (0.09s)
+        --- PASS: TestDistinctCapabilityMain/primary/generic-skip-1-40 (0.07s)
+        --- PASS: TestDistinctCapabilityMain/primary/empty-skip-0-40 (0.06s)
+        --- PASS: TestDistinctCapabilityMain/primary/generic-local-label-1 (0.00s)
+        --- PASS: TestDistinctCapabilityMain/primary/generic-unsupported-projection-1 (0.00s)
+        --- PASS: TestDistinctCapabilityMain/primary/generic-global-miss-40 (0.06s)
+    --- PASS: TestDistinctCapabilityMain/supplement (0.26s)
+        --- PASS: TestDistinctCapabilityMain/supplement/distinct-invalid-index-empty-1 (0.00s)
+        --- PASS: TestDistinctCapabilityMain/supplement/distinct-invalid-index-empty-40 (0.06s)
+        --- PASS: TestDistinctCapabilityMain/supplement/distinct-invalid-index-generic-1 (0.00s)
+        --- PASS: TestDistinctCapabilityMain/supplement/distinct-invalid-index-generic-40 (0.06s)
+        --- PASS: TestDistinctCapabilityMain/supplement/ordinary-empty-1 (0.00s)
+        --- PASS: TestDistinctCapabilityMain/supplement/ordinary-empty-40 (0.06s)
+        --- PASS: TestDistinctCapabilityMain/supplement/ordinary-generic-only-1 (0.00s)
+        --- PASS: TestDistinctCapabilityMain/supplement/ordinary-generic-only-40 (0.06s)
+=== RUN   TestDistinctCapabilityInitialMain
+=== RUN   TestDistinctCapabilityInitialMain/raw-complete-first-nonselected
+=== RUN   TestDistinctCapabilityInitialMain/raw-complete-first-duplicate
+=== RUN   TestDistinctCapabilityInitialMain/raw-complete-first-bad
+=== RUN   TestDistinctCapabilityInitialMain/raw-complete-no-generic
+=== RUN   TestDistinctCapabilityInitialMain/raw-plus-generic-completes
+=== RUN   TestDistinctCapabilityInitialMain/raw-plus-nonselected-then-selected
+=== RUN   TestDistinctCapabilityInitialMain/raw-plus-nonselected-then-bad
+=== RUN   TestDistinctCapabilityInitialMain/no-raw-hit-generic-completes
+=== RUN   TestDistinctCapabilityInitialMain/no-callsite-generic-completes
+=== RUN   TestDistinctCapabilityInitialMain/no-raw-hit-duplicate-then-completes
+=== RUN   TestDistinctCapabilityInitialMain/no-raw-hit-duplicate-then-bad
+=== RUN   TestDistinctCapabilityInitialMain/no-raw-hit-nonselected-then-completes
+=== RUN   TestDistinctCapabilityInitialMain/incomplete-exhaustion
+--- PASS: TestDistinctCapabilityInitialMain (0.86s)
+    --- PASS: TestDistinctCapabilityInitialMain/raw-complete-first-nonselected (0.06s)
+    --- PASS: TestDistinctCapabilityInitialMain/raw-complete-first-duplicate (0.07s)
+    --- PASS: TestDistinctCapabilityInitialMain/raw-complete-first-bad (0.06s)
+    --- PASS: TestDistinctCapabilityInitialMain/raw-complete-no-generic (0.06s)
+    --- PASS: TestDistinctCapabilityInitialMain/raw-plus-generic-completes (0.07s)
+    --- PASS: TestDistinctCapabilityInitialMain/raw-plus-nonselected-then-selected (0.07s)
+    --- PASS: TestDistinctCapabilityInitialMain/raw-plus-nonselected-then-bad (0.06s)
+    --- PASS: TestDistinctCapabilityInitialMain/no-raw-hit-generic-completes (0.06s)
+    --- PASS: TestDistinctCapabilityInitialMain/no-callsite-generic-completes (0.06s)
+    --- PASS: TestDistinctCapabilityInitialMain/no-raw-hit-duplicate-then-completes (0.06s)
+    --- PASS: TestDistinctCapabilityInitialMain/no-raw-hit-duplicate-then-bad (0.06s)
+    --- PASS: TestDistinctCapabilityInitialMain/no-raw-hit-nonselected-then-completes (0.06s)
+    --- PASS: TestDistinctCapabilityInitialMain/incomplete-exhaustion (0.06s)
+PASS
+ok  	github.com/johnsonlee/graphite/graphite-server/internal/query	3.237s
