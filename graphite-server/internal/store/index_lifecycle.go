@@ -106,6 +106,7 @@ func (s *Store) ClearStringPropertyIndexes(ctx context.Context) error {
 		}
 		st.view, st.unavailable, st.reason = nil, false, ""
 		st.main = [2]mainCallSiteIndexState{}
+		st.rawProjection = nil
 		// The mapped node-offset table is graph ownership, not a query index.
 		s.distinctProjection.index = nil
 		s.distinctProjection.mappedView = nil
@@ -121,6 +122,9 @@ func (s *Store) ClearStringPropertyIndexes(ctx context.Context) error {
 }
 
 type StringPropertyIndexState struct {
+	// Main allocates raw match states only through an unused stateFor method.
+	RawMatchCount         int  `json:"rawMatchCount"`
+	RawProjectionCount    int  `json:"rawProjectionCount"`
 	Retained              bool `json:"retained"`
 	MappedView            bool `json:"mappedView"`
 	Trigrams              bool `json:"trigrams"`
@@ -140,7 +144,7 @@ func (s *Store) StringPropertyIndexes(ctx context.Context) (StringPropertyIndexS
 	}
 	i := s.distinctProjection.index
 	v := s.distinctProjection.mappedView
-	state := StringPropertyIndexState{Retained: i != nil, MappedView: v != nil}
+	state := StringPropertyIndexState{Retained: i != nil, MappedView: v != nil, RawProjectionCount: len(s.callSiteIndex.rawProjection)}
 	if i != nil {
 		state.LoadedFromPersistence = i.view != nil
 		state.Trigrams = i.view != nil || i.ordinary != nil && i.ordinary.trigramsReady && len(i.ordinary.trigrams) > 0

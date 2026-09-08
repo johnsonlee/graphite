@@ -1,0 +1,21 @@
+{
+  ".gitignore": "a0a53d9002e4da57ad434c111f0c161e55d7d0fda2bb1b4dbdb396f605e6179b",
+  "MappedWebGraphBackedGraph.javap.txt": "24228f8bd40e0aa53519482c8a179c9c78b3994b13b2b20d96e89e3574e8fc63",
+  "README.md": "a87b56cc37e13bd62933e58543b188ffac615ac2218e6dafe4f31c48274d40d7",
+  "RawProjectionCacheOracle.java": "9361402d369e27e9d2b63d833b97147d34fd18b241dc4833f5f5cc610ded33b0",
+  "RawProjectionGraphOracle.java": "a609d543b2c4056817e1dde4c82a30610782ad2e777fec735950b203804baeef",
+  "RawProjectionMatchKey.javap.txt": "e9173444489034f48289760bcc7c957929d087ded89be59e753f8cf293894af7",
+  "RawProjectionMatches.javap.txt": "97fdeb5529ba7cd3587cd1d025de95a0a29899bdc83cb22b8cab3ab74d23d63b",
+  "RawStringMatchStates.javap.txt": "a658fd1fb79313a5ab3bffbdff9f0bc4fbf6e09c091a0c3451b57193371a4ddd",
+  "compile.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "graph-fixture-hashes.json": "8f165895ee53f95f3ba3b82fc45469223322e7c8a489f6b25ba74f75573941ba",
+  "graph-responses.jsonl": "b13c50d1da7167e3b4c6841835b4bf4090b0010450d1115ef92ca16627eeaee8",
+  "initial-incorrect-fixture-count.stderr": "8ab224f6bad8bc2c7488ac7f6037096b374d4098e81b66280d42c44eb9f1b008",
+  "java-version.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "java-version.txt.stderr": "3da1aeb6805f4a2afa33b81896052d034dc4d28ddea19f580db76c803beaaf2e",
+  "production-source-inventory.json": "6ed7a305b6718bedce7b850762fff22b1ba58b538a3f5c3dd86b6fe05e01b4c1",
+  "raw-string-state-source-audit.json": "25b4657bb66984b100133d0e83cd82fb936c72629f12899e894bc6afe877d4f8",
+  "receipt.json": "2fd03e70d5f786d59d52faed0251e51e1cd426b2e0d70b333fbf5ff62cfae2de",
+  "responses.jsonl": "34ef550fb0e39cf7c00e863e4d9c48f178add3ba5e514496676f4add3d21191d",
+  "run.py": "683ba6a03f600447a3c2d32520fabaa786134ee2e479955c2bedbf30980c5edf"
+}

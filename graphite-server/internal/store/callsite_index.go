@@ -39,14 +39,15 @@ type CallSiteStringIndexInfo struct {
 type CallSiteStringDirectoryEntry struct{ StringID, PostingCount int32 }
 type callSiteIndexRegion struct{ strings, ends, nodes int }
 type callSiteIndexState struct {
-	mu          sync.RWMutex
-	closed      bool
-	closing     chan struct{}
-	loading     chan struct{}
-	view        *CallSiteStringIndex
-	unavailable bool
-	reason      string
-	main        [2]mainCallSiteIndexState
+	rawProjection []rawProjectionMatch
+	mu            sync.RWMutex
+	closed        bool
+	closing       chan struct{}
+	loading       chan struct{}
+	view          *CallSiteStringIndex
+	unavailable   bool
+	reason        string
+	main          [2]mainCallSiteIndexState
 }
 
 // CallSiteStringIndex is an immutable Store-owned view. Methods return copied

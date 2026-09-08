@@ -1,0 +1,16 @@
+{
+  "command": [
+    "go",
+    "test",
+    "./internal/query",
+    "-run",
+    "^TestRawProjectionProviderMain$",
+    "-count=1"
+  ],
+  "cwd": "/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/graphite-raw-cache-negative-b_qeme_o/graphite-server",
+  "exitCode": 1,
+  "expectedFailure": true,
+  "mutation": "Skip only CacheRawProjectionMatches publication; keep query matching/projection unchanged",
+  "failure": "Actual-main clean-full-hit expects one raw cache entry; native negative control has zero",
+  "originalSourceUnchanged": true
+}

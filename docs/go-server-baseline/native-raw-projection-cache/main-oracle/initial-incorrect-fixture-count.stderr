@@ -1,0 +1,3 @@
+Exception in thread "main" java.lang.AssertionError: clean fixture 96 callsites
+	at RawProjectionGraphOracle.require(RawProjectionGraphOracle.java:13)
+	at RawProjectionGraphOracle.main(RawProjectionGraphOracle.java:33)

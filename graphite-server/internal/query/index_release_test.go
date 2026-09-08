@@ -74,9 +74,7 @@ func TestIndexReleaseMain(t *testing.T) {
 				t.Fatal(err)
 			}
 			outputs = append(outputs, normalized)
-			// Go has no corresponding raw-match/projection-cache counters. Preserve
-			// the original oracle, and explicitly limit this comparison to its five
-			// implemented structural observations plus all public values/file bytes.
+			// Compare all seven state fields, including both raw-cache counters.
 			comparison := lifecycleComparableMain(t, want)
 			if !reflect.DeepEqual(normalized, comparison) {
 				t.Errorf("main lifecycle differs; complete candidate retained in INDEX_RELEASE_OUTPUT")

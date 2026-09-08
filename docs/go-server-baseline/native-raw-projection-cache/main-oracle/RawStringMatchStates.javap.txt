@@ -1,0 +1,260 @@
+Compiled from "MappedWebGraphBackedGraph.kt"
+public final class io.johnsonlee.graphite.webgraph.RawStringMatchStates {
+  private final long maxRetainedBytes;
+
+  private final int maxEntries;
+
+  private final java.util.LinkedHashMap<io.johnsonlee.graphite.webgraph.RawStringMatchKey, byte[]> states;
+
+  private long bytes;
+
+  public io.johnsonlee.graphite.webgraph.RawStringMatchStates(long, int);
+    Code:
+       0: aload_0
+       1: invokespecial #9                  // Method java/lang/Object."<init>":()V
+       4: aload_0
+       5: lload_1
+       6: putfield      #13                 // Field maxRetainedBytes:J
+       9: aload_0
+      10: iload_3
+      11: putfield      #17                 // Field maxEntries:I
+      14: aload_0
+      15: new           #19                 // class java/util/LinkedHashMap
+      18: dup
+      19: aload_0
+      20: getfield      #17                 // Field maxEntries:I
+      23: iconst_1
+      24: invokestatic  #25                 // Method kotlin/ranges/RangesKt.coerceAtLeast:(II)I
+      27: iconst_1
+      28: iadd
+      29: ldc           #26                 // float 0.75f
+      31: iconst_1
+      32: invokespecial #29                 // Method java/util/LinkedHashMap."<init>":(IFZ)V
+      35: putfield      #33                 // Field states:Ljava/util/LinkedHashMap;
+      38: return
+
+  public io.johnsonlee.graphite.webgraph.RawStringMatchStates(long, int, int, kotlin.jvm.internal.DefaultConstructorMarker);
+    Code:
+       0: iload         4
+       2: iconst_1
+       3: iand
+       4: ifeq          11
+       7: ldc2_w        #37                 // long 16777216l
+      10: lstore_1
+      11: iload         4
+      13: iconst_2
+      14: iand
+      15: ifeq          21
+      18: bipush        32
+      20: istore_3
+      21: aload_0
+      22: lload_1
+      23: iload_3
+      24: invokespecial #40                 // Method "<init>":(JI)V
+      27: return
+
+  public final synchronized byte[] stateFor(io.johnsonlee.graphite.webgraph.RawStringMatchKey, int);
+    Code:
+       0: aload_1
+       1: ldc           #46                 // String key
+       3: invokestatic  #52                 // Method kotlin/jvm/internal/Intrinsics.checkNotNullParameter:(Ljava/lang/Object;Ljava/lang/String;)V
+       6: aload_0
+       7: getfield      #33                 // Field states:Ljava/util/LinkedHashMap;
+      10: aload_1
+      11: invokevirtual #56                 // Method java/util/LinkedHashMap.get:(Ljava/lang/Object;)Ljava/lang/Object;
+      14: checkcast     #58                 // class "[B"
+      17: astore_3
+      18: aload_1
+      19: iload_2
+      20: invokestatic  #64                 // Method io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraphKt.access$estimatedRawStringMatchStateBytes:(Lio/johnsonlee/graphite/webgraph/RawStringMatchKey;I)J
+      23: lstore        4
+      25: aload_3
+      26: ifnonnull     213
+      29: aload_0
+      30: getfield      #17                 // Field maxEntries:I
+      33: ifle          213
+      36: lload         4
+      38: aload_0
+      39: getfield      #13                 // Field maxRetainedBytes:J
+      42: lcmp
+      43: ifgt          213
+      46: aload_0
+      47: getfield      #33                 // Field states:Ljava/util/LinkedHashMap;
+      50: checkcast     #66                 // class java/util/Map
+      53: invokeinterface #70,  1           // InterfaceMethod java/util/Map.isEmpty:()Z
+      58: ifne          65
+      61: iconst_1
+      62: goto          66
+      65: iconst_0
+      66: ifeq          183
+      69: aload_0
+      70: getfield      #33                 // Field states:Ljava/util/LinkedHashMap;
+      73: invokevirtual #74                 // Method java/util/LinkedHashMap.size:()I
+      76: aload_0
+      77: getfield      #17                 // Field maxEntries:I
+      80: if_icmpge     98
+      83: lload         4
+      85: aload_0
+      86: getfield      #13                 // Field maxRetainedBytes:J
+      89: aload_0
+      90: getfield      #77                 // Field bytes:J
+      93: lsub
+      94: lcmp
+      95: ifle          183
+      98: aload_0
+      99: getfield      #33                 // Field states:Ljava/util/LinkedHashMap;
+     102: invokevirtual #81                 // Method java/util/LinkedHashMap.entrySet:()Ljava/util/Set;
+     105: invokeinterface #87,  1           // InterfaceMethod java/util/Set.iterator:()Ljava/util/Iterator;
+     110: invokeinterface #93,  1           // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+     115: dup
+     116: ldc           #95                 // String next(...)
+     118: invokestatic  #98                 // Method kotlin/jvm/internal/Intrinsics.checkNotNullExpressionValue:(Ljava/lang/Object;Ljava/lang/String;)V
+     121: checkcast     #100                // class java/util/Map$Entry
+     124: astore        6
+     126: aload_0
+     127: aload_0
+     128: getfield      #77                 // Field bytes:J
+     131: aload         6
+     133: invokeinterface #103,  1          // InterfaceMethod java/util/Map$Entry.getKey:()Ljava/lang/Object;
+     138: dup
+     139: ldc           #105                // String <get-key>(...)
+     141: invokestatic  #98                 // Method kotlin/jvm/internal/Intrinsics.checkNotNullExpressionValue:(Ljava/lang/Object;Ljava/lang/String;)V
+     144: checkcast     #107                // class io/johnsonlee/graphite/webgraph/RawStringMatchKey
+     147: aload         6
+     149: invokeinterface #110,  1          // InterfaceMethod java/util/Map$Entry.getValue:()Ljava/lang/Object;
+     154: checkcast     #58                 // class "[B"
+     157: arraylength
+     158: invokestatic  #64                 // Method io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraphKt.access$estimatedRawStringMatchStateBytes:(Lio/johnsonlee/graphite/webgraph/RawStringMatchKey;I)J
+     161: lsub
+     162: putfield      #77                 // Field bytes:J
+     165: aload_0
+     166: getfield      #33                 // Field states:Ljava/util/LinkedHashMap;
+     169: aload         6
+     171: invokeinterface #103,  1          // InterfaceMethod java/util/Map$Entry.getKey:()Ljava/lang/Object;
+     176: invokevirtual #113                // Method java/util/LinkedHashMap.remove:(Ljava/lang/Object;)Ljava/lang/Object;
+     179: pop
+     180: goto          46
+     183: iload_2
+     184: newarray       byte
+     186: astore_3
+     187: aload_0
+     188: getfield      #33                 // Field states:Ljava/util/LinkedHashMap;
+     191: checkcast     #66                 // class java/util/Map
+     194: aload_1
+     195: aload_3
+     196: invokeinterface #117,  3          // InterfaceMethod java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     201: pop
+     202: aload_0
+     203: aload_0
+     204: getfield      #77                 // Field bytes:J
+     207: lload         4
+     209: ladd
+     210: putfield      #77                 // Field bytes:J
+     213: aload_3
+     214: areturn
+
+  public final synchronized boolean contains(java.lang.Class<? extends io.johnsonlee.graphite.core.Node>, io.johnsonlee.graphite.graph.StringPropertyPredicate);
+    Code:
+       0: aload_1
+       1: ldc           #128                // String type
+       3: invokestatic  #52                 // Method kotlin/jvm/internal/Intrinsics.checkNotNullParameter:(Ljava/lang/Object;Ljava/lang/String;)V
+       6: aload_2
+       7: ldc           #130                // String predicate
+       9: invokestatic  #52                 // Method kotlin/jvm/internal/Intrinsics.checkNotNullParameter:(Ljava/lang/Object;Ljava/lang/String;)V
+      12: aload_0
+      13: getfield      #33                 // Field states:Ljava/util/LinkedHashMap;
+      16: invokevirtual #133                // Method java/util/LinkedHashMap.keySet:()Ljava/util/Set;
+      19: dup
+      20: ldc           #135                // String <get-keys>(...)
+      22: invokestatic  #98                 // Method kotlin/jvm/internal/Intrinsics.checkNotNullExpressionValue:(Ljava/lang/Object;Ljava/lang/String;)V
+      25: checkcast     #137                // class java/lang/Iterable
+      28: astore_3
+      29: iconst_0
+      30: istore        4
+      32: aload_3
+      33: instanceof    #139                // class java/util/Collection
+      36: ifeq          55
+      39: aload_3
+      40: checkcast     #139                // class java/util/Collection
+      43: invokeinterface #140,  1          // InterfaceMethod java/util/Collection.isEmpty:()Z
+      48: ifeq          55
+      51: iconst_0
+      52: goto          159
+      55: aload_3
+      56: invokeinterface #141,  1          // InterfaceMethod java/lang/Iterable.iterator:()Ljava/util/Iterator;
+      61: astore        5
+      63: aload         5
+      65: invokeinterface #144,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+      70: ifeq          158
+      73: aload         5
+      75: invokeinterface #93,  1           // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      80: astore        6
+      82: aload         6
+      84: checkcast     #107                // class io/johnsonlee/graphite/webgraph/RawStringMatchKey
+      87: astore        7
+      89: iconst_0
+      90: istore        8
+      92: aload         7
+      94: invokevirtual #148                // Method io/johnsonlee/graphite/webgraph/RawStringMatchKey.getProperty:()Lio/johnsonlee/graphite/webgraph/StringPropertyKey;
+      97: invokevirtual #154                // Method io/johnsonlee/graphite/webgraph/StringPropertyKey.getType:()Ljava/lang/Class;
+     100: aload_1
+     101: invokestatic  #158                // Method kotlin/jvm/internal/Intrinsics.areEqual:(Ljava/lang/Object;Ljava/lang/Object;)Z
+     104: ifeq          150
+     107: aload         7
+     109: invokevirtual #162                // Method io/johnsonlee/graphite/webgraph/RawStringMatchKey.getTransform:()Lio/johnsonlee/graphite/graph/StringValueTransform;
+     112: aload_2
+     113: invokevirtual #165                // Method io/johnsonlee/graphite/graph/StringPropertyPredicate.getTransform:()Lio/johnsonlee/graphite/graph/StringValueTransform;
+     116: if_acmpne     150
+     119: aload         7
+     121: invokevirtual #169                // Method io/johnsonlee/graphite/webgraph/RawStringMatchKey.getMode:()Lio/johnsonlee/graphite/graph/StringMatchMode;
+     124: aload_2
+     125: invokevirtual #170                // Method io/johnsonlee/graphite/graph/StringPropertyPredicate.getMode:()Lio/johnsonlee/graphite/graph/StringMatchMode;
+     128: if_acmpne     150
+     131: aload         7
+     133: invokevirtual #174                // Method io/johnsonlee/graphite/webgraph/RawStringMatchKey.getExpected:()Ljava/lang/String;
+     136: aload_2
+     137: invokevirtual #175                // Method io/johnsonlee/graphite/graph/StringPropertyPredicate.getExpected:()Ljava/lang/String;
+     140: invokestatic  #158                // Method kotlin/jvm/internal/Intrinsics.areEqual:(Ljava/lang/Object;Ljava/lang/Object;)Z
+     143: ifeq          150
+     146: iconst_1
+     147: goto          151
+     150: iconst_0
+     151: ifeq          63
+     154: iconst_1
+     155: goto          159
+     158: iconst_0
+     159: ireturn
+
+  public final synchronized void clear();
+    Code:
+       0: aload_0
+       1: getfield      #33                 // Field states:Ljava/util/LinkedHashMap;
+       4: invokevirtual #188                // Method java/util/LinkedHashMap.clear:()V
+       7: aload_0
+       8: lconst_0
+       9: putfield      #77                 // Field bytes:J
+      12: return
+
+  public final synchronized long retainedBytes();
+    Code:
+       0: aload_0
+       1: getfield      #77                 // Field bytes:J
+       4: lreturn
+
+  public final synchronized int size();
+    Code:
+       0: aload_0
+       1: getfield      #33                 // Field states:Ljava/util/LinkedHashMap;
+       4: invokevirtual #74                 // Method java/util/LinkedHashMap.size:()I
+       7: ireturn
+
+  public io.johnsonlee.graphite.webgraph.RawStringMatchStates();
+    Code:
+       0: aload_0
+       1: lconst_0
+       2: iconst_0
+       3: iconst_3
+       4: aconst_null
+       5: invokespecial #192                // Method "<init>":(JIILkotlin/jvm/internal/DefaultConstructorMarker;)V
+       8: return
+}

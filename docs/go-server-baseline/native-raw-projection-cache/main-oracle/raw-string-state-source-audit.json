@@ -1,0 +1,40 @@
+{
+  "mainRevision": "4e328b0109e13c896b74004823fb049fcb19251a",
+  "productionSourceFiles": 97,
+  "references": [
+    {
+      "path": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt",
+      "line": 201,
+      "text": "private val rawStringMatchStates = RawStringMatchStates()"
+    },
+    {
+      "path": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt",
+      "line": 2000,
+      "text": "rawStringMatchStates.clear()"
+    },
+    {
+      "path": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt",
+      "line": 2063,
+      "text": "internal fun rawStringMatchStateBytes(): Long = rawStringMatchStates.retainedBytes()"
+    },
+    {
+      "path": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt",
+      "line": 2065,
+      "text": "internal fun rawStringMatchStateCount(): Int = rawStringMatchStates.size()"
+    },
+    {
+      "path": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt",
+      "line": 2717,
+      "text": "internal class RawStringMatchStates("
+    },
+    {
+      "path": "graphite-webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt",
+      "line": 2729,
+      "text": "fun stateFor(key: RawStringMatchKey, stringCount: Int): ByteArray? {"
+    }
+  ],
+  "stateForDefinitionCount": 1,
+  "stateForDirectCallSites": 0,
+  "mappedGraphBytecodeCallsStateFor": false,
+  "scope": "Direct Kotlin/Java production references plus disassembly of mapped graph; no claim about arbitrary external reflection."
+}

@@ -147,9 +147,7 @@ func TestIndexLifecycleMain(t *testing.T) {
 				t.Fatal(err)
 			}
 			outputs = append(outputs, normalized)
-			// Go has no corresponding raw-match/projection-cache counters. Preserve
-			// the original oracle, and explicitly limit this comparison to its five
-			// implemented structural observations plus all public values/file bytes.
+			// Compare all seven state fields, including both raw-cache counters.
 			comparison := lifecycleComparableMain(t, want)
 			if !reflect.DeepEqual(normalized, comparison) {
 				t.Errorf("main lifecycle differs; complete candidate retained in INDEX_LIFECYCLE_OUTPUT")
@@ -176,26 +174,6 @@ func lifecycleComparableMain(t *testing.T, record map[string]any) map[string]any
 	var out map[string]any
 	if err := json.Unmarshal(raw, &out); err != nil {
 		t.Fatal(err)
-	}
-	state := func(value any) {
-		m := value.(map[string]any)
-		for _, key := range []string{"rawMatchCount", "rawProjectionCount"} {
-			if m[key] != float64(0) {
-				t.Fatalf("new oracle raw cache activity requires a native counterpart: %s=%v", key, m[key])
-			}
-			delete(m, key)
-		}
-	}
-	for _, key := range []string{"loaded", "afterPrepare", "afterClear"} {
-		if value, ok := out[key]; ok {
-			state(value)
-		}
-	}
-	steps, _ := out["steps"].([]any)
-	for _, step := range steps {
-		s := step.(map[string]any)
-		state(s["before"])
-		state(s["after"])
 	}
 	return out
 }

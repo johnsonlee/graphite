@@ -89,7 +89,7 @@ func (r *replay) states() (any, error) {
 		if err != nil {
 			return nil, err
 		}
-		states = append(states, map[string]any{"id": g.ID, "retained": s.Retained, "mappedView": s.MappedView, "trigrams": s.Trigrams, "loadedFromPersistence": s.LoadedFromPersistence, "mappedRangeCount": s.MappedRangeCount})
+		states = append(states, map[string]any{"id": g.ID, "retained": s.Retained, "mappedView": s.MappedView, "trigrams": s.Trigrams, "loadedFromPersistence": s.LoadedFromPersistence, "mappedRangeCount": s.MappedRangeCount, "rawMatchCount": s.RawMatchCount, "rawProjectionCount": s.RawProjectionCount})
 	}
 	return states, nil
 }
@@ -223,7 +223,7 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	if err := r.emit(map[string]any{"kind": "header", "state": *state, "caseCount": 1267, "graphCount": 64, "performanceMeasurement": false, "loaded": loaded, "workloadSHA256": main64SHA256, "unavailableStateCounters": []string{"rawMatchCount", "rawProjectionCount"}}); err != nil {
+	if err := r.emit(map[string]any{"kind": "header", "state": *state, "caseCount": 1267, "graphCount": 64, "performanceMeasurement": false, "loaded": loaded, "workloadSHA256": main64SHA256, "unavailableStateCounters": []string{}}); err != nil {
 		return err
 	}
 	if *state != "startup-prepared" {

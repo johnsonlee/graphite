@@ -125,17 +125,6 @@ func TestMappedEmptyCallSitesPreserveAnnotationProvenance(t *testing.T) {
 			t.Fatal(err)
 		}
 		outputs = append(outputs, normalized)
-		for _, when := range []string{"before", "after"} {
-			for _, rawState := range want[when].([]any) {
-				state := rawState.(map[string]any)
-				for _, counter := range []string{"rawMatchCount", "rawProjectionCount"} {
-					if state[counter] != float64(0) {
-						t.Fatal("unavailable native raw cache counter is nonzero", counter)
-					}
-					delete(state, counter)
-				}
-			}
-		}
 		if !reflect.DeepEqual(normalized, want) {
 			t.Errorf("step %d response or endpoint state differs from main", i)
 		}

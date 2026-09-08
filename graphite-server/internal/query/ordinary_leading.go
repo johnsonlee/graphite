@@ -27,6 +27,23 @@ func (e evaluator) ordinaryLeadingRows(source Graph, plan *ordinaryProjectionPla
 		return nil, false
 	}
 	if raw {
+		if plan.limit <= 0 {
+			return []map[string]any{}, true
+		}
+		cacheKey := ordinaryNodeKey(plan, plan.limit)
+		cached, hit, err := source.Store.RawProjectionMatches(e.ctx, cacheKey)
+		failProjectionRead(err)
+		if hit {
+			rows := []map[string]any{}
+			for _, id := range cached {
+				e.check()
+				sids, err := source.Store.ProjectionStringIDs(e.ctx, id)
+				failProjectionRead(err)
+				rows = append(rows, e.ordinaryRawRow(source, plan, sids))
+			}
+			return rows, true
+		}
+		matchedIDs := []int32{}
 		ids := source.Store.NodesOfKind("CallSiteNode")
 		maximum := min(1024, max(64, plan.limit*4))
 		rows := []map[string]any{}
@@ -50,13 +67,16 @@ func (e evaluator) ordinaryLeadingRows(source Graph, plan *ordinaryProjectionPla
 				continue
 			}
 			rows = append(rows, e.ordinaryRawRow(source, plan, sids))
+			matchedIDs = append(matchedIDs, id)
 			if len(rows) >= plan.limit {
+				failProjectionRead(source.Store.CacheRawProjectionMatches(e.ctx, cacheKey, matchedIDs))
 				return rows, true
 			}
 		}
 		if inspected < len(ids) {
 			return nil, false
 		}
+		failProjectionRead(source.Store.CacheRawProjectionMatches(e.ctx, cacheKey, matchedIDs))
 		return rows, true
 	}
 	if ordinarySharedMatcher(plan) {

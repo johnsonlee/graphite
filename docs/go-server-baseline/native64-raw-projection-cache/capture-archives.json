@@ -1,0 +1,20 @@
+{
+  "native-cold": {
+    "originalSHA256": "664f8c59753b3d676aeb31479b41d2e367cf9ee6a4b56f331fd9afe66e7ca46f",
+    "gzipSHA256": "88020324a2e328ea91d1343a6f1d967265a2c8775d9a5bb49412ae18a49bee97",
+    "originalBytes": 97903444,
+    "gzipBytes": 3278413
+  },
+  "native-warm": {
+    "originalSHA256": "e30afa52e21042d949b2e09e661e3f6f2eac7a88f2e13ba711780fe7e45e1440",
+    "gzipSHA256": "d99a60040f34d31c0c8f8eb91078e6d0e91dd7d422900827c3b5d3f6921d9be7",
+    "originalBytes": 97892293,
+    "gzipBytes": 3278959
+  },
+  "native-startup-prepared": {
+    "originalSHA256": "c4041f6e8336cd67646f4aa9e1a93008de06f99f0bd8dc60dd54d4851b0b371e",
+    "gzipSHA256": "130f56560f8f423218fa32da6c369daf0d5ea61167719cf9383f4a261ff7e9b2",
+    "originalBytes": 97901990,
+    "gzipBytes": 3271162
+  }
+}

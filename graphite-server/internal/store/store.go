@@ -245,6 +245,7 @@ func (s *Store) Close() error {
 	}
 	s.persistProjectionOnCloseLocked()
 	st.closed = true
+	st.rawProjection = nil
 	if index := s.distinctProjection.index; index != nil && index.ordinary != nil {
 		index.ordinary.exactTuple = nil
 	}

@@ -1,0 +1,5 @@
+--- FAIL: TestRawProjectionProviderMain (0.00s)
+    raw_projection_cache_test.go:97: clean-full-hit state={RawMatchCount:0 RawProjectionCount:0 Retained:false MappedView:false Trigrams:false LoadedFromPersistence:false MappedRangeCount:0} err=<nil>
+FAIL
+FAIL	github.com/johnsonlee/graphite/graphite-server/internal/query	0.389s
+FAIL
